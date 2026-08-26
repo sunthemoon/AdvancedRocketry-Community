@@ -325,8 +325,8 @@ def check_workflow(results: Results) -> None:
         "name: Repository governance",
         "on:",
         "jobs:",
-        "uses: actions/checkout@v4",
-        "uses: actions/setup-python@v5",
+        "uses: actions/checkout@v7",
+        "uses: actions/setup-python@v7",
         "python -m unittest discover -s tests -v",
         "python scripts/validate_repository.py --require-approved-identity",
     )
