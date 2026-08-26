@@ -1,0 +1,20 @@
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Python validation artifacts
+__pycache__/
+*.py[cod]
+
+# Gradle and Forge development outputs
+.gradle/
+build/
+out/
+run/
+
+# Local logs and crash output
+*.log
+crash-reports/

@@ -1,0 +1,10 @@
+# Copy to .github/CODEOWNERS after replacing the owner/team.
+* @sunthemoon
+
+/docs/ @sunthemoon
+/NOTICE.md @sunthemoon
+/LICENSE @sunthemoon
+/docs/provenance/ @sunthemoon
+/src/main/java/**/rocket/ @sunthemoon
+/src/main/java/**/network/ @sunthemoon
+/src/main/java/**/persistence/ @sunthemoon

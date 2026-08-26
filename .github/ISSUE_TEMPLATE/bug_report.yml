@@ -1,0 +1,99 @@
+name: Bug report
+description: Report a reproducible problem in Advanced Rocketry Community Edition
+title: "[Bug]: "
+labels:
+  - "type:bug"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is an unofficial community project. Do not report this issue to the original Advanced Rocketry maintainers.
+        Security-sensitive duplication, packet abuse, arbitrary chunk loading, or save corruption should follow SECURITY.md.
+  - type: input
+    id: arce_version
+    attributes:
+      label: ARCE version and commit/build hash
+      placeholder: "1.20.1-0.6.0-alpha.1 / abc123"
+    validations:
+      required: true
+  - type: input
+    id: forge
+    attributes:
+      label: Forge version
+      placeholder: "47.4.10"
+    validations:
+      required: true
+  - type: input
+    id: java
+    attributes:
+      label: Java version
+      placeholder: "17.0.x"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Dedicated server
+        - Singleplayer / integrated server
+        - Client-only visual issue
+    validations:
+      required: true
+  - type: textarea
+    id: mods
+    attributes:
+      label: Minimal mod list
+      description: Reduce to the smallest set that still reproduces the issue.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - label: This may duplicate items, fluids, blocks, rockets, passengers, or stations
+        - label: This may corrupt a world or player save
+        - label: This may allow arbitrary chunk loading or packet abuse
+        - label: This prevents the Earth–Moon core loop
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, crash report, screenshots, or test world
+      description: Remove secrets and personal information.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      options:
+        - label: I tested the latest applicable build
+          required: true
+        - label: I searched existing issues
+          required: true
+        - label: I will not ask the original Advanced Rocketry maintainers to support this issue
+          required: true

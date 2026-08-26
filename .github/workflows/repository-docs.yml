@@ -1,0 +1,28 @@
+name: Repository governance
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate-repository-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Test repository validator
+        run: python -m unittest discover -s tests -v
+
+      - name: Enforce governance baseline
+        run: python scripts/validate_repository.py --require-approved-identity
