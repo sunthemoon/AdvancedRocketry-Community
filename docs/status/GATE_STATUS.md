@@ -2,10 +2,10 @@
 
 ```yaml
 version: v0.0.1
-commit: "11baf8be6df42006d0499e13778553991980efcc"
+commit: "ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505"
 build: ""
 pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1"
-workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32954727518"
+workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32955717987"
 gates:
   G0: PASS
   G1: NOT_APPLICABLE
@@ -19,9 +19,10 @@ gates:
   G9: PASS
 overall: IN_PROGRESS
 remaining_items:
-  - Capture the required GitHub homepage, license, and settings evidence
-  - Complete the final signed-out review and human audit
-  - Revisit enforceable main protection while the repository remains private on a personal account
+  - Obtain explicit maintainer authorization before changing repository visibility from private to public
+  - Capture the signed-out homepage, license, Issues, Security, Contributing, and Code of Conduct review
+  - Confirm main protection is enforceable after the repository becomes public
+  - Complete the final human audit
 human_approved_by: "sunthemoon"
 human_approved_at: "2026-08-26"
 ```

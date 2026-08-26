@@ -2,9 +2,10 @@
 
 ## Remaining gate work
 
-- Pull request [#1](https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1) is open and unmerged; the remote `main` branch therefore still contains only the initial `LICENSE` commit.
+- Pull request [#1](https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1) is merged as commit `ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505`; its post-merge `main` workflow passed.
 - The classic protection rule for `main` is configured but marked `Not enforced` while the repository remains private under a personal account.
-- Required GitHub screenshots and the final signed-out review have not been captured.
+- Authenticated GitHub screenshots are archived under [`evidence/`](evidence/README.md).
+- Anonymous requests correctly return `404` while the repository is private, so the signed-out content review cannot be completed until the maintainer explicitly authorizes public visibility.
 
 ## Expected limitations
 

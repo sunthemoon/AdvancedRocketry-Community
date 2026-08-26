@@ -5,10 +5,10 @@
 ```yaml
 version: v0.0.1
 build: NOT_APPLICABLE
-commit: 11baf8be6df42006d0499e13778553991980efcc
+commit: ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505
 tag: ""
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1
-workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32954727518
+workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32955717987
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -30,7 +30,7 @@ jar_sha256: NOT_APPLICABLE
 | G5 Persistence/Recovery | NOT_APPLICABLE | No persistent data in v0.0.1 |
 | G6 Security/Authority | NOT_APPLICABLE | No network or game authority code in v0.0.1 |
 | G7 Performance | NOT_APPLICABLE | No runtime code in v0.0.1 |
-| G8 Manual Flow | IN_PROGRESS | Authenticated settings and PR review completed; saved screenshots and final anonymous-view check pending |
+| G8 Manual Flow | IN_PROGRESS | Authenticated screenshots archived and reviewed; signed-out content review awaits explicit public-visibility authorization |
 | G9 Docs/Release | PASS | Local strict validation and remote governance workflow pass; PR and run evidence are recorded |
 
 ## Commands actually run
@@ -73,8 +73,8 @@ Non-strict initialization check:
 [PASS] README, NOTICE, branding, and issue intake state unofficial status
 [PASS] LICENSE preserves the original notice and community attribution
 [PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
-[PASS] Markdown relative links resolve (28 checked)
-[PASS] No forbidden source tree, binary, or unaudited v0.0.1 assets found
+[PASS] Markdown relative links resolve (40 checked)
+[PASS] No forbidden source tree, binary, or unaudited v0.0.1 assets found (7 evidence screenshots verified)
 [PASS] No case-insensitive path collisions found
 [PASS] Issue template files have the required dependency-free structure
 [PASS] Repository governance workflow invokes the strict validator
@@ -90,8 +90,8 @@ Strict Gate check:
 [PASS] README, NOTICE, branding, and issue intake state unofficial status
 [PASS] LICENSE preserves the original notice and community attribution
 [PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
-[PASS] Markdown relative links resolve (28 checked)
-[PASS] No forbidden source tree, binary, or unaudited v0.0.1 assets found
+[PASS] Markdown relative links resolve (40 checked)
+[PASS] No forbidden source tree, binary, or unaudited v0.0.1 assets found (7 evidence screenshots verified)
 [PASS] No case-insensitive path collisions found
 [PASS] Issue template files have the required dependency-free structure
 [PASS] Repository governance workflow invokes the strict validator
@@ -104,11 +104,11 @@ Remote GitHub Actions validation:
 
 ```yaml
 workflow: Repository governance
-run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32954727518
-validated_commit: 11baf8be6df42006d0499e13778553991980efcc
+run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32955717987
+validated_commit: ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505
 job: validate-repository-docs
 result: PASS
-duration_seconds: 13
+duration_seconds: 10
 annotations: 0
 ```
 
@@ -136,16 +136,16 @@ See `KNOWN-ISSUES.md`.
 
 ## Manual tests
 
-See `MANUAL-TEST.md`. Authenticated settings, PR, and workflow checks are complete; required saved screenshots and the final signed-out review remain pending.
+See `MANUAL-TEST.md` and [`evidence/README.md`](evidence/README.md). Authenticated settings, homepage, license, PR, Issues, Security, and workflow evidence are archived. Anonymous requests return `404` while the repository is private; a signed-out content review remains pending explicit maintainer authorization to make the repository public.
 
 ## Final recommendation
 
 ```yaml
 recommended_status: IN_PROGRESS
 remaining_items:
-  - Capture required GitHub screenshots and complete the final manual audit
-  - Perform the human review of pull request 1 before merging
-  - Resolve or explicitly accept the private-account branch-protection enforcement limitation
+  - Obtain explicit maintainer authorization before changing repository visibility
+  - Capture the signed-out public review and confirm branch-protection enforcement
+  - Complete the final human audit
 reviewed_by: "sunthemoon"
 reviewed_at: "2026-08-26"
 ```
