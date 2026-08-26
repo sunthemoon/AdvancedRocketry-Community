@@ -1,0 +1,75 @@
+name: Porting task
+description: Propose or claim a scoped upstream behavior/asset port
+title: "[Port]: "
+labels:
+  - "type:porting"
+body:
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Target milestone
+      options:
+        - v0.0.1
+        - v0.0.2
+        - v0.1.0
+        - v0.2.0
+        - v0.3.0
+        - v0.4.0
+        - v0.5.0
+        - v0.6.0
+        - v0.7.0
+        - v0.8.0
+        - v0.9.0
+        - v1.0.0
+        - Post-v1.0
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Original player behavior
+      description: Describe observable behavior, not only class names.
+    validations:
+      required: true
+  - type: textarea
+    id: upstream
+    attributes:
+      label: Exact upstream references
+      placeholder: |
+        repository:
+        branch:
+        commit:
+        source paths:
+        asset paths:
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: Proposed 1.20.1 target design
+    validations:
+      required: true
+  - type: textarea
+    id: nongoals
+    attributes:
+      label: Explicit non-goals
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Automated and manual test plan
+    validations:
+      required: true
+  - type: textarea
+    id: persistence
+    attributes:
+      label: Save, network, performance, and authority impact
+    validations:
+      required: true
+  - type: textarea
+    id: provenance
+    attributes:
+      label: License and provenance plan
+    validations:
+      required: true

@@ -1,0 +1,52 @@
+name: Compatibility report
+description: Report a conflict with Forge or another mod using a minimal reproduction
+title: "[Compat]: "
+labels:
+  - "status:needs-reproduction"
+body:
+  - type: input
+    id: arce
+    attributes:
+      label: ARCE version
+    validations:
+      required: true
+  - type: input
+    id: forge
+    attributes:
+      label: Forge version
+    validations:
+      required: true
+  - type: input
+    id: other
+    attributes:
+      label: Other mod and exact version
+    validations:
+      required: true
+  - type: textarea
+    id: minimal
+    attributes:
+      label: Minimal reproduction mod list
+      description: Large modpack lists without reduction are normally not actionable.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and crash report
+    validations:
+      required: true
+  - type: checkboxes
+    id: isolated
+    attributes:
+      label: Isolation
+      options:
+        - label: The issue disappears when ARCE is removed
+          required: true
+        - label: The issue disappears when the named other mod is removed
+          required: true

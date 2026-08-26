@@ -1,0 +1,78 @@
+# Package Manifest
+
+- Generated: 2026-08-26
+- Files listed: 70
+- Package purpose: executable documentation and Codex runbook for an Advanced Rocketry community rewrite targeting Minecraft 1.20.1 Forge.
+
+| Path | Bytes | SHA-256 |
+|---|---:|---|
+| `.github/CODEOWNERS.example` | 289 | `6d1cbee3103babf076d76854d3e0b7f4a91d88d5caad720167c74d87c09469d9` |
+| `.github/ISSUE_TEMPLATE/bug_report.yml` | 2713 | `f82d54af303cb45b953188f968cda9831698683509069e13a4ede7c172817c21` |
+| `.github/ISSUE_TEMPLATE/compatibility_report.yml` | 1257 | `b9fe7fa07fe941b3c8a8ff8070aa00b9a31447da666c78991603b98151810a4f` |
+| `.github/ISSUE_TEMPLATE/config.yml` | 269 | `4ce0d6195a140c0af7199ef9b54d51145399718e13ec7d7555f837dc75438f48` |
+| `.github/ISSUE_TEMPLATE/porting_task.yml` | 1614 | `4e6028782160ca5060cc4b8abb316c27f7cd24c5ad872c03f11db9902be8ce1c` |
+| `.github/PULL_REQUEST_TEMPLATE.md` | 1327 | `4ce5919b65564dd43a039b738c55e50785af2ef436a145d4b16df22cc37552be` |
+| `00-READ-ME-FIRST.md` | 2379 | `b887a7a08df2215d621a49b30c8f331607b20cb5aa738e9e991e258dddd2264d` |
+| `AGENTS.md` | 6216 | `110c0023f27d810a03ce2c96c8fc19246bf347d576402453ddcb9b9038699ccd` |
+| `BRANDING_AND_AFFILIATION.md` | 2047 | `d641c0d4396b9679f1a82a61120f5cc258a1f93cfb9e74fd5ab4ff5431453b4f` |
+| `CODE_OF_CONDUCT.md` | 968 | `6643c4d86e8802da91c43eb98f29ca33f4099ff23671faa17b92c75bf8a7cf85` |
+| `CONTRIBUTING.md` | 2261 | `f8169a4ad576a4c99c102e9273ee58127e2d233082acf9d7b6f9af40aeaff6c0` |
+| `DOCUMENT-INDEX.md` | 3934 | `40d582ca229bcc7c90d70e619ce7eb8caa281988f0bc5f98ee826b4cf9d15a13` |
+| `LICENSE` | 1125 | `6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba` |
+| `MASTER-EXECUTION-PLAN.md` | 179746 | `76435d0fc76cb659ef2abc2f37417d6d81caa0352b2f25cf8ede8c2f423f78d5` |
+| `NOTICE.md` | 2141 | `4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36` |
+| `PACKAGE-VALIDATION.md` | 1728 | `5feee58c7ed8cf5d8d5102c418ccdc7aae3f2559219ceb083aebd0e0468d84fb` |
+| `PRODUCT.md` | 3715 | `4167da9296321a9b6bbdc8deb8cda0e44772802af8990e83d199c192ff9b3efc` |
+| `PROJECT-CONFIG.md` | 3531 | `44be0ad6ea3679b5be0b604f721422d97ba6a976efd34b8e0e089f238ebf64fa` |
+| `README.md` | 3339 | `0a651861ef16d989550dbc2b0b1ddc74c5834afa4ba3913b6bb2bf320c106da2` |
+| `REPOSITORY-DECLARATIONS.md` | 4211 | `7633f0ed346d7f6c61b4272d5ea5be4e015bdf410f32dab608d85e74cb979b0b` |
+| `SECURITY.md` | 1426 | `a0bc67ef4938ed124ee6b5bb7d45510fada27b8529c60f6b0029fb1a20937d07` |
+| `UPSTREAM.md` | 1997 | `c7e22ebe4909f3ecf4574112648610a16d7bd8152e74f55dd8c628ecb2110ed9` |
+| `codex-prompts/00-initialize-repository.md` | 1175 | `fc1ff11a7983cd2f7fbe8ee9946908fbf49a1be82f15053eb732bf3ff6caac2f` |
+| `codex-prompts/01-run-upstream-audit.md` | 1275 | `f4801c1e657a2d5376048090eaae46468656e2e41edcebbb7a1d9d08a5a8b06d` |
+| `codex-prompts/02-implement-next-version.md` | 1178 | `ccac0634cd352d6b0a8867f240acea24bf00ab499892d1c08fa520b278daf666` |
+| `codex-prompts/03-audit-current-version.md` | 1112 | `8de7bb2c1e7716705a1b3bf7c3e47280c00864d3d3aabc0d76f9d36348c0eaa5` |
+| `codex-prompts/04-release-gate.md` | 995 | `cdc753e9636be01e74ab2899b52b154c9194fc94960c38378d32e3845568d8f3` |
+| `docs/01-PORTING-PRINCIPLES.md` | 4619 | `a1ff595bdcc85335ef6124c4ca4d640d318d5fd8ca69af8c57d842186e629984` |
+| `docs/02-UPSTREAM-TREE-AND-ASSET-AUDIT.md` | 4927 | `5ae0f4934c23a70d448af935e8be8bfed5b9fbf6667a6bdb0e65f9e035f19c72` |
+| `docs/03-TARGET-ARCHITECTURE.md` | 6493 | `bd980a19ce018a3e958f1df959cb7b1175befe1484666b1c0606acf22b0dd1db` |
+| `docs/04-VERSION-ROADMAP.md` | 2980 | `779ba932e687fd0f62a96c64a2788de1cd6305b982311bbdd68e45f6bdddc2b2` |
+| `docs/05-MASTER-TEST-PLAN.md` | 6377 | `32c0bd747752edddfeaf5e5958154001dbbfa1eb3c46cfeea67039be93bd1663` |
+| `docs/06-RELEASE-AND-ACCEPTANCE-GATES.md` | 3626 | `c32b824e289c68d417006b747961a8b53cb8600eab6dd9bd8a1420531a81b93e` |
+| `docs/07-SAVE-DATA-AND-NETWORK-VERSIONING.md` | 3727 | `5000650982813492e5968d4c670aacbb45b8d835ed43da1a60d5557f1aabd14c` |
+| `docs/08-ASSET-LICENSE-AND-PROVENANCE.md` | 3673 | `f72c5cd5dd707bfd746982bef46e7208fd4f061dcbc50334a10dbd98da8c8fe2` |
+| `docs/09-GITHUB-REPOSITORY-SETUP.md` | 5712 | `2e81e130c14923ac2e30ed3eb320c0d976f7dab95bbdd960f4b61fa1828d6a22` |
+| `docs/10-CODEX-EXECUTION-RUNBOOK.md` | 3712 | `746c705094feb8b284c6c971ec640f1f7f01dbd3b7c3549eed8cc56e2734e92b` |
+| `docs/11-RISK-REGISTER.md` | 3215 | `dab7044a8a8f7e20927fe5eb5a5dff15156be7ec0de0a7ea08f56ec02a362aa2` |
+| `docs/12-SOURCES.md` | 3596 | `c4327daab5623f5f30e573d8c08305add27b771e36aaca4704e7f95f9b129d42` |
+| `docs/13-BOOTSTRAP-COMMANDS.md` | 2023 | `50f50676bdc3f6f495a7499e6dd7fa843e0daf816877aec71e18b176464ed24a` |
+| `docs/PORTING_MATRIX.md` | 5087 | `6dd95d715567f925baa84530b054387b5352aa424f65aab24d78c1b285733bc6` |
+| `docs/decisions/ADR-000-PROJECT-IDENTITY.md` | 1264 | `941a0cd4214f79aa345c27dea7ce29e6ef2c55314701965a47b73fbcfd31201a` |
+| `docs/decisions/ADR-001-FIXED-DIMENSIONS.md` | 879 | `1143e5de4a319c036c7641fd8a2e6eb3f5358ba930e62c7bff6dcf862ef3fb6e` |
+| `docs/decisions/ADR-002-ROCKET-TRANSACTIONS.md` | 778 | `82f6fbaf69b6de2d1e0dbc45fea7b52299b4e09c16f425a559a1277995404944` |
+| `docs/decisions/ADR-003-ATMOSPHERE-BUDGET.md` | 667 | `20ea23762c9a9b24c229268965b87c23900056da57c3365a0a03caa23e7d0cff` |
+| `docs/provenance/README.md` | 188 | `de0fcde4784e55d49b1334d3eafdbfd826a304a0ba22c8621a16f22064d7eabb` |
+| `docs/releases/README.md` | 179 | `a40d561a1e8373682d213a0e1d3a6bb1224bfb43be0e08730d70c3f1f67c9028` |
+| `docs/status/CURRENT_VERSION.md` | 184 | `bcfb8aab1f8c22210707e7841bc1fad534b3908fe2877a02dd300d93b5d1e995` |
+| `docs/status/GATE_STATUS.md` | 333 | `b9facf780f00d2f5dacd8c7de0fb09e12bfcd7d52cf5765761fd46e55e282f4f` |
+| `docs/templates/ADR-TEMPLATE.md` | 546 | `b69d2830730e979feaac6ab3669cfa575a329b08bd5a65f5d111d979221665d0` |
+| `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` | 480 | `2ab6a1bebc3db58b8090ec7f1f8127f4fca39a44a5816664a72b372594a01a8e` |
+| `docs/templates/PERFORMANCE-REPORT-TEMPLATE.md` | 604 | `284839b1a2760a0cbf19db6043819a8f4b945b2d8e66cd7fbc220efda0bce3f2` |
+| `docs/templates/RELEASE-EVIDENCE-TEMPLATE.md` | 1288 | `7b82ee95c605c32ef7e0e4fe7498df8d3477449aa703ebf432b10d3132273e8b` |
+| `docs/templates/SOURCE-PROVENANCE-TEMPLATE.md` | 586 | `43105bd8e2b2f6f00e8c3555c92ea2a3a06689f728b50944c4ca012205a68302` |
+| `docs/templates/TEST-REPORT-TEMPLATE.md` | 836 | `f558f698611a6da5695c79ab5e37ca4272c4dbec161ac05f7adb872a016daab3` |
+| `docs/templates/UPSTREAM-MAINTAINER-OUTREACH.md` | 1573 | `c6a76fc994a42ecfd51426326742b3e5b2650fa2d1f70c476b80872bf09294de` |
+| `docs/templates/VERSION-PLAN-TEMPLATE.md` | 1031 | `db67136011c92ccb89b5485126e262a307ddf7ecbb64b849aa5aef56a714c513` |
+| `docs/versions/V0.0.1-REPOSITORY-BASELINE.md` | 5432 | `ea959183e6c27edf0a22a4a9de9f63bd26f69862a58f70788c2363ac846e3060` |
+| `docs/versions/V0.0.2-FORGE-BOOTSTRAP.md` | 5167 | `f2157b1eb80292974116f7b025c1c20a783ec437a4c026eee23fd0d27bd0a2ef` |
+| `docs/versions/V0.1.0-ASSET-REGISTRY-BASELINE.md` | 4978 | `f2ab9810eae419adc2fe18efcc8b68ce3c97b3a1f498d067f986578965a39211` |
+| `docs/versions/V0.2.0-MACHINE-VERTICAL-SLICE.md` | 5033 | `f281b6cccd4982b2cc6d3de65851f64e20a847b1a6747e7404ee4f66d885db40` |
+| `docs/versions/V0.3.0-CELESTIAL-DATA-AND-DIMENSIONS.md` | 5154 | `9d6c400115ba1453d10bff8e72bbec57c69c820995a8e6956fd4ffbc1c28fda0` |
+| `docs/versions/V0.4.0-VACUUM-LIFE-SUPPORT-ATMOSPHERE.md` | 5060 | `5d37b592be7b97c842b58cbdbe514add240b0b6ebabb1bff67dc6b0edd85fdd8` |
+| `docs/versions/V0.5.0-ROCKET-ASSEMBLY.md` | 5292 | `299e8a162053c1bd369405c357332a28e336447c63f25218741aba3ce66642be` |
+| `docs/versions/V0.6.0-EARTH-MOON-ROUNDTRIP.md` | 5725 | `8ca9571df99c4115eb251cfe2a83eaa5f4bf610c2d5588cc7fa4221884ac8076` |
+| `docs/versions/V0.7.0-SPACE-STATION.md` | 4671 | `f2eef65a81e5eb67d3e8258f0cbdbb500487423cda7d18ddccabe114cfa0cd27` |
+| `docs/versions/V0.8.0-PROGRESSION-SATELLITES.md` | 4809 | `83bf67118d7d0d1d5b9c45ed05135e435a35c237b1f367f572225d6323009293` |
+| `docs/versions/V0.9.0-BETA-HARDENING.md` | 4840 | `acbf2b83c897cd90ba63e85056ff9fe3999ab47bb05401d7dfe7c03b59618dab` |
+| `docs/versions/V1.0.0-COMMUNITY-MVP.md` | 4376 | `2e0b833d98191a2880b7182b643f046d6f1dc2d36f3d2b010c562896324bbc2d` |
+| `docs/work/README.md` | 195 | `b8dd777044f3d8632ce381788ea78910924e8a953473f4eb0206fbc38e13bb36` |

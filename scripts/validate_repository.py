@@ -1,0 +1,408 @@
+#!/usr/bin/env python3
+"""Validate the repository governance and documentation baseline."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import re
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import unquote
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+REQUIRED_PATHS = (
+    ".gitattributes",
+    ".gitignore",
+    "00-READ-ME-FIRST.md",
+    "AGENTS.md",
+    "BRANDING_AND_AFFILIATION.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "NOTICE.md",
+    "PRODUCT.md",
+    "PROJECT-CONFIG.md",
+    "README.md",
+    "SECURITY.md",
+    "UPSTREAM.md",
+    ".github/CODEOWNERS",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/compatibility_report.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/porting_task.yml",
+    ".github/workflows/repository-docs.yml",
+    "tests/test_validate_repository.py",
+    "docs/status/CURRENT_VERSION.md",
+    "docs/status/GATE_STATUS.md",
+    "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
+    "docs/releases/v0.0.1/TEST-REPORT.md",
+    "docs/releases/v0.0.1/MANUAL-TEST.md",
+    "docs/releases/v0.0.1/KNOWN-ISSUES.md",
+    "docs/work/v0.0.1-implementation-log.md",
+)
+
+VERSION_DOCUMENTS = (
+    "V0.0.1-REPOSITORY-BASELINE.md",
+    "V0.0.2-FORGE-BOOTSTRAP.md",
+    "V0.1.0-ASSET-REGISTRY-BASELINE.md",
+    "V0.2.0-MACHINE-VERTICAL-SLICE.md",
+    "V0.3.0-CELESTIAL-DATA-AND-DIMENSIONS.md",
+    "V0.4.0-VACUUM-LIFE-SUPPORT-ATMOSPHERE.md",
+    "V0.5.0-ROCKET-ASSEMBLY.md",
+    "V0.6.0-EARTH-MOON-ROUNDTRIP.md",
+    "V0.7.0-SPACE-STATION.md",
+    "V0.8.0-PROGRESSION-SATELLITES.md",
+    "V0.9.0-BETA-HARDENING.md",
+    "V1.0.0-COMMUNITY-MVP.md",
+)
+
+MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
+IDENTITY_STATUS = re.compile(r'identity_status:\s*"([A-Z_]+)"')
+UPSTREAM_COMMIT = re.compile(r"upstream_commit:\s*([0-9a-f]{40})\b")
+
+
+class Results:
+    def __init__(self) -> None:
+        self.passes: list[str] = []
+        self.warnings: list[str] = []
+        self.failures: list[str] = []
+
+    def passed(self, message: str) -> None:
+        self.passes.append(message)
+
+    def warn(self, message: str) -> None:
+        self.warnings.append(message)
+
+    def fail(self, message: str) -> None:
+        self.failures.append(message)
+
+    def print_report(self) -> None:
+        for message in self.passes:
+            print(f"[PASS] {message}")
+        for message in self.warnings:
+            print(f"[WARN] {message}")
+        for message in self.failures:
+            print(f"[FAIL] {message}")
+        print(
+            "Summary: "
+            f"{len(self.passes)} passed, "
+            f"{len(self.warnings)} warnings, "
+            f"{len(self.failures)} failed"
+        )
+
+
+def read_text(path: Path, results: Results) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        results.fail(f"Cannot read UTF-8 text file {path.relative_to(ROOT)}: {exc}")
+        return ""
+
+
+def check_required_paths(results: Results) -> None:
+    missing = [path for path in REQUIRED_PATHS if not (ROOT / path).is_file()]
+    missing.extend(
+        f"docs/versions/{name}"
+        for name in VERSION_DOCUMENTS
+        if not (ROOT / "docs" / "versions" / name).is_file()
+    )
+    if missing:
+        results.fail("Missing required files: " + ", ".join(sorted(missing)))
+    else:
+        results.passed(
+            f"Required governance files and {len(VERSION_DOCUMENTS)} version plans exist"
+        )
+
+
+def parse_current_identity(text: str) -> tuple[str | None, str | None, str | None]:
+    current_values = text.split("当前值：", 1)[-1]
+    match = IDENTITY_STATUS.search(current_values)
+    reviewer = re.search(r'reviewed_by:\s*"([^"]+)"', current_values)
+    reviewed_at = re.search(r'reviewed_at:\s*"(\d{4}-\d{2}-\d{2})"', current_values)
+    return (
+        match.group(1) if match else None,
+        reviewer.group(1) if reviewer else None,
+        reviewed_at.group(1) if reviewed_at else None,
+    )
+
+
+def check_identity(results: Results, require_approved: bool) -> None:
+    text = read_text(ROOT / "PROJECT-CONFIG.md", results)
+    status, reviewer, reviewed_at = parse_current_identity(text)
+    if not status:
+        results.fail("PROJECT-CONFIG.md has no parseable identity_status")
+        return
+
+    if status == "APPROVED":
+        expected_values = (
+            "| GitHub owner | `sunthemoon` |",
+            "| repository | `AdvancedRocketry-Community` |",
+            "| mod id | `advancedrocketrycommunity` |",
+        )
+        if not reviewer or not reviewed_at or any(value not in text for value in expected_values):
+            results.fail("Approved identity is missing reviewer, review date, or required project values")
+        else:
+            results.passed("Project identity is APPROVED and expected values are present")
+    elif require_approved:
+        results.fail(f"Project identity is {status}; APPROVED is required")
+    else:
+        results.warn(f"Project identity is {status}; human approval is still required")
+
+
+def check_public_statements(results: Results) -> None:
+    requirements = {
+        "README.md": ("unofficial", "not an official minecraft product"),
+        "NOTICE.md": ("unofficial", "not an official minecraft product"),
+        "BRANDING_AND_AFFILIATION.md": (
+            "unofficial",
+            "not an official minecraft product",
+        ),
+        ".github/ISSUE_TEMPLATE/bug_report.yml": (
+            "unofficial community project",
+            "original advanced rocketry maintainers",
+        ),
+    }
+    failures: list[str] = []
+    for relative, phrases in requirements.items():
+        text = read_text(ROOT / relative, results).lower()
+        for phrase in phrases:
+            if phrase not in text:
+                failures.append(f"{relative}: {phrase}")
+    if failures:
+        results.fail("Missing public non-affiliation statements: " + ", ".join(failures))
+    else:
+        results.passed("README, NOTICE, branding, and issue intake state unofficial status")
+
+
+def check_license_and_upstream(results: Results) -> None:
+    license_text = read_text(ROOT / "LICENSE", results)
+    license_requirements = (
+        "MIT License",
+        "Copyright (c) 2017",
+        "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+        "Permission is hereby granted, free of charge",
+    )
+    missing = [item for item in license_requirements if item not in license_text]
+    if missing:
+        results.fail("LICENSE is missing: " + ", ".join(missing))
+    else:
+        results.passed("LICENSE preserves the original notice and community attribution")
+
+    upstream_text = read_text(ROOT / "UPSTREAM.md", results)
+    match = UPSTREAM_COMMIT.search(upstream_text)
+    if match:
+        results.passed(f"Exact upstream commit is recorded: {match.group(1)}")
+    else:
+        results.fail("UPSTREAM.md does not contain an exact 40-character commit")
+
+
+def iter_markdown_prose(path: Path, results: Results):
+    in_fence = False
+    for number, line in enumerate(read_text(path, results).splitlines(), start=1):
+        stripped = line.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if not in_fence:
+            yield number, re.sub(r"`[^`]*`", "", line)
+
+
+def normalize_link_target(raw_target: str) -> str:
+    target = raw_target.strip()
+    if target.startswith("<") and ">" in target:
+        target = target[1 : target.index(">")]
+    else:
+        target = target.split(maxsplit=1)[0]
+    return unquote(target)
+
+
+def check_markdown_links(results: Results) -> None:
+    broken: list[str] = []
+    checked = 0
+    for path in sorted(ROOT.rglob("*.md")):
+        if ".git" in path.parts:
+            continue
+        for line_number, line in iter_markdown_prose(path, results):
+            for match in MARKDOWN_LINK.finditer(line):
+                target = normalize_link_target(match.group(1))
+                if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+                    continue
+                target = target.split("#", 1)[0].split("?", 1)[0]
+                if not target:
+                    continue
+                checked += 1
+                candidate = (path.parent / target).resolve()
+                if not candidate.is_relative_to(ROOT) or not candidate.exists():
+                    broken.append(f"{path.relative_to(ROOT)}:{line_number} -> {target}")
+    if broken:
+        results.fail("Broken Markdown links: " + "; ".join(broken))
+    else:
+        results.passed(f"Markdown relative links resolve ({checked} checked)")
+
+
+def repository_files() -> list[Path]:
+    command = [
+        "git",
+        "-C",
+        str(ROOT),
+        "ls-files",
+        "-z",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=False,
+        )
+        names = [name for name in completed.stdout.split(b"\0") if name]
+        return [ROOT / name.decode("utf-8") for name in names]
+    except (OSError, subprocess.CalledProcessError, UnicodeError):
+        return [path for path in ROOT.rglob("*") if path.is_file() and ".git" not in path.parts]
+
+
+def check_repository_contents(results: Results) -> None:
+    files = repository_files()
+    relative = [path.relative_to(ROOT).as_posix() for path in files]
+    forbidden = [path for path in relative if path.lower().endswith((".jar", ".class"))]
+    forbidden.extend(path for path in relative if path.startswith("src/main/java/zmaster587/"))
+
+    current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
+    if "current_version: v0.0.1" in current:
+        v001_extensions = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".ogg", ".obj", ".mtl")
+        forbidden.extend(
+            path for path in relative if path.lower().endswith(v001_extensions)
+        )
+        forbidden.extend(path for path in relative if path.startswith("src/"))
+
+    if forbidden:
+        results.fail("Forbidden v0.0.1 source, asset, or binary files: " + ", ".join(sorted(set(forbidden))))
+    else:
+        results.passed("No forbidden source tree, binary, or unaudited v0.0.1 assets found")
+
+    folded: dict[str, list[str]] = {}
+    for path in relative:
+        folded.setdefault(path.casefold(), []).append(path)
+    collisions = [paths for paths in folded.values() if len(paths) > 1]
+    if collisions:
+        results.fail("Case-insensitive path collisions: " + "; ".join(", ".join(paths) for paths in collisions))
+    else:
+        results.passed("No case-insensitive path collisions found")
+
+
+def check_issue_templates(results: Results) -> None:
+    directory = ROOT / ".github" / "ISSUE_TEMPLATE"
+    failures: list[str] = []
+    for path in sorted(directory.glob("*.yml")):
+        text = read_text(path, results)
+        if "\t" in text:
+            failures.append(f"{path.name}: tab indentation")
+        if path.name == "config.yml":
+            required = ("blank_issues_enabled:", "contact_links:")
+        else:
+            required = ("name:", "description:", "body:")
+        missing = [key for key in required if key not in text]
+        if missing:
+            failures.append(f"{path.name}: missing {', '.join(missing)}")
+    if failures:
+        results.fail("Issue template structure errors: " + "; ".join(failures))
+    else:
+        results.passed("Issue template files have the required dependency-free structure")
+
+
+def check_workflow(results: Results) -> None:
+    path = ROOT / ".github" / "workflows" / "repository-docs.yml"
+    text = read_text(path, results)
+    required = (
+        "name: Repository governance",
+        "on:",
+        "jobs:",
+        "uses: actions/checkout@v4",
+        "uses: actions/setup-python@v5",
+        "python -m unittest discover -s tests -v",
+        "python scripts/validate_repository.py --require-approved-identity",
+    )
+    missing = [item for item in required if item not in text]
+    if "\t" in text:
+        missing.append("tab-free indentation")
+    if missing:
+        results.fail("Repository workflow is missing: " + ", ".join(missing))
+    else:
+        results.passed("Repository governance workflow invokes the strict validator")
+
+
+def check_package_checksums(package_root: Path, results: Results) -> None:
+    package_root = package_root.resolve()
+    sums_path = package_root / "PACKAGE-SHA256SUMS.txt"
+    try:
+        lines = sums_path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        results.fail(f"Cannot read package checksum list: {exc}")
+        return
+
+    failures: list[str] = []
+    checked = 0
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip():
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2 or not re.fullmatch(r"[0-9a-f]{64}", parts[0]):
+            failures.append(f"line {line_number}: invalid checksum entry")
+            continue
+        expected, relative = parts
+        path = package_root / relative.strip()
+        if not path.is_file():
+            failures.append(f"missing {relative.strip()}")
+            continue
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        checked += 1
+        if actual != expected:
+            failures.append(f"hash mismatch {relative.strip()}")
+    if failures:
+        results.fail("Planning package checksum errors: " + "; ".join(failures))
+    else:
+        results.passed(f"Planning package checksums match ({checked} files checked)")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--require-approved-identity",
+        action="store_true",
+        help="fail unless PROJECT-CONFIG.md has identity_status APPROVED",
+    )
+    parser.add_argument(
+        "--package-root",
+        type=Path,
+        help="also verify PACKAGE-SHA256SUMS.txt under the supplied planning package",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    results = Results()
+    check_required_paths(results)
+    check_identity(results, args.require_approved_identity)
+    check_public_statements(results)
+    check_license_and_upstream(results)
+    check_markdown_links(results)
+    check_repository_contents(results)
+    check_issue_templates(results)
+    check_workflow(results)
+    if args.package_root:
+        check_package_checksums(args.package_root, results)
+    results.print_report()
+    return 1 if results.failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
