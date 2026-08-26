@@ -24,3 +24,4 @@ These warnings originate in the Forge/ForgeGradle development runtime, not in pr
 
 - A transient Mojang CDN asset download failure passed on retry and has not recurred.
 - The initial generated GameTest structure used the wrong NBT tag type for coordinates. The corrected fixture loads and the required GameTest passes.
+- The first Linux CI baseline changed the tracked `gradlew` mode during setup and was correctly rejected by the DataGen clean-tree check. The executable mode is now part of the repository.

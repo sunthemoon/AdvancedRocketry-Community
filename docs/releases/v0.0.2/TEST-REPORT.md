@@ -42,6 +42,7 @@ environment: Windows 11 / Java 17.0.6 / Gradle 8.8 / Minecraft 1.20.1 / Forge 47
 | First `runData` | FAIL | One Mojang CDN sound asset failed download/validation; retry succeeded and later runs remained green |
 | First `runGameTestServer` | FAIL | Corrected generated structure `size` from `IntArrayTag` to `ListTag<IntTag>` and added an explicit air block |
 | Final `runGameTestServer` | PASS | `All 1 required tests passed :)`; server shut down normally |
+| First Linux baseline CI | FAIL | Build, JAR audit, side scan, and DataGen passed; clean-tree check detected the workflow's `chmod` mode change. Stored `gradlew` as executable and reran CI |
 
 ## Log review
 
