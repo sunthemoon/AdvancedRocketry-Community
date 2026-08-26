@@ -2,7 +2,10 @@ import hashlib
 import unittest
 
 from scripts.validate_repository import (
+    GRADLE_WRAPPER_PATH,
+    ROOT,
     is_audited_v001_evidence,
+    is_approved_gradle_wrapper,
     normalize_link_target,
     parse_current_identity,
 )
@@ -79,6 +82,25 @@ class EvidenceAssetTests(unittest.TestCase):
             is_audited_v001_evidence(
                 "src/main/resources/texture.jpg", self.content, self.index
             )
+        )
+
+
+class ApprovedBinaryTests(unittest.TestCase):
+    def test_pinned_gradle_wrapper_is_allowed(self) -> None:
+        content = (ROOT / GRADLE_WRAPPER_PATH).read_bytes()
+
+        self.assertTrue(is_approved_gradle_wrapper(GRADLE_WRAPPER_PATH, content))
+
+    def test_other_jar_path_is_rejected(self) -> None:
+        content = (ROOT / GRADLE_WRAPPER_PATH).read_bytes()
+
+        self.assertFalse(is_approved_gradle_wrapper("libs/dependency.jar", content))
+
+    def test_changed_wrapper_is_rejected(self) -> None:
+        content = (ROOT / GRADLE_WRAPPER_PATH).read_bytes()
+
+        self.assertFalse(
+            is_approved_gradle_wrapper(GRADLE_WRAPPER_PATH, content + b"changed")
         )
 
 

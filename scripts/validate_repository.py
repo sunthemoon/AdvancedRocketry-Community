@@ -36,7 +36,24 @@ REQUIRED_PATHS = (
     ".github/ISSUE_TEMPLATE/config.yml",
     ".github/ISSUE_TEMPLATE/porting_task.yml",
     ".github/workflows/repository-docs.yml",
+    ".github/workflows/forge-bootstrap.yml",
+    "build.gradle",
+    "gradle.properties",
+    "settings.gradle",
+    "gradlew",
+    "gradlew.bat",
+    "gradle/wrapper/gradle-wrapper.jar",
+    "gradle/wrapper/gradle-wrapper.properties",
+    "scripts/check_client_imports.py",
+    "scripts/validate_build_artifact.py",
+    "tests/test_check_client_imports.py",
+    "tests/test_validate_build_artifact.py",
     "tests/test_validate_repository.py",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+    "src/main/resources/META-INF/mods.toml",
+    "src/main/resources/pack.mcmeta",
+    "src/main/resources/advancedrocketrycommunity.png",
+    "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
     "docs/status/CURRENT_VERSION.md",
     "docs/status/GATE_STATUS.md",
     "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
@@ -46,6 +63,11 @@ REQUIRED_PATHS = (
     "docs/releases/v0.0.1/evidence/README.md",
     "docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md",
     "docs/work/v0.0.1-implementation-log.md",
+    "docs/work/v0.0.2-implementation-log.md",
+    "docs/releases/v0.0.2/RELEASE-EVIDENCE.md",
+    "docs/releases/v0.0.2/TEST-REPORT.md",
+    "docs/releases/v0.0.2/MANUAL-TEST.md",
+    "docs/releases/v0.0.2/KNOWN-ISSUES.md",
 )
 
 VERSION_DOCUMENTS = (
@@ -68,6 +90,10 @@ IDENTITY_STATUS = re.compile(r'identity_status:\s*"([A-Z_]+)"')
 UPSTREAM_COMMIT = re.compile(r"upstream_commit:\s*([0-9a-f]{40})\b")
 V001_EVIDENCE_PREFIX = "docs/releases/v0.0.1/evidence/"
 V001_EVIDENCE_MAX_BYTES = 2 * 1024 * 1024
+GRADLE_WRAPPER_PATH = "gradle/wrapper/gradle-wrapper.jar"
+GRADLE_WRAPPER_SHA256 = "ed2c26eba7cfb93cc2b7785d05e534f07b5b48b5e7fc941921cd098628abca58"
+BOOTSTRAP_LOGO_PATH = "src/main/resources/advancedrocketrycommunity.png"
+BOOTSTRAP_LOGO_SHA256 = "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690"
 
 
 class Results:
@@ -294,10 +320,33 @@ def is_audited_v001_evidence(relative: str, content: bytes, index_text: str) -> 
     )
 
 
+def is_approved_gradle_wrapper(relative: str, content: bytes) -> bool:
+    return (
+        relative == GRADLE_WRAPPER_PATH
+        and content.startswith(b"PK")
+        and hashlib.sha256(content).hexdigest() == GRADLE_WRAPPER_SHA256
+    )
+
+
 def check_repository_contents(results: Results) -> None:
     files = repository_files()
     relative = [path.relative_to(ROOT).as_posix() for path in files]
-    forbidden = [path for path in relative if path.lower().endswith((".jar", ".class"))]
+    forbidden = [path for path in relative if path.lower().endswith(".class")]
+    approved_wrappers: set[str] = set()
+    for path in files:
+        binary_relative = path.relative_to(ROOT).as_posix()
+        if not binary_relative.lower().endswith(".jar"):
+            continue
+        try:
+            binary_content = path.read_bytes()
+        except OSError as exc:
+            results.fail(f"Cannot read JAR {binary_relative}: {exc}")
+            forbidden.append(binary_relative)
+            continue
+        if is_approved_gradle_wrapper(binary_relative, binary_content):
+            approved_wrappers.add(binary_relative)
+        else:
+            forbidden.append(binary_relative)
     forbidden.extend(path for path in relative if path.startswith("src/main/java/zmaster587/"))
     audited_evidence: set[str] = set()
     unaudited_evidence: set[str] = set()
@@ -341,11 +390,12 @@ def check_repository_contents(results: Results) -> None:
 
     forbidden.extend(unaudited_evidence)
     if forbidden:
-        results.fail("Forbidden v0.0.1 source, asset, or binary files: " + ", ".join(sorted(set(forbidden))))
+        results.fail("Forbidden legacy, unaudited evidence, or unapproved binary files: " + ", ".join(sorted(set(forbidden))))
     else:
         results.passed(
-            "No forbidden source tree, binary, or unaudited v0.0.1 assets found"
-            f" ({len(audited_evidence)} evidence screenshots verified)"
+            "No forbidden legacy source, unapproved binary, or unaudited evidence found"
+            f" ({len(approved_wrappers)} wrapper JAR and "
+            f"{len(audited_evidence)} evidence screenshots verified)"
         )
 
     folded: dict[str, list[str]] = {}
@@ -356,6 +406,58 @@ def check_repository_contents(results: Results) -> None:
         results.fail("Case-insensitive path collisions: " + "; ".join(", ".join(paths) for paths in collisions))
     else:
         results.passed("No case-insensitive path collisions found")
+
+
+def check_forge_bootstrap(results: Results) -> None:
+    current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
+    if "current_version: v0.0.2" not in current:
+        return
+
+    requirements = {
+        "gradle.properties": (
+            "minecraft_version=1.20.1",
+            "minecraft_version_range=[1.20.1,1.20.2)",
+            "forge_version=47.4.10",
+            "forge_latest_version=47.4.23",
+            "mod_id=advancedrocketrycommunity",
+            "mod_group_id=io.github.sunthemoon.advancedrocketrycommunity",
+            "mod_artifact_id=advancedrocketry-community",
+        ),
+        "build.gradle": (
+            "JavaLanguageVersion.of(17)",
+            "preserveFileTimestamps = false",
+            "reproducibleFileOrder = true",
+            "from(rootProject.file('LICENSE'))",
+            "from(rootProject.file('NOTICE.md'))",
+        ),
+        "gradle/wrapper/gradle-wrapper.properties": (
+            "gradle-8.8-bin.zip",
+            "distributionSha256Sum=a4b4158601f8636cdeeab09bd76afb640030bb5b144aafe261a5e8af027dc612",
+        ),
+        "src/main/resources/META-INF/mods.toml": (
+            'modId="${mod_id}"',
+            'displayTest="MATCH_VERSION"',
+            'features={java_version="[17,)"}',
+        ),
+    }
+    failures: list[str] = []
+    for relative, fragments in requirements.items():
+        text = read_text(ROOT / relative, results)
+        missing = [fragment for fragment in fragments if fragment not in text]
+        if missing:
+            failures.append(f"{relative}: {', '.join(missing)}")
+
+    try:
+        logo = (ROOT / BOOTSTRAP_LOGO_PATH).read_bytes()
+        if hashlib.sha256(logo).hexdigest() != BOOTSTRAP_LOGO_SHA256:
+            failures.append(f"{BOOTSTRAP_LOGO_PATH}: unexpected SHA-256")
+    except OSError as exc:
+        failures.append(f"{BOOTSTRAP_LOGO_PATH}: {exc}")
+
+    if failures:
+        results.fail("Forge bootstrap baseline errors: " + "; ".join(failures))
+    else:
+        results.passed("Forge 1.20.1 / Java 17 bootstrap identity and pinned binaries match")
 
 
 def check_issue_templates(results: Results) -> None:
@@ -397,6 +499,34 @@ def check_workflow(results: Results) -> None:
         results.fail("Repository workflow is missing: " + ", ".join(missing))
     else:
         results.passed("Repository governance workflow invokes the strict validator")
+
+    forge_path = ROOT / ".github" / "workflows" / "forge-bootstrap.yml"
+    forge_text = read_text(forge_path, results)
+    forge_required = (
+        "name: Forge bootstrap",
+        "permissions:",
+        "contents: read",
+        "uses: actions/checkout@v7",
+        "persist-credentials: false",
+        "uses: actions/setup-java@v6",
+        "uses: gradle/actions/setup-gradle@v6",
+        "./gradlew clean build --no-daemon --stacktrace",
+        "python scripts/validate_build_artifact.py",
+        "python scripts/check_client_imports.py",
+        "./gradlew runData --no-daemon --stacktrace",
+        "git diff --exit-code",
+        "./gradlew runGameTestServer --no-daemon --stacktrace",
+        'ORG_GRADLE_PROJECT_forge_version: "47.4.23"',
+        "continue-on-error: true",
+        "uses: actions/upload-artifact@v7",
+    )
+    forge_missing = [item for item in forge_required if item not in forge_text]
+    if "\t" in forge_text:
+        forge_missing.append("tab-free indentation")
+    if forge_missing:
+        results.fail("Forge bootstrap workflow is missing: " + ", ".join(forge_missing))
+    else:
+        results.passed("Forge baseline and advisory latest-lane workflow is present")
 
 
 def check_package_checksums(package_root: Path, results: Results) -> None:
@@ -456,6 +586,7 @@ def main() -> int:
     check_license_and_upstream(results)
     check_markdown_links(results)
     check_repository_contents(results)
+    check_forge_bootstrap(results)
     check_issue_templates(results)
     check_workflow(results)
     if args.package_root:

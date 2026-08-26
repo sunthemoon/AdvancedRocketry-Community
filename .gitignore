@@ -14,6 +14,13 @@ __pycache__/
 build/
 out/
 run/
+run-data/
+src/generated/resources/.cache/
+mcmodsrepo/
+bin/
+.classpath
+.project
+.settings/
 
 # Local logs and crash output
 *.log

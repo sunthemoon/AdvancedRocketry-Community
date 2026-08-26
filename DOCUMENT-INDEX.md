@@ -56,6 +56,14 @@
 | `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` | 人工测试用例 |
 | `docs/templates/PERFORMANCE-REPORT-TEMPLATE.md` | 性能报告 |
 | `docs/templates/RELEASE-EVIDENCE-TEMPLATE.md` | 每版最终证据 |
+| `docs/releases/v0.0.2/` | Forge bootstrap 的自动、人工、产物和风险证据 |
+
+## 实施记录
+
+| 文件 | 用途 |
+|---|---|
+| `docs/work/v0.0.1-implementation-log.md` | 仓库治理基线实施记录 |
+| `docs/work/v0.0.2-implementation-log.md` | Forge 工程初始化、来源和验证记录 |
 
 ## 分版本执行文件
 
