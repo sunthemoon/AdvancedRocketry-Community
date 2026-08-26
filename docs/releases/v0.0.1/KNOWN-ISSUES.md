@@ -2,9 +2,8 @@
 
 ## Remaining gate work
 
-- The governance baseline is not committed or pushed; the remote `main` branch still contains only the initial `LICENSE` commit.
+- Pull request [#1](https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1) is open and unmerged; the remote `main` branch therefore still contains only the initial `LICENSE` commit.
 - The classic protection rule for `main` is configured but marked `Not enforced` while the repository remains private under a personal account.
-- A required repository-workflow status check cannot be selected until the workflow has run remotely and GitHub has registered its check name.
 - Required GitHub screenshots and the final signed-out review have not been captured.
 
 ## Expected limitations

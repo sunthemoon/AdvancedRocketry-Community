@@ -3,9 +3,10 @@
 ```yaml
 test_date: 2026-08-26
 version: v0.0.1
-commit: WORKTREE
+commit: 11baf8be6df42006d0499e13778553991980efcc
 environment: Windows / Python 3.12.10 / Git
 scope: repository documentation, identity, license, links, templates, workflow, and forbidden-content checks
+remote_ci: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32954727518
 ```
 
 ## Commands
@@ -32,6 +33,7 @@ $textFiles = Get-ChildItem -Recurse -File -Include *.md,*.py,*.yml,*.yaml; $text
 | Case-insensitive paths | PASS | No collisions |
 | Issue templates | PASS | Required dependency-free structure present |
 | GitHub Actions workflow | PASS | Strict repository validator invoked |
+| Remote GitHub Actions | PASS | `validate-repository-docs` passed in 13 seconds with no annotations |
 | Validator unit tests | PASS | 4 tests passed; identity current-value parsing and Markdown target normalization covered |
 | Non-strict initialization validation | PASS | 11 passed, 0 warnings, 0 failed, including package checksums |
 | Strict G0 validation | PASS | 10 passed, 0 warnings, 0 failed |
@@ -40,4 +42,4 @@ $textFiles = Get-ChildItem -Recurse -File -Include *.md,*.py,*.yml,*.yaml; $text
 
 ## Interpretation
 
-The repository structure and maintainer-approved identity pass local validation. Remote workflow execution, saved GitHub evidence, and the final G8/G9 audit remain outstanding because the governance baseline has not been committed or pushed.
+The repository structure and maintainer-approved identity pass locally and in GitHub Actions. G9 is complete; saved GitHub visual evidence and the final G8 human review remain outstanding.

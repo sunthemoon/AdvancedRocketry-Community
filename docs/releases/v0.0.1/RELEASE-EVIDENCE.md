@@ -5,8 +5,10 @@
 ```yaml
 version: v0.0.1
 build: NOT_APPLICABLE
-commit: WORKTREE
+commit: 11baf8be6df42006d0499e13778553991980efcc
 tag: ""
+pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1
+workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32954727518
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -28,8 +30,8 @@ jar_sha256: NOT_APPLICABLE
 | G5 Persistence/Recovery | NOT_APPLICABLE | No persistent data in v0.0.1 |
 | G6 Security/Authority | NOT_APPLICABLE | No network or game authority code in v0.0.1 |
 | G7 Performance | NOT_APPLICABLE | No runtime code in v0.0.1 |
-| G8 Manual Flow | IN_PROGRESS | Authenticated settings configuration and review completed; screenshots and final anonymous-view check pending |
-| G9 Docs/Release | IN_PROGRESS | Local strict validation passes; remote workflow and pull-request evidence pending |
+| G8 Manual Flow | IN_PROGRESS | Authenticated settings and PR review completed; saved screenshots and final anonymous-view check pending |
+| G9 Docs/Release | PASS | Local strict validation and remote governance workflow pass; PR and run evidence are recorded |
 
 ## Commands actually run
 
@@ -45,6 +47,10 @@ git rev-parse upstream-ar/1.12
 git show upstream-ar/1.12:LICENSE
 git fetch --prune origin
 git push --dry-run origin HEAD:refs/heads/docs/v0.0.1-governance
+git commit -m "docs(repo): initialize v0.0.1 governance baseline"
+git push --set-upstream origin docs/v0.0.1-governance
+git commit -m "ci(repo): update governance actions runtime"
+git push
 python scripts/validate_repository.py --package-root ../AdvancedRocketryCommunity/AdvancedRocketry-1.20.1-Community-Porting-Docs
 python -m unittest discover -s tests -v
 python scripts/validate_repository.py --require-approved-identity
@@ -92,9 +98,21 @@ Strict Gate check:
 Summary: 10 passed, 0 warnings, 0 failed
 ```
 
-The strict identity Gate now passes. `git diff --check` completed successfully, and the full text-worktree scan found no trailing whitespace in the untracked initialization files.
+The strict identity Gate now passes. `git diff --check` completed successfully, and the full text-worktree scan found no trailing whitespace in the initialization files.
 
-Authenticated GitHub inspection confirmed that the current account can administer the private repository. The About description and nine topics were updated; Dependency Graph, Dependabot alerts, security updates, and grouped security updates were enabled. A classic `main` protection rule was created with pull-request, conversation-resolution, no-bypass, no-force-push, and no-deletion settings. GitHub marks that rule `Not enforced` on this private personal-account repository. No remote refs were changed.
+Remote GitHub Actions validation:
+
+```yaml
+workflow: Repository governance
+run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32954727518
+validated_commit: 11baf8be6df42006d0499e13778553991980efcc
+job: validate-repository-docs
+result: PASS
+duration_seconds: 13
+annotations: 0
+```
+
+Authenticated GitHub inspection confirmed that the current account can administer the private repository. The About description and nine topics were updated; Dependency Graph, Dependabot alerts, security updates, and grouped security updates were enabled. A classic `main` protection rule was created with pull-request, conversation-resolution, no-bypass, no-force-push, and no-deletion settings. The successful `validate-repository-docs` check is required, and branches must be up to date before merging. GitHub still marks the rule `Not enforced` on this private personal-account repository.
 
 ## Provenance
 
@@ -118,15 +136,15 @@ See `KNOWN-ISSUES.md`.
 
 ## Manual tests
 
-See `MANUAL-TEST.md`. Settings checks are complete; required saved screenshots and the final signed-out review remain pending.
+See `MANUAL-TEST.md`. Authenticated settings, PR, and workflow checks are complete; required saved screenshots and the final signed-out review remain pending.
 
 ## Final recommendation
 
 ```yaml
 recommended_status: IN_PROGRESS
 remaining_items:
-  - Push the governance baseline and obtain remote workflow evidence
   - Capture required GitHub screenshots and complete the final manual audit
+  - Perform the human review of pull request 1 before merging
   - Resolve or explicitly accept the private-account branch-protection enforcement limitation
 reviewed_by: "sunthemoon"
 reviewed_at: "2026-08-26"
