@@ -1,9 +1,9 @@
 # MANUAL-TEST — v0.0.1 GitHub Identity and Governance
 
 ```yaml
-status: IN_PROGRESS
+status: PASS
 test_date: 2026-08-26
-tester: Codex-assisted repository review
+tester: sunthemoon with Codex-assisted evidence capture
 build_hash: NOT_APPLICABLE
 commit: ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505
 ```
@@ -57,9 +57,9 @@ PASS:
 - Post-merge GitHub Actions run [32955717987](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32955717987) passed the repository-governance workflow in 10 seconds.
 - Authenticated screenshots were captured, visually reviewed, and indexed in [`evidence/README.md`](evidence/README.md).
 
-Unauthenticated GitHub page and REST requests both return `404 Not Found`, which is consistent with the repository remaining private but does not replace the required final signed-out content review.
+Unauthenticated GitHub page and REST requests both return `404 Not Found`, which is consistent with the repository remaining private. This does not demonstrate public rendering; the maintainer accepted that limitation for v0.0.1 under ADR-004.
 
-## MANUAL-V001-003 — Remaining public-facing review
+## MANUAL-V001-003 — Private-repository evidence acceptance
 
 **Steps completed**
 
@@ -67,15 +67,25 @@ Unauthenticated GitHub page and REST requests both return `404 Not Found`, which
 2. Confirmed the repository UI exposes MIT License, Security, Contributing, and Code of Conduct links.
 3. Confirmed unauthenticated page and API requests return `404` while visibility is private.
 
-**Steps still required**
+**Maintainer decision**
 
-1. Obtain explicit maintainer authorization before changing repository visibility.
-2. Make the repository public and capture a genuinely signed-out review of the homepage, license, Issues, Security, Contributing, and Code of Conduct pages.
-3. Confirm the `main` protection rule becomes enforceable after the visibility change.
-4. Complete the final human audit and decide whether v0.0.1 is `PASSED`.
+The maintainer chose to keep the repository private and accepted the seven indexed authenticated screenshots plus the anonymous `404` privacy checks as sufficient v0.0.1 G8 evidence. See [ADR-004](../../decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md).
+
+**Actual**
+
+PASS. The signed-out content review is not claimed as executed and is not a v0.0.1 blocker under the accepted decision.
+
+**Future trigger**
+
+Before any public-visibility change or public release:
+
+1. Capture a genuinely signed-out review of the homepage, license, Issues, Security, Contributing, and Code of Conduct pages.
+2. Confirm the `main` protection rule becomes enforceable.
+3. Record the result in the version active at that time.
 
 **Required evidence**
 
 - Authenticated evidence index: [`evidence/README.md`](evidence/README.md)
-- Signed-out/public evidence: pending maintainer visibility decision
-- Final human reviewer and completion date: pending
+- Privacy evidence: anonymous page and REST requests returned `404`
+- Acceptance decision: [ADR-004](../../decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md)
+- Final human reviewer: `sunthemoon`, 2026-08-26

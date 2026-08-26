@@ -9,6 +9,8 @@ commit: ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505
 tag: ""
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1
 workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32955717987
+evidence_pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/2
+evidence_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32958108278
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -30,7 +32,7 @@ jar_sha256: NOT_APPLICABLE
 | G5 Persistence/Recovery | NOT_APPLICABLE | No persistent data in v0.0.1 |
 | G6 Security/Authority | NOT_APPLICABLE | No network or game authority code in v0.0.1 |
 | G7 Performance | NOT_APPLICABLE | No runtime code in v0.0.1 |
-| G8 Manual Flow | IN_PROGRESS | Authenticated screenshots archived and reviewed; signed-out content review awaits explicit public-visibility authorization |
+| G8 Manual Flow | PASS | Maintainer accepted seven indexed authenticated screenshots and anonymous `404` privacy checks under ADR-004 |
 | G9 Docs/Release | PASS | Local strict validation and remote governance workflow pass; PR and run evidence are recorded |
 
 ## Commands actually run
@@ -73,7 +75,7 @@ Non-strict initialization check:
 [PASS] README, NOTICE, branding, and issue intake state unofficial status
 [PASS] LICENSE preserves the original notice and community attribution
 [PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
-[PASS] Markdown relative links resolve (40 checked)
+[PASS] Markdown relative links resolve (46 checked)
 [PASS] No forbidden source tree, binary, or unaudited v0.0.1 assets found (7 evidence screenshots verified)
 [PASS] No case-insensitive path collisions found
 [PASS] Issue template files have the required dependency-free structure
@@ -90,7 +92,7 @@ Strict Gate check:
 [PASS] README, NOTICE, branding, and issue intake state unofficial status
 [PASS] LICENSE preserves the original notice and community attribution
 [PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
-[PASS] Markdown relative links resolve (40 checked)
+[PASS] Markdown relative links resolve (46 checked)
 [PASS] No forbidden source tree, binary, or unaudited v0.0.1 assets found (7 evidence screenshots verified)
 [PASS] No case-insensitive path collisions found
 [PASS] Issue template files have the required dependency-free structure
@@ -136,16 +138,14 @@ See `KNOWN-ISSUES.md`.
 
 ## Manual tests
 
-See `MANUAL-TEST.md` and [`evidence/README.md`](evidence/README.md). Authenticated settings, homepage, license, PR, Issues, Security, and workflow evidence are archived. Anonymous requests return `404` while the repository is private; a signed-out content review remains pending explicit maintainer authorization to make the repository public.
+See `MANUAL-TEST.md`, [`evidence/README.md`](evidence/README.md), and [ADR-004](../../decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md). Authenticated settings, homepage, license, PR, Issues, Security, and workflow evidence are archived. The maintainer accepted this evidence plus the anonymous `404` privacy checks for v0.0.1 while keeping the repository private. A new signed-out review is mandatory before any future public-visibility change or public release.
 
 ## Final recommendation
 
 ```yaml
-recommended_status: IN_PROGRESS
-remaining_items:
-  - Obtain explicit maintainer authorization before changing repository visibility
-  - Capture the signed-out public review and confirm branch-protection enforcement
-  - Complete the final human audit
+recommended_status: PASSED
+remaining_items: []
+accepted_exception: docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md
 reviewed_by: "sunthemoon"
 reviewed_at: "2026-08-26"
 ```

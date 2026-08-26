@@ -12,9 +12,9 @@ image_format: JPEG
 
 These images record the GitHub state after pull request
 [#1](https://github.com/sunthemoon/AdvancedRocketry-Community/pull/1) was
-merged. They are evidence for the authenticated portion of Gate G8; they do
-not replace the remaining signed-out review after the repository becomes
-public.
+merged. The maintainer accepted them, together with the anonymous `404`
+privacy checks, as sufficient Gate G8 evidence for private-repository v0.0.1
+under [ADR-004](../../../decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md).
 
 | Evidence | What it demonstrates | Resolution | SHA-256 |
 |---|---|---:|---|
@@ -37,7 +37,7 @@ github_page_status=404
 github_api_status=404
 ```
 
-This is a successful privacy check, but it cannot prove that repository
-content and community links are correct for signed-out visitors. That check
-remains pending until the maintainer explicitly authorizes changing repository
-visibility.
+This is a successful privacy check, but it does not prove that repository
+content and community links render correctly for signed-out visitors. The
+maintainer accepted that limitation for private v0.0.1. ADR-004 requires a new
+signed-out review before any future public-visibility change or public release.

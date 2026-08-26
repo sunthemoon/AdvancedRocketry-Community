@@ -44,6 +44,7 @@ REQUIRED_PATHS = (
     "docs/releases/v0.0.1/MANUAL-TEST.md",
     "docs/releases/v0.0.1/KNOWN-ISSUES.md",
     "docs/releases/v0.0.1/evidence/README.md",
+    "docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md",
     "docs/work/v0.0.1-implementation-log.md",
 )
 
@@ -299,6 +300,25 @@ def check_repository_contents(results: Results) -> None:
     forbidden = [path for path in relative if path.lower().endswith((".jar", ".class"))]
     forbidden.extend(path for path in relative if path.startswith("src/main/java/zmaster587/"))
     audited_evidence: set[str] = set()
+    unaudited_evidence: set[str] = set()
+
+    evidence_index = read_text(ROOT / V001_EVIDENCE_PREFIX / "README.md", results)
+    for path in files:
+        evidence_relative = path.relative_to(ROOT).as_posix()
+        if evidence_relative == f"{V001_EVIDENCE_PREFIX}README.md":
+            continue
+        if not evidence_relative.startswith(V001_EVIDENCE_PREFIX):
+            continue
+        try:
+            content = path.read_bytes()
+        except OSError as exc:
+            results.fail(f"Cannot read evidence asset {evidence_relative}: {exc}")
+            unaudited_evidence.add(evidence_relative)
+            continue
+        if is_audited_v001_evidence(evidence_relative, content, evidence_index):
+            audited_evidence.add(evidence_relative)
+        else:
+            unaudited_evidence.add(evidence_relative)
 
     current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
     if "current_version: v0.0.1" in current:
@@ -312,18 +332,6 @@ def check_repository_contents(results: Results) -> None:
             ".obj",
             ".mtl",
         )
-        evidence_index = read_text(ROOT / V001_EVIDENCE_PREFIX / "README.md", results)
-        for path in files:
-            evidence_relative = path.relative_to(ROOT).as_posix()
-            if not evidence_relative.startswith(V001_EVIDENCE_PREFIX):
-                continue
-            try:
-                content = path.read_bytes()
-            except OSError as exc:
-                results.fail(f"Cannot read evidence asset {evidence_relative}: {exc}")
-                continue
-            if is_audited_v001_evidence(evidence_relative, content, evidence_index):
-                audited_evidence.add(evidence_relative)
         forbidden.extend(
             path
             for path in relative
@@ -331,6 +339,7 @@ def check_repository_contents(results: Results) -> None:
         )
         forbidden.extend(path for path in relative if path.startswith("src/"))
 
+    forbidden.extend(unaudited_evidence)
     if forbidden:
         results.fail("Forbidden v0.0.1 source, asset, or binary files: " + ", ".join(sorted(set(forbidden))))
     else:

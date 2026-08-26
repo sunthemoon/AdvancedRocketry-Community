@@ -28,7 +28,7 @@ $textFiles = Get-ChildItem -Recurse -File -Include *.md,*.py,*.yml,*.yaml; $text
 | Public non-affiliation statements | PASS | README, NOTICE, branding, and issue intake checked |
 | LICENSE | PASS | Original 2017 notice and community attribution present |
 | Exact upstream commit | PASS | `c5cd5af62fc07cd4e0d24f06a16033f181c47c04` |
-| Markdown relative links | PASS | 40 checked, 0 broken |
+| Markdown relative links | PASS | 46 checked, 0 broken |
 | Forbidden v0.0.1 content | PASS | No Java/Forge source, JAR, class, or unaudited game assets; 7 indexed evidence screenshots verified by path, JPEG signature, size, and SHA-256 |
 | Case-insensitive paths | PASS | No collisions |
 | Issue templates | PASS | Required dependency-free structure present |
@@ -42,4 +42,4 @@ $textFiles = Get-ChildItem -Recurse -File -Include *.md,*.py,*.yml,*.yaml; $text
 
 ## Interpretation
 
-The repository structure and maintainer-approved identity pass locally and in GitHub Actions. G9 is complete and the authenticated GitHub visual evidence is archived. G8 remains in progress because a signed-out content review cannot be performed while the repository is private and still requires a maintainer visibility decision.
+The repository structure and maintainer-approved identity pass locally and in GitHub Actions. The authenticated GitHub visual evidence is archived and hash-checked. The maintainer accepted that evidence plus anonymous `404` privacy checks under ADR-004, so G8 and G9 pass for v0.0.1 while the repository remains private.
