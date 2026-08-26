@@ -43,6 +43,8 @@ REQUIRED_PATHS = (
     "docs/releases/v0.0.1/TEST-REPORT.md",
     "docs/releases/v0.0.1/MANUAL-TEST.md",
     "docs/releases/v0.0.1/KNOWN-ISSUES.md",
+    "docs/releases/v0.0.1/evidence/README.md",
+    "docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md",
     "docs/work/v0.0.1-implementation-log.md",
 )
 
@@ -64,6 +66,8 @@ VERSION_DOCUMENTS = (
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 IDENTITY_STATUS = re.compile(r'identity_status:\s*"([A-Z_]+)"')
 UPSTREAM_COMMIT = re.compile(r"upstream_commit:\s*([0-9a-f]{40})\b")
+V001_EVIDENCE_PREFIX = "docs/releases/v0.0.1/evidence/"
+V001_EVIDENCE_MAX_BYTES = 2 * 1024 * 1024
 
 
 class Results:
@@ -269,24 +273,80 @@ def repository_files() -> list[Path]:
         return [path for path in ROOT.rglob("*") if path.is_file() and ".git" not in path.parts]
 
 
+def is_audited_v001_evidence(relative: str, content: bytes, index_text: str) -> bool:
+    evidence_path = Path(relative)
+    if (
+        evidence_path.parent.as_posix() != V001_EVIDENCE_PREFIX.rstrip("/")
+        or evidence_path.suffix.lower() not in (".jpg", ".jpeg")
+    ):
+        return False
+    if (
+        len(content) > V001_EVIDENCE_MAX_BYTES
+        or not content.startswith(b"\xff\xd8\xff")
+    ):
+        return False
+
+    filename = evidence_path.name
+    digest = hashlib.sha256(content).hexdigest()
+    return any(
+        f"]({filename})" in line and f"`{digest}`" in line
+        for line in index_text.splitlines()
+    )
+
+
 def check_repository_contents(results: Results) -> None:
     files = repository_files()
     relative = [path.relative_to(ROOT).as_posix() for path in files]
     forbidden = [path for path in relative if path.lower().endswith((".jar", ".class"))]
     forbidden.extend(path for path in relative if path.startswith("src/main/java/zmaster587/"))
+    audited_evidence: set[str] = set()
+    unaudited_evidence: set[str] = set()
+
+    evidence_index = read_text(ROOT / V001_EVIDENCE_PREFIX / "README.md", results)
+    for path in files:
+        evidence_relative = path.relative_to(ROOT).as_posix()
+        if evidence_relative == f"{V001_EVIDENCE_PREFIX}README.md":
+            continue
+        if not evidence_relative.startswith(V001_EVIDENCE_PREFIX):
+            continue
+        try:
+            content = path.read_bytes()
+        except OSError as exc:
+            results.fail(f"Cannot read evidence asset {evidence_relative}: {exc}")
+            unaudited_evidence.add(evidence_relative)
+            continue
+        if is_audited_v001_evidence(evidence_relative, content, evidence_index):
+            audited_evidence.add(evidence_relative)
+        else:
+            unaudited_evidence.add(evidence_relative)
 
     current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
     if "current_version: v0.0.1" in current:
-        v001_extensions = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".ogg", ".obj", ".mtl")
+        v001_extensions = (
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".webp",
+            ".ogg",
+            ".obj",
+            ".mtl",
+        )
         forbidden.extend(
-            path for path in relative if path.lower().endswith(v001_extensions)
+            path
+            for path in relative
+            if path.lower().endswith(v001_extensions) and path not in audited_evidence
         )
         forbidden.extend(path for path in relative if path.startswith("src/"))
 
+    forbidden.extend(unaudited_evidence)
     if forbidden:
         results.fail("Forbidden v0.0.1 source, asset, or binary files: " + ", ".join(sorted(set(forbidden))))
     else:
-        results.passed("No forbidden source tree, binary, or unaudited v0.0.1 assets found")
+        results.passed(
+            "No forbidden source tree, binary, or unaudited v0.0.1 assets found"
+            f" ({len(audited_evidence)} evidence screenshots verified)"
+        )
 
     folded: dict[str, list[str]] = {}
     for path in relative:

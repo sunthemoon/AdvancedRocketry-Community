@@ -1,6 +1,11 @@
+import hashlib
 import unittest
 
-from scripts.validate_repository import normalize_link_target, parse_current_identity
+from scripts.validate_repository import (
+    is_audited_v001_evidence,
+    normalize_link_target,
+    parse_current_identity,
+)
 
 
 class IdentityParsingTests(unittest.TestCase):
@@ -44,6 +49,36 @@ class MarkdownTargetTests(unittest.TestCase):
         self.assertEqual(
             "docs/file.md",
             normalize_link_target('docs/file.md "title"'),
+        )
+
+
+class EvidenceAssetTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.relative = "docs/releases/v0.0.1/evidence/github-home-authenticated.jpg"
+        self.content = b"\xff\xd8\xffauthenticated evidence"
+        digest = hashlib.sha256(self.content).hexdigest()
+        self.index = (
+            "| [Repository homepage](github-home-authenticated.jpg) | evidence | "
+            f"`{digest}` |"
+        )
+
+    def test_indexed_jpeg_with_matching_hash_is_allowed(self) -> None:
+        self.assertTrue(
+            is_audited_v001_evidence(self.relative, self.content, self.index)
+        )
+
+    def test_changed_evidence_content_is_rejected(self) -> None:
+        self.assertFalse(
+            is_audited_v001_evidence(
+                self.relative, self.content + b"changed", self.index
+            )
+        )
+
+    def test_image_outside_release_evidence_directory_is_rejected(self) -> None:
+        self.assertFalse(
+            is_audited_v001_evidence(
+                "src/main/resources/texture.jpg", self.content, self.index
+            )
         )
 
 
