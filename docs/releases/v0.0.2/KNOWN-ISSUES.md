@@ -2,7 +2,6 @@
 
 ## Blocking before `PASSED`
 
-- GitHub Actions baseline and Forge 47.4.23 compatibility lanes have not completed a remote run yet.
 - Packaged dedicated-server startup, player connection, clean stop, and restart have not been executed.
 - Client Mods-screen and world-start manual evidence has not been captured.
 

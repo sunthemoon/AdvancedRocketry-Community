@@ -2,15 +2,16 @@
 
 ```yaml
 version: v0.0.2
-commit: "1b5f28094619081bc901bc1c7472cd19b129505a"
+commit: "1386c7473407e2544f20fc593d85ce6b43641839"
 base_commit: "86b9db01b1cb4c8b8f673590baf1dc185d1716b3"
 branch: "codex/v0.0.2-forge-bootstrap"
 build: "1.20.1-0.0.2-dev"
-pull_request: ""
-workflow_run: ""
+pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3"
+workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32980410416"
+governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32980410415"
 gates:
   G0: PASS
-  G1: IN_PROGRESS
+  G1: PASS
   G2: PASS
   G3: PASS
   G4: IN_PROGRESS
@@ -21,7 +22,6 @@ gates:
   G9: IN_PROGRESS
 overall: IN_PROGRESS
 remaining_items:
-  - "Run baseline and Forge 47.4.23 CI lanes"
   - "Run packaged dedicated server startup, player join, stop, and restart checks"
   - "Capture client Mods screen and world-start manual evidence"
   - "Complete release documentation and human acceptance"

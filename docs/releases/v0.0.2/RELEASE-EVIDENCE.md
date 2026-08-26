@@ -5,10 +5,11 @@
 ```yaml
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
-commit: 1b5f28094619081bc901bc1c7472cd19b129505a
+commit: 1386c7473407e2544f20fc593d85ce6b43641839
 tag: ""
-pull_request: ""
-workflow_run: ""
+pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
+workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32980410416
+governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/32980410415
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -24,7 +25,7 @@ jar_sha256: b10db9785c3f80e35b6bba53d11c518907f12d39fdee263ca3630a4ba57d50e9
 | Gate | Status | Evidence |
 |---|---|---|
 | G0 License/Provenance | PASS | Approved identity; official MDK hashes; packaged-license audit script; no upstream AR code/assets imported |
-| G1 Build | IN_PROGRESS | Baseline reproducibility and local 47.4.23 build pass; remote clean-environment CI pending |
+| G1 Build | PASS | Reproducible local baseline plus remote baseline and Forge 47.4.23 jobs pass on Java 17 |
 | G2 Data/Assets | PASS | DataGen is deterministic and commit `1b5f280` remained clean after regeneration |
 | G3 Automated Behavior | PASS | 3 JUnit tests, 20 Python tests, and 1 Forge GameTest pass |
 | G4 Dedicated/Sides | IN_PROGRESS | GameTest physical server loads cleanly; packaged server/player/restart cases pending |
@@ -93,7 +94,6 @@ See [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
 ```yaml
 recommended_status: IN_PROGRESS
 blocking_reasons:
-  - Remote baseline/latest CI has not completed on GitHub
   - Packaged dedicated server and player connection/restart evidence is absent
   - Client Mods screen and world-start manual evidence is absent
 reviewed_by: ""
