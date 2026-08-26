@@ -2,7 +2,7 @@
 
 ```yaml
 version: v0.0.2
-commit: ""
+commit: "1b5f28094619081bc901bc1c7472cd19b129505a"
 base_commit: "86b9db01b1cb4c8b8f673590baf1dc185d1716b3"
 branch: "codex/v0.0.2-forge-bootstrap"
 build: "1.20.1-0.0.2-dev"
@@ -11,7 +11,7 @@ workflow_run: ""
 gates:
   G0: PASS
   G1: IN_PROGRESS
-  G2: IN_PROGRESS
+  G2: PASS
   G3: PASS
   G4: IN_PROGRESS
   G5: NOT_APPLICABLE

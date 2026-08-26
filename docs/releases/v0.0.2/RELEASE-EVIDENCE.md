@@ -5,7 +5,7 @@
 ```yaml
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
-commit: PENDING_BRANCH_COMMIT
+commit: 1b5f28094619081bc901bc1c7472cd19b129505a
 tag: ""
 pull_request: ""
 workflow_run: ""
@@ -25,7 +25,7 @@ jar_sha256: b10db9785c3f80e35b6bba53d11c518907f12d39fdee263ca3630a4ba57d50e9
 |---|---|---|
 | G0 License/Provenance | PASS | Approved identity; official MDK hashes; packaged-license audit script; no upstream AR code/assets imported |
 | G1 Build | IN_PROGRESS | Baseline reproducibility and local 47.4.23 build pass; remote clean-environment CI pending |
-| G2 Data/Assets | IN_PROGRESS | DataGen is deterministic; committed-tree diff check pending |
+| G2 Data/Assets | PASS | DataGen is deterministic and commit `1b5f280` remained clean after regeneration |
 | G3 Automated Behavior | PASS | 3 JUnit tests, 20 Python tests, and 1 Forge GameTest pass |
 | G4 Dedicated/Sides | IN_PROGRESS | GameTest physical server loads cleanly; packaged server/player/restart cases pending |
 | G5 Persistence/Recovery | NOT_APPLICABLE | No persistent project data in v0.0.2 |

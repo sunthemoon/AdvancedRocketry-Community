@@ -4,7 +4,7 @@
 test_date: 2026-08-26
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
-commit: PENDING_BRANCH_COMMIT
+commit: 1b5f28094619081bc901bc1c7472cd19b129505a
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Java 17.0.6 / Gradle 8.8 / Minecraft 1.20.1 / Forge 47.4.10
 ```
@@ -22,7 +22,7 @@ environment: Windows 11 / Java 17.0.6 / Gradle 8.8 / Minecraft 1.20.1 / Forge 47
 | `gradlew clean build --no-daemon` | PASS | Two clean builds passed in 34s and 27s; binary JAR hashes matched |
 | `ORG_GRADLE_PROJECT_forge_version=47.4.23; gradlew clean build --no-daemon` | PASS | Clean compatibility build passed in 1m 14s with 3 JUnit tests |
 | `python scripts/validate_build_artifact.py <jar>` | PASS | 32 entries; metadata, notices, paths, placeholders, and credential name/content scans passed |
-| `git diff --exit-code` after DataGen | PENDING | Must be run from a committed baseline |
+| `git diff --exit-code` after DataGen | PASS | Commit `1b5f280` remained clean; no unignored files were created |
 
 ## Test inventory
 

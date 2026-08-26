@@ -5,7 +5,7 @@ status: NOT_RUN
 test_date: ""
 tester: ""
 build: 1.20.1-0.0.2-dev
-commit: PENDING_BRANCH_COMMIT
+commit: 1b5f28094619081bc901bc1c7472cd19b129505a
 ```
 
 ## MANUAL-V002-001 — Client metadata and world start
