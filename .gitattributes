@@ -6,6 +6,7 @@
 .github/CODEOWNERS.example text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
+docs/licenses/*.txt text eol=lf -whitespace
 *.yml text eol=lf
 *.yaml text eol=lf
 *.py text eol=lf
