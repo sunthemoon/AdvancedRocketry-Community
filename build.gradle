@@ -38,6 +38,17 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
+
+            if (project.hasProperty('arceEvidenceRun')) {
+                workingDirectory project.file('build/client-evidence/game')
+                args '--width', '960', '--height', '540'
+            }
+            if (project.hasProperty('arceQuickPlaySingleplayer')) {
+                args '--quickPlaySingleplayer', project.property('arceQuickPlaySingleplayer').toString()
+            }
+            if (project.hasProperty('arceQuickPlayMultiplayer')) {
+                args '--quickPlayMultiplayer', project.property('arceQuickPlayMultiplayer').toString()
+            }
         }
 
         server {

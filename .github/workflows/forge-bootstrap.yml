@@ -54,6 +54,9 @@ jobs:
       - name: Run Forge GameTests
         run: ./gradlew runGameTestServer --no-daemon --stacktrace
 
+      - name: Run packaged dedicated-server smoke test
+        run: python scripts/run_dedicated_server_smoke.py --evidence-dir build/dedicated-server-smoke/evidence
+
       - name: Upload baseline JAR and test reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -64,6 +67,7 @@ jobs:
             build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
             build/reports/tests/test/
             build/test-results/test/
+            build/dedicated-server-smoke/evidence/
 
   latest-compatibility:
     name: Forge 47.4.23 compatibility (advisory)

@@ -45,8 +45,10 @@ REQUIRED_PATHS = (
     "gradle/wrapper/gradle-wrapper.jar",
     "gradle/wrapper/gradle-wrapper.properties",
     "scripts/check_client_imports.py",
+    "scripts/run_dedicated_server_smoke.py",
     "scripts/validate_build_artifact.py",
     "tests/test_check_client_imports.py",
+    "tests/test_dedicated_server_smoke.py",
     "tests/test_validate_build_artifact.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
@@ -278,6 +280,8 @@ def check_markdown_links(results: Results) -> None:
 def repository_files() -> list[Path]:
     command = [
         "git",
+        "-c",
+        f"safe.directory={ROOT.as_posix()}",
         "-C",
         str(ROOT),
         "ls-files",
@@ -516,6 +520,7 @@ def check_workflow(results: Results) -> None:
         "./gradlew runData --no-daemon --stacktrace",
         "git diff --exit-code",
         "./gradlew runGameTestServer --no-daemon --stacktrace",
+        "python scripts/run_dedicated_server_smoke.py",
         'ORG_GRADLE_PROJECT_forge_version: "47.4.23"',
         "continue-on-error: true",
         "uses: actions/upload-artifact@v7",
