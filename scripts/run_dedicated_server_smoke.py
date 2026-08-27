@@ -203,6 +203,30 @@ def decode_optimized_forge_data(value: str) -> dict[str, str]:
     return result
 
 
+def validate_status_identity(status: dict) -> None:
+    version = status.get("version")
+    if not isinstance(version, dict):
+        raise SmokeError("Server status response has no version object")
+
+    name = version.get("name")
+    if name != MINECRAFT_VERSION:
+        raise SmokeError(
+            f"Status response Minecraft version is {name!r}, expected {MINECRAFT_VERSION!r}"
+        )
+
+    protocol = version.get("protocol")
+    if protocol != MINECRAFT_PROTOCOL:
+        raise SmokeError(
+            f"Status response protocol is {protocol!r}, expected {MINECRAFT_PROTOCOL}"
+        )
+
+    marker = forge_mod_versions(status).get(MOD_ID)
+    if marker != MOD_VERSION:
+        raise SmokeError(
+            f"Status response mod marker is {marker!r}, expected {MOD_VERSION!r}"
+        )
+
+
 def scan_log(lines: Iterable[str]) -> list[str]:
     findings: list[str] = []
     for line in lines:
@@ -222,6 +246,9 @@ def evidence_lines(lines: Iterable[str]) -> list[str]:
         "Preparing level",
         "Done (",
         "There are ",
+        "logged in with entity id",
+        "joined the game",
+        "left the game",
         "Saving the game",
         "Saved the game",
         "Stopping server",
@@ -299,14 +326,37 @@ def allocate_port() -> int:
         return int(candidate.getsockname()[1])
 
 
-def create_session(work_root: Path, requested: Path | None) -> Path:
+def create_session(
+    work_root: Path,
+    requested: Path | None,
+    resume_install_session: bool = False,
+) -> Path:
     if requested:
         session = requested.resolve()
     else:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         session = (work_root / f"run-{stamp}-{os.getpid()}").resolve()
     if session.exists():
-        raise SmokeError(f"Refusing to reuse an existing server session: {session}")
+        if not resume_install_session:
+            raise SmokeError(f"Refusing to reuse an existing server session: {session}")
+        if requested is None or not session.is_dir():
+            raise SmokeError("Installer resume requires an existing explicit session directory")
+        runtime_paths = (
+            session / "eula.txt",
+            session / "server.properties",
+            session / "mods",
+            session / "world",
+            session / "logs",
+        )
+        existing_runtime_path = next(
+            (path for path in runtime_paths if path.exists()), None
+        )
+        if existing_runtime_path is not None:
+            raise SmokeError(
+                "Refusing to resume a session that contains server runtime state: "
+                f"{existing_runtime_path}"
+            )
+        return session
     session.mkdir(parents=True)
     return session
 
@@ -443,11 +493,7 @@ def run_cycle(
             encoding="utf-8",
             newline="\n",
         )
-        mods = forge_mod_versions(status)
-        if mods.get(MOD_ID) != MOD_VERSION:
-            raise SmokeError(
-                f"Status response mod marker is {mods.get(MOD_ID)!r}, expected {MOD_VERSION!r}"
-            )
+        validate_status_identity(status)
         captured.command("list")
         captured.command("save-all flush")
         captured.wait_for(SAVE_MARKER, 60)
@@ -478,21 +524,45 @@ def install_server(
         raise SmokeError("Forge installer attempts must be at least 1")
     for attempt in range(1, max_attempts + 1):
         log_path = server / f"installer-attempt-{attempt}-full.txt"
-        completed = subprocess.run(
-            [java, "-jar", str(installer), "--installServer", str(server)],
-            cwd=server,
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=timeout,
-        )
-        log_path.write_text(
-            completed.stdout + completed.stderr,
-            encoding="utf-8",
-            newline="\n",
-        )
+        try:
+            completed = subprocess.run(
+                [java, "-jar", str(installer), "--installServer", str(server)],
+                cwd=server,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=timeout,
+            )
+            output = completed.stdout + completed.stderr
+            return_code: int | None = completed.returncode
+        except subprocess.TimeoutExpired as exc:
+            stdout = exc.stdout or ""
+            stderr = exc.stderr or ""
+            if isinstance(stdout, bytes):
+                stdout = stdout.decode("utf-8", errors="replace")
+            if isinstance(stderr, bytes):
+                stderr = stderr.decode("utf-8", errors="replace")
+            output = (
+                stdout
+                + stderr
+                + f"\n[TIMEOUT] Forge installer exceeded {timeout} seconds.\n"
+            )
+            return_code = None
+        log_path.write_text(output, encoding="utf-8", newline="\n")
+        if return_code is None:
+            if attempt == max_attempts:
+                raise SmokeError(
+                    f"Forge installer timed out after {max_attempts} attempts; "
+                    f"see {log_path}"
+                )
+            print(
+                f"[WARN] Forge installer attempt {attempt} timed out; retrying "
+                "with validated downloads retained",
+                flush=True,
+            )
+            continue
         if completed.returncode == 0:
             break
         if attempt == max_attempts:
@@ -579,6 +649,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--java", default=default_java)
     parser.add_argument("--work-root", type=Path, default=ROOT / "build" / "dedicated-server-smoke")
     parser.add_argument("--session-dir", type=Path)
+    parser.add_argument(
+        "--resume-install-session",
+        action="store_true",
+        help=(
+            "reuse an explicit session directory containing only a partial Forge "
+            "installer download; refuses directories with server runtime state"
+        ),
+    )
     parser.add_argument("--installer", type=Path)
     parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--port", type=int)
@@ -599,7 +677,11 @@ def main() -> int:
         if not artifact.is_file() or artifact.name != ARTIFACT_NAME:
             raise SmokeError(f"Expected built artifact {ARTIFACT_NAME}: {artifact}")
         artifact_sha256 = digest_file(artifact)
-        session = create_session(args.work_root.resolve(), args.session_dir)
+        session = create_session(
+            args.work_root.resolve(),
+            args.session_dir,
+            args.resume_install_session,
+        )
         installer = args.installer.resolve() if args.installer else args.work_root.resolve() / "cache" / INSTALLER_NAME
         installer = download_installer(installer)
         _, installer_attempts = install_server(
@@ -611,7 +693,11 @@ def main() -> int:
         )
         mods = session / "mods"
         mods.mkdir()
-        shutil.copy2(artifact, mods / artifact.name)
+        server_artifact = mods / artifact.name
+        shutil.copy2(artifact, server_artifact)
+        server_artifact_sha256 = digest_file(server_artifact)
+        if server_artifact_sha256 != artifact_sha256:
+            raise SmokeError("Copied server artifact SHA-256 does not match the source artifact")
         port = args.port or allocate_port()
         if not 1 <= port <= 65535:
             raise SmokeError(f"Server port is outside 1-65535: {port}")
@@ -646,6 +732,8 @@ def main() -> int:
             "minecraft": MINECRAFT_VERSION,
             "offline_mode": args.offline_mode,
             "platform": platform.platform(),
+            "server_artifact_sha256": server_artifact_sha256,
+            "server_port": port,
             "started_at": started_at.isoformat(),
             "world_level_dat": True,
         }

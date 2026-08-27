@@ -1,0 +1,8 @@
+# SHA-256 checksums for the v0.0.2 distributable and committed evidence.
+# The build/libs JAR is intentionally not committed; CI verifies it separately.
+827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+4b9dc6e9e0f8d52d84a959d475e05238b908bbbf861dde596da849527470b865  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
+4bd3059485f4402f6603ad506cfbd85fa3df8b741eb29688fefe9907b4da4513  docs/releases/v0.0.2/evidence/dedicated-server/README.md
+bef77379f5d2a8a04aa52bc7068105c353c9f1d2f813bc2904e1e27049bddfd0  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
+d238aac2990929def0b8678b9d8c5cfd45633efca2cc53d67b181d77254f9ed3  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
+bc81352a980e786257d65ff91947990abc19f8acc1850ccc20c04636eb01a6ff  docs/releases/v0.0.2/evidence/dedicated-server/summary.json

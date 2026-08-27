@@ -40,7 +40,15 @@ jobs:
         run: ./gradlew clean build --no-daemon --stacktrace
 
       - name: Audit distributable JAR
-        run: python scripts/validate_build_artifact.py build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+        run: >-
+          python scripts/validate_build_artifact.py
+          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+          --content-manifest build/release-evidence/jar-content-manifest.json
+
+      - name: Validate release checksums and artifact evidence
+        run: >-
+          python scripts/validate_release_checksums.py
+          --artifact build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
 
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
@@ -50,6 +58,9 @@ jobs:
 
       - name: Require a clean DataGen worktree
         run: git diff --exit-code
+
+      - name: Reject untracked DataGen outputs
+        run: python scripts/check_clean_worktree.py
 
       - name: Run Forge GameTests
         run: ./gradlew runGameTestServer --no-daemon --stacktrace
@@ -67,6 +78,7 @@ jobs:
             build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
             build/reports/tests/test/
             build/test-results/test/
+            build/release-evidence/jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
 
   latest-compatibility:

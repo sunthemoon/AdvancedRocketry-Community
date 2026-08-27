@@ -4,8 +4,8 @@
 
 | 领域 | 1.12 主要位置 | 旧依赖/风险 | 1.20.1 目标 | 目标版本 | 最低验收 | 状态 |
 |---|---|---|---|---|---|---|
-| 仓库与授权 | 根 LICENSE/README | 名称、原 notice | LICENSE/NOTICE/UPSTREAM/provenance | `v0.0.1` | G0 | PLANNED |
-| Forge 初始化 | build files / mod entry | 旧 ForgeGradle/Java | Java 17、Forge 47.4.10、CI | `v0.0.2` | G1/G4 | PLANNED |
+| 仓库与授权 | 根 LICENSE/README | 名称、原 notice | LICENSE/NOTICE/UPSTREAM/provenance | `v0.0.1` | G0 | PASSED |
+| Forge 初始化 | build files / mod entry | 旧 ForgeGradle/Java | Java 17、Forge 47.4.10、CI | `v0.0.2` | G1/G4 | IN_PROGRESS |
 | 注册系统 | block/item/common | 旧注册事件、数字 ID | DeferredRegister/RegistryObject | `v0.1.0` | build + registry tests | NOT_AUDITED |
 | 语言 | assets/.../lang | `.lang` | `en_us.json` 等 | `v0.1.0` | JSON + key audit | NOT_AUDITED |
 | 方块/物品纹理 | textures/blocks/items | 路径大小写、来源 | 新 namespace + manifest | `v0.1.0` | no missing texture | NOT_AUDITED |

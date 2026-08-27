@@ -6,6 +6,7 @@ from scripts.validate_repository import (
     ROOT,
     is_audited_v001_evidence,
     is_approved_gradle_wrapper,
+    is_approved_third_party_license,
     normalize_link_target,
     parse_current_identity,
 )
@@ -102,6 +103,32 @@ class ApprovedBinaryTests(unittest.TestCase):
         self.assertFalse(
             is_approved_gradle_wrapper(GRADLE_WRAPPER_PATH, content + b"changed")
         )
+
+
+class ApprovedThirdPartyLicenseTests(unittest.TestCase):
+    def test_pinned_license_copies_are_allowed(self) -> None:
+        for relative in (
+            "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
+            "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+        ):
+            with self.subTest(relative=relative):
+                self.assertTrue(
+                    is_approved_third_party_license(
+                        relative, (ROOT / relative).read_bytes()
+                    )
+                )
+
+    def test_changed_license_copy_is_rejected(self) -> None:
+        relative = "docs/licenses/GRADLE-8.1.1-LICENSE.txt"
+
+        self.assertFalse(
+            is_approved_third_party_license(
+                relative, (ROOT / relative).read_bytes() + b"changed"
+            )
+        )
+
+    def test_unlisted_license_path_is_rejected(self) -> None:
+        self.assertFalse(is_approved_third_party_license("docs/licenses/other.txt", b""))
 
 
 if __name__ == "__main__":

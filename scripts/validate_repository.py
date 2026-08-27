@@ -11,6 +11,11 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote
 
+if __package__:
+    from .validate_release_checksums import validate_release_checksums
+else:
+    from validate_release_checksums import validate_release_checksums
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,9 +26,11 @@ REQUIRED_PATHS = (
     "AGENTS.md",
     "BRANDING_AND_AFFILIATION.md",
     "CODE_OF_CONDUCT.md",
+    "CHANGELOG.md",
     "CONTRIBUTING.md",
     "LICENSE",
     "NOTICE.md",
+    "THIRD-PARTY-NOTICES.md",
     "PRODUCT.md",
     "PROJECT-CONFIG.md",
     "README.md",
@@ -45,11 +52,15 @@ REQUIRED_PATHS = (
     "gradle/wrapper/gradle-wrapper.jar",
     "gradle/wrapper/gradle-wrapper.properties",
     "scripts/check_client_imports.py",
+    "scripts/check_clean_worktree.py",
     "scripts/run_dedicated_server_smoke.py",
     "scripts/validate_build_artifact.py",
+    "scripts/validate_release_checksums.py",
     "tests/test_check_client_imports.py",
+    "tests/test_check_clean_worktree.py",
     "tests/test_dedicated_server_smoke.py",
     "tests/test_validate_build_artifact.py",
+    "tests/test_validate_release_checksums.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
@@ -67,10 +78,16 @@ REQUIRED_PATHS = (
     "docs/work/v0.0.1-implementation-log.md",
     "docs/work/v0.0.2-implementation-log.md",
     "docs/work/v0.0.2-test-machine-handoff.md",
+    "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
+    "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+    "docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md",
+    "docs/releases/v0.0.2/INSTALLATION.md",
     "docs/releases/v0.0.2/RELEASE-EVIDENCE.md",
     "docs/releases/v0.0.2/TEST-REPORT.md",
     "docs/releases/v0.0.2/MANUAL-TEST.md",
     "docs/releases/v0.0.2/KNOWN-ISSUES.md",
+    "docs/releases/v0.0.2/checksums.txt",
+    "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json",
     "docs/releases/v0.0.2/evidence/dedicated-server/README.md",
     "docs/releases/v0.0.2/evidence/dedicated-server/summary.json",
     "docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt",
@@ -101,6 +118,14 @@ GRADLE_WRAPPER_PATH = "gradle/wrapper/gradle-wrapper.jar"
 GRADLE_WRAPPER_SHA256 = "ed2c26eba7cfb93cc2b7785d05e534f07b5b48b5e7fc941921cd098628abca58"
 BOOTSTRAP_LOGO_PATH = "src/main/resources/advancedrocketrycommunity.png"
 BOOTSTRAP_LOGO_SHA256 = "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690"
+THIRD_PARTY_LICENSE_SHA256 = {
+    "docs/licenses/GRADLE-8.1.1-LICENSE.txt": (
+        "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437"
+    ),
+    "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt": (
+        "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57"
+    ),
+}
 
 
 class Results:
@@ -139,6 +164,14 @@ def read_text(path: Path, results: Results) -> str:
     except (OSError, UnicodeError) as exc:
         results.fail(f"Cannot read UTF-8 text file {path.relative_to(ROOT)}: {exc}")
         return ""
+
+
+def is_approved_third_party_license(relative: str, content: bytes) -> bool:
+    expected_hash = THIRD_PARTY_LICENSE_SHA256.get(relative)
+    return (
+        expected_hash is not None
+        and hashlib.sha256(content).hexdigest() == expected_hash
+    )
 
 
 def check_required_paths(results: Results) -> None:
@@ -438,6 +471,8 @@ def check_forge_bootstrap(results: Results) -> None:
             "reproducibleFileOrder = true",
             "from(rootProject.file('LICENSE'))",
             "from(rootProject.file('NOTICE.md'))",
+            "from(rootProject.file('THIRD-PARTY-NOTICES.md'))",
+            "from(rootProject.file('docs/licenses'))",
         ),
         "gradle/wrapper/gradle-wrapper.properties": (
             "gradle-8.8-bin.zip",
@@ -462,6 +497,14 @@ def check_forge_bootstrap(results: Results) -> None:
             failures.append(f"{BOOTSTRAP_LOGO_PATH}: unexpected SHA-256")
     except OSError as exc:
         failures.append(f"{BOOTSTRAP_LOGO_PATH}: {exc}")
+
+    for relative in THIRD_PARTY_LICENSE_SHA256:
+        try:
+            content = (ROOT / relative).read_bytes()
+            if not is_approved_third_party_license(relative, content):
+                failures.append(f"{relative}: unexpected SHA-256")
+        except OSError as exc:
+            failures.append(f"{relative}: {exc}")
 
     if failures:
         results.fail("Forge bootstrap baseline errors: " + "; ".join(failures))
@@ -521,9 +564,13 @@ def check_workflow(results: Results) -> None:
         "uses: gradle/actions/setup-gradle@v6",
         "./gradlew clean build --no-daemon --stacktrace",
         "python scripts/validate_build_artifact.py",
+        "--content-manifest build/release-evidence/jar-content-manifest.json",
+        "python scripts/validate_release_checksums.py",
+        "--artifact build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
         "python scripts/check_client_imports.py",
         "./gradlew runData --no-daemon --stacktrace",
         "git diff --exit-code",
+        "python scripts/check_clean_worktree.py",
         "./gradlew runGameTestServer --no-daemon --stacktrace",
         "python scripts/run_dedicated_server_smoke.py",
         'ORG_GRADLE_PROJECT_forge_version: "47.4.23"',
@@ -537,6 +584,17 @@ def check_workflow(results: Results) -> None:
         results.fail("Forge bootstrap workflow is missing: " + ", ".join(forge_missing))
     else:
         results.passed("Forge baseline and advisory latest-lane workflow is present")
+
+
+def check_release_checksums(results: Results) -> None:
+    errors, details = validate_release_checksums(repository_root=ROOT)
+    if errors:
+        results.fail("v0.0.2 release checksum errors: " + "; ".join(errors))
+    else:
+        results.passed(
+            "v0.0.2 release checksums cover "
+            f"{details['evidence_files']} evidence files and match the JAR manifest"
+        )
 
 
 def check_package_checksums(package_root: Path, results: Results) -> None:
@@ -599,6 +657,7 @@ def main() -> int:
     check_forge_bootstrap(results)
     check_issue_templates(results)
     check_workflow(results)
+    check_release_checksums(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
     results.print_report()

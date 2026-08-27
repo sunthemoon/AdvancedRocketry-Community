@@ -50,6 +50,7 @@
 
 | 文件 | 用途 |
 |---|---|
+| `CHANGELOG.md` | 玩家与服主可见的版本变化；未发布版本必须明确标注状态 |
 | `docs/05-MASTER-TEST-PLAN.md` | 单元、GameTest、专服、重启、多人、性能 |
 | `docs/06-RELEASE-AND-ACCEPTANCE-GATES.md` | G0–G9 的通过门槛 |
 | `docs/07-SAVE-DATA-AND-NETWORK-VERSIONING.md` | schema、迁移、journal、包大小 |
@@ -58,6 +59,7 @@
 | `docs/templates/PERFORMANCE-REPORT-TEMPLATE.md` | 性能报告 |
 | `docs/templates/RELEASE-EVIDENCE-TEMPLATE.md` | 每版最终证据 |
 | `docs/releases/v0.0.2/` | Forge bootstrap 的自动、人工、产物和风险证据 |
+| `docs/releases/v0.0.2/INSTALLATION.md` | 未发布开发预览的环境、客户端/服务端安装和存档边界 |
 
 ## 实施记录
 

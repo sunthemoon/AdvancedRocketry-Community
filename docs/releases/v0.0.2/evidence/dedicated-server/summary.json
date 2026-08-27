@@ -1,7 +1,7 @@
 {
   "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-  "artifact_sha256": "b10db9785c3f80e35b6bba53d11c518907f12d39fdee263ca3630a4ba57d50e9",
-  "completed_at": "2026-08-27T09:39:39.374109+00:00",
+  "artifact_sha256": "827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd",
+  "completed_at": "2026-08-27T14:32:31.622862+00:00",
   "cycles": [
     {
       "exit_code": 0,
@@ -22,10 +22,12 @@
   "installer_attempts": 1,
   "installer_sha1": "66bfea9963bfa60d88bab6b2750e74a958392715",
   "installer_sha256": "1912760b4cb6b803d8a826de603c9076b1da71ec2765e9a1f8c1ca78f65278e3",
-  "java": "17.0.6",
+  "java": "17.0.8",
   "minecraft": "1.20.1",
-  "offline_mode": false,
+  "offline_mode": true,
   "platform": "Windows-11-10.0.26200-SP0",
-  "started_at": "2026-08-27T09:33:46.701177+00:00",
+  "server_artifact_sha256": "827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd",
+  "server_port": 63166,
+  "started_at": "2026-08-27T14:30:15.143735+00:00",
   "world_level_dat": true
 }
