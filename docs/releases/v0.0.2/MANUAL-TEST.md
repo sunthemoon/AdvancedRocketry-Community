@@ -1,70 +1,117 @@
 # MANUAL-TEST — v0.0.2 Forge Bootstrap
 
 ```yaml
-status: PARTIAL
-test_date: "2026-08-27"
-tester: "Packaged-server automation completed; visible client deferred to external test machine"
+status: PARTIAL_AUTOMATED
+test_date: 2026-08-27
+tester: packaged-server automation only
 build: 1.20.1-0.0.2-dev
-commit: 41374d828e9200dc3efc8d2435e8857adb11335b
+tested_implementation_commit: 05ef786c3df567517e28d1cb17bb1c74e57a4cc2
+artifact_sha256: 827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd
+packaged_client_tested: false
 ```
 
-## MANUAL-V002-001 — Client metadata and world start
+## MANUAL-V002-001 — Packaged-client metadata and world start
 
 **Preconditions**
 
-- Build the distributable JAR with Java 17 and Forge 47.4.10.
-- Use a clean Minecraft test profile containing only Forge and this mod.
+- Use an isolated official Forge 1.20.1-47.4.10 client on Java 17.
+- Install only the exact distributable JAR identified above.
+- Do not use ForgeGradle `runClient` as packaged release evidence.
 
 **Steps**
 
-1. Start the client and open the Mods list.
-2. Inspect the project name, version, description, credits, license, and logo.
-3. Create a disposable single-player world.
-4. Save and return to the title screen.
+1. Start the packaged client and open the Mods list.
+2. Inspect name, version, description, credits, license, and logo.
+3. Create and enter a disposable single-player world.
+4. Review the full client log, then archive only privacy-reviewed evidence.
 
 **Expected**
 
-- Metadata matches the approved project identity and says the build has no playable rocket systems.
-- The client reaches the title screen and world without a project-source ERROR.
+- Metadata matches the approved project identity and states that the build has
+  no playable rocket systems.
+- The client reaches the world without a project-source ERROR.
 
 **Actual**
 
-DEFERRED_TO_TEST_MACHINE. A development client was started only far enough to
-confirm Forge 47.4.10, Java 17, the `Dev` identity, and the project initialization
-line. No valid Mods-screen or world-start screenshot was retained, so this case
-remains unpassed.
+`NOT_EXECUTED`. No packaged-client screenshot or log is claimed. Earlier
+ForgeGradle client diagnostics do not load the physical release JAR and are
+excluded from acceptance.
 
-## MANUAL-V002-002 — Packaged dedicated server and client connection
+## MANUAL-V002-002 — Packaged dedicated server and matching client
 
 **Steps**
 
-1. Install Forge 47.4.10 server files in a disposable directory and add the built JAR.
-2. Accept the Minecraft EULA for that disposable test instance.
-3. Start the server, wait for readiness, and connect with a matching client.
-4. Disconnect, stop cleanly, restart, reconnect, and stop again.
+1. Install Forge 47.4.10 in an isolated loopback-only server directory and copy
+   the final JAR.
+2. Verify source, server, and client JAR SHA-256 equality.
+3. Start the server and connect with the isolated matching client.
+4. Disconnect, save, stop, restart the same world, reconnect, and stop again.
 
 **Expected**
 
-- The server starts without loading `net.minecraft.client` classes.
-- The matching client connects, and both shutdowns complete without a project-source ERROR.
+- The server identifies Minecraft 1.20.1, protocol 763, and exact mod version
+  `1.20.1-0.0.2-dev` without loading client classes.
+- The matching client connects twice and both shutdowns finish without a
+  project-source ERROR.
 
 **Actual**
 
-PARTIAL PASS. `scripts/run_dedicated_server_smoke.py` installed the pinned Forge
-47.4.10 server, copied the final JAR, verified its optimized status marker,
-created and saved a world, stopped cleanly, restarted the same world, saved it,
-and stopped cleanly again. Both cycles exited 0 with no ERROR or client-class
-linkage finding. A matching visible client did not join; join/disconnect/reconnect
-remains deferred to the external test machine.
+`PARTIAL`. The packaged-server portion passed with the final artifact. Source
+and server copies share SHA-256
+`827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd`.
+Both headless cycles verified status identity, saved, exited 0, and reused the
+same `world/level.dat`; the selected logs contain no ERROR or client-class
+linkage finding. No packaged client joined, so three-way hash equality,
+join/disconnect, and restart/reconnect remain untested.
 
-## Evidence required
+## MANUAL-V002-003 — Declared mismatch policy
 
-- [ ] Client Mods page screenshot.
-- [ ] Client world-start log excerpt.
-- [x] Packaged server first-start and restart log excerpts.
-- [ ] Player connection evidence tied to the final JAR SHA-256.
+**Steps**
 
-See [`evidence/dedicated-server/`](evidence/dedicated-server/) for the completed
+1. Create a second isolated Forge 47.4.10 client without the project JAR.
+2. Observe the retained loopback server's compatibility indicator and message.
+3. Attempt one connection and record the actual result without assuming it.
+
+**Actual**
+
+`NOT_EXECUTED`. The declared `displayTest="MATCH_VERSION"` behavior still needs
+packaged observation.
+
+## Scoped G4 applicability decisions
+
+```yaml
+two_player_consistency:
+  proposed_status: NOT_APPLICABLE
+  rationale: >-
+    v0.0.2 has no playable content, project packets, shared player state,
+    permissions, inventories, or interactions to compare between players.
+  human_review_decision: ""
+  reviewed_by: ""
+  reviewed_at: ""
+optional_client_dependency_absence:
+  proposed_status: NOT_APPLICABLE
+  rationale: >-
+    v0.0.2 declares no optional runtime or client-only dependency; the clean
+    packaged profile contains only Forge and the project JAR.
+  human_review_decision: ""
+  reviewed_by: ""
+  reviewed_at: ""
+```
+
+These proposals do not approve G4 and do not replace the matching-client or
+mismatch-policy cases.
+
+## Evidence checklist
+
+- [ ] Three-way source/server/client JAR hash equality.
+- [ ] Full-window packaged-client Mods page screenshot.
+- [ ] Packaged-client single-player in-world screenshot and selected log.
+- [x] Final-JAR packaged-server first-start and restart excerpts.
+- [ ] Matching-client first join, disconnect, restart, and reconnect evidence.
+- [ ] Missing-project-mod indicator, message, and connection result.
+- [ ] Human decisions for both scoped G4 applicability proposals.
+
+See [`evidence/dedicated-server/`](evidence/dedicated-server/) for completed
 server evidence and
 [`../../work/v0.0.2-test-machine-handoff.md`](../../work/v0.0.2-test-machine-handoff.md)
-for the remaining-machine procedure.
+for the isolated packaged-client procedure.

@@ -2,36 +2,70 @@
 
 ## Blocking before `PASSED`
 
-- Matching-client join, disconnect, restart, and reconnect have not been executed;
-  they are deferred to a separate visible test machine.
-- Client Mods-screen and world-start evidence has not been captured and is also
-  deferred to the external test machine.
+- Human review has not approved the Forge MDK/Gradle Wrapper license scope and
+  the source/binary notice treatment. The mechanical provenance record remains
+  `PENDING_HUMAN_REVIEW`.
+- An isolated packaged client has not captured the Mods page or disposable
+  single-player world evidence.
+- A matching packaged client has not joined, disconnected, or reconnected after
+  restarting the retained server world.
+- The missing-project-mod compatibility behavior has not been observed, and the
+  proposed G4 applicability decisions have not been reviewed.
+- Final human release acceptance is absent. The version is not tagged, merged
+  as accepted, or published.
+
+## Artifact reproducibility result and boundary
+
+- The final reviewed local artifact has SHA-256
+  `827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd`;
+  two Windows clean builds produced identical bytes.
+- The Linux Forge 47.4.10 baseline upload has the same JAR SHA-256 and content
+  manifest as Windows. Cross-platform byte identity is proven for the tested
+  implementation and toolchain pair.
+- Historical hashes `b10db978...` and `c627d23a...` identify earlier artifacts
+  before the third-party notice/license packaging and evidence hardening. They
+  are superseded and must not be mixed with the final client/server session.
+- This result does not replace session-level identity checks. Manual evidence
+  still requires the source, server, and client copies used in one session to
+  have the same SHA-256.
 
 ## Expected bootstrap limitations
 
-- The build has no playable blocks, items, machines, planets, dimensions, rockets, recipes, networking, or persistent project data.
-- The original geometric logo is a bootstrap placeholder and may be replaced only by another provenance-audited asset.
-- The local machine defaults to Java 8, so recorded Gradle commands explicitly select the installed Java 17 JDK.
-- The packaged-server harness requires network access during a fresh Forge server
-  installation. It preserves failed installer-attempt logs and retries up to
-  three times before failing.
+- The build has no playable blocks, items, machines, planets, dimensions,
+  rockets, recipes, networking, or persistent project data.
+- Worlds are disposable; no compatibility is promised for `v0.0.x` through
+  `v0.4.x`.
+- The original geometric logo is a bootstrap placeholder and may be replaced
+  only by another provenance-audited asset.
+- A fresh Forge/server installation requires network access. The harness
+  verifies the installer, preserves failed attempt logs, retries timeouts or
+  nonzero exits with validated partial downloads, and refuses to resume a
+  directory containing server runtime state.
 
-## Accepted development-runtime warnings
+## Accepted development-runtime findings
 
-- Forge userdev reports missing `mods.toml` files for its own language-provider JARs.
+- Forge userdev language-provider JARs report missing `mods.toml` files.
 - Forge userdev reports `union:` resource URLs as an unexpected schema.
-- ForgeGradle uses Gradle features scheduled for removal in Gradle 9; this project remains on the MDK-compatible Gradle 8.8 wrapper.
+- ForgeGradle uses Gradle features scheduled for removal in Gradle 9; the
+  project remains on the MDK-compatible Gradle 8.8 wrapper.
+- Fresh GameTest/server directories create missing default configuration files;
+  GameTest also logs Minecraft's initial missing `server.properties` before
+  continuing successfully.
+- Headless runs report that advanced terminal features are unavailable.
 
-These warnings originate in the Forge/ForgeGradle development runtime, not in project code. They must be re-reviewed if their wording or source changes.
+These findings originate in Minecraft, Forge, ForgeGradle, or the fresh test
+environment. They must be re-reviewed if their source or wording changes; no
+project-source ERROR is accepted.
 
 ## Resolved during implementation
 
-- A transient Mojang CDN asset download failure passed on retry and has not recurred.
-- The initial generated GameTest structure used the wrong NBT tag type for coordinates. The corrected fixture loads and the required GameTest passes.
-- The first Linux CI baseline changed the tracked `gradlew` mode during setup and was correctly rejected by the DataGen clean-tree check. The executable mode is now part of the repository.
-- The initial packaged-server harness used the empty legacy Forge status list and
-  an incomplete flat-world property. It now decodes Forge 47.4.10's optimized
-  status data and uses a normal disposable world; final first-start/restart logs
-  contain no ERROR.
-- A transient Minecraft library download timed out in one discarded installer
-  session. The final archived run installed successfully on attempt 1.
+- A transient Mojang CDN asset download failure passed on retry and left the
+  generated resource unchanged.
+- The generated GameTest structure now uses the required list-of-int coordinate
+  schema and an explicit air block.
+- The executable bit for `gradlew` is stored in Git, so CI setup no longer
+  dirties the DataGen worktree.
+- The packaged-server harness decodes Forge's optimized status data, validates
+  Minecraft/protocol/mod identity, and uses a normal disposable world.
+- Installer timeout output is retained, and explicit installer-only recovery
+  was verified before the final two-cycle server pass.
