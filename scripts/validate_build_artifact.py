@@ -54,6 +54,7 @@ SENSITIVE_PARTS = {
     "secrets",
 }
 SENSITIVE_SUFFIXES = (".jks", ".key", ".p12", ".pem", ".pfx")
+FORBIDDEN_GENERATOR_METADATA_PREFIXES = (".cache/",)
 SENSITIVE_CONTENT = (
     re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     re.compile(rb"\bAKIA[0-9A-Z]{16}\b"),
@@ -216,6 +217,20 @@ def validate_artifact(
             sensitive = sorted(name for name in names if is_sensitive_entry(name))
             if sensitive:
                 errors.append("Sensitive-looking files in artifact: " + ", ".join(sensitive))
+
+            generator_metadata = sorted(
+                name
+                for name in names
+                if any(
+                    name.startswith(prefix)
+                    for prefix in FORBIDDEN_GENERATOR_METADATA_PREFIXES
+                )
+            )
+            if generator_metadata:
+                errors.append(
+                    "Generator cache metadata must not be packaged: "
+                    + ", ".join(generator_metadata)
+                )
 
             sensitive_content = sorted(
                 name

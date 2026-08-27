@@ -162,6 +162,15 @@ class ArtifactValidationTests(unittest.TestCase):
 
         self.assertTrue(any("Sensitive-looking" in error for error in errors))
 
+    def test_generator_cache_metadata_is_rejected(self) -> None:
+        artifact = self.create_artifact({".cache/datagen-state": b"generated"})
+
+        errors, _ = validate_artifact(artifact)
+
+        self.assertTrue(
+            any("Generator cache metadata must not be packaged" in error for error in errors)
+        )
+
     def test_credential_like_content_is_rejected(self) -> None:
         artifact = self.create_artifact(
             {"assets/config.txt": b"-----BEGIN PRIVATE KEY-----"}

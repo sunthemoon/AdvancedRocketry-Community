@@ -5,8 +5,9 @@ present in the repository. These components remain under their respective
 licenses; the repository's MIT license applies only where the third-party terms
 do not apply.
 
-The detailed import hashes and transformations are recorded in
-[`docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md`](docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md).
+The detailed import hashes and transformations are recorded in the repository
+at `docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md`. That provenance
+record is not embedded in the distributable JAR.
 
 ## Minecraft Forge 1.20.1-47.4.10 MDK
 
@@ -15,7 +16,8 @@ Source:
 - Project: MinecraftForge/MinecraftForge
 - Repository: <https://github.com/MinecraftForge/MinecraftForge>
 - Branch: `1.20.1`
-- Release source commit associated with the artifact:
+- Source commit inferred for the artifact from the official universal-JAR
+  manifest and matching source-tree files (see the provenance record):
   `132704e5f23dbee28d776738eb1c0c42fefc0bf6`
 - Artifact: `net.minecraftforge:forge:1.20.1-47.4.10:mdk@zip`
 - Artifact URL:
@@ -53,14 +55,17 @@ target_sha256: 481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57
 copy_transformation: none; byte-for-byte copy
 ```
 
-See
-[`docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt`](docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt).
+The exact repository copy is
+`docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt`; distributable JARs
+carry it as `META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt`.
 
 ## Gradle Wrapper
 
 The official Forge MDK supplied the checked-in Wrapper launchers and JAR. The
 launcher scripts retain their Apache License 2.0 headers. The Wrapper JAR hash
-matches the checksum published by Gradle for Gradle 8.1 and 8.1.1.
+matches the checksum published by Gradle for Gradle 8.1 and 8.1.1; Gradle 8.1.1
+is the selected, byte-identical upstream source used for this record, not a
+claim that the MDK uniquely identifies that release as the Wrapper's origin.
 Project attribution: Gradle and the original Wrapper authors. The copyright
 notices already present in `gradlew` and `gradlew.bat` remain unchanged.
 
@@ -93,8 +98,9 @@ target_sha256: e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437
 copy_transformation: none; byte-for-byte copy
 ```
 
-See
-[`docs/licenses/GRADLE-8.1.1-LICENSE.txt`](docs/licenses/GRADLE-8.1.1-LICENSE.txt).
+The exact repository copy is `docs/licenses/GRADLE-8.1.1-LICENSE.txt`;
+distributable JARs carry it as
+`META-INF/licenses/GRADLE-8.1.1-LICENSE.txt`.
 
 `gradle/wrapper/gradle-wrapper.properties` selects the Gradle 8.8 binary
 distribution. The distribution is downloaded from Gradle and is not checked
@@ -106,7 +112,8 @@ into this repository. Its pinned SHA-256 is
 This notice concerns the Forge MDK and Gradle Wrapper bootstrap inputs only. It
 does not classify or license material from original Advanced Rocketry,
 LibVulpes, Minecraft, or community forks. Original Advanced Rocketry attribution
-is maintained separately in [`NOTICE.md`](NOTICE.md) and `UPSTREAM.md`.
+is maintained separately in the repository's `NOTICE.md` and `UPSTREAM.md`.
+The distributable JAR carries `NOTICE.md` as `META-INF/NOTICE.md`.
 
 ## Review status
 
