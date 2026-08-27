@@ -2,7 +2,7 @@
 
 ```yaml
 version: v0.0.2
-commit: "1386c7473407e2544f20fc593d85ce6b43641839"
+commit: "41374d828e9200dc3efc8d2435e8857adb11335b"
 base_commit: "86b9db01b1cb4c8b8f673590baf1dc185d1716b3"
 branch: "codex/v0.0.2-forge-bootstrap"
 build: "1.20.1-0.0.2-dev"
@@ -22,8 +22,8 @@ gates:
   G9: IN_PROGRESS
 overall: IN_PROGRESS
 remaining_items:
-  - "Run packaged dedicated server startup, player join, stop, and restart checks"
-  - "Capture client Mods screen and world-start manual evidence"
+  - "Run matching-client join, disconnect, restart, and reconnect checks on the external test machine"
+  - "Capture client Mods screen and world-start evidence on the external test machine"
   - "Complete release documentation and human acceptance"
 human_approved_by: ""
 human_approved_at: ""

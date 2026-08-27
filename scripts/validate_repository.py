@@ -66,10 +66,15 @@ REQUIRED_PATHS = (
     "docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md",
     "docs/work/v0.0.1-implementation-log.md",
     "docs/work/v0.0.2-implementation-log.md",
+    "docs/work/v0.0.2-test-machine-handoff.md",
     "docs/releases/v0.0.2/RELEASE-EVIDENCE.md",
     "docs/releases/v0.0.2/TEST-REPORT.md",
     "docs/releases/v0.0.2/MANUAL-TEST.md",
     "docs/releases/v0.0.2/KNOWN-ISSUES.md",
+    "docs/releases/v0.0.2/evidence/dedicated-server/README.md",
+    "docs/releases/v0.0.2/evidence/dedicated-server/summary.json",
+    "docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt",
+    "docs/releases/v0.0.2/evidence/dedicated-server/restart.txt",
 )
 
 VERSION_DOCUMENTS = (

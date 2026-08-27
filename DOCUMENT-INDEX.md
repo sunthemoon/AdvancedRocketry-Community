@@ -7,6 +7,7 @@
 | `PROJECT-CONFIG.md` | 唯一项目变量和人工决策入口 |
 | `AGENTS.md` | Codex 的长期工程约束、Gate 和输出格式 |
 | `00-READ-ME-FIRST.md` | 人工启动顺序 |
+| `MASTER-EXECUTION-PLAN.md` | 完整单文件开发计划；分文件与当前 ADR/状态冲突时以后者为准 |
 | `codex-prompts/00-initialize-repository.md` | 第一次执行，只完成 v0.0.1 |
 
 ## 产品与总体方案
@@ -64,6 +65,7 @@
 |---|---|
 | `docs/work/v0.0.1-implementation-log.md` | 仓库治理基线实施记录 |
 | `docs/work/v0.0.2-implementation-log.md` | Forge 工程初始化、来源和验证记录 |
+| `docs/work/v0.0.2-test-machine-handoff.md` | 换机继续客户端与玩家连接验收的命令和证据要求 |
 
 ## 分版本执行文件
 

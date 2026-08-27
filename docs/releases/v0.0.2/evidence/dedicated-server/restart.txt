@@ -1,0 +1,17 @@
+cycle=restart
+exit_code=0
+status_version=1.20.1
+status_protocol=763
+mod_marker=1.20.1-0.0.2-dev
+
+[17:39:21] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.0.2-dev initialized
+[17:39:27] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[17:39:27] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:29337
+[17:39:30] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[17:39:35] [Server thread/INFO] [minecraft/DedicatedServer]: Done (4.475s)! For help, type "help"
+[17:39:35] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online:
+[17:39:35] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[17:39:36] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[17:39:36] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[17:39:36] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[17:39:36] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
