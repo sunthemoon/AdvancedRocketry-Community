@@ -38,9 +38,15 @@ INSTALLER_URL = (
     f"{FORGE_COORDINATE}/{INSTALLER_NAME}"
 )
 INSTALLER_SHA1 = "66bfea9963bfa60d88bab6b2750e74a958392715"
+SUMMARY_SCHEMA_VERSION = 2
+WORLD_IDENTITY_FILE = ".v002-smoke-world-identity.json"
 READY_MARKER = re.compile(r"Done \([^)]+\)! For help, type \"help\"")
 SAVE_MARKER = re.compile(r"Saved the game")
+JOIN_MARKER = re.compile(r" joined the game")
+LEAVE_MARKER = re.compile(r" left the game")
 ERROR_LINE = re.compile(r"\[[^\]]+/ERROR\]")
+WARNING_LINE = re.compile(r"\[[^\]]+/WARN\]")
+PROJECT_LOGGER = re.compile(r"\[[^\]]*advancedrocketrycommunity[^\]]*/[^\]]*\]", re.I)
 CLIENT_LINKAGE_MARKERS = (
     "Attempted to load class net/minecraft/client",
     "NoClassDefFoundError: net/minecraft/client",
@@ -59,6 +65,64 @@ def digest_file(path: Path, algorithm: str = "sha256") -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def build_session_id(artifact_sha256: str, started_at: str, port: int) -> str:
+    payload = f"v0.0.2\0{artifact_sha256}\0{started_at}\0{port}".encode("utf-8")
+    return "v002-" + hashlib.sha256(payload).hexdigest()[:24]
+
+
+def establish_world_identity(
+    server: Path,
+    session_id: str,
+    artifact_sha256: str,
+) -> dict[str, object]:
+    world = server / "world"
+    level_dat = world / "level.dat"
+    if not level_dat.is_file():
+        raise SmokeError("First server cycle did not create world/level.dat")
+    marker = world / WORLD_IDENTITY_FILE
+    if marker.exists() or marker.is_symlink():
+        raise SmokeError(f"World identity marker already exists: {marker}")
+
+    before_hash = digest_file(level_dat)
+    identity = hashlib.sha256(
+        f"{session_id}\0{artifact_sha256}\0{before_hash}".encode("utf-8")
+    ).hexdigest()
+    marker_document = {
+        "artifact_sha256": artifact_sha256,
+        "session_id": session_id,
+        "world_identity": identity,
+    }
+    marker_payload = (
+        json.dumps(marker_document, ensure_ascii=True, sort_keys=True) + "\n"
+    )
+    marker.write_text(marker_payload, encoding="utf-8", newline="\n")
+    return {
+        "identity": identity,
+        "identity_marker": f"world/{WORLD_IDENTITY_FILE}",
+        "identity_marker_sha256": digest_file(marker),
+        "level_dat_before_restart_sha256": before_hash,
+        "level_dat_before_restart_size": level_dat.stat().st_size,
+    }
+
+
+def complete_world_identity(server: Path, identity: dict[str, object]) -> dict[str, object]:
+    marker = server / str(identity["identity_marker"])
+    level_dat = server / "world" / "level.dat"
+    if not marker.is_file() or marker.is_symlink():
+        raise SmokeError("Same-world restart lost the harness identity marker")
+    if digest_file(marker) != identity["identity_marker_sha256"]:
+        raise SmokeError("Same-world restart changed the harness identity marker")
+    if not level_dat.is_file():
+        raise SmokeError("Same-world restart did not retain world/level.dat")
+    return {
+        **identity,
+        "level_dat_after_restart_sha256": digest_file(level_dat),
+        "level_dat_after_restart_size": level_dat.stat().st_size,
+        "level_name": "world",
+        "same_world_verified": True,
+    }
 
 
 def encode_varint(value: int) -> bytes:
@@ -233,9 +297,36 @@ def scan_log(lines: Iterable[str]) -> list[str]:
         stripped = line.rstrip()
         if ERROR_LINE.search(stripped):
             findings.append(stripped)
+        elif WARNING_LINE.search(stripped) and PROJECT_LOGGER.search(stripped):
+            findings.append(stripped)
         elif any(marker in stripped for marker in CLIENT_LINKAGE_MARKERS):
             findings.append(stripped)
     return findings
+
+
+def log_audit_counts(lines: Iterable[str]) -> dict[str, int]:
+    """Count broad errors plus project and client-linkage findings."""
+    counts = {
+        "error_count": 0,
+        "warning_count": 0,
+        "project_error_count": 0,
+        "project_warning_count": 0,
+        "client_linkage_failure_count": 0,
+    }
+    for line in lines:
+        lowered = line.casefold()
+        is_project = PROJECT_LOGGER.search(line) is not None
+        if ERROR_LINE.search(line):
+            counts["error_count"] += 1
+            if is_project:
+                counts["project_error_count"] += 1
+        if WARNING_LINE.search(line):
+            counts["warning_count"] += 1
+            if is_project:
+                counts["project_warning_count"] += 1
+        if any(marker.casefold() in lowered for marker in CLIENT_LINKAGE_MARKERS):
+            counts["client_linkage_failure_count"] += 1
+    return counts
 
 
 def evidence_lines(lines: Iterable[str]) -> list[str]:
@@ -364,9 +455,16 @@ def create_session(
 @dataclass
 class ServerCycle:
     name: str
+    cycle_id: str
     lines: list[str]
     status: dict
     exit_code: int
+    started_at: str
+    completed_at: str
+    full_log_file: str
+    full_log_sha256: str
+    player_join_observed: bool
+    player_leave_observed: bool
 
 
 class CapturedProcess:
@@ -401,14 +499,20 @@ class CapturedProcess:
             with self.condition:
                 self.condition.notify_all()
 
-    def wait_for(self, marker: re.Pattern[str], timeout: float) -> None:
+    def wait_for(
+        self,
+        marker: re.Pattern[str],
+        timeout: float,
+        *,
+        start_at: int = 0,
+    ) -> int:
         deadline = time.monotonic() + timeout
-        checked = 0
+        checked = start_at
         with self.condition:
             while True:
-                for line in self.lines[checked:]:
+                for index, line in enumerate(self.lines[checked:], start=checked):
                     if marker.search(line):
-                        return
+                        return index
                 checked = len(self.lines)
                 code = self.process.poll()
                 if code is not None:
@@ -469,11 +573,16 @@ def wait_for_status(port: int, timeout: float = 30.0) -> dict:
 
 def run_cycle(
     name: str,
+    cycle_id: str,
     java: str,
     server: Path,
     port: int,
     startup_timeout: float,
+    *,
+    require_player_cycle: bool = False,
+    player_timeout: float = 600.0,
 ) -> ServerCycle:
+    cycle_started_at = datetime.now(timezone.utc).isoformat()
     args_name = "win_args.txt" if platform.system() == "Windows" else "unix_args.txt"
     args_file = Path("libraries/net/minecraftforge/forge") / FORGE_COORDINATE / args_name
     command = [
@@ -484,7 +593,11 @@ def run_cycle(
         f"@{args_file.as_posix()}",
         "nogui",
     ]
-    captured = CapturedProcess(command, server, server / f"{name}-full.txt")
+    full_log_file = f"{name}-full.txt"
+    full_log_path = server / full_log_file
+    captured = CapturedProcess(command, server, full_log_path)
+    player_join_observed = False
+    player_leave_observed = False
     try:
         captured.wait_for(READY_MARKER, startup_timeout)
         status = wait_for_status(port)
@@ -494,9 +607,20 @@ def run_cycle(
             newline="\n",
         )
         validate_status_identity(status)
+        if require_player_cycle:
+            print(
+                f"[WAIT] {name} ({cycle_id}): join and then disconnect the "
+                "matching packaged client",
+                flush=True,
+            )
+            join_index = captured.wait_for(JOIN_MARKER, player_timeout)
+            player_join_observed = True
+            captured.wait_for(LEAVE_MARKER, player_timeout, start_at=join_index + 1)
+            player_leave_observed = True
         captured.command("list")
+        save_start = len(captured.lines)
         captured.command("save-all flush")
-        captured.wait_for(SAVE_MARKER, 60)
+        captured.wait_for(SAVE_MARKER, 60, start_at=save_start)
         captured.command("stop")
         code = captured.finish()
     except BaseException:
@@ -507,10 +631,22 @@ def run_cycle(
         raise SmokeError(f"Server {name} exited with code {code}")
     findings = scan_log(captured.lines)
     if findings:
-        raise SmokeError(f"Server {name} log contains errors: {findings[0]}")
+        raise SmokeError(f"Server {name} log contains blocking findings: {findings[0]}")
     if not any("Advanced Rocketry: Community Edition" in line for line in captured.lines):
         raise SmokeError(f"Server {name} log does not contain the project initialization line")
-    return ServerCycle(name, list(captured.lines), status, code)
+    return ServerCycle(
+        name=name,
+        cycle_id=cycle_id,
+        lines=list(captured.lines),
+        status=status,
+        exit_code=code,
+        started_at=cycle_started_at,
+        completed_at=datetime.now(timezone.utc).isoformat(),
+        full_log_file=full_log_file,
+        full_log_sha256=digest_file(full_log_path),
+        player_join_observed=player_join_observed,
+        player_leave_observed=player_leave_observed,
+    )
 
 
 def install_server(
@@ -620,12 +756,21 @@ def write_evidence(directory: Path, summary: dict, cycles: list[ServerCycle]) ->
         newline="\n",
     )
     for cycle in cycles:
+        audit_counts = log_audit_counts(cycle.lines)
         lines = [
             f"cycle={cycle.name}",
+            f"cycle_id={cycle.cycle_id}",
+            f"started_at={cycle.started_at}",
+            f"completed_at={cycle.completed_at}",
             f"exit_code={cycle.exit_code}",
+            f"full_log_file={cycle.full_log_file}",
+            f"full_log_sha256={cycle.full_log_sha256}",
+            f"player_join_observed={str(cycle.player_join_observed).lower()}",
+            f"player_leave_observed={str(cycle.player_leave_observed).lower()}",
             f"status_version={cycle.status.get('version', {}).get('name', '')}",
             f"status_protocol={cycle.status.get('version', {}).get('protocol', '')}",
             f"mod_marker={forge_mod_versions(cycle.status).get(MOD_ID, '')}",
+            *(f"{key}={value}" for key, value in audit_counts.items()),
             "",
             *evidence_lines(cycle.lines),
         ]
@@ -661,6 +806,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--port", type=int)
     parser.add_argument("--offline-mode", action="store_true")
+    parser.add_argument(
+        "--manual-player-cycles",
+        action="store_true",
+        help=(
+            "wait in each server cycle for a matching packaged client to join "
+            "and disconnect before saving and stopping"
+        ),
+    )
+    parser.add_argument(
+        "--player-timeout",
+        type=float,
+        default=600,
+        help="seconds to wait for each manual join and disconnect marker",
+    )
     parser.add_argument("--install-attempts", type=int, default=3)
     parser.add_argument("--install-timeout", type=float, default=600)
     parser.add_argument("--startup-timeout", type=float, default=240)
@@ -701,24 +860,58 @@ def main() -> int:
         port = args.port or allocate_port()
         if not 1 <= port <= 65535:
             raise SmokeError(f"Server port is outside 1-65535: {port}")
+        if args.player_timeout <= 0:
+            raise SmokeError("Player marker timeout must be positive")
+        session_id = build_session_id(artifact_sha256, started_at.isoformat(), port)
         write_server_configuration(session, port, args.offline_mode)
 
-        first = run_cycle("first-start", java, session, port, args.startup_timeout)
-        level_data = session / "world" / "level.dat"
-        if not level_data.is_file():
-            raise SmokeError("First server cycle did not create world/level.dat")
-        restart = run_cycle("restart", java, session, port, args.startup_timeout)
+        first = run_cycle(
+            "first-start",
+            f"{session_id}-first-start",
+            java,
+            session,
+            port,
+            args.startup_timeout,
+            require_player_cycle=args.manual_player_cycles,
+            player_timeout=args.player_timeout,
+        )
+        world_identity = establish_world_identity(
+            session,
+            session_id,
+            artifact_sha256,
+        )
+        restart = run_cycle(
+            "restart",
+            f"{session_id}-restart",
+            java,
+            session,
+            port,
+            args.startup_timeout,
+            require_player_cycle=args.manual_player_cycles,
+            player_timeout=args.player_timeout,
+        )
+        world_identity = complete_world_identity(session, world_identity)
         cycles = [first, restart]
 
         summary = {
+            "schema_version": SUMMARY_SCHEMA_VERSION,
+            "session_id": session_id,
             "artifact": artifact.name,
             "artifact_sha256": artifact_sha256,
             "completed_at": datetime.now(timezone.utc).isoformat(),
             "cycles": [
                 {
+                    **log_audit_counts(cycle.lines),
+                    "completed_at": cycle.completed_at,
+                    "cycle_id": cycle.cycle_id,
                     "exit_code": cycle.exit_code,
+                    "full_log_file": cycle.full_log_file,
+                    "full_log_sha256": cycle.full_log_sha256,
                     "mod_marker": forge_mod_versions(cycle.status).get(MOD_ID),
                     "name": cycle.name,
+                    "player_join_observed": cycle.player_join_observed,
+                    "player_leave_observed": cycle.player_leave_observed,
+                    "started_at": cycle.started_at,
                     "status_protocol": cycle.status.get("version", {}).get("protocol"),
                     "status_version": cycle.status.get("version", {}).get("name"),
                 }
@@ -729,12 +922,15 @@ def main() -> int:
             "installer_sha256": digest_file(installer),
             "installer_attempts": installer_attempts,
             "java": java_version,
+            "manual_player_cycles": args.manual_player_cycles,
             "minecraft": MINECRAFT_VERSION,
             "offline_mode": args.offline_mode,
             "platform": platform.platform(),
+            "server_bind": "127.0.0.1",
             "server_artifact_sha256": server_artifact_sha256,
             "server_port": port,
             "started_at": started_at.isoformat(),
+            "world": world_identity,
             "world_level_dat": True,
         }
         evidence_dir = args.evidence_dir.resolve() if args.evidence_dir else session / "evidence"
@@ -743,6 +939,9 @@ def main() -> int:
         print(f"[PASS] Artifact SHA-256: {artifact_sha256}")
         print(f"[PASS] First start, status query, save, and clean stop on port {port}")
         print("[PASS] Same-world restart, status query, save, and clean stop")
+        if args.manual_player_cycles:
+            print("[PASS] Matching packaged-client join and disconnect observed in both cycles")
+        print(f"[PASS] Harness session binding: {session_id}")
         print(f"[PASS] Evidence: {evidence_dir}")
         print(f"[INFO] Full disposable server session: {session}")
         return 0

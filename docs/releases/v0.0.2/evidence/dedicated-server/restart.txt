@@ -1,17 +1,29 @@
 cycle=restart
+cycle_id=v002-023ec4639969e1bf54c9804d-restart
+started_at=2026-08-27T17:09:48.875773+00:00
+completed_at=2026-08-27T17:10:03.926563+00:00
 exit_code=0
+full_log_file=restart-full.txt
+full_log_sha256=bd10795a659c355a3fc20be63fa4d81999c6ecf9afc85895864b31f6c157f1c6
+player_join_observed=false
+player_leave_observed=false
 status_version=1.20.1
 status_protocol=763
 mod_marker=1.20.1-0.0.2-dev
+error_count=0
+warning_count=10
+project_error_count=0
+project_warning_count=0
+client_linkage_failure_count=0
 
-[22:32:18] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.0.2-dev initialized
-[22:32:22] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
-[22:32:22] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:63166
-[22:32:23] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
-[22:32:27] [Server thread/INFO] [minecraft/DedicatedServer]: Done (4.060s)! For help, type "help"
-[22:32:28] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online:
-[22:32:28] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
-[22:32:29] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
-[22:32:29] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
-[22:32:29] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
-[22:32:29] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[01:09:56] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.0.2-dev initialized
+[01:09:58] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[01:09:58] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:55094
+[01:09:59] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[01:10:01] [Server thread/INFO] [minecraft/DedicatedServer]: Done (2.420s)! For help, type "help"
+[01:10:02] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online:
+[01:10:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[01:10:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[01:10:02] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[01:10:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[01:10:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds

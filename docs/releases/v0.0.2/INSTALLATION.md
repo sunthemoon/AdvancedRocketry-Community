@@ -86,6 +86,7 @@ join/restart evidence procedure, follow
 ## Distribution status
 
 Do not present this artifact as stable, upload it as a public release, or use it
-for a persistent server. Publication remains blocked until the remaining G4,
-G8, and G9 evidence is reviewed and a human explicitly marks the version
-`PASSED`.
+for a persistent server. Acceptance remains blocked until the remaining G0,
+G4, G8, and G9 evidence is reviewed and a human explicitly marks the version
+`PASSED`. A GitHub Release is not itself required for Gate acceptance; if one is
+created afterward, it must be marked as a pre-release rather than stable.

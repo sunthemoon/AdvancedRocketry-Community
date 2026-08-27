@@ -9,9 +9,21 @@ import json
 import re
 import subprocess
 import sys
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Collection
+
+if __package__:
+    from .validate_build_artifact import (
+        CONTENT_MANIFEST_SCHEMA_VERSION,
+        build_content_manifest,
+    )
+else:
+    from validate_build_artifact import (  # type: ignore[no-redef]
+        CONTENT_MANIFEST_SCHEMA_VERSION,
+        build_content_manifest,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +35,10 @@ DEFAULT_CONTENT_MANIFEST = (
 SHA256 = re.compile(r"[0-9a-f]{64}")
 CHECKSUM_LINE = re.compile(r"^([0-9a-f]{64})[ \t]+(.+)$")
 HASH_CHUNK_SIZE = 1024 * 1024
+CHECKSUM_HEADER = (
+    "# SHA-256 checksums for the v0.0.2 distributable and committed evidence.\n"
+    "# The build/libs JAR is intentionally not committed; CI verifies it separately.\n"
+)
 
 
 @dataclass(frozen=True)
@@ -36,6 +52,7 @@ class ChecksumEntry:
 class ArtifactMetadata:
     filename: str
     sha256: str
+    manifest: dict[str, object]
 
 
 def file_sha256(path: Path) -> str:
@@ -139,6 +156,29 @@ def repository_relative(path: Path, repository_root: Path) -> tuple[str | None, 
     return relative, None
 
 
+def archive_entry_path_error(value: str) -> str | None:
+    if not value:
+        return "path is empty"
+    if "\\" in value:
+        return "backslashes are not allowed"
+    if any(ord(character) < 32 or ord(character) == 127 for character in value):
+        return "control characters are not allowed"
+    posix_path = PurePosixPath(value)
+    windows_path = PureWindowsPath(value)
+    if posix_path.is_absolute() or windows_path.is_absolute() or windows_path.drive:
+        return "absolute or drive-qualified paths are not allowed"
+    without_directory_marker = value[:-1] if value.endswith("/") else value
+    parts = without_directory_marker.split("/")
+    if not without_directory_marker or any(part in ("", ".", "..") for part in parts):
+        return "empty, current-directory, or traversal segments are not allowed"
+    if any(":" in part for part in parts):
+        return "colons are not allowed"
+    normalized = posix_path.as_posix() + ("/" if value.endswith("/") else "")
+    if normalized != value:
+        return "path is not a normalized POSIX archive path"
+    return None
+
+
 def load_artifact_metadata(path: Path) -> tuple[ArtifactMetadata | None, list[str]]:
     errors: list[str] = []
     try:
@@ -148,6 +188,31 @@ def load_artifact_metadata(path: Path) -> tuple[ArtifactMetadata | None, list[st
 
     if not isinstance(document, dict):
         return None, ["JAR content manifest must contain a JSON object"]
+
+    expected_document_keys = {
+        "schema_version",
+        "artifact",
+        "artifact_sha256",
+        "entry_count",
+        "entries",
+    }
+    actual_document_keys = set(document)
+    if actual_document_keys != expected_document_keys:
+        missing = sorted(expected_document_keys - actual_document_keys)
+        unexpected = sorted(actual_document_keys - expected_document_keys)
+        if missing:
+            errors.append("JAR content manifest is missing keys: " + ", ".join(missing))
+        if unexpected:
+            errors.append(
+                "JAR content manifest has unexpected keys: " + ", ".join(unexpected)
+            )
+
+    schema_version = document.get("schema_version")
+    if type(schema_version) is not int or schema_version != CONTENT_MANIFEST_SCHEMA_VERSION:
+        errors.append(
+            "JAR content manifest schema_version must be "
+            f"{CONTENT_MANIFEST_SCHEMA_VERSION}"
+        )
 
     filename = document.get("artifact")
     checksum = document.get("artifact_sha256")
@@ -165,13 +230,161 @@ def load_artifact_metadata(path: Path) -> tuple[ArtifactMetadata | None, list[st
             "JAR content manifest is missing lowercase artifact_sha256 metadata"
         )
 
+    entry_count = document.get("entry_count")
+    entries = document.get("entries")
+    if type(entry_count) is not int or entry_count < 0:
+        errors.append("JAR content manifest entry_count must be a non-negative integer")
+    if not isinstance(entries, list):
+        errors.append("JAR content manifest entries must be a JSON array")
+    else:
+        entry_paths: list[str] = []
+        for index, entry in enumerate(entries):
+            prefix = f"JAR content manifest entries[{index}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{prefix} must be an object")
+                continue
+            expected_entry_keys = {"path", "size", "sha256"}
+            if set(entry) != expected_entry_keys:
+                errors.append(
+                    f"{prefix} must contain exactly path, size, and sha256"
+                )
+            entry_path = entry.get("path")
+            size = entry.get("size")
+            entry_sha256 = entry.get("sha256")
+            if not isinstance(entry_path, str):
+                errors.append(f"{prefix}.path must be a string")
+            else:
+                path_error = archive_entry_path_error(entry_path)
+                if path_error:
+                    errors.append(f"{prefix}.path is unsafe: {path_error}")
+                entry_paths.append(entry_path)
+                if entry_path.endswith("/") and size != 0:
+                    errors.append(f"{prefix} directory entry must have size 0")
+            if type(size) is not int or size < 0:
+                errors.append(f"{prefix}.size must be a non-negative integer")
+            if not isinstance(entry_sha256, str) or SHA256.fullmatch(entry_sha256) is None:
+                errors.append(f"{prefix}.sha256 must be a lowercase SHA-256")
+
+        if type(entry_count) is int and entry_count != len(entries):
+            errors.append(
+                "JAR content manifest entry_count does not match entries length: "
+                f"{entry_count} != {len(entries)}"
+            )
+        if len(entry_paths) != len(set(entry_paths)):
+            errors.append("JAR content manifest contains duplicate entry paths")
+        if entry_paths != sorted(entry_paths):
+            errors.append("JAR content manifest entries must be sorted by path")
+
     if errors:
         return None, errors
-    return ArtifactMetadata(filename, checksum), []
+    assert isinstance(filename, str)
+    assert isinstance(checksum, str)
+    return ArtifactMetadata(filename, checksum, document), []
 
 
 def _absolute_from_root(path: Path, repository_root: Path) -> Path:
     return path if path.is_absolute() else repository_root / path
+
+
+def render_release_checksums(
+    repository_root: Path = ROOT,
+    evidence_dir: Path = DEFAULT_EVIDENCE_DIR,
+    content_manifest_path: Path = DEFAULT_CONTENT_MANIFEST,
+) -> tuple[str | None, list[str]]:
+    """Render the deterministic checksum list for the distributable and evidence."""
+    repository_root = repository_root.resolve()
+    evidence_dir = _absolute_from_root(evidence_dir, repository_root)
+    content_manifest_path = _absolute_from_root(
+        content_manifest_path, repository_root
+    )
+    errors: list[str] = []
+
+    evidence_relative, path_error = repository_relative(
+        evidence_dir, repository_root
+    )
+    if path_error:
+        errors.append(path_error)
+    if evidence_dir.is_symlink() or not evidence_dir.is_dir():
+        errors.append(f"Evidence directory is missing or unsafe: {evidence_dir}")
+
+    metadata, metadata_errors = load_artifact_metadata(content_manifest_path)
+    errors.extend(metadata_errors)
+    if errors or evidence_relative is None or metadata is None:
+        return None, errors
+
+    entries: list[tuple[str, str]] = [
+        (
+            metadata.sha256,
+            f"build/libs/{metadata.filename}",
+        )
+    ]
+    evidence_files: list[tuple[str, Path]] = []
+    for path in evidence_dir.rglob("*"):
+        if path.is_symlink():
+            errors.append(f"Evidence path must not be a symlink: {path}")
+            continue
+        if not path.is_file():
+            continue
+        relative, relative_error = repository_relative(path, repository_root)
+        if relative_error:
+            errors.append(relative_error)
+            continue
+        assert relative is not None
+        portable_error = relative_path_error(relative)
+        if portable_error:
+            errors.append(
+                f"Unsafe evidence path {relative!r}: {portable_error}"
+            )
+            continue
+        evidence_files.append((relative, path))
+
+    expected_manifest = content_manifest_path.resolve()
+    if all(path.resolve() != expected_manifest for _, path in evidence_files):
+        errors.append("Evidence tree does not contain the JAR content manifest")
+    if errors:
+        return None, errors
+
+    entries.extend(
+        (file_sha256(path), relative)
+        for relative, path in sorted(evidence_files, key=lambda item: item[0])
+    )
+    lines = [CHECKSUM_HEADER.rstrip("\n")]
+    lines.extend(f"{checksum}  {relative}" for checksum, relative in entries)
+    return "\n".join(lines) + "\n", []
+
+
+def update_release_checksums(
+    repository_root: Path = ROOT,
+    checksums_path: Path = DEFAULT_CHECKSUMS,
+    evidence_dir: Path = DEFAULT_EVIDENCE_DIR,
+    content_manifest_path: Path = DEFAULT_CONTENT_MANIFEST,
+) -> list[str]:
+    """Write the deterministic checksum list without changing any Gate status."""
+    repository_root = repository_root.resolve()
+    checksums_path = _absolute_from_root(checksums_path, repository_root)
+    relative, path_error = repository_relative(checksums_path, repository_root)
+    if path_error:
+        return [path_error]
+    assert relative is not None
+    portable_error = relative_path_error(relative)
+    if portable_error:
+        return [f"Unsafe checksum output path {relative!r}: {portable_error}"]
+    if checksums_path.is_symlink():
+        return [f"Checksum output must not be a symlink: {relative}"]
+
+    text, errors = render_release_checksums(
+        repository_root=repository_root,
+        evidence_dir=evidence_dir,
+        content_manifest_path=content_manifest_path,
+    )
+    if errors or text is None:
+        return errors
+    try:
+        checksums_path.parent.mkdir(parents=True, exist_ok=True)
+        checksums_path.write_text(text, encoding="utf-8", newline="\n")
+    except OSError as exc:
+        return [f"Cannot write checksum list {relative}: {exc}"]
+    return []
 
 
 def validate_release_checksums(
@@ -323,11 +536,24 @@ def validate_release_checksums(
     errors.extend(metadata_errors)
 
     artifact_entry = artifact_entries[0] if len(artifact_entries) == 1 else None
-    if metadata is not None and artifact_entry is not None:
-        if PurePosixPath(artifact_entry.path).name != metadata.filename:
+    if artifact_entry is not None:
+        artifact_parts = PurePosixPath(artifact_entry.path).parts
+        if (
+            len(artifact_parts) != 3
+            or artifact_parts[:2] != ("build", "libs")
+            or not artifact_parts[2].endswith(".jar")
+        ):
             errors.append(
-                "Distributable JAR checksum filename does not match committed "
-                f"content manifest: {artifact_entry.path} != {metadata.filename}"
+                "External distributable checksum path must be exactly "
+                f"build/libs/<filename>.jar, got {artifact_entry.path}"
+            )
+    if metadata is not None and artifact_entry is not None:
+        expected_artifact_entry = f"build/libs/{metadata.filename}"
+        if artifact_entry.path != expected_artifact_entry:
+            errors.append(
+                "Distributable JAR checksum path does not match the canonical "
+                f"content-manifest path: {artifact_entry.path} != "
+                f"{expected_artifact_entry}"
             )
         if artifact_entry.sha256 != metadata.sha256:
             errors.append(
@@ -336,14 +562,39 @@ def validate_release_checksums(
             )
 
     if artifact_path is not None:
-        artifact_path = artifact_path.resolve()
-        if not artifact_path.is_file():
-            errors.append(f"Artifact does not exist: {artifact_path}")
+        artifact_path = _absolute_from_root(artifact_path, repository_root)
+        supplied_artifact_path = artifact_path
+        canonical_artifact_path = (
+            repository_root / "build" / "libs" / metadata.filename
+            if metadata is not None
+            else None
+        )
+        canonical_path_matches = (
+            canonical_artifact_path is not None
+            and supplied_artifact_path.resolve() == canonical_artifact_path.resolve()
+        )
+        if supplied_artifact_path.is_symlink():
+            errors.append(
+                f"Built artifact path must not be a symbolic link: {supplied_artifact_path}"
+            )
+        elif not canonical_path_matches:
+            expected = (
+                str(canonical_artifact_path)
+                if canonical_artifact_path is not None
+                else "build/libs/<content-manifest artifact>"
+            )
+            errors.append(
+                "Built artifact path must be the canonical repository path: "
+                f"expected {expected}, got {supplied_artifact_path}"
+            )
+        elif not supplied_artifact_path.is_file():
+            errors.append(f"Artifact does not exist: {supplied_artifact_path}")
         else:
+            artifact_manifest_matches = False
             try:
-                artifact_sha256 = file_sha256(artifact_path)
+                artifact_sha256 = file_sha256(supplied_artifact_path)
             except OSError as exc:
-                errors.append(f"Cannot hash artifact {artifact_path}: {exc}")
+                errors.append(f"Cannot hash artifact {supplied_artifact_path}: {exc}")
             else:
                 details["artifact_sha256"] = artifact_sha256
                 if artifact_entry is not None and artifact_sha256 != artifact_entry.sha256:
@@ -352,21 +603,55 @@ def validate_release_checksums(
                         f"expected {artifact_entry.sha256}, got {artifact_sha256}"
                     )
                 if metadata is not None:
-                    if artifact_path.name != metadata.filename:
+                    if supplied_artifact_path.name != metadata.filename:
                         errors.append(
                             "Artifact filename does not match committed content "
-                            f"manifest: {artifact_path.name} != {metadata.filename}"
+                            f"manifest: {supplied_artifact_path.name} != {metadata.filename}"
                         )
                     if artifact_sha256 != metadata.sha256:
                         errors.append(
                             "Artifact SHA-256 does not match committed content "
                             f"manifest: expected {metadata.sha256}, got {artifact_sha256}"
                         )
+                    try:
+                        actual_manifest = build_content_manifest(supplied_artifact_path)
+                    except (
+                        OSError,
+                        RuntimeError,
+                        ValueError,
+                        zipfile.BadZipFile,
+                    ) as exc:
+                        errors.append(
+                            "Cannot regenerate built artifact content manifest: "
+                            f"{exc}"
+                        )
+                    else:
+                        differing_fields = [
+                            field
+                            for field in (
+                                "schema_version",
+                                "artifact",
+                                "artifact_sha256",
+                                "entry_count",
+                                "entries",
+                            )
+                            if actual_manifest.get(field) != metadata.manifest.get(field)
+                        ]
+                        if differing_fields:
+                            errors.append(
+                                "Regenerated built artifact content manifest does not "
+                                "match committed evidence; differing fields: "
+                                + ", ".join(differing_fields)
+                            )
+                        else:
+                            artifact_manifest_matches = True
                 if (
                     artifact_entry is not None
                     and metadata is not None
                     and artifact_sha256 == artifact_entry.sha256 == metadata.sha256
-                    and artifact_path.name == metadata.filename
+                    and supplied_artifact_path.name == metadata.filename
+                    and canonical_path_matches
+                    and artifact_manifest_matches
                 ):
                     details["artifact_verified"] = True
 
@@ -406,11 +691,34 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         help="also hash and verify the built distributable JAR",
     )
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help=(
+            "rewrite checksums deterministically from the content manifest and "
+            "complete evidence tree, without changing any Gate"
+        ),
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.update:
+        errors = update_release_checksums(
+            repository_root=args.repository_root,
+            checksums_path=args.checksums,
+            evidence_dir=args.evidence_dir,
+            content_manifest_path=args.content_manifest,
+        )
+        if errors:
+            for error in errors:
+                print(f"[FAIL] {error}")
+            return 1
+        print(f"[PASS] Updated release checksums: {args.checksums}")
+        print("[INFO] Stage new evidence, then run validation without --update")
+        return 0
+
     errors, details = validate_release_checksums(
         repository_root=args.repository_root,
         checksums_path=args.checksums,

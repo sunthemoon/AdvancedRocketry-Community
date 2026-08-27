@@ -12,19 +12,21 @@
 - The missing-project-mod compatibility behavior has not been observed, and the
   proposed G4 applicability decisions have not been reviewed.
 - Final human release acceptance is absent. The version is not tagged, merged
-  as accepted, or published.
+  as accepted, or published. Any later GitHub Release must be a pre-release,
+  never a stable release.
 
 ## Artifact reproducibility result and boundary
 
-- The final reviewed local artifact has SHA-256
-  `827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd`;
+- The current reviewed local artifact has SHA-256
+  `58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`;
   two Windows clean builds produced identical bytes.
-- The Linux Forge 47.4.10 baseline upload has the same JAR SHA-256 and content
-  manifest as Windows. Cross-platform byte identity is proven for the tested
-  implementation and toolchain pair.
-- Historical hashes `b10db978...` and `c627d23a...` identify earlier artifacts
-  before the third-party notice/license packaging and evidence hardening. They
-  are superseded and must not be mixed with the final client/server session.
+- The current sources JAR has SHA-256
+  `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
+- The new-head Linux Forge 47.4.10 upload has not yet been downloaded and
+  compared. Cross-platform byte identity remains pending for this artifact.
+- Historical hashes `b10db978...`, `c627d23a...`, and `827c07b...` identify
+  superseded artifacts from earlier packaging/evidence states. They must not be
+  mixed with the current client/server session.
 - This result does not replace session-level identity checks. Manual evidence
   still requires the source, server, and client copies used in one session to
   have the same SHA-256.

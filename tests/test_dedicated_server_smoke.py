@@ -11,10 +11,14 @@ from scripts.run_dedicated_server_smoke import (
     MINECRAFT_PROTOCOL,
     MINECRAFT_VERSION,
     SmokeError,
+    build_session_id,
+    complete_world_identity,
     create_session,
     decode_optimized_forge_data,
     encode_varint,
+    establish_world_identity,
     evidence_lines,
+    log_audit_counts,
     extract_java_version,
     forge_mod_versions,
     install_server,
@@ -152,6 +156,33 @@ class LogAuditTests(unittest.TestCase):
 
         self.assertEqual(2, len(scan_log(lines)))
 
+    def test_project_warning_is_blocking_but_third_party_warning_is_not(self) -> None:
+        project = "[Server thread/WARN] [advancedrocketrycommunity/]: risky\n"
+        third_party = "[Server thread/WARN] [forge/]: unrelated\n"
+
+        self.assertEqual([project.rstrip()], scan_log([project]))
+        self.assertEqual([], scan_log([third_party]))
+
+    def test_log_audit_counts_separate_project_and_broad_findings(self) -> None:
+        lines = [
+            "[Server thread/ERROR] [advancedrocketrycommunity/]: project error\n",
+            "[Server thread/WARN] [forge/]: third-party warning\n",
+            "[Server thread/WARN] [AdvancedRocketryCommunity/]: project warning\n",
+            "[main/WARN] [ForgeConfigSpec/CORE]: config/advancedrocketrycommunity-common.toml\n",
+            "NoClassDefFoundError: net.minecraft.client.Minecraft\n",
+        ]
+
+        self.assertEqual(
+            {
+                "error_count": 1,
+                "warning_count": 3,
+                "project_error_count": 1,
+                "project_warning_count": 1,
+                "client_linkage_failure_count": 1,
+            },
+            log_audit_counts(lines),
+        )
+
     def test_evidence_filter_keeps_lifecycle_markers(self) -> None:
         lines = [
             "noise\n",
@@ -250,6 +281,41 @@ class SessionSafetyTests(unittest.TestCase):
 
             with self.assertRaisesRegex(SmokeError, "server runtime state"):
                 create_session(work_root, session, resume_install_session=True)
+
+
+class WorldIdentityTests(unittest.TestCase):
+    def test_world_identity_survives_level_dat_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            server = Path(temporary_directory)
+            level_dat = server / "world" / "level.dat"
+            level_dat.parent.mkdir()
+            level_dat.write_bytes(b"first-save")
+            session_id = build_session_id("a" * 64, "2026-08-28T00:00:00+00:00", 25565)
+
+            identity = establish_world_identity(server, session_id, "a" * 64)
+            level_dat.write_bytes(b"restart-save")
+            completed = complete_world_identity(server, identity)
+
+            self.assertTrue(completed["same_world_verified"])
+            self.assertEqual("world", completed["level_name"])
+            self.assertNotEqual(
+                completed["level_dat_before_restart_sha256"],
+                completed["level_dat_after_restart_sha256"],
+            )
+
+    def test_changed_world_identity_marker_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            server = Path(temporary_directory)
+            level_dat = server / "world" / "level.dat"
+            level_dat.parent.mkdir()
+            level_dat.write_bytes(b"first-save")
+            identity = establish_world_identity(server, "v002-session", "b" * 64)
+            (server / str(identity["identity_marker"])).write_text(
+                "tampered\n", encoding="utf-8"
+            )
+
+            with self.assertRaisesRegex(SmokeError, "changed"):
+                complete_world_identity(server, identity)
 
 
 if __name__ == "__main__":

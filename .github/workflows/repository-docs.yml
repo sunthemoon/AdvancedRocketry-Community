@@ -24,5 +24,8 @@ jobs:
       - name: Test repository validator
         run: python -m unittest discover -s tests -v
 
+      - name: Validate bootstrap provenance allowlist
+        run: python scripts/validate_bootstrap_provenance.py
+
       - name: Enforce governance baseline
         run: python scripts/validate_repository.py --require-approved-identity

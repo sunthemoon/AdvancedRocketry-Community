@@ -1,6 +1,6 @@
 {
   "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-  "artifact_sha256": "827c07b34745cc5e6f484beb398b718cf87bd50e8d5be4f3c12679adc0973dcd",
+  "artifact_sha256": "58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944",
   "entries": [
     {
       "path": "META-INF/",
@@ -24,8 +24,8 @@
     },
     {
       "path": "META-INF/THIRD-PARTY-NOTICES.md",
-      "sha256": "0e4c78070e0145a17b3241c4423d44b44a5532ed1f2f5c8d752d80c829b4e58e",
-      "size": 4867
+      "sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
+      "size": 5340
     },
     {
       "path": "META-INF/licenses/",

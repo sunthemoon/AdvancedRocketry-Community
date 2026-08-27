@@ -2,9 +2,15 @@ import hashlib
 import json
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
-from scripts.validate_release_checksums import validate_release_checksums
+from scripts.validate_build_artifact import build_content_manifest
+from scripts.validate_release_checksums import (
+    render_release_checksums,
+    update_release_checksums,
+    validate_release_checksums,
+)
 
 
 class ReleaseChecksumValidationTests(unittest.TestCase):
@@ -26,7 +32,10 @@ class ReleaseChecksumValidationTests(unittest.TestCase):
         self.lifecycle.parent.mkdir(parents=True)
         self.artifact.parent.mkdir(parents=True)
         self.lifecycle.write_text("server lifecycle evidence\n", encoding="utf-8")
-        self.artifact.write_bytes(b"reproducible distributable")
+        with zipfile.ZipFile(
+            self.artifact, "w", compression=zipfile.ZIP_DEFLATED
+        ) as archive:
+            archive.writestr("pack.mcmeta", b"{}")
         self.write_manifest()
 
         self.tracked_files = {
@@ -39,21 +48,19 @@ class ReleaseChecksumValidationTests(unittest.TestCase):
     def digest(path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
-    def write_manifest(self, *, include_artifact_sha256: bool = True) -> None:
-        document: dict[str, object] = {
-            "schema_version": 1,
-            "artifact": self.artifact_name,
-            "entry_count": 1,
-            "entries": [
-                {
-                    "path": "pack.mcmeta",
-                    "size": 2,
-                    "sha256": hashlib.sha256(b"{}").hexdigest(),
-                }
-            ],
-        }
+    def write_manifest(
+        self,
+        *,
+        include_artifact_sha256: bool = True,
+        transform=None,
+    ) -> None:
+        document: dict[str, object] = build_content_manifest(self.artifact)
         if include_artifact_sha256:
-            document["artifact_sha256"] = self.digest(self.artifact)
+            pass
+        else:
+            document.pop("artifact_sha256")
+        if transform is not None:
+            transform(document)
         self.manifest.write_text(
             json.dumps(document, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -64,6 +71,7 @@ class ReleaseChecksumValidationTests(unittest.TestCase):
         *,
         include_lifecycle: bool = True,
         extra_lines: tuple[str, ...] = (),
+        artifact_entry_path: str | None = None,
     ) -> None:
         lines = [
             "# v0.0.2 release evidence",
@@ -77,7 +85,10 @@ class ReleaseChecksumValidationTests(unittest.TestCase):
                 "docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt"
             )
         lines.extend(extra_lines)
-        lines.append(f"{self.digest(self.artifact)}  {self.artifact_name}")
+        lines.append(
+            f"{self.digest(self.artifact)}  "
+            f"{artifact_entry_path or f'build/libs/{self.artifact_name}'}"
+        )
         self.checksums.parent.mkdir(parents=True, exist_ok=True)
         self.checksums.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -171,6 +182,105 @@ class ReleaseChecksumValidationTests(unittest.TestCase):
             any("missing lowercase artifact_sha256 metadata" in error for error in errors),
             errors,
         )
+
+    def test_complete_content_manifest_schema_is_required(self) -> None:
+        def change_schema(document: dict[str, object]) -> None:
+            document["schema_version"] = 2
+            document["unexpected"] = True
+
+        self.write_manifest(transform=change_schema)
+        self.write_checksums()
+
+        errors = self.validate()
+
+        self.assertTrue(any("schema_version must be 1" in error for error in errors), errors)
+        self.assertTrue(any("unexpected keys" in error for error in errors), errors)
+
+    def test_manifest_entry_count_and_entry_schema_are_validated(self) -> None:
+        def corrupt_entries(document: dict[str, object]) -> None:
+            document["entry_count"] = 2
+            entries = document["entries"]
+            assert isinstance(entries, list)
+            assert isinstance(entries[0], dict)
+            entries[0]["extra"] = "not part of schema"
+
+        self.write_manifest(transform=corrupt_entries)
+        self.write_checksums()
+
+        errors = self.validate()
+
+        self.assertTrue(any("entry_count does not match" in error for error in errors), errors)
+        self.assertTrue(any("exactly path, size, and sha256" in error for error in errors), errors)
+
+    def test_built_artifact_entries_must_match_committed_manifest(self) -> None:
+        def tamper_entry(document: dict[str, object]) -> None:
+            entries = document["entries"]
+            assert isinstance(entries, list)
+            assert isinstance(entries[0], dict)
+            entries[0]["sha256"] = "0" * 64
+
+        self.write_manifest(transform=tamper_entry)
+        self.write_checksums()
+
+        errors = self.validate(artifact=self.artifact)
+
+        self.assertTrue(
+            any("Regenerated built artifact content manifest" in error for error in errors),
+            errors,
+        )
+        self.assertTrue(any("entries" in error for error in errors), errors)
+
+    def test_external_artifact_checksum_path_must_be_canonical(self) -> None:
+        self.write_checksums(artifact_entry_path=self.artifact_name)
+
+        errors = self.validate()
+
+        self.assertTrue(
+            any("build/libs/<filename>.jar" in error for error in errors), errors
+        )
+        self.assertTrue(any("canonical" in error for error in errors), errors)
+
+    def test_supplied_artifact_path_must_be_canonical(self) -> None:
+        self.write_checksums()
+        outside = self.root / self.artifact_name
+        outside.write_bytes(self.artifact.read_bytes())
+
+        errors = self.validate(artifact=outside)
+
+        self.assertTrue(
+            any("canonical repository path" in error for error in errors), errors
+        )
+
+    def test_deterministic_update_covers_the_complete_evidence_tree(self) -> None:
+        extra = self.evidence_dir / "client/manual-evidence.json"
+        extra.parent.mkdir(parents=True)
+        extra.write_text("{}\n", encoding="utf-8")
+        self.tracked_files.add(
+            "docs/releases/v0.0.2/evidence/client/manual-evidence.json"
+        )
+
+        errors = update_release_checksums(repository_root=self.root)
+
+        self.assertEqual([], errors)
+        first = self.checksums.read_bytes()
+        second_text, render_errors = render_release_checksums(
+            repository_root=self.root
+        )
+        self.assertEqual([], render_errors)
+        self.assertEqual(first, second_text.encode("utf-8"))
+        self.assertIn(self.digest(extra).encode("ascii"), first)
+        self.assertEqual([], self.validate(artifact=self.artifact))
+
+    def test_update_rejects_symlinked_evidence(self) -> None:
+        link = self.evidence_dir / "linked.txt"
+        try:
+            link.symlink_to(self.lifecycle)
+        except OSError as exc:
+            self.skipTest(f"symlinks are unavailable: {exc}")
+
+        errors = update_release_checksums(repository_root=self.root)
+
+        self.assertTrue(any("must not be a symlink" in error for error in errors))
 
 
 if __name__ == "__main__":

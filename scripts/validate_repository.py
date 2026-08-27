@@ -6,14 +6,30 @@ from __future__ import annotations
 import argparse
 import hashlib
 import re
+import shlex
 import subprocess
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote
 
 if __package__:
+    from .collect_v002_manual_evidence import COMMITTED_BUNDLE, validate_bundle
+    from .validate_bootstrap_provenance import (
+        EXCLUDED_RESOURCE_PREFIXES,
+        EXPECTED_RESOURCE_PATHS,
+        RESOURCE_ROOTS,
+        validate_bootstrap_provenance,
+    )
     from .validate_release_checksums import validate_release_checksums
 else:
+    from collect_v002_manual_evidence import COMMITTED_BUNDLE, validate_bundle
+    from validate_bootstrap_provenance import (
+        EXCLUDED_RESOURCE_PREFIXES,
+        EXPECTED_RESOURCE_PATHS,
+        RESOURCE_ROOTS,
+        validate_bootstrap_provenance,
+    )
     from validate_release_checksums import validate_release_checksums
 
 
@@ -53,12 +69,18 @@ REQUIRED_PATHS = (
     "gradle/wrapper/gradle-wrapper.properties",
     "scripts/check_client_imports.py",
     "scripts/check_clean_worktree.py",
+    "scripts/collect_v002_manual_evidence.py",
+    "scripts/generate_v002_g0_evidence.py",
     "scripts/run_dedicated_server_smoke.py",
+    "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
     "scripts/validate_release_checksums.py",
     "tests/test_check_client_imports.py",
     "tests/test_check_clean_worktree.py",
+    "tests/test_collect_v002_manual_evidence.py",
     "tests/test_dedicated_server_smoke.py",
+    "tests/test_generate_v002_g0_evidence.py",
+    "tests/test_validate_bootstrap_provenance.py",
     "tests/test_validate_build_artifact.py",
     "tests/test_validate_release_checksums.py",
     "tests/test_validate_repository.py",
@@ -75,12 +97,14 @@ REQUIRED_PATHS = (
     "docs/releases/v0.0.1/KNOWN-ISSUES.md",
     "docs/releases/v0.0.1/evidence/README.md",
     "docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md",
+    "docs/decisions/ADR-005-V0.0.2-G4-APPLICABILITY.md",
     "docs/work/v0.0.1-implementation-log.md",
     "docs/work/v0.0.2-implementation-log.md",
     "docs/work/v0.0.2-test-machine-handoff.md",
     "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
     "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
     "docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md",
+    "docs/provenance/v0.0.2-bootstrap-inputs.json",
     "docs/releases/v0.0.2/INSTALLATION.md",
     "docs/releases/v0.0.2/RELEASE-EVIDENCE.md",
     "docs/releases/v0.0.2/TEST-REPORT.md",
@@ -88,6 +112,10 @@ REQUIRED_PATHS = (
     "docs/releases/v0.0.2/KNOWN-ISSUES.md",
     "docs/releases/v0.0.2/checksums.txt",
     "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json",
+    "docs/releases/v0.0.2/evidence/g0-mechanical/README.md",
+    "docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json",
+    "docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml",
+    "docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json",
     "docs/releases/v0.0.2/evidence/dedicated-server/README.md",
     "docs/releases/v0.0.2/evidence/dedicated-server/summary.json",
     "docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt",
@@ -126,8 +154,6 @@ THIRD_PARTY_LICENSE_SHA256 = {
         "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57"
     ),
 }
-
-
 class Results:
     def __init__(self) -> None:
         self.passes: list[str] = []
@@ -370,6 +396,18 @@ def is_approved_gradle_wrapper(relative: str, content: bytes) -> bool:
     )
 
 
+def find_unlisted_v002_resources(paths: list[str]) -> list[str]:
+    """Return every distributable source resource absent from provenance."""
+
+    return sorted(
+        path
+        for path in paths
+        if path.startswith(RESOURCE_ROOTS)
+        and not path.startswith(EXCLUDED_RESOURCE_PREFIXES)
+        and path not in EXPECTED_RESOURCE_PATHS
+    )
+
+
 def check_repository_contents(results: Results) -> None:
     files = repository_files()
     relative = [path.relative_to(ROOT).as_posix() for path in files]
@@ -430,14 +468,18 @@ def check_repository_contents(results: Results) -> None:
         )
         forbidden.extend(path for path in relative if path.startswith("src/"))
 
+    if "current_version: v0.0.2" in current:
+        forbidden.extend(find_unlisted_v002_resources(relative))
+
     forbidden.extend(unaudited_evidence)
     if forbidden:
         results.fail("Forbidden legacy, unaudited evidence, or unapproved binary files: " + ", ".join(sorted(set(forbidden))))
     else:
         results.passed(
-            "No forbidden legacy source, unapproved binary, or unaudited evidence found"
+            "No forbidden legacy source or unapproved binary found; applicable "
+            "source-resource allowlists match"
             f" ({len(approved_wrappers)} wrapper JAR and "
-            f"{len(audited_evidence)} evidence screenshots verified)"
+            f"{len(audited_evidence)} v0.0.1 evidence screenshots verified)"
         )
 
     folded: dict[str, list[str]] = {}
@@ -532,58 +574,556 @@ def check_issue_templates(results: Results) -> None:
         results.passed("Issue template files have the required dependency-free structure")
 
 
+@dataclass
+class WorkflowStep:
+    fields: dict[str, str] = field(default_factory=dict)
+    structurally_safe: bool = True
+
+    @property
+    def enabled(self) -> bool:
+        return not _is_statically_false(self.fields.get("if"))
+
+    @property
+    def blocking(self) -> bool:
+        return (
+            self.structurally_safe
+            and self.enabled
+            and _continue_on_error_is_blocking(
+                self.fields.get("continue-on-error")
+            )
+        )
+
+
+@dataclass
+class WorkflowJob:
+    fields: dict[str, str] = field(default_factory=dict)
+    env: dict[str, str] = field(default_factory=dict)
+    steps: list[WorkflowStep] = field(default_factory=list)
+    structurally_safe: bool = True
+
+    @property
+    def enabled(self) -> bool:
+        return not _is_statically_false(self.fields.get("if"))
+
+    @property
+    def blocking(self) -> bool:
+        return (
+            self.structurally_safe
+            and self.enabled
+            and _continue_on_error_is_blocking(
+                self.fields.get("continue-on-error")
+            )
+        )
+
+
+def _indent(line: str) -> int:
+    return len(line) - len(line.lstrip(" "))
+
+
+def _strip_yaml_comment(value: str) -> str:
+    quote: str | None = None
+    escaped = False
+    for index, character in enumerate(value):
+        if escaped:
+            escaped = False
+            continue
+        if character == "\\" and quote == '"':
+            escaped = True
+            continue
+        if character in ("'", '"'):
+            if quote is None:
+                quote = character
+            elif quote == character:
+                quote = None
+            continue
+        if character == "#" and quote is None and (
+            index == 0 or value[index - 1].isspace()
+        ):
+            return value[:index].rstrip()
+    return value.rstrip()
+
+
+def _yaml_scalar(value: str) -> str:
+    value = _strip_yaml_comment(value).strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    return value
+
+
+def _is_statically_false(value: str | None) -> bool:
+    if value is None:
+        return False
+    normalized = _yaml_scalar(value).strip().lower()
+    if normalized.startswith("${{") and normalized.endswith("}}"):
+        normalized = normalized[3:-2].strip()
+    return normalized in {"false", "no", "off", "0", "null", "~"}
+
+
+def _normalized_simple_expression(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = _yaml_scalar(value).strip().lower()
+    if normalized.startswith("${{") and normalized.endswith("}}"):
+        normalized = normalized[3:-2].strip()
+    return normalized
+
+
+def _continue_on_error_is_blocking(value: str | None) -> bool:
+    """Accept only absent or provably false continue-on-error values.
+
+    Any non-literal expression is rejected for required jobs and steps because
+    repository validation cannot prove that failures will block the workflow.
+    """
+
+    normalized = _normalized_simple_expression(value)
+    return normalized in {None, "", "false", "no", "off", "0", "null", "~"}
+
+
+def _continue_on_error_is_statically_true(value: str | None) -> bool:
+    normalized = _normalized_simple_expression(value)
+    return normalized in {"true", "yes", "on", "1"}
+
+
+def _mapping_entry(content: str) -> tuple[str, str] | None:
+    match = re.fullmatch(
+        r"(?:"
+        r"(?P<plain>[A-Za-z0-9_-]+)|"
+        r"'(?P<single>[A-Za-z0-9_-]+)'|"
+        r'"(?P<double>[A-Za-z0-9_-]+)"'
+        r")\s*:(?:\s*(?P<value>.*))?",
+        content,
+    )
+    if match is None:
+        return None
+    key = match.group("plain") or match.group("single") or match.group("double")
+    return key, _yaml_scalar(match.group("value") or "")
+
+
+def _multiline_scalar(
+    lines: list[str], start: int, end: int, parent_indent: int, style: str
+) -> tuple[str, int]:
+    collected: list[str] = []
+    index = start
+    while index < end:
+        line = lines[index]
+        if line.strip() and _indent(line) <= parent_indent:
+            break
+        collected.append(line)
+        index += 1
+    nonempty_indents = [_indent(line) for line in collected if line.strip()]
+    content_indent = min(nonempty_indents, default=parent_indent + 2)
+    content = [line[content_indent:] if line.strip() else "" for line in collected]
+    if style.startswith(">"):
+        value = " ".join(part.strip() for part in content if part.strip())
+    else:
+        value = "\n".join(content)
+    return value, index
+
+
+def _parse_step(lines: list[str], start: int, end: int, step_indent: int) -> WorkflowStep:
+    step = WorkflowStep()
+    first = lines[start].lstrip()[2:].strip()
+    first_entry = _mapping_entry(first)
+    if first_entry is not None:
+        step.fields[first_entry[0]] = first_entry[1]
+    elif first:
+        step.structurally_safe = False
+
+    index = start + 1
+    field_indent = step_indent + 2
+    while index < end:
+        line = lines[index]
+        if not line.strip() or line.lstrip().startswith("#"):
+            index += 1
+            continue
+        if _indent(line) != field_indent:
+            index += 1
+            continue
+        entry = _mapping_entry(line.strip())
+        if entry is None:
+            step.structurally_safe = False
+            index += 1
+            continue
+        key, value = entry
+        if value in {"|", "|-", "|+", ">", ">-", ">+"}:
+            value, index = _multiline_scalar(
+                lines, index + 1, end, field_indent, value
+            )
+        elif key in {"env", "with"} and not value:
+            child = index + 1
+            while child < end and (
+                not lines[child].strip() or _indent(lines[child]) > field_indent
+            ):
+                if lines[child].strip() and _indent(lines[child]) == field_indent + 2:
+                    child_entry = _mapping_entry(lines[child].strip())
+                    if child_entry is not None:
+                        step.fields[f"{key}.{child_entry[0]}"] = child_entry[1]
+                    else:
+                        step.structurally_safe = False
+                child += 1
+            index = child
+        else:
+            index += 1
+        step.fields[key] = value
+    return step
+
+
+def parse_workflow_jobs(text: str) -> dict[str, WorkflowJob]:
+    """Parse the controlled GitHub Actions job/step subset used by this repo."""
+
+    if "\t" in text:
+        return {}
+    lines = text.splitlines()
+    jobs_index = next(
+        (
+            index
+            for index, line in enumerate(lines)
+            if _indent(line) == 0 and line.strip() == "jobs:"
+        ),
+        None,
+    )
+    if jobs_index is None:
+        return {}
+
+    job_starts: list[tuple[int, str]] = []
+    jobs_end = len(lines)
+    for index in range(jobs_index + 1, len(lines)):
+        line = lines[index]
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if _indent(line) == 0:
+            jobs_end = index
+            break
+        if _indent(line) == 2:
+            entry = _mapping_entry(line.strip())
+            if entry is not None and not entry[1]:
+                job_starts.append((index, entry[0]))
+
+    jobs: dict[str, WorkflowJob] = {}
+    for position, (start, job_id) in enumerate(job_starts):
+        end = (
+            job_starts[position + 1][0]
+            if position + 1 < len(job_starts)
+            else jobs_end
+        )
+        job = WorkflowJob()
+        steps_index: int | None = None
+        index = start + 1
+        while index < end:
+            line = lines[index]
+            if not line.strip() or line.lstrip().startswith("#"):
+                index += 1
+                continue
+            if _indent(line) != 4:
+                index += 1
+                continue
+            entry = _mapping_entry(line.strip())
+            if entry is None:
+                job.structurally_safe = False
+                index += 1
+                continue
+            key, value = entry
+            if key == "steps" and not value:
+                steps_index = index
+                index += 1
+                continue
+            if key == "env" and not value:
+                child = index + 1
+                while child < end and (
+                    not lines[child].strip() or _indent(lines[child]) > 4
+                ):
+                    if lines[child].strip() and _indent(lines[child]) == 6:
+                        env_entry = _mapping_entry(lines[child].strip())
+                        if env_entry is not None:
+                            job.env[env_entry[0]] = env_entry[1]
+                        else:
+                            job.structurally_safe = False
+                    child += 1
+                index = child
+                continue
+            job.fields[key] = value
+            index += 1
+
+        if steps_index is not None:
+            step_starts = [
+                index
+                for index in range(steps_index + 1, end)
+                if _indent(lines[index]) == 6
+                and lines[index].lstrip().startswith("- ")
+                and not lines[index].lstrip().startswith("- #")
+            ]
+            for step_position, step_start in enumerate(step_starts):
+                step_end = (
+                    step_starts[step_position + 1]
+                    if step_position + 1 < len(step_starts)
+                    else end
+                )
+                job.steps.append(_parse_step(lines, step_start, step_end, 6))
+        jobs[job_id] = job
+    return jobs
+
+
+def _top_level_scalar(text: str, key: str) -> str | None:
+    for line in text.splitlines():
+        if not line.strip() or line.lstrip().startswith("#") or _indent(line) != 0:
+            continue
+        entry = _mapping_entry(line.strip())
+        if entry is not None and entry[0] == key:
+            return entry[1]
+    return None
+
+
+def _nested_top_level_scalar(text: str, parent: str, child: str) -> str | None:
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if _indent(line) != 0 or line.strip() != f"{parent}:":
+            continue
+        for nested in lines[index + 1 :]:
+            if nested.strip() and _indent(nested) == 0:
+                break
+            if not nested.strip() or nested.lstrip().startswith("#"):
+                continue
+            if _indent(nested) == 2:
+                entry = _mapping_entry(nested.strip())
+                if entry is not None and entry[0] == child:
+                    return entry[1]
+        break
+    return None
+
+
+def _required_steps(
+    job: WorkflowJob, *, require_blocking_job: bool = True
+) -> list[WorkflowStep]:
+    if (
+        not job.structurally_safe
+        or not job.enabled
+        or (require_blocking_job and not job.blocking)
+    ):
+        return []
+    return [step for step in job.steps if step.blocking]
+
+
+def _job_has_action(
+    job: WorkflowJob, action: str, *, require_blocking_job: bool = True
+) -> bool:
+    return any(
+        step.fields.get("uses") == action
+        for step in _required_steps(
+            job, require_blocking_job=require_blocking_job
+        )
+    )
+
+
+def _job_action_steps(
+    job: WorkflowJob, action: str, *, require_blocking_job: bool = True
+) -> list[WorkflowStep]:
+    return [
+        step
+        for step in _required_steps(
+            job, require_blocking_job=require_blocking_job
+        )
+        if step.fields.get("uses") == action
+    ]
+
+
+def _run_commands(run: str) -> list[tuple[str, ...]]:
+    commands: list[tuple[str, ...]] = []
+    for line in run.splitlines() or [run]:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        try:
+            tokens = tuple(shlex.split(line, comments=True, posix=True))
+        except ValueError:
+            continue
+        if tokens:
+            commands.append(tokens)
+    return commands
+
+
+def _job_has_command(
+    job: WorkflowJob,
+    expected: tuple[str, ...],
+    *,
+    require_blocking_job: bool = True,
+) -> bool:
+    return any(
+        command == expected
+        for step in _required_steps(
+            job, require_blocking_job=require_blocking_job
+        )
+        for command in _run_commands(step.fields.get("run", ""))
+    )
+
+
+def validate_repository_workflow_text(text: str) -> list[str]:
+    errors: list[str] = []
+    if "\t" in text:
+        errors.append("tab-free indentation")
+    if _top_level_scalar(text, "name") != "Repository governance":
+        errors.append("top-level name Repository governance")
+    if _top_level_scalar(text, "on") is None:
+        errors.append("top-level on trigger")
+    jobs = parse_workflow_jobs(text)
+    job = jobs.get("validate-repository-docs")
+    if job is None or not job.blocking:
+        errors.append("enabled blocking validate-repository-docs job")
+        return errors
+    for action in ("actions/checkout@v7", "actions/setup-python@v7"):
+        if not _job_has_action(job, action):
+            errors.append(f"enabled action {action}")
+    for command in (
+        ("python", "-m", "unittest", "discover", "-s", "tests", "-v"),
+        ("python", "scripts/validate_bootstrap_provenance.py"),
+        (
+            "python",
+            "scripts/validate_repository.py",
+            "--require-approved-identity",
+        ),
+    ):
+        if not _job_has_command(job, command):
+            errors.append("enabled run command " + " ".join(command))
+    return errors
+
+
+def validate_forge_workflow_text(text: str) -> list[str]:
+    errors: list[str] = []
+    if "\t" in text:
+        errors.append("tab-free indentation")
+    if _top_level_scalar(text, "name") != "Forge bootstrap":
+        errors.append("top-level name Forge bootstrap")
+    if _top_level_scalar(text, "on") is None:
+        errors.append("top-level on trigger")
+    if _nested_top_level_scalar(text, "permissions", "contents") != "read":
+        errors.append("permissions.contents read")
+
+    jobs = parse_workflow_jobs(text)
+    baseline = jobs.get("baseline")
+    latest = jobs.get("latest-compatibility")
+    if baseline is None or not baseline.blocking:
+        errors.append("enabled blocking baseline job")
+    else:
+        for action in (
+            "actions/checkout@v7",
+            "actions/setup-java@v6",
+            "gradle/actions/setup-gradle@v6",
+            "actions/upload-artifact@v7",
+        ):
+            if not _job_has_action(baseline, action):
+                errors.append(f"baseline enabled action {action}")
+        checkout_steps = _job_action_steps(baseline, "actions/checkout@v7")
+        if not any(
+            step.fields.get("with.persist-credentials") == "false"
+            for step in checkout_steps
+        ):
+            errors.append("baseline checkout persist-credentials false")
+        baseline_commands = (
+            ("chmod", "+x", "./gradlew"),
+            ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace"),
+            ("python", "scripts/validate_bootstrap_provenance.py"),
+            (
+                "python",
+                "scripts/validate_build_artifact.py",
+                "build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+                "--content-manifest",
+                "build/release-evidence/jar-content-manifest.json",
+            ),
+            (
+                "python",
+                "scripts/validate_release_checksums.py",
+                "--artifact",
+                "build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+            ),
+            (
+                "python",
+                "scripts/generate_v002_g0_evidence.py",
+                "verify",
+                "build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar",
+                "--evidence-dir",
+                "docs/releases/v0.0.2/evidence/g0-mechanical",
+            ),
+            ("python", "scripts/check_client_imports.py"),
+            ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
+            ("git", "diff", "--exit-code"),
+            ("python", "scripts/check_clean_worktree.py"),
+            (
+                "./gradlew",
+                "runGameTestServer",
+                "--no-daemon",
+                "--stacktrace",
+            ),
+            (
+                "python",
+                "scripts/run_dedicated_server_smoke.py",
+                "--evidence-dir",
+                "build/dedicated-server-smoke/evidence",
+            ),
+        )
+        for command in baseline_commands:
+            if not _job_has_command(baseline, command):
+                errors.append("baseline enabled run command " + " ".join(command))
+
+    if latest is None or not latest.enabled:
+        errors.append("enabled latest-compatibility job")
+    else:
+        if not _continue_on_error_is_statically_true(
+            latest.fields.get("continue-on-error")
+        ):
+            errors.append("latest-compatibility continue-on-error true")
+        if latest.env.get("ORG_GRADLE_PROJECT_forge_version") != "47.4.23":
+            errors.append("latest-compatibility Forge 47.4.23 environment")
+        for action in (
+            "actions/checkout@v7",
+            "actions/setup-java@v6",
+            "gradle/actions/setup-gradle@v6",
+        ):
+            if not _job_has_action(
+                latest, action, require_blocking_job=False
+            ):
+                errors.append(f"latest enabled action {action}")
+        checkout_steps = _job_action_steps(
+            latest,
+            "actions/checkout@v7",
+            require_blocking_job=False,
+        )
+        if not any(
+            step.fields.get("with.persist-credentials") == "false"
+            for step in checkout_steps
+        ):
+            errors.append("latest checkout persist-credentials false")
+        for command in (
+            ("chmod", "+x", "./gradlew"),
+            ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace"),
+        ):
+            if not _job_has_command(
+                latest, command, require_blocking_job=False
+            ):
+                errors.append("latest enabled run command " + " ".join(command))
+    return errors
+
+
 def check_workflow(results: Results) -> None:
     path = ROOT / ".github" / "workflows" / "repository-docs.yml"
     text = read_text(path, results)
-    required = (
-        "name: Repository governance",
-        "on:",
-        "jobs:",
-        "uses: actions/checkout@v7",
-        "uses: actions/setup-python@v7",
-        "python -m unittest discover -s tests -v",
-        "python scripts/validate_repository.py --require-approved-identity",
-    )
-    missing = [item for item in required if item not in text]
-    if "\t" in text:
-        missing.append("tab-free indentation")
-    if missing:
-        results.fail("Repository workflow is missing: " + ", ".join(missing))
+    errors = validate_repository_workflow_text(text)
+    if errors:
+        results.fail("Repository workflow is missing: " + ", ".join(errors))
     else:
-        results.passed("Repository governance workflow invokes the strict validator")
+        results.passed(
+            "Repository governance workflow invokes validators in enabled blocking "
+            "run steps"
+        )
 
     forge_path = ROOT / ".github" / "workflows" / "forge-bootstrap.yml"
     forge_text = read_text(forge_path, results)
-    forge_required = (
-        "name: Forge bootstrap",
-        "permissions:",
-        "contents: read",
-        "uses: actions/checkout@v7",
-        "persist-credentials: false",
-        "uses: actions/setup-java@v6",
-        "uses: gradle/actions/setup-gradle@v6",
-        "./gradlew clean build --no-daemon --stacktrace",
-        "python scripts/validate_build_artifact.py",
-        "--content-manifest build/release-evidence/jar-content-manifest.json",
-        "python scripts/validate_release_checksums.py",
-        "--artifact build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-        "python scripts/check_client_imports.py",
-        "./gradlew runData --no-daemon --stacktrace",
-        "git diff --exit-code",
-        "python scripts/check_clean_worktree.py",
-        "./gradlew runGameTestServer --no-daemon --stacktrace",
-        "python scripts/run_dedicated_server_smoke.py",
-        'ORG_GRADLE_PROJECT_forge_version: "47.4.23"',
-        "continue-on-error: true",
-        "uses: actions/upload-artifact@v7",
-    )
-    forge_missing = [item for item in forge_required if item not in forge_text]
-    if "\t" in forge_text:
-        forge_missing.append("tab-free indentation")
-    if forge_missing:
-        results.fail("Forge bootstrap workflow is missing: " + ", ".join(forge_missing))
+    forge_errors = validate_forge_workflow_text(forge_text)
+    if forge_errors:
+        results.fail("Forge bootstrap workflow is missing: " + ", ".join(forge_errors))
     else:
-        results.passed("Forge baseline and advisory latest-lane workflow is present")
+        results.passed(
+            "Forge baseline and advisory latest-lane commands are in enabled "
+            "blocking run steps"
+        )
 
 
 def check_release_checksums(results: Results) -> None:
@@ -595,6 +1135,37 @@ def check_release_checksums(results: Results) -> None:
             "v0.0.2 release checksums cover "
             f"{details['evidence_files']} evidence files and match the JAR manifest"
         )
+
+
+def check_bootstrap_provenance(results: Results) -> None:
+    errors, details = validate_bootstrap_provenance(repository_root=ROOT)
+    if errors:
+        results.fail("v0.0.2 bootstrap provenance errors: " + "; ".join(errors))
+    else:
+        results.passed(
+            "v0.0.2 bootstrap provenance validates "
+            f"{details['targets']} imported targets and "
+            f"{details['local_assets']} local resources"
+        )
+
+
+def check_optional_v002_client_evidence(results: Results) -> None:
+    bundle = ROOT / COMMITTED_BUNDLE
+    if not bundle.exists():
+        results.passed(
+            "No v0.0.2 client evidence bundle is committed; G4/G8 remain unproven"
+        )
+        return
+
+    errors, record = validate_bundle(bundle, repository_root=ROOT)
+    if errors:
+        results.fail("v0.0.2 client evidence errors: " + "; ".join(errors))
+        return
+    assert record is not None
+    results.passed(
+        "v0.0.2 client evidence bundle is structurally valid; readiness is "
+        f"{record['review_readiness']['status']}"
+    )
 
 
 def check_package_checksums(package_root: Path, results: Results) -> None:
@@ -657,6 +1228,8 @@ def main() -> int:
     check_forge_bootstrap(results)
     check_issue_templates(results)
     check_workflow(results)
+    check_bootstrap_provenance(results)
+    check_optional_v002_client_evidence(results)
     check_release_checksums(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)

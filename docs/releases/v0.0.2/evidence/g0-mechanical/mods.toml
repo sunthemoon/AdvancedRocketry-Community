@@ -1,0 +1,36 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+issueTrackerURL="https://github.com/sunthemoon/AdvancedRocketry-Community/issues"
+
+[[mods]]
+modId="advancedrocketrycommunity"
+version="1.20.1-0.0.2-dev"
+displayName="Advanced Rocketry: Community Edition"
+displayURL="https://github.com/sunthemoon/AdvancedRocketry-Community"
+logoFile="advancedrocketrycommunity.png"
+logoBlur=false
+credits="Based on the MIT-licensed Advanced Rocketry project. Unofficial community rewrite; not supported by the original maintainers."
+authors="sunthemoon and contributors"
+displayTest="MATCH_VERSION"
+features={java_version="[17,)"}
+description='''
+An unofficial community rewrite of Advanced Rocketry for Minecraft 1.20.1 Forge.
+This developer build establishes the project foundation and does not contain playable rocket systems.
+
+NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
+'''
+
+[[dependencies.advancedrocketrycommunity]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.10,48)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.advancedrocketrycommunity]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"
