@@ -6,14 +6,14 @@
 version: v0.0.2
 status: IN_PROGRESS
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 7567dbb60332526789ee3b2824c582ff1909203e
+tested_implementation_commit: 8ce7a8d842a6c8cca05bede3de688b6a80bf5232
 tag: NOT_CREATED
 release: NOT_CREATED
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
-forge_workflow_run: ""
-governance_workflow_run: ""
+forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971600
+governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971618
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -23,6 +23,11 @@ built_at: 2026-08-28
 built_by: Codex-assisted local development
 jar_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
+linux_jar_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
+linux_sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
+content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
+linux_ci_artifact_id: 9657910132
+pull_request_checks: 3/3_PASS
 ```
 
 ## Gate summary
@@ -30,7 +35,7 @@ sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de83
 | Gate | Status | Evidence |
 |---|---|---|
 | G0 Identity/License/Provenance | IN_PROGRESS | Machine-readable input/target mapping, exact license copies, sources-JAR evidence, JAR packaging, and hash checks exist; a current rendered README screenshot and human scope/sufficiency review remain |
-| G1 Reproducible Build | PASS | Repeated Windows clean builds produced the same current 34-entry JAR; current-head Linux comparison is pending |
+| G1 Reproducible Build | PASS | Repeated Windows clean builds and current-head Linux CI produced byte-identical main JARs, sources JARs, and content manifests |
 | G2 Data/Assets | PASS | DataGen passed after one retained network retry and left no generated-resource or committed worktree change |
 | G3 Automated Behavior | PASS | 3 JUnit, 154 Python, and 1 Forge GameTest pass |
 | G4 Dedicated/Sides | IN_PROGRESS | Packaged first-start/save/stop/restart passes; packaged player join/reconnect and mismatch observation remain |
@@ -38,7 +43,7 @@ sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de83
 | G6 Security/Authority | NOT_APPLICABLE | No project packets or gameplay authority in v0.0.2 |
 | G7 Performance | NOT_APPLICABLE | No gameplay loop, ticking service, or world scan in v0.0.2 |
 | G8 Manual Flow | NOT_STARTED | Packaged-client Mods page, world entry, and player-flow evidence remain |
-| G9 Docs/Release | IN_PROGRESS | Changelog, installation/save boundary, known issues, mechanical evidence, and checksums exist; current-head CI, client evidence integration, and human acceptance remain |
+| G9 Docs/Release | IN_PROGRESS | Changelog, installation/save boundary, known issues, mechanical evidence, checksums, and current-head CI exist; client evidence integration and human acceptance remain |
 
 No Required Gate is treated as waived. Proposed G4 `NOT_APPLICABLE` rationales
 for two-player project state and optional client dependencies require explicit
@@ -83,14 +88,15 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 - Sources JAR SHA-256:
   `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
 - Two same-environment clean builds produced identical bytes.
-- The current-head Linux upload has not yet been compared. Cross-platform byte
-  identity is therefore pending rather than claimed for this implementation.
+- Forge run 33098971600's Linux upload matches the Windows main JAR
+  (`58622a5ad...`), sources JAR (`2e18a573...`), and content manifest
+  (`a5128fff...`) byte-for-byte.
 - The content manifest records 34 sorted entries with per-entry size and hash.
 - The artifact contains byte-identical project LICENSE/NOTICE,
   `THIRD-PARTY-NOTICES.md`, and exact Forge/Gradle supplemental license copies.
 - The release checksum validator covers all nine committed evidence files and
   verifies the external JAR against the content manifest.
-- Pull request #3 checks for the evidence-integration commit are pending.
+- Pull request #3 reports 3/3 successful checks for the tested implementation.
 
 See [`TEST-REPORT.md`](TEST-REPORT.md),
 [`checksums.txt`](checksums.txt), and
@@ -172,7 +178,6 @@ See [`KNOWN-ISSUES.md`](KNOWN-ISSUES.md).
 recommended_status: IN_PROGRESS
 blocking_reasons:
   - G0 current rendered README screenshot and human provenance/license review are incomplete
-  - Current-head CI and Linux artifact/content-manifest comparison are pending
   - G4 matching-client join, disconnect, restart, and reconnect evidence is absent
   - G4 missing-project-mod behavior and proposed N/A decisions are unreviewed
   - G8 packaged-client Mods screen and world-start evidence is absent

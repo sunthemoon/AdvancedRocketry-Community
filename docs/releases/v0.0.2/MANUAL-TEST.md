@@ -5,7 +5,7 @@ status: PARTIAL_AUTOMATED
 test_date: 2026-08-28
 tester: packaged-server automation only
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 7567dbb60332526789ee3b2824c582ff1909203e
+tested_implementation_commit: 8ce7a8d842a6c8cca05bede3de688b6a80bf5232
 artifact_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 packaged_client_tested: false
 ```

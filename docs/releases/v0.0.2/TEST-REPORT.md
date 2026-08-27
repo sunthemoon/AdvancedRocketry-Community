@@ -4,7 +4,7 @@
 test_date: 2026-08-28
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 7567dbb60332526789ee3b2824c582ff1909203e
+tested_implementation_commit: 8ce7a8d842a6c8cca05bede3de688b6a80bf5232
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / Minecraft 1.20.1 / Forge 47.4.10
 ```
@@ -22,12 +22,12 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / Minecraft 1.20.1 
 | `python scripts/validate_release_checksums.py --artifact <jar>` | PASS | 10 entries; all 9 committed evidence files and the external JAR matched |
 | `python scripts/check_client_imports.py` | PASS | No common/server client references |
 | `python scripts/validate_repository.py --require-approved-identity` | PASS | 15 passed, 0 warnings, 0 failed |
-| `gradlew runData --no-daemon --stacktrace` | PASS_AFTER_RETRY | A historical Mojang asset download failed once; the retained retry passed and produced no tracked generated-resource change |
+| `gradlew runData --no-daemon --stacktrace` | PASS | The current run passed and left tracked and untracked worktree state unchanged; one historical Mojang download retry remains recorded below |
 | `gradlew runGameTestServer --no-daemon --stacktrace` | PASS | 1/1 required GameTest passed |
 | `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS_AFTER_RECOVERY | Current 34-entry JAR passed schema-2 first start/status/save/stop and same-world restart/status/save/stop with bound log/world evidence |
-| GitHub Actions repository governance | PENDING | The evidence-integration commit has not been pushed yet |
-| GitHub Actions Forge bootstrap | PENDING | Current Linux JAR and content-manifest hashes are not yet available |
-| Post-commit clean-worktree checks | PENDING | Run after the evidence-integration commit is created |
+| GitHub Actions repository governance | PASS | [Run 33098971618](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971618) passed at the tested implementation commit |
+| GitHub Actions Forge bootstrap | PASS | [Run 33098971600](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971600) passed baseline plus advisory jobs and uploaded the Linux artifacts |
+| Post-commit clean-worktree checks | PASS | `git diff --exit-code` and `python scripts/check_clean_worktree.py` passed at `8ce7a8d` |
 
 ## Artifact identity
 
@@ -38,17 +38,20 @@ sources_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 entry_count: 34
 repeated_clean_build_hash_equal: true
 server_copy_hash_equal: true
-linux_ci_sha256: ""
-cross_platform_byte_identity_proven: PENDING_CURRENT_HEAD_CI
+linux_ci_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
+linux_ci_sources_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
+linux_ci_content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
+linux_ci_artifact_id: 9657910132
+cross_platform_byte_identity_proven: true
 ```
 
 The committed per-entry manifest is
 [`evidence/artifact/jar-content-manifest.json`](evidence/artifact/jar-content-manifest.json),
 with SHA-256
 `a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5`.
-The ten-entry release list is [`checksums.txt`](checksums.txt). No Linux hash is
-recorded for this artifact until the evidence-integration workflow completes and
-its uploaded files are downloaded and compared.
+The ten-entry release list is [`checksums.txt`](checksums.txt). The artifacts
+downloaded from Forge run 33098971600 match the Windows main JAR, sources JAR,
+and committed content manifest byte-for-byte.
 
 ## Test inventory
 
@@ -56,7 +59,7 @@ its uploaded files are downloaded and compared.
 |---|---:|---|---|
 | Java unit | 3 | PASS | Approved identity and expanded Forge metadata |
 | Python unit | 154 | PASS | Repository, provenance approval binding, blocking workflow structure, bounded JAR/G0, side, manual-evidence audit binding/readiness, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
-| DataGen | 1 provider | PASS_AFTER_RETRY | Minimal GameTest structure remained byte-stable |
+| DataGen | 1 provider | PASS | Minimal GameTest structure remained byte-stable and the current run left the worktree unchanged |
 | Forge GameTest | 1 | PASS | Entrypoint and approved mod ID agree |
 | Packaged dedicated server | 2 cycles | PASS | Current JAR schema-2 first start and same-world restart both exited 0 after identity/status/save/stop checks |
 | Packaged client/manual | 0 completed | PENDING | Isolated Mods/world/join/reconnect/mismatch observations remain |
@@ -109,15 +112,14 @@ counts are retained separately from project-source findings.
 
 ```yaml
 local_automated_baseline: PASS
-current_head_governance_ci: PENDING
-current_head_forge_ci: PENDING
-current_head_checks: PENDING
+current_head_governance_ci: PASS
+current_head_forge_ci: PASS
+current_head_checks: 3/3_PASS
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 release_status: IN_PROGRESS
 blocking_items:
   - Current rendered README screenshot and human Forge/Gradle provenance review
-  - Current-head CI and Linux artifact/content-manifest comparison
   - Isolated packaged-client Mods page and single-player evidence
   - Three-way JAR equality and matching-client join/disconnect/restart/reconnect evidence
   - Missing-project-mod observation and scoped G4 applicability decisions

@@ -22,8 +22,9 @@
   two Windows clean builds produced identical bytes.
 - The current sources JAR has SHA-256
   `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
-- The new-head Linux Forge 47.4.10 upload has not yet been downloaded and
-  compared. Cross-platform byte identity remains pending for this artifact.
+- The current-head Linux Forge 47.4.10 upload was downloaded from workflow run
+  33098971600. Its main JAR, sources JAR, and content manifest are byte-identical
+  to the Windows build and committed manifest.
 - Historical hashes `b10db978...`, `c627d23a...`, and `827c07b...` identify
   superseded artifacts from earlier packaging/evidence states. They must not be
   mixed with the current client/server session.
