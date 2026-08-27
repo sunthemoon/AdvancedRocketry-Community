@@ -119,6 +119,21 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 
+tasks.withType(Jar).configureEach {
+    from(rootProject.file('LICENSE')) {
+        into 'META-INF'
+    }
+    from(rootProject.file('NOTICE.md')) {
+        into 'META-INF'
+    }
+    from(rootProject.file('THIRD-PARTY-NOTICES.md')) {
+        into 'META-INF'
+    }
+    from(rootProject.file('docs/licenses')) {
+        into 'META-INF/licenses'
+    }
+}
+
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
@@ -129,13 +144,6 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Version': project.version,
                 'Implementation-Vendor' : mod_authors
         ])
-    }
-
-    from(rootProject.file('LICENSE')) {
-        into 'META-INF'
-    }
-    from(rootProject.file('NOTICE.md')) {
-        into 'META-INF'
     }
 
     finalizedBy 'reobfJar'
