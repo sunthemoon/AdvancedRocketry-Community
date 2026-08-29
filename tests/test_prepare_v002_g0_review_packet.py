@@ -61,7 +61,15 @@ class V002G0ReviewPacketTests(unittest.TestCase):
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(source.read_bytes())
         cls.seed_git("add", "--", *(path for _, path in TOOL_DEFINITIONS))
-        cls.seed_git("commit", "--quiet", "-m", "add bound G0 review tools")
+        # In CI the checked-out HEAD already contains these exact tool bytes;
+        # keep a dedicated fixture tip even when copying them creates no diff.
+        cls.seed_git(
+            "commit",
+            "--quiet",
+            "--allow-empty",
+            "-m",
+            "add bound G0 review tools",
+        )
         cls.seed_commit = cls.seed_git("rev-parse", "HEAD")
 
         build = cls.seed_root / "build"
