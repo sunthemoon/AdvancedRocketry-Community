@@ -1,15 +1,25 @@
 import hashlib
+import subprocess
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from scripts.validate_repository import (
+    APPROVED_RECORD_STATUS,
+    COMMITTED_BUNDLE,
     GRADLE_WRAPPER_PATH,
     ROOT,
+    Results,
+    check_optional_v002_client_evidence,
     find_unlisted_v002_resources,
     is_audited_v001_evidence,
     is_approved_gradle_wrapper,
     is_approved_third_party_license,
+    markdown_link_errors,
     normalize_link_target,
     parse_current_identity,
+    tracked_markdown_files,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
@@ -57,6 +67,65 @@ class MarkdownTargetTests(unittest.TestCase):
             "docs/file.md",
             normalize_link_target('docs/file.md "title"'),
         )
+
+
+class MarkdownLinkInventoryTests(unittest.TestCase):
+    def initialize_repository(self, root: Path) -> None:
+        subprocess.run(
+            ["git", "init", "--quiet"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+
+    def add(self, root: Path, *paths: str) -> None:
+        subprocess.run(
+            ["git", "add", "--", *paths],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+
+    def test_ignored_packet_markdown_is_not_authoritative(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / ".gitignore").write_text("build/\n", encoding="utf-8")
+            (root / "docs").mkdir()
+            (root / "docs/target.md").write_text("# Target\n", encoding="utf-8")
+            (root / "README.md").write_text(
+                "[tracked target](docs/target.md)\n", encoding="utf-8"
+            )
+            packet = root / "build/v0.0.2-g0-review-packet/files"
+            packet.mkdir(parents=True)
+            (packet / "README.md").write_text(
+                "[ignored broken target](missing.md)\n", encoding="utf-8"
+            )
+            self.add(root, ".gitignore", "README.md", "docs/target.md")
+
+            inventory = tracked_markdown_files(root)
+            relative = [path.relative_to(root).as_posix() for path in inventory]
+            errors, checked = markdown_link_errors(root, inventory)
+
+            self.assertEqual(["README.md", "docs/target.md"], relative)
+            self.assertEqual([], errors)
+            self.assertEqual(1, checked)
+
+    def test_tracked_broken_markdown_link_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / "docs").mkdir()
+            (root / "docs/tracked.md").write_text(
+                "[missing](missing.md)\n", encoding="utf-8"
+            )
+            self.add(root, "docs/tracked.md")
+
+            inventory = tracked_markdown_files(root)
+            errors, checked = markdown_link_errors(root, inventory)
+
+            self.assertEqual(["docs/tracked.md:1 -> missing.md"], errors)
+            self.assertEqual(1, checked)
 
 
 class EvidenceAssetTests(unittest.TestCase):
@@ -173,6 +242,80 @@ class V002ResourceInventoryTests(unittest.TestCase):
         )
 
 
+class ClientEvidenceProvenanceTests(unittest.TestCase):
+    def test_pending_provenance_without_bundle_remains_acceptable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = Results()
+            with (
+                patch("scripts.validate_repository.ROOT", root),
+                patch(
+                    "scripts.validate_repository.validate_bootstrap_provenance"
+                ) as validate_provenance,
+            ):
+                check_optional_v002_client_evidence(results)
+
+            self.assertEqual([], results.failures)
+            self.assertEqual(1, len(results.passes))
+            validate_provenance.assert_not_called()
+
+    def test_bundle_is_rejected_until_provenance_is_approved(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / COMMITTED_BUNDLE).mkdir(parents=True)
+            results = Results()
+            with (
+                patch("scripts.validate_repository.ROOT", root),
+                patch(
+                    "scripts.validate_repository.validate_bootstrap_provenance",
+                    return_value=(
+                        [],
+                        {
+                            "review_status": (
+                                "EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING"
+                            )
+                        },
+                    ),
+                ),
+                patch(
+                    "scripts.validate_repository.validate_bundle"
+                ) as validate_client_bundle,
+            ):
+                check_optional_v002_client_evidence(results)
+
+            self.assertTrue(
+                any(APPROVED_RECORD_STATUS in failure for failure in results.failures),
+                results.failures,
+            )
+            validate_client_bundle.assert_not_called()
+
+    def test_approved_provenance_allows_bundle_readiness_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle = root / COMMITTED_BUNDLE
+            bundle.mkdir(parents=True)
+            results = Results()
+            with (
+                patch("scripts.validate_repository.ROOT", root),
+                patch(
+                    "scripts.validate_repository.validate_bootstrap_provenance",
+                    return_value=([], {"review_status": APPROVED_RECORD_STATUS}),
+                ),
+                patch(
+                    "scripts.validate_repository.validate_bundle",
+                    return_value=(
+                        [],
+                        {"review_readiness": {"status": "READY_FOR_HUMAN_GATE_REVIEW"}},
+                    ),
+                ) as validate_client_bundle,
+            ):
+                check_optional_v002_client_evidence(results)
+
+            self.assertEqual([], results.failures)
+            self.assertEqual(1, len(results.passes))
+            validate_client_bundle.assert_called_once_with(bundle, repository_root=root)
+
+
 class WorkflowStructureTests(unittest.TestCase):
     def setUp(self) -> None:
         self.repository_workflow = (
@@ -199,6 +342,170 @@ class WorkflowStructureTests(unittest.TestCase):
 
         self.assertIn(
             "enabled run command python scripts/validate_bootstrap_provenance.py",
+            errors,
+        )
+
+    def test_g0_review_packet_commands_are_required(self) -> None:
+        commands = (
+            (
+                "          python -I -S -c \"from pathlib import Path; "
+                "Path('build').mkdir(exist_ok=True)\""
+            ),
+            (
+                "          python -I -S scripts/prepare_v002_g0_review_packet.py generate "
+                '--commit "$GITHUB_SHA" --output build/v0.0.2-g0-review-packet'
+            ),
+            (
+                "          python -I -S scripts/prepare_v002_g0_review_packet.py verify "
+                '--commit "$GITHUB_SHA" --packet build/v0.0.2-g0-review-packet'
+            ),
+        )
+
+        for command in commands:
+            with self.subTest(command=command):
+                tampered = self.repository_workflow.replace(command, "          true", 1)
+
+                errors = validate_repository_workflow_text(tampered)
+
+                self.assertIn(
+                    "exact isolated G0 review-packet "
+                    "setup/generate/verify command sequence",
+                    errors,
+                )
+
+    def test_repository_workflow_action_contract_mutations_are_rejected(self) -> None:
+        cases = (
+            (
+                "checkout action version",
+                "uses: actions/checkout@v7",
+                "uses: actions/checkout@v6",
+                "exact enabled action contract actions/checkout@v7",
+            ),
+            (
+                "checkout history",
+                "fetch-depth: 0",
+                "fetch-depth: 1",
+                "exact enabled action contract actions/checkout@v7",
+            ),
+            (
+                "checkout credentials",
+                "persist-credentials: false",
+                "persist-credentials: true",
+                "exact enabled action contract actions/checkout@v7",
+            ),
+            (
+                "setup-python action version",
+                "uses: actions/setup-python@v7",
+                "uses: actions/setup-python@v6",
+                "exact enabled action contract actions/setup-python@v7",
+            ),
+            (
+                "python version",
+                'python-version: "3.12"',
+                'python-version: "3.11"',
+                "exact enabled action contract actions/setup-python@v7",
+            ),
+            (
+                "upload action version",
+                "uses: actions/upload-artifact@v7",
+                "uses: actions/upload-artifact@v6",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
+            (
+                "artifact name",
+                "name: v0.0.2-g0-review-packet-${{ github.sha }}",
+                "name: v0.0.2-g0-review-packet",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
+            (
+                "missing artifact behavior",
+                "if-no-files-found: error",
+                "if-no-files-found: warn",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
+            (
+                "hidden files",
+                "include-hidden-files: true",
+                "include-hidden-files: false",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
+            (
+                "artifact path",
+                "path: build/v0.0.2-g0-review-packet/",
+                "path: build/",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
+        )
+
+        for name, original, replacement, expected in cases:
+            with self.subTest(name=name):
+                self.assertIn(original, self.repository_workflow)
+                tampered = self.repository_workflow.replace(original, replacement, 1)
+
+                errors = validate_repository_workflow_text(tampered)
+
+                self.assertIn(expected, errors)
+
+    def test_repository_workflow_rejects_additional_upload_inputs(self) -> None:
+        tampered = self.repository_workflow.replace(
+            "          include-hidden-files: true",
+            "          include-hidden-files: true\n          retention-days: 7",
+            1,
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact enabled action contract actions/upload-artifact@v7", errors
+        )
+
+    def test_repository_workflow_permissions_are_read_only(self) -> None:
+        mutations = (
+            ("  contents: read", "  contents: write"),
+            ("  contents: read", "  contents: read\n  actions: write"),
+            (
+                "    runs-on: ubuntu-latest",
+                "    runs-on: ubuntu-latest\n    permissions: write-all",
+            ),
+        )
+
+        for original, replacement in mutations:
+            with self.subTest(replacement=replacement):
+                tampered = self.repository_workflow.replace(original, replacement, 1)
+
+                errors = validate_repository_workflow_text(tampered)
+
+                self.assertTrue(
+                    any("permissions" in error for error in errors), errors
+                )
+
+    def test_g0_review_packet_sequence_requires_python_isolation(self) -> None:
+        tampered = self.repository_workflow.replace(
+            "python -I -S scripts/prepare_v002_g0_review_packet.py generate",
+            "python -S scripts/prepare_v002_g0_review_packet.py generate",
+            1,
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact isolated G0 review-packet setup/generate/verify command sequence",
+            errors,
+        )
+
+    def test_g0_review_packet_sequence_rejects_an_extra_command(self) -> None:
+        generate = (
+            "          python -I -S scripts/prepare_v002_g0_review_packet.py generate "
+            '--commit "$GITHUB_SHA" --output build/v0.0.2-g0-review-packet'
+        )
+        tampered = self.repository_workflow.replace(
+            generate, generate + "\n          python --version", 1
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact isolated G0 review-packet setup/generate/verify command sequence",
             errors,
         )
 

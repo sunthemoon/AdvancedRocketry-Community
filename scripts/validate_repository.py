@@ -9,13 +9,15 @@ import re
 import shlex
 import subprocess
 import sys
+import threading
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
 if __package__:
     from .collect_v002_manual_evidence import COMMITTED_BUNDLE, validate_bundle
     from .validate_bootstrap_provenance import (
+        APPROVED_RECORD_STATUS,
         EXCLUDED_RESOURCE_PREFIXES,
         EXPECTED_RESOURCE_PATHS,
         RESOURCE_ROOTS,
@@ -25,6 +27,7 @@ if __package__:
 else:
     from collect_v002_manual_evidence import COMMITTED_BUNDLE, validate_bundle
     from validate_bootstrap_provenance import (
+        APPROVED_RECORD_STATUS,
         EXCLUDED_RESOURCE_PREFIXES,
         EXPECTED_RESOURCE_PATHS,
         RESOURCE_ROOTS,
@@ -71,6 +74,7 @@ REQUIRED_PATHS = (
     "scripts/check_clean_worktree.py",
     "scripts/collect_v002_manual_evidence.py",
     "scripts/generate_v002_g0_evidence.py",
+    "scripts/prepare_v002_g0_review_packet.py",
     "scripts/run_dedicated_server_smoke.py",
     "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
@@ -80,6 +84,7 @@ REQUIRED_PATHS = (
     "tests/test_collect_v002_manual_evidence.py",
     "tests/test_dedicated_server_smoke.py",
     "tests/test_generate_v002_g0_evidence.py",
+    "tests/test_prepare_v002_g0_review_packet.py",
     "tests/test_validate_bootstrap_provenance.py",
     "tests/test_validate_build_artifact.py",
     "tests/test_validate_release_checksums.py",
@@ -138,6 +143,10 @@ VERSION_DOCUMENTS = (
 )
 
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
+MAX_TRACKED_MARKDOWN_INVENTORY_BYTES = 1024 * 1024
+MAX_TRACKED_MARKDOWN_FILES = 4096
+MAX_TRACKED_MARKDOWN_PATH_BYTES = 4096
+MAX_MARKDOWN_FILE_BYTES = 2 * 1024 * 1024
 IDENTITY_STATUS = re.compile(r'identity_status:\s*"([A-Z_]+)"')
 UPSTREAM_COMMIT = re.compile(r"upstream_commit:\s*([0-9a-f]{40})\b")
 V001_EVIDENCE_PREFIX = "docs/releases/v0.0.1/evidence/"
@@ -317,24 +326,152 @@ def normalize_link_target(raw_target: str) -> str:
     return unquote(target)
 
 
-def check_markdown_links(results: Results) -> None:
+def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
+    """Return the bounded, Git-indexed Markdown inventory for validation."""
+
+    repository_root = repository_root.resolve()
+    command = [
+        "git",
+        "-c",
+        f"safe.directory={repository_root.as_posix()}",
+        "-C",
+        str(repository_root),
+        "ls-files",
+        "-z",
+        "--cached",
+        "--",
+        "*.md",
+    ]
+    try:
+        process = subprocess.Popen(
+            command,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError as exc:
+        raise ValueError(f"cannot enumerate tracked Markdown files with Git: {exc}") from exc
+    assert process.stdout is not None
+    timed_out = threading.Event()
+
+    def terminate_on_timeout() -> None:
+        if process.poll() is None:
+            timed_out.set()
+            process.kill()
+
+    timer = threading.Timer(30, terminate_on_timeout)
+    timer.daemon = True
+    timer.start()
+    try:
+        payload = process.stdout.read(MAX_TRACKED_MARKDOWN_INVENTORY_BYTES + 1)
+        if len(payload) > MAX_TRACKED_MARKDOWN_INVENTORY_BYTES:
+            raise ValueError("tracked Markdown inventory exceeds the byte limit")
+        return_code = process.wait()
+        if timed_out.is_set():
+            raise ValueError("tracked Markdown inventory query timed out")
+        if return_code != 0:
+            raise ValueError(
+                f"tracked Markdown inventory query failed with exit {return_code}"
+            )
+    finally:
+        timer.cancel()
+        process.stdout.close()
+        if process.poll() is None:
+            process.kill()
+        process.wait()
+
+    raw_names = [name for name in payload.split(b"\0") if name]
+    if len(raw_names) > MAX_TRACKED_MARKDOWN_FILES:
+        raise ValueError("tracked Markdown inventory exceeds the file-count limit")
+
+    paths: list[Path] = []
+    for raw_name in raw_names:
+        if len(raw_name) > MAX_TRACKED_MARKDOWN_PATH_BYTES:
+            raise ValueError("tracked Markdown inventory contains an oversized path")
+        try:
+            name = raw_name.decode("utf-8")
+        except UnicodeError as exc:
+            raise ValueError("tracked Markdown inventory contains a non-UTF-8 path") from exc
+        relative = PurePosixPath(name)
+        if (
+            relative.is_absolute()
+            or not relative.parts
+            or any(part in {"", ".", ".."} for part in relative.parts)
+        ):
+            raise ValueError(f"tracked Markdown inventory contains an unsafe path: {name}")
+        path = repository_root.joinpath(*relative.parts)
+        if path.suffix.lower() != ".md":
+            raise ValueError(
+                f"Git returned a non-Markdown path for the Markdown inventory: {name}"
+            )
+        paths.append(path)
+    return paths
+
+
+def markdown_link_errors(
+    repository_root: Path, paths: list[Path]
+) -> tuple[list[str], int]:
+    repository_root = repository_root.resolve()
     broken: list[str] = []
     checked = 0
-    for path in sorted(ROOT.rglob("*.md")):
-        if ".git" in path.parts:
+    for path in sorted(paths):
+        try:
+            resolved = path.resolve(strict=True)
+            relative = resolved.relative_to(repository_root)
+            with resolved.open("rb") as stream:
+                payload = stream.read(MAX_MARKDOWN_FILE_BYTES + 1)
+        except (OSError, ValueError) as exc:
+            broken.append(f"{path}: cannot read tracked Markdown file: {exc}")
             continue
-        for line_number, line in iter_markdown_prose(path, results):
+        if len(payload) > MAX_MARKDOWN_FILE_BYTES:
+            broken.append(
+                f"{relative.as_posix()}: tracked Markdown file exceeds "
+                f"{MAX_MARKDOWN_FILE_BYTES} bytes"
+            )
+            continue
+        try:
+            text = payload.decode("utf-8")
+        except UnicodeError as exc:
+            broken.append(
+                f"{relative.as_posix()}: cannot decode tracked Markdown as UTF-8: {exc}"
+            )
+            continue
+
+        in_fence = False
+        for line_number, source_line in enumerate(text.splitlines(), start=1):
+            stripped = source_line.lstrip()
+            if stripped.startswith("```") or stripped.startswith("~~~"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            line = re.sub(r"`[^`]*`", "", source_line)
             for match in MARKDOWN_LINK.finditer(line):
                 target = normalize_link_target(match.group(1))
-                if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+                if not target or target.startswith(
+                    ("#", "http://", "https://", "mailto:")
+                ):
                     continue
                 target = target.split("#", 1)[0].split("?", 1)[0]
                 if not target:
                     continue
                 checked += 1
-                candidate = (path.parent / target).resolve()
-                if not candidate.is_relative_to(ROOT) or not candidate.exists():
-                    broken.append(f"{path.relative_to(ROOT)}:{line_number} -> {target}")
+                candidate = (resolved.parent / target).resolve()
+                if (
+                    not candidate.is_relative_to(repository_root)
+                    or not candidate.exists()
+                ):
+                    broken.append(f"{relative.as_posix()}:{line_number} -> {target}")
+    return broken, checked
+
+
+def check_markdown_links(results: Results) -> None:
+    try:
+        paths = tracked_markdown_files(ROOT)
+    except ValueError as exc:
+        results.fail(f"Cannot enumerate authoritative Markdown files: {exc}")
+        return
+    broken, checked = markdown_link_errors(ROOT, paths)
     if broken:
         results.fail("Broken Markdown links: " + "; ".join(broken))
     else:
@@ -891,6 +1028,38 @@ def _nested_top_level_scalar(text: str, parent: str, child: str) -> str | None:
     return None
 
 
+def _nested_top_level_mapping(text: str, parent: str) -> dict[str, str] | None:
+    """Parse one simple top-level mapping and reject ambiguous YAML shapes."""
+
+    lines = text.splitlines()
+    starts: list[int] = []
+    for index, line in enumerate(lines):
+        if not line.strip() or line.lstrip().startswith("#") or _indent(line) != 0:
+            continue
+        entry = _mapping_entry(line.strip())
+        if entry is not None and entry[0] == parent:
+            if entry[1]:
+                return None
+            starts.append(index)
+    if len(starts) != 1:
+        return None
+
+    values: dict[str, str] = {}
+    for nested in lines[starts[0] + 1 :]:
+        if not nested.strip() or nested.lstrip().startswith("#"):
+            continue
+        indent = _indent(nested)
+        if indent == 0:
+            break
+        if indent != 2:
+            return None
+        entry = _mapping_entry(nested.strip())
+        if entry is None or not entry[1] or entry[0] in values:
+            return None
+        values[entry[0]] = entry[1]
+    return values
+
+
 def _required_steps(
     job: WorkflowJob, *, require_blocking_job: bool = True
 ) -> list[WorkflowStep]:
@@ -924,6 +1093,22 @@ def _job_action_steps(
         )
         if step.fields.get("uses") == action
     ]
+
+
+def _job_has_exact_action_contract(
+    job: WorkflowJob,
+    action: str,
+    expected_inputs: dict[str, str],
+) -> bool:
+    steps = _job_action_steps(job, action)
+    if len(steps) != 1:
+        return False
+    actual_inputs = {
+        key.removeprefix("with."): value
+        for key, value in steps[0].fields.items()
+        if key.startswith("with.")
+    }
+    return actual_inputs == expected_inputs
 
 
 def _run_commands(run: str) -> list[tuple[str, ...]]:
@@ -963,17 +1148,80 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         errors.append("top-level name Repository governance")
     if _top_level_scalar(text, "on") is None:
         errors.append("top-level on trigger")
+    if _nested_top_level_mapping(text, "permissions") != {"contents": "read"}:
+        errors.append("top-level permissions limited to contents read")
     jobs = parse_workflow_jobs(text)
     job = jobs.get("validate-repository-docs")
     if job is None or not job.blocking:
         errors.append("enabled blocking validate-repository-docs job")
         return errors
-    for action in ("actions/checkout@v7", "actions/setup-python@v7"):
-        if not _job_has_action(job, action):
-            errors.append(f"enabled action {action}")
+    if "permissions" in job.fields:
+        errors.append("no job-level permissions override")
+    action_contracts = (
+        (
+            "actions/checkout@v7",
+            {"fetch-depth": "0", "persist-credentials": "false"},
+        ),
+        ("actions/setup-python@v7", {"python-version": "3.12"}),
+        (
+            "actions/upload-artifact@v7",
+            {
+                "name": "v0.0.2-g0-review-packet-${{ github.sha }}",
+                "if-no-files-found": "error",
+                "include-hidden-files": "true",
+                "path": "build/v0.0.2-g0-review-packet/",
+            },
+        ),
+    )
+    for action, inputs in action_contracts:
+        if not _job_has_exact_action_contract(job, action, inputs):
+            errors.append(f"exact enabled action contract {action}")
+
+    packet_commands = (
+        (
+            "python",
+            "-I",
+            "-S",
+            "-c",
+            "from pathlib import Path; Path('build').mkdir(exist_ok=True)",
+        ),
+        (
+            "python",
+            "-I",
+            "-S",
+            "scripts/prepare_v002_g0_review_packet.py",
+            "generate",
+            "--commit",
+            "$GITHUB_SHA",
+            "--output",
+            "build/v0.0.2-g0-review-packet",
+        ),
+        (
+            "python",
+            "-I",
+            "-S",
+            "scripts/prepare_v002_g0_review_packet.py",
+            "verify",
+            "--commit",
+            "$GITHUB_SHA",
+            "--packet",
+            "build/v0.0.2-g0-review-packet",
+        ),
+    )
+    packet_steps = [
+        step
+        for step in _required_steps(job)
+        if tuple(_run_commands(step.fields.get("run", ""))) == packet_commands
+    ]
+    if len(packet_steps) != 1:
+        errors.append(
+            "exact isolated G0 review-packet setup/generate/verify command sequence"
+        )
+
     for command in (
         ("python", "-m", "unittest", "discover", "-s", "tests", "-v"),
         ("python", "scripts/validate_bootstrap_provenance.py"),
+        *packet_commands,
         (
             "python",
             "scripts/validate_repository.py",
@@ -1151,9 +1399,23 @@ def check_bootstrap_provenance(results: Results) -> None:
 
 def check_optional_v002_client_evidence(results: Results) -> None:
     bundle = ROOT / COMMITTED_BUNDLE
-    if not bundle.exists():
+    if not bundle.exists() and not bundle.is_symlink():
         results.passed(
             "No v0.0.2 client evidence bundle is committed; G4/G8 remain unproven"
+        )
+        return
+
+    provenance_errors, provenance = validate_bootstrap_provenance(repository_root=ROOT)
+    if provenance_errors:
+        results.fail(
+            "v0.0.2 client evidence requires valid bootstrap provenance: "
+            + "; ".join(provenance_errors)
+        )
+        return
+    if provenance.get("review_status") != APPROVED_RECORD_STATUS:
+        results.fail(
+            "v0.0.2 client evidence requires digest-bound bootstrap provenance "
+            f"status {APPROVED_RECORD_STATUS} before readiness validation"
         )
         return
 

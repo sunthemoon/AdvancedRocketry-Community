@@ -30,5 +30,19 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
+      - name: Generate and verify commit-bound G0 review packet
+        run: |
+          python -I -S -c "from pathlib import Path; Path('build').mkdir(exist_ok=True)"
+          python -I -S scripts/prepare_v002_g0_review_packet.py generate --commit "$GITHUB_SHA" --output build/v0.0.2-g0-review-packet
+          python -I -S scripts/prepare_v002_g0_review_packet.py verify --commit "$GITHUB_SHA" --packet build/v0.0.2-g0-review-packet
+
       - name: Enforce governance baseline
         run: python scripts/validate_repository.py --require-approved-identity
+
+      - name: Upload commit-bound G0 review packet
+        uses: actions/upload-artifact@v7
+        with:
+          name: v0.0.2-g0-review-packet-${{ github.sha }}
+          if-no-files-found: error
+          include-hidden-files: true
+          path: build/v0.0.2-g0-review-packet/

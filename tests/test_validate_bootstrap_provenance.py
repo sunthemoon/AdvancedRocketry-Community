@@ -5,11 +5,15 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
+from unittest.mock import patch
 
+import scripts.validate_bootstrap_provenance as validator_module
 from scripts.validate_bootstrap_provenance import (
     APPROVED_RECORD_STATUS,
     DEFAULT_MANIFEST,
@@ -19,6 +23,7 @@ from scripts.validate_bootstrap_provenance import (
     REVIEW_DIGEST_DOMAIN,
     compute_review_content_sha256,
     validate_bootstrap_provenance,
+    validate_bootstrap_provenance_at_commit,
 )
 
 
@@ -227,6 +232,26 @@ class BootstrapProvenanceValidationTests(unittest.TestCase):
     def validate(self) -> tuple[list[str], dict[str, int | str]]:
         return validate_bootstrap_provenance(repository_root=self.root)
 
+    def run_cli(self, *arguments: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(
+                    self.source_root
+                    / "scripts"
+                    / "validate_bootstrap_provenance.py"
+                ),
+                "--repository-root",
+                str(self.root),
+                *arguments,
+            ],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            timeout=120,
+        )
+
     def find_target(self, path: str) -> dict[str, object]:
         return next(
             target for target in self.document["targets"] if target["path"] == path
@@ -372,6 +397,20 @@ The notice decision is {decision}.
         self.write_manifest()
         return digest
 
+    def commit_current_fixture(self, message: str = "selected validation tip") -> str:
+        self.git("add", "--all")
+        self.git("update-index", "--chmod=+x", "--", "gradlew")
+        self.git("commit", "--quiet", "-m", message)
+        return self.git("rev-parse", "HEAD")
+
+    def validate_selected(
+        self, selected_commit: str
+    ) -> tuple[list[str], dict[str, int | str]]:
+        return validate_bootstrap_provenance_at_commit(
+            repository_root=self.root,
+            selected_commit=selected_commit,
+        )
+
     def test_happy_pending_path_validates_all_required_entries(self) -> None:
         errors, details = self.validate()
 
@@ -381,6 +420,574 @@ The notice decision is {decision}.
         self.assertEqual(2, details["local_assets"])
         self.assertEqual(PENDING_RECORD_STATUS, details["review_status"])
         self.assertRegex(details["review_content_sha256"], r"^[0-9a-f]{64}$")
+
+    def test_selected_commit_validation_ignores_dirty_worktree_inputs(self) -> None:
+        selected = self.commit_current_fixture()
+        self.document["components"][0]["source_sha256"] = "0" * 64
+        self.write_manifest()
+        (self.root / EXPECTED_NOTICE_PATH).write_text(
+            "dirty mutable notice\n", encoding="utf-8"
+        )
+
+        errors, details = self.validate_selected(selected)
+
+        self.assertEqual([], errors)
+        self.assertEqual(PENDING_RECORD_STATUS, details["review_status"])
+        self.assertEqual(11, details["targets"])
+
+    def test_selected_commit_validation_rejects_nonexistent_history(self) -> None:
+        missing_commit = "0" * 40
+        self.set_pending_commit_scope(import_commit=missing_commit)
+        selected = self.commit_current_fixture("invalid selected history")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("import_commit does not exist as a local Git commit" in error for error in errors),
+            errors,
+        )
+
+    def test_selected_commit_validation_rejects_wrong_component_source_hash(self) -> None:
+        self.document["components"][0]["source_sha256"] = "0" * 64
+        self.write_manifest()
+        selected = self.commit_current_fixture("invalid selected source hash")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("component forge_mdk source_sha256 must be" in error for error in errors),
+            errors,
+        )
+
+    def test_selected_commit_validation_rejects_wrong_target_source_evidence(self) -> None:
+        target = self.find_target("build.gradle")
+        target["source_path"] = "fabricated/safe/path"
+        target["source_sha256"] = "0" * 64
+        self.write_manifest()
+        selected = self.commit_current_fixture("invalid selected target source")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("build.gradle source_path must be build.gradle" in error for error in errors),
+            errors,
+        )
+        self.assertTrue(
+            any("build.gradle source_sha256 must be" in error for error in errors),
+            errors,
+        )
+
+    def test_selected_commit_materialization_ignores_ambient_info_attributes(self) -> None:
+        selected = self.commit_current_fixture("valid selected attribute policy")
+        info_attributes = self.root / ".git/info/attributes"
+        info_attributes.parent.mkdir(parents=True, exist_ok=True)
+        info_attributes.write_text(
+            "gradlew.bat -text eol=lf\n", encoding="utf-8"
+        )
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertEqual([], errors)
+
+    def test_selected_commit_materialization_rejects_unknown_matched_attribute(
+        self,
+    ) -> None:
+        attributes = self.root / ".gitattributes"
+        attributes.write_text(
+            attributes.read_text(encoding="utf-8")
+            + "\ngradlew.bat filter=untrusted-materializer\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        selected = self.commit_current_fixture("unsupported selected attribute")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("unsupported matched attribute" in error for error in errors),
+            errors,
+        )
+
+    def test_declared_commit_ids_must_be_exact_commit_objects(self) -> None:
+        self.git(
+            "tag",
+            "-a",
+            "annotated-import-alias",
+            "-m",
+            "annotated import alias",
+            self.import_commit,
+        )
+        tag_object = self.git("rev-parse", "annotated-import-alias^{tag}")
+        previous = self.document["import_commit"]
+        self.document["import_commit"] = tag_object
+        record_path = self.root / EXPECTED_RECORD_PATH
+        record_path.write_text(
+            record_path.read_text(encoding="utf-8").replace(
+                f"import_commit: {previous}",
+                f"import_commit: {tag_object}",
+                1,
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
+        self.write_manifest()
+        selected = self.commit_current_fixture("annotated tag is not a commit identity")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any(
+                "import_commit does not exist as a local Git commit" in error
+                and "exact object type is 'tag'" in error
+                for error in errors
+            ),
+            errors,
+        )
+
+    def test_parent_parser_uses_git_revision_parent_semantics(self) -> None:
+        tree = self.git("rev-parse", f"{self.scope_commit}^{{tree}}")
+        malformed = f"""tree {tree}
+author Provenance Test <provenance-test@example.invalid> 1 +0000
+parent {self.import_commit}
+committer Provenance Test <provenance-test@example.invalid> 1 +0000
+
+late parent header must not create ancestry
+""".encode("ascii")
+        synthetic = self.git_with_input(
+            malformed,
+            "hash-object",
+            "--literally",
+            "-t",
+            "commit",
+            "-w",
+            "--stdin",
+        )
+        errors: list[str] = []
+
+        parents = validator_module._git_commit_parents(
+            self.root, synthetic, "synthetic malformed commit", errors
+        )
+
+        self.assertEqual([], errors)
+        self.assertEqual([], parents)
+
+    def test_exact_tree_lookup_rejects_duplicate_malformed_entries(self) -> None:
+        blob = self.git("rev-parse", f"{self.scope_commit}:build.gradle")
+        tree_content = (
+            b"100644 build.gradle\0"
+            + bytes.fromhex(blob)
+            + b"100644 build.gradle\0"
+            + bytes.fromhex(blob)
+        )
+        tree = self.git_with_input(
+            tree_content,
+            "hash-object",
+            "--literally",
+            "-t",
+            "tree",
+            "-w",
+            "--stdin",
+        )
+        commit = self.git_with_input(
+            b"duplicate exact tree path\n",
+            "commit-tree",
+            tree,
+            "-p",
+            self.scope_commit,
+        )
+        errors: list[str] = []
+
+        valid, entry = validator_module._git_tree_entry(
+            self.root,
+            commit,
+            "build.gradle",
+            "duplicate exact tree lookup",
+            errors,
+        )
+
+        self.assertFalse(valid)
+        self.assertIsNone(entry)
+        self.assertTrue(any("expected exactly one tree entry" in error for error in errors), errors)
+
+    def test_selected_commit_validation_rejects_legacy_git_grafts(self) -> None:
+        selected = self.commit_current_fixture("selected history before graft")
+        grafts = self.root / ".git/info/grafts"
+        grafts.parent.mkdir(parents=True, exist_ok=True)
+        grafts.write_text(f"{selected}\n", encoding="ascii")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("forbids legacy Git info/grafts metadata" in error for error in errors),
+            errors,
+        )
+
+    def test_selected_commit_validation_rejects_deep_json_without_traceback(self) -> None:
+        nested: object = "leaf"
+        for _ in range(80):
+            nested = [nested]
+        self.document["unexpected_deep_value"] = nested
+        self.write_manifest()
+        selected = self.commit_current_fixture("deep selected manifest")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(any("exceeds JSON depth" in error for error in errors), errors)
+
+    def test_selected_commit_validation_rejects_nonfinite_json(self) -> None:
+        self.document["unexpected_nonfinite_value"] = float("nan")
+        self.write_manifest()
+        selected = self.commit_current_fixture("nonfinite selected manifest")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(any("non-finite JSON number is forbidden" in error for error in errors), errors)
+
+    def test_selected_commit_validation_rejects_overflowing_json_number(self) -> None:
+        encoded = json.dumps(self.document, indent=2, sort_keys=True)
+        self.manifest.write_text(
+            encoded[:-1] + ',\n  "unexpected_overflow": 1e9999\n}\n',
+            encoding="utf-8",
+            newline="\n",
+        )
+        selected = self.commit_current_fixture("overflowing selected JSON number")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("contains a non-finite JSON number" in error for error in errors),
+            errors,
+        )
+
+    def test_selected_commit_array_cardinality_is_strict_and_bounded(self) -> None:
+        original = copy.deepcopy(self.document["targets"][0])
+        self.document["targets"].extend(copy.deepcopy(original) for _ in range(1_000))
+        self.write_manifest()
+        selected = self.commit_current_fixture("oversized target inventory")
+
+        errors, details = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("targets must contain exactly 11 entries" in error for error in errors),
+            errors,
+        )
+        self.assertTrue(
+            any("duplicate imported target path" in error for error in errors),
+            errors,
+        )
+        self.assertLess(len(errors), 20, errors)
+        self.assertEqual(11, details["targets"])
+
+    def test_unsafe_generator_path_never_reaches_git_history_commands(self) -> None:
+        generated = next(
+            asset
+            for asset in self.document["local_assets"]
+            if asset["status"] == "GENERATED"
+        )
+        generated["generator_path"] = "../outside-generator"
+        self.write_manifest()
+        selected = self.commit_current_fixture("unsafe selected generator path")
+
+        with patch.object(
+            validator_module,
+            "_git_tree_entry",
+            wraps=validator_module._git_tree_entry,
+        ) as tree_entry:
+            errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(any("generator is an unsafe path" in error for error in errors), errors)
+        self.assertNotIn(
+            "../outside-generator",
+            [call.args[2] for call in tree_entry.call_args_list],
+        )
+
+    def test_provenance_paths_reject_windows_unsafe_names(self) -> None:
+        for value in (
+            "CON/generator.py",
+            "CONIN$/generator.py",
+            "CONOUT$.txt",
+            "COM¹/generator.py",
+            "LPT³.txt",
+            ".Git/config",
+            "a" * 256,
+            "tools/bad-name./generator.py",
+            "tools/bad:name/generator.py",
+        ):
+            with self.subTest(value=value):
+                self.assertIsNotNone(validator_module.relative_path_error(value))
+
+    def test_verified_git_object_rejects_oid_and_declared_size_forgery(self) -> None:
+        oid = self.git("rev-parse", f"{self.scope_commit}:build.gradle")
+        objects = Path(self.git("rev-parse", "--git-path", "objects"))
+        if not objects.is_absolute():
+            objects = self.root / objects
+        loose = objects / oid[:2] / oid[2:]
+        loose.parent.mkdir(parents=True, exist_ok=True)
+        if loose.exists():
+            loose.chmod(0o600)
+
+        loose.write_bytes(zlib.compress(b"blob 4\0BBBB"))
+        errors: list[str] = []
+        content = validator_module._read_verified_git_object(
+            self.root, oid, "blob", 1024, "corrupt blob", errors
+        )
+        self.assertIsNone(content)
+        self.assertTrue(any("Git object identity mismatch" in error for error in errors), errors)
+
+        loose.write_bytes(zlib.compress(b"blob 1\0" + b"A" * (1024 * 1024)))
+        errors = []
+        content = validator_module._read_verified_git_object(
+            self.root, oid, "blob", 1024, "size-forged blob", errors
+        )
+        self.assertIsNone(content)
+        self.assertTrue(any("undeclared bytes" in error for error in errors), errors)
+
+    def test_ancestry_walk_has_a_hard_commit_bound(self) -> None:
+        errors: list[str] = []
+        with patch.object(validator_module, "MAX_GIT_ANCESTRY_COMMITS", 1):
+            validator_module._validate_git_ancestor(
+                self.root,
+                self.import_commit,
+                self.scope_commit,
+                "bounded test ancestry",
+                errors,
+            )
+
+        self.assertEqual(
+            ["cannot verify bounded test ancestry: ancestry traversal exceeds 1 commits"],
+            errors,
+        )
+
+        errors = []
+        with patch.object(validator_module, "MAX_GIT_ANCESTRY_COMMITS", 1):
+            validator_module._validate_git_ancestor(
+                self.root,
+                self.scope_commit,
+                self.scope_commit,
+                "reflexive ancestry",
+                errors,
+            )
+        self.assertEqual([], errors)
+
+    def test_worktree_resource_inventory_has_a_hard_file_bound(self) -> None:
+        errors: list[str] = []
+        with patch.object(validator_module, "MAX_SELECTED_RESOURCE_FILES", 1):
+            validator_module._repository_resource_files(self.root, errors)
+
+        self.assertTrue(
+            any("worktree resource inventory exceeds 1 files" in error for error in errors),
+            errors,
+        )
+
+    def test_markdown_yaml_cardinality_is_bounded(self) -> None:
+        text = "```yaml\nstatus: one\n```\n```yaml\nstatus: two\n```\n"
+        errors: list[str] = []
+        with patch.object(validator_module, "MAX_MARKDOWN_YAML_FENCES", 1):
+            validator_module._validate_record_yaml_structure(text, errors)
+
+        self.assertEqual(
+            ["provenance Markdown exceeds 1 YAML metadata blocks"], errors
+        )
+
+    def test_selected_commit_tip_is_explicit_and_rejects_later_target_drift(self) -> None:
+        valid_selected = self.commit_current_fixture("valid selected tip")
+        (self.root / "build.gradle").write_bytes(b"selected target drift\n")
+        self.git("add", "build.gradle")
+        self.git("commit", "--quiet", "-m", "drift after selected tip")
+        drifted_head = self.git("rev-parse", "HEAD")
+
+        valid_errors, _ = self.validate_selected(valid_selected)
+        drift_errors, _ = self.validate_selected(drifted_head)
+
+        self.assertEqual([], valid_errors)
+        self.assertTrue(
+            any("selected commit snapshot" in error for error in drift_errors),
+            drift_errors,
+        )
+
+    def test_selected_commit_validation_rejects_unlisted_resource(self) -> None:
+        extra = self.root / "src/main/resources/unlisted-selected.txt"
+        extra.parent.mkdir(parents=True, exist_ok=True)
+        extra.write_text("unlisted\n", encoding="utf-8")
+        selected = self.commit_current_fixture("unlisted selected resource")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("resource files missing provenance entries" in error for error in errors),
+            errors,
+        )
+
+    def test_selected_commit_preserves_raw_and_materialized_hash_distinction(self) -> None:
+        target = self.find_target("gradlew.bat")
+        materialized = target.get("worktree_materialized_sha256")
+        self.assertIsInstance(materialized, str)
+        target["audited_target_raw_blob_sha256"] = materialized
+        self.write_manifest()
+        selected = self.commit_current_fixture("invalid raw selected hash")
+
+        errors, _ = self.validate_selected(selected)
+
+        self.assertTrue(
+            any("raw Git blob SHA-256 mismatch" in error for error in errors),
+            errors,
+        )
+
+    def test_cli_default_separates_mechanical_pass_from_human_pending(self) -> None:
+        result = self.run_cli()
+
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn(
+            "[PASS] Bootstrap provenance mechanical validation:", result.stdout
+        )
+        self.assertIn(
+            f"[PENDING] Human provenance review: {PENDING_RECORD_STATUS}",
+            result.stdout,
+        )
+        self.assertIn("mechanical validation does not approve G0", result.stdout)
+        self.assertNotIn("reviewed_content_sha256:", result.stdout)
+        self.assertNotIn("[PASS] Provenance review metadata", result.stdout)
+        self.assertEqual("", result.stderr)
+
+    def test_cli_diagnostic_pending_digest_is_explicitly_nonapproval(self) -> None:
+        _, details = self.validate()
+
+        result = self.run_cli("--diagnostic-pending-digest")
+
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn(
+            "[DIAGNOSTIC] pending_review_content_sha256: "
+            f"{details['review_content_sha256']}",
+            result.stdout,
+        )
+        self.assertIn("pending content only", result.stdout)
+        self.assertIn("must not be copied into approval metadata", result.stdout)
+        self.assertIn("[PENDING] Human provenance review:", result.stdout)
+        self.assertNotIn("approval_candidate_reviewed_content_sha256", result.stdout)
+
+        self.approve_current_content()
+        approved_result = self.run_cli("--diagnostic-pending-digest")
+
+        self.assertEqual(1, approved_result.returncode, approved_result.stdout)
+        self.assertIn(
+            "--diagnostic-pending-digest requires a valid pending review",
+            approved_result.stdout,
+        )
+        self.assertNotIn("pending_review_content_sha256:", approved_result.stdout)
+
+    def test_cli_approval_candidate_mode_accepts_only_missing_final_digest(
+        self,
+    ) -> None:
+        pending_result = self.run_cli("--prepare-approval-digest")
+        self.assertEqual(1, pending_result.returncode, pending_result.stdout)
+        self.assertIn(
+            "requires an otherwise-valid THIRD_PARTY_APPROVED candidate",
+            pending_result.stdout,
+        )
+        self.assertNotIn(
+            "approval_candidate_reviewed_content_sha256", pending_result.stdout
+        )
+
+        self.approve_current_content()
+        self.document["review"]["reviewed_content_sha256"] = None
+        self.write_review_documents(approved=True)
+        self.write_manifest()
+        protected_paths = (
+            self.manifest,
+            self.root / EXPECTED_RECORD_PATH,
+            self.root / EXPECTED_NOTICE_PATH,
+        )
+        before = {path: path.read_bytes() for path in protected_paths}
+
+        candidate_result = self.run_cli("--prepare-approval-digest")
+
+        self.assertEqual(
+            0,
+            candidate_result.returncode,
+            candidate_result.stdout + candidate_result.stderr,
+        )
+        self.assertRegex(
+            candidate_result.stdout,
+            r"\[CANDIDATE\] approval_candidate_reviewed_content_sha256: "
+            r"[0-9a-f]{64}",
+        )
+        self.assertIn("changes no files and records no approval", candidate_result.stdout)
+        self.assertEqual(before, {path: path.read_bytes() for path in protected_paths})
+
+        self.document["review"]["reviewed_at"] = "not-an-iso-date"
+        self.write_manifest()
+        invalid_result = self.run_cli("--prepare-approval-digest")
+
+        self.assertEqual(1, invalid_result.returncode, invalid_result.stdout)
+        self.assertIn(
+            "approved review requires a valid ISO reviewed_at date",
+            invalid_result.stdout,
+        )
+        self.assertNotIn(
+            "approval_candidate_reviewed_content_sha256", invalid_result.stdout
+        )
+
+        self.document["review"]["reviewed_at"] = "2026-08-27"
+        self.document["review"]["reviewed_content_sha256"] = "not-a-digest"
+        self.write_review_documents(approved=True, digest="not-a-digest")
+        self.write_manifest()
+        malformed_digest_result = self.run_cli("--prepare-approval-digest")
+
+        self.assertEqual(
+            1, malformed_digest_result.returncode, malformed_digest_result.stdout
+        )
+        self.assertIn(
+            "approved review reviewed_content_sha256 must be lowercase",
+            malformed_digest_result.stdout,
+        )
+        self.assertNotIn(
+            "approval_candidate_reviewed_content_sha256",
+            malformed_digest_result.stdout,
+        )
+
+        self.approve_current_content()
+        already_bound_result = self.run_cli("--prepare-approval-digest")
+
+        self.assertEqual(1, already_bound_result.returncode, already_bound_result.stdout)
+        self.assertNotIn(
+            "approval_candidate_reviewed_content_sha256", already_bound_result.stdout
+        )
+
+    def test_cli_require_approved_review_blocks_pending_then_accepts_bound_review(
+        self,
+    ) -> None:
+        pending_result = self.run_cli("--require-approved-review")
+
+        self.assertEqual(1, pending_result.returncode, pending_result.stdout)
+        self.assertIn("[PENDING] Human provenance review:", pending_result.stdout)
+        self.assertIn(
+            "[FAIL] --require-approved-review requires a valid, digest-bound",
+            pending_result.stdout,
+        )
+
+        self.approve_current_content()
+        approved_result = self.run_cli("--require-approved-review")
+
+        self.assertEqual(
+            0,
+            approved_result.returncode,
+            approved_result.stdout + approved_result.stderr,
+        )
+        self.assertIn(
+            "[PASS] Recorded provenance review is mechanically consistent and "
+            "digest-bound: THIRD_PARTY_APPROVED",
+            approved_result.stdout,
+        )
+        self.assertNotIn("[PENDING]", approved_result.stdout)
+
+    def test_cli_retires_ambiguous_print_review_digest_option(self) -> None:
+        result = self.run_cli("--print-review-digest")
+
+        self.assertEqual(2, result.returncode, result.stdout)
+        self.assertIn("--print-review-digest is retired", result.stdout)
+        self.assertIn("--diagnostic-pending-digest", result.stdout)
+        self.assertIn("--prepare-approval-digest", result.stdout)
+        self.assertNotIn("reviewed_content_sha256:", result.stdout)
 
     def test_schema_version_two_is_rejected_after_git_snapshot_contract_change(
         self,
@@ -1007,7 +1614,10 @@ reviewed_content_sha256: null
 
         errors, _ = self.validate()
 
-        self.assertTrue(any("unsafe path" in error for error in errors), errors)
+        self.assertTrue(
+            any("unsafe path" in error or "is unsafe:" in error for error in errors),
+            errors,
+        )
         self.assertTrue(any("traversal" in error for error in errors), errors)
 
     def test_non_lowercase_source_hash_is_rejected(self) -> None:

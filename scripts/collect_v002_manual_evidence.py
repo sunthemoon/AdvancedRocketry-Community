@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import struct
 import subprocess
 import sys
@@ -24,13 +25,15 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "v0.0.2"
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 CONTENT_MANIFEST = Path(
     "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json"
 )
 COMMITTED_BUNDLE = Path("docs/releases/v0.0.2/evidence/client")
 RECORD_NAME = "manual-evidence.json"
 MAX_JSON_BYTES = 1024 * 1024
+MAX_JSON_DEPTH = 64
+MAX_BUNDLE_ENTRIES = 128
 MAX_PNG_BYTES = 16 * 1024 * 1024
 MAX_SCREENSHOT_TOTAL = 40 * 1024 * 1024
 MAX_PNG_PIXELS = 4096 * 4096
@@ -41,6 +44,8 @@ MIN_PNG_HEIGHT = 360
 MAX_LOG_BYTES = 32 * 1024 * 1024
 MAX_EXCERPT_LINES = 200
 MAX_EXCERPT_BYTES = 64 * 1024
+MAX_PEM_PRIVATE_KEY_CHARS = 32 * 1024
+MAX_PEM_PRIVATE_KEY_BLOCKS = 16
 HASH_CHUNK_SIZE = 1024 * 1024
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
@@ -58,16 +63,41 @@ IPV6_RE = re.compile(
     r"(?i)(?<![0-9a-f:])(?:\[[0-9a-f:]+\]|(?:[0-9a-f]{1,4}:){2,7}"
     r"[0-9a-f:]{0,4})(?![0-9a-f:])"
 )
+KEY_VALUE_CREDENTIAL_PREFIX = re.compile(
+    r"(?i)\b(?:access[_-]?token|authorization|password|passwd|secret)"
+    r"\s*[:=]\s*(?:Bearer\s+)?"
+)
+LAUNCHER_CREDENTIAL_PREFIX = re.compile(
+    r"(?i)(?<![A-Za-z0-9_-])"
+    r"--(?:access[-_]?token|client[-_]?id|xuid)"
+    r"(?:\s*,\s*|\s+)(?:Bearer\s+)?"
+)
+PEM_PRIVATE_KEY_LABEL = r"[A-Z0-9 ]{0,48}PRIVATE KEY"
+PEM_PRIVATE_KEY_BLOCK = re.compile(
+    rf"-----BEGIN (?P<label>{PEM_PRIVATE_KEY_LABEL})-----"
+    rf"[\s\S]{{0,{MAX_PEM_PRIVATE_KEY_CHARS}}}?"
+    r"-----END (?P=label)-----",
+    re.I,
+)
+PEM_PRIVATE_KEY_MARKER = re.compile(
+    rf"-----(?:BEGIN|END) {PEM_PRIVATE_KEY_LABEL}-----",
+    re.I,
+)
 CREDENTIAL_PATTERNS = (
-    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    re.compile(
+        r"(?i)\b(?:access[_-]?token|authorization|password|passwd|secret)"
+        r"\s*[:=]\s*(?:Bearer\s+)?[^\s,;]{1,4096}(?=$|[\s,;])"
+    ),
+    re.compile(
+        r"(?i)(?<![A-Za-z0-9_-])"
+        r"--(?:access[-_]?token|client[-_]?id|xuid)"
+        r"(?:\s*,\s*|\s+)(?:Bearer\s+)?"
+        r"[^\s,;\[\]]{1,4096}(?=$|[\s,;\[\]])"
+    ),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b"),
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}\b"),
     re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
-    re.compile(
-        r"(?i)\b(?:access[_-]?token|authorization|password|passwd|secret)"
-        r"\s*[:=]\s*(?:Bearer\s+)?[^\s,;]+"
-    ),
 )
 PRIVACY_CATEGORIES = ("player_name", "uuid", "credential", "home", "ip")
 ERROR_LINE = re.compile(r"\[[^\]\r\n]+/ERROR\]")
@@ -96,6 +126,14 @@ MISMATCH_RECEIPT_ARCHIVE = "server/mismatch-server-receipt.json"
 MISMATCH_PROPERTIES_SCHEMA_VERSION = 1
 MISMATCH_PROPERTIES_ARCHIVE = "server/mismatch-server-properties.json"
 SERVER_PROPERTIES_IDENTITY_FILE = "server.properties.v002-startup"
+PROFILE_SNAPSHOT_SCHEMA_VERSION = 1
+PROFILE_ROLES = ("matching", "missing_mod")
+PROFILE_PHASES = ("before", "after")
+PROFILE_ARCHIVES = {
+    (role, phase): f"client-profiles/{role}-{phase}.json"
+    for role in PROFILE_ROLES
+    for phase in PROFILE_PHASES
+}
 SESSION_ID_RE = re.compile(r"v002-[0-9a-f]{24}")
 MINECRAFT_SERVER_LOGGER = (
     r"(?:minecraft/MinecraftServer|net\.minecraft\.server\.MinecraftServer)/?"
@@ -287,6 +325,11 @@ CLIENT_LOG_ROLES = {
     "matching_client_connection",
     "mismatch_attempt",
 }
+CLIENT_LOG_PROFILES = {
+    "client_startup_world": "matching",
+    "matching_client_connection": "matching",
+    "mismatch_attempt": "missing_mod",
+}
 MISMATCH_SERVER_LOG_ROLE = "mismatch_server_attempt_save_stop"
 SERVER_LOG_ROLES = set(SERVER_LOG_CYCLES) | {MISMATCH_SERVER_LOG_ROLE}
 LIFECYCLE_MARKERS = {
@@ -322,6 +365,50 @@ def file_sha256(path: Path) -> str:
             digest.update(chunk)
 
 
+def physical_file_identity(path: Path) -> str:
+    stat_result = path.stat()
+    payload = f"{stat_result.st_dev}\0{stat_result.st_ino}".encode("ascii")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def read_bounded_bytes(path: Path, maximum: int, label: str) -> bytes:
+    if maximum < 0:
+        raise ValueError("bounded read maximum must be non-negative")
+    path_stat = path.stat()
+    if not stat.S_ISREG(path_stat.st_mode):
+        raise ValueError(f"{label} must be a regular file: {path}")
+    if path_stat.st_size > maximum:
+        raise ValueError(f"{label} exceeds {maximum} bytes: {path}")
+    with path.open("rb") as stream:
+        opened_stat = os.fstat(stream.fileno())
+        if not stat.S_ISREG(opened_stat.st_mode):
+            raise ValueError(f"{label} must be a regular file: {path}")
+        if (
+            (opened_stat.st_dev, opened_stat.st_ino)
+            != (path_stat.st_dev, path_stat.st_ino)
+            or opened_stat.st_size != path_stat.st_size
+            or opened_stat.st_mtime_ns != path_stat.st_mtime_ns
+        ):
+            raise ValueError(f"{label} changed before it could be read: {path}")
+        if opened_stat.st_size > maximum:
+            raise ValueError(f"{label} exceeds {maximum} bytes: {path}")
+        payload = stream.read(maximum + 1)
+        final_stat = os.fstat(stream.fileno())
+    if len(payload) > maximum:
+        raise ValueError(f"{label} exceeds {maximum} bytes: {path}")
+    if (
+        final_stat.st_size != opened_stat.st_size
+        or final_stat.st_mtime_ns != opened_stat.st_mtime_ns
+        or len(payload) != final_stat.st_size
+    ):
+        raise ValueError(f"{label} changed while it was being read: {path}")
+    return payload
+
+
+def read_bounded_text(path: Path, maximum: int, label: str) -> str:
+    return read_bounded_bytes(path, maximum, label).decode("utf-8", errors="strict")
+
+
 def _duplicates_rejected(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -331,12 +418,35 @@ def _duplicates_rejected(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
+def parse_json_payload(payload: bytes, label: str = "JSON file") -> Any:
+    try:
+        document = json.loads(
+            payload.decode("utf-8", errors="strict"),
+            object_pairs_hook=_duplicates_rejected,
+        )
+    except RecursionError as exc:
+        raise ValueError(f"{label} exceeds the JSON nesting limit") from exc
+    stack: list[tuple[Any, int]] = [(document, 1)]
+    while stack:
+        value, depth = stack.pop()
+        if depth > MAX_JSON_DEPTH:
+            raise ValueError(f"{label} exceeds the JSON nesting limit")
+        if isinstance(value, dict):
+            stack.extend((item, depth + 1) for item in value.values())
+        elif isinstance(value, list):
+            stack.extend((item, depth + 1) for item in value)
+    return document
+
+
+def load_json_payload(
+    path: Path, label: str = "JSON file"
+) -> tuple[bytes, Any]:
+    payload = read_bounded_bytes(path, MAX_JSON_BYTES, label)
+    return payload, parse_json_payload(payload, label)
+
+
 def load_json(path: Path) -> Any:
-    if path.stat().st_size > MAX_JSON_BYTES:
-        raise ValueError(f"JSON file exceeds {MAX_JSON_BYTES} bytes: {path}")
-    return json.loads(
-        path.read_text(encoding="utf-8"), object_pairs_hook=_duplicates_rejected
-    )
+    return load_json_payload(path)[1]
 
 
 def write_json(path: Path, document: Any) -> None:
@@ -349,18 +459,28 @@ def write_json(path: Path, document: Any) -> None:
 
 def _is_link(path: Path) -> bool:
     junction = getattr(path, "is_junction", None)
-    return path.is_symlink() or bool(junction and junction())
+    if path.is_symlink() or bool(junction and junction()):
+        return True
+    try:
+        attributes = path.lstat().st_file_attributes
+    except (AttributeError, OSError):
+        return False
+    return bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
 
 
 def _reject_link_components(path: Path, build_root: Path) -> None:
     relative = path.relative_to(build_root)
     current = build_root
-    if current.exists() and _is_link(current):
-        raise ValueError(f"build directory must not be a symlink or junction: {current}")
+    if _is_link(current):
+        raise ValueError(
+            f"build directory must not be a symlink or junction/reparse point: {current}"
+        )
     for part in relative.parts:
         current /= part
-        if current.exists() and _is_link(current):
-            raise ValueError(f"path must not contain a symlink or junction: {current}")
+        if _is_link(current):
+            raise ValueError(
+                f"path must not contain a symlink or junction/reparse point: {current}"
+            )
 
 
 def resolve_build_path(
@@ -462,6 +582,381 @@ def relative_build_path(path: Path, repository_root: Path) -> str:
     return validate_recorded_build_path(relative)
 
 
+def recorded_paths_overlap(first: str, second: str) -> bool:
+    first_parts = tuple(part.casefold() for part in PurePosixPath(first).parts)
+    second_parts = tuple(part.casefold() for part in PurePosixPath(second).parts)
+    shorter = min(len(first_parts), len(second_parts))
+    return first_parts[:shorter] == second_parts[:shorter]
+
+
+def resolved_paths_overlap(first: Path, second: Path) -> bool:
+    first = first.resolve()
+    second = second.resolve()
+    try:
+        first.relative_to(second)
+        return True
+    except ValueError:
+        pass
+    try:
+        second.relative_to(first)
+        return True
+    except ValueError:
+        return False
+
+
+def canonical_json_payload(document: Any) -> bytes:
+    return (
+        json.dumps(document, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+
+
+def _profile_inventory_sha256(document: dict[str, Any]) -> str:
+    binding = {
+        "artifact_filename": document["artifact_filename"],
+        "artifact_sha256": document["artifact_sha256"],
+        "game_directory": document["game_directory"],
+        "mods_directory": document["mods_directory"],
+        "mods_files": document["mods_files"],
+        "profile_role": document["profile_role"],
+    }
+    payload = json.dumps(
+        binding, ensure_ascii=True, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def inspect_profile_inventory(
+    game_directory: Path,
+    *,
+    profile_role: str,
+    artifact_metadata: dict[str, str],
+    repository_root: Path,
+) -> dict[str, Any]:
+    if profile_role not in PROFILE_ROLES:
+        raise ValueError(f"unknown client profile role: {profile_role}")
+    game_directory = resolve_build_path(
+        game_directory, repository_root, must_exist=True
+    )
+    if not game_directory.is_dir():
+        raise ValueError("client profile game directory must be a directory")
+    game_relative = relative_build_path(game_directory, repository_root)
+    mods_directory = game_directory / "mods"
+    _reject_link_components(
+        mods_directory.absolute(), (repository_root.resolve() / "build").absolute()
+    )
+    if _is_link(mods_directory) or not mods_directory.is_dir():
+        raise ValueError(
+            f"client profile mods directory is missing or unsafe: {mods_directory}"
+        )
+
+    files: list[dict[str, Any]] = []
+    entries = mods_directory.iterdir()
+    first = next(entries, None)
+    if profile_role == "missing_mod":
+        if first is not None:
+            raise ValueError(
+                "missing-project-mod client profile mods directory must be empty"
+            )
+    else:
+        second = next(entries, None)
+        if first is None or second is not None:
+            raise ValueError(
+                "matching client profile mods directory must contain exactly the "
+                "expected project JAR"
+            )
+        if first.name != artifact_metadata["filename"]:
+            raise ValueError(
+                "matching client profile mods directory does not contain the exact "
+                "committed project JAR"
+            )
+        if _is_link(first) or not first.is_file():
+            raise ValueError(
+                "client profile mods directory must contain regular top-level files "
+                f"only: {first}"
+            )
+        size = first.stat().st_size
+        if size <= 0:
+            raise ValueError(
+                "matching client profile mods directory does not contain the exact "
+                "committed project JAR"
+            )
+        files.append(
+            {
+                "path": first.name,
+                "sha256": file_sha256(first),
+                "size": size,
+            }
+        )
+
+    if profile_role == "matching":
+        expected_file = files[0]
+        if (
+            expected_file["sha256"] != artifact_metadata["sha256"]
+        ):
+            raise ValueError(
+                "matching client profile mods directory does not contain the exact "
+                "committed project JAR"
+            )
+
+    document: dict[str, Any] = {
+        "artifact_filename": artifact_metadata["filename"],
+        "artifact_sha256": artifact_metadata["sha256"],
+        "game_directory": game_relative,
+        "mods_directory": f"{game_relative}/mods",
+        "mods_files": files,
+        "profile_role": profile_role,
+    }
+    document["inventory_sha256"] = _profile_inventory_sha256(document)
+    return document
+
+
+def build_profile_snapshot_document(
+    game_directory: Path,
+    *,
+    profile_role: str,
+    phase: str,
+    artifact_metadata: dict[str, str],
+    repository_root: Path,
+    captured_at: str | None = None,
+) -> dict[str, Any]:
+    if phase not in PROFILE_PHASES:
+        raise ValueError(f"unknown client profile snapshot phase: {phase}")
+    inventory = inspect_profile_inventory(
+        game_directory,
+        profile_role=profile_role,
+        artifact_metadata=artifact_metadata,
+        repository_root=repository_root,
+    )
+    timestamp = captured_at or dt.datetime.now(dt.timezone.utc).replace(
+        microsecond=0
+    ).isoformat()
+    try:
+        parsed = dt.datetime.fromisoformat(timestamp)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("profile snapshot captured_at must be an ISO timestamp") from exc
+    if parsed.tzinfo is None:
+        raise ValueError("profile snapshot captured_at must include a timezone")
+    return {
+        "schema_version": PROFILE_SNAPSHOT_SCHEMA_VERSION,
+        "phase": phase,
+        "captured_at": timestamp,
+        **inventory,
+    }
+
+
+def validate_profile_snapshot_document(
+    value: Any,
+    *,
+    expected_role: str,
+    expected_phase: str,
+    expected_game_directory: str,
+    artifact_metadata: dict[str, str],
+    expected_artifact_size: int | None = None,
+) -> dict[str, Any]:
+    errors: list[str] = []
+    document = _exact_keys(
+        value,
+        {
+            "schema_version",
+            "phase",
+            "captured_at",
+            "artifact_filename",
+            "artifact_sha256",
+            "game_directory",
+            "mods_directory",
+            "mods_files",
+            "profile_role",
+            "inventory_sha256",
+        },
+        f"{expected_role} {expected_phase} profile snapshot",
+        errors,
+    )
+    if errors:
+        raise ValueError("; ".join(errors))
+    if document.get("schema_version") != PROFILE_SNAPSHOT_SCHEMA_VERSION:
+        raise ValueError("client profile snapshot schema version is invalid")
+    if document.get("profile_role") != expected_role:
+        raise ValueError("client profile snapshot role is invalid")
+    if document.get("phase") != expected_phase:
+        raise ValueError("client profile snapshot phase is invalid")
+    try:
+        captured_at = dt.datetime.fromisoformat(document.get("captured_at", ""))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "client profile snapshot captured_at must be an ISO timestamp"
+        ) from exc
+    if captured_at.tzinfo is None:
+        raise ValueError("client profile snapshot captured_at must include a timezone")
+
+    game_directory = validate_recorded_build_path(document.get("game_directory"))
+    if game_directory != expected_game_directory:
+        raise ValueError("client profile snapshot game directory differs from session")
+    expected_mods = f"{game_directory}/mods"
+    if validate_recorded_build_path(document.get("mods_directory")) != expected_mods:
+        raise ValueError("client profile snapshot mods directory is invalid")
+    if (
+        document.get("artifact_filename") != artifact_metadata["filename"]
+        or document.get("artifact_sha256") != artifact_metadata["sha256"]
+    ):
+        raise ValueError(
+            "client profile snapshot artifact differs from the committed manifest"
+        )
+
+    files = document.get("mods_files")
+    if not isinstance(files, list):
+        raise ValueError("client profile snapshot mods_files must be a list")
+    normalized_files: list[dict[str, Any]] = []
+    for index, item_value in enumerate(files):
+        item_errors: list[str] = []
+        item = _exact_keys(
+            item_value,
+            {"path", "sha256", "size"},
+            f"client profile snapshot mods_files[{index}]",
+            item_errors,
+        )
+        if item_errors:
+            raise ValueError("; ".join(item_errors))
+        filename = item.get("path")
+        if (
+            not isinstance(filename, str)
+            or not filename
+            or PurePosixPath(filename).name != filename
+            or PureWindowsPath(filename).name != filename
+            or ":" in filename
+        ):
+            raise ValueError("client profile snapshot contains an unsafe mod filename")
+        checksum = item.get("sha256")
+        size = item.get("size")
+        if not isinstance(checksum, str) or SHA256_RE.fullmatch(checksum) is None:
+            raise ValueError("client profile snapshot contains an invalid mod hash")
+        if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
+            raise ValueError("client profile snapshot contains an invalid mod size")
+        normalized_files.append(
+            {"path": filename, "sha256": checksum, "size": size}
+        )
+    if normalized_files != sorted(
+        normalized_files, key=lambda item: item["path"].casefold()
+    ):
+        raise ValueError("client profile snapshot mod inventory is not sorted")
+    if len({item["path"].casefold() for item in normalized_files}) != len(
+        normalized_files
+    ):
+        raise ValueError("client profile snapshot mod filenames are not distinct")
+
+    if expected_role == "matching":
+        if (
+            len(normalized_files) != 1
+            or normalized_files[0]["path"] != artifact_metadata["filename"]
+            or normalized_files[0]["sha256"] != artifact_metadata["sha256"]
+            or (
+                expected_artifact_size is not None
+                and normalized_files[0]["size"] != expected_artifact_size
+            )
+        ):
+            raise ValueError(
+                "matching client profile snapshot must contain exactly the expected JAR"
+            )
+    elif normalized_files:
+        raise ValueError(
+            "missing-project-mod client profile snapshot must contain no mod files"
+        )
+    if document.get("inventory_sha256") != _profile_inventory_sha256(document):
+        raise ValueError("client profile snapshot inventory hash is invalid")
+    return document
+
+
+def create_profile_snapshot(
+    game_directory: Path,
+    output: Path,
+    *,
+    profile_role: str,
+    phase: str,
+    repository_root: Path = ROOT,
+) -> None:
+    game_directory = resolve_build_path(
+        game_directory, repository_root, must_exist=True
+    )
+    output = resolve_build_path(output, repository_root, must_exist=False)
+    if output.exists():
+        raise ValueError(f"profile snapshot output already exists: {output}")
+    mods_directory = game_directory / "mods"
+    try:
+        output.absolute().relative_to(mods_directory.absolute())
+    except ValueError:
+        pass
+    else:
+        raise ValueError("profile snapshot output must remain outside the mods directory")
+    _, artifact_metadata = load_content_manifest(repository_root)
+    document = build_profile_snapshot_document(
+        game_directory,
+        profile_role=profile_role,
+        phase=phase,
+        artifact_metadata=artifact_metadata,
+        repository_root=repository_root,
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    _reject_link_components(
+        output.parent.absolute(), (repository_root.resolve() / "build").absolute()
+    )
+    with output.open("xb") as stream:
+        stream.write(canonical_json_payload(document))
+
+
+def recorded_path_is_below(value: str, parent: str) -> bool:
+    try:
+        relative = PurePosixPath(value).relative_to(PurePosixPath(parent))
+    except ValueError:
+        return False
+    return bool(relative.parts)
+
+
+def profile_capture_timeline_errors(
+    captures: dict[str, dict[str, str]], summary: dict[str, Any]
+) -> list[str]:
+    if set(captures) != set(PROFILE_ROLES):
+        return []
+    try:
+        matching_before = dt.datetime.fromisoformat(captures["matching"]["before"])
+        matching_after = dt.datetime.fromisoformat(captures["matching"]["after"])
+        missing_before = dt.datetime.fromisoformat(captures["missing_mod"]["before"])
+        missing_after = dt.datetime.fromisoformat(captures["missing_mod"]["after"])
+        server_start = dt.datetime.fromisoformat(summary["started_at"])
+        server_end = dt.datetime.fromisoformat(summary["completed_at"])
+    except (KeyError, TypeError, ValueError):
+        return ["client profile and server capture timestamps are invalid"]
+    if any(
+        value.tzinfo is None
+        for value in (
+            matching_before,
+            matching_after,
+            missing_before,
+            missing_after,
+            server_start,
+            server_end,
+        )
+    ):
+        return ["client profile and server capture timestamps must be timezone-aware"]
+    errors: list[str] = []
+    if matching_before > server_start:
+        errors.append(
+            "matching client before snapshot must predate the player harness"
+        )
+    if matching_after < server_end:
+        errors.append(
+            "matching client after snapshot must follow the player harness"
+        )
+    if missing_before < matching_after:
+        errors.append(
+            "missing-project-mod before snapshot must follow the matching client "
+            "after snapshot"
+        )
+    if missing_after < missing_before:
+        errors.append(
+            "missing-project-mod after snapshot must follow its before snapshot"
+        )
+    return errors
+
+
 def _parse_content_manifest(document: Any) -> dict[str, str]:
     if not isinstance(document, dict):
         raise ValueError("committed content manifest must contain a JSON object")
@@ -537,9 +1032,7 @@ def load_content_manifest_at_commit(
     )
     if len(payload) > MAX_JSON_BYTES:
         raise ValueError("source-commit content manifest exceeds the JSON size limit")
-    document = json.loads(
-        payload.decode("utf-8"), object_pairs_hook=_duplicates_rejected
-    )
+    document = parse_json_payload(payload, "source-commit content manifest")
     return payload, _parse_content_manifest(document)
 
 
@@ -644,9 +1137,30 @@ def _redact_ip(match: re.Match[str], counts: dict[str, int]) -> str:
     return "[REDACTED_NON_LOOPBACK_IP]"
 
 
+def _redact_pem_private_keys(
+    text: str,
+) -> tuple[str, list[tuple[int, int]]]:
+    matches: list[re.Match[str]] = []
+    for match in PEM_PRIVATE_KEY_BLOCK.finditer(text):
+        matches.append(match)
+        if len(matches) > MAX_PEM_PRIVATE_KEY_BLOCKS:
+            raise ValueError(
+                "text contains too many PEM private-key blocks to redact safely"
+            )
+
+    spans = [(match.start(), match.end()) for match in matches]
+    redacted = PEM_PRIVATE_KEY_BLOCK.sub(
+        lambda match: "[REDACTED_CREDENTIAL]"
+        + ("\n" * match.group(0).count("\n")),
+        text,
+    )
+    return redacted, spans
+
+
 def redact_text(text: str, player_names: list[str]) -> tuple[str, dict[str, int]]:
     counts = {category: 0 for category in PRIVACY_CATEGORIES}
-    result = text
+    result, pem_spans = _redact_pem_private_keys(text)
+    counts["credential"] += len(pem_spans)
     for pattern in CREDENTIAL_PATTERNS:
         result, count = pattern.subn("[REDACTED_CREDENTIAL]", result)
         counts["credential"] += count
@@ -669,7 +1183,12 @@ def privacy_findings(text: str, player_names: list[str] | None = None) -> list[s
         findings.append("UUID")
     if HOME_RE.search(text):
         findings.append("user-home path")
-    if any(pattern.search(text) for pattern in CREDENTIAL_PATTERNS):
+    if (
+        PEM_PRIVATE_KEY_MARKER.search(text)
+        or KEY_VALUE_CREDENTIAL_PREFIX.search(text)
+        or LAUNCHER_CREDENTIAL_PREFIX.search(text)
+        or any(pattern.search(text) for pattern in CREDENTIAL_PATTERNS)
+    ):
         findings.append("credential-like value")
     for match in (*IPV4_RE.finditer(text), *IPV6_RE.finditer(text)):
         candidate = match.group(0).strip("[]")
@@ -707,12 +1226,23 @@ def scan_log_text(text: str) -> dict[str, int]:
     return counts
 
 
+def read_log_snapshot(
+    path: Path,
+) -> tuple[bytes, str, dict[str, int], str, int]:
+    payload = read_bounded_bytes(path, MAX_LOG_BYTES, "log source")
+    text = payload.decode("utf-8", errors="strict")
+    return (
+        payload,
+        text,
+        scan_log_text(text),
+        hashlib.sha256(payload).hexdigest(),
+        len(payload),
+    )
+
+
 def scan_log_file(path: Path) -> tuple[dict[str, int], str, int]:
-    size = path.stat().st_size
-    if size > MAX_LOG_BYTES:
-        raise ValueError(f"log source exceeds {MAX_LOG_BYTES} bytes: {path}")
-    text = path.read_text(encoding="utf-8", errors="strict")
-    return scan_log_text(text), file_sha256(path), size
+    _, _, counts, digest, size = read_log_snapshot(path)
+    return counts, digest, size
 
 
 def bind_player_identity(secret: bytes, player_name: str) -> str:
@@ -972,7 +1502,9 @@ def build_mismatch_properties(
     *,
     summary: dict[str, Any],
 ) -> tuple[dict[str, Any], bytes]:
-    source_payload = path.read_bytes()
+    source_payload = read_bounded_bytes(
+        path, MAX_JSON_BYTES, "mismatch startup-properties identity"
+    )
     expected_payload = server_configuration_payload(summary["server_port"])
     if source_payload != expected_payload:
         raise ValueError(
@@ -996,6 +1528,7 @@ def build_mismatch_properties(
 def build_mismatch_server_binding(
     *,
     source_log: Path,
+    source_payload: bytes,
     source_sha256: str,
     server_artifact: Path,
     summary: dict[str, Any],
@@ -1012,12 +1545,24 @@ def build_mismatch_server_binding(
         raise ValueError("mismatch server runtime log escapes the server root") from exc
     if _is_link(runtime_log) or not runtime_log.is_file():
         raise ValueError("mismatch server runtime latest.log is missing or unsafe")
-    runtime_hash = file_sha256(runtime_log)
-    if runtime_hash != source_sha256 or file_sha256(source_log) != runtime_hash:
+    if not isinstance(source_payload, bytes) or len(source_payload) > MAX_LOG_BYTES:
+        raise ValueError("mismatch server retained log snapshot is invalid")
+    runtime_payload = (
+        source_payload
+        if os.path.samefile(runtime_log, source_log)
+        else read_bounded_bytes(
+            runtime_log, MAX_LOG_BYTES, "mismatch server runtime log"
+        )
+    )
+    runtime_hash = hashlib.sha256(runtime_payload).hexdigest()
+    if (
+        runtime_hash != source_sha256
+        or hashlib.sha256(source_payload).hexdigest() != runtime_hash
+    ):
         raise ValueError(
             "mismatch server log is not the retained runtime logs/latest.log content"
         )
-    text = source_log.read_text(encoding="utf-8", errors="strict")
+    text = source_payload.decode("utf-8", errors="strict")
     bind_matches = [
         match for line in text.splitlines()
         if (match := SERVER_BIND_LINE.search(line)) is not None
@@ -1065,7 +1610,9 @@ def build_mismatch_server_binding(
         raise ValueError("mismatch server world marker escapes the server root") from exc
     if _is_link(marker) or not marker.is_file():
         raise ValueError("mismatch server world identity marker is missing or unsafe")
-    marker_document = load_json(marker)
+    marker_payload, marker_document = load_json_payload(
+        marker, "mismatch server world identity marker"
+    )
     expected_marker = {
         "artifact_sha256": summary["artifact_sha256"],
         "server_properties_sha256": summary["world"][
@@ -1076,7 +1623,7 @@ def build_mismatch_server_binding(
     }
     if marker_document != expected_marker:
         raise ValueError("mismatch server world identity marker differs from player harness")
-    marker_hash = file_sha256(marker)
+    marker_hash = hashlib.sha256(marker_payload).hexdigest()
     if marker_hash != summary["world"]["identity_marker_sha256"]:
         raise ValueError("mismatch server world identity marker hash differs from player harness")
     artifact_hash = file_sha256(server_artifact)
@@ -1106,10 +1653,8 @@ def _chunk(chunk_type: bytes, data: bytes) -> bytes:
 
 
 def inspect_png(path: Path) -> dict[str, Any]:
-    size = path.stat().st_size
-    if size > MAX_PNG_BYTES:
-        raise ValueError(f"PNG exceeds {MAX_PNG_BYTES} bytes: {path}")
-    content = path.read_bytes()
+    content = read_bounded_bytes(path, MAX_PNG_BYTES, "PNG")
+    size = len(content)
     if not content.startswith(b"\x89PNG\r\n\x1a\n"):
         raise ValueError(f"invalid PNG signature: {path}")
 
@@ -1227,29 +1772,38 @@ def inspect_png(path: Path) -> dict[str, Any]:
     }
 
 
-def extract_log_excerpt(
-    path: Path,
+def extract_log_excerpt_from_text(
+    raw_text: str,
     line_start: int,
     line_end: int,
     player_names: list[str],
+    *,
+    source_label: str = "log source",
 ) -> tuple[bytes, dict[str, int]]:
-    if path.stat().st_size > MAX_LOG_BYTES:
-        raise ValueError(f"log source exceeds {MAX_LOG_BYTES} bytes: {path}")
     if line_start < 1 or line_end < line_start:
         raise ValueError("log line range must be positive and ordered")
     if line_end - line_start + 1 > MAX_EXCERPT_LINES:
         raise ValueError(f"log excerpt exceeds {MAX_EXCERPT_LINES} lines")
 
-    selected: list[str] = []
-    with path.open("r", encoding="utf-8", errors="strict", newline=None) as stream:
-        for line_number, line in enumerate(stream, start=1):
-            if line_number > line_end:
-                break
-            if line_number >= line_start:
-                selected.append(line.rstrip("\r\n"))
+    pem_redacted, pem_spans = _redact_pem_private_keys(raw_text)
+    if PEM_PRIVATE_KEY_MARKER.search(pem_redacted):
+        raise ValueError(
+            "log source contains an incomplete or oversized PEM private-key block"
+        )
+    selected = pem_redacted.splitlines()[line_start - 1 : line_end]
     if len(selected) != line_end - line_start + 1:
-        raise ValueError(f"log does not contain requested line range: {path}")
+        raise ValueError(
+            f"log does not contain requested line range: {source_label}"
+        )
     text, counts = redact_text("\n".join(selected) + "\n", player_names)
+    counts["credential"] += sum(
+        1
+        for start, end in pem_spans
+        if not (
+            raw_text.count("\n", 0, end) + 1 < line_start
+            or raw_text.count("\n", 0, start) + 1 > line_end
+        )
+    )
     encoded = text.encode("utf-8")
     if len(encoded) > MAX_EXCERPT_BYTES:
         raise ValueError(f"redacted log excerpt exceeds {MAX_EXCERPT_BYTES} bytes")
@@ -1257,6 +1811,22 @@ def extract_log_excerpt(
     if findings:
         raise ValueError("redacted log still contains: " + ", ".join(findings))
     return encoded, counts
+
+
+def extract_log_excerpt(
+    path: Path,
+    line_start: int,
+    line_end: int,
+    player_names: list[str],
+) -> tuple[bytes, dict[str, int]]:
+    _, raw_text, _, _, _ = read_log_snapshot(path)
+    return extract_log_excerpt_from_text(
+        raw_text,
+        line_start,
+        line_end,
+        player_names,
+        source_label=str(path),
+    )
 
 
 def lifecycle_marker_result(role: str, text: str) -> dict[str, Any] | None:
@@ -1303,7 +1873,20 @@ def build_template(artifact_filename: str) -> dict[str, Any]:
         "artifacts": {
             "source": f"build/libs/{artifact_filename}",
             "server": f"build/v0.0.2-manual/server/mods/{artifact_filename}",
-            "client": f"build/v0.0.2-manual/client/mods/{artifact_filename}",
+            "client": (
+                "build/v0.0.2-manual/client-matching/mods/"
+                f"{artifact_filename}"
+            ),
+        },
+        "client_profiles": {
+            role: {
+                "status": "MISSING",
+                "game_directory": "",
+                "before_snapshot": "",
+                "after_snapshot": "",
+                "note": "No before/after client profile inventory was captured.",
+            }
+            for role in PROFILE_ROLES
         },
         "server_harness": {
             "status": "MISSING",
@@ -1394,6 +1977,7 @@ def validate_session(document: Any) -> list[str]:
             "version",
             "metadata",
             "artifacts",
+            "client_profiles",
             "server_harness",
             "privacy",
             "observations",
@@ -1440,6 +2024,52 @@ def validate_session(document: Any) -> list[str]:
     for role, value in artifacts.items():
         if not isinstance(value, str) or not value:
             errors.append(f"artifacts.{role} must be a non-empty path")
+
+    client_profiles = _exact_keys(
+        top.get("client_profiles"), set(PROFILE_ROLES), "client_profiles", errors
+    )
+    for role in PROFILE_ROLES:
+        profile = _exact_keys(
+            client_profiles.get(role),
+            {
+                "status",
+                "game_directory",
+                "before_snapshot",
+                "after_snapshot",
+                "note",
+            },
+            f"client_profiles.{role}",
+            errors,
+        )
+        if profile.get("status") not in {"PRESENT", "MISSING"}:
+            errors.append(
+                f"client_profiles.{role}.status must be PRESENT or MISSING"
+            )
+        for field in (
+            "game_directory",
+            "before_snapshot",
+            "after_snapshot",
+            "note",
+        ):
+            if not isinstance(profile.get(field), str):
+                errors.append(f"client_profiles.{role}.{field} must be a string")
+        if profile.get("status") == "PRESENT" and any(
+            not profile.get(field)
+            for field in ("game_directory", "before_snapshot", "after_snapshot")
+        ):
+            errors.append(
+                f"client_profiles.{role} PRESENT requires a game directory and "
+                "both snapshots"
+            )
+        if profile.get("status") == "MISSING" and (
+            profile.get("game_directory")
+            or profile.get("before_snapshot")
+            or profile.get("after_snapshot")
+            or not profile.get("note", "").strip()
+        ):
+            errors.append(
+                f"client_profiles.{role} MISSING requires empty paths and a reason"
+            )
 
     server_harness = _exact_keys(
         top.get("server_harness"),
@@ -2051,6 +2681,10 @@ def _review_blockers(record: dict[str, Any]) -> list[str]:
         blockers.append("matching-client review supplied no player-name redaction term")
     if record["server_harness"].get("status") != "PRESENT":
         blockers.append("harness-generated manual player-cycle summary is missing")
+    for role in PROFILE_ROLES:
+        profile = record.get("client_profiles", {}).get(role, {})
+        if not isinstance(profile, dict) or profile.get("status") != "PRESENT":
+            blockers.append(f"{role} client profile before/after binding is missing")
     if any(item["status"] == "PRESENT" for item in record["evidence"].values()) and not record["privacy"]["visual_review"]["completed"]:
         blockers.append("screenshot pixel content lacks a completed human privacy review")
     for key, review in record["applicability_reviews"].items():
@@ -2179,6 +2813,193 @@ def collect_evidence(
         except (OSError, ValueError) as exc:
             errors.append(str(exc))
 
+    client_profiles_record: dict[str, dict[str, Any]] = {}
+    resolved_profile_dirs: dict[str, Path] = {}
+    resolved_snapshot_sources: list[Path] = []
+    inventory_fields = (
+        "artifact_filename",
+        "artifact_sha256",
+        "game_directory",
+        "mods_directory",
+        "mods_files",
+        "profile_role",
+        "inventory_sha256",
+    )
+    for role in PROFILE_ROLES:
+        item = session["client_profiles"][role]
+        if item["status"] == "MISSING":
+            client_profiles_record[role] = {
+                "status": "MISSING",
+                "note": item["note"],
+            }
+            continue
+        try:
+            game_directory = resolve_build_path(
+                item["game_directory"],
+                repository_root,
+                must_exist=True,
+            )
+            if not game_directory.is_dir():
+                raise ValueError(
+                    f"{role} client profile game directory must be a directory"
+                )
+            game_relative = relative_build_path(game_directory, repository_root)
+            if privacy_findings(game_relative, player_names):
+                raise ValueError(
+                    f"{role} client profile path contains private data: "
+                    + game_relative
+                )
+
+            snapshot_documents: dict[str, dict[str, Any]] = {}
+            snapshot_records: dict[str, dict[str, Any]] = {}
+            for phase in PROFILE_PHASES:
+                source = resolve_build_path(
+                    item[f"{phase}_snapshot"],
+                    repository_root,
+                    must_exist=True,
+                    require_file=True,
+                )
+                if any(
+                    source == previous or os.path.samefile(source, previous)
+                    for previous in resolved_snapshot_sources
+                ):
+                    raise ValueError(
+                        "client profile before/after snapshots must be distinct "
+                        "physical files"
+                    )
+                resolved_snapshot_sources.append(source)
+                source_relative = relative_build_path(source, repository_root)
+                if privacy_findings(source_relative, player_names):
+                    raise ValueError(
+                        f"{role} {phase} profile snapshot path contains private data"
+                    )
+                source_payload = read_bounded_bytes(
+                    source,
+                    MAX_JSON_BYTES,
+                    f"{role} {phase} profile snapshot",
+                )
+                document = parse_json_payload(
+                    source_payload, f"{role} {phase} profile snapshot"
+                )
+                document = validate_profile_snapshot_document(
+                    document,
+                    expected_role=role,
+                    expected_phase=phase,
+                    expected_game_directory=game_relative,
+                    artifact_metadata=artifact_metadata,
+                    expected_artifact_size=artifacts.get("client", {}).get("size"),
+                )
+                archive_payload = canonical_json_payload(document)
+                if source_payload != archive_payload:
+                    raise ValueError(
+                        f"{role} {phase} profile snapshot is not canonical JSON"
+                    )
+                if privacy_findings_in_value(document, player_names):
+                    raise ValueError(
+                        f"{role} {phase} profile snapshot contains private data"
+                    )
+                archive = PROFILE_ARCHIVES[(role, phase)]
+                payloads[archive] = archive_payload
+                snapshot_documents[phase] = document
+                snapshot_records[phase] = {
+                    "source_path": source_relative,
+                    "file": archive,
+                    "source_sha256": hashlib.sha256(source_payload).hexdigest(),
+                    "sha256": hashlib.sha256(archive_payload).hexdigest(),
+                    "size": len(archive_payload),
+                    "captured_at": document["captured_at"],
+                }
+
+            before_time = dt.datetime.fromisoformat(
+                snapshot_documents["before"]["captured_at"]
+            )
+            after_time = dt.datetime.fromisoformat(
+                snapshot_documents["after"]["captured_at"]
+            )
+            if after_time < before_time:
+                raise ValueError(
+                    f"{role} client profile after snapshot predates before snapshot"
+                )
+            if any(
+                snapshot_documents["before"][field]
+                != snapshot_documents["after"][field]
+                for field in inventory_fields
+            ):
+                raise ValueError(
+                    f"{role} client profile changed between before and after snapshots"
+                )
+            current_inventory = inspect_profile_inventory(
+                game_directory,
+                profile_role=role,
+                artifact_metadata=artifact_metadata,
+                repository_root=repository_root,
+            )
+            if any(
+                current_inventory[field] != snapshot_documents["after"][field]
+                for field in inventory_fields
+            ):
+                raise ValueError(
+                    f"{role} client profile no longer matches its after snapshot"
+                )
+            if role == "matching":
+                client_artifact = resolved_artifact_roles.get("client")
+                expected_client_artifact = (
+                    game_directory / "mods" / artifact_metadata["filename"]
+                )
+                if (
+                    client_artifact is None
+                    or not expected_client_artifact.is_file()
+                    or not os.path.samefile(client_artifact, expected_client_artifact)
+                ):
+                    raise ValueError(
+                        "artifacts.client must be the exact JAR in the matching "
+                        "client profile"
+                    )
+            resolved_profile_dirs[role] = game_directory
+            client_profiles_record[role] = {
+                "status": "PRESENT",
+                "game_directory": game_relative,
+                "mods_directory": snapshot_documents["after"]["mods_directory"],
+                "artifact_filename": artifact_metadata["filename"],
+                "artifact_sha256": artifact_metadata["sha256"],
+                "inventory_sha256": snapshot_documents["after"][
+                    "inventory_sha256"
+                ],
+                "before_snapshot": snapshot_records["before"],
+                "after_snapshot": snapshot_records["after"],
+                "note": item["note"],
+            }
+        except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+            errors.append(f"client_profiles.{role}: {exc}")
+            client_profiles_record[role] = {
+                "status": "MISSING",
+                "note": "Invalid client profile evidence was not archived.",
+            }
+
+    if len(resolved_profile_dirs) == len(PROFILE_ROLES):
+        matching_directory = resolved_profile_dirs["matching"]
+        missing_directory = resolved_profile_dirs["missing_mod"]
+        try:
+            matching_recorded = client_profiles_record["matching"][
+                "game_directory"
+            ]
+            missing_recorded = client_profiles_record["missing_mod"][
+                "game_directory"
+            ]
+            if recorded_paths_overlap(matching_recorded, missing_recorded):
+                errors.append(
+                    "matching and missing-project-mod client profile paths must be "
+                    "disjoint, not the same path or an ancestor/descendant pair"
+                )
+            if resolved_paths_overlap(matching_directory, missing_directory):
+                errors.append(
+                    "matching and missing-project-mod client profile physical "
+                    "directories must be disjoint, not the same directory or an "
+                    "ancestor/descendant pair"
+                )
+        except OSError as exc:
+            errors.append(f"cannot compare client profile directories: {exc}")
+
     server_harness_record: dict[str, Any]
     summary_cycles: dict[str, dict[str, Any]] = {}
     server_summary: dict[str, Any] = {}
@@ -2201,7 +3022,9 @@ def collect_evidence(
                 raise ValueError(
                     f"server summary path contains private data: {summary_relative}"
                 )
-            summary = load_json(summary_source)
+            summary_source_payload, summary = load_json_payload(
+                summary_source, "server harness summary source"
+            )
             summary_errors, summary_cycles = validate_server_summary(
                 summary, artifact_metadata
             )
@@ -2222,7 +3045,9 @@ def collect_evidence(
                 "status": "PRESENT",
                 "source_path": summary_relative,
                 "file": SERVER_SUMMARY_ARCHIVE,
-                "source_sha256": file_sha256(summary_source),
+                "source_sha256": hashlib.sha256(
+                    summary_source_payload
+                ).hexdigest(),
                 "sha256": hashlib.sha256(summary_payload).hexdigest(),
                 "size": len(summary_payload),
                 "session_id": summary["session_id"],
@@ -2235,6 +3060,19 @@ def collect_evidence(
                 "status": "MISSING",
                 "note": "Invalid server summary was not archived.",
             }
+
+    if server_summary:
+        profile_captures = {
+            role: {
+                phase: client_profiles_record[role][f"{phase}_snapshot"][
+                    "captured_at"
+                ]
+                for phase in PROFILE_PHASES
+            }
+            for role in PROFILE_ROLES
+            if client_profiles_record.get(role, {}).get("status") == "PRESENT"
+        }
+        errors.extend(profile_capture_timeline_errors(profile_captures, server_summary))
 
     evidence_record: dict[str, dict[str, Any]] = {}
     log_record: dict[str, dict[str, Any]] = {}
@@ -2264,6 +3102,10 @@ def collect_evidence(
             errors.append(f"evidence.{role}: {exc}")
 
     raw_log_audits: dict[str, dict[str, Any]] = {}
+    resolved_client_log_sources: list[tuple[str, str, Path]] = []
+    collected_log_snapshots: list[
+        tuple[Path, tuple[bytes, str, dict[str, int], str, int]]
+    ] = []
     observed_player_names: dict[str, str] = {}
     for role, item in session["log_excerpts"].items():
         if item["status"] == "MISSING":
@@ -2283,8 +3125,47 @@ def collect_evidence(
             relative = relative_build_path(source, repository_root)
             if privacy_findings(relative, player_names):
                 raise ValueError(f"log path contains private data: {relative}")
-            raw_audit_counts, raw_sha256, raw_size = scan_log_file(source)
-            raw_text = source.read_text(encoding="utf-8", errors="strict")
+            profile_role = CLIENT_LOG_PROFILES.get(role)
+            if profile_role is not None:
+                profile_record = client_profiles_record.get(profile_role, {})
+                if profile_record.get("status") == "PRESENT" and not recorded_path_is_below(
+                    relative, f"{profile_record['game_directory']}/logs"
+                ):
+                    raise ValueError(
+                        f"{role} raw log must remain under the {profile_role} "
+                        "client profile logs directory"
+                    )
+                for previous_profile, previous_role, previous_source in (
+                    resolved_client_log_sources
+                ):
+                    if previous_profile != profile_role and os.path.samefile(
+                        source, previous_source
+                    ):
+                        raise ValueError(
+                            f"{role} and {previous_role} client raw logs must not "
+                            "reuse one physical file or hard link across matching "
+                            "and missing-project-mod profiles"
+                        )
+                resolved_client_log_sources.append((profile_role, role, source))
+            snapshot = next(
+                (
+                    previous_snapshot
+                    for previous_source, previous_snapshot in collected_log_snapshots
+                    if source == previous_source
+                    or os.path.samefile(source, previous_source)
+                ),
+                None,
+            )
+            if snapshot is None:
+                snapshot = read_log_snapshot(source)
+                collected_log_snapshots.append((source, snapshot))
+            (
+                raw_payload,
+                raw_text,
+                raw_audit_counts,
+                raw_sha256,
+                raw_size,
+            ) = snapshot
             warning_disposition = copy.deepcopy(item["warning_disposition"])
             warning_status = warning_disposition["status"]
             warning_count = raw_audit_counts["warning_count"]
@@ -2306,8 +3187,22 @@ def collect_evidence(
                 "sha256": raw_sha256,
                 "size": raw_size,
                 "audit_counts": raw_audit_counts,
+                **(
+                    {
+                        "profile_role": profile_role,
+                        "physical_file_identity": physical_file_identity(source),
+                    }
+                    if profile_role is not None
+                    else {}
+                ),
             }
-            payload, counts = extract_log_excerpt(source, item["line_start"], item["line_end"], player_names)
+            payload, counts = extract_log_excerpt_from_text(
+                raw_text,
+                item["line_start"],
+                item["line_end"],
+                player_names,
+                source_label=str(source),
+            )
             _merge_counts(redaction_counts, counts)
             output = f"logs/{role}.txt"
             payloads[output] = payload
@@ -2404,9 +3299,14 @@ def collect_evidence(
                         "mismatch server receipt path contains private data: "
                         + receipt_relative
                     )
-                receipt_source_sha256 = file_sha256(receipt_source)
+                receipt_source_payload, receipt_source_document = load_json_payload(
+                    receipt_source, "mismatch server receipt source"
+                )
+                receipt_source_sha256 = hashlib.sha256(
+                    receipt_source_payload
+                ).hexdigest()
                 receipt_document = validate_mismatch_receipt(
-                    load_json(receipt_source),
+                    receipt_source_document,
                     full_log_sha256=raw_sha256,
                     expected_exit_code=item["server_exit_code"],
                 )
@@ -2433,6 +3333,7 @@ def collect_evidence(
                     properties_document,
                 ) = build_mismatch_server_binding(
                     source_log=source,
+                    source_payload=raw_payload,
                     source_sha256=raw_sha256,
                     server_artifact=resolved_artifact_roles["server"],
                     summary=server_summary,
@@ -2534,6 +3435,9 @@ def collect_evidence(
         },
         "metadata": sanitized["metadata"],
         "artifacts": artifacts,
+        "client_profiles": _sanitize(
+            client_profiles_record, player_names, redaction_counts
+        ),
         "server_harness": _sanitize(
             server_harness_record, player_names, redaction_counts
         ),
@@ -2650,7 +3554,7 @@ def validate_bundle(
 
     expected_top = {
         "schema_version", "version", "collector", "generated_at", "scope_statement",
-        "source_revision", "artifact_manifest", "metadata", "artifacts", "server_harness", "observations", "evidence",
+        "source_revision", "artifact_manifest", "metadata", "artifacts", "client_profiles", "server_harness", "observations", "evidence",
         "log_excerpts", "findings", "applicability_reviews", "privacy", "review_readiness",
     }
     _exact_keys(record, expected_top, "record", errors)
@@ -2720,6 +3624,9 @@ def validate_bundle(
     record_observations = record.get("observations")
     if not isinstance(record_observations, dict):
         record_observations = {}
+    record_profiles = record.get("client_profiles")
+    if not isinstance(record_profiles, dict):
+        record_profiles = {}
 
     session_shape = {
         "schema_version": SCHEMA_VERSION, "version": VERSION,
@@ -2727,6 +3634,25 @@ def validate_bundle(
         "artifacts": {
             role: item.get("path", "") if isinstance(item, dict) else ""
             for role, item in record_artifacts.items()
+        },
+        "client_profiles": {
+            role: {
+                "status": item.get("status"),
+                "game_directory": item.get("game_directory", ""),
+                "before_snapshot": (
+                    item.get("before_snapshot", {}).get("source_path", "")
+                    if isinstance(item.get("before_snapshot"), dict)
+                    else ""
+                ),
+                "after_snapshot": (
+                    item.get("after_snapshot", {}).get("source_path", "")
+                    if isinstance(item.get("after_snapshot"), dict)
+                    else ""
+                ),
+                "note": item.get("note", ""),
+            }
+            for role, item in record_profiles.items()
+            if isinstance(item, dict)
         },
         "server_harness": {
             "status": record.get("server_harness", {}).get("status"),
@@ -2821,6 +3747,273 @@ def validate_bundle(
         errors.append("recorded source/server/client JAR sizes differ")
 
     expected_files = {RECORD_NAME}
+    _exact_keys(
+        record_profiles, set(PROFILE_ROLES), "client_profiles", errors
+    )
+    validated_profile_paths: dict[str, str] = {}
+    validated_profile_captures: dict[str, dict[str, str]] = {}
+    resolved_validation_profile_dirs: dict[str, Path] = {}
+    resolved_validation_snapshot_sources: list[Path] = []
+    recorded_validation_snapshot_paths: set[str] = set()
+    profile_inventory_fields = (
+        "artifact_filename",
+        "artifact_sha256",
+        "game_directory",
+        "mods_directory",
+        "mods_files",
+        "profile_role",
+        "inventory_sha256",
+    )
+    for role in PROFILE_ROLES:
+        item_value = record_profiles.get(role)
+        item = item_value if isinstance(item_value, dict) else {}
+        if item.get("status") == "MISSING":
+            _exact_keys(
+                item, {"status", "note"}, f"client_profiles.{role}", errors
+            )
+            continue
+        if item.get("status") != "PRESENT":
+            errors.append(
+                f"client_profiles.{role}.status must be PRESENT or MISSING"
+            )
+            continue
+        _exact_keys(
+            item,
+            {
+                "status",
+                "game_directory",
+                "mods_directory",
+                "artifact_filename",
+                "artifact_sha256",
+                "inventory_sha256",
+                "before_snapshot",
+                "after_snapshot",
+                "note",
+            },
+            f"client_profiles.{role}",
+            errors,
+        )
+        try:
+            game_relative = validate_recorded_build_path(
+                item.get("game_directory")
+            )
+            if privacy_findings(game_relative):
+                raise ValueError(
+                    f"client_profiles.{role} game directory contains private data"
+                )
+            expected_mods_relative = f"{game_relative}/mods"
+            if item.get("mods_directory") != expected_mods_relative:
+                raise ValueError(
+                    f"client_profiles.{role} mods directory is invalid"
+                )
+            if (
+                item.get("artifact_filename") != artifact_metadata["filename"]
+                or item.get("artifact_sha256") != artifact_metadata["sha256"]
+            ):
+                raise ValueError(
+                    f"client_profiles.{role} artifact binding differs from manifest"
+                )
+            inventory_sha256 = item.get("inventory_sha256")
+            if (
+                not isinstance(inventory_sha256, str)
+                or SHA256_RE.fullmatch(inventory_sha256) is None
+            ):
+                raise ValueError(
+                    f"client_profiles.{role} inventory SHA-256 is invalid"
+                )
+
+            documents: dict[str, dict[str, Any]] = {}
+            for phase in PROFILE_PHASES:
+                snapshot = _exact_keys(
+                    item.get(f"{phase}_snapshot"),
+                    {
+                        "source_path",
+                        "file",
+                        "source_sha256",
+                        "sha256",
+                        "size",
+                        "captured_at",
+                    },
+                    f"client_profiles.{role}.{phase}_snapshot",
+                    errors,
+                )
+                source_relative = validate_recorded_build_path(
+                    snapshot.get("source_path")
+                )
+                portable_source = source_relative.casefold()
+                if portable_source in recorded_validation_snapshot_paths:
+                    raise ValueError(
+                        "client profile snapshot source paths are not distinct"
+                    )
+                recorded_validation_snapshot_paths.add(portable_source)
+                if privacy_findings(source_relative):
+                    raise ValueError(
+                        f"client_profiles.{role} {phase} snapshot path contains "
+                        "private data"
+                    )
+                archive = PROFILE_ARCHIVES[(role, phase)]
+                expected_files.add(archive)
+                archive_path = bundle / archive
+                _reject_link_components(archive_path.absolute(), bundle.absolute())
+                if _is_link(archive_path) or not archive_path.is_file():
+                    raise ValueError(
+                        f"bundle is missing safe {role} {phase} profile snapshot"
+                    )
+                archive_payload = read_bounded_bytes(
+                    archive_path,
+                    MAX_JSON_BYTES,
+                    f"archived {role} {phase} profile snapshot",
+                )
+                archive_hash = hashlib.sha256(archive_payload).hexdigest()
+                if (
+                    snapshot.get("file") != archive
+                    or snapshot.get("sha256") != archive_hash
+                    or snapshot.get("source_sha256") != archive_hash
+                    or snapshot.get("size") != len(archive_payload)
+                ):
+                    raise ValueError(
+                        f"{role} {phase} profile snapshot archive metadata mismatch"
+                    )
+                document = validate_profile_snapshot_document(
+                    parse_json_payload(
+                        archive_payload,
+                        f"archived {role} {phase} profile snapshot",
+                    ),
+                    expected_role=role,
+                    expected_phase=phase,
+                    expected_game_directory=game_relative,
+                    artifact_metadata=artifact_metadata,
+                    expected_artifact_size=(
+                        record_artifacts.get("client", {}).get("size")
+                        if isinstance(record_artifacts.get("client"), dict)
+                        else None
+                    ),
+                )
+                if archive_payload != canonical_json_payload(document):
+                    raise ValueError(
+                        f"archived {role} {phase} profile snapshot is not canonical"
+                    )
+                if snapshot.get("captured_at") != document["captured_at"]:
+                    raise ValueError(
+                        f"{role} {phase} profile capture time differs from archive"
+                    )
+                if privacy_findings_in_value(document):
+                    raise ValueError(
+                        f"archived {role} {phase} profile snapshot contains private data"
+                    )
+                documents[phase] = document
+                if bundle_mode == "build":
+                    source_path = resolve_build_path(
+                        source_relative,
+                        repository_root,
+                        must_exist=True,
+                        require_file=True,
+                    )
+                    if any(
+                        source_path == previous
+                        or os.path.samefile(source_path, previous)
+                        for previous in resolved_validation_snapshot_sources
+                    ):
+                        raise ValueError(
+                            "client profile snapshot source files are not distinct"
+                        )
+                    resolved_validation_snapshot_sources.append(source_path)
+                    if read_bounded_bytes(
+                        source_path,
+                        MAX_JSON_BYTES,
+                        f"{role} {phase} profile snapshot source",
+                    ) != archive_payload:
+                        raise ValueError(
+                            f"{role} {phase} profile snapshot source no longer "
+                            "matches its archive"
+                        )
+
+            before_time = dt.datetime.fromisoformat(documents["before"]["captured_at"])
+            after_time = dt.datetime.fromisoformat(documents["after"]["captured_at"])
+            if after_time < before_time:
+                raise ValueError(
+                    f"{role} client profile after snapshot predates before snapshot"
+                )
+            if any(
+                documents["before"][field] != documents["after"][field]
+                for field in profile_inventory_fields
+            ):
+                raise ValueError(
+                    f"{role} client profile changed between before and after snapshots"
+                )
+            if (
+                documents["after"]["inventory_sha256"] != inventory_sha256
+                or documents["after"]["mods_directory"]
+                != item.get("mods_directory")
+            ):
+                raise ValueError(
+                    f"client_profiles.{role} record differs from its snapshots"
+                )
+            validated_profile_paths[role] = game_relative
+            validated_profile_captures[role] = {
+                phase: documents[phase]["captured_at"] for phase in PROFILE_PHASES
+            }
+
+            if role == "matching":
+                expected_client_path = (
+                    f"{game_relative}/mods/{artifact_metadata['filename']}"
+                )
+                client_record = record_artifacts.get("client", {})
+                if (
+                    not isinstance(client_record, dict)
+                    or client_record.get("path") != expected_client_path
+                ):
+                    raise ValueError(
+                        "artifacts.client is not the exact matching-profile JAR"
+                    )
+            if bundle_mode == "build":
+                game_directory = resolve_build_path(
+                    game_relative, repository_root, must_exist=True
+                )
+                if not game_directory.is_dir():
+                    raise ValueError(
+                        f"client_profiles.{role} game directory is not a directory"
+                    )
+                current_inventory = inspect_profile_inventory(
+                    game_directory,
+                    profile_role=role,
+                    artifact_metadata=artifact_metadata,
+                    repository_root=repository_root,
+                )
+                if any(
+                    current_inventory[field] != documents["after"][field]
+                    for field in profile_inventory_fields
+                ):
+                    raise ValueError(
+                        f"{role} client profile no longer matches its after snapshot"
+                    )
+                resolved_validation_profile_dirs[role] = game_directory
+        except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+            errors.append(str(exc))
+
+    if len(validated_profile_paths) == len(PROFILE_ROLES):
+        if recorded_paths_overlap(
+            validated_profile_paths["matching"],
+            validated_profile_paths["missing_mod"],
+        ):
+            errors.append(
+                "matching and missing-project-mod client profile paths must be "
+                "disjoint, not the same path or an ancestor/descendant pair"
+            )
+    if len(resolved_validation_profile_dirs) == len(PROFILE_ROLES):
+        try:
+            if resolved_paths_overlap(
+                resolved_validation_profile_dirs["matching"],
+                resolved_validation_profile_dirs["missing_mod"],
+            ):
+                errors.append(
+                    "matching and missing-project-mod client profile physical "
+                    "directories must be disjoint, not the same directory or an "
+                    "ancestor/descendant pair"
+                )
+        except OSError as exc:
+            errors.append(f"cannot compare client profile directories: {exc}")
+
     record_harness = record.get("server_harness")
     if not isinstance(record_harness, dict):
         record_harness = {}
@@ -2856,20 +4049,21 @@ def validate_bundle(
                 record_harness.get("source_path")
             )
             summary_path = bundle / SERVER_SUMMARY_ARCHIVE
+            _reject_link_components(summary_path.absolute(), bundle.absolute())
             if _is_link(summary_path) or not summary_path.is_file():
                 raise ValueError("bundle is missing the safe server harness summary")
-            summary_payload = summary_path.read_bytes()
+            summary_payload = read_bounded_bytes(
+                summary_path, MAX_JSON_BYTES, "server harness summary archive"
+            )
             if (
-                len(summary_payload) > MAX_JSON_BYTES
-                or len(summary_payload) != record_harness.get("size")
+                len(summary_payload) != record_harness.get("size")
                 or hashlib.sha256(summary_payload).hexdigest()
                 != record_harness.get("sha256")
                 or record_harness.get("file") != SERVER_SUMMARY_ARCHIVE
             ):
                 raise ValueError("server harness summary archive metadata mismatch")
-            summary = json.loads(
-                summary_payload.decode("utf-8"),
-                object_pairs_hook=_duplicates_rejected,
+            summary = parse_json_payload(
+                summary_payload, "server harness summary archive"
             )
             summary_errors, summary_cycles = validate_server_summary(
                 summary, artifact_metadata
@@ -2896,12 +4090,24 @@ def validate_bundle(
                     must_exist=True,
                     require_file=True,
                 )
-                if file_sha256(raw_summary) != source_hash:
+                raw_summary_payload = read_bounded_bytes(
+                    raw_summary,
+                    MAX_JSON_BYTES,
+                    "server harness summary source",
+                )
+                if hashlib.sha256(raw_summary_payload).hexdigest() != source_hash:
                     raise ValueError("server harness source no longer matches its record")
         except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
             errors.append(str(exc))
     else:
         errors.append("server_harness.status must be PRESENT or MISSING")
+
+    if server_summary:
+        errors.extend(
+            profile_capture_timeline_errors(
+                validated_profile_captures, server_summary
+            )
+        )
 
     screenshot_total = 0
     _exact_keys(record_evidence, set(SCREENSHOT_ROLES), "evidence", errors)
@@ -2925,6 +4131,7 @@ def validate_bundle(
         try:
             validate_recorded_build_path(item.get("source_path"))
             path = bundle / expected_file
+            _reject_link_components(path.absolute(), bundle.absolute())
             if _is_link(path) or not path.is_file():
                 raise ValueError(f"missing safe bundle screenshot: {expected_file}")
             details = inspect_png(path)
@@ -2956,6 +4163,11 @@ def validate_bundle(
 
     _exact_keys(record_logs, set(LOG_ROLES), "log_excerpts", errors)
     validated_source_audits: dict[str, dict[str, Any]] = {}
+    validated_client_physical_identities: dict[str, tuple[str, str]] = {}
+    resolved_validation_client_log_sources: list[tuple[str, str, Path]] = []
+    validation_log_snapshots: list[
+        tuple[Path, tuple[bytes, str, dict[str, int], str, int]]
+    ] = []
     validated_player_names: dict[str, str] = {}
     for role, item_value in record_logs.items():
         if role not in LOG_ROLES:
@@ -2996,13 +4208,30 @@ def validate_bundle(
         _exact_keys(item, log_keys, f"log_excerpts.{role}", errors)
         expected_file = f"logs/{role}.txt"
         expected_files.add(expected_file)
+        physical_payload: bytes | None = None
+        raw_path: Path | None = None
         try:
-            validate_recorded_build_path(item.get("source_path"))
+            recorded_log_path = validate_recorded_build_path(
+                item.get("source_path")
+            )
+            profile_role = CLIENT_LOG_PROFILES.get(role)
+            if profile_role is not None and profile_role in validated_profile_paths:
+                if not recorded_path_is_below(
+                    recorded_log_path,
+                    f"{validated_profile_paths[profile_role]}/logs",
+                ):
+                    raise ValueError(
+                        f"{role} raw log is not bound to the {profile_role} "
+                        "client profile"
+                    )
             path = bundle / expected_file
+            _reject_link_components(path.absolute(), bundle.absolute())
             if _is_link(path) or not path.is_file():
                 raise ValueError(f"missing safe bundle log: {expected_file}")
-            content = path.read_bytes()
-            if len(content) > MAX_EXCERPT_BYTES or hashlib.sha256(content).hexdigest() != item.get("sha256") or len(content) != item.get("size"):
+            content = read_bounded_bytes(
+                path, MAX_EXCERPT_BYTES, f"archived log excerpt {role}"
+            )
+            if hashlib.sha256(content).hexdigest() != item.get("sha256") or len(content) != item.get("size"):
                 raise ValueError(f"log excerpt metadata mismatch: {role}")
             text = content.decode("utf-8")
             if privacy_findings(text):
@@ -3025,9 +4254,14 @@ def validate_bundle(
             )
             if recorded_excerpt_audit != excerpt_audit:
                 raise ValueError(f"archived log audit mismatch: {role}")
+            source_audit_keys = {"source_path", "sha256", "size", "audit_counts"}
+            if profile_role is not None:
+                source_audit_keys.update(
+                    {"profile_role", "physical_file_identity"}
+                )
             source_audit = _exact_keys(
                 item.get("source_audit"),
-                {"source_path", "sha256", "size", "audit_counts"},
+                source_audit_keys,
                 f"log_excerpts.{role}.source_audit",
                 errors,
             )
@@ -3039,6 +4273,35 @@ def validate_bundle(
                 raise ValueError(f"raw log audit SHA-256 is invalid: {role}")
             if not isinstance(raw_size, int) or isinstance(raw_size, bool) or not 0 < raw_size <= MAX_LOG_BYTES:
                 raise ValueError(f"raw log audit size is invalid: {role}")
+            physical_identity = source_audit.get("physical_file_identity")
+            if profile_role is not None:
+                if source_audit.get("profile_role") != profile_role:
+                    raise ValueError(
+                        f"raw log audit client profile role is invalid: {role}"
+                    )
+                if (
+                    not isinstance(physical_identity, str)
+                    or SHA256_RE.fullmatch(physical_identity) is None
+                ):
+                    raise ValueError(
+                        f"raw log physical file identity is invalid: {role}"
+                    )
+                previous_identity = validated_client_physical_identities.get(
+                    physical_identity
+                )
+                if (
+                    previous_identity is not None
+                    and previous_identity[0] != profile_role
+                ):
+                    raise ValueError(
+                        f"{role} and {previous_identity[1]} client raw logs reuse "
+                        "one physical-file identity across matching and "
+                        "missing-project-mod profiles"
+                    )
+                validated_client_physical_identities[physical_identity] = (
+                    profile_role,
+                    role,
+                )
             raw_counts = _exact_keys(
                 source_audit.get("audit_counts"),
                 set(LOG_AUDIT_FIELDS),
@@ -3084,18 +4347,57 @@ def validate_bundle(
                     must_exist=True,
                     require_file=True,
                 )
-                physical_counts, physical_hash, physical_size = scan_log_file(raw_path)
+                if profile_role is not None:
+                    for (
+                        previous_profile,
+                        previous_role,
+                        previous_source,
+                    ) in resolved_validation_client_log_sources:
+                        if previous_profile != profile_role and os.path.samefile(
+                            raw_path, previous_source
+                        ):
+                            raise ValueError(
+                                f"{role} and {previous_role} client raw logs reuse "
+                                "one physical file or hard link across matching and "
+                                "missing-project-mod profiles"
+                            )
+                    resolved_validation_client_log_sources.append(
+                        (profile_role, role, raw_path)
+                    )
+                physical_snapshot = next(
+                    (
+                        previous_snapshot
+                        for previous_path, previous_snapshot in validation_log_snapshots
+                        if raw_path == previous_path
+                        or os.path.samefile(raw_path, previous_path)
+                    ),
+                    None,
+                )
+                if physical_snapshot is None:
+                    physical_snapshot = read_log_snapshot(raw_path)
+                    validation_log_snapshots.append((raw_path, physical_snapshot))
+                (
+                    physical_payload,
+                    physical_text,
+                    physical_counts,
+                    physical_hash,
+                    physical_size,
+                ) = physical_snapshot
                 if (
                     physical_hash != raw_hash
                     or physical_size != raw_size
                     or physical_counts != raw_counts
                 ):
                     raise ValueError(f"raw log source no longer matches its audit: {role}")
-                if role in SERVER_LOG_CYCLES:
-                    raw_identity = parse_player_lifecycle(
-                        raw_path.read_text(encoding="utf-8", errors="strict"),
-                        role,
+                if (
+                    profile_role is not None
+                    and physical_file_identity(raw_path) != physical_identity
+                ):
+                    raise ValueError(
+                        f"raw log physical file identity no longer matches: {role}"
                     )
+                if role in SERVER_LOG_CYCLES:
+                    raw_identity = parse_player_lifecycle(physical_text, role)
                     validated_player_names[SERVER_LOG_CYCLES[role]] = raw_identity[
                         "player_name"
                     ].casefold()
@@ -3200,11 +4502,14 @@ def validate_bundle(
                     raise ValueError(
                         "bundle is missing the safe mismatch server receipt"
                     )
-                receipt_payload = receipt_path.read_bytes()
+                receipt_payload = read_bounded_bytes(
+                    receipt_path,
+                    MAX_JSON_BYTES,
+                    "mismatch server receipt archive",
+                )
                 receipt_hash = hashlib.sha256(receipt_payload).hexdigest()
                 if (
-                    len(receipt_payload) > MAX_JSON_BYTES
-                    or receipt.get("file") != MISMATCH_RECEIPT_ARCHIVE
+                    receipt.get("file") != MISMATCH_RECEIPT_ARCHIVE
                     or receipt.get("sha256") != receipt_hash
                     or receipt.get("size") != len(receipt_payload)
                 ):
@@ -3212,9 +4517,8 @@ def validate_bundle(
                         "mismatch server receipt archive metadata mismatch"
                     )
                 receipt_document = validate_mismatch_receipt(
-                    json.loads(
-                        receipt_payload.decode("utf-8"),
-                        object_pairs_hook=_duplicates_rejected,
+                    parse_json_payload(
+                        receipt_payload, "mismatch server receipt archive"
                     ),
                     full_log_sha256=raw_hash,
                     expected_exit_code=item.get("server_exit_code"),
@@ -3248,12 +4552,21 @@ def validate_bundle(
                         must_exist=True,
                         require_file=True,
                     )
-                    if file_sha256(raw_receipt) != receipt_source_sha256:
+                    (
+                        raw_receipt_payload,
+                        raw_receipt_document,
+                    ) = load_json_payload(
+                        raw_receipt, "mismatch server receipt source"
+                    )
+                    if (
+                        hashlib.sha256(raw_receipt_payload).hexdigest()
+                        != receipt_source_sha256
+                    ):
                         raise ValueError(
                             "mismatch server receipt source no longer matches its record"
                         )
                     physical_receipt = validate_mismatch_receipt(
-                        load_json(raw_receipt),
+                        raw_receipt_document,
                         full_log_sha256=raw_hash,
                         expected_exit_code=item.get("server_exit_code"),
                     )
@@ -3283,11 +4596,14 @@ def validate_bundle(
                     raise ValueError(
                         "bundle is missing the safe mismatch server properties archive"
                     )
-                properties_payload = properties_path.read_bytes()
+                properties_payload = read_bounded_bytes(
+                    properties_path,
+                    MAX_JSON_BYTES,
+                    "mismatch server properties archive",
+                )
                 properties_hash = hashlib.sha256(properties_payload).hexdigest()
                 if (
-                    len(properties_payload) > MAX_JSON_BYTES
-                    or properties_record.get("file") != MISMATCH_PROPERTIES_ARCHIVE
+                    properties_record.get("file") != MISMATCH_PROPERTIES_ARCHIVE
                     or properties_record.get("sha256") != properties_hash
                     or properties_record.get("size") != len(properties_payload)
                 ):
@@ -3299,9 +4615,9 @@ def validate_bundle(
                         "mismatch server properties archive lacks a harness summary"
                     )
                 properties_document = validate_mismatch_properties(
-                    json.loads(
-                        properties_payload.decode("utf-8"),
-                        object_pairs_hook=_duplicates_rejected,
+                    parse_json_payload(
+                        properties_payload,
+                        "mismatch server properties archive",
                     ),
                     summary=server_summary,
                 )
@@ -3367,12 +4683,17 @@ def validate_bundle(
                         raise ValueError(
                             "mismatch server binding lacks the physical server artifact"
                         )
+                    if raw_path is None or physical_payload is None:
+                        raise ValueError(
+                            "mismatch server binding lacks a raw-log snapshot"
+                        )
                     (
                         physical_binding,
                         physical_properties_payload,
                         physical_properties_document,
                     ) = build_mismatch_server_binding(
                         source_log=raw_path,
+                        source_payload=physical_payload,
                         source_sha256=raw_hash,
                         server_artifact=server_artifact,
                         summary=server_summary,
@@ -3445,11 +4766,34 @@ def validate_bundle(
                 )
 
     actual_files: set[str] = set()
-    for path in bundle.rglob("*"):
-        if _is_link(path):
-            errors.append(f"bundle must not contain symlinks or junctions: {path}")
-        elif path.is_file():
-            actual_files.add(path.relative_to(bundle).as_posix())
+    pending_directories = [bundle]
+    scanned_entries = 0
+    try:
+        while pending_directories:
+            directory = pending_directories.pop()
+            with os.scandir(directory) as entries:
+                for entry in entries:
+                    scanned_entries += 1
+                    if scanned_entries > MAX_BUNDLE_ENTRIES:
+                        raise ValueError(
+                            "bundle contains more than "
+                            f"{MAX_BUNDLE_ENTRIES} filesystem entries"
+                        )
+                    path = Path(entry.path)
+                    if _is_link(path):
+                        errors.append(
+                            f"bundle must not contain symlinks or junctions: {path}"
+                        )
+                    elif entry.is_file(follow_symlinks=False):
+                        actual_files.add(path.relative_to(bundle).as_posix())
+                    elif entry.is_dir(follow_symlinks=False):
+                        pending_directories.append(path)
+                    else:
+                        errors.append(
+                            f"bundle contains an unsupported filesystem entry: {path}"
+                        )
+    except (OSError, ValueError) as exc:
+        errors.append(str(exc))
     if actual_files != expected_files:
         errors.append(
             "bundle file set mismatch: expected " + ", ".join(sorted(expected_files))
@@ -3516,6 +4860,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
     template = subparsers.add_parser("template", help="write a BLOCKED-by-default session template")
     template.add_argument("--output", required=True, type=Path)
+    profile_snapshot = subparsers.add_parser(
+        "profile-snapshot",
+        help="capture one canonical before/after client profile mod inventory",
+    )
+    profile_snapshot.add_argument(
+        "--profile-role", required=True, choices=PROFILE_ROLES
+    )
+    profile_snapshot.add_argument("--phase", required=True, choices=PROFILE_PHASES)
+    profile_snapshot.add_argument("--game-directory", required=True, type=Path)
+    profile_snapshot.add_argument("--output", required=True, type=Path)
     collect = subparsers.add_parser("collect", help="archive safe evidence without deciding a Gate")
     collect.add_argument("--session", required=True, type=Path)
     collect.add_argument("--output", required=True, type=Path)
@@ -3550,6 +4904,18 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "template":
             create_template(args.output)
             print(f"[TEMPLATE] BLOCKED-by-default session: {args.output}")
+            return 0
+        if args.command == "profile-snapshot":
+            create_profile_snapshot(
+                args.game_directory,
+                args.output,
+                profile_role=args.profile_role,
+                phase=args.phase,
+            )
+            print(
+                f"[PROFILE] {args.profile_role} {args.phase} snapshot: "
+                f"{args.output}"
+            )
             return 0
         if args.command == "collect":
             errors, record = collect_evidence(

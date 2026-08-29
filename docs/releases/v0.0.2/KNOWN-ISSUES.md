@@ -15,18 +15,20 @@
 - Final human release acceptance is absent. The version is not tagged, merged
   as accepted, or published. Any later GitHub Release must be a pre-release,
   never a stable release.
-- G0 human approval must happen before packaged-client evidence. Its review
-  transition changes `THIRD-PARTY-NOTICES.md`, which is packaged into both
-  JARs; approval therefore requires a rebuild, refreshed artifact evidence, and
-  successful CI before the client/server JAR is selected. Any earlier client
-  capture would describe obsolete bytes.
+- The G0 provenance/license subreview must be approved before packaged-client
+  evidence. Its transition changes `THIRD-PARTY-NOTICES.md`, which is packaged
+  into both JARs; approval therefore requires a rebuild, refreshed artifact
+  evidence, and successful CI before the client/server JAR is selected. This
+  subreview does not pass G0; the post-rebuild rendered README capture and human
+  visual review remain required. Any earlier client capture would describe
+  obsolete bytes.
 - Provenance and future client evidence bind historical Git commits. PR #3 must
   use a normal merge commit when accepted; squash/rebase history rewriting
   requires new bindings, mechanical validation, and the affected human reviews.
 
 ## Artifact reproducibility result and boundary
 
-- The current mechanically tested pre-G0 artifact has SHA-256
+- The current mechanically tested pre-provenance-approval artifact has SHA-256
   `58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`;
   two Windows clean builds produced identical bytes.
 - The current sources JAR has SHA-256
@@ -53,6 +55,11 @@
   `v0.4.x`.
 - The original geometric logo is a bootstrap placeholder and may be replaced
   only by another provenance-audited asset.
+- Schema-4 client-profile snapshot timestamps are local self-attestation. The
+  collector binds ordered endpoint inventories and rejects changed final state,
+  but those endpoints cannot prove that no mod was temporarily added between
+  captures. Human review must confirm the isolated-profile procedure and
+  launch sequence before accepting the evidence.
 - A fresh Forge/server installation requires network access. The harness
   verifies the installer, preserves failed attempt logs, retries timeouts or
   nonzero exits with validated partial downloads, and refuses to resume a

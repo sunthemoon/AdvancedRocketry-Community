@@ -41,7 +41,7 @@ last_observed_checkpoint_pull_request_checks: 3/3_PASS
 | G0 Identity/License/Provenance | IN_PROGRESS | Machine-readable input/target mapping, exact license copies, sources-JAR evidence, JAR packaging, and hash checks exist; a current rendered README screenshot and human scope/sufficiency review remain |
 | G1 Reproducible Build | PASS | Repeated Windows clean builds and tested-implementation Linux CI produced byte-identical main JARs, sources JARs, and content manifests |
 | G2 Data/Assets | PASS | DataGen passed after one retained network retry and left no generated-resource or committed worktree change |
-| G3 Automated Behavior | PASS | 3 JUnit, 243 Python, and 1 Forge GameTest pass |
+| G3 Automated Behavior | PASS | 3 JUnit, 353 Python, and 1 Forge GameTest pass |
 | G4 Dedicated/Sides | IN_PROGRESS | Packaged first-start/save/stop/restart passes; packaged player join/reconnect and mismatch observation remain |
 | G5 Persistence/Recovery | NOT_APPLICABLE | No project persistent data in v0.0.2 |
 | G6 Security/Authority | NOT_APPLICABLE | No project packets or gameplay authority in v0.0.2 |
@@ -53,8 +53,10 @@ No Required Gate is treated as waived. Five proposed G4 `NOT_APPLICABLE`
 rationales cover bootstrap-only synchronization, two-player, chunk-unload,
 configuration-mismatch, and optional-client-dependency cases. Every decision
 requires explicit human review and does not replace the matching-client checks.
-G0 must be reviewed and its packaged notice changes rebuilt before those client
-checks begin; otherwise the client evidence would bind a superseded JAR.
+The G0 provenance/license subreview must be approved and its packaged notice
+changes rebuilt before those client checks begin; otherwise the client evidence
+would bind a superseded JAR. This subreview does not pass G0: the later rendered
+README screenshot and human visual review remain part of final G0 acceptance.
 
 ## Commands actually run for the tested implementation
 
@@ -88,7 +90,7 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 
 ## Artifact and automated tests
 
-- Current tested artifact (pre-G0 human approval):
+- Current tested artifact (pre-provenance-subreview approval):
   `advancedrocketry-community-1.20.1-0.0.2-dev.jar`.
 - SHA-256:
   `58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`.
@@ -138,14 +140,16 @@ player_join: PENDING
 Selected lifecycle evidence is under
 [`evidence/dedicated-server/`](evidence/dedicated-server/). The retained local
 session is ignored and contains full installer/runtime logs plus its disposable
-world. It is a headless baseline only; the post-G0 packaged-client procedure
-creates a fresh isolated player session.
+world. It is a headless baseline only; the post-provenance-approval packaged-
+client procedure creates a fresh isolated player session.
 
 ## Manual tests
 
 See [`MANUAL-TEST.md`](MANUAL-TEST.md). No packaged-client/manual PASS is
 claimed. ForgeGradle `runClient` output is diagnostic-only and cannot satisfy
-G4 or G8.
+G4 or G8. The schema-4 collector can bind distinct matching and missing-project-
+mod profiles, exact/empty mod inventories, ordered before/after snapshots, and
+profile-local raw logs, but no such external-machine bundle exists yet.
 
 ## Provenance
 
@@ -173,6 +177,12 @@ the machine-readable input manifest is
 and generated mechanical evidence is under
 [`evidence/g0-mechanical/`](evidence/g0-mechanical/). They deliberately do not
 claim final legal/provenance approval or replace the rendered README review.
+`scripts/prepare_v002_g0_review_packet.py` can copy the exact committed inputs
+into a deterministic ignored review packet and verify them against Git objects.
+The current pending packet labels its content digest
+`PENDING_CONTENT_DIAGNOSTIC_ONLY`. A packet from an already approved commit
+instead observes its previously recorded valid approval binding; the tool never
+writes reviewer answers or approval state in either case.
 
 ## Save, network, security, and performance
 
@@ -190,7 +200,8 @@ See [`KNOWN-ISSUES.md`](KNOWN-ISSUES.md).
 ```yaml
 recommended_status: IN_PROGRESS
 blocking_reasons:
-  - G0 current rendered README screenshot and human provenance/license review are incomplete
+  - G0 human provenance/license subreview is incomplete before the final rebuild
+  - G0 post-rebuild rendered README screenshot and human visual review are absent
   - G4 matching-client join, disconnect, restart, and reconnect evidence is absent
   - G4 missing-project-mod behavior and proposed N/A decisions are unreviewed
   - G8 packaged-client Mods screen and world-start evidence is absent

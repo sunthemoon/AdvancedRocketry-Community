@@ -31,19 +31,31 @@ Use a new disposable world and a separate test profile. The project promises
 no world compatibility for `v0.0.x` through `v0.4.x`; do not open a valued
 world with this developer preview.
 
-## Acceptance prerequisite: finish G0 first
+## Acceptance prerequisite: finish the provenance subreview first
 
 Do not select or launch a packaged-client acceptance artifact while the G0
-Forge/Gradle provenance review is pending. The repository owner or assigned
-license reviewer must complete the rendered README and provenance/license
-review, commit the approval metadata and packaged notice changes, then rebuild
-the JARs, refresh artifact evidence/checksums, and obtain successful blocking CI
-for that exact commit. The approval transition changes packaged bytes, so a
-pre-approval JAR cannot be reused as client evidence.
+Forge/Gradle provenance/license subreview is pending. The repository owner or
+assigned license reviewer must resolve that subreview, commit its approval
+metadata and packaged notice changes, then rebuild the JARs, refresh artifact
+evidence/checksums, and obtain successful blocking CI for that exact commit.
+The approval transition changes packaged bytes, so a pre-approval JAR cannot be
+reused as client evidence.
+
+The reviewer uses the commit-bound packet procedure in
+[`../../work/v0.0.2-test-machine-handoff.md`](../../work/v0.0.2-test-machine-handoff.md).
+Do not continue until
+`python -I -S scripts/validate_bootstrap_provenance.py --require-approved-review`
+passes for the reviewed checkout; the default validator intentionally permits a
+mechanically valid but human-pending state.
+
+This first phase is not final G0 `PASS`. The rendered README screenshot is
+captured from the later clean post-rebuild checkout and receives a separate
+human visual review together with the packaged-client evidence. G0 stays
+`IN_PROGRESS` until both phases are complete.
 
 ## Obtain the test artifact
 
-Build from that reviewed post-G0 source revision with Java 17:
+Build from that post-provenance-approval source revision with Java 17:
 
 ```text
 ./gradlew clean build

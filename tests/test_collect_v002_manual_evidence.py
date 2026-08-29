@@ -2,6 +2,8 @@ import copy
 import hashlib
 import hmac
 import json
+import os
+import shutil
 import struct
 import subprocess
 import tempfile
@@ -11,20 +13,29 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.collect_v002_manual_evidence import (
+    _profile_inventory_sha256,
     APPLICABILITY,
     COMMITTED_BUNDLE,
     CONTENT_MANIFEST,
     LOG_ROLES,
+    MAX_BUNDLE_ENTRIES,
+    MAX_JSON_BYTES,
+    MAX_PEM_PRIVATE_KEY_CHARS,
     OBSERVATIONS,
     RECORD_NAME,
     SCREENSHOT_ROLES,
     build_template,
     bind_player_identity,
     collect_evidence,
+    create_profile_snapshot,
     create_template,
     extract_log_excerpt,
+    inspect_profile_inventory,
     inspect_png,
     parse_player_lifecycle,
+    privacy_findings,
+    read_bounded_bytes,
+    redact_text,
     validate_bundle,
     validate_session,
 )
@@ -133,7 +144,10 @@ class ManualEvidenceTests(unittest.TestCase):
         ).stdout.strip()
         self.jar_paths: dict[str, Path] = {}
         for role in ("source", "server", "client"):
-            path = self.build / role / "mods" / self.artifact_name
+            role_root = self.build / role
+            if role == "client":
+                role_root = self.build / "v0.0.2-manual" / "client-matching"
+            path = role_root / "mods" / self.artifact_name
             path.parent.mkdir(parents=True)
             path.write_bytes(self.artifact_content)
             self.jar_paths[role] = path
@@ -179,20 +193,89 @@ class ManualEvidenceTests(unittest.TestCase):
                     "note": "Full Minecraft window; pixel content manually reviewed.",
                 }
             )
-        client_log = self.build / "logs" / "client-full.log"
-        client_log.parent.mkdir(parents=True)
-        client_log.write_text(
+        matching_game = self.jar_paths["client"].parent.parent
+        missing_game = self.build / "missing-client"
+        (missing_game / "mods").mkdir(parents=True)
+        snapshots = self.build / "profile-snapshots"
+        snapshots.mkdir()
+        profile_snapshot_paths: dict[tuple[str, str], Path] = {}
+        for role, game_directory in (
+            ("matching", matching_game),
+            ("missing_mod", missing_game),
+        ):
+            path = snapshots / f"{role}-before.json"
+            create_profile_snapshot(
+                game_directory,
+                path,
+                profile_role=role,
+                phase="before",
+                repository_root=self.root,
+            )
+            document = json.loads(path.read_text(encoding="utf-8"))
+            document["captured_at"] = (
+                "2026-08-27T11:00:00+00:00"
+                if role == "matching"
+                else "2026-08-27T12:12:00+00:00"
+            )
+            path.write_text(
+                json.dumps(document, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            profile_snapshot_paths[(role, "before")] = path
+
+        matching_client_log = matching_game / "logs" / "latest.log"
+        matching_client_log.parent.mkdir(parents=True)
+        matching_client_log.write_text(
             "SecretPlayer initialized from C:\\Users\\private user\\instance "
             "with UUID 123e4567-e89b-42d3-a456-426614174000\n"
             "remote 203.0.113.8 Authorization: Bearer ghp_abcdefghijklmnopqrstuvwxyz\n"
             "matching connection to 127.0.0.1\n"
-            "matching client entered the world\n"
+            "matching client entered the world\n",
+            encoding="utf-8",
+        )
+        mismatch_client_log = missing_game / "logs" / "latest.log"
+        mismatch_client_log.parent.mkdir(parents=True)
+        mismatch_client_log.write_text(
             "missing-mod indicator observed\n"
             "[Render thread/INFO] [minecraft/ConnectScreen]: "
             "Connecting to 127.0.0.1, 25565\n"
             "missing-mod connection result recorded\n",
             encoding="utf-8",
         )
+        for role, game_directory in (
+            ("matching", matching_game),
+            ("missing_mod", missing_game),
+        ):
+            path = snapshots / f"{role}-after.json"
+            create_profile_snapshot(
+                game_directory,
+                path,
+                profile_role=role,
+                phase="after",
+                repository_root=self.root,
+            )
+            document = json.loads(path.read_text(encoding="utf-8"))
+            document["captured_at"] = (
+                "2026-08-27T12:11:00+00:00"
+                if role == "matching"
+                else "2026-08-27T12:13:00+00:00"
+            )
+            path.write_text(
+                json.dumps(document, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            profile_snapshot_paths[(role, "after")] = path
+            session["client_profiles"][role] = {
+                "status": "PRESENT",
+                "game_directory": game_directory.relative_to(self.root).as_posix(),
+                "before_snapshot": profile_snapshot_paths[
+                    (role, "before")
+                ].relative_to(self.root).as_posix(),
+                "after_snapshot": path.relative_to(self.root).as_posix(),
+                "note": "Canonical before/after profile inventories captured.",
+            }
         server_root = self.jar_paths["server"].parent.parent
         first_log = server_root / "first-start-full.txt"
         first_log.write_text(
@@ -261,11 +344,11 @@ class ManualEvidenceTests(unittest.TestCase):
             server_properties_payload
         ).hexdigest()
         log_inputs = {
-            "client_startup_world": (client_log, 1, 2),
-            "matching_client_connection": (client_log, 3, 4),
+            "client_startup_world": (matching_client_log, 1, 2),
+            "matching_client_connection": (matching_client_log, 3, 4),
             "server_first_join_leave_save_stop": (first_log, 1, 4),
             "server_restart_reconnect_save_stop": (restart_log, 1, 5),
-            "mismatch_attempt": (client_log, 5, 7),
+            "mismatch_attempt": (mismatch_client_log, 1, 3),
             "mismatch_server_attempt_save_stop": (mismatch_log, 1, 7),
         }
         for role, item in session["log_excerpts"].items():
@@ -502,7 +585,10 @@ class ManualEvidenceTests(unittest.TestCase):
         item = session["log_excerpts"][role]
         source = self.root / item["source"]
         lines = source.read_text(encoding="utf-8").splitlines()
-        lines[5] = replacement
+        marker_index = next(
+            index for index, line in enumerate(lines) if "Connecting to" in line
+        )
+        lines[marker_index] = replacement
         source.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     def collect(
@@ -516,15 +602,74 @@ class ManualEvidenceTests(unittest.TestCase):
         )
         return errors, record, output
 
+    def assert_bundle_parent_link_rejected(self, parent_name: str) -> None:
+        session = self.ready_session()
+        errors, _, output = self.collect(
+            session, f"linked-{parent_name}-parent-bundle"
+        )
+        self.assertEqual([], errors)
+        parent = output / parent_name
+        outside = self.build / f"outside-{parent_name}-archive-parent"
+        parent.rename(outside)
+        try:
+            parent.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:
+            outside.rename(parent)
+            self.skipTest(f"directory symlinks unavailable: {exc}")
+
+        lexical_parent = str(parent.absolute()).casefold() + os.sep
+
+        def reject_read_through_parent(
+            path: Path, maximum: int, label: str
+        ) -> bytes:
+            if str(path.absolute()).casefold().startswith(lexical_parent):
+                raise AssertionError(
+                    f"validator read {path} before rejecting linked parent"
+                )
+            return read_bounded_bytes(path, maximum, label)
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.read_bounded_bytes",
+            side_effect=reject_read_through_parent,
+        ):
+            validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "symlink or junction/reparse point" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
     def test_template_is_fixed_and_blocked_by_default(self) -> None:
         output = self.build / "template" / "session.json"
 
         create_template(output, self.root)
 
         document = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {
+                "source": f"build/libs/{self.artifact_name}",
+                "server": (
+                    "build/v0.0.2-manual/server/mods/"
+                    f"{self.artifact_name}"
+                ),
+                "client": (
+                    "build/v0.0.2-manual/client-matching/mods/"
+                    f"{self.artifact_name}"
+                ),
+            },
+            document["artifacts"],
+        )
         self.assertEqual(set(OBSERVATIONS), set(document["observations"]))
         self.assertEqual(set(SCREENSHOT_ROLES), set(document["evidence"]))
         self.assertEqual(set(LOG_ROLES), set(document["log_excerpts"]))
+        self.assertEqual({"matching", "missing_mod"}, set(document["client_profiles"]))
+        self.assertEqual(
+            {"MISSING"},
+            {item["status"] for item in document["client_profiles"].values()},
+        )
         self.assertEqual(5, len(APPLICABILITY))
         self.assertEqual(set(APPLICABILITY), set(document["applicability_reviews"]))
         self.assertEqual(
@@ -546,6 +691,15 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertEqual([], errors)
         self.assertIsNotNone(record)
         assert record is not None
+        expected_matching_directory = "build/v0.0.2-manual/client-matching"
+        self.assertEqual(
+            f"{expected_matching_directory}/mods/{self.artifact_name}",
+            record["artifacts"]["client"]["path"],
+        )
+        self.assertEqual(
+            expected_matching_directory,
+            record["client_profiles"]["matching"]["game_directory"],
+        )
         self.assertEqual(
             "READY_FOR_HUMAN_GATE_REVIEW", record["review_readiness"]["status"]
         )
@@ -582,6 +736,18 @@ class ManualEvidenceTests(unittest.TestCase):
             ]["receipt_sha256"],
         )
         self.assertTrue((output / receipt["file"]).is_file())
+        self.assertNotEqual(
+            record["client_profiles"]["matching"]["game_directory"],
+            record["client_profiles"]["missing_mod"]["game_directory"],
+        )
+        self.assertNotEqual(
+            record["log_excerpts"]["matching_client_connection"]["source_path"],
+            record["log_excerpts"]["mismatch_attempt"]["source_path"],
+        )
+        for profile in record["client_profiles"].values():
+            self.assertEqual("PRESENT", profile["status"])
+            for phase in ("before_snapshot", "after_snapshot"):
+                self.assertTrue((output / profile[phase]["file"]).is_file())
 
     def test_fail_is_archived_but_never_acceptance_ready(self) -> None:
         session = self.ready_session()
@@ -619,6 +785,9 @@ class ManualEvidenceTests(unittest.TestCase):
         }
         for raw_log in raw_logs:
             raw_log.unlink()
+        for profile in session["client_profiles"].values():
+            for phase in ("before_snapshot", "after_snapshot"):
+                (self.root / profile[phase]).unlink()
         (
             self.root
             / session["log_excerpts"]["mismatch_server_attempt_save_stop"][
@@ -667,6 +836,87 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertTrue(
             any("log excerpt metadata mismatch" in error for error in payload_errors),
             payload_errors,
+        )
+
+    def test_committed_profile_inventory_cannot_rebind_false_jar_size(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "profile-size-tamper-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        profile = record["client_profiles"]["matching"]
+
+        rebound_inventory = ""
+        for phase in ("before_snapshot", "after_snapshot"):
+            snapshot_record = profile[phase]
+            snapshot_path = output / snapshot_record["file"]
+            document = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            document["mods_files"][0]["size"] += 1
+            document["inventory_sha256"] = _profile_inventory_sha256(document)
+            payload = (
+                json.dumps(document, ensure_ascii=True, indent=2, sort_keys=True)
+                + "\n"
+            ).encode("utf-8")
+            digest = hashlib.sha256(payload).hexdigest()
+            snapshot_path.write_bytes(payload)
+            snapshot_record.update(
+                source_sha256=digest,
+                sha256=digest,
+                size=len(payload),
+            )
+            rebound_inventory = document["inventory_sha256"]
+        profile["inventory_sha256"] = rebound_inventory
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+        validation_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+
+        self.assertTrue(
+            any(
+                "matching client profile snapshot must contain exactly" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_committed_bundle_rejects_client_log_profile_rebinding(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "profile-log-rebind-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        item = record["log_excerpts"]["matching_client_connection"]
+        rebound_path = "build/unrelated-client/logs/latest.log"
+        item["source_path"] = rebound_path
+        item["source_audit"]["source_path"] = rebound_path
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+        validation_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+
+        self.assertTrue(
+            any(
+                "matching_client_connection raw log is not bound to the matching "
+                "client profile" in error
+                for error in validation_errors
+            ),
+            validation_errors,
         )
 
     def test_total_screenshot_payload_is_bounded(self) -> None:
@@ -827,6 +1077,431 @@ class ManualEvidenceTests(unittest.TestCase):
 
         self.assertTrue(any("distinct physical copy" in error for error in errors), errors)
 
+    def test_profile_snapshot_happy_path_is_canonical_and_role_bound(self) -> None:
+        session = self.ready_session()
+
+        for role in ("matching", "missing_mod"):
+            profile = session["client_profiles"][role]
+            for phase in ("before", "after"):
+                path = self.root / profile[f"{phase}_snapshot"]
+                document = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(role, document["profile_role"])
+                self.assertEqual(phase, document["phase"])
+                self.assertEqual(
+                    path.read_text(encoding="utf-8"),
+                    json.dumps(document, ensure_ascii=True, indent=2, sort_keys=True)
+                    + "\n",
+                )
+        matching = json.loads(
+            (
+                self.root
+                / session["client_profiles"]["matching"]["after_snapshot"]
+            ).read_text(encoding="utf-8")
+        )
+        missing = json.loads(
+            (
+                self.root
+                / session["client_profiles"]["missing_mod"]["after_snapshot"]
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual([self.artifact_name], [item["path"] for item in matching["mods_files"]])
+        self.assertEqual([], missing["mods_files"])
+
+    def test_matching_profile_rejects_any_extra_mod_file_after_snapshot(self) -> None:
+        session = self.ready_session()
+        matching_game = self.root / session["client_profiles"]["matching"][
+            "game_directory"
+        ]
+        (matching_game / "mods" / "unexpected.jar").write_bytes(b"unexpected")
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(
+            any("exactly the expected project JAR" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_matching_profile_rejects_surplus_before_hashing_mods(self) -> None:
+        matching_game = self.jar_paths["client"].parent.parent
+        (matching_game / "mods" / "surplus.jar").write_bytes(b"surplus")
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.file_sha256",
+            side_effect=AssertionError("surplus inventory must fail before hashing"),
+        ):
+            with self.assertRaisesRegex(ValueError, "exactly the expected project JAR"):
+                inspect_profile_inventory(
+                    matching_game,
+                    profile_role="matching",
+                    artifact_metadata={
+                        "filename": self.artifact_name,
+                        "sha256": self.artifact_hash,
+                    },
+                    repository_root=self.root,
+                )
+
+    def test_missing_profile_rejects_first_entry_before_hashing_mods(self) -> None:
+        missing_game = self.build / "bounded-missing-client"
+        mods = missing_game / "mods"
+        mods.mkdir(parents=True)
+        (mods / "unexpected.jar").write_bytes(b"unexpected")
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.file_sha256",
+            side_effect=AssertionError("missing profile must fail before hashing"),
+        ):
+            with self.assertRaisesRegex(ValueError, "must be empty"):
+                inspect_profile_inventory(
+                    missing_game,
+                    profile_role="missing_mod",
+                    artifact_metadata={
+                        "filename": self.artifact_name,
+                        "sha256": self.artifact_hash,
+                    },
+                    repository_root=self.root,
+                )
+
+    def test_matching_profile_rejects_wrong_singleton_before_hashing(self) -> None:
+        matching_game = self.build / "wrong-singleton-client"
+        mods = matching_game / "mods"
+        mods.mkdir(parents=True)
+        (mods / "wrong.jar").write_bytes(b"wrong")
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.file_sha256",
+            side_effect=AssertionError("wrong filename must fail before hashing"),
+        ):
+            with self.assertRaisesRegex(ValueError, "exact committed project JAR"):
+                inspect_profile_inventory(
+                    matching_game,
+                    profile_role="matching",
+                    artifact_metadata={
+                        "filename": self.artifact_name,
+                        "sha256": self.artifact_hash,
+                    },
+                    repository_root=self.root,
+                )
+
+    def test_oversized_profile_snapshot_source_is_rejected_before_parsing(self) -> None:
+        session = self.ready_session()
+        snapshot = self.root / session["client_profiles"]["matching"][
+            "before_snapshot"
+        ]
+        with snapshot.open("wb") as stream:
+            stream.truncate(MAX_JSON_BYTES + 1)
+
+        errors, _, output = self.collect(session, "oversized-profile-source")
+
+        self.assertTrue(
+            any(
+                f"matching before profile snapshot exceeds {MAX_JSON_BYTES} bytes"
+                in error
+                for error in errors
+            ),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_oversized_server_summary_source_is_rejected_before_parsing(self) -> None:
+        session = self.ready_session()
+        summary = self.root / session["server_harness"]["summary"]
+        with summary.open("wb") as stream:
+            stream.truncate(MAX_JSON_BYTES + 1)
+
+        errors, _, output = self.collect(session, "oversized-summary-source")
+
+        self.assertTrue(
+            any(
+                f"server harness summary source exceeds {MAX_JSON_BYTES} bytes"
+                in error
+                for error in errors
+            ),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_deeply_nested_session_json_is_rejected_without_crashing(self) -> None:
+        session_path = self.build / "deep-session.json"
+        session_path.write_bytes(b"[" * 2000 + b"0" + b"]" * 2000)
+        output = self.build / "deep-session-bundle"
+
+        errors, record = collect_evidence(session_path, output, self.root)
+
+        self.assertIsNone(record)
+        self.assertTrue(
+            any("exceeds the JSON nesting limit" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_missing_mod_profile_rejects_project_jar_after_snapshot(self) -> None:
+        session = self.ready_session()
+        missing_game = self.root / session["client_profiles"]["missing_mod"][
+            "game_directory"
+        ]
+        (missing_game / "mods" / self.artifact_name).write_bytes(self.artifact_content)
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("must be empty" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_client_profile_directories_must_not_be_nested(self) -> None:
+        session = self.ready_session()
+        missing_profile = session["client_profiles"]["missing_mod"]
+        old_missing_game = self.root / missing_profile["game_directory"]
+        matching_game = self.root / session["client_profiles"]["matching"][
+            "game_directory"
+        ]
+        nested_missing_game = matching_game / "logs" / "nested-missing-client"
+        nested_missing_game.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(old_missing_game, nested_missing_game)
+        nested_relative = nested_missing_game.relative_to(self.root).as_posix()
+        missing_profile["game_directory"] = nested_relative
+
+        for phase in ("before", "after"):
+            snapshot_path = self.root / missing_profile[f"{phase}_snapshot"]
+            document = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            document["game_directory"] = nested_relative
+            document["mods_directory"] = f"{nested_relative}/mods"
+            document["inventory_sha256"] = _profile_inventory_sha256(document)
+            snapshot_path.write_text(
+                json.dumps(document, ensure_ascii=True, indent=2, sort_keys=True)
+                + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+        session["log_excerpts"]["mismatch_attempt"]["source"] = (
+            nested_missing_game / "logs" / "latest.log"
+        ).relative_to(self.root).as_posix()
+
+        errors, _, output = self.collect(session, "nested-client-profiles")
+
+        self.assertTrue(
+            any("ancestor/descendant pair" in error for error in errors), errors
+        )
+        self.assertFalse(output.exists())
+
+    def test_committed_bundle_rejects_nested_profile_path_rebinding(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "nested-profile-record-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        profile = record["client_profiles"]["missing_mod"]
+        nested_relative = (
+            record["client_profiles"]["matching"]["game_directory"]
+            + "/logs/nested-missing-client"
+        )
+        profile["game_directory"] = nested_relative
+        profile["mods_directory"] = f"{nested_relative}/mods"
+
+        rebound_inventory = ""
+        for phase in ("before_snapshot", "after_snapshot"):
+            snapshot_record = profile[phase]
+            snapshot_path = output / snapshot_record["file"]
+            document = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            document["game_directory"] = nested_relative
+            document["mods_directory"] = f"{nested_relative}/mods"
+            document["inventory_sha256"] = _profile_inventory_sha256(document)
+            payload = (
+                json.dumps(document, ensure_ascii=True, indent=2, sort_keys=True)
+                + "\n"
+            ).encode("utf-8")
+            digest = hashlib.sha256(payload).hexdigest()
+            snapshot_path.write_bytes(payload)
+            snapshot_record.update(
+                source_sha256=digest,
+                sha256=digest,
+                size=len(payload),
+            )
+            rebound_inventory = document["inventory_sha256"]
+        profile["inventory_sha256"] = rebound_inventory
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "ancestor/descendant pair" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_profile_before_and_after_sources_must_be_distinct(self) -> None:
+        session = self.ready_session()
+        profile = session["client_profiles"]["matching"]
+        profile["after_snapshot"] = profile["before_snapshot"]
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(
+            any("snapshots must be distinct physical files" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_profile_snapshot_timeline_must_span_player_sessions(self) -> None:
+        session = self.ready_session()
+        after_path = self.root / session["client_profiles"]["matching"][
+            "after_snapshot"
+        ]
+        document = json.loads(after_path.read_text(encoding="utf-8"))
+        document["captured_at"] = "2026-08-27T11:30:00+00:00"
+        after_path.write_text(
+            json.dumps(document, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(
+            any("after snapshot must follow the player harness" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_mismatch_client_log_cannot_reuse_matching_profile_log(self) -> None:
+        session = self.ready_session()
+        matching_item = session["log_excerpts"]["matching_client_connection"]
+        matching_log = self.root / matching_item["source"]
+        with matching_log.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(
+                "[Render thread/INFO] [minecraft/ConnectScreen]: "
+                "Connecting to 127.0.0.1, 25565\n"
+            )
+        mismatch = session["log_excerpts"]["mismatch_attempt"]
+        mismatch["source"] = matching_item["source"]
+        mismatch["line_start"] = 5
+        mismatch["line_end"] = 5
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(
+            any("missing_mod client profile logs directory" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_cross_profile_client_logs_must_not_be_hard_links(self) -> None:
+        session = self.ready_session()
+        matching_item = session["log_excerpts"]["matching_client_connection"]
+        matching_log = self.root / matching_item["source"]
+        with matching_log.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(
+                "[Render thread/INFO] [minecraft/ConnectScreen]: "
+                "Connecting to 127.0.0.1, 25565\n"
+            )
+        mismatch_item = session["log_excerpts"]["mismatch_attempt"]
+        mismatch_log = self.root / mismatch_item["source"]
+        mismatch_log.unlink()
+        os.link(matching_log, mismatch_log)
+        mismatch_item["line_start"] = 5
+        mismatch_item["line_end"] = 5
+
+        errors, _, output = self.collect(session, "hard-linked-client-logs")
+
+        self.assertTrue(os.path.samefile(matching_log, mismatch_log))
+        self.assertTrue(
+            any("physical file or hard link" in error for error in errors), errors
+        )
+        self.assertFalse(output.exists())
+
+    def test_build_bundle_rejects_late_cross_profile_hard_link(self) -> None:
+        session = self.ready_session()
+        errors, _, output = self.collect(session, "late-hard-linked-client-logs")
+        self.assertEqual([], errors)
+        matching_log = self.root / session["log_excerpts"][
+            "matching_client_connection"
+        ]["source"]
+        mismatch_log = self.root / session["log_excerpts"]["mismatch_attempt"][
+            "source"
+        ]
+        mismatch_log.unlink()
+        os.link(matching_log, mismatch_log)
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any("physical file or hard link" in error for error in validation_errors),
+            validation_errors,
+        )
+
+    def test_committed_bundle_rejects_cross_profile_physical_log_identity(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "physical-log-record-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        matching_identity = record["log_excerpts"][
+            "matching_client_connection"
+        ]["source_audit"]["physical_file_identity"]
+        record["log_excerpts"]["mismatch_attempt"]["source_audit"][
+            "physical_file_identity"
+        ] = matching_identity
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "physical-file identity across matching" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_blocked_session_can_archive_missing_profile_snapshots(self) -> None:
+        session = self.ready_session()
+        for observation in session["observations"].values():
+            observation["outcome"] = "BLOCKED"
+            observation["actual"] = "Client profile evidence was not captured."
+        for role in ("matching", "missing_mod"):
+            session["client_profiles"][role] = {
+                "status": "MISSING",
+                "game_directory": "",
+                "before_snapshot": "",
+                "after_snapshot": "",
+                "note": "Profile snapshot was not captured.",
+            }
+
+        errors, record, output = self.collect(session)
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertEqual("INCOMPLETE", record["review_readiness"]["status"])
+        self.assertFalse((output / "client-profiles").exists())
+        validation_errors, _ = validate_bundle(output, self.root)
+        self.assertEqual([], validation_errors)
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertTrue(
+            any("client profile before/after binding" in error for error in strict_errors),
+            strict_errors,
+        )
+
     def test_input_outside_build_is_rejected(self) -> None:
         session = self.ready_session()
         outside = self.root / "outside.png"
@@ -914,6 +1589,105 @@ class ManualEvidenceTests(unittest.TestCase):
 
         self.assertTrue(
             any("log excerpt metadata mismatch" in error for error in validation_errors),
+            validation_errors,
+        )
+
+    def test_bundle_filesystem_entry_scan_is_bounded(self) -> None:
+        errors, _, output = self.collect(
+            self.ready_session(), "surplus-entry-bundle"
+        )
+        self.assertEqual([], errors)
+        surplus = output / "surplus"
+        surplus.mkdir()
+        for index in range(MAX_BUNDLE_ENTRIES):
+            (surplus / f"entry-{index:03d}").mkdir()
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                f"more than {MAX_BUNDLE_ENTRIES} filesystem entries" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_oversized_archived_profile_snapshot_is_rejected_before_parsing(
+        self,
+    ) -> None:
+        errors, _, output = self.collect(
+            self.ready_session(), "oversized-archived-profile"
+        )
+        self.assertEqual([], errors)
+        target = output / "client-profiles" / "matching-before.json"
+        with target.open("wb") as stream:
+            stream.truncate(MAX_JSON_BYTES + 1)
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                f"archived matching before profile snapshot exceeds "
+                f"{MAX_JSON_BYTES} bytes" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_oversized_archived_server_summary_is_rejected_before_parsing(
+        self,
+    ) -> None:
+        errors, _, output = self.collect(
+            self.ready_session(), "oversized-archived-summary"
+        )
+        self.assertEqual([], errors)
+        target = output / "server" / "server-summary.json"
+        with target.open("wb") as stream:
+            stream.truncate(MAX_JSON_BYTES + 1)
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                f"server harness summary archive exceeds {MAX_JSON_BYTES} bytes"
+                in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_deeply_nested_archived_json_is_rejected_without_crashing(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "deep-archive-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        payload = b"[" * 2000 + b"0" + b"]" * 2000
+        target = output / "client-profiles" / "matching-before.json"
+        target.write_bytes(payload)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        snapshot = record["client_profiles"]["matching"]["before_snapshot"]
+        digest = hashlib.sha256(payload).hexdigest()
+        snapshot.update(
+            {"sha256": digest, "source_sha256": digest, "size": len(payload)}
+        )
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "archived matching before profile snapshot exceeds the JSON "
+                "nesting limit" in error
+                for error in validation_errors
+            ),
             validation_errors,
         )
 
@@ -1024,7 +1798,6 @@ class ManualEvidenceTests(unittest.TestCase):
             (
                 "client_startup_world",
                 "matching_client_connection",
-                "mismatch_attempt",
             ),
             count=1,
         )
@@ -1313,7 +2086,6 @@ class ManualEvidenceTests(unittest.TestCase):
         roles = (
             "client_startup_world",
             "matching_client_connection",
-            "mismatch_attempt",
         )
         self.set_warning_disposition(
             session, roles, count=1, status="ACCEPTED"
@@ -1498,6 +2270,188 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertIn("[REDACTED_HOME]", text)
         self.assertNotIn("Private Test User", text)
         self.assertNotIn("C:\\Users", text)
+
+    def test_complete_pem_private_key_is_fully_redacted_with_line_count(self) -> None:
+        source = self.build / "logs" / "private-key.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "-----BEGIN PRIVATE KEY-----\n"
+            "SUPER_SECRET_BASE64_BODY\n"
+            "-----END PRIVATE KEY-----\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        payload, counts = extract_log_excerpt(source, 1, 3, [])
+        text = payload.decode("utf-8")
+
+        self.assertEqual(3, len(text.splitlines()))
+        self.assertEqual(1, counts["credential"])
+        self.assertIn("[REDACTED_CREDENTIAL]", text)
+        self.assertNotIn("SUPER_SECRET_BASE64_BODY", text)
+        self.assertNotIn("BEGIN PRIVATE KEY", text)
+        self.assertNotIn("END PRIVATE KEY", text)
+        self.assertEqual([], privacy_findings(text))
+
+    def test_partial_pem_body_selection_cannot_escape_redaction(self) -> None:
+        source = self.build / "logs" / "partial-private-key.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "-----BEGIN RSA PRIVATE KEY-----\n"
+            "PARTIAL_SELECTION_SECRET\n"
+            "-----END RSA PRIVATE KEY-----\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        payload, counts = extract_log_excerpt(source, 2, 2, [])
+        text = payload.decode("utf-8")
+
+        self.assertEqual("\n", text)
+        self.assertEqual(1, counts["credential"])
+        self.assertNotIn("PARTIAL_SELECTION_SECRET", text)
+
+    def test_incomplete_pem_private_key_is_rejected(self) -> None:
+        source = self.build / "logs" / "incomplete-private-key.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "-----BEGIN OPENSSH PRIVATE KEY-----\n"
+            "INCOMPLETE_SECRET_BODY\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        with self.assertRaisesRegex(ValueError, "incomplete or oversized PEM"):
+            extract_log_excerpt(source, 1, 2, [])
+
+    def test_oversized_pem_private_key_is_rejected(self) -> None:
+        source = self.build / "logs" / "oversized-private-key.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "-----BEGIN PRIVATE KEY-----\n"
+            + ("A" * (MAX_PEM_PRIVATE_KEY_CHARS + 1))
+            + "\n-----END PRIVATE KEY-----\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        with self.assertRaisesRegex(ValueError, "incomplete or oversized PEM"):
+            extract_log_excerpt(source, 1, 3, [])
+
+    def test_excessive_pem_private_key_blocks_are_rejected(self) -> None:
+        source = self.build / "logs" / "too-many-private-keys.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        block = (
+            "-----BEGIN PRIVATE KEY-----\n"
+            "SECRET_BODY\n"
+            "-----END PRIVATE KEY-----\n"
+        )
+        source.write_text(block * 17, encoding="utf-8", newline="\n")
+
+        with self.assertRaisesRegex(ValueError, "too many PEM private-key blocks"):
+            extract_log_excerpt(source, 1, 51, [])
+
+    def test_public_key_pem_and_plain_private_key_words_are_not_redacted(self) -> None:
+        text = (
+            "-----BEGIN PUBLIC KEY-----\n"
+            "PUBLIC_MATERIAL\n"
+            "-----END PUBLIC KEY-----\n"
+            "Documentation discusses PRIVATE KEY handling without PEM markers.\n"
+        )
+
+        redacted, counts = redact_text(text, [])
+
+        self.assertEqual(text, redacted)
+        self.assertEqual(0, counts["credential"])
+        self.assertEqual([], privacy_findings(redacted))
+
+    def test_launcher_argument_credentials_are_redacted_in_strict_bundle(self) -> None:
+        session = self.ready_session()
+        item = session["log_excerpts"]["client_startup_world"]
+        source = self.root / item["source"]
+        with source.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(
+                "ModLauncher args [--accessToken, ACCESS_TOKEN_PRIVATE, "
+                "--clientId CLIENT_ID_PRIVATE, --xuid, XUID_PRIVATE]\n"
+            )
+        item["line_start"] = 5
+        item["line_end"] = 5
+
+        errors, record, output = self.collect(session, "launcher-secret-strict")
+        self.assertEqual([], errors)
+        assert record is not None
+        archived = (output / "logs" / "client_startup_world.txt").read_text(
+            encoding="utf-8"
+        )
+        for secret in (
+            "ACCESS_TOKEN_PRIVATE",
+            "CLIENT_ID_PRIVATE",
+            "XUID_PRIVATE",
+        ):
+            self.assertNotIn(secret, archived)
+        self.assertGreaterEqual(archived.count("[REDACTED_CREDENTIAL]"), 3)
+        self.assertGreaterEqual(
+            record["log_excerpts"]["client_startup_world"]["redaction_counts"][
+                "credential"
+            ],
+            3,
+        )
+        validation_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertEqual([], validation_errors)
+
+    def test_launcher_argument_credentials_are_redacted_in_blocked_bundle(self) -> None:
+        session = self.ready_session()
+        session["observations"]["MANUAL-V002-001"].update(
+            outcome="BLOCKED",
+            actual="Client startup observation remained blocked.",
+        )
+        item = session["log_excerpts"]["client_startup_world"]
+        source = self.root / item["source"]
+        with source.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write("args --access_token BLOCKED_PRIVATE_TOKEN\n")
+        item["line_start"] = 5
+        item["line_end"] = 5
+
+        errors, _, output = self.collect(session, "launcher-secret-blocked")
+
+        self.assertEqual([], errors)
+        archived = (output / "logs" / "client_startup_world.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn("BLOCKED_PRIVATE_TOKEN", archived)
+        self.assertIn("[REDACTED_CREDENTIAL]", archived)
+        default_errors, _ = validate_bundle(output, self.root)
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertEqual([], default_errors)
+        self.assertTrue(any("not PASS" in error for error in strict_errors), strict_errors)
+
+    def test_launcher_credential_regex_does_not_match_similar_public_labels(self) -> None:
+        text = (
+            "docs accessToken, public-label --accessTokenization, public-label "
+            "--clientIdentity public-label xuid-public-label\n"
+        )
+
+        redacted, counts = redact_text(text, [])
+
+        self.assertEqual(text, redacted)
+        self.assertEqual(0, counts["credential"])
+        self.assertEqual([], privacy_findings(redacted))
+
+    def test_oversized_launcher_credential_is_rejected_not_partially_redacted(self) -> None:
+        source = self.build / "logs" / "oversized-launcher-secret.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "--accessToken, " + ("a" * 4097) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        with self.assertRaisesRegex(ValueError, "credential-like value"):
+            extract_log_excerpt(source, 1, 1, [])
 
     def test_mismatch_server_must_use_the_harness_world(self) -> None:
         session = self.ready_session()
@@ -1791,7 +2745,7 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertEqual([], errors)
         record_path = output / RECORD_NAME
         record = json.loads(record_path.read_text(encoding="utf-8"))
-        record["log_excerpts"]["mismatch_attempt"]["source_audit"][
+        record["log_excerpts"]["matching_client_connection"]["source_audit"][
             "audit_counts"
         ]["error_count"] = 1
         record_path.write_text(
@@ -1835,7 +2789,9 @@ class ManualEvidenceTests(unittest.TestCase):
     def test_staged_validation_uses_build_mode_and_rejects_changed_raw_input(self) -> None:
         session = self.ready_session()
         output = self.build / "staged-validation-failure"
-        client_log = self.build / "logs" / "client-full.log"
+        client_log = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
         changed = False
 
         def mutate_then_validate(*args, **kwargs):
@@ -1867,10 +2823,85 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertFalse(staging.exists())
         self.assertEqual("build", validator.call_args.kwargs["_validation_mode"])
 
+    def test_shared_raw_log_uses_one_immutable_snapshot_per_validation_phase(
+        self,
+    ) -> None:
+        session = self.ready_session()
+        target = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
+        target_absolute = target.absolute()
+        target_reads = 0
+        reads_at_validation_entry: list[int] = []
+
+        def count_target_reads(path: Path, maximum: int, label: str) -> bytes:
+            nonlocal target_reads
+            if path.absolute() == target_absolute:
+                target_reads += 1
+            return read_bounded_bytes(path, maximum, label)
+
+        def validate_after_collection(*args, **kwargs):
+            reads_at_validation_entry.append(target_reads)
+            return validate_bundle(*args, **kwargs)
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.read_bounded_bytes",
+            side_effect=count_target_reads,
+        ), patch(
+            "scripts.collect_v002_manual_evidence.validate_bundle",
+            side_effect=validate_after_collection,
+        ):
+            errors, _, output = self.collect(
+                session, "single-raw-log-snapshot"
+            )
+
+        self.assertEqual([], errors)
+        self.assertTrue(output.is_dir())
+        self.assertEqual([1], reads_at_validation_entry)
+        self.assertEqual(2, target_reads)
+
+    def test_raw_log_change_between_snapshot_phases_is_rejected(self) -> None:
+        session = self.ready_session()
+        target = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
+        target_absolute = target.absolute()
+        original = target.read_bytes()
+        changed = original + (
+            b"[Render thread/ERROR] [advancedrocketrycommunity/Test]: "
+            b"changed between snapshots\n"
+        )
+        target_reads = 0
+
+        def change_after_collection(path: Path, maximum: int, label: str) -> bytes:
+            nonlocal target_reads
+            if path.absolute() == target_absolute:
+                target_reads += 1
+                return original if target_reads == 1 else changed
+            return read_bounded_bytes(path, maximum, label)
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.read_bounded_bytes",
+            side_effect=change_after_collection,
+        ):
+            errors, record, output = self.collect(
+                session, "changed-raw-log-snapshot"
+            )
+
+        self.assertIsNone(record)
+        self.assertTrue(
+            any("raw log source no longer matches its audit" in error for error in errors),
+            errors,
+        )
+        self.assertEqual(2, target_reads)
+        self.assertFalse(output.exists())
+
     def test_staged_committed_validation_rechecks_raw_inputs_before_publish(self) -> None:
         session = self.ready_session()
         output = self.root / COMMITTED_BUNDLE
-        client_log = self.build / "logs" / "client-full.log"
+        client_log = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
         modes: list[str] = []
         changed = False
 
@@ -1901,6 +2932,42 @@ class ManualEvidenceTests(unittest.TestCase):
 
         self.assertIsNone(record)
         self.assertTrue(any("raw log source no longer matches" in error for error in errors), errors)
+        self.assertEqual(["committed", "build"], modes)
+        self.assertFalse(output.exists())
+        self.assertFalse((self.build / ".v002-evidence-staging").exists())
+
+    def test_staged_committed_validation_rechecks_profile_inventory(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        missing_game = self.root / session["client_profiles"]["missing_mod"][
+            "game_directory"
+        ]
+        modes: list[str] = []
+        changed = False
+
+        def mutate_profile_after_committed_check(*args, **kwargs):
+            nonlocal changed
+            mode = kwargs["_validation_mode"]
+            modes.append(mode)
+            result = validate_bundle(*args, **kwargs)
+            if mode == "committed" and not changed:
+                changed = True
+                (missing_game / "mods" / "late.jar").write_bytes(b"late mutation")
+            return result
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.validate_bundle",
+            side_effect=mutate_profile_after_committed_check,
+        ):
+            errors, record = collect_evidence(
+                self.write_session(session, "staged-profile-session.json"),
+                output,
+                self.root,
+                require_acceptance_ready=True,
+            )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("must be empty" in error for error in errors), errors)
         self.assertEqual(["committed", "build"], modes)
         self.assertFalse(output.exists())
         self.assertFalse((self.build / ".v002-evidence-staging").exists())
@@ -2001,6 +3068,22 @@ class ManualEvidenceTests(unittest.TestCase):
 
         self.assertTrue(any("symlink or junction" in error for error in errors), errors)
         self.assertFalse(output.exists())
+
+    def test_archived_profile_snapshot_parent_link_is_rejected_before_read(
+        self,
+    ) -> None:
+        self.assert_bundle_parent_link_rejected("client-profiles")
+
+    def test_archived_server_summary_parent_link_is_rejected_before_read(
+        self,
+    ) -> None:
+        self.assert_bundle_parent_link_rejected("server")
+
+    def test_archived_screenshot_parent_link_is_rejected_before_read(self) -> None:
+        self.assert_bundle_parent_link_rejected("screenshots")
+
+    def test_archived_log_parent_link_is_rejected_before_read(self) -> None:
+        self.assert_bundle_parent_link_rejected("logs")
 
 
 if __name__ == "__main__":
