@@ -273,7 +273,7 @@
       "source_sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Preserved all bytes."
+        "Preserved script content; Git stores normalized LF blob bytes while Windows checkout materializes the original CRLF source bytes."
       ],
       "worktree_materialized_sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
     },

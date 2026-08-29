@@ -3,8 +3,9 @@
 ## Blocking before `PASSED`
 
 - Human review has not approved the Forge MDK/Gradle Wrapper license scope and
-  the source/binary notice treatment. The mechanical provenance record remains
-  `PENDING_HUMAN_REVIEW`.
+  the source/binary notice treatment. The schema-3 provenance record remains
+  `EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING`; its individual target and notice
+  decisions remain `PENDING_HUMAN_REVIEW`.
 - An isolated packaged client has not captured the Mods page or disposable
   single-player world evidence.
 - A matching packaged client has not joined, disconnected, or reconnected after
@@ -14,17 +15,29 @@
 - Final human release acceptance is absent. The version is not tagged, merged
   as accepted, or published. Any later GitHub Release must be a pre-release,
   never a stable release.
+- G0 human approval must happen before packaged-client evidence. Its review
+  transition changes `THIRD-PARTY-NOTICES.md`, which is packaged into both
+  JARs; approval therefore requires a rebuild, refreshed artifact evidence, and
+  successful CI before the client/server JAR is selected. Any earlier client
+  capture would describe obsolete bytes.
+- Provenance and future client evidence bind historical Git commits. PR #3 must
+  use a normal merge commit when accepted; squash/rebase history rewriting
+  requires new bindings, mechanical validation, and the affected human reviews.
 
 ## Artifact reproducibility result and boundary
 
-- The current reviewed local artifact has SHA-256
+- The current mechanically tested pre-G0 artifact has SHA-256
   `58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`;
   two Windows clean builds produced identical bytes.
 - The current sources JAR has SHA-256
   `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
-- The current-head Linux Forge 47.4.10 upload was downloaded from workflow run
-  33098971600. Its main JAR, sources JAR, and content manifest are byte-identical
-  to the Windows build and committed manifest.
+- The tested-implementation Linux Forge 47.4.10 upload was downloaded from
+  workflow run 33258532863. Its main JAR, sources JAR, and content manifest are
+  byte-identical to the Windows build and committed manifest.
+- Documentation checkpoint `12375d1` had 3/3 successful last-observed checks in
+  Forge run 33100160962 and governance run 33100161000. Those documentation-
+  checkpoint runs are not relabeled as the artifact-producing implementation
+  run above.
 - Historical hashes `b10db978...`, `c627d23a...`, and `827c07b...` identify
   superseded artifacts from earlier packaging/evidence states. They must not be
   mixed with the current client/server session.

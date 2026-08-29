@@ -114,12 +114,14 @@ Codex 报告格式
 
 ## 决策记录
 
-`docs/decisions/` 内提供五份 ADR：
+`docs/decisions/` 内提供六份 ADR：
 
 - 项目身份与 namespace；
 - 固定 Moon/Space 维度；
 - 火箭事务；
-- 大气扫描预算。
-- 私有仓库下的 v0.0.1 G8 证据接受与公开前复查条件。
+- 大气扫描预算；
+- 私有仓库下的 v0.0.1 G8 证据接受与公开前复查条件；
+- v0.0.2 bootstrap 范围内的 G4 适用性判断。
 
-ADR-000 与 ADR-004 已由维护者接受；其余初始 ADR 默认 `PROPOSED`，需在对应版本前由人工接受。
+ADR-000 与 ADR-004 已由维护者接受；ADR-005 和其余初始 ADR 默认
+`PROPOSED`，需在对应版本前由人工接受。

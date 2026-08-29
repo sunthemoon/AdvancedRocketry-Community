@@ -11,11 +11,13 @@
 | Minecraft | Java Edition 1.20.1 |
 | Mod loader | Forge 47.4.10 verification baseline |
 | Java | 17, for client, build, and dedicated-server execution |
+| Evidence tooling | Python 3.12, for repository validators and the manual-evidence helper |
 | Project JAR | `advancedrocketry-community-1.20.1-0.0.2-dev.jar` |
 | Optional dependencies | None |
 
 Forge 47.4.23 is an advisory CI compatibility lane, not the packaged-client
-acceptance baseline. Do not substitute another Minecraft, Forge, Java, or mod
+acceptance baseline. Python is source/evidence tooling and is not a Minecraft
+runtime dependency. Do not substitute another Minecraft, Forge, Java, or mod
 version when producing `v0.0.2` release evidence.
 
 ## What this build contains
@@ -29,9 +31,19 @@ Use a new disposable world and a separate test profile. The project promises
 no world compatibility for `v0.0.x` through `v0.4.x`; do not open a valued
 world with this developer preview.
 
+## Acceptance prerequisite: finish G0 first
+
+Do not select or launch a packaged-client acceptance artifact while the G0
+Forge/Gradle provenance review is pending. The repository owner or assigned
+license reviewer must complete the rendered README and provenance/license
+review, commit the approval metadata and packaged notice changes, then rebuild
+the JARs, refresh artifact evidence/checksums, and obtain successful blocking CI
+for that exact commit. The approval transition changes packaged bytes, so a
+pre-approval JAR cannot be reused as client evidence.
+
 ## Obtain the test artifact
 
-Build from the reviewed source revision with Java 17:
+Build from that reviewed post-G0 source revision with Java 17:
 
 ```text
 ./gradlew clean build

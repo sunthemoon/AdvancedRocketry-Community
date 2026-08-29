@@ -1,12 +1,13 @@
 # TEST-REPORT — v0.0.2 Forge Bootstrap
 
 ```yaml
-test_date: 2026-08-28
+test_date: 2026-08-29
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 8ce7a8d842a6c8cca05bede3de688b6a80bf5232
+tested_implementation_commit: 0fa080fdff3ab025c6b764b02d2d07fa9221c5ae
+documentation_checkpoint: 12375d178cb2c06b09cdf3f196cc6c609607a9ba
 branch: codex/v0.0.2-forge-bootstrap
-environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / Minecraft 1.20.1 / Forge 47.4.10
+environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13.13 / CI Python 3.12 / Minecraft 1.20.1 / Forge 47.4.10
 ```
 
 ## Automated command results
@@ -15,8 +16,8 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / Minecraft 1.20.1 
 |---|---|---|
 | `gradlew --version` | PASS | Gradle 8.8 on JVM 17.0.8 |
 | `gradlew clean build --no-daemon --stacktrace` | PASS | Repeated clean builds produced the same main and sources JARs; 3 JUnit tests passed |
-| `python -m unittest discover -s tests -v` | PASS | 154/154 Python tests passed |
-| `python scripts/validate_bootstrap_provenance.py` | PASS | 2 pinned components and all 11 imported targets matched the machine-readable manifest |
+| `python -m unittest discover -s tests -v` | PASS | 243/243 Python tests passed |
+| `python scripts/validate_bootstrap_provenance.py` | PASS | Schema-3 evidence matched 2 pinned components, 11 imported targets, Git object/mode/blob identities, and current HEAD; review remains human-pending |
 | `python scripts/validate_build_artifact.py <jar> --content-manifest <path>` | PASS | 34 entries; metadata, exact notices/licenses, paths, generated-cache exclusion, placeholders, and credential scans passed |
 | `python scripts/generate_v002_g0_evidence.py verify <jar> <sources-jar> ...` | PASS | Committed mechanical G0 evidence matches both current JARs |
 | `python scripts/validate_release_checksums.py --artifact <jar>` | PASS | 10 entries; all 9 committed evidence files and the external JAR matched |
@@ -24,10 +25,12 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / Minecraft 1.20.1 
 | `python scripts/validate_repository.py --require-approved-identity` | PASS | 15 passed, 0 warnings, 0 failed |
 | `gradlew runData --no-daemon --stacktrace` | PASS | The current run passed and left tracked and untracked worktree state unchanged; one historical Mojang download retry remains recorded below |
 | `gradlew runGameTestServer --no-daemon --stacktrace` | PASS | 1/1 required GameTest passed |
-| `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS_AFTER_RECOVERY | Current 34-entry JAR passed schema-2 first start/status/save/stop and same-world restart/status/save/stop with bound log/world evidence |
-| GitHub Actions repository governance | PASS | [Run 33098971618](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971618) passed at the tested implementation commit |
-| GitHub Actions Forge bootstrap | PASS | [Run 33098971600](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971600) passed baseline plus advisory jobs and uploaded the Linux artifacts |
-| Post-commit clean-worktree checks | PASS | `git diff --exit-code` and `python scripts/check_clean_worktree.py` passed at `8ce7a8d` |
+| `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS_AFTER_RECOVERY | Current 34-entry JAR passed schema-2 first start/status/save/stop and same-world restart/status/save/stop with bound log, world, and canonical startup-properties evidence |
+| GitHub Actions repository governance | PASS | [Run 33258532838](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838) passed at the tested implementation commit |
+| GitHub Actions Forge bootstrap | PASS | [Run 33258532863](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863) passed baseline plus advisory jobs and uploaded the Linux artifacts |
+| Documentation-checkpoint repository governance | PASS | [Run 33100161000](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100161000) passed at documentation checkpoint `12375d1` |
+| Documentation-checkpoint Forge bootstrap | PASS | [Run 33100160962](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100160962) passed at documentation checkpoint `12375d1` |
+| Tested-implementation clean-worktree checks | PASS | `git diff --exit-code` and `python scripts/check_clean_worktree.py` passed in CI at `0fa080f` |
 
 ## Artifact identity
 
@@ -41,7 +44,7 @@ server_copy_hash_equal: true
 linux_ci_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 linux_ci_sources_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 linux_ci_content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
-linux_ci_artifact_id: 9657910132
+linux_ci_artifact_id: 9716650737
 cross_platform_byte_identity_proven: true
 ```
 
@@ -50,7 +53,7 @@ The committed per-entry manifest is
 with SHA-256
 `a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5`.
 The ten-entry release list is [`checksums.txt`](checksums.txt). The artifacts
-downloaded from Forge run 33098971600 match the Windows main JAR, sources JAR,
+downloaded from Forge run 33258532863 match the Windows main JAR, sources JAR,
 and committed content manifest byte-for-byte.
 
 ## Test inventory
@@ -58,10 +61,10 @@ and committed content manifest byte-for-byte.
 | Layer | Count | Result | Notes |
 |---|---:|---|---|
 | Java unit | 3 | PASS | Approved identity and expanded Forge metadata |
-| Python unit | 154 | PASS | Repository, provenance approval binding, blocking workflow structure, bounded JAR/G0, side, manual-evidence audit binding/readiness, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
+| Python unit | 243 | PASS | Repository, schema-3 provenance and approval binding, blocking workflow structure, bounded JAR/G0, side, manual-evidence audit binding/readiness, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
 | DataGen | 1 provider | PASS | Minimal GameTest structure remained byte-stable and the current run left the worktree unchanged |
 | Forge GameTest | 1 | PASS | Entrypoint and approved mod ID agree |
-| Packaged dedicated server | 2 cycles | PASS | Current JAR schema-2 first start and same-world restart both exited 0 after identity/status/save/stop checks |
+| Packaged dedicated server | 2 cycles | PASS | Current JAR schema-2 first start and same-world restart both exited 0 after artifact/status/save/stop, world, and canonical startup-properties identity checks |
 | Packaged client/manual | 0 completed | PENDING | Isolated Mods/world/join/reconnect/mismatch observations remain |
 
 ## Failures and recovery
@@ -112,9 +115,13 @@ counts are retained separately from project-source findings.
 
 ```yaml
 local_automated_baseline: PASS
-current_head_governance_ci: PASS
-current_head_forge_ci: PASS
-current_head_checks: 3/3_PASS
+tested_implementation_governance_ci: PASS
+tested_implementation_forge_ci: PASS
+tested_implementation_checks: 3/3_PASS
+documentation_checkpoint: 12375d178cb2c06b09cdf3f196cc6c609607a9ba
+last_observed_checkpoint_governance_ci: PASS
+last_observed_checkpoint_forge_ci: PASS
+last_observed_checkpoint_checks: 3/3_PASS
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 release_status: IN_PROGRESS

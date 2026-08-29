@@ -8,7 +8,9 @@
 
 ## Status
 
-**Pre-alpha / Forge bootstrap phase. The development build loads on Forge, but no playable public release is available yet.**
+**Pre-alpha / staged Forge development. The authoritative build and acceptance
+state is recorded in [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md);
+no stable playable public release is available.**
 
 Current target:
 

@@ -2,10 +2,10 @@
 # The build/libs JAR is intentionally not committed; CI verifies it separately.
 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
 a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
-891831b8eaaa407eb84acfd5cd36590247d13cbdf528f115970c179ef12ec79e  docs/releases/v0.0.2/evidence/dedicated-server/README.md
-775fabcd222281ac4a9baf7302b86dc31ff80eff82ec8ee7d75ddad8ec584ec6  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
-0970e9724c9f9fcc4b972654a9313d75abfa66cd5af382d5164d13a9f0ab2053  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
-61cbf5d45926eb6c8f73ba484fc08bdf9c51ab07041489cc8701f7e57b9e5319  docs/releases/v0.0.2/evidence/dedicated-server/summary.json
+dffd5b54f2db8caba18d2696c369813898dbbc622d074da39a3aa6b1c6738f4c  docs/releases/v0.0.2/evidence/dedicated-server/README.md
+79ad47b208404d555cfe80653ce4ddf440ce641849b41b96dcb7b99d561852a5  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
+cc23c817def71110aa69d096306ea32f0a4754b6193f7e6d93044a4ccc199144  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
+37be93f86779121854223980207ff4228a534d47dacecae837d70e2c11b17cfa  docs/releases/v0.0.2/evidence/dedicated-server/summary.json
 c142ba57806534341a136366253f8c45b6acc259c8b18329c4c2b5f1976f68fc  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
 fc67b24054003444581b38a79d5877bb9fede3abcdf67b7bf9f7ee96fc8f4c26  docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json
 5baecb565c0d10b57b6373f465708b69cbd12176f63677fc836cbc7b9725e57c  docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml

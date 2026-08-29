@@ -6,28 +6,32 @@
 version: v0.0.2
 status: IN_PROGRESS
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 8ce7a8d842a6c8cca05bede3de688b6a80bf5232
+tested_implementation_commit: 0fa080fdff3ab025c6b764b02d2d07fa9221c5ae
 tag: NOT_CREATED
 release: NOT_CREATED
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
-forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971600
-governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33098971618
+tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863
+tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838
+documentation_checkpoint: 12375d178cb2c06b09cdf3f196cc6c609607a9ba
+last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100160962
+last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100161000
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
 java: 17.0.8
 gradle: 8.8
-built_at: 2026-08-28
+built_at: 2026-08-29
 built_by: Codex-assisted local development
 jar_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 linux_jar_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 linux_sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
-linux_ci_artifact_id: 9657910132
-pull_request_checks: 3/3_PASS
+linux_ci_artifact_id: 9716650737
+tested_implementation_pull_request_checks: 3/3_PASS
+last_observed_checkpoint_pull_request_checks: 3/3_PASS
 ```
 
 ## Gate summary
@@ -35,19 +39,22 @@ pull_request_checks: 3/3_PASS
 | Gate | Status | Evidence |
 |---|---|---|
 | G0 Identity/License/Provenance | IN_PROGRESS | Machine-readable input/target mapping, exact license copies, sources-JAR evidence, JAR packaging, and hash checks exist; a current rendered README screenshot and human scope/sufficiency review remain |
-| G1 Reproducible Build | PASS | Repeated Windows clean builds and current-head Linux CI produced byte-identical main JARs, sources JARs, and content manifests |
+| G1 Reproducible Build | PASS | Repeated Windows clean builds and tested-implementation Linux CI produced byte-identical main JARs, sources JARs, and content manifests |
 | G2 Data/Assets | PASS | DataGen passed after one retained network retry and left no generated-resource or committed worktree change |
-| G3 Automated Behavior | PASS | 3 JUnit, 154 Python, and 1 Forge GameTest pass |
+| G3 Automated Behavior | PASS | 3 JUnit, 243 Python, and 1 Forge GameTest pass |
 | G4 Dedicated/Sides | IN_PROGRESS | Packaged first-start/save/stop/restart passes; packaged player join/reconnect and mismatch observation remain |
 | G5 Persistence/Recovery | NOT_APPLICABLE | No project persistent data in v0.0.2 |
 | G6 Security/Authority | NOT_APPLICABLE | No project packets or gameplay authority in v0.0.2 |
 | G7 Performance | NOT_APPLICABLE | No gameplay loop, ticking service, or world scan in v0.0.2 |
 | G8 Manual Flow | NOT_STARTED | Packaged-client Mods page, world entry, and player-flow evidence remain |
-| G9 Docs/Release | IN_PROGRESS | Changelog, installation/save boundary, known issues, mechanical evidence, checksums, and current-head CI exist; client evidence integration and human acceptance remain |
+| G9 Docs/Release | IN_PROGRESS | Changelog, installation/save boundary, known issues, mechanical evidence, checksums, tested-implementation CI, and a successful last-observed documentation-checkpoint CI exist; client evidence integration and human acceptance remain |
 
-No Required Gate is treated as waived. Proposed G4 `NOT_APPLICABLE` rationales
-for two-player project state and optional client dependencies require explicit
-human decisions and do not replace the matching-client checks.
+No Required Gate is treated as waived. Five proposed G4 `NOT_APPLICABLE`
+rationales cover bootstrap-only synchronization, two-player, chunk-unload,
+configuration-mismatch, and optional-client-dependency cases. Every decision
+requires explicit human review and does not replace the matching-client checks.
+G0 must be reviewed and its packaged notice changes rebuilt before those client
+checks begin; otherwise the client evidence would bind a superseded JAR.
 
 ## Commands actually run for the tested implementation
 
@@ -81,14 +88,14 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 
 ## Artifact and automated tests
 
-- Final artifact:
+- Current tested artifact (pre-G0 human approval):
   `advancedrocketry-community-1.20.1-0.0.2-dev.jar`.
 - SHA-256:
   `58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`.
 - Sources JAR SHA-256:
   `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
 - Two same-environment clean builds produced identical bytes.
-- Forge run 33098971600's Linux upload matches the Windows main JAR
+- Tested-implementation Forge run 33258532863's Linux upload matches the Windows main JAR
   (`58622a5ad...`), sources JAR (`2e18a573...`), and content manifest
   (`a5128fff...`) byte-for-byte.
 - The content manifest records 34 sorted entries with per-entry size and hash.
@@ -97,6 +104,8 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 - The release checksum validator covers all nine committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for the tested implementation.
+  Documentation checkpoint `12375d1` also had 3/3 successful last-observed
+  checks in Forge run 33100160962 and governance run 33100161000.
 
 See [`TEST-REPORT.md`](TEST-REPORT.md),
 [`checksums.txt`](checksums.txt), and
@@ -106,7 +115,7 @@ See [`TEST-REPORT.md`](TEST-REPORT.md),
 
 ```yaml
 evidence_schema_version: 2
-harness_session_id: v002-023ec4639969e1bf54c9804d
+harness_session_id: v002-643266d9b1762b0a3e505a45
 java: 17.0.8
 forge: 47.4.10
 offline_mode: true
@@ -119,6 +128,7 @@ packaged_mod_marker: 1.20.1-0.0.2-dev
 packaged_save_and_stop: PASS
 same_world_restart: PASS
 same_world_identity_marker: PASS
+canonical_startup_properties_identity: PASS
 client_class_linkage_findings: 0
 project_error_findings: 0
 project_warning_findings: 0
@@ -127,8 +137,9 @@ player_join: PENDING
 
 Selected lifecycle evidence is under
 [`evidence/dedicated-server/`](evidence/dedicated-server/). The retained local
-session is ignored and contains full installer/runtime logs plus the world for
-the packaged-client continuation.
+session is ignored and contains full installer/runtime logs plus its disposable
+world. It is a headless baseline only; the post-G0 packaged-client procedure
+creates a fresh isolated player session.
 
 ## Manual tests
 
@@ -146,11 +157,13 @@ gradle_license_copy_verified: true
 third_party_notices_packaged: true
 machine_readable_manifest_verified: true
 mechanical_g0_evidence_verified: true
+provenance_schema_version: 3
+mechanical_review_state: EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING
 new_upstream_ar_code_or_assets: 0
 new_original_assets: 1 bootstrap logo
 generated_assets: 1 GameTest structure
 current_rendered_readme_screenshot: false
-review_status: PENDING_HUMAN_REVIEW
+review_status: EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING
 ```
 
 The human-readable record is

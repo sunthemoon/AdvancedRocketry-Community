@@ -1,10 +1,10 @@
 cycle=first-start
-cycle_id=v002-023ec4639969e1bf54c9804d-first-start
-started_at=2026-08-27T17:09:25.580128+00:00
-completed_at=2026-08-27T17:09:48.873781+00:00
+cycle_id=v002-643266d9b1762b0a3e505a45-first-start
+started_at=2026-08-29T14:44:43.429639+00:00
+completed_at=2026-08-29T14:45:25.294753+00:00
 exit_code=0
 full_log_file=first-start-full.txt
-full_log_sha256=e3ec95422592327511713ae9ed4082ae3b03b23ec4ab77f49b6916e96bb7591b
+full_log_sha256=f54c178f880ffd4a9b7fdcffd61bf119f5846a0f15c959e6c2e47617ef252f88
 player_join_observed=false
 player_leave_observed=false
 status_version=1.20.1
@@ -16,14 +16,14 @@ project_error_count=0
 project_warning_count=0
 client_linkage_failure_count=0
 
-[01:09:32] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.0.2-dev initialized
-[01:09:34] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
-[01:09:34] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:55094
-[01:09:35] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
-[01:09:45] [Server thread/INFO] [minecraft/DedicatedServer]: Done (10.554s)! For help, type "help"
-[01:09:46] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online:
-[01:09:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
-[01:09:47] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
-[01:09:47] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
-[01:09:47] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
-[01:09:47] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[22:44:56] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.0.2-dev initialized
+[22:45:01] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[22:45:01] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:51368
+[22:45:02] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[22:45:21] [Server thread/INFO] [minecraft/DedicatedServer]: Done (18.628s)! For help, type "help"
+[22:45:21] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online:
+[22:45:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[22:45:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[22:45:23] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[22:45:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[22:45:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
