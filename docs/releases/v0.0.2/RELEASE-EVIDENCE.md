@@ -14,9 +14,12 @@ required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
 tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863
 tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838
-documentation_checkpoint: 9434bf37f60d73e116d3ce62b10ef2d629f0dd02
-last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695419
-last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695420
+documentation_checkpoint: d2b571f7dd63cc7d87bc3acf9197e8fd72ab3cfa
+last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040688
+last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040675
+checkpoint_forge_artifact_id: 9721907600
+checkpoint_g0_review_packet_artifact_id: 9721841271
+checkpoint_g0_review_packet_commit: 08e8c4813f4cbc4913ff8fb9c78162bdf6dbc5b4
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -106,8 +109,10 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 - The release checksum validator covers all nine committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for the tested implementation.
-  Documentation checkpoint `9434bf3` also had 3/3 successful last-observed
-  checks in Forge run 33259695419 and governance run 33259695420.
+  Documentation checkpoint `d2b571f` also had 3/3 successful last-observed
+  checks in Forge run 33277040688 and governance run 33277040675. The latter
+  uploaded the 33-file PR-merge review packet as artifact 9721841271; its
+  diagnostic binding does not approve G0.
 
 See [`TEST-REPORT.md`](TEST-REPORT.md),
 [`checksums.txt`](checksums.txt), and

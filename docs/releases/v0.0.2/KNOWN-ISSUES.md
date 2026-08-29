@@ -36,8 +36,8 @@
 - The tested-implementation Linux Forge 47.4.10 upload was downloaded from
   workflow run 33258532863. Its main JAR, sources JAR, and content manifest are
   byte-identical to the Windows build and committed manifest.
-- Documentation checkpoint `9434bf3` had 3/3 successful last-observed checks in
-  Forge run 33259695419 and governance run 33259695420. Those documentation-
+- Documentation checkpoint `d2b571f` had 3/3 successful last-observed checks in
+  Forge run 33277040688 and governance run 33277040675. Those documentation-
   checkpoint runs are not relabeled as the artifact-producing implementation
   run above.
 - Historical hashes `b10db978...`, `c627d23a...`, and `827c07b...` identify
