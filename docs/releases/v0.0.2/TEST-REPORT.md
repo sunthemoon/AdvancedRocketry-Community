@@ -5,7 +5,7 @@ test_date: 2026-08-29
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
 tested_implementation_commit: 0fa080fdff3ab025c6b764b02d2d07fa9221c5ae
-documentation_checkpoint: 12375d178cb2c06b09cdf3f196cc6c609607a9ba
+documentation_checkpoint: 9434bf37f60d73e116d3ce62b10ef2d629f0dd02
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13.13 / CI Python 3.12 / Minecraft 1.20.1 / Forge 47.4.10
 ```
@@ -28,8 +28,8 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13
 | `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS_AFTER_RECOVERY | Current 34-entry JAR passed schema-2 first start/status/save/stop and same-world restart/status/save/stop with bound log, world, and canonical startup-properties evidence |
 | GitHub Actions repository governance | PASS | [Run 33258532838](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838) passed at the tested implementation commit |
 | GitHub Actions Forge bootstrap | PASS | [Run 33258532863](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863) passed baseline plus advisory jobs and uploaded the Linux artifacts |
-| Documentation-checkpoint repository governance | PASS | [Run 33100161000](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100161000) passed at documentation checkpoint `12375d1` |
-| Documentation-checkpoint Forge bootstrap | PASS | [Run 33100160962](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100160962) passed at documentation checkpoint `12375d1` |
+| Documentation-checkpoint repository governance | PASS | [Run 33259695420](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695420) passed at documentation checkpoint `9434bf3` |
+| Documentation-checkpoint Forge bootstrap | PASS | [Run 33259695419](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695419) passed at documentation checkpoint `9434bf3` |
 | Tested-implementation clean-worktree checks | PASS | `git diff --exit-code` and `python scripts/check_clean_worktree.py` passed in CI at `0fa080f` |
 
 ## Artifact identity
@@ -118,7 +118,7 @@ local_automated_baseline: PASS
 tested_implementation_governance_ci: PASS
 tested_implementation_forge_ci: PASS
 tested_implementation_checks: 3/3_PASS
-documentation_checkpoint: 12375d178cb2c06b09cdf3f196cc6c609607a9ba
+documentation_checkpoint: 9434bf37f60d73e116d3ce62b10ef2d629f0dd02
 last_observed_checkpoint_governance_ci: PASS
 last_observed_checkpoint_forge_ci: PASS
 last_observed_checkpoint_checks: 3/3_PASS

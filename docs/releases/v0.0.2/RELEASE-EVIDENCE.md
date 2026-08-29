@@ -14,9 +14,9 @@ required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
 tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863
 tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838
-documentation_checkpoint: 12375d178cb2c06b09cdf3f196cc6c609607a9ba
-last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100160962
-last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100161000
+documentation_checkpoint: 9434bf37f60d73e116d3ce62b10ef2d629f0dd02
+last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695419
+last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695420
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -104,8 +104,8 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 - The release checksum validator covers all nine committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for the tested implementation.
-  Documentation checkpoint `12375d1` also had 3/3 successful last-observed
-  checks in Forge run 33100160962 and governance run 33100161000.
+  Documentation checkpoint `9434bf3` also had 3/3 successful last-observed
+  checks in Forge run 33259695419 and governance run 33259695420.
 
 See [`TEST-REPORT.md`](TEST-REPORT.md),
 [`checksums.txt`](checksums.txt), and

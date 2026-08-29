@@ -15,10 +15,10 @@ pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3"
 tested_implementation_pull_request_checks: "3/3 PASS"
 tested_implementation_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863"
 tested_implementation_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838"
-documentation_checkpoint: "12375d178cb2c06b09cdf3f196cc6c609607a9ba"
+documentation_checkpoint: "9434bf37f60d73e116d3ce62b10ef2d629f0dd02"
 last_observed_checkpoint_pull_request_checks: "3/3 PASS"
-last_observed_checkpoint_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100160962"
-last_observed_checkpoint_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33100161000"
+last_observed_checkpoint_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695419"
+last_observed_checkpoint_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33259695420"
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 gates:
@@ -44,8 +44,8 @@ human_approved_at: ""
 ```
 
 `PASS` above records evidence-backed automated Gates. Runs 33258532863 and
-33258532838 are the tested-implementation CI; runs 33100160962 and 33100161000
-are the last observed CI for documentation checkpoint `12375d1`. This does not
+33258532838 are the tested-implementation CI; runs 33259695419 and 33259695420
+are the last observed CI for documentation checkpoint `9434bf3`. This does not
 mark the version `PASSED`. G0 retains rendered README and human review work, and
 no Required Gate is waived. A GitHub Release is not required before acceptance;
 if one is created after human acceptance, it must be classified as a
