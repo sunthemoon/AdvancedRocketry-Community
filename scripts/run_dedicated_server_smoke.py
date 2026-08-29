@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import io
 import json
 import os
 import platform
 import re
+import secrets
 import shutil
 import socket
 import subprocess
@@ -39,11 +41,39 @@ INSTALLER_URL = (
 )
 INSTALLER_SHA1 = "66bfea9963bfa60d88bab6b2750e74a958392715"
 SUMMARY_SCHEMA_VERSION = 2
+MANUAL_PLAYER_SUMMARY_SCHEMA_VERSION = 3
 WORLD_IDENTITY_FILE = ".v002-smoke-world-identity.json"
-READY_MARKER = re.compile(r"Done \([^)]+\)! For help, type \"help\"")
-SAVE_MARKER = re.compile(r"Saved the game")
-JOIN_MARKER = re.compile(r" joined the game")
-LEAVE_MARKER = re.compile(r" left the game")
+SERVER_PROPERTIES_IDENTITY_FILE = "server.properties.v002-startup"
+MINECRAFT_SERVER_LOGGER = (
+    r"(?:minecraft/MinecraftServer|net\.minecraft\.server\.MinecraftServer)/?"
+)
+DEDICATED_SERVER_LOGGER = (
+    r"(?:minecraft/DedicatedServer|"
+    r"net\.minecraft\.server\.dedicated\.DedicatedServer)/?"
+)
+SERVER_LOG_LINE_PREFIX = (
+    r"^(?:\[[^\]\r\n]+\]\s*)*"
+    r"\[Server thread/INFO\]\s+"
+)
+READY_MARKER = re.compile(
+    SERVER_LOG_LINE_PREFIX
+    + rf"\[{DEDICATED_SERVER_LOGGER}\]:\s+"
+    + r'Done \([^)]+\)! For help, type "help"\s*$'
+)
+SAVE_MARKER = re.compile(
+    SERVER_LOG_LINE_PREFIX
+    + rf"\[{MINECRAFT_SERVER_LOGGER}\]:\s+Saved the game\s*$"
+)
+JOIN_MARKER = re.compile(
+    SERVER_LOG_LINE_PREFIX
+    + rf"\[{MINECRAFT_SERVER_LOGGER}\]:\s+"
+    + r"(?P<player>[A-Za-z0-9_]{3,16}) joined the game\s*$"
+)
+LEAVE_MARKER = re.compile(
+    SERVER_LOG_LINE_PREFIX
+    + rf"\[{MINECRAFT_SERVER_LOGGER}\]:\s+"
+    + r"(?P<player>[A-Za-z0-9_]{3,16}) left the game\s*$"
+)
 ERROR_LINE = re.compile(r"\[[^\]]+/ERROR\]")
 WARNING_LINE = re.compile(r"\[[^\]]+/WARN\]")
 PROJECT_LOGGER = re.compile(r"\[[^\]]*advancedrocketrycommunity[^\]]*/[^\]]*\]", re.I)
@@ -53,6 +83,20 @@ CLIENT_LINKAGE_MARKERS = (
     "NoClassDefFoundError: net.minecraft.client",
     "ClassNotFoundException: net.minecraft.client",
 )
+HARNESS_SERVER_PROPERTIES = {
+    "difficulty": "peaceful",
+    "enable-command-block": "false",
+    "generate-structures": "false",
+    "level-name": "world",
+    "level-type": "minecraft:normal",
+    "max-players": "2",
+    "motd": "ARCE v0.0.2 dedicated smoke",
+    "server-ip": "127.0.0.1",
+    "simulation-distance": "2",
+    "spawn-protection": "0",
+    "sync-chunk-writes": "true",
+    "view-distance": "2",
+}
 
 
 class SmokeError(RuntimeError):
@@ -67,30 +111,76 @@ def digest_file(path: Path, algorithm: str = "sha256") -> str:
     return digest.hexdigest()
 
 
+def is_link_or_junction(path: Path) -> bool:
+    junction = getattr(path, "is_junction", None)
+    return path.is_symlink() or bool(junction and junction())
+
+
 def build_session_id(artifact_sha256: str, started_at: str, port: int) -> str:
     payload = f"v0.0.2\0{artifact_sha256}\0{started_at}\0{port}".encode("utf-8")
     return "v002-" + hashlib.sha256(payload).hexdigest()[:24]
+
+
+def bind_player_identity(identity_secret: bytes, player_name: str) -> str:
+    """Create an opaque identity binding using an unarchived per-run secret."""
+    if not isinstance(identity_secret, bytes) or len(identity_secret) < 32:
+        raise SmokeError("Player identity binding requires a 32-byte secret")
+    payload = b"v0.0.2-player-identity\0" + player_name.casefold().encode("utf-8")
+    return hmac.new(identity_secret, payload, hashlib.sha256).hexdigest()
+
+
+def matching_player_name(join_line: str, leave_line: str) -> str:
+    join_match = JOIN_MARKER.search(join_line)
+    leave_match = LEAVE_MARKER.search(leave_line)
+    if join_match is None or leave_match is None:
+        raise SmokeError("Could not parse the manual player join/leave identity")
+    joined_player = join_match.group("player")
+    left_player = leave_match.group("player")
+    if joined_player.casefold() != left_player.casefold():
+        raise SmokeError("Manual player join and leave identities differ")
+    return joined_player
+
+
+def summary_schema_version(manual_player_cycles: bool) -> int:
+    return (
+        MANUAL_PLAYER_SUMMARY_SCHEMA_VERSION
+        if manual_player_cycles
+        else SUMMARY_SCHEMA_VERSION
+    )
 
 
 def establish_world_identity(
     server: Path,
     session_id: str,
     artifact_sha256: str,
+    server_properties_sha256: str,
 ) -> dict[str, object]:
     world = server / "world"
     level_dat = world / "level.dat"
     if not level_dat.is_file():
         raise SmokeError("First server cycle did not create world/level.dat")
     marker = world / WORLD_IDENTITY_FILE
-    if marker.exists() or marker.is_symlink():
+    if marker.exists() or is_link_or_junction(marker):
         raise SmokeError(f"World identity marker already exists: {marker}")
+    properties_identity = server / SERVER_PROPERTIES_IDENTITY_FILE
+    if (
+        re.fullmatch(r"[0-9a-f]{64}", server_properties_sha256) is None
+        or not properties_identity.is_file()
+        or is_link_or_junction(properties_identity)
+        or digest_file(properties_identity) != server_properties_sha256
+    ):
+        raise SmokeError("Harness server.properties startup identity is invalid")
 
     before_hash = digest_file(level_dat)
     identity = hashlib.sha256(
-        f"{session_id}\0{artifact_sha256}\0{before_hash}".encode("utf-8")
+        (
+            f"{session_id}\0{artifact_sha256}\0{before_hash}\0"
+            f"{server_properties_sha256}"
+        ).encode("utf-8")
     ).hexdigest()
     marker_document = {
         "artifact_sha256": artifact_sha256,
+        "server_properties_sha256": server_properties_sha256,
         "session_id": session_id,
         "world_identity": identity,
     }
@@ -104,16 +194,26 @@ def establish_world_identity(
         "identity_marker_sha256": digest_file(marker),
         "level_dat_before_restart_sha256": before_hash,
         "level_dat_before_restart_size": level_dat.stat().st_size,
+        "server_properties_sha256": server_properties_sha256,
     }
 
 
 def complete_world_identity(server: Path, identity: dict[str, object]) -> dict[str, object]:
     marker = server / str(identity["identity_marker"])
+    properties_identity = server / SERVER_PROPERTIES_IDENTITY_FILE
     level_dat = server / "world" / "level.dat"
-    if not marker.is_file() or marker.is_symlink():
+    if not marker.is_file() or is_link_or_junction(marker):
         raise SmokeError("Same-world restart lost the harness identity marker")
     if digest_file(marker) != identity["identity_marker_sha256"]:
         raise SmokeError("Same-world restart changed the harness identity marker")
+    if (
+        not properties_identity.is_file()
+        or is_link_or_junction(properties_identity)
+        or digest_file(properties_identity) != identity["server_properties_sha256"]
+    ):
+        raise SmokeError(
+            "Same-world restart changed the harness server.properties identity"
+        )
     if not level_dat.is_file():
         raise SmokeError("Same-world restart did not retain world/level.dat")
     return {
@@ -338,15 +438,19 @@ def evidence_lines(lines: Iterable[str]) -> list[str]:
         "Done (",
         "There are ",
         "logged in with entity id",
-        "joined the game",
-        "left the game",
         "Saving the game",
         "Saved the game",
         "Stopping server",
         "Saving players",
         "Saving worlds",
     )
-    selected = [line.rstrip() for line in lines if any(marker in line for marker in markers)]
+    selected = [
+        line.rstrip()
+        for line in lines
+        if any(marker in line for marker in markers)
+        or JOIN_MARKER.search(line)
+        or LEAVE_MARKER.search(line)
+    ]
     return selected or ["No evidence markers were selected from the captured log."]
 
 
@@ -435,6 +539,7 @@ def create_session(
         runtime_paths = (
             session / "eula.txt",
             session / "server.properties",
+            session / SERVER_PROPERTIES_IDENTITY_FILE,
             session / "mods",
             session / "world",
             session / "logs",
@@ -465,24 +570,29 @@ class ServerCycle:
     full_log_sha256: str
     player_join_observed: bool
     player_leave_observed: bool
+    player_identity_binding: str | None
 
 
 class CapturedProcess:
     def __init__(self, command: list[str], cwd: Path, log_path: Path):
-        self.process = subprocess.Popen(
-            command,
-            cwd=cwd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            bufsize=1,
-        )
         self.lines: list[str] = []
         self.condition = threading.Condition()
         self.log_stream = log_path.open("x", encoding="utf-8", newline="\n")
+        try:
+            self.process = subprocess.Popen(
+                command,
+                cwd=cwd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                bufsize=1,
+            )
+        except BaseException:
+            self.log_stream.close()
+            raise
         self.reader = threading.Thread(target=self._read, daemon=True)
         self.reader.start()
 
@@ -581,6 +691,7 @@ def run_cycle(
     *,
     require_player_cycle: bool = False,
     player_timeout: float = 600.0,
+    player_identity_secret: bytes | None = None,
 ) -> ServerCycle:
     cycle_started_at = datetime.now(timezone.utc).isoformat()
     args_name = "win_args.txt" if platform.system() == "Windows" else "unix_args.txt"
@@ -598,6 +709,7 @@ def run_cycle(
     captured = CapturedProcess(command, server, full_log_path)
     player_join_observed = False
     player_leave_observed = False
+    player_identity_binding: str | None = None
     try:
         captured.wait_for(READY_MARKER, startup_timeout)
         status = wait_for_status(port)
@@ -608,6 +720,8 @@ def run_cycle(
         )
         validate_status_identity(status)
         if require_player_cycle:
+            if player_identity_secret is None:
+                raise SmokeError("Manual player cycle requires an identity-binding secret")
             print(
                 f"[WAIT] {name} ({cycle_id}): join and then disconnect the "
                 "matching packaged client",
@@ -615,8 +729,16 @@ def run_cycle(
             )
             join_index = captured.wait_for(JOIN_MARKER, player_timeout)
             player_join_observed = True
-            captured.wait_for(LEAVE_MARKER, player_timeout, start_at=join_index + 1)
+            leave_index = captured.wait_for(
+                LEAVE_MARKER, player_timeout, start_at=join_index + 1
+            )
+            joined_player = matching_player_name(
+                captured.lines[join_index], captured.lines[leave_index]
+            )
             player_leave_observed = True
+            player_identity_binding = bind_player_identity(
+                player_identity_secret, joined_player
+            )
         captured.command("list")
         save_start = len(captured.lines)
         captured.command("save-all flush")
@@ -646,6 +768,7 @@ def run_cycle(
         full_log_sha256=digest_file(full_log_path),
         player_join_observed=player_join_observed,
         player_leave_observed=player_leave_observed,
+        player_identity_binding=player_identity_binding,
     )
 
 
@@ -717,31 +840,31 @@ def install_server(
     return args_file, attempt
 
 
-def write_server_configuration(server: Path, port: int, offline_mode: bool) -> None:
+def server_configuration_payload(port: int, offline_mode: bool) -> bytes:
+    if not 1 <= port <= 65535:
+        raise SmokeError(f"Server port is outside 1-65535: {port}")
+    properties = {
+        **HARNESS_SERVER_PROPERTIES,
+        "enforce-secure-profile": "false" if offline_mode else "true",
+        "online-mode": "false" if offline_mode else "true",
+        "server-port": str(port),
+    }
+    content = "".join(f"{key}={value}\n" for key, value in sorted(properties.items()))
+    return content.encode("ascii", errors="strict")
+
+
+def write_server_configuration(server: Path, port: int, offline_mode: bool) -> str:
     (server / "eula.txt").write_text(
         "# Disposable automated test instance\neula=true\n",
         encoding="utf-8",
         newline="\n",
     )
-    properties = {
-        "difficulty": "peaceful",
-        "enable-command-block": "false",
-        "enforce-secure-profile": "false" if offline_mode else "true",
-        "generate-structures": "false",
-        "level-name": "world",
-        "level-type": "minecraft:normal",
-        "max-players": "2",
-        "motd": "ARCE v0.0.2 dedicated smoke",
-        "online-mode": "false" if offline_mode else "true",
-        "server-ip": "127.0.0.1",
-        "server-port": str(port),
-        "simulation-distance": "2",
-        "spawn-protection": "0",
-        "sync-chunk-writes": "true",
-        "view-distance": "2",
-    }
-    content = "".join(f"{key}={value}\n" for key, value in sorted(properties.items()))
-    (server / "server.properties").write_text(content, encoding="utf-8", newline="\n")
+    payload = server_configuration_payload(port, offline_mode)
+    identity_path = server / SERVER_PROPERTIES_IDENTITY_FILE
+    with identity_path.open("xb") as stream:
+        stream.write(payload)
+    (server / "server.properties").write_bytes(payload)
+    return hashlib.sha256(payload).hexdigest()
 
 
 def write_evidence(directory: Path, summary: dict, cycles: list[ServerCycle]) -> None:
@@ -863,7 +986,12 @@ def main() -> int:
         if args.player_timeout <= 0:
             raise SmokeError("Player marker timeout must be positive")
         session_id = build_session_id(artifact_sha256, started_at.isoformat(), port)
-        write_server_configuration(session, port, args.offline_mode)
+        player_identity_secret = (
+            secrets.token_bytes(32) if args.manual_player_cycles else None
+        )
+        server_properties_sha256 = write_server_configuration(
+            session, port, args.offline_mode
+        )
 
         first = run_cycle(
             "first-start",
@@ -874,11 +1002,13 @@ def main() -> int:
             args.startup_timeout,
             require_player_cycle=args.manual_player_cycles,
             player_timeout=args.player_timeout,
+            player_identity_secret=player_identity_secret,
         )
         world_identity = establish_world_identity(
             session,
             session_id,
             artifact_sha256,
+            server_properties_sha256,
         )
         restart = run_cycle(
             "restart",
@@ -889,34 +1019,53 @@ def main() -> int:
             args.startup_timeout,
             require_player_cycle=args.manual_player_cycles,
             player_timeout=args.player_timeout,
+            player_identity_secret=player_identity_secret,
         )
         world_identity = complete_world_identity(session, world_identity)
         cycles = [first, restart]
 
+        same_player_verified = False
+        if args.manual_player_cycles:
+            if (
+                first.player_identity_binding is None
+                or restart.player_identity_binding is None
+                or first.player_identity_binding != restart.player_identity_binding
+            ):
+                raise SmokeError(
+                    "Manual cycles did not observe the same packaged-client identity"
+                )
+            same_player_verified = True
+
+        cycle_documents: list[dict[str, object]] = []
+        for cycle in cycles:
+            cycle_document: dict[str, object] = {
+                **log_audit_counts(cycle.lines),
+                "completed_at": cycle.completed_at,
+                "cycle_id": cycle.cycle_id,
+                "exit_code": cycle.exit_code,
+                "full_log_file": cycle.full_log_file,
+                "full_log_sha256": cycle.full_log_sha256,
+                "mod_marker": forge_mod_versions(cycle.status).get(MOD_ID),
+                "name": cycle.name,
+                "player_join_observed": cycle.player_join_observed,
+                "player_leave_observed": cycle.player_leave_observed,
+                "started_at": cycle.started_at,
+                "status_protocol": cycle.status.get("version", {}).get("protocol"),
+                "status_version": cycle.status.get("version", {}).get("name"),
+            }
+            if args.manual_player_cycles:
+                cycle_document["player_identity_binding"] = (
+                    cycle.player_identity_binding
+                )
+            cycle_documents.append(cycle_document)
+
         summary = {
-            "schema_version": SUMMARY_SCHEMA_VERSION,
+            "schema_version": summary_schema_version(args.manual_player_cycles),
             "session_id": session_id,
             "artifact": artifact.name,
             "artifact_sha256": artifact_sha256,
             "completed_at": datetime.now(timezone.utc).isoformat(),
-            "cycles": [
-                {
-                    **log_audit_counts(cycle.lines),
-                    "completed_at": cycle.completed_at,
-                    "cycle_id": cycle.cycle_id,
-                    "exit_code": cycle.exit_code,
-                    "full_log_file": cycle.full_log_file,
-                    "full_log_sha256": cycle.full_log_sha256,
-                    "mod_marker": forge_mod_versions(cycle.status).get(MOD_ID),
-                    "name": cycle.name,
-                    "player_join_observed": cycle.player_join_observed,
-                    "player_leave_observed": cycle.player_leave_observed,
-                    "started_at": cycle.started_at,
-                    "status_protocol": cycle.status.get("version", {}).get("protocol"),
-                    "status_version": cycle.status.get("version", {}).get("name"),
-                }
-                for cycle in cycles
-            ],
+            "cycles": cycle_documents,
             "forge": FORGE_VERSION,
             "installer_sha1": digest_file(installer, "sha1"),
             "installer_sha256": digest_file(installer),
@@ -933,6 +1082,8 @@ def main() -> int:
             "world": world_identity,
             "world_level_dat": True,
         }
+        if args.manual_player_cycles:
+            summary["same_player_verified"] = same_player_verified
         evidence_dir = args.evidence_dir.resolve() if args.evidence_dir else session / "evidence"
         write_evidence(evidence_dir, summary, cycles)
         print(f"[PASS] Forge installer SHA-1: {summary['installer_sha1']}")

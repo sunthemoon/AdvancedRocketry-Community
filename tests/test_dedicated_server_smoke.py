@@ -1,3 +1,4 @@
+import hashlib
 import io
 import subprocess
 import tempfile
@@ -6,11 +7,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.run_dedicated_server_smoke import (
+    CapturedProcess,
     MOD_ID,
     MOD_VERSION,
     MINECRAFT_PROTOCOL,
     MINECRAFT_VERSION,
+    SERVER_PROPERTIES_IDENTITY_FILE,
     SmokeError,
+    bind_player_identity,
     build_session_id,
     complete_world_identity,
     create_session,
@@ -22,10 +26,84 @@ from scripts.run_dedicated_server_smoke import (
     extract_java_version,
     forge_mod_versions,
     install_server,
+    matching_player_name,
     read_varint,
     scan_log,
+    server_configuration_payload,
+    summary_schema_version,
     validate_status_identity,
+    write_server_configuration,
 )
+
+
+class PlayerIdentityTests(unittest.TestCase):
+    @staticmethod
+    def lifecycle_line(player: str, action: str) -> str:
+        return (
+            "[28Aug2026 12:00:00.000] [Server thread/INFO] "
+            f"[net.minecraft.server.MinecraftServer/]: {player} {action} the game"
+        )
+
+    def test_join_leave_identity_is_parsed_case_insensitively(self) -> None:
+        self.assertEqual(
+            "TestPlayer",
+            matching_player_name(
+                self.lifecycle_line("TestPlayer", "joined"),
+                self.lifecycle_line("testplayer", "left"),
+            ),
+        )
+
+    def test_different_join_leave_identity_is_rejected(self) -> None:
+        with self.assertRaisesRegex(SmokeError, "identities differ"):
+            matching_player_name(
+                self.lifecycle_line("FirstPlayer", "joined"),
+                self.lifecycle_line("OtherPlayer", "left"),
+            )
+
+    def test_chat_text_cannot_spoof_a_player_lifecycle_marker(self) -> None:
+        with self.assertRaisesRegex(SmokeError, "Could not parse"):
+            matching_player_name(
+                self.lifecycle_line("TestPlayer", "joined"),
+                "[Server thread/INFO] [minecraft/MinecraftServer]: "
+                "<TestPlayer> TestPlayer left the game",
+            )
+
+    def test_similar_logger_name_cannot_spoof_a_player_lifecycle_marker(self) -> None:
+        with self.assertRaisesRegex(SmokeError, "Could not parse"):
+            matching_player_name(
+                "[Server thread/INFO] [evil/FakeMinecraftServerChat]: "
+                "TestPlayer joined the game",
+                "[Server thread/INFO] [evil/FakeMinecraftServerChat]: "
+                "TestPlayer left the game",
+            )
+
+    def test_unscoped_lifecycle_text_is_rejected(self) -> None:
+        with self.assertRaisesRegex(SmokeError, "Could not parse"):
+            matching_player_name(
+                "TestPlayer joined the game",
+                "TestPlayer left the game",
+            )
+
+    def test_identity_binding_uses_secret_key_and_is_case_stable(self) -> None:
+        first = bind_player_identity(b"a" * 32, "TestPlayer")
+        self.assertEqual(
+            first,
+            bind_player_identity(b"a" * 32, "testplayer"),
+        )
+        self.assertNotEqual(
+            first,
+            bind_player_identity(b"b" * 32, "TestPlayer"),
+        )
+
+    def test_identity_binding_rejects_public_or_short_salts(self) -> None:
+        with self.assertRaisesRegex(SmokeError, "32-byte secret"):
+            bind_player_identity(b"short", "TestPlayer")
+        with self.assertRaisesRegex(SmokeError, "32-byte secret"):
+            bind_player_identity("v002-public-session", "TestPlayer")  # type: ignore[arg-type]
+
+    def test_headless_schema_two_and_manual_schema_three_are_distinct(self) -> None:
+        self.assertEqual(2, summary_schema_version(False))
+        self.assertEqual(3, summary_schema_version(True))
 
 
 class VarIntTests(unittest.TestCase):
@@ -186,17 +264,58 @@ class LogAuditTests(unittest.TestCase):
     def test_evidence_filter_keeps_lifecycle_markers(self) -> None:
         lines = [
             "noise\n",
-            "[Server thread/INFO] Dev joined the game\n",
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Dev joined the game\n",
             "[Server thread/INFO] Saved the game\n",
         ]
 
         self.assertEqual(
             [
-                "[Server thread/INFO] Dev joined the game",
+                "[Server thread/INFO] [minecraft/MinecraftServer]: Dev joined the game",
                 "[Server thread/INFO] Saved the game",
             ],
             evidence_lines(lines),
         )
+
+    def test_evidence_filter_drops_chat_lifecycle_text(self) -> None:
+        lines = [
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "<Dev> Dev left the game\n",
+        ]
+
+        self.assertEqual(
+            ["No evidence markers were selected from the captured log."],
+            evidence_lines(lines),
+        )
+
+
+class CapturedProcessSafetyTests(unittest.TestCase):
+    def test_existing_log_is_rejected_before_starting_process(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            work = Path(temporary_directory)
+            log = work / "server-full.txt"
+            log.write_text("existing evidence\n", encoding="utf-8")
+
+            with patch(
+                "scripts.run_dedicated_server_smoke.subprocess.Popen"
+            ) as popen:
+                with self.assertRaises(FileExistsError):
+                    CapturedProcess(["java"], work, log)
+
+            popen.assert_not_called()
+
+    def test_log_reservation_is_closed_if_process_start_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            work = Path(temporary_directory)
+            log = work / "server-full.txt"
+
+            with patch(
+                "scripts.run_dedicated_server_smoke.subprocess.Popen",
+                side_effect=OSError("cannot start"),
+            ):
+                with self.assertRaisesRegex(OSError, "cannot start"):
+                    CapturedProcess(["java"], work, log)
+
+            log.unlink()
 
 
 class JavaVersionTests(unittest.TestCase):
@@ -209,6 +328,35 @@ class JavaVersionTests(unittest.TestCase):
     def test_other_java_major_is_rejected(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "Java 17 is required"):
             extract_java_version('openjdk version "21.0.4" 2024-07-16')
+
+
+class ServerConfigurationTests(unittest.TestCase):
+    def test_manual_server_properties_are_ascii_sorted_and_canonical(self) -> None:
+        payload = server_configuration_payload(25565, True)
+
+        self.assertEqual(payload, payload.decode("ascii").encode("ascii"))
+        lines = payload.decode("ascii").splitlines()
+        self.assertEqual(lines, sorted(lines))
+        self.assertIn("level-name=world", lines)
+        self.assertIn("server-ip=127.0.0.1", lines)
+        self.assertIn("server-port=25565", lines)
+        self.assertIn("online-mode=false", lines)
+
+    def test_configuration_reserves_an_immutable_startup_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            server = Path(temporary_directory)
+
+            sha256 = write_server_configuration(server, 25565, True)
+
+            payload = server_configuration_payload(25565, True)
+            self.assertEqual(payload, (server / "server.properties").read_bytes())
+            self.assertEqual(
+                payload,
+                (server / SERVER_PROPERTIES_IDENTITY_FILE).read_bytes(),
+            )
+            self.assertEqual(sha256, hashlib.sha256(payload).hexdigest())
+            with self.assertRaises(FileExistsError):
+                write_server_configuration(server, 25565, True)
 
 
 class InstallerRetryTests(unittest.TestCase):
@@ -292,7 +440,10 @@ class WorldIdentityTests(unittest.TestCase):
             level_dat.write_bytes(b"first-save")
             session_id = build_session_id("a" * 64, "2026-08-28T00:00:00+00:00", 25565)
 
-            identity = establish_world_identity(server, session_id, "a" * 64)
+            properties_sha256 = write_server_configuration(server, 25565, True)
+            identity = establish_world_identity(
+                server, session_id, "a" * 64, properties_sha256
+            )
             level_dat.write_bytes(b"restart-save")
             completed = complete_world_identity(server, identity)
 
@@ -309,7 +460,10 @@ class WorldIdentityTests(unittest.TestCase):
             level_dat = server / "world" / "level.dat"
             level_dat.parent.mkdir()
             level_dat.write_bytes(b"first-save")
-            identity = establish_world_identity(server, "v002-session", "b" * 64)
+            properties_sha256 = write_server_configuration(server, 25565, True)
+            identity = establish_world_identity(
+                server, "v002-session", "b" * 64, properties_sha256
+            )
             (server / str(identity["identity_marker"])).write_text(
                 "tampered\n", encoding="utf-8"
             )

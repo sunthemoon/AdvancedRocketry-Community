@@ -1,7 +1,9 @@
 import copy
 import hashlib
+import hmac
 import json
 import struct
+import subprocess
 import tempfile
 import unittest
 import zlib
@@ -9,6 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.collect_v002_manual_evidence import (
+    APPLICABILITY,
     COMMITTED_BUNDLE,
     CONTENT_MANIFEST,
     LOG_ROLES,
@@ -16,12 +19,18 @@ from scripts.collect_v002_manual_evidence import (
     RECORD_NAME,
     SCREENSHOT_ROLES,
     build_template,
+    bind_player_identity,
     collect_evidence,
     create_template,
     extract_log_excerpt,
     inspect_png,
+    parse_player_lifecycle,
     validate_bundle,
     validate_session,
+)
+from scripts.run_dedicated_server_smoke import (
+    SERVER_PROPERTIES_IDENTITY_FILE,
+    server_configuration_payload as smoke_server_configuration_payload,
 )
 
 
@@ -62,6 +71,11 @@ class ManualEvidenceTests(unittest.TestCase):
         self.root = Path(temporary.name)
         self.build = self.root / "build"
         self.build.mkdir()
+        (self.root / ".gitattributes").write_bytes(b"* text eol=lf\n")
+        (self.root / "README.md").write_bytes(
+            b"# Test repository\n\nBound manual evidence fixture.\n"
+        )
+        (self.root / ".gitignore").write_bytes(b"/build/\n")
         self.artifact_content = b"final-distributable-v002"
         self.artifact_hash = hashlib.sha256(self.artifact_content).hexdigest()
         manifest = self.root / CONTENT_MANIFEST
@@ -80,7 +94,43 @@ class ManualEvidenceTests(unittest.TestCase):
             )
             + "\n",
             encoding="utf-8",
+            newline="\n",
         )
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(
+            [
+                "git",
+                "add",
+                ".gitattributes",
+                ".gitignore",
+                "README.md",
+                CONTENT_MANIFEST.as_posix(),
+            ],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "user.name=Evidence Fixture",
+                "-c",
+                "user.email=evidence@example.invalid",
+                "commit",
+                "-q",
+                "-m",
+                "test fixture",
+            ],
+            cwd=self.root,
+            check=True,
+        )
+        self.source_commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
         self.jar_paths: dict[str, Path] = {}
         for role in ("source", "server", "client"):
             path = self.build / role / "mods" / self.artifact_name
@@ -91,7 +141,7 @@ class ManualEvidenceTests(unittest.TestCase):
     def ready_session(self) -> dict[str, object]:
         session = build_template(self.artifact_name)
         session["metadata"] = {
-            "source_commit": "a" * 40,
+            "source_commit": self.source_commit,
             "test_date": "2026-08-27",
             "tester_id": "external-tester-01",
             "environment": {
@@ -129,43 +179,94 @@ class ManualEvidenceTests(unittest.TestCase):
                     "note": "Full Minecraft window; pixel content manually reviewed.",
                 }
             )
-
         client_log = self.build / "logs" / "client-full.log"
         client_log.parent.mkdir(parents=True)
         client_log.write_text(
-            "SecretPlayer initialized from C:\\Users\\private-user\\instance "
+            "SecretPlayer initialized from C:\\Users\\private user\\instance "
             "with UUID 123e4567-e89b-42d3-a456-426614174000\n"
             "remote 203.0.113.8 Authorization: Bearer ghp_abcdefghijklmnopqrstuvwxyz\n"
             "matching connection to 127.0.0.1\n"
             "matching client entered the world\n"
             "missing-mod indicator observed\n"
+            "[Render thread/INFO] [minecraft/ConnectScreen]: "
+            "Connecting to 127.0.0.1, 25565\n"
             "missing-mod connection result recorded\n",
             encoding="utf-8",
         )
-        first_log = self.build / "server" / "first-start-full.txt"
-        first_log.parent.mkdir(parents=True, exist_ok=True)
+        server_root = self.jar_paths["server"].parent.parent
+        first_log = server_root / "first-start-full.txt"
         first_log.write_text(
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
             "SecretPlayer joined the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
             "SecretPlayer left the game\n"
-            "Saved the game\n"
-            "Stopping server\n",
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Saved the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Stopping server\n",
             encoding="utf-8",
         )
-        restart_log = self.build / "server" / "restart-full.txt"
+        restart_log = server_root / "restart-full.txt"
         restart_log.write_text(
+            "[Server thread/INFO] [minecraft/DedicatedServer]: "
             "Done (1.00s)! For help, type help\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
             "SecretPlayer joined the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
             "SecretPlayer left the game\n"
-            "Saved the game\n"
-            "Stopping server\n",
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Saved the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Stopping server\n",
             encoding="utf-8",
         )
+        mismatch_payload = (
+            "[Server thread/INFO] [minecraft/DedicatedServer]: "
+            "Starting Minecraft server on 127.0.0.1:25565\n"
+            "[Server thread/INFO] [minecraft/DedicatedServer]: "
+            "Preparing level \"world\"\n"
+            "[Server thread/INFO] [minecraft/DedicatedServer]: "
+            "Done (1.00s)! For help, type help\n"
+            "[Netty Server IO #1/INFO] "
+            "[net.minecraftforge.server.ServerLifecycleHooks/SERVERHOOKS]: "
+            "Disconnecting VANILLA connection attempt from isolated client\n"
+            "Missing-mod connection attempt was rejected\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Saved the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: Stopping server\n"
+        )
+        runtime_log = server_root / "logs" / "latest.log"
+        runtime_log.parent.mkdir(parents=True)
+        runtime_log.write_text(mismatch_payload, encoding="utf-8")
+        mismatch_log = self.build / "mismatch-server-full.txt"
+        mismatch_log.write_text(mismatch_payload, encoding="utf-8")
+        mismatch_receipt = self.build / "mismatch-server-receipt.json"
+        mismatch_receipt.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "exit_code": 0,
+                    "full_log_sha256": hashlib.sha256(
+                        mismatch_log.read_bytes()
+                    ).hexdigest(),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        server_properties_payload = smoke_server_configuration_payload(25565, True)
+        (server_root / "server.properties").write_bytes(server_properties_payload)
+        (server_root / SERVER_PROPERTIES_IDENTITY_FILE).write_bytes(
+            server_properties_payload
+        )
+        server_properties_sha256 = hashlib.sha256(
+            server_properties_payload
+        ).hexdigest()
         log_inputs = {
             "client_startup_world": (client_log, 1, 2),
             "matching_client_connection": (client_log, 3, 4),
             "server_first_join_leave_save_stop": (first_log, 1, 4),
             "server_restart_reconnect_save_stop": (restart_log, 1, 5),
-            "mismatch_attempt": (client_log, 5, 6),
+            "mismatch_attempt": (client_log, 5, 7),
+            "mismatch_server_attempt_save_stop": (mismatch_log, 1, 7),
         }
         for role, item in session["log_excerpts"].items():
             source, line_start, line_end = log_inputs[role]
@@ -176,10 +277,22 @@ class ManualEvidenceTests(unittest.TestCase):
                     "line_start": line_start,
                     "line_end": line_end,
                     "note": "Selected lifecycle lines only.",
+                    "warning_disposition": {
+                        "status": "NONE",
+                        "warning_count": 0,
+                        "origins": [],
+                        "explanation": "",
+                    },
                 }
             )
+            if role == "mismatch_server_attempt_save_stop":
+                item["server_exit_code"] = 0
+                item["receipt"] = mismatch_receipt.relative_to(
+                    self.root
+                ).as_posix()
 
         session_id = "v002-" + "a" * 24
+        player_binding = bind_player_identity(b"\x17" * 32, "SecretPlayer")
         cycle_base = {
             "error_count": 0,
             "warning_count": 0,
@@ -189,12 +302,20 @@ class ManualEvidenceTests(unittest.TestCase):
             "exit_code": 0,
             "mod_marker": "1.20.1-0.0.2-dev",
             "player_join_observed": True,
+            "player_identity_binding": player_binding,
             "player_leave_observed": True,
             "status_protocol": 763,
             "status_version": "1.20.1",
         }
+        world_before_sha256 = "0" * 64
+        world_identity = hashlib.sha256(
+            (
+                f"{session_id}\0{self.artifact_hash}\0{world_before_sha256}\0"
+                f"{server_properties_sha256}"
+            ).encode("utf-8")
+        ).hexdigest()
         summary = {
-            "schema_version": 2,
+            "schema_version": 3,
             "session_id": session_id,
             "artifact": self.artifact_name,
             "artifact_sha256": self.artifact_hash,
@@ -231,20 +352,40 @@ class ManualEvidenceTests(unittest.TestCase):
             "server_artifact_sha256": self.artifact_hash,
             "server_bind": "127.0.0.1",
             "server_port": 25565,
+            "same_player_verified": True,
             "started_at": "2026-08-27T12:00:00+00:00",
             "world": {
-                "identity": "d" * 64,
+                "identity": world_identity,
                 "identity_marker": "world/.v002-smoke-world-identity.json",
-                "identity_marker_sha256": "e" * 64,
+                "identity_marker_sha256": "",
                 "level_dat_after_restart_sha256": "f" * 64,
                 "level_dat_after_restart_size": 2048,
-                "level_dat_before_restart_sha256": "0" * 64,
+                "level_dat_before_restart_sha256": world_before_sha256,
                 "level_dat_before_restart_size": 1024,
                 "level_name": "world",
                 "same_world_verified": True,
+                "server_properties_sha256": server_properties_sha256,
             },
             "world_level_dat": True,
         }
+        world_marker = server_root / "world" / ".v002-smoke-world-identity.json"
+        world_marker.parent.mkdir()
+        world_marker.write_text(
+            json.dumps(
+                {
+                    "artifact_sha256": self.artifact_hash,
+                    "server_properties_sha256": server_properties_sha256,
+                    "session_id": session_id,
+                    "world_identity": summary["world"]["identity"],
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        summary["world"]["identity_marker_sha256"] = hashlib.sha256(
+            world_marker.read_bytes()
+        ).hexdigest()
         summary_path = self.build / "server-evidence" / "summary.json"
         summary_path.parent.mkdir()
         summary_path.write_text(
@@ -295,6 +436,75 @@ class ManualEvidenceTests(unittest.TestCase):
             json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
 
+    def set_warning_disposition(
+        self,
+        session: dict[str, object],
+        roles: tuple[str, ...],
+        *,
+        count: int,
+        status: str = "UNRESOLVED",
+    ) -> None:
+        for role in roles:
+            session["log_excerpts"][role]["warning_disposition"] = {
+                "status": status,
+                "warning_count": count,
+                "origins": ["Test logger"],
+                "explanation": "Preserved warning disposition for the rejection-path test.",
+            }
+
+    def refresh_mismatch_receipt(
+        self,
+        session: dict[str, object],
+        *,
+        exit_code: int | None = None,
+    ) -> None:
+        role = "mismatch_server_attempt_save_stop"
+        item = session["log_excerpts"][role]
+        if exit_code is not None:
+            item["server_exit_code"] = exit_code
+        source = self.root / item["source"]
+        receipt = self.root / item["receipt"]
+        receipt.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "exit_code": item["server_exit_code"],
+                    "full_log_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    def replace_mismatch_server_log(
+        self,
+        session: dict[str, object],
+        payload: str,
+    ) -> None:
+        role = "mismatch_server_attempt_save_stop"
+        item = session["log_excerpts"][role]
+        source = self.root / item["source"]
+        source.write_text(payload, encoding="utf-8")
+        runtime = self.jar_paths["server"].parent.parent / "logs" / "latest.log"
+        runtime.write_text(payload, encoding="utf-8")
+        item["line_start"] = 1
+        item["line_end"] = len(payload.splitlines())
+        self.refresh_mismatch_receipt(session)
+
+    def replace_client_connection_marker(
+        self,
+        session: dict[str, object],
+        replacement: str,
+    ) -> None:
+        role = "mismatch_attempt"
+        item = session["log_excerpts"][role]
+        source = self.root / item["source"]
+        lines = source.read_text(encoding="utf-8").splitlines()
+        lines[5] = replacement
+        source.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
     def collect(
         self, session: dict[str, object], output_name: str = "bundle"
     ) -> tuple[list[str], dict[str, object] | None, Path]:
@@ -315,6 +525,8 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertEqual(set(OBSERVATIONS), set(document["observations"]))
         self.assertEqual(set(SCREENSHOT_ROLES), set(document["evidence"]))
         self.assertEqual(set(LOG_ROLES), set(document["log_excerpts"]))
+        self.assertEqual(5, len(APPLICABILITY))
+        self.assertEqual(set(APPLICABILITY), set(document["applicability_reviews"]))
         self.assertEqual(
             {"BLOCKED"},
             {item["outcome"] for item in document["observations"].values()},
@@ -351,7 +563,7 @@ class ManualEvidenceTests(unittest.TestCase):
         for private in (
             "SecretPlayer",
             "123e4567-e89b-42d3-a456-426614174000",
-            "private-user",
+            "private user",
             "203.0.113.8",
             "ghp_abcdefghijklmnopqrstuvwxyz",
         ):
@@ -360,6 +572,16 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertIn("[REDACTED_TEST_PLAYER]", archived_text)
         self.assertFalse(any("player_names" in key for key in record))
         self.assertIn("not set or approve any release Gate", record["scope_statement"])
+        receipt = record["log_excerpts"][
+            "mismatch_server_attempt_save_stop"
+        ]["receipt"]
+        self.assertEqual(
+            receipt["sha256"],
+            record["log_excerpts"]["mismatch_server_attempt_save_stop"][
+                "mismatch_server_binding"
+            ]["receipt_sha256"],
+        )
+        self.assertTrue((output / receipt["file"]).is_file())
 
     def test_fail_is_archived_but_never_acceptance_ready(self) -> None:
         session = self.ready_session()
@@ -397,6 +619,12 @@ class ManualEvidenceTests(unittest.TestCase):
         }
         for raw_log in raw_logs:
             raw_log.unlink()
+        (
+            self.root
+            / session["log_excerpts"]["mismatch_server_attempt_save_stop"][
+                "receipt"
+            ]
+        ).unlink()
         (self.root / session["server_harness"]["summary"]).unlink()
 
         validation_errors, validated = validate_bundle(
@@ -526,6 +754,18 @@ class ManualEvidenceTests(unittest.TestCase):
             item.update(status="MISSING", source="", note="Client did not launch.")
         for item in session["log_excerpts"].values():
             item.update(status="MISSING", source="", note="Client did not launch.")
+            item["warning_disposition"] = {
+                "status": "PENDING",
+                "warning_count": None,
+                "origins": [],
+                "explanation": "",
+            }
+        session["log_excerpts"]["mismatch_server_attempt_save_stop"][
+            "server_exit_code"
+        ] = None
+        session["log_excerpts"]["mismatch_server_attempt_save_stop"][
+            "receipt"
+        ] = ""
         session["server_harness"] = {
             "status": "MISSING",
             "summary": "",
@@ -591,6 +831,9 @@ class ManualEvidenceTests(unittest.TestCase):
         session = self.ready_session()
         outside = self.root / "outside.png"
         outside.write_bytes(make_png())
+        (self.root / ".git" / "info" / "exclude").write_text(
+            "outside.png\n", encoding="utf-8", newline="\n"
+        )
         session["evidence"]["mods_page"]["source"] = "outside.png"
 
         errors, _, _ = self.collect(session)
@@ -703,6 +946,9 @@ class ManualEvidenceTests(unittest.TestCase):
                 "raw log contradicts summary\n"
             )
         self.refresh_summary_log_hash(session, "first-start", first_log)
+        self.set_warning_disposition(
+            session, ("server_first_join_leave_save_stop",), count=1
+        )
         summary_path = self.root / session["server_harness"]["summary"]
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
         first_cycle = next(
@@ -742,6 +988,12 @@ class ManualEvidenceTests(unittest.TestCase):
         record["log_excerpts"][role]["source_audit"]["audit_counts"][
             "warning_count"
         ] = 1
+        record["log_excerpts"][role]["warning_disposition"] = {
+            "status": "ACCEPTED",
+            "warning_count": 1,
+            "origins": ["Test logger"],
+            "explanation": "Tamper fixture keeps disposition structurally valid.",
+        }
         record_path.write_text(
             json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
@@ -767,6 +1019,15 @@ class ManualEvidenceTests(unittest.TestCase):
                 "[Render thread/WARN] [advancedrocketrycommunity/]: "
                 "preserved client warning\n"
             )
+        self.set_warning_disposition(
+            session,
+            (
+                "client_startup_world",
+                "matching_client_connection",
+                "mismatch_attempt",
+            ),
+            count=1,
+        )
         session["findings"]["client_project_warning_count"] = 1
         session["findings"]["notes"] = "Preserved project warning for review."
 
@@ -855,6 +1116,890 @@ class ManualEvidenceTests(unittest.TestCase):
         errors, _, output = self.collect(session)
 
         self.assertTrue(any("same named world" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_false_player_redaction_term_is_rejected(self) -> None:
+        session = self.ready_session()
+        session["privacy"]["player_names"] = ["FakePlayer"]
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(
+            any("absent from privacy.player_names" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_different_join_and_leave_players_are_rejected(self) -> None:
+        session = self.ready_session()
+        session["privacy"]["player_names"].append("OtherPlayer")
+        role = "server_first_join_leave_save_stop"
+        first_log = self.root / session["log_excerpts"][role]["source"]
+        first_log.write_text(
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "SecretPlayer joined the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "OtherPlayer left the game\n"
+            "Saved the game\n"
+            "Stopping server\n",
+            encoding="utf-8",
+        )
+        self.refresh_summary_log_hash(session, "first-start", first_log)
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("join and leave identities differ" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_different_players_across_cycles_are_rejected(self) -> None:
+        session = self.ready_session()
+        session["privacy"]["player_names"].append("OtherPlayer")
+        role = "server_restart_reconnect_save_stop"
+        restart_log = self.root / session["log_excerpts"][role]["source"]
+        restart_log.write_text(
+            "Done (1.00s)! For help, type help\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "OtherPlayer joined the game\n"
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "OtherPlayer left the game\n"
+            "Saved the game\n"
+            "Stopping server\n",
+            encoding="utf-8",
+        )
+        self.refresh_summary_log_hash(session, "restart", restart_log)
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("same player identity" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_missing_mismatch_server_evidence_rejects_pass(self) -> None:
+        session = self.ready_session()
+        item = session["log_excerpts"]["mismatch_server_attempt_save_stop"]
+        item.update(
+            status="MISSING",
+            source="",
+            note="Third server cycle was not captured.",
+            server_exit_code=None,
+            receipt="",
+            warning_disposition={
+                "status": "PENDING",
+                "warning_count": None,
+                "origins": [],
+                "explanation": "",
+            },
+        )
+
+        errors = validate_session(session)
+
+        self.assertTrue(any("cannot claim PASS" in error for error in errors), errors)
+
+    def test_mismatch_nonzero_exit_blocks_strict_readiness(self) -> None:
+        session = self.ready_session()
+        self.refresh_mismatch_receipt(session, exit_code=7)
+
+        errors, record, output = self.collect(session)
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertIn(
+            "missing-mod third server exit code is 7, not 0",
+            record["review_readiness"]["blockers"],
+        )
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertTrue(any("exit code is 7" in error for error in strict_errors))
+
+    def test_mismatch_receipt_log_digest_must_match_retained_full_log(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        receipt = self.root / session["log_excerpts"][role]["receipt"]
+        document = json.loads(receipt.read_text(encoding="utf-8"))
+        document["full_log_sha256"] = "0" * 64
+        receipt.write_text(
+            json.dumps(document, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("differs from the retained full log" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_mismatch_receipt_exit_must_match_session_record(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        session["log_excerpts"][role]["server_exit_code"] = 9
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("differs from the session record" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_committed_bundle_rejects_mismatch_receipt_cross_binding_tamper(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "receipt-tamper-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        receipt_path = output / "server" / "mismatch-server-receipt.json"
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt["full_log_sha256"] = "0" * 64
+        receipt_path.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        item = record["log_excerpts"]["mismatch_server_attempt_save_stop"]
+        payload = receipt_path.read_bytes()
+        item["receipt"]["sha256"] = hashlib.sha256(payload).hexdigest()
+        item["receipt"]["size"] = len(payload)
+        item["receipt"]["full_log_sha256"] = "0" * 64
+        item["mismatch_server_binding"]["receipt_sha256"] = item["receipt"][
+            "sha256"
+        ]
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any("differs from the retained full log" in error for error in validation_errors),
+            validation_errors,
+        )
+
+    def test_mismatch_project_warning_is_a_server_finding(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        mismatch_log = self.root / session["log_excerpts"][role]["source"]
+        payload = mismatch_log.read_text(encoding="utf-8") + (
+            "[Server thread/WARN] [advancedrocketrycommunity/]: mismatch finding\n"
+        )
+        mismatch_log.write_text(payload, encoding="utf-8")
+        runtime_log = self.jar_paths["server"].parent.parent / "logs" / "latest.log"
+        runtime_log.write_text(payload, encoding="utf-8")
+        self.refresh_mismatch_receipt(session)
+        self.set_warning_disposition(session, (role,), count=1)
+        session["findings"]["server_project_warning_count"] = 1
+        session["findings"]["notes"] = "Mismatch project warning retained."
+
+        errors, record, output = self.collect(session)
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertEqual(1, record["findings"]["server_project_warning_count"])
+        self.assertEqual("INCOMPLETE", record["review_readiness"]["status"])
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertTrue(
+            any("server_project_warning_count is 1" in error for error in strict_errors),
+            strict_errors,
+        )
+
+    def test_accepted_third_party_warning_requires_and_preserves_disposition(self) -> None:
+        session = self.ready_session()
+        client_log = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
+        with client_log.open("a", encoding="utf-8") as stream:
+            stream.write("[Render thread/WARN] [forge/]: reviewed third-party warning\n")
+        roles = (
+            "client_startup_world",
+            "matching_client_connection",
+            "mismatch_attempt",
+        )
+        self.set_warning_disposition(
+            session, roles, count=1, status="ACCEPTED"
+        )
+
+        errors, record, output = self.collect(session)
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+
+        self.assertEqual([], errors)
+        self.assertEqual([], strict_errors)
+        assert record is not None
+        self.assertEqual(
+            "ACCEPTED",
+            record["log_excerpts"]["client_startup_world"][
+                "warning_disposition"
+            ]["status"],
+        )
+
+    def test_broad_third_party_error_blocks_strict_readiness(self) -> None:
+        session = self.ready_session()
+        client_log = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
+        with client_log.open("a", encoding="utf-8") as stream:
+            stream.write("[Render thread/ERROR] [forge/]: broad client failure\n")
+
+        errors, record, output = self.collect(session)
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertEqual("INCOMPLETE", record["review_readiness"]["status"])
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertTrue(any("broad ERROR" in error for error in strict_errors), strict_errors)
+
+    def test_strict_collect_is_atomic_when_review_is_incomplete(self) -> None:
+        session = self.ready_session()
+        review = session["applicability_reviews"]["chunk_unload_behavior"]
+        review.update(decision="PENDING", reviewed_by="", reviewed_at="", notes="")
+        output = self.build / "strict-incomplete"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "strict-incomplete-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("chunk_unload_behavior" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_dirty_worktree_is_rejected_before_collection(self) -> None:
+        session = self.ready_session()
+        (self.root / ".gitignore").write_bytes(b"/build/\n/local-only/\n")
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("clean tracked/untracked worktree" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_source_commit_must_equal_existing_checkout_head(self) -> None:
+        session = self.ready_session()
+        session["metadata"]["source_commit"] = "a" * 40
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("rev-parse" in error or "source commit" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_committed_bundle_validates_original_source_commit_after_head_moves(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "source-revision-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        (self.root / "README.md").write_bytes(b"# Later documentation commit\n")
+        manifest_path = self.root / CONTENT_MANIFEST
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "artifact": "future-artifact.jar",
+                    "artifact_sha256": "1" * 64,
+                    "entry_count": 0,
+                    "entries": [],
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        subprocess.run(
+            ["git", "add", "README.md", CONTENT_MANIFEST.as_posix()],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "user.name=Evidence Fixture",
+                "-c",
+                "user.email=evidence@example.invalid",
+                "commit",
+                "-q",
+                "-m",
+                "later docs",
+            ],
+            cwd=self.root,
+            check=True,
+        )
+
+        validation_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+
+        self.assertEqual([], validation_errors)
+
+    def test_player_identity_binding_uses_private_hmac_protocol(self) -> None:
+        secret = b"private-fixture-secret-material!" + b"x" * 8
+        expected = hmac.new(
+            secret,
+            b"v0.0.2-player-identity\0secretplayer",
+            hashlib.sha256,
+        ).hexdigest()
+
+        actual = bind_player_identity(secret, "SecretPlayer")
+
+        self.assertEqual(expected, actual)
+        public_session_digest = hashlib.sha256(
+            b"v002-aaaaaaaaaaaaaaaaaaaaaaaa\0secretplayer"
+        ).hexdigest()
+        self.assertNotEqual(public_session_digest, actual)
+        with self.assertRaisesRegex(ValueError, "at least 32 bytes"):
+            bind_player_identity(b"short", "SecretPlayer")
+
+    def test_collector_treats_private_player_binding_as_opaque(self) -> None:
+        session = self.ready_session()
+        summary_path = self.root / session["server_harness"]["summary"]
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        for cycle in summary["cycles"]:
+            cycle["player_identity_binding"] = "9" * 64
+        summary_path.write_text(
+            json.dumps(summary, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        errors, record, _ = self.collect(session, "opaque-binding")
+
+        self.assertEqual([], errors)
+        assert record is not None
+        bindings = {
+            record["log_excerpts"][role]["player_identity_binding"]
+            for role in (
+                "server_first_join_leave_save_stop",
+                "server_restart_reconnect_save_stop",
+            )
+        }
+        self.assertEqual({"9" * 64}, bindings)
+
+    def test_windows_home_with_spaces_is_fully_redacted(self) -> None:
+        source = self.build / "logs" / "home-space.log"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "loaded C:\\Users\\Private Test User\\isolated-instance\\options.txt\n",
+            encoding="utf-8",
+        )
+
+        payload, counts = extract_log_excerpt(source, 1, 1, [])
+        text = payload.decode("utf-8")
+
+        self.assertEqual(1, counts["home"])
+        self.assertIn("[REDACTED_HOME]", text)
+        self.assertNotIn("Private Test User", text)
+        self.assertNotIn("C:\\Users", text)
+
+    def test_mismatch_server_must_use_the_harness_world(self) -> None:
+        session = self.ready_session()
+        server_root = self.jar_paths["server"].parent.parent
+        (server_root / SERVER_PROPERTIES_IDENTITY_FILE).write_text(
+            "server-ip=127.0.0.1\n"
+            "server-port=25565\n"
+            "level-name=other-world\n",
+            encoding="utf-8",
+        )
+
+        errors, _, output = self.collect(session, "wrong-mismatch-world")
+
+        self.assertTrue(
+            any("harness-owned ASCII canonical" in error for error in errors), errors
+        )
+        self.assertFalse(output.exists())
+
+    def test_mismatch_server_rejects_noncanonical_java_properties_syntax(self) -> None:
+        session = self.ready_session()
+        server_root = self.jar_paths["server"].parent.parent
+        properties = server_root / SERVER_PROPERTIES_IDENTITY_FILE
+        properties.write_text(
+            properties.read_text(encoding="utf-8") + "level-name:other-world\n",
+            encoding="utf-8",
+        )
+
+        errors, _, output = self.collect(session, "alternate-properties-separator")
+
+        self.assertTrue(
+            any("harness-owned ASCII canonical" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_java_rewritten_runtime_properties_do_not_break_startup_binding(self) -> None:
+        session = self.ready_session()
+        server_root = self.jar_paths["server"].parent.parent
+        (server_root / "server.properties").write_text(
+            "#Minecraft server properties\n"
+            "#Fri Aug 29 12:00:00 CST 2026\n"
+            "level-name=world\n"
+            "level-type=minecraft\\:normal\n"
+            "server-ip=127.0.0.1\n"
+            "server-port=25565\n",
+            encoding="iso-8859-1",
+        )
+
+        errors, record, _ = self.collect(session, "java-rewritten-properties")
+
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+
+    def test_mismatch_world_load_requires_exact_dedicated_server_logger(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        payload = source.read_text(encoding="utf-8").replace(
+            "[minecraft/DedicatedServer]: Preparing level \"world\"",
+            "[evil/FakeDedicatedServer]: Preparing level \"world\"",
+        )
+        self.replace_mismatch_server_log(session, payload)
+        output = self.build / "fake-world-load-logger"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "fake-world-load-logger-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(
+            any("Preparing level" in error or "world-load" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_strict_mismatch_accepts_server_connection_marker_without_client_marker(self) -> None:
+        session = self.ready_session()
+        self.replace_client_connection_marker(
+            session, "missing-mod client result without a connection log marker"
+        )
+        output = self.build / "server-connection-marker-only"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "server-connection-marker-only-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertEqual("READY_FOR_HUMAN_GATE_REVIEW", record["review_readiness"]["status"])
+        self.assertEqual(
+            "server",
+            record["log_excerpts"]["mismatch_server_attempt_save_stop"][
+                "connection_attempt_marker"
+            ]["source"],
+        )
+
+    def test_strict_mismatch_accepts_bound_client_marker_without_server_marker(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        payload = "\n".join(
+            line
+            for line in source.read_text(encoding="utf-8").splitlines()
+            if "Disconnecting VANILLA connection attempt" not in line
+        ) + "\n"
+        self.replace_mismatch_server_log(session, payload)
+        output = self.build / "client-connection-marker-only"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "client-connection-marker-only-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertEqual("READY_FOR_HUMAN_GATE_REVIEW", record["review_readiness"]["status"])
+        self.assertEqual(
+            "client",
+            record["log_excerpts"]["mismatch_attempt"][
+                "connection_attempt_marker"
+            ]["source"],
+        )
+
+    def test_strict_mismatch_rejects_client_marker_for_other_port(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        payload = "\n".join(
+            line
+            for line in source.read_text(encoding="utf-8").splitlines()
+            if "Disconnecting VANILLA connection attempt" not in line
+        ) + "\n"
+        self.replace_mismatch_server_log(session, payload)
+        self.replace_client_connection_marker(
+            session,
+            "[Render thread/INFO] [minecraft/ConnectScreen]: "
+            "Connecting to 127.0.0.1, 25566",
+        )
+        output = self.build / "wrong-client-connection-port"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "wrong-client-connection-port-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("connection-attempt marker" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_strict_mismatch_rejects_forged_client_logger(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        payload = "\n".join(
+            line
+            for line in source.read_text(encoding="utf-8").splitlines()
+            if "Disconnecting VANILLA connection attempt" not in line
+        ) + "\n"
+        self.replace_mismatch_server_log(session, payload)
+        self.replace_client_connection_marker(
+            session,
+            "[Render thread/INFO] [evil/ConnectScreen]: "
+            "Connecting to 127.0.0.1, 25565",
+        )
+        output = self.build / "forged-client-connection-logger"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "forged-client-connection-logger-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("connection-attempt marker" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_strict_mismatch_rejects_when_both_connection_markers_are_absent(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        payload = "\n".join(
+            line
+            for line in source.read_text(encoding="utf-8").splitlines()
+            if "Disconnecting VANILLA connection attempt" not in line
+        ) + "\n"
+        self.replace_mismatch_server_log(session, payload)
+        self.replace_client_connection_marker(
+            session, "missing-mod result without any connection marker"
+        )
+        output = self.build / "no-connection-markers"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "no-connection-markers-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("connection-attempt marker" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_strict_mismatch_requires_logger_anchored_connection_attempt(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        item = session["log_excerpts"][role]
+        source = self.root / item["source"]
+        payload = source.read_text(encoding="utf-8").replace(
+            "[Netty Server IO #1/INFO] "
+            "[net.minecraftforge.server.ServerLifecycleHooks/SERVERHOOKS]: "
+            "Disconnecting VANILLA connection attempt from isolated client",
+            "[Server thread/INFO] [minecraft/Chat]: injected "
+            "[Netty Server IO #1/INFO] "
+            "[net.minecraftforge.server.ServerLifecycleHooks/SERVERHOOKS]: "
+            "Disconnecting VANILLA connection attempt from isolated client",
+        )
+        self.replace_mismatch_server_log(session, payload)
+        self.replace_client_connection_marker(
+            session, "missing-mod client result without a connection log marker"
+        )
+        output = self.build / "missing-connection-marker"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "missing-connection-marker-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(
+            any("connection-attempt marker" in error for error in errors), errors
+        )
+        self.assertFalse(output.exists())
+
+    def test_embedded_minecraft_logger_text_cannot_forge_player_lifecycle(self) -> None:
+        session = self.ready_session()
+        role = "server_first_join_leave_save_stop"
+        first_log = self.root / session["log_excerpts"][role]["source"]
+        first_log.write_text(
+            "[Server thread/INFO] [minecraft/Chat]: injected "
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "SecretPlayer joined the game\n"
+            "[Server thread/INFO] [minecraft/Chat]: injected "
+            "[Server thread/INFO] [minecraft/MinecraftServer]: "
+            "SecretPlayer left the game\n"
+            "Saved the game\n"
+            "Stopping server\n",
+            encoding="utf-8",
+        )
+        self.refresh_summary_log_hash(session, "first-start", first_log)
+
+        errors, _, output = self.collect(session, "embedded-player-spoof")
+
+        self.assertTrue(
+            any("exactly one player join and one player leave" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_similar_minecraft_logger_name_cannot_forge_player_lifecycle(self) -> None:
+        payload = (
+            "[Server thread/INFO] [evil/FakeMinecraftServerChat]: "
+            "SecretPlayer joined the game\n"
+            "[Server thread/INFO] [evil/FakeMinecraftServerChat]: "
+            "SecretPlayer left the game\n"
+        )
+
+        with self.assertRaisesRegex(ValueError, "exactly one player join"):
+            parse_player_lifecycle(payload, "fake-logger")
+
+    def test_committed_bundle_rejects_conflicting_shared_source_audits(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "shared-audit-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        record["log_excerpts"]["mismatch_attempt"]["source_audit"][
+            "audit_counts"
+        ]["error_count"] = 1
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        validation_errors, _ = validate_bundle(
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertTrue(
+            any("raw log audits for shared source" in error for error in validation_errors),
+            validation_errors,
+        )
+
+    def test_strict_collect_rejects_colon_or_ads_source_without_output(self) -> None:
+        session = self.ready_session()
+        carrier = self.build / "capture" / "unsafe-source"
+        carrier.write_bytes(b"carrier")
+        unsafe = Path(str(carrier) + ":capture")
+        unsafe.write_bytes(make_png(seed=91))
+        session["evidence"]["mods_page"]["source"] = unsafe.relative_to(
+            self.root
+        ).as_posix()
+        output = self.build / "strict-unsafe-source"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "strict-unsafe-source-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("not portable" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_staged_validation_uses_build_mode_and_rejects_changed_raw_input(self) -> None:
+        session = self.ready_session()
+        output = self.build / "staged-validation-failure"
+        client_log = self.build / "logs" / "client-full.log"
+        changed = False
+
+        def mutate_then_validate(*args, **kwargs):
+            nonlocal changed
+            if not changed:
+                changed = True
+                client_log.write_text(
+                    client_log.read_text(encoding="utf-8")
+                    + "[Render thread/ERROR] [minecraft/Test]: changed during collect\n",
+                    encoding="utf-8",
+                )
+            return validate_bundle(*args, **kwargs)
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.validate_bundle",
+            side_effect=mutate_then_validate,
+        ) as validator:
+            errors, record = collect_evidence(
+                self.write_session(session, "staged-validation-session.json"),
+                output,
+                self.root,
+                require_acceptance_ready=True,
+            )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("raw log source no longer matches" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+        staging = self.build / ".v002-evidence-staging"
+        self.assertFalse(staging.exists())
+        self.assertEqual("build", validator.call_args.kwargs["_validation_mode"])
+
+    def test_staged_committed_validation_rechecks_raw_inputs_before_publish(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        client_log = self.build / "logs" / "client-full.log"
+        modes: list[str] = []
+        changed = False
+
+        def mutate_after_committed_check(*args, **kwargs):
+            nonlocal changed
+            mode = kwargs["_validation_mode"]
+            modes.append(mode)
+            result = validate_bundle(*args, **kwargs)
+            if mode == "committed" and not changed:
+                changed = True
+                client_log.write_text(
+                    client_log.read_text(encoding="utf-8")
+                    + "[Render thread/ERROR] [minecraft/Test]: changed during collect\n",
+                    encoding="utf-8",
+                )
+            return result
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.validate_bundle",
+            side_effect=mutate_after_committed_check,
+        ):
+            errors, record = collect_evidence(
+                self.write_session(session, "staged-committed-session.json"),
+                output,
+                self.root,
+                require_acceptance_ready=True,
+            )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("raw log source no longer matches" in error for error in errors), errors)
+        self.assertEqual(["committed", "build"], modes)
+        self.assertFalse(output.exists())
+        self.assertFalse((self.build / ".v002-evidence-staging").exists())
+
+    def test_committed_bundle_binds_archived_server_properties_hash(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "properties-tamper-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        item = record["log_excerpts"]["mismatch_server_attempt_save_stop"]
+        properties_path = output / item["server_properties"]["file"]
+        self.assertTrue(properties_path.is_file())
+        item["mismatch_server_binding"]["server_properties_sha256"] = "0" * 64
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        validation_errors, _ = validate_bundle(
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertTrue(
+            any("server_properties_sha256" in error for error in validation_errors),
+            validation_errors,
+        )
+
+    def test_committed_bundle_binds_canonical_raw_server_properties_hash(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "raw-properties-tamper-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        item = record["log_excerpts"]["mismatch_server_attempt_save_stop"]
+        properties_path = output / item["server_properties"]["file"]
+        properties = json.loads(properties_path.read_text(encoding="utf-8"))
+        properties["source_sha256"] = "0" * 64
+        payload = (
+            json.dumps(properties, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        properties_path.write_bytes(payload)
+        archive_sha256 = hashlib.sha256(payload).hexdigest()
+        item["server_properties"].update(
+            {
+                "sha256": archive_sha256,
+                "size": len(payload),
+                "source_sha256": properties["source_sha256"],
+            }
+        )
+        # Rebind every attacker-controlled archived hash. Validation must still
+        # derive the raw properties digest from the canonical harness payload.
+        item["mismatch_server_binding"]["server_properties_sha256"] = archive_sha256
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        validation_errors, _ = validate_bundle(
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertTrue(
+            any(
+                "canonical harness startup-properties" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+
+    def test_mismatch_runtime_parent_symlink_is_rejected(self) -> None:
+        session = self.ready_session()
+        server_root = self.jar_paths["server"].parent.parent
+        logs = server_root / "logs"
+        outside = self.build / "outside-runtime-logs"
+        logs.rename(outside)
+        try:
+            logs.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:
+            outside.rename(logs)
+            self.skipTest(f"directory symlinks unavailable: {exc}")
+
+        errors, _, output = self.collect(session)
+
+        self.assertTrue(any("symlink or junction" in error for error in errors), errors)
         self.assertFalse(output.exists())
 
 
