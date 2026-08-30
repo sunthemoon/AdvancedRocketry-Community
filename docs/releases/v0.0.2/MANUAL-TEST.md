@@ -2,12 +2,13 @@
 
 ```yaml
 status: PARTIAL_AUTOMATED
-test_date: 2026-08-29
-tester: packaged-server automation only
+test_date: 2026-08-30
+tester: automated baseline plus repository-owner G0 review
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 0fa080fdff3ab025c6b764b02d2d07fa9221c5ae
-artifact_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
-artifact_identity_scope: PRE_PROVENANCE_APPROVAL_HEADLESS_BASELINE
+tested_implementation_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
+final_g0_record_commit: 3d8274082008ebcdd59d5c118dd9583790ccf175
+artifact_sha256: cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad
+artifact_identity_scope: POST_PROVENANCE_APPROVAL_G0_APPROVED
 packaged_client_tested: false
 ```
 
@@ -15,28 +16,16 @@ packaged_client_tested: false
 
 **Preconditions**
 
-- Complete the human G0 provenance/license subreview first, rebuild with its
-  notice/review changes, refresh artifact evidence, commit those changes and the
-  regenerated evidence together, and obtain successful
-  blocking CI for the exact source commit. That subreview changes packaged JAR
-  bytes, so evidence captured against a pre-approval artifact is invalid. This
-  is only the first phase of G0; final G0 remains `IN_PROGRESS` until the exact
-  implementation's complete distributable source/resource inventory and history
-  are reviewed and the rendered README captured below receives human visual
-  review.
-- Generate and verify the exact-commit final-G0 input report, compare it with
-  the blocking governance CI artifact, inspect every reported Git blob and
-  relevant history entry, and archive the report with the human decision as
-  specified by the test-machine handoff. Do not begin client capture when that
-  decision is pending or `CHANGES_REQUIRED`.
-- Before handoff, the evidence owner must update and commit the identity block
-  above with the post-provenance-approval artifact-producing commit and rebuilt
-  artifact SHA-256.
-  The tester must pull the later clean documentation checkpoint, verify the
-  block no longer says `PRE_PROVENANCE_APPROVAL_HEADLESS_BASELINE`, and stop if
-  it was not refreshed; do not edit these fields on the test machine. The clean
-  checkout commit bound by the evidence collector may be a later documentation-
-  only checkpoint than the artifact-producing implementation commit.
+- G0 is complete. Bootstrap provenance is `THIRD_PARTY_APPROVED`; the rebuilt
+  implementation and JAR are bound above; the exact source/resource report and
+  rendered README review are `APPROVED` in record commit `3d82740`.
+- Use only the selected `cd5ae579...` artifact. A changed JAR, reviewed source,
+  packaged manifest, or README invalidates the affected binding and requires a
+  fresh review rather than reuse of these results.
+- Pull a clean descendant documentation checkpoint containing the identity
+  block above. The checkout commit bound by the evidence collector may be later
+  than the artifact-producing implementation commit, but it must validate the
+  exact approved G0 record.
 - Use an isolated official Forge 1.20.1-47.4.10 client on Java 17.
 - Install only that newly selected post-provenance-approval distributable JAR.
 - Use the schema-5 collector template and the fixed matching profile directory
@@ -106,14 +95,11 @@ excluded from acceptance.
 
 **Actual**
 
-`PARTIAL`. The headless packaged-server portion passed with the current tested
-artifact before the G0 provenance/license subreview approval. Source
-and server copies share SHA-256
-`58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`.
-Both headless cycles verified status identity, saved, exited 0, and reused the
-same `world/level.dat`; full-log review found zero ERROR, zero project WARN, and
-zero client-class linkage findings in both cycles. No packaged client joined,
-so three-way hash equality,
+`PARTIAL`. The committed historical headless baseline passed before the final
+provenance approval. Exact implementation Forge run 33302877815 repeated both
+cycles with the current `cd5ae579...` artifact: status identity, save, exit 0,
+same-world restart, zero project ERROR/WARN, and zero client-class linkage
+findings all passed. No packaged client joined, so three-way hash equality,
 join/disconnect, and restart/reconnect remain untested.
 
 The existing committed dedicated-server evidence is a headless baseline, not a
@@ -238,8 +224,8 @@ review.
 - [ ] Three-way source/server/client JAR hash equality.
 - [ ] Distinct matching and missing-project-mod profile paths, four canonical
   inventory snapshots, exact matching JAR, and empty missing-mod inventory.
-- [ ] Current rendered README screenshot from the tested checkout.
-- [ ] Final G0 full distributable source/resource inventory-history decision is
+- [x] Current rendered README screenshot from the tested checkout.
+- [x] Final G0 full distributable source/resource inventory-history decision is
       recorded for the selected implementation commit and tree, with the
       verified report archived at its commit-named tracked path.
 - [ ] Full-window packaged-client Mods page screenshot.

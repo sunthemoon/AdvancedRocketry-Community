@@ -2,14 +2,6 @@
 
 ## Blocking before `PASSED`
 
-- Human review has not approved the Forge MDK/Gradle Wrapper license scope and
-  the source/binary notice treatment. The schema-3 provenance record remains
-  `EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING`; its individual target and notice
-  decisions remain `PENDING_HUMAN_REVIEW`.
-- Final G0 has not reviewed the exact implementation's complete distributable
-  source/resource inventory and relevant history for unrecorded upstream or
-  community-fork content. Deterministic exact-Git input generation and CI
-  artifact upload exist, but they make no human provenance/license decision.
 - An isolated packaged client has not captured the Mods page or disposable
   single-player world evidence.
 - A matching packaged client has not joined, disconnected, or reconnected after
@@ -19,33 +11,24 @@
 - Final human release acceptance is absent. The version is not tagged, merged
   as accepted, or published. Any later GitHub Release must be a pre-release,
   never a stable release.
-- The G0 provenance/license subreview must be approved before packaged-client
-  evidence. Its transition changes `THIRD-PARTY-NOTICES.md`, which is packaged
-  into both JARs; approval therefore requires a rebuild, refreshed artifact
-  evidence, and successful CI before the client/server JAR is selected. This
-  subreview does not pass G0; the full source/resource inventory-history
-  decision must then be approved before client capture, and the post-rebuild
-  rendered README visual review remains required. Any earlier client capture
-  could bind bytes or source scope that a required correction supersedes.
 - Provenance and future client evidence bind historical Git commits. PR #3 must
   use a normal merge commit when accepted; squash/rebase history rewriting
   requires new bindings, mechanical validation, and the affected human reviews.
 
 ## Artifact reproducibility result and boundary
 
-- The current mechanically tested pre-provenance-approval artifact has SHA-256
-  `58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944`;
+- The current approved and mechanically tested artifact has SHA-256
+  `cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad`;
   two Windows clean builds produced identical bytes.
 - The current sources JAR has SHA-256
-  `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
+  `f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe`.
 - The tested-implementation Linux Forge 47.4.10 upload was downloaded from
-  workflow run 33258532863. Its main JAR, sources JAR, and content manifest are
+  workflow run 33302877815. Its main JAR, sources JAR, and content manifest are
   byte-identical to the Windows build and committed manifest.
-- Hardened documentation checkpoint `da67cfa` had 3/3 successful last-observed
-  checks in Forge run 33285098959 and governance run 33285099023. The latter
-  uploaded exact-head packet and final-G0 input-report artifacts; both remain
-  mechanical inputs without a human decision. These checkpoint runs are not
-  relabeled as the artifact-producing implementation run above.
+- Governance run 33302877802 passed 517/517 tests and uploaded exact-head packet
+  and final-G0 input-report artifacts. Owner decisions are separately bound in
+  immutable record commit `3d82740`; mechanical artifacts alone are not
+  relabeled as human decisions.
 - Historical hashes `b10db978...`, `c627d23a...`, and `827c07b...` identify
   superseded artifacts from earlier packaging/evidence states. They must not be
   mixed with the current client/server session.

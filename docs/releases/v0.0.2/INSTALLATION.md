@@ -32,54 +32,26 @@ Use a new disposable world and a separate test profile. The project promises
 no world compatibility for `v0.0.x` through `v0.4.x`; do not open a valued
 world with this developer preview.
 
-## Acceptance prerequisite: finish the provenance subreview first
+## Acceptance prerequisite: approved artifact selection
 
-Do not select or launch a packaged-client acceptance artifact while the G0
-Forge/Gradle provenance/license subreview is pending. The repository owner or
-assigned license reviewer must resolve that subreview in the worktree, rebuild
-both JARs, refresh and validate artifact evidence/checksums, then commit the
-approval and regenerated evidence together. Blocking CI must pass for that exact
-commit.
-The approval transition changes packaged bytes, so a pre-approval JAR cannot be
-reused as client evidence.
+G0 is complete for implementation
+`d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b`. The bootstrap provenance record
+is digest-bound `THIRD_PARTY_APPROVED`; both rebuilt JARs and artifact evidence
+reproduce in blocking CI; the exact source/resource inventory-history review
+and rendered README review are `APPROVED` in immutable record commit
+`3d8274082008ebcdd59d5c118dd9583790ccf175`.
 
-The reviewer uses the commit-bound packet procedure in
-[`../../work/v0.0.2-test-machine-handoff.md`](../../work/v0.0.2-test-machine-handoff.md).
-Do not continue until
-`python -I -S scripts/validate_bootstrap_provenance.py --require-approved-review`
-passes for the reviewed checkout; the default validator intentionally permits a
-mechanically valid but human-pending state.
+Packaged-client acceptance must use main JAR SHA-256
+`cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad`
+and companion sources JAR SHA-256
+`f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe`.
+Verify the exact physical source, server, and client copies; do not substitute a
+pre-approval artifact. If a later change touches packaged bytes, reviewed
+source/resources, provenance, or `README.md`, stop and repeat the affected
+review instead of relabeling this evidence.
 
-The packet covers only the Forge MDK and Gradle Wrapper provenance/license
-subreview. It does not prove repository-wide originality. The later final G0
-acceptance review must inspect the complete distributable source/resource
-inventory and relevant Git history, with its commit/tree, reviewer/date,
-decision, and findings recorded in [`RELEASE-EVIDENCE.md`](RELEASE-EVIDENCE.md).
-
-The scope decision is not forced toward the validator's current target list. If
-the reviewer requests removal of `.gitattributes` or `.gitignore`, or any other
-license/notice correction, record `CHANGES_REQUIRED` in the provenance
-correction log. Keep the manifest-level approval metadata null and its status
-`EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING`; keep retained target statuses
-`PENDING_HUMAN_REVIEW` and their proposed statuses unchanged. Revise the
-manifest, record, notice, validator/packet contracts, and tests, then rebuild and
-refresh the artifact manifest, G0 mechanical evidence, and checksums before
-committing the replacement pending scope. Generate a new commit-bound packet
-and repeat the review. Do not prepare an approval digest until that exact scope
-and its regenerated packaging evidence have been reviewed.
-
-This first phase is not final G0 `PASS`. The later final G0 phase covers both the
-complete source/resource inventory/history determination and the rendered
-README visual review from the clean post-rebuild checkout. G0 stays
-`IN_PROGRESS` until the bootstrap subreview and the complete final G0 review are
-recorded.
-
-For each post-rebuild commit, blocking governance CI generates the deterministic
-`v0.0.2-final-g0-review-inputs-<commit>` artifact. Follow the exact generate,
-verify, blob/history inspection, and tracked-report archival procedure in the
-[test-machine handoff](../../work/v0.0.2-test-machine-handoff.md). An input
-report is not an approval, and client capture must wait if that review records
-`CHANGES_REQUIRED`.
+The exact verification and invalidation procedure remains in the
+[`test-machine handoff`](../../work/v0.0.2-test-machine-handoff.md).
 
 ## Obtain the test artifact
 

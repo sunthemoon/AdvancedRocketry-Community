@@ -4,17 +4,35 @@
 test_date: 2026-08-30
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 7441cd245251040ef2b1629257be978b4796fe0e
-documentation_checkpoint: 7441cd245251040ef2b1629257be978b4796fe0e
+tested_implementation_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
+documentation_checkpoint: 3d8274082008ebcdd59d5c118dd9583790ccf175
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13.13 / CI Python 3.12 / Minecraft 1.20.1 / Forge 47.4.10
 ```
 
 ## Historical automated command results through `da67cfa`
 
-This table preserves the earlier artifact and review-automation checkpoints.
-The current `7441cd2` results are recorded separately below rather than
-relabeling the historical 396-test and schema facts.
+This report preserves earlier artifact and review-automation checkpoints rather
+than relabeling historical results. The current post-approval implementation and
+final-G0 record are listed first.
+
+## Post-approval implementation and final G0 — `d6c8464` / `3d82740`
+
+| Command or check | Result | Detail |
+|---|---|---|
+| Two Windows Java 17 clean builds | PASS | Main JAR `cd5ae579...` and sources JAR `f958f433...` were byte-identical across rebuilds |
+| Exact implementation Forge CI | PASS | [Run 33302877815](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877815) passed baseline/advisory jobs, 3/3 JUnit, 1/1 GameTest, and current-JAR packaged-server smoke |
+| Exact implementation governance CI | PASS | [Run 33302877802](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877802) passed 517/517 Python tests and strict governance; PR #3 was 3/3 PASS |
+| CI/local artifact comparison | PASS | Artifact 9729573591 matched the Windows main JAR, sources JAR, and `1384c9c4...` content manifest byte-for-byte |
+| Bootstrap provenance | PASS | Schema-3 record is digest-bound `THIRD_PARTY_APPROVED`; approved-review validation passes |
+| Final-G0 source/resource review | APPROVED | Report `7b8aef7c...` binds tree `878d0c6...`, 18 inventory files, 11 bootstrap targets, 27 commits, and 319 path changes; exact-blob rename/copy lineage is empty |
+| Final-G0 README review | APPROVED | Complete 1440x5000 PNG `a89318c2...` shows required identity/non-affiliation text and no private information |
+| Immutable final-G0 record validation | PASS | Record commit `3d8274082008ebcdd59d5c118dd9583790ccf175` validates both owner-approved outcomes |
+| Release checksums | PASS | 12 entries cover all 11 committed evidence files plus the external main JAR |
+| Strict repository validation | PASS_WITH_PENDING_GATES | 16 PASS, 2 PENDING, 0 WARN, 0 FAIL; only the absent client bundle and proposed ADR-005 remain explicit pending states |
+
+G0 is `PASS`. G4, G8, and G9 remain open; no packaged-client or final release
+acceptance is inferred from these results.
 
 | Command | Result | Detail |
 |---|---|---|
@@ -71,22 +89,22 @@ human release acceptance.
 
 ```yaml
 artifact: advancedrocketry-community-1.20.1-0.0.2-dev.jar
-sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
-sources_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
+sha256: cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad
+sources_sha256: f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe
 entry_count: 34
 repeated_clean_build_hash_equal: true
 server_copy_hash_equal: true
-linux_ci_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
-linux_ci_sources_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
-linux_ci_content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
-linux_ci_artifact_id: 9726838947
-checkpoint_linux_ci_artifact_id: 9726838947
-checkpoint_g0_review_packet_artifact_id: 9726778456
-checkpoint_g0_review_packet_commit: 7441cd245251040ef2b1629257be978b4796fe0e
-checkpoint_g0_review_packet_manifest_sha256: 395c753fc9d723aa358e27dfaca182bd906fa830bb820ad013a95c95e869f795
-checkpoint_final_g0_review_inputs_artifact_id: 9726778602
-checkpoint_final_g0_review_inputs_commit: 7441cd245251040ef2b1629257be978b4796fe0e
-checkpoint_final_g0_review_inputs_sha256: 9f87d1a82a7d5b8583c6be3cfb2548c9d9018143a9f64407a0232165ec8cd023
+linux_ci_sha256: cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad
+linux_ci_sources_sha256: f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe
+linux_ci_content_manifest_sha256: 1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f
+linux_ci_artifact_id: 9729573591
+checkpoint_linux_ci_artifact_id: 9729573591
+checkpoint_g0_review_packet_artifact_id: 9729539499
+checkpoint_g0_review_packet_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
+checkpoint_g0_review_packet_manifest_sha256: b7df039f085862a0c2aa353549943c537d1183524cf4c3f12a676a0f86647d3b
+checkpoint_final_g0_review_inputs_artifact_id: 9729539691
+checkpoint_final_g0_review_inputs_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
+checkpoint_final_g0_review_inputs_sha256: 7b8aef7c8308f0896fc50bd29c7285342de24f93def3c62d6cb87f310e659623
 cross_platform_byte_identity_proven: true
 ```
 
@@ -115,6 +133,7 @@ artifact 9726838947 from run 33293732867.
 
 | Attempt | Result | Resolution |
 |---|---|---|
+| Final-G0 record-only checkpoint `3d82740` CI | FAIL | Forge baseline run 33303577846 and governance run 33303577844 correctly rejected two newly tracked G0 files omitted from the old checksum list. Regenerated the deterministic list to 12 entries, verified all 11 committed evidence files plus the current JAR, and reran strict validation to 16 PASS / 2 PENDING / 0 FAIL before the recovery commit. |
 | Accidental Java 8 clean build | FAIL | Re-ran with the pinned Microsoft Java 17.0.8 runtime; the current artifact built successfully |
 | Acceptance-hardening ambient-runtime clean build | FAIL | The shell selected IBM Java 8 and ForgeGradle stopped before compilation; setting `JAVA_HOME` explicitly to Microsoft Java 17.0.8 made the unchanged clean build pass |
 | Acceptance-hardening first sources-JAR audit | FAIL | A verified-empty, untracked `src/main/java/example/` directory added an unwanted archive entry; removing only that empty directory and rerunning `sourcesJar` restored the expected `2e18a573...` hash |
@@ -180,17 +199,14 @@ local_automated_baseline: PASS
 tested_implementation_governance_ci: PASS
 tested_implementation_forge_ci: PASS
 tested_implementation_checks: 3/3_PASS
-documentation_checkpoint: 7441cd245251040ef2b1629257be978b4796fe0e
-last_observed_checkpoint_governance_ci: PASS
-last_observed_checkpoint_forge_ci: PASS
-last_observed_checkpoint_checks: 3/3_PASS
+documentation_checkpoint: 3d8274082008ebcdd59d5c118dd9583790ccf175
+last_observed_checkpoint_governance_ci: FAIL_CHECKSUM_RECOVERY_PREPARED
+last_observed_checkpoint_forge_ci: BASELINE_FAIL_ADVISORY_PASS_CHECKSUM_RECOVERY_PREPARED
+last_observed_checkpoint_checks: 1/3_PASS_RECOVERY_CI_PENDING
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 release_status: IN_PROGRESS
 blocking_items:
-  - Human Forge/Gradle provenance/license subreview before the final rebuild
-  - Exact-commit final G0 source/resource inventory-history review and archived input report
-  - Post-rebuild rendered README screenshot and human G0 visual review
   - Isolated packaged-client Mods page and single-player evidence
   - Three-way JAR equality and matching-client join/disconnect/restart/reconnect evidence
   - Missing-project-mod observation and scoped G4 applicability decisions
