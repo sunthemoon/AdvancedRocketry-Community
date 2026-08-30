@@ -19,7 +19,7 @@ artifact_sha256: 07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6e
 |---|---|---|
 | `gradlew clean build` — first run | PASS | Main JAR 95,924 bytes, SHA-256 `07f5c108…` |
 | `gradlew clean build` — second run | PASS | Byte-identical main JAR |
-| Python test suite | PASS (combined rerun) | 548 current methods: CI passed the prior 547/547; new Git-blob portability case is included in the 22/22 focused v0.1.0 rerun; final-head CI pending |
+| Python test suite | PASS | Exact-head Linux CI ran 548 tests successfully in one invocation; one test was intentionally skipped |
 | JAR audit | PASS | 112 entries; version/metadata/license/resource audit passed |
 | Client package-boundary scan | PASS | No common/server import of `net.minecraft.client.*` |
 | Strict repository validator | PASS | 20 passed, 0 pending, 0 warnings, 0 failed |
@@ -32,8 +32,8 @@ artifact_sha256: 07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6e
 | Packaged server lifecycle | PASS | First start/status/save/stop plus same-world restart |
 | Packaged matching-client cycles | PASS | Same client joined/disconnected before and after restart |
 | Packaged client visual/log review | PASS | zh_cn/en_us, effective scales 3/2, project/linkage findings zero |
-| Sources JAR repeat task | PASS | Two forced reruns byte-identical: 77,075 bytes, SHA-256 `33021af8…` |
-| Blocking GitHub Actions | PENDING | Run URLs will be recorded before `PASSED` |
+| Sources JAR repeat task | PASS | After removing one untracked empty local source directory, two forced Windows reruns and the prior Linux CI artifact are byte-identical: 76,981 bytes, SHA-256 `f239d18f…` |
+| Blocking GitHub Actions | PASS | PR #5 reports 3/3 checks: Forge baseline, Forge compatibility, and governance all passed at `cc895554` |
 
 ## GameTests
 
@@ -92,6 +92,8 @@ Failures were not relabeled as passes:
 | PR head `5370392` Forge CI | PASS | Forge 47.4.10 baseline and 47.4.23 compatibility both pass; accepted main JAR hash reproduced on Linux |
 | PR head `5370392` governance CI | FAIL after 547/547 tests passed | Four audit CSV files recorded Windows-smudged upstream worktree byte counts/hashes instead of raw Git blob bytes |
 | Audit portability recovery | PASS locally | Audit reads bounded blobs from the exact Git tree, CSV uses LF, regenerated 18-file manifest verifies, and 7/7 audit tests include a clean CRLF materialization case |
+| PR head `cc895554` Forge CI | PASS | Forge 47.4.10 baseline and 47.4.23 compatibility passed; main JAR SHA-256 is `07f5c108...`, 112 entries were audited, 3/3 GameTests passed, and packaged-server smoke passed |
+| PR head `cc895554` governance CI | PASS | All 548 Python tests completed successfully with one intentional skip; strict validation reported 20 passed, 0 pending, 0 warnings, 0 failed |
 
 No timeout was enlarged and no assertion was removed. The recovery command
 used `--resume-install-session`, which refuses a directory containing server
@@ -108,9 +110,18 @@ The broad warnings originate in Forge language-provider metadata, Forge union
 resource URLs, first-run Forge config correction, Vanilla sound/shader state,
 or a launcher-supplied Netty property. They are not project logger findings.
 
-## Final verification pending
+## Final blocking verification
 
-Before `PASSED`, the blocking pull-request CI must run the complete 547-method
-suite in one invocation, reproduce the main JAR on Linux, and pass build,
-DataGen clean-worktree, GameTest, packaged-server, provenance, resource, release
-evidence, and governance checks. Exact run URLs replace the pending entries.
+Exact tested head `cc8955547dd25589ea176f64663689975fdfce68`
+passed all three pull-request checks:
+
+- Forge baseline and compatibility:
+  <https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33325366158>
+- Repository governance:
+  <https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33325366161>
+
+The Linux artifact bundle is GitHub Actions artifact `9736115503`. Its main
+JAR is byte-identical to both Windows clean builds, and its sources JAR is
+byte-identical to the clean local sources rebuild. Build, DataGen clean-tree,
+GameTest, packaged-server, provenance, resource, release-evidence, and
+governance checks all passed.

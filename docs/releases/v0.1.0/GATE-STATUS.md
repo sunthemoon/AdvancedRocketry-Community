@@ -1,4 +1,4 @@
-# GATE_STATUS
+# GATE_STATUS — v0.1.0 accepted snapshot
 
 ```yaml
 version: v0.1.0
@@ -30,16 +30,12 @@ human_approved_by: "sunthemoon"
 human_approved_at: "2026-08-31"
 ```
 
-The exact upstream audit, ten-target provenance review, generated resources,
-packaged client, matching-client dedicated-server restart, release evidence,
-and owner review are complete. Exact tested head `cc895554` passed all three
-pull-request checks, including the Linux build, 3/3 GameTests, packaged-server
-smoke, 548-test Python suite, and strict governance validation. All Required
-Gates are accepted; this is an unreleased developer preview, not a stable
-public release.
+Exact tested head `cc8955547dd25589ea176f64663689975fdfce68`
+passed all three pull-request checks. The accepted main JAR is 95,924 bytes
+with SHA-256
+`07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea`;
+the sources JAR is 76,981 bytes with SHA-256
+`f239d18f2d222f740bddbd6d218e34d88d964e5262e113298a2f07cccb7d9d3e`.
 
-The accepted v0.0.2 snapshot is archived at
-[`../releases/v0.0.2/GATE-STATUS.md`](../releases/v0.0.2/GATE-STATUS.md).
-
-The accepted v0.1.0 snapshot is archived at
-[`../releases/v0.1.0/GATE-STATUS.md`](../releases/v0.1.0/GATE-STATUS.md).
+This snapshot records milestone acceptance only. No tag or public release was
+created, and the build remains an unreleased developer preview.

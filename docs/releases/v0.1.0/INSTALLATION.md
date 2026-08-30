@@ -69,7 +69,7 @@ test world instead of treating it as an upgrade path.
 
 ## Distribution status
 
-No public tag or GitHub Release exists while blocking CI is pending. If this
-developer preview is later published, it must be marked as a pre-release and
-must link the exact source commit and checksums. It must never be described as
-stable Advanced Rocketry gameplay.
+The milestone passed acceptance, but no public tag or GitHub Release was
+created. If this developer preview is later published, it must be marked as a
+pre-release and must link the exact source commit and checksums. It must never
+be described as stable Advanced Rocketry gameplay.

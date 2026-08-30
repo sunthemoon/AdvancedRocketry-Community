@@ -20,12 +20,13 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The active milestone is `v0.1.0`, which adds the audited asset/registry/DataGen
-baseline and a deliberately inert visible content slice: one machine casing
-and four development components. It does not yet provide machine or rocket
-gameplay. See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the
-implementation sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md)
-for verified and pending gates.
+The latest accepted milestone is `v0.1.0`, which adds the audited
+asset/registry/DataGen baseline and a deliberately inert visible content slice:
+one machine casing and four development components. The next target is
+`v0.2.0`, one complete machine vertical slice. Machine and rocket gameplay are
+not yet available. See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md)
+for the implementation sequence and
+[`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for accepted evidence.
 
 ## What this project is
 

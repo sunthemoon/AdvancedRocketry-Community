@@ -1,8 +1,8 @@
 # SHA-256 checksums for v0.1.0 artifacts and committed evidence.
 # Artifact JARs are built by CI and are intentionally not committed.
 07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea  build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
-33021af81f583752317810cd01f239a5665843b0f91c7085740f440ea514db65  build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar
-bf33cff7698c9c4d3747a259ee74d66c3ada4effd9094e5ba880b704509a98f7  docs/releases/v0.1.0/evidence/artifact/artifact-summary.json
+f239d18f2d222f740bddbd6d218e34d88d964e5262e113298a2f07cccb7d9d3e  build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar
+4282f0ffdcc1aa0ef467c4870007c5b6fd6b0ca680877d753c1762ed282f805d  docs/releases/v0.1.0/evidence/artifact/artifact-summary.json
 83e1c2707c0fa645271510b407ef81864d96b4660a85faf7e24c2f6dea014d08  docs/releases/v0.1.0/evidence/artifact/jar-content-manifest.json
 9e38727a92b71e8c7f6ac34519a8faac780969577ef64304c5990dd3dde1a9e0  docs/releases/v0.1.0/evidence/client/logs/client-log-review.json
 f0230259da722d9b2408aa6789116decb325bbd7e149b00086ad0c32e8305e76  docs/releases/v0.1.0/evidence/client/logs/en_us-client.txt

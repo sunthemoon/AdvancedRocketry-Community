@@ -61,6 +61,7 @@
 | `docs/releases/v0.0.2/` | Forge bootstrap 的自动、人工、产物和风险证据 |
 | `docs/releases/v0.0.2/INSTALLATION.md` | 未发布开发预览的环境、客户端/服务端安装和存档边界 |
 | `docs/releases/v0.1.0/` | 资产/注册基线的来源、构建、客户端、专服和人工验收证据 |
+| `docs/releases/v0.1.0/GATE-STATUS.md` | v0.1.0 全部 Required Gate 的接受快照与 CI 绑定 |
 | `docs/releases/v0.1.0/INSTALLATION.md` | v0.1.0 开发预览的安装、内容与存档边界 |
 
 ## 实施记录

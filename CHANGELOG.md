@@ -4,11 +4,11 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.1.0 — acceptance in progress, unreleased developer preview
+## v0.1.0 — PASSED, unreleased developer preview
 
-**Status:** Local implementation, packaged-client, matching-client server, and
-maintainer review are complete on 2026-08-30. Blocking pull-request CI remains
-before the version can be marked `PASSED`; no tag or public release exists.
+**Status:** `PASSED` on 2026-08-31 after packaged-client, matching-client
+server, maintainer review, and all 3/3 pull-request checks completed. No tag or
+public release exists.
 
 ### Added
 

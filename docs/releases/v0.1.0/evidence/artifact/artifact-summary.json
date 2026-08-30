@@ -30,9 +30,9 @@
   },
   "schema_version": 1,
   "sources_jar": {
-    "bytes": 77075,
+    "bytes": 76981,
     "path": "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar",
-    "sha256": "33021af81f583752317810cd01f239a5665843b0f91c7085740f440ea514db65"
+    "sha256": "f239d18f2d222f740bddbd6d218e34d88d964e5262e113298a2f07cccb7d9d3e"
   },
   "version": "v0.1.0"
 }

@@ -4,9 +4,10 @@
 
 ```yaml
 version: v0.1.0
-status: IN_PROGRESS
+status: PASSED
 build: 1.20.1-0.1.0-dev
-tested_implementation_commit: ccae3a79242a1901daed0cadf0c15bb058f89c0b
+tested_implementation_commit: cc8955547dd25589ea176f64663689975fdfce68
+implementation_commit: ccae3a79242a1901daed0cadf0c15bb058f89c0b
 upstream_commit: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
 minecraft: 1.20.1
 forge_baseline: 47.4.10
@@ -14,15 +15,17 @@ forge_compat_lane: 47.4.23
 java: 17.0.8
 gradle: 8.8
 jar_sha256: 07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea
-sources_jar_sha256: 33021af81f583752317810cd01f239a5665843b0f91c7085740f440ea514db65
-pull_request: PENDING
-forge_ci: PENDING
-governance_ci: PENDING
+sources_jar_sha256: f239d18f2d222f740bddbd6d218e34d88d964e5262e113298a2f07cccb7d9d3e
+pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/5
+pull_request_checks: 3/3_PASS
+forge_ci: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33325366158
+governance_ci: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33325366161
+ci_artifact_id: 9736115503
 tag: NOT_CREATED
 release: NOT_CREATED
 release_classification_if_created: PRE_RELEASE
 human_approved_by: sunthemoon
-human_approved_at: 2026-08-30
+human_approved_at: 2026-08-31
 ```
 
 This milestone is an unreleased developer preview. It establishes the audited
@@ -34,9 +37,9 @@ Advanced Rocketry gameplay release.
 | Gate | Status | Evidence |
 |---|---|---|
 | G0 Identity/License/Provenance | PASS | Exact upstream commit, deterministic 18-file audit output, ten-entry MIT import ledger, full ten-entry maintainer review |
-| G1 Reproducible Build | IN_PROGRESS | Two Windows Java 17 clean builds are byte-identical; blocking Linux CI is pending |
+| G1 Reproducible Build | PASS | Two Windows Java 17 clean builds and exact-head Linux CI reproduce the 95,924-byte main JAR; clean-tree sources JARs also match byte for byte |
 | G2 Data and Generated Resources | PASS | 37 managed resources, 14 checked local references, deterministic DataGen, no case collision or unrecorded resource |
-| G3 Automated Behavior | PASS | Java/Python tests and 3/3 Forge GameTests pass locally; final counts are in `TEST-REPORT.md` |
+| G3 Automated Behavior | PASS | Exact-head CI passed Java tests, 548 Python tests with one intentional skip, 3/3 Forge GameTests, artifact/resource checks, and strict governance |
 | G4 Dedicated Server and Sides | PASS | First start and same-world restart passed; the same packaged client joined and disconnected in both cycles |
 | G5 Persistence and Recovery | NOT_APPLICABLE | v0.1.0 adds no project persistent state |
 | G6 Security and Authority | NOT_APPLICABLE | v0.1.0 adds no project network packet or authoritative gameplay transaction |
@@ -44,8 +47,8 @@ Advanced Rocketry gameplay release.
 | G8 Manual Player Flow | PASS | Maintainer-approved zh_cn/en_us Mods, creative-tab, item, placement, break, and dedicated reconnect evidence |
 | G9 Documentation and Release | PASS | Changelog, installation/save boundary, known issues, evidence, and checksums are present; no stable-release claim |
 
-Only G1 remains open until the exact pull-request head passes blocking CI. No
-Required Gate is waived.
+All Required Gates pass. No Gate is waived. This acceptance does not create a
+tag or public release.
 
 ## Audited upstream baseline
 
@@ -86,15 +89,18 @@ Records:
 
 ## Artifact binding
 
-Two consecutive clean builds produced the same 95,924-byte main JAR:
+Two consecutive Windows clean builds and exact-head Linux CI produced the same
+95,924-byte main JAR:
 
 ```text
 07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea  build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
 ```
 
-The source, isolated packaged-client copy, and dedicated-server copy have that
-same SHA-256. The artifact contains 112 entries and exactly the managed v0.1.0
-resource set. See
+The build output, isolated packaged-client copy, and dedicated-server copy have
+that same SHA-256. The 76,981-byte sources JAR also matches Windows/Linux at
+SHA-256 `f239d18f2d222f740bddbd6d218e34d88d964e5262e113298a2f07cccb7d9d3e`.
+The artifact contains 112 entries and exactly the managed v0.1.0 resource set.
+See
 [`evidence/artifact/artifact-summary.json`](evidence/artifact/artifact-summary.json)
 and [`checksums.txt`](checksums.txt).
 
@@ -141,12 +147,10 @@ Forge/Vanilla/Netty warnings are classified in
 
 ## Approval boundary
 
-Repository maintainer `sunthemoon` approved G8/G9 on 2026-08-30 and renewed G0
-on 2026-08-31 after the two language-source hashes were rebound from a Windows
-checkout representation to the exact upstream Git blobs. The approval is bound
-to the provenance content digest, evidence hashes, and JAR SHA-256 above. Any
-changed imported/generated resource, packaged JAR byte, or visual evidence
-invalidates the affected approval and requires revalidation.
-
-CI and pull-request URLs will replace the pending identity fields before the
-version status changes to `PASSED`.
+Repository maintainer `sunthemoon` approved G8/G9 on 2026-08-30, renewed G0 on
+2026-08-31 after the two language-source hashes were rebound from a Windows
+checkout representation to the exact upstream Git blobs, and confirmed final
+milestone acceptance on 2026-08-31. The approval is bound to the provenance
+content digest, evidence hashes, JAR SHA-256, exact tested head, and CI runs
+above. Any changed imported/generated resource, packaged JAR byte, or visual
+evidence invalidates the affected approval and requires revalidation.

@@ -4,7 +4,7 @@
 
 - This milestone is an asset/registry developer preview, not a playable
   Advanced Rocketry loop.
-- No tag or public GitHub Release is created while blocking CI is pending. Any
+- Acceptance is complete, but no tag or public GitHub Release was created. Any
   later publication must be marked pre-release.
 - Test worlds are disposable; no save compatibility is promised through
   `v0.4.x`.
