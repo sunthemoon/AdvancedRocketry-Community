@@ -150,14 +150,15 @@ SHA-256 `cd5ae579...`, sources JAR SHA-256 `f958f433...`, and content-manifest
 SHA-256 `1384c9c4...`. Forge run 33302877815 and governance run 33302877802
 provide 3/3 successful pull-request checks; governance ran 517/517 Python tests.
 
-The exact-Git final-G0 report has SHA-256 `7b8aef7c...`, inventories 18
-distributable source/resource/legal files, covers 11 bootstrap targets and 27
-commits with 319 path changes, and reports no exact-blob rename/copy lineage.
-Reviewer `sunthemoon` approved that report and the complete 1440x5000 rendered
-README screenshot on 2026-08-30 with no findings. Record commit
-`3d8274082008ebcdd59d5c118dd9583790ccf175` passes immutable-record
-validation. These human decisions, not the input hashes alone, support G0
-`PASS`.
+The final-G0 source review was renewed after the evidence-collector hardening at
+`3b5a26168c5702606f460e14824c13d952636359`. Its exact-Git report has SHA-256
+`a064d2c2...`, inventories 18 distributable source/resource/legal files, covers
+11 bootstrap targets and 30 commits with 337 path changes, and reports no
+exact-blob rename/copy lineage. Reviewer `sunthemoon` approved that report on
+2026-08-30 with no findings. The complete 1440x5000 rendered README screenshot
+remains bound to `d6c8464` because no README change followed its visual review;
+that review also remains approved without findings. These human decisions, not
+the input hashes alone, support G0 `PASS`.
 
 ## Artifact and automated tests
 
@@ -174,7 +175,7 @@ validation. These human decisions, not the input hashes alone, support G0
 - The content manifest records 34 sorted entries with per-entry size and hash.
 - The artifact contains byte-identical project LICENSE/NOTICE,
   `THIRD-PARTY-NOTICES.md`, and exact Forge/Gradle supplemental license copies.
-- The release checksum validator covers all eleven committed evidence files and
+- The release checksum validator covers all twelve committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for exact tested head `d6c8464`
   in Forge run 33302877815 and governance run 33302877802. Governance bound the
@@ -270,10 +271,10 @@ checks those bindings but did not create or infer the human outcomes.
   },
   "final_g0_source_resource_review": {
     "outcome": "APPROVED",
-    "selected_implementation_commit": "d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b",
-    "selected_tree_oid": "878d0c682d15915ed44804420a21f0220b87bb3d",
-    "review_inputs_report": "docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/final-g0-review-inputs.json",
-    "review_inputs_report_sha256": "7b8aef7c8308f0896fc50bd29c7285342de24f93def3c62d6cb87f310e659623",
+    "selected_implementation_commit": "3b5a26168c5702606f460e14824c13d952636359",
+    "selected_tree_oid": "e529ca795cbf5daa9424c40fa971f390964eb77c",
+    "review_inputs_report": "docs/releases/v0.0.2/evidence/g0-final/3b5a26168c5702606f460e14824c13d952636359/final-g0-review-inputs.json",
+    "review_inputs_report_sha256": "a064d2c2fce4955f7a9a46c3c44da3c08de35f38934a3160586b03f5606c1789",
     "reviewer": "sunthemoon",
     "reviewed_at": "2026-08-30",
     "findings": []

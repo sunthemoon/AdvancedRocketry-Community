@@ -6,6 +6,7 @@ dfa33ca011a0a4c9fe7f681180ba8c8c561b6e1b69e04c23b6eb3005e880564a  docs/releases/
 79ad47b208404d555cfe80653ce4ddf440ce641849b41b96dcb7b99d561852a5  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
 cc23c817def71110aa69d096306ea32f0a4754b6193f7e6d93044a4ccc199144  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
 37be93f86779121854223980207ff4228a534d47dacecae837d70e2c11b17cfa  docs/releases/v0.0.2/evidence/dedicated-server/summary.json
+a064d2c2fce4955f7a9a46c3c44da3c08de35f38934a3160586b03f5606c1789  docs/releases/v0.0.2/evidence/g0-final/3b5a26168c5702606f460e14824c13d952636359/final-g0-review-inputs.json
 7b8aef7c8308f0896fc50bd29c7285342de24f93def3c62d6cb87f310e659623  docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/final-g0-review-inputs.json
 a89318c28e8ba2a65ab040a91ad6f1e49da2f8484c126d2735ae42e6646a8ebc  docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/readme-full-window.png
 54eb141cef09deee8b9e6eeffb4cb6d47b3b33cf0e9a9e2461b421d803c7acd5  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
