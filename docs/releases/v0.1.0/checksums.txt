@@ -1,0 +1,25 @@
+# SHA-256 checksums for v0.1.0 artifacts and committed evidence.
+# Artifact JARs are built by CI and are intentionally not committed.
+07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea  build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
+33021af81f583752317810cd01f239a5665843b0f91c7085740f440ea514db65  build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar
+4704a1e0aeed6c1cd371460f114591ddf5b565c397e94c0168d9797b4f2acfa1  docs/releases/v0.1.0/evidence/artifact/artifact-summary.json
+83e1c2707c0fa645271510b407ef81864d96b4660a85faf7e24c2f6dea014d08  docs/releases/v0.1.0/evidence/artifact/jar-content-manifest.json
+f4c98e042ba5f72657e693f6136033ae5fc6e9151809596be1c04882ebcd8ed1  docs/releases/v0.1.0/evidence/client/logs/client-log-review.json
+89ae956107a94bf436af061f606076f2a865fe2bedac5f63435ecd3235222089  docs/releases/v0.1.0/evidence/client/logs/en_us-client.txt
+78b3ca81a8c4f09fcd28bde6971910e12fc4ebbc4e1bc4d6d5e0128831ccc23a  docs/releases/v0.1.0/evidence/client/logs/zh_cn-client.txt
+24a7baa9af99ade0fa648400919e2f9282bb322461df9681a6438f6967215074  docs/releases/v0.1.0/evidence/client/manual-evidence.json
+0c9deb9908f8b0ee67a45ea37236dcbc64487e98aa09838971eba7ab84e2503d  docs/releases/v0.1.0/evidence/client/screenshots/creative_tab_en_us.png
+a15d40598f9fecc71c76aee499948f5fe13dd0711ca82aef54991f43caacbfcc  docs/releases/v0.1.0/evidence/client/screenshots/creative_tab_zh_cn.png
+96928ba8ea43bcc554f3fba8753c1ba919fc672fbad03629dab1da06ab04b0c8  docs/releases/v0.1.0/evidence/client/screenshots/data_storage_tooltip_en_us.png
+6ab69dc6758b04c07107f97f73073f987606540cab79a5fd6448ea3fd09a7cdf  docs/releases/v0.1.0/evidence/client/screenshots/data_storage_tooltip_zh_cn.png
+7ecc41eef49e58553bb809a5f4ce3f2066026c23bbd8bcb8ea26f49e62b6d4ed  docs/releases/v0.1.0/evidence/client/screenshots/dedicated_first_join.png
+e41ec5730489ecf16f507c561875e7bfede2177728218bdfe8626addf60e6c30  docs/releases/v0.1.0/evidence/client/screenshots/dedicated_restart_rejoin.png
+1630487cf785d0360317c36a54d3d0f766d444fd3f1f9214cc2e1894d3570398  docs/releases/v0.1.0/evidence/client/screenshots/machine_casing_break_zh_cn.png
+6048ac58e7632ca1fa79933dd66228452bd54c65b78b35dfef2eb68047976e06  docs/releases/v0.1.0/evidence/client/screenshots/machine_casing_orientations_zh_cn.png
+7521d69c6213b5a2098d4f8af72d6e8dfe01de21b339bf5319dbf816542121c8  docs/releases/v0.1.0/evidence/client/screenshots/machine_casing_place_zh_cn.png
+3f75a34d61ef55b7378144e38aa0dcb0db284af5b0547e67e39e530f93853222  docs/releases/v0.1.0/evidence/client/screenshots/mods_en_us.png
+b9aecb998df1bd7e036f52fb1d185af675bdc6e3c88978628c9e21c7892d0545  docs/releases/v0.1.0/evidence/client/screenshots/mods_zh_cn.png
+f58efe70605362a16d2ab5af1ff2b3e2e5a9b76fce5388820c9658925787aabc  docs/releases/v0.1.0/evidence/dedicated-server/first-start.txt
+85429b4fa156a556895fa1c13c183766f4927f6381e7015c168a18fd08a59b3a  docs/releases/v0.1.0/evidence/dedicated-server/restart.txt
+f0cd1f4167fc50c3e2e5b3a21a1da50d7148c30c42c586afffcb0c6c0242beb9  docs/releases/v0.1.0/evidence/dedicated-server/summary.json
+b48372d980556558f49beb444d8675e1141faab47b71e4265ae1cdb0e8b50dcf  docs/releases/v0.1.0/evidence/provenance/human-review.json

@@ -5,13 +5,13 @@
 | 领域 | 1.12 主要位置 | 旧依赖/风险 | 1.20.1 目标 | 目标版本 | 最低验收 | 状态 |
 |---|---|---|---|---|---|---|
 | 仓库与授权 | 根 LICENSE/README | 名称、原 notice | LICENSE/NOTICE/UPSTREAM/provenance | `v0.0.1` | G0 | PASSED |
-| Forge 初始化 | build files / mod entry | 旧 ForgeGradle/Java | Java 17、Forge 47.4.10、CI | `v0.0.2` | G1/G4 | IN_PROGRESS |
-| 注册系统 | block/item/common | 旧注册事件、数字 ID | DeferredRegister/RegistryObject | `v0.1.0` | build + registry tests | NOT_AUDITED |
-| 语言 | assets/.../lang | `.lang` | `en_us.json` 等 | `v0.1.0` | JSON + key audit | NOT_AUDITED |
-| 方块/物品纹理 | textures/blocks/items | 路径大小写、来源 | 新 namespace + manifest | `v0.1.0` | no missing texture | NOT_AUDITED |
-| OBJ/MTL 模型 | models/*.obj/*.mtl | loader、引用、性能 | 复杂模型保留/简单模型转换 | 分批 | visual + ref validation | NOT_AUDITED |
-| 声音 | sounds + sounds.json | 来源、ID | 新 sound registry/data | 分批 | decode + client check | NOT_AUDITED |
-| 普通配方 | assets recipes | 旧格式 | data recipes/DataGen | `v0.1.0+` | runData clean | NOT_AUDITED |
+| Forge 初始化 | `build.gradle`、`src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java` | 旧 ForgeGradle/Java、集中初始化 | Java 17、Forge 47.4.10、CI | `v0.0.2` | G1/G4 | PASSED |
+| 注册系统 | `AdvancedRocketry.java:474–875`、`init/AdvancedRocketryBlocks.java`、`init/AdvancedRocketryItems.java` | `RegistryEvent`、`GameRegistry`、LibVulpes 注册和数字时代名称 | `registry/ModBlocks.java`、`ModItems.java`、`ModSounds.java`、`ModCreativeTabs.java` 的 DeferredRegister/RegistryObject | `v0.1.0` | build + 3 registry/content GameTests | IN_PROGRESS |
+| 语言 | `assets/advancedrocketry/lang/en_US.lang`、`zh_CN.lang` | `.lang`、旧键名和旧 namespace | DataGen `assets/advancedrocketrycommunity/lang/en_us.json`、`zh_cn.json` | `v0.1.0` | JSON/key audit + 双语言客户端截图 | IN_PROGRESS |
+| 方块/物品纹理 | provenance 清单中的 `textures/blocks/{machinewarning,machinestorage,machinevent}.png` 与 `textures/items/{siliconwafer,basiccircuit,advancedcircuit,datastorageunit}.png` | 路径复数、大小写、来源 | 单数目录、新 namespace、逐文件 source/target hash | `v0.1.0` | 37-resource validator + client no-missing-texture review | IN_PROGRESS |
+| OBJ/MTL 模型 | `assets/advancedrocketry/models/**/*.obj`、`**/*.mtl`（43 OBJ / 20 MTL） | loader、引用、性能 | 复杂模型按后续垂直切片逐个审计；v0.1.0 仅用 JSON 模型 | 分批 | visual + ref validation | DEFERRED |
+| 声音 | `assets/advancedrocketry/sounds/buttonblipa.ogg`、`sounds.json` | 来源、旧事件 ID | `advancedrocketrycommunity:ui_select` + DeferredRegister/DataGen | `v0.1.0+` | OGG header/hash + packaged-client interaction | IN_PROGRESS |
+| 普通配方 | `assets/advancedrocketry/recipes/*.json`（157 条已索引） | 旧格式、内容规模 | 当前五个最小配方由 DataGen 生成，其余按版本引入 | `v0.1.0+` | runData clean + JSON/reference audit | IN_PROGRESS |
 | 基础机器 | tile/block/recipe + LibVulpes | 巨型基础库耦合 | 最小 machine vertical slice | `v0.2.0` | process/restart/automation | NOT_AUDITED |
 | 多方块 | tile + LibVulpes | 结构匹配、区块 | internal MultiblockPattern | `v0.2.0+` | rotation/failure/unloaded | NOT_AUDITED |
 | 天体定义 | dimension/api/XML | 数字维度 ID、静态 manager | Codec + datapack + SavedData | `v0.3.0` | roundtrip/cycle validation | NOT_AUDITED |

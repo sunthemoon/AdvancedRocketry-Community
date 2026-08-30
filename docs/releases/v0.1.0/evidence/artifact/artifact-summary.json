@@ -1,0 +1,38 @@
+{
+  "build": "1.20.1-0.1.0-dev",
+  "content_manifest": {
+    "entry_count": 112,
+    "path": "docs/releases/v0.1.0/evidence/artifact/jar-content-manifest.json",
+    "sha256": "83e1c2707c0fa645271510b407ef81864d96b4660a85faf7e24c2f6dea014d08"
+  },
+  "forge": "47.4.10",
+  "gradle": "8.8",
+  "java": "17.0.8",
+  "main_jar": {
+    "bytes": 95924,
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
+    "sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea"
+  },
+  "minecraft": "1.20.1",
+  "packaged_copies": {
+    "all_equal": true,
+    "client_sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea",
+    "server_sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea",
+    "source_sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea"
+  },
+  "repeated_clean_builds": {
+    "byte_identical": true,
+    "count": 2,
+    "sha256_values": [
+      "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea",
+      "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea"
+    ]
+  },
+  "schema_version": 1,
+  "sources_jar": {
+    "bytes": 77075,
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar",
+    "sha256": "33021af81f583752317810cd01f239a5665843b0f91c7085740f440ea514db65"
+  },
+  "version": "v0.1.0"
+}

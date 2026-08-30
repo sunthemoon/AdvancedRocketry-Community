@@ -1,0 +1,68 @@
+path,class_name,base_types,domain
+src/main/java/zmaster587/advancedRocketry/tile/TileFluidTank.java,TileFluidTank,TileFluidHatch,tile
+src/main/java/zmaster587/advancedRocketry/tile/TileForceFieldProjector.java,TileForceFieldProjector,TileEntity | ITickable,tile
+src/main/java/zmaster587/advancedRocketry/tile/TileGuidanceComputer.java,TileGuidanceComputer,TileInventoryHatch | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/TilePump.java,TilePump,"TileEntityRFConsumer | IFluidHandler, IModularInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/TileRocketAssemblingMachine.java,ErrorCodes,,tile
+src/main/java/zmaster587/advancedRocketry/tile/TileRocketAssemblingMachine.java,TileRocketAssemblingMachine,"TileEntityRFConsumer | IButtonInventory, INetworkMachine, IDataSync, IModularInventory, IProgressBar, ILinkableTile",tile
+src/main/java/zmaster587/advancedRocketry/tile/TileSolarPanel.java,TileSolarPanel,TileInventoriedForgePowerMachine,tile
+src/main/java/zmaster587/advancedRocketry/tile/TileStationAssembler.java,TileStationAssembler,TileRocketAssemblingMachine | IInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/TileSuitWorkStation.java,TileSuitWorkStation,"TileEntity | IModularInventory, IInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/TileUnmannedVehicleAssembler.java,TileUnmannedVehicleAssembler,TileRocketAssemblingMachine,tile
+src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileAtmosphereDetector.java,TileAtmosphereDetector,"TileEntity | ITickable, IModularInventory, IButtonInventory, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileCO2Scrubber.java,TileCO2Scrubber,TileInventoryHatch | IComparatorOverride,tile
+src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileGasChargePad.java,TileGasChargePad,TileInventoriedRFConsumerTank | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileOxygenVent.java,TileOxygenVent,"TileInventoriedRFConsumerTank | IBlobHandler, IModularInventory, INetworkMachine, IAdjBlockUpdate, IToggleableMachine, IButtonInventory, IToggleButton",tile
+src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileSeal.java,TileSeal,TileEntity | ITickable,tile
+src/main/java/zmaster587/advancedRocketry/tile/cables/TileDataPipe.java,TileDataPipe,TilePipe,tile
+src/main/java/zmaster587/advancedRocketry/tile/cables/TileEnergyPipe.java,TileEnergyPipe,TilePipe | IUniversalEnergy,tile
+src/main/java/zmaster587/advancedRocketry/tile/cables/TileLiquidPipe.java,TileLiquidPipe,TilePipe,tile
+src/main/java/zmaster587/advancedRocketry/tile/cables/TilePipe.java,TilePipe,TileEntity,tile
+src/main/java/zmaster587/advancedRocketry/tile/cables/TileWaterPipe.java,TileWaterPipe,TilePipe,tile
+src/main/java/zmaster587/advancedRocketry/tile/cables/TileWirelessTransciever.java,TileWirelessTransciever,"TileEntity | INetworkMachine, IModularInventory, ILinkableTile, IDataHandler, ITickable, IToggleButton",tile
+src/main/java/zmaster587/advancedRocketry/tile/hatch/TileDataBus.java,TileDataBus,"TileInventoryHatch | IDataInventory, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/hatch/TileSatelliteHatch.java,TileSatelliteHatch,TileInventoryHatch,tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileFuelingStation.java,TileFuelingStation,"TileInventoriedRFConsumerTank | IModularInventory, IMultiblock, IInfrastructure, ILinkableTile, INetworkMachine, IButtonInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileGuidanceComputerAccessHatch.java,TileGuidanceComputerAccessHatch,"TilePointer | IInfrastructure, IInventory, IModularInventory, IToggleButton, INetworkMachine, ITickable",tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketFluidLoader.java,TileRocketFluidLoader,"TileFluidHatch | IInfrastructure,  ITickable,  IButtonInventory, INetworkMachine, IGuiCallback",tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketFluidUnloader.java,TileRocketFluidUnloader,"TileRocketFluidLoader | IInfrastructure, ITickable,  IButtonInventory, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketLoader.java,TileRocketLoader,"TileInventoryHatch | IInfrastructure, ITickable,  IButtonInventory, INetworkMachine, IGuiCallback",tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketMonitoringStation.java,TileRocketMonitoringStation,"TileEntity | IModularInventory, ITickable, IAdjBlockUpdate, IInfrastructure, ILinkableTile, INetworkMachine, IButtonInventory, IProgressBar, IComparatorOverride",tile
+src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketUnloader.java,TileRocketUnloader,"TileRocketLoader | IInfrastructure, ITickable, IButtonInventory, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileAreaGravityController.java,TileAreaGravityController,"TileMultiPowerConsumer | ISliderBar, IGuiCallback",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileAstrobodyDataProcessor.java,TileAstrobodyDataProcessor,"TileMultiPowerConsumer | IModularInventory, IInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileAtmosphereTerraformer.java,TileAtmosphereTerraformer,TileMultiPowerConsumer | IInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileBeacon.java,TileBeacon,TileMultiPowerConsumer,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileBiomeScanner.java,TileBiomeScanner,TileMultiPowerConsumer,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileObservatory.java,TileObservatory,"TileMultiPowerConsumer | IModularInventory, IDataInventory, IGuiCallback",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TilePlanetSelector.java,TilePlanetSelector,"TilePointer | ISelectionNotify, IModularInventory, IProgressBar, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileRailgun.java,TileRailgun,"TileMultiPowerConsumer | IInventory, ILinkableTile, IGuiCallback",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileSpaceElevator.java,TileSpaceElevator,"TileMultiPowerConsumer | IModularInventory, ILinkableTile, ITickable",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileWarpCore.java,TileWarpCore,TileMultiBlock,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/energy/TileBlackHoleGenerator.java,TileBlackHoleGenerator,TileMultiPowerProducer | ITickable,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/energy/TileMicrowaveReciever.java,TileMicrowaveReciever,TileMultiPowerProducer | ITickable,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/energy/TileSolarArray.java,TileSolarArray,TileMultiPowerProducer | ITickable,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileCentrifuge.java,TileCentrifuge,TileMultiblockMachine,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileChemicalReactor.java,TileChemicalReactor,TileMultiblockMachine,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileCrystallizer.java,TileCrystallizer,TileMultiblockMachine | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileCuttingMachine.java,TileCuttingMachine,TileMultiblockMachine | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileElectricArcFurnace.java,TileElectricArcFurnace,TileMultiblockMachine | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileElectrolyser.java,TileElectrolyser,TileMultiblockMachine,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileLathe.java,TileLathe,TileMultiblockMachine | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TilePrecisionAssembler.java,TilePrecisionAssembler,"TileMultiblockMachine | IModularInventory, IProgressBar",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TilePrecisionLaserEtcher.java,TilePrecisionLaserEtcher,TileMultiblockMachine | IModularInventory,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileRollingMachine.java,TileRollingMachine,TileMultiblockMachine,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/orbitallaserdrill/AbstractDrill.java,AbstractDrill,,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/orbitallaserdrill/MiningDrill.java,MiningDrill,AbstractDrill,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/orbitallaserdrill/TileOrbitalLaserDrill.java,MODE,,tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/orbitallaserdrill/TileOrbitalLaserDrill.java,TileOrbitalLaserDrill,"TileMultiPowerConsumer | ISidedInventory, IGuiCallback, IButtonInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/orbitallaserdrill/VoidDrill.java,VoidDrill,AbstractDrill,tile
+src/main/java/zmaster587/advancedRocketry/tile/satellite/TileSatelliteBuilder.java,TileSatelliteBuilder,"TileMultiPowerConsumer | IModularInventory, IInventory, IButtonInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/satellite/TileSatelliteTerminal.java,TileSatelliteTerminal,"TileInventoriedRFConsumer | INetworkMachine, IModularInventory, IButtonInventory, IDataInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileDockingPort.java,TileDockingPort,"TileEntity | IModularInventory, IGuiCallback, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileHolographicPlanetSelector.java,TileHolographicPlanetSelector,"TileEntity | ITickable,IButtonInventory, IModularInventory, ISliderBar, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileLandingPad.java,TileLandingPad,"TileInventoryHatch | ILinkableTile, IGuiCallback, INetworkMachine",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileStationAltitudeController.java,TileStationAltitudeController,"TileEntity | IModularInventory, ITickable, INetworkMachine, ISliderBar, IButtonInventory, IComparatorOverride",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileStationGravityController.java,TileStationGravityController,"TileEntity | IModularInventory, ITickable, INetworkMachine, ISliderBar, IButtonInventory, IComparatorOverride",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileStationOrientationController.java,TileStationOrientationController,"TileEntity | ITickable, IModularInventory, INetworkMachine, ISliderBar, IButtonInventory",tile
+src/main/java/zmaster587/advancedRocketry/tile/station/TileWarpController.java,TileWarpController,"TileEntity | ITickable, IModularInventory, ISelectionNotify, INetworkMachine, IButtonInventory, IProgressBar, IDataSync, IGuiCallback, IDataInventory, IPlanetDefiner",tile

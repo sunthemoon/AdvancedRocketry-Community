@@ -51,29 +51,22 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
-      - name: Verify G0 binary and sources packaging evidence
-        run: >-
-          python scripts/generate_v002_g0_evidence.py verify
-          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
-          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar
-          --evidence-dir docs/releases/v0.0.2/evidence/g0-mechanical
-
       - name: Audit distributable JAR
         run: >-
           python scripts/validate_build_artifact.py
-          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
-          --content-manifest build/release-evidence/jar-content-manifest.json
+          build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
+          --expected-version 1.20.1-0.1.0-dev
+          --content-manifest build/release-evidence/v010-jar-content-manifest.json
 
-      - name: Compare generated and committed content manifests
+      - name: Validate v0.1.0 managed resources and packaged bytes
         run: >-
-          diff --unified
-          docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
-          build/release-evidence/jar-content-manifest.json
+          python scripts/validate_v010_asset_baseline.py
+          --jar build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
 
-      - name: Validate release checksums and artifact evidence
+      - name: Validate v0.1.0 release evidence and exact artifact binding
         run: >-
-          python scripts/validate_release_checksums.py
-          --artifact build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+          python scripts/validate_v010_release_evidence.py
+          --artifact build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
 
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
@@ -91,7 +84,11 @@ jobs:
         run: ./gradlew runGameTestServer --no-daemon --stacktrace
 
       - name: Run packaged dedicated-server smoke test
-        run: python scripts/run_dedicated_server_smoke.py --evidence-dir build/dedicated-server-smoke/evidence
+        run: >-
+          python scripts/run_dedicated_server_smoke.py
+          build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
+          --expected-mod-version 1.20.1-0.1.0-dev
+          --evidence-dir build/dedicated-server-smoke/evidence
 
       - name: Upload baseline JAR and test reports
         if: always()
@@ -100,11 +97,11 @@ jobs:
           name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
           if-no-files-found: error
           path: |
-            build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
-            build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar
+            build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
+            build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar
             build/reports/tests/test/
             build/test-results/test/
-            build/release-evidence/jar-content-manifest.json
+            build/release-evidence/v010-jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
 
   latest-compatibility:

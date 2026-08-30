@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "batch_id": "v0.1.0-minimal-visible-content",
+  "target_version": "v0.1.0",
+  "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+  "source_branch": "1.12",
+  "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2017",
+  "entries": [
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinestorage.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_side.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename blocks directory to block", "rename machinestorage to machine_casing_side"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinevent.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_top.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename blocks directory to block", "rename machinevent to machine_casing_top"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinewarning.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_front.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename blocks directory to block", "rename machinewarning to machine_casing_front"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/siliconwafer.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/silicon_wafer.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename items directory to item", "rename siliconwafer to silicon_wafer"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/basiccircuit.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/basic_circuit.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename items directory to item", "rename basiccircuit to basic_circuit"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/advancedcircuit.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/advanced_circuit.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename items directory to item", "rename advancedcircuit to advanced_circuit"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/datastorageunit.png",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/data_storage_unit.png",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename items directory to item", "rename datastorageunit to data_storage_unit"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/sounds/buttonblipa.ogg",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/sounds/ui_select.ogg",
+      "mode": "copy",
+      "transformation": ["rename namespace advancedrocketry to advancedrocketrycommunity", "rename buttonblipa to ui_select"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/lang/en_US.lang",
+      "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/en_us.json",
+      "mode": "lang",
+      "translations": {
+        "item.wafer.0.name": "item.advancedrocketrycommunity.silicon_wafer",
+        "item.circuitIC.0.name": "item.advancedrocketrycommunity.basic_circuit",
+        "item.circuitIC.2.name": "item.advancedrocketrycommunity.advanced_circuit",
+        "item.dataUnit.0.name": "item.advancedrocketrycommunity.data_storage_unit"
+      },
+      "additions": {
+        "block.advancedrocketrycommunity.machine_casing": "Machine Casing",
+        "itemGroup.advancedrocketrycommunity.main": "Advanced Rocketry: Community Edition",
+        "message.advancedrocketrycommunity.machine_casing_inert": "Machine behavior begins in v0.2.0",
+        "subtitle.advancedrocketrycommunity.ui_select": "Interface selection",
+        "tooltip.advancedrocketrycommunity.development_component": "Development component — no machine behavior in v0.1.0"
+      },
+      "transformation": ["extract reviewed keys from legacy en_US.lang", "rename legacy keys and namespace", "serialize sorted UTF-8 JSON", "add new community-project labels"]
+    },
+    {
+      "source_path": "src/main/resources/assets/advancedrocketry/lang/zh_CN.lang",
+      "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/zh_cn.json",
+      "mode": "lang",
+      "translations": {
+        "item.wafer.0.name": "item.advancedrocketrycommunity.silicon_wafer",
+        "item.circuitIC.0.name": "item.advancedrocketrycommunity.basic_circuit",
+        "item.circuitIC.2.name": "item.advancedrocketrycommunity.advanced_circuit",
+        "item.dataUnit.0.name": "item.advancedrocketrycommunity.data_storage_unit"
+      },
+      "additions": {
+        "block.advancedrocketrycommunity.machine_casing": "机器外壳",
+        "itemGroup.advancedrocketrycommunity.main": "高级火箭：社区版",
+        "message.advancedrocketrycommunity.machine_casing_inert": "机器功能将在 v0.2.0 开始实现",
+        "subtitle.advancedrocketrycommunity.ui_select": "界面选择",
+        "tooltip.advancedrocketrycommunity.development_component": "开发组件——v0.1.0 尚无机器功能"
+      },
+      "transformation": ["extract reviewed keys from legacy zh_CN.lang", "rename legacy keys and namespace", "serialize sorted UTF-8 JSON", "add new community-project labels"]
+    }
+  ]
+}

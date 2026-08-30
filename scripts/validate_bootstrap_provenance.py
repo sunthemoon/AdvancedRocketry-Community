@@ -27,6 +27,7 @@ GIT_EXECUTABLE_CANDIDATE = shutil.which("git")
 DEFAULT_MANIFEST = Path("docs/provenance/v0.0.2-bootstrap-inputs.json")
 EXPECTED_RECORD_PATH = "docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md"
 EXPECTED_NOTICE_PATH = "THIRD-PARTY-NOTICES.md"
+HISTORICAL_V002_RECORD_COMMIT = "9359257b9fe1eccf7e0043dfa7f626cf1ee44be9"
 
 SHA256 = re.compile(r"[0-9a-f]{64}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
@@ -3603,6 +3604,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_MANIFEST,
         help="machine-readable provenance manifest path",
     )
+    parser.add_argument(
+        "--selected-commit",
+        help=(
+            "validate all v0.0.2 authority from one exact historical Git commit; "
+            "later-version worktrees select the accepted v0.0.2 record automatically"
+        ),
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--diagnostic-pending-digest",
@@ -3643,10 +3651,36 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    errors, details = validate_bootstrap_provenance(
-        repository_root=args.repository_root,
-        manifest_path=args.manifest,
-    )
+    selected_commit = args.selected_commit
+    if selected_commit is None:
+        current_version_path = args.repository_root / "docs/status/CURRENT_VERSION.md"
+        try:
+            current_version = current_version_path.read_text(
+                encoding="utf-8", errors="strict"
+            )
+        except (OSError, UnicodeError):
+            current_version = ""
+        if re.search(r"^current_version:\s+v0\.(?:[1-9]|[1-9][0-9]+)\.", current_version, re.MULTILINE):
+            selected_commit = HISTORICAL_V002_RECORD_COMMIT
+
+    if selected_commit is not None:
+        if args.prepare_approval_digest or args.diagnostic_pending_digest:
+            print(
+                "[FAIL] approval-digest modes require the mutable v0.0.2 worktree, "
+                "not historical validation"
+            )
+            return 2
+        errors, details = validate_bootstrap_provenance_at_commit(
+            args.repository_root,
+            selected_commit,
+            args.manifest,
+        )
+        print(f"[INFO] Validating accepted v0.0.2 provenance at {selected_commit}")
+    else:
+        errors, details = validate_bootstrap_provenance(
+            repository_root=args.repository_root,
+            manifest_path=args.manifest,
+        )
 
     if args.prepare_approval_digest:
         candidate_ready = (

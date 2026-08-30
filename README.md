@@ -20,7 +20,12 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The active milestone is `v0.0.2`, which establishes the build, metadata, side separation, DataGen, and GameTest foundations. See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for verified and pending gates.
+The active milestone is `v0.1.0`, which adds the audited asset/registry/DataGen
+baseline and a deliberately inert visible content slice: one machine casing
+and four development components. It does not yet provide machine or rocket
+gameplay. See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the
+implementation sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md)
+for verified and pending gates.
 
 ## What this project is
 

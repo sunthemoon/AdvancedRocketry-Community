@@ -1,0 +1,36 @@
+path,line,declaration,risk
+src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java,168,"static HashMap<AllowedProducts, HashSet<String>> modProducts",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java,49,"static String MISSION = ""Resource Collection Missions",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/api/AdvancedRocketryBiomes.java,22,static List<Integer> blackListedBiomeIds,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/api/AdvancedRocketryFluids.java,19,static Set<FluidGasGiantGas> gasses,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/api/AdvancedRocketryFluids.java,26,static Set<FluidGasGiantGas> getGasGiantGasses,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/api/SatelliteRegistry.java,17,"static HashMap<String, Class<? extends SatelliteBase>> registry",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/api/SatelliteRegistry.java,19,"static HashMap<ItemStack, SatelliteProperties> itemPropertiesRegistry",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,67,"static final HashMap<String, SimpleEntry<String, String>> entryMap",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/atmosphere/AtmosphereHandler.java,45,"static HashMap<Integer, AtmosphereHandler> dimensionOxygen",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/atmosphere/AtmosphereHandler.java,46,"static HashMap<EntityPlayer, IAtmosphere> prevAtmosphere",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/cable/CableNetwork.java,20,static HashSet<Integer> usedIds,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/event/PlanetEventHandler.java,85,static List<TransitionEntity> transitionMap,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/arcFurnace/ArcFurnaceRecipeMaker.java,12,static List<ArcFurnaceWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/centrifuge/CentrifugeRecipeMaker.java,12,static List<CentrifugeWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/chemicalReactor/ChemicalReactorRecipeMaker.java,12,static List<ChemicalReactorlWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/crystallizer/CrystallizerRecipeMaker.java,12,static List<CrystallizerWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/electrolyser/ElectrolyzerRecipeMaker.java,12,static List<ElectrolyzerWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/lathe/LatheRecipeMaker.java,12,static List<LatheWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/platePresser/PlatePressRecipeMaker.java,12,static List<PlatePressWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/precisionAssembler/PrecisionAssemblerRecipeMaker.java,12,static List<PrecisionAssemblerWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/precisionLaserEtcher/PrecisionLaserEtcherRecipeMaker.java,12,static List<PrecisionLaserEtcherWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/rollingMachine/RollingMachineRecipeMaker.java,12,static List<RollingMachineWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/integration/jei/sawmill/SawMillRecipeMaker.java,12,static List<SawMillWrapper> getMachineRecipes,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/inventory/TextureResources.java,84,"static final Map<String, ResourceLocation> planetResources",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/item/ItemJackHammer.java,19,static final Set<Block> items,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/satellite/SatelliteOreMapping.java,23,static ArrayList<Integer> oreList,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileChemicalReactor.java,47,static List<IRecipe> recipesSpecial,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/unit/IngameTestOrchestrator.java,18,"static final Map<Long, PlayerMapping> eventScheduler",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/util/GravityHandler.java,46,"static WeakHashMap<Entity, Double> entityMap",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/util/RocketInventoryHelper.java,14,static HashSet<WeakReference<EntityPlayer>> inventoryCheckPlayerBypassMap,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/util/RocketInventoryHelper.java,15,"static WeakHashMap<EntityPlayer, Long> inventoryTimingMap",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/util/RocketInventoryHelper.java,16,"static WeakHashMap<EntityPlayer, BlockPos> inventoryDismapping",mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/world/GenLayerBiomePlanet.java,17,static List<BiomeEntry> biomeEntries,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/world/GenLayerBiomePlanet.java,32,static synchronized void setupBiomesForUse(List<BiomeEntry> entries,mutable_static_collection_candidate
+src/main/java/zmaster587/advancedRocketry/world/decoration/MapGenSpaceVillage.java,16,static List<Biome> BLACKLIST_VILLAGE_SPAWN_BIOMES,mutable_static_collection_candidate

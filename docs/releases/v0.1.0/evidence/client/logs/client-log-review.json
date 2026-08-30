@@ -1,0 +1,42 @@
+{
+  "accepted_external_warning_categories": [
+    "Forge language-provider JARs report missing mods.toml metadata",
+    "Forge union resource URLs report an unexpected schema",
+    "Fresh ForgeConfigSpec corrects the newly created common config",
+    "Vanilla goat-horn sound events are absent in this runtime",
+    "Vanilla translucent-emissive shader reports an unused sampler",
+    "Netty falls back after a launcher-supplied IPv6 system-property value is not boolean"
+  ],
+  "runs": {
+    "en_us": {
+      "clean_shutdown_observed": true,
+      "client_linkage_failure_count": 0,
+      "error_count": 0,
+      "fatal_count": 0,
+      "filtered_log": "docs/releases/v0.1.0/evidence/client/logs/en_us-client.txt",
+      "line_count": 100,
+      "project_initialized": true,
+      "project_warning_error_fatal_count": 0,
+      "singleplayer_login_observed": true,
+      "source_log_kind": "latest.log",
+      "source_log_sha256": "07bb6b8077c9fa5321b3d99d851bec755b7d256741e748e63c06240b8428fb68",
+      "warning_count": 10
+    },
+    "zh_cn": {
+      "clean_shutdown_observed": true,
+      "client_linkage_failure_count": 0,
+      "error_count": 0,
+      "fatal_count": 0,
+      "filtered_log": "docs/releases/v0.1.0/evidence/client/logs/zh_cn-client.txt",
+      "line_count": 230,
+      "project_initialized": true,
+      "project_warning_error_fatal_count": 0,
+      "singleplayer_login_observed": true,
+      "source_log_kind": "2026-08-30-1.log.gz",
+      "source_log_sha256": "09232eea530548d4a5735120b32df67c2628471eec4cb4a3b46e45b2af6a2597",
+      "warning_count": 32
+    }
+  },
+  "schema_version": 1,
+  "version": "v0.1.0"
+}

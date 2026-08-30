@@ -368,7 +368,10 @@ def decode_optimized_forge_data(value: str) -> dict[str, str]:
     return result
 
 
-def validate_status_identity(status: dict) -> None:
+def validate_status_identity(
+    status: dict,
+    expected_mod_version: str = MOD_VERSION,
+) -> None:
     version = status.get("version")
     if not isinstance(version, dict):
         raise SmokeError("Server status response has no version object")
@@ -386,9 +389,10 @@ def validate_status_identity(status: dict) -> None:
         )
 
     marker = forge_mod_versions(status).get(MOD_ID)
-    if marker != MOD_VERSION:
+    if marker != expected_mod_version:
         raise SmokeError(
-            f"Status response mod marker is {marker!r}, expected {MOD_VERSION!r}"
+            "Status response mod marker is "
+            f"{marker!r}, expected {expected_mod_version!r}"
         )
 
 
@@ -718,6 +722,7 @@ def run_cycle(
     require_player_cycle: bool = False,
     player_timeout: float = 600.0,
     player_identity_secret: bytes | None = None,
+    expected_mod_version: str = MOD_VERSION,
 ) -> ServerCycle:
     cycle_started_at = datetime.now(timezone.utc).isoformat()
     args_name = "win_args.txt" if platform.system() == "Windows" else "unix_args.txt"
@@ -744,7 +749,7 @@ def run_cycle(
             encoding="utf-8",
             newline="\n",
         )
-        validate_status_identity(status)
+        validate_status_identity(status, expected_mod_version)
         if require_player_cycle:
             if player_identity_secret is None:
                 raise SmokeError("Manual player cycle requires an identity-binding secret")
@@ -1054,7 +1059,15 @@ def parse_args() -> argparse.Namespace:
         "artifact",
         nargs="?",
         type=Path,
-        default=ROOT / "build" / "libs" / ARTIFACT_NAME,
+        default=None,
+    )
+    parser.add_argument(
+        "--expected-mod-version",
+        default=MOD_VERSION,
+        help=(
+            "exact Forge displayTest marker and artifact version under test; "
+            f"defaults to the historical bootstrap version {MOD_VERSION}"
+        ),
     )
     parser.add_argument("--java", default=default_java)
     parser.add_argument("--work-root", type=Path, default=ROOT / "build" / "dedicated-server-smoke")
@@ -1097,9 +1110,21 @@ def main() -> int:
     started_at = datetime.now(timezone.utc)
     try:
         java, java_version = resolve_java(args.java)
-        artifact = args.artifact.resolve()
-        if not artifact.is_file() or artifact.name != ARTIFACT_NAME:
-            raise SmokeError(f"Expected built artifact {ARTIFACT_NAME}: {artifact}")
+        if re.fullmatch(r"1\.20\.1-[0-9A-Za-z][0-9A-Za-z.+-]*", args.expected_mod_version) is None:
+            raise SmokeError(
+                "Expected mod version must be a 1.20.1-prefixed artifact version"
+            )
+        expected_artifact_name = (
+            f"advancedrocketry-community-{args.expected_mod_version}.jar"
+        )
+        artifact_argument = args.artifact or (
+            ROOT / "build" / "libs" / expected_artifact_name
+        )
+        artifact = artifact_argument.resolve()
+        if not artifact.is_file() or artifact.name != expected_artifact_name:
+            raise SmokeError(
+                f"Expected built artifact {expected_artifact_name}: {artifact}"
+            )
         artifact_sha256 = digest_file(artifact)
         session = create_session(
             args.work_root.resolve(),
@@ -1145,6 +1170,7 @@ def main() -> int:
             require_player_cycle=args.manual_player_cycles,
             player_timeout=args.player_timeout,
             player_identity_secret=player_identity_secret,
+            expected_mod_version=args.expected_mod_version,
         )
         world_identity = establish_world_identity(
             session,
@@ -1162,6 +1188,7 @@ def main() -> int:
             require_player_cycle=args.manual_player_cycles,
             player_timeout=args.player_timeout,
             player_identity_secret=player_identity_secret,
+            expected_mod_version=args.expected_mod_version,
         )
         world_identity = complete_world_identity(session, world_identity)
         cycles = [first, restart]
@@ -1218,6 +1245,7 @@ def main() -> int:
             "java": java_version,
             "manual_player_cycles": args.manual_player_cycles,
             "minecraft": MINECRAFT_VERSION,
+            "mod_version": args.expected_mod_version,
             "offline_mode": args.offline_mode,
             "platform": platform.platform(),
             "server_bind": "127.0.0.1",

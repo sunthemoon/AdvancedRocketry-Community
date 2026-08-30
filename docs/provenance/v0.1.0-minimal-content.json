@@ -1,0 +1,190 @@
+{
+  "batch_id": "v0.1.0-minimal-visible-content",
+  "copyright_notice": "Copyright (c) 2017",
+  "entries": [
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/lang/en_US.lang",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "b5121ab48620f3373456d7d366798b4fa71931d7e8c39d9a36d87bee4b544ccf",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/en_us.json",
+      "target_sha256": "1795e6c4c6a92f0a1678a5aa5fcbb1abaaece7b2dfc8c5ac11571b39c2d489b9",
+      "transformation": [
+        "extract reviewed keys from legacy en_US.lang",
+        "rename legacy keys and namespace",
+        "serialize sorted UTF-8 JSON",
+        "add new community-project labels"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/lang/zh_CN.lang",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "9636e8a45d85fda98821c3ba40f62e3ba721c87d1864dad7beb9eb45c9fb00c5",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/zh_cn.json",
+      "target_sha256": "dca61b612857a186ee1657651b4a33280681d3ecf6c5b83ff65dfe05dfb0f87d",
+      "transformation": [
+        "extract reviewed keys from legacy zh_CN.lang",
+        "rename legacy keys and namespace",
+        "serialize sorted UTF-8 JSON",
+        "add new community-project labels"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/sounds/buttonblipa.ogg",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "44ab8402681ee7684293f64e26fd96309e8309d07cc9af6ddcc866e4edec9fd6",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/sounds/ui_select.ogg",
+      "target_sha256": "44ab8402681ee7684293f64e26fd96309e8309d07cc9af6ddcc866e4edec9fd6",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename buttonblipa to ui_select"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinewarning.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "133cd0c9f8abb5eba85f29629007933c675fe4284ba4c8c094288bd736857db8",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_front.png",
+      "target_sha256": "133cd0c9f8abb5eba85f29629007933c675fe4284ba4c8c094288bd736857db8",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename blocks directory to block",
+        "rename machinewarning to machine_casing_front"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinestorage.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "5c0435081c9c0d8c11cbbeea3278b293ffa17fd43a73e91c4fe3bffab110f62b",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_side.png",
+      "target_sha256": "5c0435081c9c0d8c11cbbeea3278b293ffa17fd43a73e91c4fe3bffab110f62b",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename blocks directory to block",
+        "rename machinestorage to machine_casing_side"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinevent.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "4e0e841b02eca215643571024d784e71f75ee9b32523bb946bb49f65b2644b41",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_top.png",
+      "target_sha256": "4e0e841b02eca215643571024d784e71f75ee9b32523bb946bb49f65b2644b41",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename blocks directory to block",
+        "rename machinevent to machine_casing_top"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/advancedcircuit.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "3b0a52abc227438a0e16b5ad999883829e453d63b3e00962d98e199244c9cb7a",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/advanced_circuit.png",
+      "target_sha256": "3b0a52abc227438a0e16b5ad999883829e453d63b3e00962d98e199244c9cb7a",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename items directory to item",
+        "rename advancedcircuit to advanced_circuit"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/basiccircuit.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "68ccf0a13ff55141a8c95ea81afbb6956f5f60db4348a012dd2544eefecfc10e",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/basic_circuit.png",
+      "target_sha256": "68ccf0a13ff55141a8c95ea81afbb6956f5f60db4348a012dd2544eefecfc10e",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename items directory to item",
+        "rename basiccircuit to basic_circuit"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/datastorageunit.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "4a341ea614d7adb8b7cf1ac056575d83be0311be317516f04f97e80fd9651e22",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/data_storage_unit.png",
+      "target_sha256": "4a341ea614d7adb8b7cf1ac056575d83be0311be317516f04f97e80fd9651e22",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename items directory to item",
+        "rename datastorageunit to data_storage_unit"
+      ]
+    },
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/siliconwafer.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "cb2a7cb7292cb399af37138918b8104baf62049d985dcd21448ab580c8034b8d",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/silicon_wafer.png",
+      "target_sha256": "cb2a7cb7292cb399af37138918b8104baf62049d985dcd21448ab580c8034b8d",
+      "transformation": [
+        "rename namespace advancedrocketry to advancedrocketrycommunity",
+        "rename items directory to item",
+        "rename siliconwafer to silicon_wafer"
+      ]
+    }
+  ],
+  "license": "MIT",
+  "review": {
+    "content_digest": "d1357ba67a7b8a2029ffe4cd51bc7c7e6413b247d0934f338e8ea2df8739cb79",
+    "findings": [],
+    "reviewed_at": "2026-08-30",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
+  },
+  "schema_version": 1,
+  "source_branch": "1.12",
+  "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+  "target_version": "v0.1.0"
+}

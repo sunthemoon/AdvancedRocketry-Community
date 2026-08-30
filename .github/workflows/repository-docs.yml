@@ -33,6 +33,19 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
+      - name: Check out exact Advanced Rocketry 1.12 audit source
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/Advanced-Rocketry/AdvancedRocketry.git build/upstream/AdvancedRocketry
+          git -C build/upstream/AdvancedRocketry checkout --detach c5cd5af62fc07cd4e0d24f06a16033f181c47c04
+
+      - name: Verify v0.1.0 audit and provenance transforms
+        run: |
+          python tools/audit/audit_upstream.py verify --upstream build/upstream/AdvancedRocketry --commit c5cd5af62fc07cd4e0d24f06a16033f181c47c04
+          python tools/import/import_v010_assets.py verify --upstream build/upstream/AdvancedRocketry
+          python scripts/manage_v010_generated_manifest.py verify
+          python scripts/validate_v010_asset_baseline.py
+          python scripts/validate_v010_release_evidence.py
+
       - name: Generate and verify commit-bound G0 review packet
         run: |
           python -I -S -c "from pathlib import Path; Path('build').mkdir(exist_ok=True)"

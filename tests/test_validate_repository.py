@@ -31,9 +31,47 @@ from scripts.validate_repository import (
     repository_files,
     tracked_markdown_files,
     validate_v002_gate_status_text,
+    validate_v010_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
+
+
+def v010_gate_document(
+    *,
+    status: str = "IN_PROGRESS",
+    overall: str = "IN_PROGRESS",
+    g0: str = "IN_PROGRESS",
+    g1: str = "IN_PROGRESS",
+    g2: str = "IN_PROGRESS",
+    g3: str = "IN_PROGRESS",
+    g4: str = "NOT_STARTED",
+    g8: str = "NOT_STARTED",
+    g9: str = "NOT_STARTED",
+    reviewer: str = "",
+    reviewed_at: str = "",
+) -> str:
+    return f"""# GATE_STATUS
+
+```yaml
+version: v0.1.0
+status: {status}
+gates:
+  G0: {g0}
+  G1: {g1}
+  G2: {g2}
+  G3: {g3}
+  G4: {g4}
+  G5: NOT_APPLICABLE
+  G6: NOT_APPLICABLE
+  G7: NOT_APPLICABLE
+  G8: {g8}
+  G9: {g9}
+overall: {overall}
+human_approved_by: "{reviewer}"
+human_approved_at: "{reviewed_at}"
+```
+"""
 
 
 class RepositoryCliTests(unittest.TestCase):
@@ -542,6 +580,48 @@ class ApprovedThirdPartyLicenseTests(unittest.TestCase):
         self.assertFalse(is_approved_third_party_license("docs/licenses/other.txt", b""))
 
 
+class V010GateStatusTests(unittest.TestCase):
+    def test_honest_in_progress_status_accepts_pending_provenance(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v010_gate_status_text(
+                v010_gate_document(),
+                asset_details={
+                    "review_status": "PENDING_HUMAN_REVIEW",
+                    "resource_count": 37,
+                },
+            ),
+        )
+
+    def test_g0_pass_requires_approved_provenance(self) -> None:
+        errors = validate_v010_gate_status_text(
+            v010_gate_document(g0="PASS"),
+            asset_details={
+                "review_status": "PENDING_HUMAN_REVIEW",
+                "resource_count": 37,
+            },
+        )
+        self.assertTrue(any("G0 cannot be PASS" in error for error in errors))
+
+    def test_passed_status_requires_all_gates_and_owner_approval(self) -> None:
+        errors = validate_v010_gate_status_text(
+            v010_gate_document(
+                status="PASSED",
+                overall="PASSED",
+                g0="PASS",
+                g1="PASS",
+                g2="PASS",
+                g3="PASS",
+                g4="PASS",
+                g8="PASS",
+                g9="PASS",
+            ),
+            asset_details={"review_status": "APPROVED", "resource_count": 37},
+        )
+        self.assertTrue(any("G8 cannot be PASS" in error for error in errors))
+        self.assertTrue(any("human approval" in error for error in errors))
+
+
 class V002ResourceInventoryTests(unittest.TestCase):
     def test_all_current_text_and_binary_resources_are_allowlisted(self) -> None:
         paths = [
@@ -799,7 +879,7 @@ class FinalG0RepositoryCheckTests(unittest.TestCase):
     def test_invalid_final_g0_record_fails_repository_validation(self) -> None:
         results = Results()
         with patch(
-            "scripts.validate_repository.validate_v002_final_g0_review",
+            "scripts.validate_repository._validate_v002_final_g0_history",
             return_value=(["bad binding"], {}),
         ):
             check_v002_final_g0_review(results)
@@ -813,7 +893,7 @@ class FinalG0RepositoryCheckTests(unittest.TestCase):
     def test_pending_final_g0_record_is_valid_without_gate_conclusion(self) -> None:
         results = Results()
         with patch(
-            "scripts.validate_repository.validate_v002_final_g0_review",
+            "scripts.validate_repository._validate_v002_final_g0_history",
             return_value=(
                 [],
                 {
@@ -833,7 +913,7 @@ class FinalG0RepositoryCheckTests(unittest.TestCase):
     def test_approved_records_still_do_not_compute_gate(self) -> None:
         results = Results()
         with patch(
-            "scripts.validate_repository.validate_v002_final_g0_review",
+            "scripts.validate_repository._validate_v002_final_g0_history",
             return_value=(
                 [],
                 {

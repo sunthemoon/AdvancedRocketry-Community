@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/machine_casing",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/machine_casing"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/machine_casing",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/machine_casing",
+      "y": 270
+    }
+  }
+}

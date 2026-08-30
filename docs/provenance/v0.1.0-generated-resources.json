@@ -1,0 +1,148 @@
+{
+  "generated_root": "src/generated/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "provenance_managed_targets": [
+    "src/generated/resources/assets/advancedrocketrycommunity/lang/en_us.json",
+    "src/generated/resources/assets/advancedrocketrycommunity/lang/zh_cn.json"
+  ],
+  "schema_version": 1,
+  "status": "GENERATED",
+  "target_version": "v0.1.0",
+  "targets": [
+    {
+      "bytes": 439,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/blockstates/machine_casing.json",
+      "sha256": "afc8dbb026dc3ed0d37bf36941b087b36a6c8a1fd38a46adafba707539fa8784"
+    },
+    {
+      "bytes": 345,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/models/block/machine_casing.json",
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb"
+    },
+    {
+      "bytes": 127,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/models/item/advanced_circuit.json",
+      "sha256": "3ec0b0b2ab25b938903b877e3fe1e71b2969430d4bdf6eb1af763461a26efc48"
+    },
+    {
+      "bytes": 124,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/models/item/basic_circuit.json",
+      "sha256": "ff82ff636c90e8bef171ff4391a092f002629cd7f9a87fd0b97d26924484a589"
+    },
+    {
+      "bytes": 128,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/models/item/data_storage_unit.json",
+      "sha256": "57db35b04249c906318814bac45be0775b9f991e9eccb6128af2ba90f2760a60"
+    },
+    {
+      "bytes": 64,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/models/item/machine_casing.json",
+      "sha256": "7fc0bc4269a675b377be4ed8779089c3a946d4a56f2a098d8419b914b8783e8c"
+    },
+    {
+      "bytes": 124,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/models/item/silicon_wafer.json",
+      "sha256": "8a96925f63c40828a229eb8dcff9e82fc83a3fdeb51024075adf10f38a5445ba"
+    },
+    {
+      "bytes": 154,
+      "path": "src/generated/resources/assets/advancedrocketrycommunity/sounds.json",
+      "sha256": "a76413e97bbbad694e6a25227286cb9fb3f3bcd1e4b41f4538fd6c58d78236e2"
+    },
+    {
+      "bytes": 668,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/advancements/recipes/building_blocks/machine_casing.json",
+      "sha256": "0f4fe0b084352d2ca5b3103fdb64b3fc64ac83d3958f43f864236f66bb715075"
+    },
+    {
+      "bytes": 672,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/advancements/recipes/misc/advanced_circuit.json",
+      "sha256": "9f7837c0a8b9861db37ad90265f4062752716886a99ce736a1ce014afa389297"
+    },
+    {
+      "bytes": 666,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/advancements/recipes/misc/basic_circuit.json",
+      "sha256": "5fdcee18b1f70997e84d3baceb03441cb3053e794b790e197c5ab6827a57df8f"
+    },
+    {
+      "bytes": 683,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/advancements/recipes/misc/data_storage_unit.json",
+      "sha256": "8ac994625baae6d38ed80124780d562a2257da7c8f2402cbb10474a08c8ad2df"
+    },
+    {
+      "bytes": 629,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/advancements/recipes/misc/silicon_wafer.json",
+      "sha256": "aa81d18c1d4ac1e1fcb309dd649ada44d91577c49f6cea7006ac7a45b9bbce43"
+    },
+    {
+      "bytes": 428,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/loot_tables/blocks/machine_casing.json",
+      "sha256": "17006dbe80e84e52ad793fb95f2e4a8a586f370ae435725c718cb6779e444545"
+    },
+    {
+      "bytes": 327,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/recipes/advanced_circuit.json",
+      "sha256": "f3384f662a473fd0f560690a605802eee74ac96789f00a74c7c3ad8677b295b4"
+    },
+    {
+      "bytes": 343,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/recipes/basic_circuit.json",
+      "sha256": "a041d676e55718970315e95d010c20f7ab4f3202f43758ba50e418ab0d6da09d"
+    },
+    {
+      "bytes": 336,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/recipes/data_storage_unit.json",
+      "sha256": "04c1796a93ec6eb019687f3db9a0beeedbf6760167c5db0bc664e749540c7f66"
+    },
+    {
+      "bytes": 378,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/recipes/machine_casing.json",
+      "sha256": "2c1e40f9396bb5298cbef52799179fc11e30ab8909a5fb2440f71535222e4949"
+    },
+    {
+      "bytes": 272,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/recipes/silicon_wafer.json",
+      "sha256": "15a2b46c745f6ae5bfaec7bc7fa712a01c5eecfce7545ce7d83d7a556667382a"
+    },
+    {
+      "bytes": 124,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
+      "sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/tags/items/circuits/advanced.json",
+      "sha256": "0ccc15537a49795389cea373f0beab849a76a9b93d99680d341fe086b59b83d1"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/tags/items/circuits/basic.json",
+      "sha256": "8ac5d39b8ca41e42de4d641908db432994b231a86f85c623da57c110719fc96c"
+    },
+    {
+      "bytes": 71,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/tags/items/data_storage_units.json",
+      "sha256": "04531391f7c9c032f79f63b1bd29b19bfe06c574844baa38554069f9157fa198"
+    },
+    {
+      "bytes": 68,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/tags/items/machine_casings.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/resources/data/advancedrocketrycommunity/tags/items/silicon_wafers.json",
+      "sha256": "2177f4f11599e34efde585f5f771e1f5cd8f03249ba474d16c55cf059e601552"
+    },
+    {
+      "bytes": 68,
+      "path": "src/generated/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f"
+    },
+    {
+      "bytes": 68,
+      "path": "src/generated/resources/data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f"
+    }
+  ]
+}

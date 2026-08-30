@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModIdentityTest {
@@ -15,5 +16,14 @@ class ModIdentityTest {
     @Test
     void displayNameMatchesApprovedIdentity() {
         assertEquals("Advanced Rocketry: Community Edition", ModIdentity.DISPLAY_NAME);
+    }
+
+    @Test
+    void projectResourceIdsAreBoundToTheApprovedNamespace() {
+        assertEquals(
+                "advancedrocketrycommunity:machine_casing",
+                ModIdentity.id("machine_casing").toString()
+        );
+        assertThrows(IllegalArgumentException.class, () -> ModIdentity.id("Uppercase/Invalid"));
     }
 }
