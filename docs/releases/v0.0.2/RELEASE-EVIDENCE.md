@@ -4,7 +4,7 @@
 
 ```yaml
 version: v0.0.2
-status: IN_PROGRESS
+status: PASSED
 build: 1.20.1-0.0.2-dev
 tested_implementation_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
 tag: NOT_CREATED
@@ -14,9 +14,10 @@ required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
 tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877815
 tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877802
-documentation_checkpoint: 3d8274082008ebcdd59d5c118dd9583790ccf175
-last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33303577846
-last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33303577844
+documentation_checkpoint: db9ce96113712dd93e8db05736b3a9ed764e41a8
+acceptance_evidence_source_commit: cf476b9601fc482977d1716617c87e4b2cbf704f
+last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33308011345
+last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33308011373
 checkpoint_forge_artifact_id: 9729573591
 checkpoint_g0_review_packet_artifact_id: 9729539499
 checkpoint_g0_review_packet_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
@@ -38,7 +39,7 @@ linux_sources_jar_sha256: f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e27
 content_manifest_sha256: 1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f
 linux_ci_artifact_id: 9729573591
 tested_implementation_pull_request_checks: 3/3_PASS
-last_observed_checkpoint_pull_request_checks: 1/3_PASS_CHECKSUM_RECOVERY_PREPARED
+last_observed_checkpoint_pull_request_checks: 3/3_PASS
 ```
 
 ## Gate summary
@@ -49,17 +50,18 @@ last_observed_checkpoint_pull_request_checks: 1/3_PASS_CHECKSUM_RECOVERY_PREPARE
 | G1 Reproducible Build | PASS | Repeated Windows clean builds and tested-implementation Linux CI produced byte-identical main JARs, sources JARs, and content manifests |
 | G2 Data/Assets | PASS | DataGen passed after one retained network retry and left no generated-resource or committed worktree change |
 | G3 Automated Behavior | PASS | 3 JUnit, 517 Python, and 1 Forge GameTest pass at exact implementation `d6c8464` |
-| G4 Dedicated/Sides | IN_PROGRESS | Packaged first-start/save/stop/restart passes; packaged player join/reconnect and mismatch observation remain |
+| G4 Dedicated/Sides | PASS | Matching client joined, disconnected, and reconnected after same-world restart; missing-project-mod behavior was observed; ADR-005 accepts the five bootstrap-only N/A cases |
 | G5 Persistence/Recovery | NOT_APPLICABLE | No project persistent data in v0.0.2 |
 | G6 Security/Authority | NOT_APPLICABLE | No project packets or gameplay authority in v0.0.2 |
 | G7 Performance | NOT_APPLICABLE | No gameplay loop, ticking service, or world scan in v0.0.2 |
-| G8 Manual Flow | NOT_STARTED | Packaged-client Mods page, world entry, and player-flow evidence remain |
-| G9 Docs/Release | IN_PROGRESS | Changelog, installation/save boundary, known issues, mechanical evidence, checksums, tested-implementation CI, and a successful last-observed documentation-checkpoint CI exist; client evidence integration and human acceptance remain |
+| G8 Manual Flow | PASS | Strict schema-5 bundle contains privacy-reviewed Mods/world/join/reconnect/missing-mod screenshots, logs, profile inventories, and exact JAR bindings; owner approved 2026-08-30 |
+| G9 Docs/Release | PASS | Changelog, installation/save boundary, known issues, evidence, checksums, CI, and explicit owner acceptance are complete; no stable-release claim is made |
 
-No Required Gate is treated as waived. Five proposed G4 `NOT_APPLICABLE`
-rationales cover bootstrap-only synchronization, two-player, chunk-unload,
-configuration-mismatch, and optional-client-dependency cases. Every decision
-requires explicit human review and does not replace the matching-client checks.
+No Required Gate is treated as waived. Owner `sunthemoon` accepted five
+version-scoped G4 `NOT_APPLICABLE` classifications for bootstrap-only
+synchronization, two-player, chunk-unload, configuration-mismatch, and optional-
+client-dependency cases. Those decisions do not replace the completed matching-
+client checks.
 G0 is approved at the exact post-rebuild bindings below. Client evidence must
 use the `cd5ae579...` main JAR selected by implementation `d6c8464`; changing
 any packaged byte, reviewed source/resource, or `README.md` invalidates the
@@ -175,7 +177,7 @@ the input hashes alone, support G0 `PASS`.
 - The content manifest records 34 sorted entries with per-entry size and hash.
 - The artifact contains byte-identical project LICENSE/NOTICE,
   `THIRD-PARTY-NOTICES.md`, and exact Forge/Gradle supplemental license copies.
-- The release checksum validator covers all twelve committed evidence files and
+- The release checksum validator covers all 34 committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for exact tested head `d6c8464`
   in Forge run 33302877815 and governance run 33302877802. Governance bound the
@@ -212,7 +214,9 @@ canonical_startup_properties_identity: PASS
 client_class_linkage_findings: 0
 project_error_findings: 0
 project_warning_findings: 0
-player_join: PENDING
+player_join: PASS
+matching_client_reconnect: PASS
+source_server_client_jar_hash_equal: true
 ```
 
 Selected lifecycle evidence is under
@@ -226,13 +230,14 @@ client procedure creates a fresh isolated player session.
 
 ## Manual tests
 
-See [`MANUAL-TEST.md`](MANUAL-TEST.md). No packaged-client/manual PASS is
-claimed. ForgeGradle `runClient` output is diagnostic-only and cannot satisfy
-G4 or G8. The schema-5 collector can bind distinct matching and missing-project-
-mod profiles, exact/empty mod inventories, ordered before/after snapshots, and
-profile-local raw logs. Acceptance-ready collection also requires an exact-
-commit approved final-G0 source/resource review, which is now present. No
-packaged-client bundle exists yet.
+See [`MANUAL-TEST.md`](MANUAL-TEST.md) and the canonical
+[`evidence/client/`](evidence/client/) bundle. Schema-5 record SHA-256
+`8d5cab6e...` is `READY_FOR_HUMAN_GATE_REVIEW` and binds source commit
+`cf476b9`, exact/empty profile inventories, three-way `cd5ae579...` JAR equality,
+Mods/world screenshots, two matching-client cycles, and the missing-project-mod
+attempt. The latter displayed a red incompatibility marker but accepted the
+connection; the evidence preserves both facts. Owner `sunthemoon` approved G8
+and G9 on 2026-08-30. ForgeGradle `runClient` remains diagnostic-only.
 
 ## Provenance
 
@@ -414,19 +419,12 @@ See [`KNOWN-ISSUES.md`](KNOWN-ISSUES.md).
 ## Final recommendation
 
 ```yaml
-recommended_status: IN_PROGRESS
-blocking_reasons:
-  - G0 human provenance/license subreview is incomplete before the final rebuild
-  - G0 full source/resource inventory-history review is absent
-  - G0 post-rebuild rendered README screenshot and human visual review are absent
-  - G4 matching-client join, disconnect, restart, and reconnect evidence is absent
-  - G4 missing-project-mod behavior and proposed N/A decisions are unreviewed
-  - G8 packaged-client Mods screen and world-start evidence is absent
-  - G9 human release acceptance is incomplete
-human_approved_by: ""
-human_approved_at: ""
+recommended_status: PASSED
+blocking_reasons: []
+human_approved_by: "sunthemoon"
+human_approved_at: "2026-08-30"
 ```
 
-No GitHub Release is required before the Gate review can finish. If a release is
-created after explicit human acceptance, it must be classified as a pre-release
-and must not be presented as stable.
+No GitHub Release is required for the completed Gate review. If a release is
+created, it must be classified as a pre-release and must not be presented as
+stable.

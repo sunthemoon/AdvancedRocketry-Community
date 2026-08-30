@@ -1,0 +1,8 @@
+[18:06:33] [Render thread/INFO]: Connecting to 127.0.0.1, 56318
+[18:06:34] [Render thread/INFO]: Injecting existing registry data into this CLIENT instance
+[18:06:35] [Netty Client IO #1/INFO]: Connected to a modded server.
+[18:06:35] [Render thread/INFO]: Loaded 2 advancements
+[18:09:14] [Render thread/INFO]: Connecting to 127.0.0.1, 56318
+[18:09:15] [Render thread/INFO]: Injecting existing registry data into this CLIENT instance
+[18:09:15] [Netty Client IO #4/INFO]: Connected to a modded server.
+[18:09:16] [Render thread/INFO]: Loaded 2 advancements

@@ -1,0 +1,799 @@
+{
+  "applicability_reviews": {
+    "chunk_unload_behavior": {
+      "decision": "ACCEPT_NOT_APPLICABLE",
+      "notes": "The repository owner accepted the version-scoped classification because v0.0.2 has no project chunk-bound object or operation to observe across unload.",
+      "proposed_status": "NOT_APPLICABLE",
+      "rationale": "v0.0.2 defines no project block, entity, block entity, SavedData, chunk ticket, or chunk-bound operation; a reviewer must decide whether chunk-unload behavior has an observable project subject in this bootstrap milestone.",
+      "reviewed_at": "2026-08-30",
+      "reviewed_by": "sunthemoon"
+    },
+    "configuration_mismatch": {
+      "decision": "ACCEPT_NOT_APPLICABLE",
+      "notes": "The repository owner accepted the version-scoped classification because v0.0.2 defines no compatibility-bearing project configuration or mismatch contract.",
+      "proposed_status": "NOT_APPLICABLE",
+      "rationale": "v0.0.2 exposes only the bootstrap lifecycle logging option and no gameplay, packet, persistence, or authority behavior controlled by project configuration; a reviewer must decide whether a distinct mismatch case is applicable.",
+      "reviewed_at": "2026-08-30",
+      "reviewed_by": "sunthemoon"
+    },
+    "optional_client_dependency_absence": {
+      "decision": "ACCEPT_NOT_APPLICABLE",
+      "notes": "The repository owner accepted the version-scoped classification because v0.0.2 declares no optional client dependency that can be removed for a distinct case.",
+      "proposed_status": "NOT_APPLICABLE",
+      "rationale": "v0.0.2 declares no optional runtime or client-only dependency. The clean packaged profile intentionally contains only Forge and the project JAR, so no optional client dependency can be removed for a distinct test case.",
+      "reviewed_at": "2026-08-30",
+      "reviewed_by": "sunthemoon"
+    },
+    "project_state_synchronization": {
+      "decision": "ACCEPT_NOT_APPLICABLE",
+      "notes": "The repository owner accepted the version-scoped classification because v0.0.2 has no project packet or mutable player/world state to synchronize.",
+      "proposed_status": "NOT_APPLICABLE",
+      "rationale": "v0.0.2 defines no project packet or project-owned mutable player/world state; a reviewer must decide whether a separate synchronization comparison has an observable subject in this bootstrap milestone.",
+      "reviewed_at": "2026-08-30",
+      "reviewed_by": "sunthemoon"
+    },
+    "two_player_consistency": {
+      "decision": "ACCEPT_NOT_APPLICABLE",
+      "notes": "The repository owner accepted the version-scoped classification because v0.0.2 exposes no project-owned multiplayer state whose consistency can be compared.",
+      "proposed_status": "NOT_APPLICABLE",
+      "rationale": "v0.0.2 registers no playable content, project packets, shared player state, permissions, inventories, or interactions; there is no two-player project state whose consistency can be compared in this milestone.",
+      "reviewed_at": "2026-08-30",
+      "reviewed_by": "sunthemoon"
+    }
+  },
+  "artifact_manifest": {
+    "artifact_filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+    "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+    "path": "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json",
+    "sha256": "1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f"
+  },
+  "artifacts": {
+    "client": {
+      "filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "path": "build/v0.0.2-manual/client-matching/mods/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "size": 41824
+    },
+    "server": {
+      "filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "path": "build/v0.0.2-manual/server/mods/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "size": 41824
+    },
+    "source": {
+      "filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "path": "build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "size": 41824
+    }
+  },
+  "client_profiles": {
+    "matching": {
+      "after_snapshot": {
+        "captured_at": "2026-08-30T10:13:42+00:00",
+        "file": "client-profiles/matching-after.json",
+        "sha256": "4118a8c70e3dcedff60cd74fffe96fe75050aaace34e043052533943fd6af9e9",
+        "size": 702,
+        "source_path": "build/v0.0.2-manual/profile-matching-after.json",
+        "source_sha256": "4118a8c70e3dcedff60cd74fffe96fe75050aaace34e043052533943fd6af9e9"
+      },
+      "artifact_filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "before_snapshot": {
+        "captured_at": "2026-08-30T09:53:11+00:00",
+        "file": "client-profiles/matching-before.json",
+        "sha256": "70cdcae9cdad06f10da5a68124a119336566ccf8594c1ddbf480c697233fcf64",
+        "size": 703,
+        "source_path": "build/v0.0.2-manual/profile-matching-before.json",
+        "source_sha256": "70cdcae9cdad06f10da5a68124a119336566ccf8594c1ddbf480c697233fcf64"
+      },
+      "game_directory": "build/v0.0.2-manual/client-matching",
+      "inventory_sha256": "da14abbad091ebd0f9cdc92f00cbc610a51b9804ccf20352e2a99de1d428b906",
+      "mods_directory": "build/v0.0.2-manual/client-matching/mods",
+      "note": "Isolated Forge profile containing exactly the tested project JAR; before/after inventories bracket the single-player and two matching-server cycles.",
+      "status": "PRESENT"
+    },
+    "missing_mod": {
+      "after_snapshot": {
+        "captured_at": "2026-08-30T10:28:45+00:00",
+        "file": "client-profiles/missing_mod-after.json",
+        "sha256": "025e374ceff139646143f75389e53f900034a533ab94bd0b89c0185a82663245",
+        "size": 527,
+        "source_path": "build/v0.0.2-manual/profile-missing-mod-after.json",
+        "source_sha256": "025e374ceff139646143f75389e53f900034a533ab94bd0b89c0185a82663245"
+      },
+      "artifact_filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "before_snapshot": {
+        "captured_at": "2026-08-30T10:14:12+00:00",
+        "file": "client-profiles/missing_mod-before.json",
+        "sha256": "90cccd8ea3da5e268be69f251128936ef47478a5844d232c38825a1d144c3298",
+        "size": 528,
+        "source_path": "build/v0.0.2-manual/profile-missing-mod-before.json",
+        "source_sha256": "90cccd8ea3da5e268be69f251128936ef47478a5844d232c38825a1d144c3298"
+      },
+      "game_directory": "build/v0.0.2-manual/client-missing-mod",
+      "inventory_sha256": "e975811134f715df4fdd89e96c708400684d98b428401c7d8acb5d5293d96cbe",
+      "mods_directory": "build/v0.0.2-manual/client-missing-mod/mods",
+      "note": "Distinct Forge-only profile with an empty mods inventory; before/after inventories bracket the helper-owned third server cycle.",
+      "status": "PRESENT"
+    }
+  },
+  "collector": "collect_v002_manual_evidence.py",
+  "evidence": {
+    "matching_first_join": {
+      "file": "screenshots/matching_first_join.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window after the exact-JAR matching client entered the first dedicated-server cycle.",
+      "sha256": "7cfceb93407a752b13f2fcf1a00e898d080cb26b57c0f76611773d30ce7f8407",
+      "size": 257431,
+      "source_path": "build/v0.0.2-manual/screenshots/matching_first_join.png",
+      "status": "PRESENT",
+      "width": 1296
+    },
+    "matching_reconnect": {
+      "file": "screenshots/matching_reconnect.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window after the same matching client reconnected following the clean same-world server restart.",
+      "sha256": "4b0cbd302eb2f5e3feef551267836d93fbcbeb50c6320ab097b5fcfb05400a8b",
+      "size": 287424,
+      "source_path": "build/v0.0.2-manual/screenshots/matching_reconnect.png",
+      "status": "PRESENT",
+      "width": 1296
+    },
+    "matching_server_list": {
+      "file": "screenshots/matching_server_list.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window showing the matching server entry and green Forge compatibility indicator.",
+      "sha256": "0d53c0f175c39705d73cb2e768245a1fe541145ba84377661518341d72497766",
+      "size": 145768,
+      "source_path": "build/v0.0.2-manual/screenshots/matching_server_list.png",
+      "status": "PRESENT",
+      "width": 1296
+    },
+    "missing_mod_connection_result": {
+      "file": "screenshots/missing_mod_connection_result.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window recording the actual result: the Forge-only client was accepted into the world despite the red server-list indicator.",
+      "sha256": "33e6472bcf81348330db107ebdbe6767995fb7d1264d37f6a0a891b23adc48da",
+      "size": 264035,
+      "source_path": "build/v0.0.2-manual/screenshots/missing_mod_connection_result.png",
+      "status": "PRESENT",
+      "width": 1296
+    },
+    "missing_mod_server_list": {
+      "file": "screenshots/missing_mod_server_list.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window showing the red incompatible indicator and complete Forge tooltip: Incompatible FML modded server; server has additional mods that may be needed on the client.",
+      "sha256": "629c9767c48023061e847af10356d4b2b1c4c96a002f671cfdc398bdd6ffc093",
+      "size": 143262,
+      "source_path": "build/v0.0.2-manual/screenshots/missing_mod_server_list.png",
+      "status": "PRESENT",
+      "width": 1296
+    },
+    "mods_page": {
+      "file": "screenshots/mods_page.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window showing the selected Advanced Rocketry: Community Edition Mods-page identity, version, credits, MIT license, description, and logo.",
+      "sha256": "0310354fda6254a82f5cf12428a9bb7ff37561517d76f4648344e64cee8e0ff6",
+      "size": 171044,
+      "source_path": "build/v0.0.2-manual/screenshots/mods_page.png",
+      "status": "PRESENT",
+      "width": 1296
+    },
+    "readme_render": {
+      "file": "screenshots/readme_render.png",
+      "height": 5000,
+      "metadata_chunks": [],
+      "note": "Isolated full rendered root README from the selected implementation; no GitHub account UI or unrelated browser chrome.",
+      "sha256": "a89318c28e8ba2a65ab040a91ad6f1e49da2f8484c126d2735ae42e6646a8ebc",
+      "size": 213653,
+      "source_path": "build/v0.0.2-manual/screenshots/readme_render.png",
+      "status": "PRESENT",
+      "width": 1440
+    },
+    "singleplayer_world": {
+      "file": "screenshots/singleplayer_world.png",
+      "height": 759,
+      "metadata_chunks": [
+        "gAMA",
+        "pHYs",
+        "sRGB"
+      ],
+      "note": "Full Minecraft window after entering the disposable single-player world.",
+      "sha256": "2c79d37cde9a391389f8172e8f1dfc93fecc4ffdc8365c2757ee4c1c2b8efdd6",
+      "size": 285913,
+      "source_path": "build/v0.0.2-manual/screenshots/singleplayer_world.png",
+      "status": "PRESENT",
+      "width": 1296
+    }
+  },
+  "findings": {
+    "client_class_linkage_failure_count": 0,
+    "client_project_error_count": 0,
+    "client_project_warning_count": 0,
+    "notes": "Complete raw-log scans found zero project ERROR/WARN/FATAL records and zero client-class linkage failures. Broad third-party WARN dispositions are recorded per raw log. Host OpenGL diagnostics are INFO-level records and remain preserved.",
+    "server_project_error_count": 0,
+    "server_project_warning_count": 0
+  },
+  "generated_at": "2026-08-30T11:40:08+00:00",
+  "log_excerpts": {
+    "client_startup_world": {
+      "excerpt_audit_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 14
+      },
+      "file": "logs/client_startup_world.txt",
+      "line_end": 109,
+      "line_start": 44,
+      "note": "Selected project initialization through disposable single-player world entry.",
+      "redaction_counts": {
+        "credential": 0,
+        "home": 0,
+        "ip": 0,
+        "player_name": 2,
+        "uuid": 0
+      },
+      "sha256": "657ec73f96211062729840285df50ad3d64343582ab691c4c61ab16dad4559b9",
+      "size": 5917,
+      "source_audit": {
+        "audit_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 20
+        },
+        "physical_file_identity": "fa643f50decf16aade51d8b01f8838e080af2d22c8aeb010115f335b23dc4158",
+        "profile_role": "matching",
+        "sha256": "e4e1d314683f94eec224f7a35c6e557c8b07114f1c758490e2c9b1940f655350",
+        "size": 16881,
+        "source_path": "build/v0.0.2-manual/client-matching/logs/latest.log"
+      },
+      "source_path": "build/v0.0.2-manual/client-matching/logs/latest.log",
+      "status": "PRESENT",
+      "warning_disposition": {
+        "explanation": "Reviewed complete matching-client log: all 20 WARN records are Forge/vanilla bootstrap, first-run world config normalization, missing vanilla sound, shader sampler, or test-JVM property warnings. None use the project logger; no ERROR/FATAL level or client linkage finding exists. OpenGL driver diagnostics are preserved at INFO level.",
+        "origins": [
+          "Forge ModFileParser and resource loading",
+          "Minecraft/Forge first-run integrated-server configuration",
+          "Vanilla client sound, shader, and JVM property handling"
+        ],
+        "status": "ACCEPTED",
+        "warning_count": 20
+      }
+    },
+    "matching_client_connection": {
+      "excerpt_audit_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 0
+      },
+      "file": "logs/matching_client_connection.txt",
+      "line_end": 138,
+      "line_start": 131,
+      "note": "Selected exact loopback connection, first join result, and post-restart reconnect result from the unchanged matching-client log.",
+      "redaction_counts": {
+        "credential": 0,
+        "home": 0,
+        "ip": 0,
+        "player_name": 0,
+        "uuid": 0
+      },
+      "sha256": "cd6c9b3d373a1ad4672c3dc60c4101b4aa544baf3f9441ff3f638720d879549a",
+      "size": 558,
+      "source_audit": {
+        "audit_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 20
+        },
+        "physical_file_identity": "fa643f50decf16aade51d8b01f8838e080af2d22c8aeb010115f335b23dc4158",
+        "profile_role": "matching",
+        "sha256": "e4e1d314683f94eec224f7a35c6e557c8b07114f1c758490e2c9b1940f655350",
+        "size": 16881,
+        "source_path": "build/v0.0.2-manual/client-matching/logs/latest.log"
+      },
+      "source_path": "build/v0.0.2-manual/client-matching/logs/latest.log",
+      "status": "PRESENT",
+      "warning_disposition": {
+        "explanation": "Reviewed complete matching-client log: all 20 WARN records are Forge/vanilla bootstrap, first-run world config normalization, missing vanilla sound, shader sampler, or test-JVM property warnings. None use the project logger; no ERROR/FATAL level or client linkage finding exists. OpenGL driver diagnostics are preserved at INFO level.",
+        "origins": [
+          "Forge ModFileParser and resource loading",
+          "Minecraft/Forge first-run integrated-server configuration",
+          "Vanilla client sound, shader, and JVM property handling"
+        ],
+        "status": "ACCEPTED",
+        "warning_count": 20
+      }
+    },
+    "mismatch_attempt": {
+      "connection_attempt_marker": {
+        "count": 1,
+        "line_indexes": [
+          4
+        ],
+        "loggers": [
+          "net.minecraft.client.gui.screens.connectscreen"
+        ],
+        "order_valid": true,
+        "source": "client",
+        "target_host": "127.0.0.1",
+        "target_port": 56318,
+        "target_verified": true
+      },
+      "excerpt_audit_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 0
+      },
+      "file": "logs/mismatch_attempt.txt",
+      "line_end": 210,
+      "line_start": 196,
+      "note": "Selected byte-preserved launcher Log4j XmlLayout events for the missing-mod compatibility message, exact logger-anchored loopback ConnectScreen target, accepted connection, and world-entry result. The stopped client raw output was moved unchanged into its logs directory; SHA-256 d1590d91675b5fd163e5a75988310791cdece3cad3275d185f6dd1f0507da157.",
+      "redaction_counts": {
+        "credential": 0,
+        "home": 0,
+        "ip": 0,
+        "player_name": 0,
+        "uuid": 0
+      },
+      "sha256": "fbd76879de69169daf81bbf8efdadaf5ad2d710245d32c5629b084a819db90e7",
+      "size": 1223,
+      "source_audit": {
+        "audit_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 9
+        },
+        "physical_file_identity": "eae7a87ecd5977c2c05a7f9536f41ddab1e6d0a43f7b03efca7f618f24a14d1a",
+        "profile_role": "missing_mod",
+        "sha256": "d1590d91675b5fd163e5a75988310791cdece3cad3275d185f6dd1f0507da157",
+        "size": 23329,
+        "source_path": "build/v0.0.2-manual/client-missing-mod/logs/launcher-console.xml.log"
+      },
+      "source_path": "build/v0.0.2-manual/client-missing-mod/logs/launcher-console.xml.log",
+      "status": "PRESENT",
+      "warning_disposition": {
+        "explanation": "Reviewed complete Forge-only client log: all 9 WARN records come from Forge language-provider metadata/resource loading or vanilla sound/shader handling. The project mod is absent, no project logger warning exists, and no ERROR/FATAL level or client linkage finding exists. OpenGL driver diagnostics are preserved at INFO level.",
+        "origins": [
+          "Forge ModFileParser and resource loading",
+          "Vanilla client sound and shader handling"
+        ],
+        "status": "ACCEPTED",
+        "warning_count": 9
+      }
+    },
+    "mismatch_server_attempt_save_stop": {
+      "connection_attempt_marker": {
+        "count": 0,
+        "line_indexes": [],
+        "loggers": [],
+        "order_valid": false,
+        "source": "server",
+        "target_host": "127.0.0.1",
+        "target_port": 56318,
+        "target_verified": false
+      },
+      "excerpt_audit_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 0
+      },
+      "file": "logs/mismatch_server_attempt_save_stop.txt",
+      "lifecycle_markers": {
+        "order_valid": true,
+        "positions": {
+          "ready": 7,
+          "save": 18,
+          "stop": 20,
+          "world": 0
+        }
+      },
+      "line_end": 51,
+      "line_start": 31,
+      "mismatch_server_binding": {
+        "active_server_properties_sha256": "3ceb777586e1e60920a1e923368d3be891e278e0ab7eb4116e5294768914c7e5",
+        "full_log_sha256": "e600a016f1b6cc34b6a830fcc38880c0b61d0da799d8abafa89f4e64d10b905e",
+        "harness_summary_sha256": "f1fe584d46769238903ff063926ba1ad25dd31bb1cdcfb7454f30e0a01b20562",
+        "java_version": "17.0.8",
+        "previous_runtime_log_sha256": "f7d966ce68a0ad8ac74efeb679f21c7c640b272baa78d434683fe5bbcf96ccce",
+        "receipt_sha256": "98f1ff1438e2df9e5afe350d6507cb7fb1676d5c2332c5952d3a40a5342a0fbd",
+        "run_id": "v002-mismatch-9f35db8dd4398b8998066e64",
+        "runtime_latest_log_sha256": "e600a016f1b6cc34b6a830fcc38880c0b61d0da799d8abafa89f4e64d10b905e",
+        "runtime_world_level_name": "world",
+        "server_artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+        "server_bind": "127.0.0.1",
+        "server_exit_code": 0,
+        "server_mods_files": [
+          {
+            "filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+            "sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad"
+          }
+        ],
+        "server_port": 56318,
+        "server_properties_sha256": "6f022e35d35729f522c745db6a47d5b65fda140cd0594471620ab806ff1e0641",
+        "session_id": "v002-0e0386b4d3c113c3d3e76f62",
+        "third_cycle_completed_at": "2026-08-30T10:28:23.482436+00:00",
+        "third_cycle_started_at": "2026-08-30T10:16:54.225651+00:00",
+        "world_identity": "4bdd66da6e7b13cd44d88c6ec3dbc80f72bf1e9f2481e6ae34d9d9a5556ab838",
+        "world_identity_marker_sha256": "96c02f60a513963513916640b7c0a89292c554f3c56d773656d5b87018aaf6d0"
+      },
+      "note": "Selected same-world prepare, ready, missing-mod client join/leave, explicit save completion, and clean stop lifecycle.",
+      "receipt": {
+        "active_server_properties_sha256": "3ceb777586e1e60920a1e923368d3be891e278e0ab7eb4116e5294768914c7e5",
+        "completed_at": "2026-08-30T10:28:23.482436+00:00",
+        "critical_server_properties": {
+          "difficulty": "peaceful",
+          "enable-command-block": "false",
+          "enforce-secure-profile": "false",
+          "generate-structures": "false",
+          "level-name": "world",
+          "level-type": "minecraft:normal",
+          "max-players": "2",
+          "motd": "ARCE v0.0.2 dedicated smoke",
+          "online-mode": "false",
+          "server-ip": "127.0.0.1",
+          "server-port": "56318",
+          "simulation-distance": "2",
+          "spawn-protection": "0",
+          "sync-chunk-writes": "true",
+          "view-distance": "2"
+        },
+        "duration_millis": 689257,
+        "exit_code": 0,
+        "file": "server/mismatch-server-receipt.json",
+        "full_log_sha256": "e600a016f1b6cc34b6a830fcc38880c0b61d0da799d8abafa89f4e64d10b905e",
+        "harness_cycle_log_sha256": {
+          "first-start": "188ff482c91bd60f69f8949c051935f312d80ebd502692812b8cea6b64c8c5d8",
+          "restart": "96d624115aa1c7102c267999a894618e164ac93d04cee607d926b150481186a7"
+        },
+        "harness_summary_sha256": "f1fe584d46769238903ff063926ba1ad25dd31bb1cdcfb7454f30e0a01b20562",
+        "java_version": "17.0.8",
+        "previous_runtime_log_sha256": "f7d966ce68a0ad8ac74efeb679f21c7c640b272baa78d434683fe5bbcf96ccce",
+        "run_id": "v002-mismatch-9f35db8dd4398b8998066e64",
+        "schema_version": 2,
+        "server_artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+        "server_mods_files": [
+          {
+            "filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+            "sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad"
+          }
+        ],
+        "session_id": "v002-0e0386b4d3c113c3d3e76f62",
+        "sha256": "98f1ff1438e2df9e5afe350d6507cb7fb1676d5c2332c5952d3a40a5342a0fbd",
+        "size": 1715,
+        "source_path": "build/v0.0.2-manual/mismatch-server-receipt.json",
+        "source_sha256": "98f1ff1438e2df9e5afe350d6507cb7fb1676d5c2332c5952d3a40a5342a0fbd",
+        "started_at": "2026-08-30T10:16:54.225651+00:00"
+      },
+      "redaction_counts": {
+        "credential": 0,
+        "home": 0,
+        "ip": 0,
+        "player_name": 4,
+        "uuid": 0
+      },
+      "server_exit_code": 0,
+      "server_properties": {
+        "active_source_sha256": "3ceb777586e1e60920a1e923368d3be891e278e0ab7eb4116e5294768914c7e5",
+        "critical_properties": {
+          "difficulty": "peaceful",
+          "enable-command-block": "false",
+          "enforce-secure-profile": "false",
+          "generate-structures": "false",
+          "level-name": "world",
+          "level-type": "minecraft:normal",
+          "max-players": "2",
+          "motd": "ARCE v0.0.2 dedicated smoke",
+          "online-mode": "false",
+          "server-ip": "127.0.0.1",
+          "server-port": "56318",
+          "simulation-distance": "2",
+          "spawn-protection": "0",
+          "sync-chunk-writes": "true",
+          "view-distance": "2"
+        },
+        "file": "server/mismatch-server-properties.json",
+        "level_name": "world",
+        "schema_version": 2,
+        "server_bind": "127.0.0.1",
+        "server_port": 56318,
+        "sha256": "4f9366c74a862b73a43845c06a24b9d3c750ccb7578dd6ec5e2a14f7552c5ec9",
+        "size": 797,
+        "source_sha256": "6f022e35d35729f522c745db6a47d5b65fda140cd0594471620ab806ff1e0641"
+      },
+      "sha256": "c070b72055831032b86e3d22faa35c8db442cfdf3e723d0ab44b91d83f363eca",
+      "size": 2879,
+      "source_audit": {
+        "audit_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 10
+        },
+        "physical_file_identity": "45f19ef9d3b15a3bf8649898d9434e16ffcea2d7c96b7228f9d43f38f2023b5b",
+        "sha256": "e600a016f1b6cc34b6a830fcc38880c0b61d0da799d8abafa89f4e64d10b905e",
+        "size": 10015,
+        "source_path": "build/v0.0.2-manual/mismatch-server-full.txt"
+      },
+      "source_path": "build/v0.0.2-manual/mismatch-server-full.txt",
+      "status": "PRESENT",
+      "warning_disposition": {
+        "explanation": "Reviewed complete helper-owned third-cycle log: all 10 WARN records are Forge language-provider metadata, vanilla resource schema, or intentional loopback offline-mode warnings. Project logger WARN/ERROR/FATAL counts are zero.",
+        "origins": [
+          "Forge ModFileParser language-provider metadata",
+          "Minecraft VanillaPackResourcesBuilder",
+          "Minecraft DedicatedServer offline-mode test configuration"
+        ],
+        "status": "ACCEPTED",
+        "warning_count": 10
+      }
+    },
+    "server_first_join_leave_save_stop": {
+      "excerpt_audit_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 0
+      },
+      "file": "logs/server_first_join_leave_save_stop.txt",
+      "harness_cycle_id": "v002-0e0386b4d3c113c3d3e76f62-first-start",
+      "lifecycle_markers": {
+        "order_valid": true,
+        "positions": {
+          "join": 3,
+          "leave": 5,
+          "save": 12,
+          "stop": 14
+        }
+      },
+      "line_end": 84,
+      "line_start": 70,
+      "note": "Selected ready, first join, leave, save completion, and clean stop lifecycle.",
+      "player_identity_binding": "cb2b1fb98d0abd414a34ba75a2956b073d180d30161f0c2ed50376dc0223d98c",
+      "redaction_counts": {
+        "credential": 0,
+        "home": 0,
+        "ip": 0,
+        "player_name": 4,
+        "uuid": 0
+      },
+      "sha256": "46220ff6073e72203bde4ffb998ab6b9b069eee5fb827d31089909c037d68f68",
+      "size": 1603,
+      "source_audit": {
+        "audit_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 23
+        },
+        "physical_file_identity": "6edc56d9a18305b5841e6b17663175c995ce8611fe3f3acdf651a7c0dc236467",
+        "sha256": "188ff482c91bd60f69f8949c051935f312d80ebd502692812b8cea6b64c8c5d8",
+        "size": 12212,
+        "source_path": "build/v0.0.2-manual/server/first-start-full.txt"
+      },
+      "source_path": "build/v0.0.2-manual/server/first-start-full.txt",
+      "status": "PRESENT",
+      "warning_disposition": {
+        "explanation": "Reviewed complete first-cycle server log: all 23 WARN records are Forge/vanilla bootstrap, create-once config normalization, resource schema, or intentional loopback offline-mode warnings. Project logger WARN/ERROR/FATAL counts are zero.",
+        "origins": [
+          "Forge FMLConfig/ForgeConfigSpec first-run normalization",
+          "Forge ModFileParser language-provider metadata",
+          "Minecraft VanillaPackResourcesBuilder",
+          "Minecraft DedicatedServer offline-mode test configuration"
+        ],
+        "status": "ACCEPTED",
+        "warning_count": 23
+      }
+    },
+    "server_restart_reconnect_save_stop": {
+      "excerpt_audit_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 0
+      },
+      "file": "logs/server_restart_reconnect_save_stop.txt",
+      "harness_cycle_id": "v002-0e0386b4d3c113c3d3e76f62-restart",
+      "lifecycle_markers": {
+        "order_valid": true,
+        "positions": {
+          "join": 11,
+          "leave": 13,
+          "ready": 8,
+          "save": 20,
+          "stop": 22
+        }
+      },
+      "line_end": 54,
+      "line_start": 32,
+      "note": "Selected same-world prepare, ready, reconnect, leave, save completion, and clean stop lifecycle.",
+      "player_identity_binding": "cb2b1fb98d0abd414a34ba75a2956b073d180d30161f0c2ed50376dc0223d98c",
+      "redaction_counts": {
+        "credential": 0,
+        "home": 0,
+        "ip": 0,
+        "player_name": 4,
+        "uuid": 0
+      },
+      "sha256": "322160c5ba0adaa5fd349983c3dbfa17f2a335424fc4f0ebbb46d32d6f53468b",
+      "size": 2394,
+      "source_audit": {
+        "audit_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 10
+        },
+        "physical_file_identity": "29d42d209c894a2f408690727a5eabdfdc4319c7bc33fae97e05df480cfd85c3",
+        "sha256": "96d624115aa1c7102c267999a894618e164ac93d04cee607d926b150481186a7",
+        "size": 8329,
+        "source_path": "build/v0.0.2-manual/server/restart-full.txt"
+      },
+      "source_path": "build/v0.0.2-manual/server/restart-full.txt",
+      "status": "PRESENT",
+      "warning_disposition": {
+        "explanation": "Reviewed complete restart server log: all 10 WARN records are Forge language-provider metadata, vanilla resource schema, or intentional loopback offline-mode warnings. Project logger WARN/ERROR/FATAL counts are zero.",
+        "origins": [
+          "Forge ModFileParser language-provider metadata",
+          "Minecraft VanillaPackResourcesBuilder",
+          "Minecraft DedicatedServer offline-mode test configuration"
+        ],
+        "status": "ACCEPTED",
+        "warning_count": 10
+      }
+    }
+  },
+  "metadata": {
+    "environment": {
+      "forge": "47.4.10",
+      "java": "17.0.8",
+      "minecraft": "1.20.1",
+      "os": "Windows 11 10.0.26200"
+    },
+    "source_commit": "cf476b9601fc482977d1716617c87e4b2cbf704f",
+    "test_date": "2026-08-30",
+    "tester_id": "local-test-machine-20260830"
+  },
+  "observations": {
+    "MANUAL-V002-001": {
+      "actual": "The rendered README and packaged Mods-page identity matched the approved v0.0.2 identity. The exact packaged client initialized the project mod and entered a disposable single-player world; complete raw-log scans found zero project ERROR/WARN/FATAL and zero client linkage failures.",
+      "expected": "The current rendered README and packaged-client metadata match the approved identity, and the client enters a disposable single-player world without a project-source ERROR or FATAL.",
+      "outcome": "PASS"
+    },
+    "MANUAL-V002-002": {
+      "actual": "Source, server, and matching-client JAR copies all hashed to cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad. Harness v002-0e0386b4d3c113c3d3e76f62 observed the same player join and leave in both cycles, clean save/stop, and a successful reconnect to the same world after restart.",
+      "expected": "The matching packaged client joins the loopback server, disconnects, and reconnects after a clean same-world restart without a project-source ERROR/FATAL or client-class linkage failure.",
+      "outcome": "PASS"
+    },
+    "MANUAL-V002-003": {
+      "actual": "The Forge-only profile with an empty mods inventory showed a red incompatible indicator and the complete message that the server has additional mods. The single attempted connection was then accepted into the world; exact client ConnectScreen and server join/leave records preserve that actual result without treating rejection as predetermined.",
+      "expected": "The missing-project-mod client exposes the actual MATCH_VERSION indicator, message, and connection result without a prefilled verdict.",
+      "outcome": "PASS"
+    }
+  },
+  "privacy": {
+    "automated_redaction_counts": {
+      "credential": 0,
+      "home": 0,
+      "ip": 0,
+      "player_name": 14,
+      "uuid": 0
+    },
+    "player_name_terms_supplied": 1,
+    "png_pixel_content_scanned_by_tool": false,
+    "png_privacy_metadata_rejected": true,
+    "visual_review": {
+      "completed": true,
+      "notes": "Reviewed all eight final captures. They contain the isolated README render or Minecraft window, the disposable test identity where applicable, and no GitHub account UI, credentials, notifications, or private desktop/account data. Thin window-edge background pixels contain no private information.",
+      "reviewed_at": "2026-08-30",
+      "reviewed_by": "codex-assisted-local-tester"
+    }
+  },
+  "review_readiness": {
+    "blockers": [],
+    "status": "READY_FOR_HUMAN_GATE_REVIEW"
+  },
+  "schema_version": 5,
+  "scope_statement": "This package records v0.0.2 evidence for human review; it does not set or approve any release Gate.",
+  "server_harness": {
+    "file": "server/server-summary.json",
+    "server_port": 56318,
+    "session_id": "v002-0e0386b4d3c113c3d3e76f62",
+    "sha256": "f1fe584d46769238903ff063926ba1ad25dd31bb1cdcfb7454f30e0a01b20562",
+    "size": 3364,
+    "source_path": "build/v0.0.2-manual/server-player-evidence/summary.json",
+    "source_sha256": "f1fe584d46769238903ff063926ba1ad25dd31bb1cdcfb7454f30e0a01b20562",
+    "status": "PRESENT",
+    "world_identity": "4bdd66da6e7b13cd44d88c6ec3dbc80f72bf1e9f2481e6ae34d9d9a5556ab838"
+  },
+  "source_revision": {
+    "commit": "cf476b9601fc482977d1716617c87e4b2cbf704f",
+    "files": {
+      "README.md": {
+        "git_blob": "48c453a457aa121b3e210aa92c8fb4e2cda512e9",
+        "sha256": "c183d7b28ee061000bb0e38f42057c3e2bc7423420af95837ab503e2f4f2f820",
+        "size": 3624
+      },
+      "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json": {
+        "git_blob": "e60ec5c9f9ed95e1210c67c94439ff8a41bc63d5",
+        "sha256": "1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f",
+        "size": 6234
+      }
+    }
+  },
+  "version": "v0.0.2"
+}

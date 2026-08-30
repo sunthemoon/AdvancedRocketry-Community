@@ -5,10 +5,26 @@ test_date: 2026-08-30
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
 tested_implementation_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
-documentation_checkpoint: 3d8274082008ebcdd59d5c118dd9583790ccf175
+documentation_checkpoint: db9ce96113712dd93e8db05736b3a9ed764e41a8
+acceptance_evidence_source_commit: cf476b9601fc482977d1716617c87e4b2cbf704f
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13.13 / CI Python 3.12 / Minecraft 1.20.1 / Forge 47.4.10
 ```
+
+## Final packaged-client and owner acceptance — `cf476b9`
+
+| Command or check | Result | Detail |
+|---|---|---|
+| Exact documentation-checkpoint CI | PASS | Forge run 33308011345 and governance run 33308011373 passed all 3/3 checks at `db9ce96`; governance ran 519/519 Python tests |
+| Strict schema-5 client bundle | PASS | 22 canonical files are `READY_FOR_HUMAN_GATE_REVIEW`, bind source commit `cf476b9`, and pass ADR/client cross-validation |
+| MANUAL-V002-001 | PASS | Packaged Mods metadata and disposable single-player world were captured; zero project WARN/ERROR/FATAL or client linkage findings |
+| MANUAL-V002-002 | PASS | Three-way JAR hash equality, first join/leave, clean save/stop, same-world restart, and reconnect passed |
+| MANUAL-V002-003 | PASS_WITH_OBSERVED_LIMITATION | Forge-only client showed a red incompatibility marker but the logger-anchored connection attempt was accepted; the server saved and stopped cleanly |
+| ADR-005 | ACCEPTED | Owner `sunthemoon` accepted all five version-scoped bootstrap-only `NOT_APPLICABLE` classifications on 2026-08-30 |
+| G8/G9 human acceptance | PASS | Owner `sunthemoon` explicitly approved both Gates on 2026-08-30 |
+
+All v0.0.2 Required Gates are satisfied. `PASSED` does not imply a public or
+stable release; no tag or GitHub Release exists.
 
 ## Historical automated command results through `da67cfa`
 
@@ -31,8 +47,9 @@ final-G0 record are listed first.
 | Release checksums | PASS | 12 entries cover all 11 committed evidence files plus the external main JAR |
 | Strict repository validation | PASS_WITH_PENDING_GATES | 16 PASS, 2 PENDING, 0 WARN, 0 FAIL; only the absent client bundle and proposed ADR-005 remain explicit pending states |
 
-G0 is `PASS`. G4, G8, and G9 remain open; no packaged-client or final release
-acceptance is inferred from these results.
+At that historical checkpoint G0 was `PASS` while G4, G8, and G9 remained open;
+no later packaged-client or final release acceptance is inferred from those
+earlier results.
 
 | Command | Result | Detail |
 |---|---|---|
@@ -111,8 +128,9 @@ cross_platform_byte_identity_proven: true
 The committed per-entry manifest is
 [`evidence/artifact/jar-content-manifest.json`](evidence/artifact/jar-content-manifest.json),
 with SHA-256
-`a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5`.
-The ten-entry release list is [`checksums.txt`](checksums.txt). The earlier
+`1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f`.
+The 35-entry release list is [`checksums.txt`](checksums.txt) and covers 34
+committed evidence files plus the external JAR. The earlier
 artifacts downloaded from Forge run 33258532863 match the Windows main JAR,
 sources JAR, and committed content manifest byte-for-byte.
 The same three hashes were independently confirmed again in exact-head Forge
@@ -123,11 +141,11 @@ artifact 9726838947 from run 33293732867.
 | Layer | Count | Result | Notes |
 |---|---:|---|---|
 | Java unit | 3 | PASS | Approved identity and expanded Forge metadata |
-| Python unit | 517 | PASS | Repository/workflow contracts, schema-3 provenance approval binding, commit-bound G0 packet, schema-2 final-G0 exact-Git inputs, schema-5 client bundle and schema-4 player summary, G4 applicability, bounded JAR/G0, side, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
+| Python unit | 519 | PASS | Repository/workflow contracts, schema-3 provenance approval binding, commit-bound G0 packet, schema-2 final-G0 exact-Git inputs, schema-5 client bundle and schema-4 player summary, structured logger evidence, G4 applicability, bounded JAR/G0, side, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
 | DataGen | 1 provider | PASS | Minimal GameTest structure remained byte-stable and the current run left the worktree unchanged |
 | Forge GameTest | 1 | PASS | Entrypoint and approved mod ID agree |
 | Packaged dedicated server | 2 cycles | PASS | Current JAR schema-2 first start and same-world restart both exited 0 after artifact/status/save/stop, world, and canonical startup-properties identity checks |
-| Packaged client/manual | 0 completed | PENDING | Isolated Mods/world/join/reconnect/mismatch observations remain |
+| Packaged client/manual | 3 cases | PASS | Mods/world, matching join/reconnect, and missing-project-mod observations are committed in the strict schema-5 bundle |
 
 ## Failures and recovery
 
@@ -199,20 +217,18 @@ local_automated_baseline: PASS
 tested_implementation_governance_ci: PASS
 tested_implementation_forge_ci: PASS
 tested_implementation_checks: 3/3_PASS
-documentation_checkpoint: 3d8274082008ebcdd59d5c118dd9583790ccf175
-last_observed_checkpoint_governance_ci: FAIL_CHECKSUM_RECOVERY_PREPARED
-last_observed_checkpoint_forge_ci: BASELINE_FAIL_ADVISORY_PASS_CHECKSUM_RECOVERY_PREPARED
-last_observed_checkpoint_checks: 1/3_PASS_RECOVERY_CI_PENDING
+documentation_checkpoint: db9ce96113712dd93e8db05736b3a9ed764e41a8
+acceptance_evidence_source_commit: cf476b9601fc482977d1716617c87e4b2cbf704f
+last_observed_checkpoint_governance_ci: PASS
+last_observed_checkpoint_forge_ci: PASS
+last_observed_checkpoint_checks: 3/3_PASS
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
-release_status: IN_PROGRESS
-blocking_items:
-  - Isolated packaged-client Mods page and single-player evidence
-  - Three-way JAR equality and matching-client join/disconnect/restart/reconnect evidence
-  - Missing-project-mod observation and scoped G4 applicability decisions
-  - Human release acceptance
+release_status: PASSED
+blocking_items: []
+human_approved_by: sunthemoon
+human_approved_at: 2026-08-30
 ```
 
-No GitHub Release is required to finish the Gate review. If a release is created
-after explicit human acceptance, it must be marked as a pre-release, never as a
-stable release.
+No GitHub Release is required for the completed Gate review. If a release is
+created, it must be marked as a pre-release, never as a stable release.

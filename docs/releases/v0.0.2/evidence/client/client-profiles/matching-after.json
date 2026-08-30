@@ -1,0 +1,18 @@
+{
+  "artifact_filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+  "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+  "captured_at": "2026-08-30T10:13:42+00:00",
+  "game_directory": "build/v0.0.2-manual/client-matching",
+  "inventory_sha256": "da14abbad091ebd0f9cdc92f00cbc610a51b9804ccf20352e2a99de1d428b906",
+  "mods_directory": "build/v0.0.2-manual/client-matching/mods",
+  "mods_files": [
+    {
+      "path": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "size": 41824
+    }
+  ],
+  "phase": "after",
+  "profile_role": "matching",
+  "schema_version": 1
+}

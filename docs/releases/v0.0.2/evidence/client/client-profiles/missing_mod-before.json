@@ -1,0 +1,12 @@
+{
+  "artifact_filename": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+  "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+  "captured_at": "2026-08-30T10:14:12+00:00",
+  "game_directory": "build/v0.0.2-manual/client-missing-mod",
+  "inventory_sha256": "e975811134f715df4fdd89e96c708400684d98b428401c7d8acb5d5293d96cbe",
+  "mods_directory": "build/v0.0.2-manual/client-missing-mod/mods",
+  "mods_files": [],
+  "phase": "before",
+  "profile_role": "missing_mod",
+  "schema_version": 1
+}

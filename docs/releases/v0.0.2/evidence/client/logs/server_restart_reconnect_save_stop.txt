@@ -1,0 +1,23 @@
+[18:07:39] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[18:07:39] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[18:07:41] [Worker-Main-12/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:07:41] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:07:41] [Worker-Main-12/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:07:41] [Worker-Main-17/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:07:41] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 90%
+[18:07:41] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 2035 ms
+[18:07:41] [Server thread/INFO] [minecraft/DedicatedServer]: Done (2.517s)! For help, type "help"
+[18:07:41] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[18:09:15] [Server thread/INFO] [minecraft/PlayerList]: [REDACTED_TEST_PLAYER][/127.0.0.1:57724] logged in with entity id 110 at (1.5, 120.0, 2.5)
+[18:09:16] [Server thread/INFO] [minecraft/MinecraftServer]: [REDACTED_TEST_PLAYER] joined the game
+[18:09:40] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: [REDACTED_TEST_PLAYER] lost connection: Disconnected
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: [REDACTED_TEST_PLAYER] left the game
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online: 
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping the server
+[18:09:40] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server

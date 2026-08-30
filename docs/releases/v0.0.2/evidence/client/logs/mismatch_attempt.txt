@@ -1,0 +1,15 @@
+  <log4j:Event logger="net.minecraftforge.client.ForgeHooksClient" timestamp="1788085535759" level="INFO" thread="Netty Client IO #0">
+    <log4j:Message><![CDATA[Server has additional mods that may be needed on the client: advancedrocketrycommunity@1.20.1-0.0.2-dev]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraft.client.gui.screens.ConnectScreen" timestamp="1788085596973" level="INFO" thread="Render thread">
+    <log4j:Message><![CDATA[Connecting to 127.0.0.1, 56318]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraftforge.registries.GameData" timestamp="1788085598046" level="INFO" thread="Render thread">
+    <log4j:Message><![CDATA[Injecting existing registry data into this CLIENT instance]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraftforge.network.NetworkHooks" timestamp="1788085598383" level="INFO" thread="Netty Client IO #1">
+    <log4j:Message><![CDATA[Connected to a modded server.]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraft.advancements.AdvancementList" timestamp="1788085598987" level="INFO" thread="Render thread">
+    <log4j:Message><![CDATA[Loaded 2 advancements]]></log4j:Message>
+  </log4j:Event>

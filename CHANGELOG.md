@@ -4,10 +4,10 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.0.2 — UNRELEASED developer preview
+## v0.0.2 — PASSED, unreleased developer preview
 
-**Status:** `IN_PROGRESS`. This version has not been approved, tagged, or
-published as a public release.
+**Status:** `PASSED` on 2026-08-30. This version is approved but has not been
+tagged or published as a public release.
 
 ### Added
 
@@ -18,8 +18,8 @@ published as a public release.
   checks.
 - A disposable packaged dedicated-server smoke test covering installation,
   startup, status, save, clean stop, and same-world restart.
-- Release evidence templates and a test-machine handoff for the remaining
-  packaged-client checks.
+- Strict, privacy-reviewed packaged-client evidence for metadata, disposable
+  world entry, dedicated-server join/reconnect, and missing-project-mod behavior.
 
 ### Compatibility and content
 
@@ -35,8 +35,13 @@ published as a public release.
 - Automated build, DataGen, unit, GameTest, artifact, side-boundary, CI, and
   packaged-server lifecycle evidence is present.
 - Packaged-client metadata/world screenshots, matching-client
-  join/disconnect/restart/reconnect evidence, and human acceptance remain
-  incomplete. No `PASSED` or public-release claim is made.
+  join/disconnect/restart/reconnect, dedicated-server lifecycle, provenance,
+  reproducibility, and human acceptance are complete.
+- A Forge-only client displays the server as incompatible when the project mod
+  is absent, but the tested connection was still accepted; this observed
+  behavior is retained as a compatibility limitation.
+- `PASSED` is an acceptance claim, not a stable-release claim. No public release
+  or stable download is provided.
 
 Installation and verification constraints are documented in
 [`docs/releases/v0.0.2/INSTALLATION.md`](docs/releases/v0.0.2/INSTALLATION.md).

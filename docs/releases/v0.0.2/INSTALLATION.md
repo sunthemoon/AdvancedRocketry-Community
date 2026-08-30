@@ -1,8 +1,8 @@
 # INSTALLATION — v0.0.2 Forge Bootstrap
 
-> **Unreleased developer preview:** `v0.0.2` is `IN_PROGRESS`. There is no
-> approved public release, release tag, or stable download. These instructions
-> exist for source-build verification and manual acceptance only.
+> **Accepted, unreleased developer preview:** `v0.0.2` is `PASSED`. There is no
+> public release, release tag, or stable download. These instructions describe
+> the accepted verification artifact and remain unsuitable for valued worlds.
 
 ## Requirements
 
@@ -121,8 +121,7 @@ join/restart evidence procedure, follow
 
 ## Distribution status
 
-Do not present this artifact as stable, upload it as a public release, or use it
-for a persistent server. Acceptance remains blocked until the remaining G0,
-G4, G8, and G9 evidence is reviewed and a human explicitly marks the version
-`PASSED`. A GitHub Release is not itself required for Gate acceptance; if one is
-created afterward, it must be marked as a pre-release rather than stable.
+Do not present this artifact as stable or use it for a persistent server. G0,
+G4, G8, and G9 passed with explicit owner approval on 2026-08-30. A GitHub
+Release is not required for Gate acceptance; if one is created afterward, it
+must be marked as a pre-release rather than stable.

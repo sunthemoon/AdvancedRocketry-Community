@@ -1,16 +1,11 @@
 # KNOWN-ISSUES — v0.0.2
 
-## Blocking before `PASSED`
+## Post-acceptance release boundary
 
-- An isolated packaged client has not captured the Mods page or disposable
-  single-player world evidence.
-- A matching packaged client has not joined, disconnected, or reconnected after
-  restarting the retained server world.
-- The missing-project-mod compatibility behavior has not been observed, and the
-  proposed G4 applicability decisions have not been reviewed.
-- Final human release acceptance is absent. The version is not tagged, merged
-  as accepted, or published. Any later GitHub Release must be a pre-release,
-  never a stable release.
+- No acceptance-blocking issue remains; repository owner `sunthemoon` approved
+  G8/G9 and marked the evidence-backed version `PASSED` on 2026-08-30.
+- The version is not tagged or published. Any later GitHub Release must be a
+  pre-release, never a stable release.
 - Provenance and future client evidence bind historical Git commits. PR #3 must
   use a normal merge commit when accepted; squash/rebase history rewriting
   requires new bindings, mechanical validation, and the affected human reviews.
@@ -26,15 +21,14 @@
   workflow run 33302877815. Its main JAR, sources JAR, and content manifest are
   byte-identical to the Windows build and committed manifest.
 - Governance run 33302877802 passed 517/517 tests and uploaded exact-head packet
-  and final-G0 input-report artifacts. Owner decisions are separately bound in
-  immutable record commit `3d82740`; mechanical artifacts alone are not
-  relabeled as human decisions.
+  and final-G0 input-report artifacts. The renewed owner-approved source review
+  is bound in immutable record commit `db9ce96`; mechanical artifacts alone are
+  not relabeled as human decisions.
 - Historical hashes `b10db978...`, `c627d23a...`, and `827c07b...` identify
   superseded artifacts from earlier packaging/evidence states. They must not be
   mixed with the current client/server session.
-- This result does not replace session-level identity checks. Manual evidence
-  still requires the source, server, and client copies used in one session to
-  have the same SHA-256.
+- Session-level evidence confirms source, server, and matching-client copies all
+  used the same `cd5ae579...` SHA-256.
 
 ## Expected bootstrap limitations
 
@@ -44,6 +38,10 @@
   `v0.4.x`.
 - The original geometric logo is a bootstrap placeholder and may be replaced
   only by another provenance-audited asset.
+- A Forge-only client without the project JAR displays a red incompatible-
+  server marker and an additional-mods message, but the tested connection was
+  accepted into the world. v0.0.2 defines no gameplay/network state and makes
+  no rejection guarantee; later content milestones must retest this behavior.
 - Schema-4 client-profile snapshot timestamps are local self-attestation. The
   collector binds ordered endpoint inventories and rejects changed final state,
   but those endpoints cannot prove that no mod was temporarily added between

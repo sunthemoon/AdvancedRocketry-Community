@@ -1,15 +1,15 @@
 # MANUAL-TEST — v0.0.2 Forge Bootstrap
 
 ```yaml
-status: PARTIAL_AUTOMATED
+status: PASSED
 test_date: 2026-08-30
-tester: automated baseline plus repository-owner G0 review
+tester: local packaged-client tester plus repository owner sunthemoon
 build: 1.20.1-0.0.2-dev
 tested_implementation_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
-final_g0_record_commit: 3d8274082008ebcdd59d5c118dd9583790ccf175
+final_g0_record_commit: db9ce96113712dd93e8db05736b3a9ed764e41a8
 artifact_sha256: cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad
 artifact_identity_scope: POST_PROVENANCE_APPROVAL_G0_APPROVED
-packaged_client_tested: false
+packaged_client_tested: true
 ```
 
 ## MANUAL-V002-001 — Packaged-client metadata and world start
@@ -58,9 +58,12 @@ packaged_client_tested: false
 
 **Actual**
 
-`NOT_EXECUTED`. No packaged-client screenshot or log is claimed. Earlier
-ForgeGradle client diagnostics do not load the physical release JAR and are
-excluded from acceptance.
+`PASS`. The isolated packaged client loaded the exact `cd5ae579...` JAR, showed
+the approved name, version, description, credits, license, and logo, and entered
+the disposable `V002 Disposable` world. The matching-client raw log contains
+zero broad ERROR/FATAL, zero project WARN/ERROR/FATAL, and zero client-class
+linkage findings. The full-window Mods page, world screenshot, reviewed README
+render, selected log, and profile inventories are in [`evidence/client/`](evidence/client/).
 
 ## MANUAL-V002-002 — Packaged dedicated server and matching client
 
@@ -95,17 +98,13 @@ excluded from acceptance.
 
 **Actual**
 
-`PARTIAL`. The committed historical headless baseline passed before the final
-provenance approval. Exact implementation Forge run 33302877815 repeated both
-cycles with the current `cd5ae579...` artifact: status identity, save, exit 0,
-same-world restart, zero project ERROR/WARN, and zero client-class linkage
-findings all passed. No packaged client joined, so three-way hash equality,
-join/disconnect, and restart/reconnect remain untested.
+`PASS`. Source, server, and matching-client copies all hash to `cd5ae579...`.
+Harness `v002-0e0386b4d3c113c3d3e76f62` records the same redacted player joining
+and leaving both cycles, a clean save/stop, the same world identity, and a
+successful reconnect after restart. Complete client and server log audits found
+zero project WARN/ERROR/FATAL and zero client-class linkage findings.
 
-The existing committed dedicated-server evidence is a headless baseline, not a
-manual-player readiness claim. A future matching-client run must use
-`run_dedicated_server_smoke.py --manual-player-cycles` and retain its schema-4
-summary plus both full logs. The summary binds the exact server artifact,
+The schema-4 summary binds the exact server artifact,
 loopback port, cycle IDs, timestamps, exit codes, raw-log hashes, player
 join/leave observations, the same redacted player identity across both cycles,
 and one stable world identity with pre/post `level.dat` snapshots plus the
@@ -159,8 +158,12 @@ client-class linkage findings block harness success.
 
 **Actual**
 
-`NOT_EXECUTED`. The declared `displayTest="MATCH_VERSION"` behavior still needs
-packaged observation.
+`PASS_WITH_OBSERVED_COMPATIBILITY_LIMITATION`. The isolated Forge-only profile
+had an empty `mods/` inventory and showed Forge's red incompatible-server marker
+with the message that the server has additional mods. The single logger-anchored
+connection attempt was nevertheless accepted into the world; client and server
+records preserve the join and leave. The server then saved and stopped cleanly.
+This is the observed Forge behavior, not a claimed rejection contract.
 
 ## Scoped G4 applicability decisions
 
@@ -171,29 +174,29 @@ project_state_synchronization:
     v0.0.2 defines no project packet or project-owned mutable player/world
     state; a reviewer must decide whether a separate synchronization comparison
     has an observable subject in this bootstrap milestone.
-  decision: PENDING
-  reviewed_by: ""
-  reviewed_at: ""
-  notes: ""
+  decision: ACCEPT_NOT_APPLICABLE
+  reviewed_by: "sunthemoon"
+  reviewed_at: "2026-08-30"
+  notes: "No project packet or mutable player/world state exists in v0.0.2."
 two_player_consistency:
   proposed_status: NOT_APPLICABLE
   rationale: >-
     v0.0.2 has no playable content, project packets, shared player state,
     permissions, inventories, or interactions to compare between players.
-  decision: PENDING
-  reviewed_by: ""
-  reviewed_at: ""
-  notes: ""
+  decision: ACCEPT_NOT_APPLICABLE
+  reviewed_by: "sunthemoon"
+  reviewed_at: "2026-08-30"
+  notes: "No project-owned multiplayer state exists in v0.0.2."
 chunk_unload_behavior:
   proposed_status: NOT_APPLICABLE
   rationale: >-
     v0.0.2 defines no project block, entity, block entity, SavedData, chunk
     ticket, or chunk-bound operation; a reviewer must decide whether chunk-
     unload behavior has an observable project subject in this milestone.
-  decision: PENDING
-  reviewed_by: ""
-  reviewed_at: ""
-  notes: ""
+  decision: ACCEPT_NOT_APPLICABLE
+  reviewed_by: "sunthemoon"
+  reviewed_at: "2026-08-30"
+  notes: "No project chunk-bound object or operation exists in v0.0.2."
 configuration_mismatch:
   proposed_status: NOT_APPLICABLE
   rationale: >-
@@ -201,51 +204,50 @@ configuration_mismatch:
     packet, persistence, or authority behavior controlled by project
     configuration; a reviewer must decide whether a distinct mismatch case is
     applicable.
-  decision: PENDING
-  reviewed_by: ""
-  reviewed_at: ""
-  notes: ""
+  decision: ACCEPT_NOT_APPLICABLE
+  reviewed_by: "sunthemoon"
+  reviewed_at: "2026-08-30"
+  notes: "No compatibility-bearing project configuration exists in v0.0.2."
 optional_client_dependency_absence:
   proposed_status: NOT_APPLICABLE
   rationale: >-
     v0.0.2 declares no optional runtime or client-only dependency; the clean
     packaged profile contains only Forge and the project JAR.
-  decision: PENDING
-  reviewed_by: ""
-  reviewed_at: ""
-  notes: ""
+  decision: ACCEPT_NOT_APPLICABLE
+  reviewed_by: "sunthemoon"
+  reviewed_at: "2026-08-30"
+  notes: "v0.0.2 declares no optional client dependency."
 ```
 
-These proposals do not approve G4 and do not replace the matching-client or
-mismatch-policy cases. Their required owner/reviewer, risk, expiry, and recovery
-record is [`ADR-005`](../../decisions/ADR-005-V0.0.2-G4-APPLICABILITY.md); the
-ADR remains `PROPOSED` until all five decisions receive an explicit human
-review.
+These accepted classifications do not replace the completed matching-client or
+mismatch-policy cases. Their owner, version scope, expiry, risk, mitigation, and
+recovery record is [`ADR-005`](../../decisions/ADR-005-V0.0.2-G4-APPLICABILITY.md).
 
 ## Evidence checklist
 
-- [ ] Three-way source/server/client JAR hash equality.
-- [ ] Distinct matching and missing-project-mod profile paths, four canonical
+- [x] Three-way source/server/client JAR hash equality.
+- [x] Distinct matching and missing-project-mod profile paths, four canonical
   inventory snapshots, exact matching JAR, and empty missing-mod inventory.
 - [x] Current rendered README screenshot from the tested checkout.
 - [x] Final G0 full distributable source/resource inventory-history decision is
       recorded for the selected implementation commit and tree, with the
       verified report archived at its commit-named tracked path.
-- [ ] Full-window packaged-client Mods page screenshot.
-- [ ] Packaged-client single-player in-world screenshot and selected log.
+- [x] Full-window packaged-client Mods page screenshot.
+- [x] Packaged-client single-player in-world screenshot and selected log.
 - [x] Current tested-JAR packaged-server first-start and restart excerpts.
-- [ ] Matching-client first join, disconnect, restart, and reconnect evidence.
-- [ ] Missing-project-mod indicator, message, and connection result.
-- [ ] Helper-owned third-start server ready/save/stop log and schema-2 run receipt.
-- [ ] Human decisions for all five scoped G4 applicability proposals.
+- [x] Matching-client first join, disconnect, restart, and reconnect evidence.
+- [x] Missing-project-mod indicator, message, and connection result.
+- [x] Helper-owned third-start server ready/save/stop log and schema-2 run receipt.
+- [x] Human decisions for all five scoped G4 applicability proposals.
 
 See [`evidence/dedicated-server/`](evidence/dedicated-server/) for completed
 server evidence and
 [`../../work/v0.0.2-test-machine-handoff.md`](../../work/v0.0.2-test-machine-handoff.md)
 for the isolated packaged-client procedure. The version-scoped evidence helper
 is [`../../../scripts/collect_v002_manual_evidence.py`](../../../scripts/collect_v002_manual_evidence.py).
-No `evidence/client/` bundle exists yet, and helper validation never marks a
-Gate or the version `PASSED`.
+The canonical [`evidence/client/`](evidence/client/) bundle is strictly valid
+and `READY_FOR_HUMAN_GATE_REVIEW`; repository owner `sunthemoon` separately
+approved G8/G9 on 2026-08-30.
 
 The schema-5 helper scans complete raw client/server logs and archived excerpts
 rather than trusting entered finding counts. It binds two distinct, non-nested
