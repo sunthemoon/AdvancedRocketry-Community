@@ -1,7 +1,7 @@
 # v0.0.2 G0 mechanical packaging evidence
 
-- Binary JAR: `advancedrocketry-community-1.20.1-0.0.2-dev.jar` (`sha256:215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743`)
-- Sources JAR: `advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar` (`sha256:6bec332fb0818f90be3e27b183af09d3ad6fd0b63f4b9275ae90a8bdb062a4d6`)
+- Binary JAR: `advancedrocketry-community-1.20.1-0.0.2-dev.jar` (`sha256:cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad`)
+- Sources JAR: `advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar` (`sha256:f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe`)
 
 This directory contains deterministic, machine-generated packaging evidence. It records license and notice placement, the exact processed `META-INF/mods.toml`, the complete sources-JAR content manifest, and each sources-JAR file's exact repository or generated input binding.
 

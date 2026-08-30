@@ -34,8 +34,8 @@ included third-party notices.
 
 Affected repository paths:
 
-- `.gitattributes` (conservatively listed pending reviewer confirmation)
-- `.gitignore` (conservatively listed pending reviewer confirmation)
+- `.gitattributes` (conservatively retained by the reviewer)
+- `.gitignore` (conservatively retained by the reviewer)
 - `build.gradle`
 - `gradle.properties`
 - `settings.gradle`
@@ -145,14 +145,16 @@ The distributable JAR carries `NOTICE.md` as `META-INF/NOTICE.md`.
 ## Review status
 
 ```yaml
-status: PENDING_HUMAN_REVIEW
-reviewer: null
-reviewed_at: null
+status: THIRD_PARTY_APPROVED
+reviewer: sunthemoon
+reviewed_at: 2026-08-30
 ```
 
 The exact source copies and mappings above address the mechanical source-tree
 license-copy and attribution gap. The build packages this notice and both exact
-license copies under `META-INF` in the main and sources JARs. Final
-legal/provenance approval remains pending: a human reviewer must confirm that
-this treatment is sufficient for the distributed artifacts. This notice does
-not claim that binary-distribution obligations are complete.
+license copies under `META-INF` in the main and sources JARs. Reviewer
+`sunthemoon` determined on 2026-08-30 that this treatment is sufficient for the
+Forge MDK and Gradle Wrapper bootstrap batch, provided each distribution offers
+the companion sources JAR and exact repository source revision as required
+above. This scoped determination does not establish full-repository originality
+or complete the broader G0 release review.

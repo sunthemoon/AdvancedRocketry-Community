@@ -1,12 +1,12 @@
 # SHA-256 checksums for the v0.0.2 distributable and committed evidence.
 # The build/libs JAR is intentionally not committed; CI verifies it separately.
-215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
-0bdf03c202ad31f5a11d19bd2da2e2bbf645ac14ae4a36fb87489161500756de  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
+cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
 dfa33ca011a0a4c9fe7f681180ba8c8c561b6e1b69e04c23b6eb3005e880564a  docs/releases/v0.0.2/evidence/dedicated-server/README.md
 79ad47b208404d555cfe80653ce4ddf440ce641849b41b96dcb7b99d561852a5  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
 cc23c817def71110aa69d096306ea32f0a4754b6193f7e6d93044a4ccc199144  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
 37be93f86779121854223980207ff4228a534d47dacecae837d70e2c11b17cfa  docs/releases/v0.0.2/evidence/dedicated-server/summary.json
-c66ba3261cf3986c65a2b5441dbdbf898fddbe44bb3467098878a91ec26353a9  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
-527cbcb19b6222be021327aaac46038dfbaec18b1901d7e31aa2cf09483003a1  docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json
+54eb141cef09deee8b9e6eeffb4cb6d47b3b33cf0e9a9e2461b421d803c7acd5  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
+5e84ea8b62d202de8162ca974af5cacffae331f0a5ecc7d4c947282310f712d3  docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json
 c7887b35cdf14b1dfc9175e2c71c71f2cd054b2de6f04d5096854a29b1ebb351  docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml
-9eb539e2ce1220dbb97dc7bc5747575dbb5b81fa1c5f631945dc6a57b85f0a6f  docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json
+492ec7b2e6d51b996c5583801d2e73c7f61bea3a4bd54907b3cf207676ce46db  docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json

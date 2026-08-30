@@ -1,6 +1,6 @@
 {
   "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar",
-  "artifact_sha256": "6bec332fb0818f90be3e27b183af09d3ad6fd0b63f4b9275ae90a8bdb062a4d6",
+  "artifact_sha256": "f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe",
   "entries": [
     {
       "path": "META-INF/",
@@ -24,8 +24,8 @@
     },
     {
       "path": "META-INF/THIRD-PARTY-NOTICES.md",
-      "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
-      "size": 6739
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
     },
     {
       "path": "META-INF/licenses/",
@@ -190,7 +190,7 @@
     "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt"
   ],
   "paired_binary_artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-  "paired_binary_sha256": "215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743",
+  "paired_binary_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
   "repository_input_count": 18,
   "repository_inputs": [
     {
@@ -208,8 +208,8 @@
     {
       "archive_path": "META-INF/THIRD-PARTY-NOTICES.md",
       "repository_path": "THIRD-PARTY-NOTICES.md",
-      "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
-      "size": 6739
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
     },
     {
       "archive_path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
