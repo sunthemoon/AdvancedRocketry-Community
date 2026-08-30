@@ -421,6 +421,24 @@ The notice decision is {decision}.
         self.assertEqual(PENDING_RECORD_STATUS, details["review_status"])
         self.assertRegex(details["review_content_sha256"], r"^[0-9a-f]{64}$")
 
+    def test_forge_source_tree_materialization_evidence_is_exact(self) -> None:
+        materialization = self.document["components"][0][
+            "source_tree_materializations"
+        ][0]
+        materialization["source_raw_sha256"] = "0" * 64
+        self.write_manifest()
+
+        errors, _ = self.validate()
+
+        self.assertTrue(
+            any(
+                "component forge_mdk source_tree_materializations must be"
+                in error
+                for error in errors
+            ),
+            errors,
+        )
+
     def test_selected_commit_validation_ignores_dirty_worktree_inputs(self) -> None:
         selected = self.commit_current_fixture()
         self.document["components"][0]["source_sha256"] = "0" * 64

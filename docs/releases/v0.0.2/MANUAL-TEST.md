@@ -39,7 +39,7 @@ packaged_client_tested: false
   only checkpoint than the artifact-producing implementation commit.
 - Use an isolated official Forge 1.20.1-47.4.10 client on Java 17.
 - Install only that newly selected post-provenance-approval distributable JAR.
-- Use the schema-4 collector template and the fixed matching profile directory
+- Use the schema-5 collector template and the fixed matching profile directory
   under ignored `build/`; its `mods/` directory must contain exactly that JAR.
 - Create the game directory below the repository, resolve it to an absolute
   path, and paste that exact absolute path into the launcher. A relative
@@ -64,8 +64,8 @@ packaged_client_tested: false
 - The rendered README and metadata match the approved project identity, retain
   the unofficial/Minecraft statements, and state that the build has no playable
   rocket systems.
-- The complete client raw log has zero broad ERROR and zero project-source
-  WARN findings; every non-project WARN has an explicit reviewed disposition.
+- The complete client raw log has zero broad ERROR/FATAL and zero project-source
+  WARN/FATAL findings; every non-project WARN has an explicit reviewed disposition.
 
 **Actual**
 
@@ -101,7 +101,7 @@ excluded from acceptance.
 - The server identifies Minecraft 1.20.1, protocol 763, and exact mod version
   `1.20.1-0.0.2-dev` without loading client classes.
 - The matching client connects twice, both shutdowns finish, every bound raw
-  log has zero broad ERROR and zero project-source WARN findings, and every
+  log has zero broad ERROR/FATAL and zero project-source WARN/FATAL findings, and every
   non-project WARN has an explicit reviewed disposition.
 
 **Actual**
@@ -118,12 +118,12 @@ join/disconnect, and restart/reconnect remain untested.
 
 The existing committed dedicated-server evidence is a headless baseline, not a
 manual-player readiness claim. A future matching-client run must use
-`run_dedicated_server_smoke.py --manual-player-cycles` and retain its schema-3
+`run_dedicated_server_smoke.py --manual-player-cycles` and retain its schema-4
 summary plus both full logs. The summary binds the exact server artifact,
 loopback port, cycle IDs, timestamps, exit codes, raw-log hashes, player
 join/leave observations, the same redacted player identity across both cycles,
 and one stable world identity with pre/post `level.dat` snapshots plus the
-canonical startup-properties identity. Project-source ERROR or WARN and
+canonical startup-properties identity. Project-source ERROR, WARN, or FATAL and
 client-class linkage findings block harness success.
 
 ## MANUAL-V002-003 — Declared mismatch policy
@@ -150,8 +150,9 @@ client-class linkage findings block harness success.
    empty multiplayer list without copying the matching profile's `servers.dat`.
 5. Observe the retained loopback server's compatibility indicator and message.
 6. Attempt one connection and record the actual result without assuming it,
-   then save and stop the server cleanly and retain the third-start full log
-   plus its exit-code/log-hash receipt.
+   then save and stop the server cleanly and retain the helper-owned third-start
+   full log plus its schema-2 run/timestamp/Java/exit/log/properties/server-mods
+   receipt.
 7. Fully exit the client, wait for its process and log writes to stop, capture
    the missing-project-mod profile's unchanged canonical `after` inventory, and
    retain its own raw client log under that profile's `logs/`.
@@ -246,7 +247,7 @@ review.
 - [x] Current tested-JAR packaged-server first-start and restart excerpts.
 - [ ] Matching-client first join, disconnect, restart, and reconnect evidence.
 - [ ] Missing-project-mod indicator, message, and connection result.
-- [ ] Third-start server ready/save/stop log and exit-code/log-hash receipt.
+- [ ] Helper-owned third-start server ready/save/stop log and schema-2 run receipt.
 - [ ] Human decisions for all five scoped G4 applicability proposals.
 
 See [`evidence/dedicated-server/`](evidence/dedicated-server/) for completed
@@ -257,16 +258,24 @@ is [`../../../scripts/collect_v002_manual_evidence.py`](../../../scripts/collect
 No `evidence/client/` bundle exists yet, and helper validation never marks a
 Gate or the version `PASSED`.
 
-The schema-4 helper scans complete raw client/server logs and archived excerpts
+The schema-5 helper scans complete raw client/server logs and archived excerpts
 rather than trusting entered finding counts. It binds two distinct, non-nested
 client game directories, four ordered canonical `mods/` inventory snapshots,
 the exact matching-profile JAR, an empty missing-project-mod profile, and each
 client raw log to its corresponding profile. It rejects a cross-profile hard
 link or other shared physical raw-log file. It binds the matching-player server excerpts
-to the schema-3 harness summary by cycle ID, filename, SHA-256, and the same
+to the schema-4 harness summary by cycle ID, filename, SHA-256, and the same
 redacted player identity, binds the third mismatch-server startup to the same
 artifact, canonical harness-owned `server.properties.v002-startup` identity,
-loopback port, exact `Preparing level "world"` marker, and world identity. It
+semantically verified active critical `server.properties`, loopback port, exact
+`Preparing level "world"` marker, world identity, and an exact singleton server
+`mods/` inventory containing only the project JAR. The schema-2 third-cycle
+receipt binds a create-once run ID, ordered start/end timestamps, monotonic
+duration, Java 17, process exit code, prior/fresh log hashes, the harness summary
+and both cycle hashes. The missing-mod before/after snapshots must bracket that
+receipt's start/end timestamps. Hash or physical-file reuse of either harness
+log is rejected. Strict raw-log decoding accepts deterministic strict UTF-8 or
+strict GB18030/GBK bytes; undecodable logs fail. It
 accepts an exact
 client-loopback connection marker when Forge rejects before the server logs the
 attempt, and enforces all lifecycle marker order. It accepts honest
@@ -276,13 +285,16 @@ canonical committed evidence path. Do not publish or commit any screenshot
 until its visible pixels have completed human privacy review. The
 `--require-acceptance-ready` flag additionally requires every fixed observation
 to be `PASS`, all five scoped decisions to be `ACCEPT_NOT_APPLICABLE`, the bound
-harness evidence, and all other mechanical checks. Its success means only
+harness evidence, zero broad FATAL and client-class linkage findings across all
+raw logs, and all other mechanical checks. Its success means only
 `READY_FOR_HUMAN_GATE_REVIEW`.
 
 The canonical client-evidence destination is implicitly acceptance-ready even
 if the strict flag is omitted. Strict collection and strict or canonical
 validation require the record's exact source commit—not merely the current
-worktree—to contain digest-bound `THIRD_PARTY_APPROVED` bootstrap provenance.
+worktree—to contain digest-bound `THIRD_PARTY_APPROVED` bootstrap provenance
+and an exact-record `APPROVED` final-G0 source/resource review. The README visual
+review may remain pending until this session captures its canonical screenshot.
 Non-strict ignored `build/` bundles remain permitted to preserve honest failure
 diagnostics, but are not acceptance artifacts and must later pass strict
 validation before use in human Gate review.

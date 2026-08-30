@@ -35,5 +35,5 @@ so they are not committed. The run used Java 17.0.8, offline mode, a
 loopback-only bind, and two Forge-installer attempts: the first timed out while
 retaining downloads, and the retry completed. `manual_player_cycles` is
 `false`; this evidence does
-**not** claim a player joined. The matching-client manual-player schema-3 run
+**not** claim a player joined. The matching-client manual-player schema-4 run
 remains deferred to a separate test machine.

@@ -1,10 +1,15 @@
 import hashlib
+import io
+import os
 import subprocess
+import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+from scripts import validate_repository as repository_validator
 from scripts.validate_repository import (
     APPROVED_RECORD_STATUS,
     COMMITTED_BUNDLE,
@@ -12,6 +17,9 @@ from scripts.validate_repository import (
     ROOT,
     Results,
     check_optional_v002_client_evidence,
+    check_package_checksums,
+    check_v002_final_g0_review,
+    check_v002_g4_applicability,
     find_unlisted_v002_resources,
     is_audited_v001_evidence,
     is_approved_gradle_wrapper,
@@ -19,10 +27,48 @@ from scripts.validate_repository import (
     markdown_link_errors,
     normalize_link_target,
     parse_current_identity,
+    read_bounded_bytes,
+    repository_files,
     tracked_markdown_files,
+    validate_v002_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
+
+
+class RepositoryCliTests(unittest.TestCase):
+    def test_help_runs_with_isolated_python(self) -> None:
+        script = ROOT / "scripts" / "validate_repository.py"
+
+        completed = subprocess.run(
+            [sys.executable, "-I", "-S", str(script), "--help"],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+        )
+
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertIn("--require-approved-identity", completed.stdout)
+
+
+class ResultsReportTests(unittest.TestCase):
+    def test_pending_results_are_not_reported_as_passes_or_warnings(self) -> None:
+        results = Results()
+        results.passed("complete")
+        results.pending_state("human evidence required")
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            results.print_report()
+
+        self.assertIn("[PASS] complete", output.getvalue())
+        self.assertIn("[PENDING] human evidence required", output.getvalue())
+        self.assertIn(
+            "Summary: 1 passed, 1 pending, 0 warnings, 0 failed",
+            output.getvalue(),
+        )
 
 
 class IdentityParsingTests(unittest.TestCase):
@@ -126,6 +172,299 @@ class MarkdownLinkInventoryTests(unittest.TestCase):
 
             self.assertEqual(["docs/tracked.md:1 -> missing.md"], errors)
             self.assertEqual(1, checked)
+
+    def test_pathspec_environment_cannot_disable_markdown_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / "tracked.md").write_text("# Tracked\n", encoding="utf-8")
+            self.add(root, "tracked.md")
+
+            with patch.dict(os.environ, {"GIT_LITERAL_PATHSPECS": "1"}):
+                inventory = tracked_markdown_files(root)
+
+            self.assertEqual(
+                ["tracked.md"],
+                [path.relative_to(root).as_posix() for path in inventory],
+            )
+
+    def test_uppercase_markdown_extension_is_included(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / "UPPER.MD").write_text(
+                "[missing](missing.md)\n", encoding="utf-8"
+            )
+            self.add(root, "UPPER.MD")
+
+            inventory = tracked_markdown_files(root)
+            errors, checked = markdown_link_errors(root, inventory)
+
+            self.assertEqual(["UPPER.MD:1 -> missing.md"], errors)
+            self.assertEqual(1, checked)
+
+    def test_markdown_link_and_error_counts_are_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / "links.md"
+            path.write_text("[x](missing)\n" * 10, encoding="utf-8")
+
+            with patch("scripts.validate_repository.MAX_MARKDOWN_LINKS", 3):
+                link_errors, checked = markdown_link_errors(root, [path])
+            self.assertEqual(3, checked)
+            self.assertEqual(4, len(link_errors))
+            self.assertIn("link-count limit", link_errors[-1])
+
+            with patch("scripts.validate_repository.MAX_MARKDOWN_ERRORS", 2):
+                bounded_errors, checked = markdown_link_errors(root, [path])
+            self.assertEqual(3, checked)
+            self.assertEqual(3, len(bounded_errors))
+            self.assertIn("stopped after 2 errors", bounded_errors[-1])
+
+    def test_markdown_aggregate_bytes_and_lines_are_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / "prose.md"
+            path.write_text("a\nb\nc\n", encoding="utf-8")
+
+            with patch("scripts.validate_repository.MAX_MARKDOWN_TOTAL_BYTES", 4):
+                byte_errors, checked = markdown_link_errors(root, [path])
+            self.assertEqual(0, checked)
+            self.assertIn("aggregate byte limit", byte_errors[0])
+
+            with patch("scripts.validate_repository.MAX_MARKDOWN_LINES_PER_FILE", 2):
+                line_errors, checked = markdown_link_errors(root, [path])
+            self.assertEqual(0, checked)
+            self.assertIn("line-count limit", line_errors[0])
+
+
+class BoundedRepositoryInputTests(unittest.TestCase):
+    def initialize_repository(self, root: Path) -> None:
+        subprocess.run(
+            ["git", "init", "--quiet"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
+
+    def test_repository_inventory_includes_tracked_and_nonignored_untracked_files(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / ".gitignore").write_text("ignored.txt\n", encoding="utf-8")
+            (root / "tracked.txt").write_text("tracked\n", encoding="utf-8")
+            (root / "untracked.txt").write_text("untracked\n", encoding="utf-8")
+            (root / "ignored.txt").write_text("ignored\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "--", ".gitignore", "tracked.txt"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+            )
+
+            inventory = {
+                path.relative_to(root).as_posix() for path in repository_files(root)
+            }
+
+            self.assertEqual(
+                {".gitignore", "tracked.txt", "untracked.txt"}, inventory
+            )
+
+    def test_repository_inventory_rejects_output_over_the_byte_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / "tracked.txt").write_text("tracked\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "--", "tracked.txt"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+            )
+
+            with patch(
+                "scripts.validate_repository.MAX_REPOSITORY_INVENTORY_BYTES", 1
+            ):
+                with self.assertRaisesRegex(ValueError, "exceeds the byte limit"):
+                    repository_files(root)
+
+    def test_repository_local_git_candidate_is_rejected_before_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fake_git = root / "git.exe"
+            fake_git.write_bytes(b"not an executable")
+
+            with (
+                patch(
+                    "scripts.validate_repository.shutil.which",
+                    return_value=str(fake_git),
+                ),
+                patch("scripts.validate_repository.subprocess.Popen") as popen,
+            ):
+                with self.assertRaisesRegex(ValueError, "contained in the repository"):
+                    repository_files(root)
+
+            popen.assert_not_called()
+
+    def test_bounded_binary_read_rejects_oversized_input_before_full_read(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / "oversized.bin"
+            path.write_bytes(b"12345")
+
+            with self.assertRaisesRegex(ValueError, "exceeds 4 bytes"):
+                read_bounded_bytes(
+                    path, 4, "test input", trusted_root=root
+                )
+
+    def test_bounded_binary_read_rejects_linked_parent_component(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            linked = root / "linked"
+            linked.mkdir()
+            path = linked / "input.txt"
+            path.write_text("external fixture\n", encoding="utf-8")
+
+            with patch(
+                "scripts.validate_repository._is_link",
+                side_effect=lambda candidate: candidate == linked,
+            ):
+                with self.assertRaisesRegex(ValueError, "path must not contain"):
+                    read_bounded_bytes(
+                        path,
+                        1024,
+                        "test input",
+                        trusted_root=root,
+                    )
+
+
+class PlanningPackageChecksumTests(unittest.TestCase):
+    def test_empty_manifest_cannot_pass_as_zero_verified_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "unlisted.txt").write_text("unlisted\n", encoding="utf-8")
+            (root / "PACKAGE-SHA256SUMS.txt").write_text("\n", encoding="utf-8")
+            results = Results()
+
+            check_package_checksums(root, results)
+
+            self.assertEqual([], results.passes)
+            self.assertEqual(
+                ["Planning package checksum list contains no entries"],
+                results.failures,
+            )
+
+    def test_valid_bounded_package_manifest_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            payload = b"package fixture\n"
+            (root / "payload.txt").write_bytes(payload)
+            (root / "PACKAGE-SHA256SUMS.txt").write_text(
+                f"{hashlib.sha256(payload).hexdigest()}  payload.txt\n",
+                encoding="utf-8",
+            )
+            results = Results()
+
+            check_package_checksums(root, results)
+
+            self.assertEqual([], results.failures)
+            self.assertEqual(1, len(results.passes))
+
+    def test_package_manifest_rejects_parent_traversal(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            root = parent / "package"
+            root.mkdir()
+            outside = parent / "outside.txt"
+            outside.write_text("outside\n", encoding="utf-8")
+            (root / "PACKAGE-SHA256SUMS.txt").write_text(
+                f"{hashlib.sha256(outside.read_bytes()).hexdigest()}  ../outside.txt\n",
+                encoding="utf-8",
+            )
+            results = Results()
+
+            check_package_checksums(root, results)
+
+            self.assertTrue(
+                any("unsafe package path" in failure for failure in results.failures),
+                results.failures,
+            )
+
+    def test_package_manifest_and_target_sizes_are_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            payload = b"12345"
+            (root / "payload.bin").write_bytes(payload)
+            manifest = root / "PACKAGE-SHA256SUMS.txt"
+            manifest.write_text(
+                f"{hashlib.sha256(payload).hexdigest()}  payload.bin\n",
+                encoding="utf-8",
+            )
+
+            manifest_results = Results()
+            with patch(
+                "scripts.validate_repository.MAX_PACKAGE_CHECKSUM_LIST_BYTES", 4
+            ):
+                check_package_checksums(root, manifest_results)
+            self.assertTrue(
+                any("exceeds 4 bytes" in failure for failure in manifest_results.failures),
+                manifest_results.failures,
+            )
+
+            target_results = Results()
+            with patch("scripts.validate_repository.MAX_PACKAGE_FILE_BYTES", 4):
+                check_package_checksums(root, target_results)
+            self.assertTrue(
+                any("exceeds 4 bytes" in failure for failure in target_results.failures),
+                target_results.failures,
+            )
+
+            aggregate_results = Results()
+            with patch("scripts.validate_repository.MAX_PACKAGE_TOTAL_BYTES", 4):
+                check_package_checksums(root, aggregate_results)
+            self.assertTrue(
+                any(
+                    "aggregate byte limit" in failure
+                    for failure in aggregate_results.failures
+                ),
+                aggregate_results.failures,
+            )
+
+    def test_package_target_replacement_cannot_bypass_aggregate_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / "payload.bin"
+            path.write_bytes(b"1")
+            replacement = b"12345"
+            (root / "PACKAGE-SHA256SUMS.txt").write_text(
+                f"{hashlib.sha256(replacement).hexdigest()}  payload.bin\n",
+                encoding="utf-8",
+            )
+            original_inspect = repository_validator._inspect_bounded_file
+
+            def replace_after_inspection(*args, **kwargs):
+                inspected = original_inspect(*args, **kwargs)
+                if Path(args[0]).name == "payload.bin":
+                    path.write_bytes(replacement)
+                return inspected
+
+            results = Results()
+            with (
+                patch("scripts.validate_repository.MAX_PACKAGE_TOTAL_BYTES", 4),
+                patch(
+                    "scripts.validate_repository._inspect_bounded_file",
+                    side_effect=replace_after_inspection,
+                ),
+            ):
+                check_package_checksums(root, results)
+
+            self.assertEqual([], results.passes)
+            self.assertTrue(
+                any("aggregate byte limit" in failure for failure in results.failures),
+                results.failures,
+            )
 
 
 class EvidenceAssetTests(unittest.TestCase):
@@ -256,7 +595,8 @@ class ClientEvidenceProvenanceTests(unittest.TestCase):
                 check_optional_v002_client_evidence(results)
 
             self.assertEqual([], results.failures)
-            self.assertEqual(1, len(results.passes))
+            self.assertEqual([], results.passes)
+            self.assertEqual(1, len(results.pending))
             validate_provenance.assert_not_called()
 
     def test_broken_reparse_bundle_path_is_rejected_instead_of_treated_as_absent(
@@ -405,6 +745,405 @@ class ClientEvidenceProvenanceTests(unittest.TestCase):
             )
 
 
+class G4ApplicabilityRepositoryCheckTests(unittest.TestCase):
+    def test_invalid_g4_record_fails_repository_validation(self) -> None:
+        results = Results()
+        with patch(
+            "scripts.validate_repository.validate_v002_g4_applicability",
+            return_value=(["invalid decision"], {}),
+        ):
+            check_v002_g4_applicability(results)
+
+        self.assertEqual([], results.passes)
+        self.assertEqual(
+            ["v0.0.2 G4 applicability errors: invalid decision"],
+            results.failures,
+        )
+
+    def test_valid_proposed_record_is_reported_as_unproven(self) -> None:
+        results = Results()
+        with patch(
+            "scripts.validate_repository.validate_v002_g4_applicability",
+            return_value=(
+                [],
+                {"status": "PROPOSED", "canonical_bundle": None},
+            ),
+        ):
+            check_v002_g4_applicability(results)
+
+        self.assertEqual([], results.failures)
+        self.assertEqual([], results.passes)
+        self.assertEqual(1, len(results.pending))
+        self.assertIn("remains PROPOSED", results.pending[0])
+
+    def test_accepted_record_matching_bundle_is_reported_as_accepted(self) -> None:
+        results = Results()
+        with patch(
+            "scripts.validate_repository.validate_v002_g4_applicability",
+            return_value=(
+                [],
+                {
+                    "status": "ACCEPTED",
+                    "canonical_bundle": "docs/releases/v0.0.2/evidence/client",
+                },
+            ),
+        ):
+            check_v002_g4_applicability(results)
+
+        self.assertEqual([], results.failures)
+        self.assertEqual(1, len(results.passes))
+        self.assertIn("is ACCEPTED", results.passes[0])
+
+
+class FinalG0RepositoryCheckTests(unittest.TestCase):
+    def test_invalid_final_g0_record_fails_repository_validation(self) -> None:
+        results = Results()
+        with patch(
+            "scripts.validate_repository.validate_v002_final_g0_review",
+            return_value=(["bad binding"], {}),
+        ):
+            check_v002_final_g0_review(results)
+
+        self.assertEqual([], results.passes)
+        self.assertEqual(
+            ["v0.0.2 final-G0 review record errors: bad binding"],
+            results.failures,
+        )
+
+    def test_pending_final_g0_record_is_valid_without_gate_conclusion(self) -> None:
+        results = Results()
+        with patch(
+            "scripts.validate_repository.validate_v002_final_g0_review",
+            return_value=(
+                [],
+                {
+                    "source_review_outcome": "PENDING_HUMAN_REVIEW",
+                    "readme_review_outcome": "PENDING_HUMAN_REVIEW",
+                },
+            ),
+        ):
+            check_v002_final_g0_review(results)
+
+        self.assertEqual([], results.failures)
+        self.assertEqual([], results.passes)
+        self.assertEqual(1, len(results.pending))
+        self.assertIn("Gate not computed", results.pending[0])
+        self.assertIn("source=PENDING_HUMAN_REVIEW", results.pending[0])
+
+    def test_approved_records_still_do_not_compute_gate(self) -> None:
+        results = Results()
+        with patch(
+            "scripts.validate_repository.validate_v002_final_g0_review",
+            return_value=(
+                [],
+                {
+                    "source_review_outcome": "APPROVED",
+                    "readme_review_outcome": "APPROVED",
+                },
+            ),
+        ):
+            check_v002_final_g0_review(results)
+
+        self.assertEqual([], results.failures)
+        self.assertIn("Gate not computed", results.passes[0])
+
+
+class V002GateStatusTests(unittest.TestCase):
+    def document(
+        self,
+        *,
+        status: str = "IN_PROGRESS",
+        overall: str = "IN_PROGRESS",
+        g0: str = "IN_PROGRESS",
+        g4: str = "IN_PROGRESS",
+        g5: str = "NOT_APPLICABLE",
+        g6: str = "NOT_APPLICABLE",
+        g7: str = "NOT_APPLICABLE",
+        g8: str = "NOT_STARTED",
+        g9: str = "IN_PROGRESS",
+        reviewer: str = "",
+        reviewed_at: str = "",
+    ) -> str:
+        return f'''# GATE_STATUS
+
+```yaml
+version: v0.0.2
+status: {status}
+gates:
+  G0: {g0}
+  G1: PASS
+  G2: PASS
+  G3: PASS
+  G4: {g4}
+  G5: {g5}
+  G6: {g6}
+  G7: {g7}
+  G8: {g8}
+  G9: {g9}
+overall: {overall}
+human_approved_by: "{reviewer}"
+human_approved_at: "{reviewed_at}"
+```
+'''
+
+    @staticmethod
+    def pending_g0() -> dict[str, object]:
+        return {
+            "source_review_outcome": "PENDING_HUMAN_REVIEW",
+            "readme_review_outcome": "PENDING_HUMAN_REVIEW",
+        }
+
+    @staticmethod
+    def approved_g0() -> dict[str, object]:
+        return {
+            "source_review_outcome": "APPROVED",
+            "readme_review_outcome": "APPROVED",
+        }
+
+    @staticmethod
+    def proposed_g4() -> dict[str, object]:
+        return {"status": "PROPOSED", "canonical_bundle": None}
+
+    @staticmethod
+    def accepted_g4() -> dict[str, object]:
+        return {
+            "status": "ACCEPTED",
+            "canonical_bundle": "docs/releases/v0.0.2/evidence/client/evidence.json",
+        }
+
+    def test_honest_in_progress_status_is_valid(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v002_gate_status_text(
+                self.document(),
+                final_g0_details=self.pending_g0(),
+                g4_details=self.proposed_g4(),
+            ),
+        )
+
+    def test_g0_pass_requires_both_human_reviews(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g0="PASS"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(any("G0 cannot be PASS" in error for error in errors), errors)
+
+    def test_g4_pass_requires_accepted_adr_and_canonical_bundle(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g4="PASS"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(any("G4 cannot be PASS" in error for error in errors), errors)
+
+    def test_g8_pass_requires_canonical_valid_bundle(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g8="PASS"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(
+            any("G8 cannot be READY_FOR_HUMAN_REVIEW or PASS" in error for error in errors),
+            errors,
+        )
+
+    def test_g8_ready_for_review_also_requires_canonical_valid_bundle(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g8="READY_FOR_HUMAN_REVIEW"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(
+            any("G8 cannot be READY_FOR_HUMAN_REVIEW or PASS" in error for error in errors),
+            errors,
+        )
+
+    def test_mechanically_ready_bundle_does_not_make_g8_pass(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g4="PASS", g8="PASS"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.accepted_g4(),
+        )
+
+        self.assertTrue(
+            any("mechanical readiness alone" in error for error in errors), errors
+        )
+
+    def test_g9_pass_requires_human_identity_and_timestamp(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g9="PASS"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(any("G9 cannot be PASS" in error for error in errors), errors)
+
+    def test_passed_version_requires_all_required_gates(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(
+                status="PASSED",
+                overall="PASSED",
+                g0="PASS",
+                g4="PASS",
+                g8="NOT_STARTED",
+                g9="PASS",
+                reviewer="sunthemoon",
+                reviewed_at="2026-08-30",
+            ),
+            final_g0_details=self.approved_g0(),
+            g4_details=self.accepted_g4(),
+        )
+
+        self.assertTrue(
+            any("Required Gates are unresolved: G8" in error for error in errors),
+            errors,
+        )
+
+    def test_fully_bound_passed_status_is_valid(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v002_gate_status_text(
+                self.document(
+                    status="PASSED",
+                    overall="PASSED",
+                    g0="PASS",
+                    g4="PASS",
+                    g8="PASS",
+                    g9="PASS",
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-08-30",
+                ),
+                final_g0_details=self.approved_g0(),
+                g4_details=self.accepted_g4(),
+            ),
+        )
+
+    def test_duplicate_yaml_block_cannot_hide_the_authoritative_status(self) -> None:
+        text = self.document() + "\n```yaml\nstatus: PASSED\n```\n"
+
+        errors = validate_v002_gate_status_text(
+            text,
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertEqual(
+            ["GATE_STATUS.md must contain exactly one YAML status block"], errors
+        )
+
+    def test_gate_status_error_flood_is_rejected_with_bounded_output(self) -> None:
+        text = "# GATE_STATUS\n\n```yaml\ngates:\n" + "  invalid\n" * 1000 + "```\n"
+
+        errors = validate_v002_gate_status_text(
+            text,
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertEqual(
+            ["GATE_STATUS YAML exceeds the status-block line limit"], errors
+        )
+
+    def test_alternate_success_wording_is_rejected(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(status="APPROVED", overall="COMPLETE"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(any("unsupported version status" in error for error in errors))
+        self.assertTrue(any("unsupported overall status" in error for error in errors))
+
+    def test_whitespace_human_identity_does_not_satisfy_g9(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g9="PASS", reviewer=" ", reviewed_at="2026-08-30"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(any("human approval fields" in error for error in errors), errors)
+        self.assertTrue(any("G9 cannot be PASS" in error for error in errors), errors)
+
+    def test_invalid_calendar_or_clock_values_do_not_satisfy_g9(self) -> None:
+        for value in (
+            "2026-99-99",
+            "2026-02-30",
+            "2026-08-30T99:99:99Z",
+            "2026-08-30T12:00:00+99:99",
+        ):
+            with self.subTest(value=value):
+                errors = validate_v002_gate_status_text(
+                    self.document(
+                        g9="PASS",
+                        reviewer="sunthemoon",
+                        reviewed_at=value,
+                    ),
+                    final_g0_details=self.pending_g0(),
+                    g4_details=self.proposed_g4(),
+                )
+
+                self.assertTrue(
+                    any("human approval fields" in error for error in errors), errors
+                )
+                self.assertTrue(
+                    any("G9 cannot be PASS" in error for error in errors), errors
+                )
+
+    def test_unapproved_machine_identity_cannot_authorize_release_gates(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(
+                g9="PASS",
+                reviewer="codex",
+                reviewed_at="2026-08-30",
+            ),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(any("authorized reviewer" in error for error in errors), errors)
+        self.assertTrue(any("G9 cannot be PASS" in error for error in errors), errors)
+
+    def test_required_gates_cannot_be_waived_while_version_is_in_progress(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(
+                g0="NOT_APPLICABLE",
+                g4="NOT_APPLICABLE",
+                g8="NOT_APPLICABLE",
+                g9="NOT_APPLICABLE",
+            ),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(
+            any(
+                "Required Gates cannot be NOT_APPLICABLE: G0, G4, G8, G9" in error
+                for error in errors
+            ),
+            errors,
+        )
+
+    def test_out_of_scope_gates_cannot_be_reactivated_or_left_unresolved(self) -> None:
+        errors = validate_v002_gate_status_text(
+            self.document(g5="BLOCKED", g6="IN_PROGRESS", g7="NOT_STARTED"),
+            final_g0_details=self.pending_g0(),
+            g4_details=self.proposed_g4(),
+        )
+
+        self.assertTrue(
+            any(
+                "out-of-scope Gates must remain NOT_APPLICABLE: G5, G6, G7" in error
+                for error in errors
+            ),
+            errors,
+        )
+
+
 class WorkflowStructureTests(unittest.TestCase):
     def setUp(self) -> None:
         self.repository_workflow = (
@@ -413,6 +1152,15 @@ class WorkflowStructureTests(unittest.TestCase):
         self.forge_workflow = (
             ROOT / ".github/workflows/forge-bootstrap.yml"
         ).read_text(encoding="utf-8")
+
+    def mutate_forge_job(
+        self, job_id: str, original: str, replacement: str
+    ) -> str:
+        marker = f"  {job_id}:"
+        before, separator, job_and_after = self.forge_workflow.partition(marker)
+        self.assertEqual(marker, separator)
+        self.assertIn(original, job_and_after)
+        return before + separator + job_and_after.replace(original, replacement, 1)
 
     def test_current_workflows_have_required_enabled_steps(self) -> None:
         self.assertEqual(
@@ -508,6 +1256,12 @@ class WorkflowStructureTests(unittest.TestCase):
                 "checkout credentials",
                 "persist-credentials: false",
                 "persist-credentials: true",
+                "exact enabled action contract actions/checkout@v7",
+            ),
+            (
+                "checkout review commit",
+                "ref: ${{ env.REVIEW_COMMIT }}",
+                "ref: ${{ github.sha }}",
                 "exact enabled action contract actions/checkout@v7",
             ),
             (
@@ -635,6 +1389,7 @@ class WorkflowStructureTests(unittest.TestCase):
             "REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}"
         )
         for replacement in (
+            "",
             "REVIEW_COMMIT: ${{ github.sha }}",
             "REVIEW_COMMIT: ${{ github.event.pull_request.head.ref }}",
         ):
@@ -644,6 +1399,101 @@ class WorkflowStructureTests(unittest.TestCase):
                 errors = validate_repository_workflow_text(tampered)
 
                 self.assertIn("exact immutable review-commit job environment", errors)
+
+    def test_repository_workflow_rejects_missing_checkout_ref(self) -> None:
+        tampered = self.repository_workflow.replace(
+            "          ref: ${{ env.REVIEW_COMMIT }}\n", "", 1
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact enabled action contract actions/checkout@v7", errors
+        )
+
+    def test_forge_jobs_bind_exact_review_commit_environments(self) -> None:
+        original = (
+            "      REVIEW_COMMIT: "
+            "${{ github.event.pull_request.head.sha || github.sha }}\n"
+        )
+        cases = (
+            (
+                "baseline",
+                "",
+                "baseline exact immutable review-commit job environment",
+            ),
+            (
+                "baseline",
+                "      REVIEW_COMMIT: ${{ github.sha }}\n",
+                "baseline exact immutable review-commit job environment",
+            ),
+            (
+                "latest-compatibility",
+                "",
+                "latest exact immutable review-commit and Forge 47.4.23 job environment",
+            ),
+            (
+                "latest-compatibility",
+                "      REVIEW_COMMIT: ${{ github.sha }}\n",
+                "latest exact immutable review-commit and Forge 47.4.23 job environment",
+            ),
+        )
+        for job_id, replacement, expected in cases:
+            with self.subTest(job_id=job_id, replacement=replacement):
+                tampered = self.mutate_forge_job(job_id, original, replacement)
+
+                errors = validate_forge_workflow_text(tampered)
+
+                self.assertIn(expected, errors)
+
+    def test_forge_jobs_bind_checkout_to_review_commit(self) -> None:
+        original = "          ref: ${{ env.REVIEW_COMMIT }}\n"
+        cases = (
+            (
+                "baseline",
+                "",
+                "baseline exact head-bound checkout action contract",
+            ),
+            (
+                "baseline",
+                "          ref: ${{ github.sha }}\n",
+                "baseline exact head-bound checkout action contract",
+            ),
+            (
+                "latest-compatibility",
+                "",
+                "latest exact head-bound checkout action contract",
+            ),
+            (
+                "latest-compatibility",
+                "          ref: ${{ github.sha }}\n",
+                "latest exact head-bound checkout action contract",
+            ),
+        )
+        for job_id, replacement, expected in cases:
+            with self.subTest(job_id=job_id, replacement=replacement):
+                tampered = self.mutate_forge_job(job_id, original, replacement)
+
+                errors = validate_forge_workflow_text(tampered)
+
+                self.assertIn(expected, errors)
+
+    def test_forge_artifact_identity_is_exact_head_bound(self) -> None:
+        original = "          name: forge-47.4.10-${{ env.REVIEW_COMMIT }}\n"
+        for replacement in (
+            "",
+            "          name: forge-47.4.10-${{ github.sha }}\n",
+        ):
+            with self.subTest(replacement=replacement):
+                tampered = self.mutate_forge_job(
+                    "baseline", original, replacement
+                )
+
+                errors = validate_forge_workflow_text(tampered)
+
+                self.assertIn(
+                    "baseline exact head-bound artifact upload identity", errors
+                )
 
     def test_g0_review_packet_sequence_requires_python_isolation(self) -> None:
         tampered = self.repository_workflow.replace(

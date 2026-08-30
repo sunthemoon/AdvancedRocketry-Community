@@ -6,9 +6,11 @@ import os
 import shutil
 import struct
 import subprocess
+import sys
 import tempfile
 import unittest
 import zlib
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -41,12 +43,38 @@ from scripts.collect_v002_manual_evidence import (
 )
 from scripts.run_dedicated_server_smoke import (
     SERVER_PROPERTIES_IDENTITY_FILE,
+    expected_server_properties,
     server_configuration_payload as smoke_server_configuration_payload,
 )
 from scripts.validate_bootstrap_provenance import (
     APPROVED_RECORD_STATUS,
     PENDING_RECORD_STATUS,
 )
+from scripts.validate_v002_final_g0_review import (
+    APPROVED as FINAL_G0_APPROVED,
+    PENDING as FINAL_G0_PENDING,
+)
+
+
+class CollectorCliTests(unittest.TestCase):
+    def test_help_runs_with_isolated_python(self) -> None:
+        script = (
+            Path(__file__).resolve().parents[1]
+            / "scripts"
+            / "collect_v002_manual_evidence.py"
+        )
+
+        completed = subprocess.run(
+            [sys.executable, "-I", "-S", str(script), "--help"],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+        )
+
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertIn("profile-snapshot", completed.stdout)
 
 
 def png_chunk(chunk_type: bytes, content: bytes) -> bytes:
@@ -91,6 +119,19 @@ class ManualEvidenceTests(unittest.TestCase):
         )
         self.provenance_validator = provenance_patcher.start()
         self.addCleanup(provenance_patcher.stop)
+        final_g0_patcher = patch(
+            "scripts.collect_v002_manual_evidence."
+            "validate_v002_final_g0_review_at_commit",
+            return_value=(
+                [],
+                {
+                    "source_review_outcome": FINAL_G0_APPROVED,
+                    "readme_review_outcome": FINAL_G0_PENDING,
+                },
+            ),
+        )
+        self.final_g0_validator = final_g0_patcher.start()
+        self.addCleanup(final_g0_patcher.stop)
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
@@ -333,22 +374,7 @@ class ManualEvidenceTests(unittest.TestCase):
         mismatch_log = self.build / "mismatch-server-full.txt"
         mismatch_log.write_text(mismatch_payload, encoding="utf-8")
         mismatch_receipt = self.build / "mismatch-server-receipt.json"
-        mismatch_receipt.write_text(
-            json.dumps(
-                {
-                    "schema_version": 1,
-                    "exit_code": 0,
-                    "full_log_sha256": hashlib.sha256(
-                        mismatch_log.read_bytes()
-                    ).hexdigest(),
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
+        mismatch_receipt.write_text("{}\n", encoding="utf-8", newline="\n")
         server_properties_payload = smoke_server_configuration_payload(25565, True)
         (server_root / "server.properties").write_bytes(server_properties_payload)
         (server_root / SERVER_PROPERTIES_IDENTITY_FILE).write_bytes(
@@ -393,8 +419,10 @@ class ManualEvidenceTests(unittest.TestCase):
         cycle_base = {
             "error_count": 0,
             "warning_count": 0,
+            "fatal_count": 0,
             "project_error_count": 0,
             "project_warning_count": 0,
+            "project_fatal_count": 0,
             "client_linkage_failure_count": 0,
             "exit_code": 0,
             "mod_marker": "1.20.1-0.0.2-dev",
@@ -412,7 +440,7 @@ class ManualEvidenceTests(unittest.TestCase):
             ).encode("utf-8")
         ).hexdigest()
         summary = {
-            "schema_version": 3,
+            "schema_version": 4,
             "session_id": session_id,
             "artifact": self.artifact_name,
             "artifact_sha256": self.artifact_hash,
@@ -493,6 +521,7 @@ class ManualEvidenceTests(unittest.TestCase):
             "summary": summary_path.relative_to(self.root).as_posix(),
             "note": "Harness-generated matching-client cycles.",
         }
+        self.refresh_mismatch_receipt(session)
         session["findings"] = {
             "client_project_error_count": 0,
             "client_project_warning_count": 0,
@@ -561,12 +590,55 @@ class ManualEvidenceTests(unittest.TestCase):
             item["server_exit_code"] = exit_code
         source = self.root / item["source"]
         receipt = self.root / item["receipt"]
+        summary_path = self.root / session["server_harness"]["summary"]
+        summary_payload = summary_path.read_bytes()
+        summary = json.loads(summary_payload.decode("utf-8"))
+        active_properties = (
+            self.jar_paths["server"].parent.parent / "server.properties"
+        ).read_bytes()
+        started_at = "2026-08-27T12:12:00+00:00"
+        completed_at = "2026-08-27T12:13:00+00:00"
+        full_log_sha256 = hashlib.sha256(source.read_bytes()).hexdigest()
         receipt.write_text(
             json.dumps(
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
+                    "run_id": "v002-mismatch-" + "b" * 24,
+                    "session_id": summary["session_id"],
+                    "harness_summary_sha256": hashlib.sha256(
+                        summary_payload
+                    ).hexdigest(),
+                    "harness_cycle_log_sha256": {
+                        cycle["name"]: cycle["full_log_sha256"]
+                        for cycle in summary["cycles"]
+                    },
+                    "started_at": started_at,
+                    "completed_at": completed_at,
+                    "duration_millis": 60_000,
+                    "java_version": "17.0.16",
                     "exit_code": item["server_exit_code"],
-                    "full_log_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                    "previous_runtime_log_sha256": "d" * 64,
+                    "full_log_sha256": full_log_sha256,
+                    "server_artifact_sha256": summary[
+                        "server_artifact_sha256"
+                    ],
+                    "active_server_properties_sha256": hashlib.sha256(
+                        active_properties
+                    ).hexdigest(),
+                    "critical_server_properties": {
+                        key: value
+                        for key, value in sorted(
+                            expected_server_properties(
+                                summary["server_port"], True
+                            ).items()
+                        )
+                    },
+                    "server_mods_files": [
+                        {
+                            "filename": self.artifact_name,
+                            "sha256": summary["server_artifact_sha256"],
+                        }
+                    ],
                 },
                 indent=2,
                 sort_keys=True,
@@ -574,6 +646,9 @@ class ManualEvidenceTests(unittest.TestCase):
             + "\n",
             encoding="utf-8",
         )
+        runtime = self.jar_paths["server"].parent.parent / "logs" / "latest.log"
+        timestamp = datetime.fromisoformat(completed_at).timestamp()
+        os.utime(runtime, (timestamp, timestamp))
 
     def replace_mismatch_server_log(
         self,
@@ -953,6 +1028,7 @@ class ManualEvidenceTests(unittest.TestCase):
         lines[2], lines[3] = lines[3], lines[2]
         lifecycle.write_text("\n".join(lines) + "\n", encoding="utf-8")
         self.refresh_summary_log_hash(session, "first-start", lifecycle)
+        self.refresh_mismatch_receipt(session)
 
         errors, record, output = self.collect(session)
 
@@ -984,6 +1060,7 @@ class ManualEvidenceTests(unittest.TestCase):
         lines.insert(1, done)
         lifecycle.write_text("\n".join(lines) + "\n", encoding="utf-8")
         self.refresh_summary_log_hash(session, "restart", lifecycle)
+        self.refresh_mismatch_receipt(session)
 
         errors, record, output = self.collect(session)
 
@@ -1386,6 +1463,61 @@ class ManualEvidenceTests(unittest.TestCase):
             errors,
         )
         self.assertFalse(output.exists())
+
+    def test_missing_mod_snapshots_must_bracket_third_cycle(self) -> None:
+        session = self.ready_session()
+        profile = session["client_profiles"]["missing_mod"]
+        for phase, captured_at in (
+            ("before", "2026-08-27T12:14:00+00:00"),
+            ("after", "2026-08-27T12:15:00+00:00"),
+        ):
+            path = self.root / profile[f"{phase}_snapshot"]
+            document = json.loads(path.read_text(encoding="utf-8"))
+            document["captured_at"] = captured_at
+            path.write_text(
+                json.dumps(document, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+
+        errors, _, output = self.collect(session, "late-missing-mod-snapshots")
+
+        self.assertTrue(
+            any("before snapshot must not follow the third-cycle start" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_gb18030_client_log_is_scanned_and_archived(self) -> None:
+        session = self.ready_session()
+        source = self.root / session["log_excerpts"]["client_startup_world"][
+            "source"
+        ]
+        text = source.read_text(encoding="utf-8") + "客户端启动完成\n"
+        source.write_bytes(text.encode("gb18030"))
+
+        errors, record, output = self.collect(session, "gb18030-client-log")
+
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        self.assertTrue(output.is_dir())
+
+    def test_gb18030_mismatch_server_log_is_scanned_and_bound(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        text = source.read_text(encoding="utf-8") + "服务器保存完成\n"
+        payload = text.encode("gb18030")
+        source.write_bytes(payload)
+        runtime = self.jar_paths["server"].parent.parent / "logs" / "latest.log"
+        runtime.write_bytes(payload)
+        self.refresh_mismatch_receipt(session)
+
+        errors, record, output = self.collect(session, "gb18030-server-log")
+
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        self.assertTrue(output.is_dir())
 
     def test_mismatch_client_log_cannot_reuse_matching_profile_log(self) -> None:
         session = self.ready_session()
@@ -2069,6 +2201,154 @@ class ManualEvidenceTests(unittest.TestCase):
         )
         self.assertTrue(any("exit code is 7" in error for error in strict_errors))
 
+    def test_mismatch_server_client_linkage_always_blocks_readiness(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        source = self.root / session["log_excerpts"][role]["source"]
+        payload = source.read_text(encoding="utf-8") + (
+            "java.lang.NoClassDefFoundError: net.minecraft.client.Minecraft\n"
+        )
+        self.replace_mismatch_server_log(session, payload)
+        session["observations"]["MANUAL-V002-002"]["outcome"] = "BLOCKED"
+        session["observations"]["MANUAL-V002-002"][
+            "actual"
+        ] = "Client-class linkage appeared during the third server cycle."
+        session["findings"]["client_class_linkage_failure_count"] = None
+
+        errors, record, output = self.collect(session, "mismatch-linkage")
+
+        self.assertEqual([], errors)
+        assert record is not None
+        self.assertEqual(
+            1,
+            record["log_excerpts"][role]["source_audit"]["audit_counts"][
+                "client_linkage_failure_count"
+            ],
+        )
+        self.assertTrue(
+            any(
+                "client-class linkage" in blocker
+                for blocker in record["review_readiness"]["blockers"]
+            )
+        )
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertTrue(any("client-class linkage" in error for error in strict_errors))
+
+    def test_mismatch_server_rejects_harness_cycle_log_hash_reuse(self) -> None:
+        session = self.ready_session()
+        restart = self.root / session["log_excerpts"][
+            "server_restart_reconnect_save_stop"
+        ]["source"]
+        self.replace_mismatch_server_log(
+            session, restart.read_text(encoding="utf-8")
+        )
+
+        errors, _, output = self.collect(session, "mismatch-cycle-hash-reuse")
+
+        self.assertTrue(
+            any("reuses a harness-cycle log hash" in error for error in errors), errors
+        )
+        self.assertFalse(output.exists())
+
+    def test_mismatch_server_rejects_harness_cycle_physical_file_reuse(self) -> None:
+        session = self.ready_session()
+        role = "mismatch_server_attempt_save_stop"
+        restart = self.root / session["log_excerpts"][
+            "server_restart_reconnect_save_stop"
+        ]["source"]
+        mismatch = self.root / session["log_excerpts"][role]["source"]
+        mismatch.unlink()
+        os.link(restart, mismatch)
+        runtime = self.jar_paths["server"].parent.parent / "logs" / "latest.log"
+        runtime.write_bytes(restart.read_bytes())
+        session["log_excerpts"][role]["line_end"] = len(
+            restart.read_text(encoding="utf-8").splitlines()
+        )
+        self.refresh_mismatch_receipt(session)
+
+        errors, _, output = self.collect(session, "mismatch-cycle-hardlink-reuse")
+
+        self.assertTrue(
+            any("server raw logs must not reuse one physical file" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+
+    def test_mismatch_receipt_rejects_java_tamper(self) -> None:
+        session = self.ready_session()
+        receipt = self.root / session["log_excerpts"][
+            "mismatch_server_attempt_save_stop"
+        ]["receipt"]
+        document = json.loads(receipt.read_text(encoding="utf-8"))
+        document["java_version"] = "21.0.1"
+        receipt.write_text(
+            json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+        errors, _, output = self.collect(session, "mismatch-receipt-java-tamper")
+
+        self.assertTrue(any("identify Java 17" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_mismatch_receipt_rejects_run_id_tamper(self) -> None:
+        session = self.ready_session()
+        receipt = self.root / session["log_excerpts"][
+            "mismatch_server_attempt_save_stop"
+        ]["receipt"]
+        document = json.loads(receipt.read_text(encoding="utf-8"))
+        document["run_id"] = "v002-mismatch-not-a-run"
+        receipt.write_text(
+            json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+        errors, _, output = self.collect(session, "mismatch-receipt-run-id-tamper")
+
+        self.assertTrue(any("run_id is invalid" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_mismatch_receipt_rejects_timestamp_tamper(self) -> None:
+        session = self.ready_session()
+        receipt = self.root / session["log_excerpts"][
+            "mismatch_server_attempt_save_stop"
+        ]["receipt"]
+        document = json.loads(receipt.read_text(encoding="utf-8"))
+        document["started_at"] = "2026-08-27T12:09:00+00:00"
+        receipt.write_text(
+            json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+        errors, _, output = self.collect(session, "mismatch-receipt-time-tamper")
+
+        self.assertTrue(
+            any("timestamps must be aware, ordered" in error for error in errors), errors
+        )
+        self.assertFalse(output.exists())
+
+    def test_mismatch_active_security_property_tamper_is_rejected(self) -> None:
+        session = self.ready_session()
+        active = self.jar_paths["server"].parent.parent / "server.properties"
+        active.write_bytes(
+            active.read_bytes().replace(b"online-mode=false", b"online-mode=true")
+        )
+        self.refresh_mismatch_receipt(session)
+
+        errors, _, output = self.collect(session, "mismatch-active-properties-tamper")
+
+        self.assertTrue(any("online-mode" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_extra_server_mod_is_rejected(self) -> None:
+        session = self.ready_session()
+        extra = self.jar_paths["server"].parent / "extra-server-mod.jar"
+        extra.write_bytes(b"extra")
+
+        errors, _, output = self.collect(session, "extra-server-mod")
+
+        self.assertTrue(any("only the project JAR" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
     def test_mismatch_receipt_log_digest_must_match_retained_full_log(self) -> None:
         session = self.ready_session()
         role = "mismatch_server_attempt_save_stop"
@@ -2110,6 +2390,7 @@ class ManualEvidenceTests(unittest.TestCase):
         receipt_path.write_text(
             json.dumps(receipt, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
+            newline="\n",
         )
         record_path = output / RECORD_NAME
         record = json.loads(record_path.read_text(encoding="utf-8"))
@@ -2130,6 +2411,49 @@ class ManualEvidenceTests(unittest.TestCase):
 
         self.assertTrue(
             any("differs from the retained full log" in error for error in validation_errors),
+            validation_errors,
+        )
+
+    def test_committed_bundle_cross_checks_receipt_and_active_properties(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, _ = collect_evidence(
+            self.write_session(session, "properties-cross-binding-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        receipt_path = output / "server" / "mismatch-server-receipt.json"
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt["active_server_properties_sha256"] = "0" * 64
+        receipt_path.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        record_path = output / RECORD_NAME
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        item = record["log_excerpts"]["mismatch_server_attempt_save_stop"]
+        payload = receipt_path.read_bytes()
+        item["receipt"]["sha256"] = hashlib.sha256(payload).hexdigest()
+        item["receipt"]["size"] = len(payload)
+        item["receipt"]["active_server_properties_sha256"] = "0" * 64
+        item["mismatch_server_binding"]["receipt_sha256"] = item["receipt"][
+            "sha256"
+        ]
+        record_path.write_text(
+            json.dumps(record, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "receipt differs from active server.properties" in error
+                for error in validation_errors
+            ),
             validation_errors,
         )
 
@@ -2210,6 +2534,35 @@ class ManualEvidenceTests(unittest.TestCase):
         )
         self.assertTrue(any("broad ERROR" in error for error in strict_errors), strict_errors)
 
+    def test_fatal_is_counted_separately_and_blocks_strict_readiness(self) -> None:
+        session = self.ready_session()
+        role = "client_startup_world"
+        source = self.root / session["log_excerpts"][role]["source"]
+        with source.open("a", encoding="utf-8") as stream:
+            stream.write(
+                "[Render thread/FATAL] [advancedrocketrycommunity/]: fatal bootstrap\n"
+            )
+
+        errors, record, output = self.collect(session, "fatal-audit")
+
+        self.assertEqual([], errors)
+        assert record is not None
+        counts = record["log_excerpts"][role]["source_audit"]["audit_counts"]
+        self.assertEqual(0, counts["error_count"])
+        self.assertEqual(0, counts["project_error_count"])
+        self.assertEqual(1, counts["fatal_count"])
+        self.assertEqual(1, counts["project_fatal_count"])
+        self.assertTrue(
+            any(
+                "broad FATAL" in blocker
+                for blocker in record["review_readiness"]["blockers"]
+            )
+        )
+        strict_errors, _ = validate_bundle(
+            output, self.root, require_acceptance_ready=True
+        )
+        self.assertTrue(any("broad FATAL" in error for error in strict_errors))
+
     def test_strict_collect_is_atomic_when_review_is_incomplete(self) -> None:
         session = self.ready_session()
         review = session["applicability_reviews"]["chunk_unload_behavior"]
@@ -2288,6 +2641,35 @@ class ManualEvidenceTests(unittest.TestCase):
             self.root.resolve(), self.source_commit
         )
 
+    def test_strict_collect_requires_approved_final_g0_source_review(self) -> None:
+        session = self.ready_session()
+        output = self.build / "strict-pending-final-g0"
+        self.final_g0_validator.reset_mock()
+        self.final_g0_validator.return_value = (
+            [],
+            {
+                "source_review_outcome": FINAL_G0_PENDING,
+                "readme_review_outcome": FINAL_G0_PENDING,
+            },
+        )
+
+        errors, record = collect_evidence(
+            self.write_session(session, "strict-pending-final-g0-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(
+            any("final-G0 source/resource review" in error for error in errors),
+            errors,
+        )
+        self.assertFalse(output.exists())
+        self.final_g0_validator.assert_called_once_with(
+            self.root.resolve(), self.source_commit
+        )
+
     def test_non_strict_build_failure_archive_allows_pending_provenance(self) -> None:
         session = self.ready_session()
         session["observations"]["MANUAL-V002-003"].update(
@@ -2313,6 +2695,33 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertEqual("INCOMPLETE", record["review_readiness"]["status"])
         self.assertTrue(output.is_dir())
         self.provenance_validator.assert_not_called()
+
+    def test_non_strict_failure_archive_allows_pending_final_g0_review(self) -> None:
+        session = self.ready_session()
+        session["observations"]["MANUAL-V002-003"].update(
+            outcome="FAIL",
+            actual="The observed mismatch policy needs human investigation.",
+        )
+        output = self.build / "pending-final-g0-failure"
+        self.final_g0_validator.reset_mock()
+        self.final_g0_validator.return_value = (
+            [],
+            {
+                "source_review_outcome": FINAL_G0_PENDING,
+                "readme_review_outcome": FINAL_G0_PENDING,
+            },
+        )
+
+        errors, record = collect_evidence(
+            self.write_session(session, "pending-final-g0-failure-session.json"),
+            output,
+            self.root,
+        )
+
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        self.assertTrue(output.is_dir())
+        self.final_g0_validator.assert_not_called()
 
     def test_committed_validation_requires_source_commit_provenance(self) -> None:
         session = self.ready_session()
@@ -2367,6 +2776,42 @@ class ManualEvidenceTests(unittest.TestCase):
             validation_errors,
         )
         self.provenance_validator.assert_called_once_with(
+            self.root.resolve(), self.source_commit
+        )
+
+    def test_strict_bundle_validation_requires_final_g0_source_review(self) -> None:
+        session = self.ready_session()
+        output = self.build / "strict-validation-pending-final-g0"
+        errors, record = collect_evidence(
+            self.write_session(session, "strict-final-g0-validation-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        self.final_g0_validator.reset_mock()
+        self.final_g0_validator.return_value = (
+            [],
+            {
+                "source_review_outcome": FINAL_G0_PENDING,
+                "readme_review_outcome": FINAL_G0_PENDING,
+            },
+        )
+
+        validation_errors, _ = validate_bundle(
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertTrue(
+            any(
+                "final-G0 source/resource review" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+        self.final_g0_validator.assert_called_once_with(
             self.root.resolve(), self.source_commit
         )
 
@@ -2470,6 +2915,7 @@ class ManualEvidenceTests(unittest.TestCase):
             json.dumps(summary, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+        self.refresh_mismatch_receipt(session)
 
         errors, record, _ = self.collect(session, "opaque-binding")
 
@@ -2719,15 +3165,21 @@ class ManualEvidenceTests(unittest.TestCase):
     def test_java_rewritten_runtime_properties_do_not_break_startup_binding(self) -> None:
         session = self.ready_session()
         server_root = self.jar_paths["server"].parent.parent
+        canonical_lines = smoke_server_configuration_payload(25565, True).decode(
+            "ascii"
+        ).splitlines()
+        rewritten_lines = [
+            line.replace("level-type=minecraft:normal", "level-type=minecraft\\:normal")
+            for line in reversed(canonical_lines)
+        ]
         (server_root / "server.properties").write_text(
             "#Minecraft server properties\n"
             "#Fri Aug 29 12:00:00 CST 2026\n"
-            "level-name=world\n"
-            "level-type=minecraft\\:normal\n"
-            "server-ip=127.0.0.1\n"
-            "server-port=25565\n",
+            + "\n".join(rewritten_lines)
+            + "\n",
             encoding="iso-8859-1",
         )
+        self.refresh_mismatch_receipt(session)
 
         errors, record, _ = self.collect(session, "java-rewritten-properties")
 

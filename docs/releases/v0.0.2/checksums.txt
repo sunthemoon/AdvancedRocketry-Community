@@ -2,7 +2,7 @@
 # The build/libs JAR is intentionally not committed; CI verifies it separately.
 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
 a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
-dffd5b54f2db8caba18d2696c369813898dbbc622d074da39a3aa6b1c6738f4c  docs/releases/v0.0.2/evidence/dedicated-server/README.md
+dfa33ca011a0a4c9fe7f681180ba8c8c561b6e1b69e04c23b6eb3005e880564a  docs/releases/v0.0.2/evidence/dedicated-server/README.md
 79ad47b208404d555cfe80653ce4ddf440ce641849b41b96dcb7b99d561852a5  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
 cc23c817def71110aa69d096306ea32f0a4754b6193f7e6d93044a4ccc199144  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
 37be93f86779121854223980207ff4228a534d47dacecae837d70e2c11b17cfa  docs/releases/v0.0.2/evidence/dedicated-server/summary.json

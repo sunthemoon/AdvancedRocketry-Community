@@ -20,6 +20,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
 
       - name: Set up Python
         uses: actions/setup-python@v7

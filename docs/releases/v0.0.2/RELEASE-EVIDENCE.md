@@ -162,9 +162,11 @@ client procedure creates a fresh isolated player session.
 
 See [`MANUAL-TEST.md`](MANUAL-TEST.md). No packaged-client/manual PASS is
 claimed. ForgeGradle `runClient` output is diagnostic-only and cannot satisfy
-G4 or G8. The schema-4 collector can bind distinct matching and missing-project-
+G4 or G8. The schema-5 collector can bind distinct matching and missing-project-
 mod profiles, exact/empty mod inventories, ordered before/after snapshots, and
-profile-local raw logs, but no such external-machine bundle exists yet.
+profile-local raw logs. Acceptance-ready collection also requires an exact-
+commit approved final-G0 source/resource review; no such external-machine
+bundle exists yet.
 
 ## Provenance
 
@@ -188,84 +190,132 @@ review_status: EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING
 
 The Forge/Gradle packet is only the first G0 subreview. Final G0 acceptance must
 also review the complete distributable source/resource inventory and its
-relevant history against one exact post-rebuild implementation commit. Record
-that independent result here rather than inferring originality from the packet
-or from hash equality:
+relevant history against one exact post-rebuild implementation commit. The two
+human decisions are stored in the duplicate-key-rejecting JSON record below.
+The mechanical validator accepts the current pending state but never supplies
+or infers either human outcome.
 
-```yaml
-final_g0_source_resource_review:
-  outcome: PENDING_HUMAN_REVIEW
-  selected_implementation_commit: null
-  selected_tree_oid: null
-  review_inputs_report: null
-  review_inputs_report_sha256: null
-  reviewer: null
-  reviewed_at: null
-  findings: []
-final_g0_readme_visual_review:
-  outcome: PENDING_HUMAN_REVIEW
-  selected_commit: null
-  selected_tree_oid: null
-  screenshot_file: null
-  screenshot_sha256: null
-  reviewer: null
-  reviewed_at: null
-  findings: []
+<!-- v0.0.2-final-g0-review-records:start -->
+```json
+{
+  "schema_version": 1,
+  "record_kind": "V0_0_2_FINAL_G0_HUMAN_REVIEW_RECORDS",
+  "record_semantics": {
+    "mechanical_validation_result": "INPUTS_ONLY",
+    "gate_decision": "HUMAN_ONLY",
+    "visible_pixel_judgment": "HUMAN_ONLY"
+  },
+  "final_g0_source_resource_review": {
+    "outcome": "PENDING_HUMAN_REVIEW",
+    "selected_implementation_commit": null,
+    "selected_tree_oid": null,
+    "review_inputs_report": null,
+    "review_inputs_report_sha256": null,
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": []
+  },
+  "final_g0_readme_visual_review": {
+    "outcome": "PENDING_HUMAN_REVIEW",
+    "selected_commit": null,
+    "selected_tree_oid": null,
+    "screenshot_file": null,
+    "screenshot_sha256": null,
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": []
+  }
+}
 ```
+<!-- v0.0.2-final-g0-review-records:end -->
 
-The final input procedure generates one exact-Git report binding the complete
-v0.0.2 distributable source/resource/legal-file scope, its history/change
-inventory from the
-v0.0.1 base (`86b9db01b1cb4c8b8f673590baf1dc185d1716b3`), the approved bootstrap
-coverage, and the complete main/sources JAR manifests:
+The final source-review input procedure generates one exact-Git report binding
+the complete v0.0.2 distributable source/resource/legal-file scope, its
+history/change inventory from the v0.0.1 base
+(`86b9db01b1cb4c8b8f673590baf1dc185d1716b3`), the approved bootstrap coverage,
+and the complete main/sources JAR manifests. Replace `<selected-commit>` with a
+lowercase full commit ID; do not use a moving ref for the human review:
 
 ```text
 python -I -S -c "from pathlib import Path; Path('build').mkdir(exist_ok=True)"
-python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate --commit HEAD --output build/v0.0.2-final-g0-review-inputs
-python -I -S scripts/prepare_v002_final_g0_review_inputs.py verify --commit HEAD --output build/v0.0.2-final-g0-review-inputs
+python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate --commit <selected-commit> --output build/v0.0.2-final-g0-review-inputs
+python -I -S scripts/prepare_v002_final_g0_review_inputs.py verify --commit <selected-commit> --output build/v0.0.2-final-g0-review-inputs
 ```
 
 The output directory is create-once. Blocking governance CI independently
 generates and uploads the same report as
 `v0.0.2-final-g0-review-inputs-<selected-commit>`. Pull-request runs bind that
 artifact to the immutable PR head SHA, not the synthetic merge SHA; push runs
-bind it to the pushed SHA. Before review, compare both the selected commit and
-the downloaded/local report SHA-256 values. The report organizes
-review inputs; it does not make the human determination, and hashes do not
-replace inspection of every listed Git blob and relevant history entry.
+bind it to the pushed SHA. Compare the selected commit, tree, and downloaded and
+local report SHA-256 values before inspecting every listed Git blob and relevant
+history entry. The report retains `INPUTS_ONLY` semantics and cannot make the
+human determination.
 
-When recording `APPROVED` or `CHANGES_REQUIRED`, preserve the verified bytes at
-`docs/releases/v0.0.2/evidence/g0-final/<selected-commit>/final-g0-review-inputs.json`
-and put that tracked repository-relative path plus its SHA-256 in the record.
-The report path remains `null` while the review is pending. A later replacement
-review uses a new commit-named directory; an earlier changes-required report is
-not overwritten or relabeled.
+For a source review with outcome `APPROVED` or `CHANGES_REQUIRED`, preserve the
+reconstructed report bytes at
+`docs/releases/v0.0.2/evidence/g0-final/<source-selected-commit>/final-g0-review-inputs.json`.
+After the human reviewer enters that decision and its bindings above, stage only
+the source report and this release-evidence record before worktree validation:
+
+```text
+git add -- docs/releases/v0.0.2/evidence/g0-final/<source-selected-commit>/final-g0-review-inputs.json
+git add -- docs/releases/v0.0.2/RELEASE-EVIDENCE.md
+python -I -S scripts/validate_v002_final_g0_review.py
+git commit
+python -I -S scripts/validate_v002_final_g0_review.py --record-commit <record-commit>
+```
+
+For a README visual review with either non-pending outcome, capture the complete
+rendered README window at
+`docs/releases/v0.0.2/evidence/g0-final/<readme-selected-commit>/readme-full-window.png`.
+The README capture commit may differ from the source-review commit, but its
+canonical directory must use its own selected full commit ID. After entering
+the README decision and bindings, stage only that screenshot and this record:
+
+```text
+git add -- docs/releases/v0.0.2/evidence/g0-final/<readme-selected-commit>/readme-full-window.png
+git add -- docs/releases/v0.0.2/RELEASE-EVIDENCE.md
+python -I -S scripts/validate_v002_final_g0_review.py
+git commit
+python -I -S scripts/validate_v002_final_g0_review.py --record-commit <record-commit>
+```
+
+Replace every placeholder with its lowercase full commit ID. If both reviews
+are recorded in one commit, stage both evidence files and this record before a
+single validation and commit sequence. In every case, staging lets the validator
+prove that the worktree and stage-0 index bytes agree.
 
 These are the only valid record states:
 
-- `PENDING_HUMAN_REVIEW`: all commit/tree/report-or-screenshot/reviewer/date
-  fields are `null`, and `findings` is empty.
-- `APPROVED`: the commit and tree are lowercase 40-hex values. The source review
-  report is a tracked regular file at the exact commit-named path above; the
-  README screenshot path is repository-relative. Each SHA-256 is lowercase
-  64-hex, the reviewer is nonempty, `reviewed_at` is `YYYY-MM-DD`, and the
-  referenced input has been verified for that exact commit. The source/resource reviewer has
-  determined that no unreviewed upstream, community-fork, Minecraft/Mojang, or
-  otherwise unlicensed code/resource remains within that distributable scope.
-  The README reviewer has inspected
-  the full rendered window and found the required identity/non-affiliation text
-  visible with no private pixels.
-- `CHANGES_REQUIRED`: the same binding, tracked-report, reviewer, and date fields
-  are present and `findings` contains at least one factual correction. G0
-  remains open; preserve this report and decision, then regenerate and review a
-  new exact-commit input after correction.
+- `PENDING_HUMAN_REVIEW`: every commit/tree/report-or-screenshot/hash/reviewer/
+  date field is `null`, and `findings` is empty.
+- `APPROVED`: the applicable commit and tree fields are lowercase full SHA-1
+  values, each evidence path is the canonical commit-named path above, each
+  SHA-256 is lowercase, the reviewer is nonempty, `reviewed_at` is a real
+  `YYYY-MM-DD` date, and `findings` is empty. The source reviewer has inspected
+  the exact reconstructed report and determined that the reviewed distributable
+  scope contains no unreviewed or unlicensed source/resource. The README
+  reviewer has inspected the visible full-window pixels for required identity
+  and non-affiliation text and for private information.
+- `CHANGES_REQUIRED`: the same commit/tree/evidence/reviewer/date bindings are
+  required and `findings` contains at least one nonempty factual correction.
+  Preserve that record and evidence; correct the implementation or capture, then
+  create and review a new commit-named input rather than relabeling old bytes.
 
-The selected tree must equal `git rev-parse <selected-commit>^{tree}`. G0 may be
-recommended for `PASS` only when the bootstrap provenance record is approved
-and both final-G0 records above are `APPROVED`. A later documentation-only
-evidence commit may cite the reviewed implementation, but any code, resource,
-provenance scope, README, screenshot, or packaged-byte change invalidates its
-affected record and requires a new review.
+The exact-record validator reconstructs the source report from the selected Git
+objects and accepts only report schema 2 with its strict inventory/JAR/history
+scope and `APPROVED_PREREQUISITE_OBSERVED` bootstrap prerequisite. It separately
+requires the bootstrap provenance record to be `THIRD_PARTY_APPROVED` at that
+selected implementation, proves selected-to-record ancestry, and rejects
+intervening repository changes except the explicit version-scoped client,
+review, checksum, decision, release/test/status, changelog, and handoff outputs
+needed to complete the remaining Gates. Code, build, workflow, provenance,
+packaged-manifest, validator, schema, test, README, and unrelated evidence
+changes remain invalidating. It also validates the canonical
+tracked screenshot hash and PNG structure and rejects intervening README
+changes. It deliberately does not inspect visible pixels or compute a Gate
+decision. G0 may be recommended for `PASS` only after both records are human
+`APPROVED`; later invalidating changes require a new review.
 
 The human-readable record is
 [`../../provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md`](../../provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md),

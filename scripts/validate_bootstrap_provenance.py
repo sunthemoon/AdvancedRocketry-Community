@@ -49,6 +49,34 @@ EXPECTED_COMPONENTS = {
             "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt"
         ),
         "license_copy_target_sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+        "source_tree_materializations": [
+            {
+                "artifact_eol": "CRLF",
+                "artifact_member": "build.gradle",
+                "artifact_member_sha256": (
+                    "f50947b2af27e834f58860360a084825951fe987d9dd8ea180e7eee261629d77"
+                ),
+                "comparison": "BYTE_IDENTICAL_AFTER_CRLF_TO_LF_NORMALIZATION",
+                "source_eol": "LF",
+                "source_path": "mdk/build.gradle",
+                "source_raw_sha256": (
+                    "c068e44d6b6eca1f1588527ad23554c5798e146515ff321fe7a0804d0daefb07"
+                ),
+            },
+            {
+                "artifact_eol": "CRLF",
+                "artifact_member": "settings.gradle",
+                "artifact_member_sha256": (
+                    "21c8c1cfea9f78f7fed6d7ad325aafa24e0d1bd330a40719997c303d2217b830"
+                ),
+                "comparison": "BYTE_IDENTICAL_AFTER_CRLF_TO_LF_NORMALIZATION",
+                "source_eol": "LF",
+                "source_path": "mdk/settings.gradle",
+                "source_raw_sha256": (
+                    "f0caadd216f2cccbe612f85ba95f8c4996e84c16a5abfe5b9daef30acfc93945"
+                ),
+            },
+        ],
     },
     "gradle_wrapper": {
         "source_repository": "https://github.com/gradle/gradle",

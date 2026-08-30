@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import redirect_stderr, redirect_stdout
+import hashlib
 import importlib.util
 import io
 import json
@@ -64,6 +65,14 @@ class GitFixture:
             self._write(Path(path), content)
 
         bootstrap_manifest = {
+            "review": {
+                "final_status_after_review": None,
+                "record_status": "EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING",
+                "reviewed_at": None,
+                "reviewed_audited_target_commit": None,
+                "reviewed_content_sha256": None,
+                "reviewer": None,
+            },
             "schema_version": 3,
             "scope_version": "v0.0.2",
             "targets": [
@@ -79,20 +88,7 @@ class GitFixture:
             Path("docs/provenance/v0.0.2-bootstrap-inputs.json"),
             bootstrap_manifest,
         )
-        self._write_json(
-            Path(
-                "docs/releases/v0.0.2/evidence/artifact/"
-                "jar-content-manifest.json"
-            ),
-            {"artifact": "fixture.jar", "entries": []},
-        )
-        self._write_json(
-            Path(
-                "docs/releases/v0.0.2/evidence/g0-mechanical/"
-                "sources-jar-manifest.json"
-            ),
-            {"artifact": "fixture-sources.jar", "entries": []},
-        )
+        self._refresh_manifests()
         self._commit("fixture base")
         self.base_commit = self._git("rev-parse", "HEAD").strip()
 
@@ -112,6 +108,7 @@ class GitFixture:
             b"class Example { int version = 2; }\n",
         )
         self._write(Path("docs/licenses/SECOND.txt"), b"second license\n")
+        self._refresh_manifests()
         self._commit("fixture selected")
         self.selected_commit = self._git("rev-parse", "HEAD").strip()
         (self.root / "build").mkdir()
@@ -138,6 +135,114 @@ class GitFixture:
         self._write(
             relative,
             (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+        )
+
+    @staticmethod
+    def _sha256(content: bytes) -> str:
+        return hashlib.sha256(content).hexdigest()
+
+    def _refresh_manifests(self) -> None:
+        repository_mappings: dict[str, Path] = {
+            "META-INF/LICENSE": Path("LICENSE"),
+            "META-INF/NOTICE.md": Path("NOTICE.md"),
+            "META-INF/THIRD-PARTY-NOTICES.md": Path("THIRD-PARTY-NOTICES.md"),
+        }
+        for source_root, archive_prefix in (
+            (Path("docs/licenses"), "META-INF/licenses"),
+            (Path("src/main/java"), ""),
+            (Path("src/main/resources"), ""),
+            (Path("src/generated/resources"), ""),
+        ):
+            root = self.root / source_root
+            if not root.exists():
+                continue
+            for source in sorted(path for path in root.rglob("*") if path.is_file()):
+                relative = source.relative_to(root).as_posix()
+                archive_path = (
+                    f"{archive_prefix}/{relative}" if archive_prefix else relative
+                )
+                repository_mappings[archive_path] = source.relative_to(self.root)
+
+        entries = []
+        repository_inputs = []
+        for archive_path, repository_path in sorted(repository_mappings.items()):
+            content = (self.root / repository_path).read_bytes()
+            digest = self._sha256(content)
+            entries.append(
+                {"path": archive_path, "sha256": digest, "size": len(content)}
+            )
+            repository_inputs.append(
+                {
+                    "archive_path": archive_path,
+                    "repository_path": repository_path.as_posix(),
+                    "sha256": digest,
+                    "size": len(content),
+                }
+            )
+
+        generated_content = b"Manifest-Version: 1.0\n"
+        generated_digest = self._sha256(generated_content)
+        entries.append(
+            {
+                "path": "META-INF/MANIFEST.MF",
+                "sha256": generated_digest,
+                "size": len(generated_content),
+            }
+        )
+        entries.sort(key=lambda entry: entry["path"])
+        binary_sha256 = "1" * 64
+        sources_sha256 = "2" * 64
+        self._write_json(
+            Path(
+                "docs/releases/v0.0.2/evidence/artifact/"
+                "jar-content-manifest.json"
+            ),
+            {
+                "artifact": "fixture.jar",
+                "artifact_sha256": binary_sha256,
+                "entries": [
+                    {
+                        "path": "META-INF/MANIFEST.MF",
+                        "sha256": generated_digest,
+                        "size": len(generated_content),
+                    }
+                ],
+                "entry_count": 1,
+                "schema_version": 1,
+            },
+        )
+        license_paths = sorted(
+            path
+            for path in repository_mappings
+            if path.startswith("META-INF/")
+            and ("LICENSE" in path or "NOTICE" in path)
+        )
+        self._write_json(
+            Path(
+                "docs/releases/v0.0.2/evidence/g0-mechanical/"
+                "sources-jar-manifest.json"
+            ),
+            {
+                "artifact": "fixture-sources.jar",
+                "artifact_sha256": sources_sha256,
+                "entries": entries,
+                "entry_count": len(entries),
+                "generated_inputs": [
+                    {
+                        "archive_path": "META-INF/MANIFEST.MF",
+                        "generator": "fixture manifest generator",
+                        "sha256": generated_digest,
+                        "size": len(generated_content),
+                    }
+                ],
+                "license_notice_paths": license_paths,
+                "paired_binary_artifact": "fixture.jar",
+                "paired_binary_sha256": binary_sha256,
+                "repository_input_count": len(repository_inputs),
+                "repository_inputs": repository_inputs,
+                "schema_version": 1,
+                "scope": "Fixture mechanical packaging evidence only.",
+            },
         )
 
     def _git(self, *arguments: str, input_bytes: bytes | None = None) -> str:
@@ -246,7 +351,7 @@ class FinalG0ReviewInputsTests(unittest.TestCase):
         self.assertEqual((selected_a, digest_a), (verified_commit, verified_digest))
 
         report = fixture.report_json("first")
-        self.assertEqual(1, report["schema_version"])
+        self.assertEqual(2, report["schema_version"])
         self.assertEqual(fixture.base_commit, report["base_commit"])
         self.assertEqual(fixture.selected_commit, report["selected_commit"])
         self.assertRegex(report["base_tree_oid"], r"^[0-9a-f]{40}$")
@@ -260,16 +365,33 @@ class FinalG0ReviewInputsTests(unittest.TestCase):
         )
         self.assertEqual(
             {
-                "exact_paths": ["LICENSE", "NOTICE.md", "THIRD-PARTY-NOTICES.md"],
-                "recursive_prefixes": [
-                    "src/main/java",
-                    "src/main/resources",
-                    "src/generated/resources",
-                    "docs/licenses",
-                ],
+                "derivation": "EXACT_SOURCES_JAR_REPOSITORY_INPUTS",
+                "repository_input_count": 8,
                 "scope_kind": "DISTRIBUTABLE_SOURCE_RESOURCE_LEGAL",
+                "sources_manifest_path": (
+                    "docs/releases/v0.0.2/evidence/g0-mechanical/"
+                    "sources-jar-manifest.json"
+                ),
             },
             report["inventory_scope"],
+        )
+        self.assertEqual(
+            {
+                "ready_for_final_human_review": False,
+                "record_status": "EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING",
+                "state": "PENDING_PREREQUISITE_OBSERVED_INPUTS_ONLY",
+            },
+            report["prerequisites"]["bootstrap_provenance_review"],
+        )
+        self.assertEqual(
+            "STRICT_SELECTED_COMMIT_MANIFEST_SCHEMA_AND_COUNTS",
+            report["jar_manifest_coverage"]["coverage_kind"],
+        )
+        self.assertEqual(
+            8,
+            report["jar_manifest_coverage"]["sources"][
+                "repository_input_count"
+            ],
         )
 
         inventory = {entry["path"]: entry for entry in report["inventory"]}
@@ -284,6 +406,7 @@ class FinalG0ReviewInputsTests(unittest.TestCase):
             self.assertEqual("blob", entry["object_type"])
             self.assertRegex(entry["oid"], r"^[0-9a-f]{40}$")
             self.assertRegex(entry["raw_blob_sha256"], r"^[0-9a-f]{64}$")
+            self.assertIsInstance(entry["sources_archive_path"], str)
 
         bindings = report["bindings"]
         self.assertEqual(
@@ -313,11 +436,227 @@ class FinalG0ReviewInputsTests(unittest.TestCase):
         self.assertTrue(
             any(
                 change["commit"] == fixture.selected_commit
-                and change["path"] == "src/main/java/example/Example.java"
+                and change["new_path"] == "src/main/java/example/Example.java"
+                and change["old_path"] == "src/main/java/example/Example.java"
                 and change["status"] == "M"
                 for change in report["history"]["path_changes"]
             )
         )
+
+    def test_bound_manifest_schemas_and_repository_inputs_fail_closed(self) -> None:
+        main_fixture = GitFixture(self)
+        main_path = Path(
+            "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json"
+        )
+        main_document = json.loads(
+            (main_fixture.root / main_path).read_text(encoding="utf-8")
+        )
+        main_document.pop("entry_count")
+        main_fixture._write_json(main_path, main_document)
+        main_fixture._commit("malformed main manifest")
+        main_fixture.selected_commit = main_fixture._git("rev-parse", "HEAD").strip()
+        with self.assertRaisesRegex(
+            main_fixture.tool.ReviewInputError, "main JAR content manifest fields"
+        ):
+            main_fixture.tool.generate(
+                main_fixture.root,
+                main_fixture.selected_commit,
+                main_fixture.output("malformed-main"),
+            )
+
+        main_document["entry_count"] = 2
+        main_fixture._write_json(main_path, main_document)
+        main_fixture._commit("wrong main manifest entry count")
+        main_fixture.selected_commit = main_fixture._git("rev-parse", "HEAD").strip()
+        with self.assertRaisesRegex(
+            main_fixture.tool.ReviewInputError,
+            "entry_count does not match entries",
+        ):
+            main_fixture.tool.generate(
+                main_fixture.root,
+                main_fixture.selected_commit,
+                main_fixture.output("wrong-main-count"),
+            )
+
+        main_document["entry_count"] = 1
+        main_document["schema_version"] = True
+        main_fixture._write_json(main_path, main_document)
+        main_fixture._commit("boolean main manifest schema")
+        main_fixture.selected_commit = main_fixture._git("rev-parse", "HEAD").strip()
+        with self.assertRaisesRegex(
+            main_fixture.tool.ReviewInputError, "schema_version must be 1"
+        ):
+            main_fixture.tool.generate(
+                main_fixture.root,
+                main_fixture.selected_commit,
+                main_fixture.output("boolean-main-schema"),
+            )
+
+        sources_path = Path(
+            "docs/releases/v0.0.2/evidence/g0-mechanical/"
+            "sources-jar-manifest.json"
+        )
+        malformed_sources_fixture = GitFixture(self)
+        malformed_sources_document = json.loads(
+            (malformed_sources_fixture.root / sources_path).read_text(encoding="utf-8")
+        )
+        malformed_sources_document.pop("scope")
+        malformed_sources_fixture._write_json(sources_path, malformed_sources_document)
+        malformed_sources_fixture._commit("malformed sources manifest")
+        malformed_sources_fixture.selected_commit = malformed_sources_fixture._git(
+            "rev-parse", "HEAD"
+        ).strip()
+        with self.assertRaisesRegex(
+            malformed_sources_fixture.tool.ReviewInputError,
+            "sources JAR manifest fields",
+        ):
+            malformed_sources_fixture.tool.generate(
+                malformed_sources_fixture.root,
+                malformed_sources_fixture.selected_commit,
+                malformed_sources_fixture.output("malformed-sources"),
+            )
+
+        wrong_sources_count_fixture = GitFixture(self)
+        wrong_sources_count_document = json.loads(
+            (wrong_sources_count_fixture.root / sources_path).read_text(encoding="utf-8")
+        )
+        wrong_sources_count_document["entry_count"] += 1
+        wrong_sources_count_fixture._write_json(
+            sources_path, wrong_sources_count_document
+        )
+        wrong_sources_count_fixture._commit("wrong sources manifest entry count")
+        wrong_sources_count_fixture.selected_commit = wrong_sources_count_fixture._git(
+            "rev-parse", "HEAD"
+        ).strip()
+        with self.assertRaisesRegex(
+            wrong_sources_count_fixture.tool.ReviewInputError,
+            "entry_count does not match entries",
+        ):
+            wrong_sources_count_fixture.tool.generate(
+                wrong_sources_count_fixture.root,
+                wrong_sources_count_fixture.selected_commit,
+                wrong_sources_count_fixture.output("wrong-sources-count"),
+            )
+
+        omitted_fixture = GitFixture(self)
+        omitted_document = json.loads(
+            (omitted_fixture.root / sources_path).read_text(encoding="utf-8")
+        )
+        omitted_document["repository_inputs"].pop()
+        omitted_document["repository_input_count"] -= 1
+        omitted_fixture._write_json(sources_path, omitted_document)
+        omitted_fixture._commit("omit repository input mapping")
+        omitted_fixture.selected_commit = omitted_fixture._git(
+            "rev-parse", "HEAD"
+        ).strip()
+        with self.assertRaisesRegex(
+            omitted_fixture.tool.ReviewInputError,
+            "does not map every sources-JAR file",
+        ):
+            omitted_fixture.tool.generate(
+                omitted_fixture.root,
+                omitted_fixture.selected_commit,
+                omitted_fixture.output("omitted-input"),
+            )
+
+        extra_fixture = GitFixture(self)
+        extra_document = json.loads(
+            (extra_fixture.root / sources_path).read_text(encoding="utf-8")
+        )
+        missing_content = b"not present in selected Git\n"
+        missing_entry = {
+            "archive_path": "example/Missing.java",
+            "repository_path": "src/main/java/example/Missing.java",
+            "sha256": hashlib.sha256(missing_content).hexdigest(),
+            "size": len(missing_content),
+        }
+        extra_document["repository_inputs"].append(missing_entry)
+        extra_document["repository_input_count"] += 1
+        extra_document["entries"].append(
+            {
+                "path": missing_entry["archive_path"],
+                "sha256": missing_entry["sha256"],
+                "size": missing_entry["size"],
+            }
+        )
+        extra_document["entries"].sort(key=lambda entry: entry["path"])
+        extra_document["entry_count"] += 1
+        extra_fixture._write_json(sources_path, extra_document)
+        extra_fixture._commit("add nonexistent repository input")
+        extra_fixture.selected_commit = extra_fixture._git("rev-parse", "HEAD").strip()
+        with self.assertRaisesRegex(
+            extra_fixture.tool.ReviewInputError, "missing selected Git paths"
+        ):
+            extra_fixture.tool.generate(
+                extra_fixture.root,
+                extra_fixture.selected_commit,
+                extra_fixture.output("extra-input"),
+            )
+
+    def test_full_range_history_records_cross_scope_rename_and_copy_lineage(self) -> None:
+        fixture = GitFixture(self)
+        renamed_origin = Path("legacy/RenamedOrigin.java")
+        copied_origin = Path("legacy/CopiedOrigin.java")
+        fixture._write(renamed_origin, b"class RenamedOrigin {}\n")
+        fixture._write(copied_origin, b"class CopiedOrigin {}\n")
+        fixture._commit("add out-of-scope origins")
+
+        renamed_destination = Path("src/main/java/example/RenamedOrigin.java")
+        renamed_destination.parent.mkdir(parents=True, exist_ok=True)
+        (fixture.root / renamed_origin).replace(fixture.root / renamed_destination)
+        copied_destination = Path("src/main/java/example/CopiedOrigin.java")
+        shutil.copy2(fixture.root / copied_origin, fixture.root / copied_destination)
+        fixture._refresh_manifests()
+        fixture._commit("move and copy origins into distributable sources")
+        fixture.selected_commit = fixture._git("rev-parse", "HEAD").strip()
+
+        fixture.tool.generate(
+            fixture.root, fixture.selected_commit, fixture.output("lineage")
+        )
+        report = fixture.report_json("lineage")
+        lineage = {
+            (
+                relation["kind"],
+                relation["source_path"],
+                relation["destination_path"],
+            )
+            for relation in report["history"]["exact_blob_lineage"]
+        }
+        self.assertIn(
+            (
+                "EXACT_BLOB_RENAME_CANDIDATE",
+                renamed_origin.as_posix(),
+                renamed_destination.as_posix(),
+            ),
+            lineage,
+        )
+        self.assertIn(
+            (
+                "EXACT_BLOB_COPY_SOURCE",
+                copied_origin.as_posix(),
+                copied_destination.as_posix(),
+            ),
+            lineage,
+        )
+        changed_paths = {
+            (change["status"], change["old_path"], change["new_path"])
+            for change in report["history"]["path_changes"]
+        }
+        self.assertIn(("D", renamed_origin.as_posix(), None), changed_paths)
+        self.assertIn(("A", None, renamed_destination.as_posix()), changed_paths)
+
+    def test_repository_local_git_executable_is_rejected(self) -> None:
+        fixture = GitFixture(self)
+        fake_git = fixture.root / "tools/git"
+        fake_git.parent.mkdir(parents=True)
+        fake_git.write_bytes(b"fake git executable\n")
+        with mock.patch.object(
+            fixture.tool.shutil, "which", return_value=str(fake_git)
+        ):
+            with self.assertRaisesRegex(
+                fixture.tool.ReviewInputError, "must not be contained in the repository"
+            ):
+                fixture.tool._git_executable(fixture.root)
 
     def test_dirty_checkout_is_ignored_for_all_authoritative_inputs(self) -> None:
         fixture = GitFixture(self)

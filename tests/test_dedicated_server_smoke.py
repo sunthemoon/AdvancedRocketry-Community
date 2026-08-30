@@ -27,11 +27,14 @@ from scripts.run_dedicated_server_smoke import (
     forge_mod_versions,
     install_server,
     matching_player_name,
+    parse_java_properties,
     read_varint,
     scan_log,
     server_configuration_payload,
+    summary_log_audit_counts,
     summary_schema_version,
     validate_status_identity,
+    verify_active_server_properties,
     write_server_configuration,
 )
 
@@ -101,9 +104,9 @@ class PlayerIdentityTests(unittest.TestCase):
         with self.assertRaisesRegex(SmokeError, "32-byte secret"):
             bind_player_identity("v002-public-session", "TestPlayer")  # type: ignore[arg-type]
 
-    def test_headless_schema_two_and_manual_schema_three_are_distinct(self) -> None:
+    def test_headless_schema_two_and_manual_schema_four_are_distinct(self) -> None:
         self.assertEqual(2, summary_schema_version(False))
-        self.assertEqual(3, summary_schema_version(True))
+        self.assertEqual(4, summary_schema_version(True))
 
 
 class VarIntTests(unittest.TestCase):
@@ -241,6 +244,26 @@ class LogAuditTests(unittest.TestCase):
         self.assertEqual([project.rstrip()], scan_log([project]))
         self.assertEqual([], scan_log([third_party]))
 
+    def test_fatal_is_blocking_and_not_counted_as_error(self) -> None:
+        fatal = "[Server thread/FATAL] [advancedrocketrycommunity/]: broken\n"
+
+        self.assertEqual([fatal.rstrip()], scan_log([fatal]))
+        counts = log_audit_counts([fatal])
+        self.assertEqual(0, counts["error_count"])
+        self.assertEqual(1, counts["fatal_count"])
+        self.assertEqual(1, counts["project_fatal_count"])
+
+    def test_fatal_fields_extend_only_the_manual_summary_schema(self) -> None:
+        fatal = ["[Server thread/FATAL] [advancedrocketrycommunity/]: broken\n"]
+
+        headless = summary_log_audit_counts(fatal, manual_player_cycles=False)
+        manual = summary_log_audit_counts(fatal, manual_player_cycles=True)
+
+        self.assertNotIn("fatal_count", headless)
+        self.assertNotIn("project_fatal_count", headless)
+        self.assertEqual(1, manual["fatal_count"])
+        self.assertEqual(1, manual["project_fatal_count"])
+
     def test_log_audit_counts_separate_project_and_broad_findings(self) -> None:
         lines = [
             "[Server thread/ERROR] [advancedrocketrycommunity/]: project error\n",
@@ -254,8 +277,10 @@ class LogAuditTests(unittest.TestCase):
             {
                 "error_count": 1,
                 "warning_count": 3,
+                "fatal_count": 0,
                 "project_error_count": 1,
                 "project_warning_count": 1,
+                "project_fatal_count": 0,
                 "client_linkage_failure_count": 1,
             },
             log_audit_counts(lines),
@@ -357,6 +382,52 @@ class ServerConfigurationTests(unittest.TestCase):
             self.assertEqual(sha256, hashlib.sha256(payload).hexdigest())
             with self.assertRaises(FileExistsError):
                 write_server_configuration(server, 25565, True)
+
+    def test_java_rewritten_active_properties_are_verified_semantically(self) -> None:
+        payload = (
+            b"#written by java\n"
+            b"online-mode=false\n"
+            b"level-type=minecraft\\:normal\n"
+            + b"\n".join(
+                line
+                for line in server_configuration_payload(25565, True).splitlines()
+                if not line.startswith((b"online-mode=", b"level-type="))
+            )
+            + b"\n"
+        )
+
+        critical = verify_active_server_properties(payload, 25565)
+
+        self.assertEqual("minecraft:normal", critical["level-type"])
+        self.assertEqual("false", critical["online-mode"])
+
+    def test_active_security_property_tamper_is_rejected(self) -> None:
+        payload = server_configuration_payload(25565, True).replace(
+            b"online-mode=false", b"online-mode=true"
+        )
+
+        with self.assertRaisesRegex(SmokeError, "online-mode"):
+            verify_active_server_properties(payload, 25565)
+
+    def test_duplicate_active_property_is_rejected(self) -> None:
+        payload = server_configuration_payload(25565, True) + b"server-port=25565\n"
+
+        with self.assertRaisesRegex(SmokeError, "duplicate key"):
+            parse_java_properties(payload)
+
+    def test_non_java_line_separator_cannot_smuggle_a_critical_property(self) -> None:
+        payload = (
+            b"# Java treats NEL as comment content\x85online-mode=false\n"
+            + b"\n".join(
+                line
+                for line in server_configuration_payload(25565, True).splitlines()
+                if not line.startswith(b"online-mode=")
+            )
+            + b"\n"
+        )
+
+        with self.assertRaisesRegex(SmokeError, "online-mode"):
+            verify_active_server_properties(payload, 25565)
 
 
 class InstallerRetryTests(unittest.TestCase):

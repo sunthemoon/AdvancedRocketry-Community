@@ -41,7 +41,7 @@ INSTALLER_URL = (
 )
 INSTALLER_SHA1 = "66bfea9963bfa60d88bab6b2750e74a958392715"
 SUMMARY_SCHEMA_VERSION = 2
-MANUAL_PLAYER_SUMMARY_SCHEMA_VERSION = 3
+MANUAL_PLAYER_SUMMARY_SCHEMA_VERSION = 4
 WORLD_IDENTITY_FILE = ".v002-smoke-world-identity.json"
 SERVER_PROPERTIES_IDENTITY_FILE = "server.properties.v002-startup"
 MINECRAFT_SERVER_LOGGER = (
@@ -76,6 +76,7 @@ LEAVE_MARKER = re.compile(
 )
 ERROR_LINE = re.compile(r"\[[^\]]+/ERROR\]")
 WARNING_LINE = re.compile(r"\[[^\]]+/WARN\]")
+FATAL_LINE = re.compile(r"\[[^\]]+/FATAL\]")
 PROJECT_LOGGER = re.compile(r"\[[^\]]*advancedrocketrycommunity[^\]]*/[^\]]*\]", re.I)
 CLIENT_LINKAGE_MARKERS = (
     "Attempted to load class net/minecraft/client",
@@ -395,7 +396,9 @@ def scan_log(lines: Iterable[str]) -> list[str]:
     findings: list[str] = []
     for line in lines:
         stripped = line.rstrip()
-        if ERROR_LINE.search(stripped):
+        if FATAL_LINE.search(stripped):
+            findings.append(stripped)
+        elif ERROR_LINE.search(stripped):
             findings.append(stripped)
         elif WARNING_LINE.search(stripped) and PROJECT_LOGGER.search(stripped):
             findings.append(stripped)
@@ -405,12 +408,14 @@ def scan_log(lines: Iterable[str]) -> list[str]:
 
 
 def log_audit_counts(lines: Iterable[str]) -> dict[str, int]:
-    """Count broad errors plus project and client-linkage findings."""
+    """Count broad ERROR/FATAL plus project and client-linkage findings."""
     counts = {
         "error_count": 0,
         "warning_count": 0,
+        "fatal_count": 0,
         "project_error_count": 0,
         "project_warning_count": 0,
+        "project_fatal_count": 0,
         "client_linkage_failure_count": 0,
     }
     for line in lines:
@@ -424,9 +429,30 @@ def log_audit_counts(lines: Iterable[str]) -> dict[str, int]:
             counts["warning_count"] += 1
             if is_project:
                 counts["project_warning_count"] += 1
+        if FATAL_LINE.search(line):
+            counts["fatal_count"] += 1
+            if is_project:
+                counts["project_fatal_count"] += 1
         if any(marker.casefold() in lowered for marker in CLIENT_LINKAGE_MARKERS):
             counts["client_linkage_failure_count"] += 1
     return counts
+
+
+def summary_log_audit_counts(
+    lines: Iterable[str], *, manual_player_cycles: bool
+) -> dict[str, int]:
+    """Return audit fields for the selected summary schema."""
+    counts = log_audit_counts(lines)
+    if manual_player_cycles:
+        return counts
+    # Preserve the already-published headless schema-2 JSON shape. FATAL is
+    # still independently counted in text evidence and blocks run_cycle before
+    # a passing summary can be published.
+    return {
+        key: value
+        for key, value in counts.items()
+        if key not in {"fatal_count", "project_fatal_count"}
+    }
 
 
 def evidence_lines(lines: Iterable[str]) -> list[str]:
@@ -843,14 +869,130 @@ def install_server(
 def server_configuration_payload(port: int, offline_mode: bool) -> bytes:
     if not 1 <= port <= 65535:
         raise SmokeError(f"Server port is outside 1-65535: {port}")
-    properties = {
+    properties = expected_server_properties(port, offline_mode)
+    content = "".join(f"{key}={value}\n" for key, value in sorted(properties.items()))
+    return content.encode("ascii", errors="strict")
+
+
+def expected_server_properties(port: int, offline_mode: bool) -> dict[str, str]:
+    """Return the critical properties owned by the disposable-server protocol."""
+    if not 1 <= port <= 65535:
+        raise SmokeError(f"Server port is outside 1-65535: {port}")
+    return {
         **HARNESS_SERVER_PROPERTIES,
         "enforce-secure-profile": "false" if offline_mode else "true",
         "online-mode": "false" if offline_mode else "true",
         "server-port": str(port),
     }
-    content = "".join(f"{key}={value}\n" for key, value in sorted(properties.items()))
-    return content.encode("ascii", errors="strict")
+
+
+def _unescape_java_property(value: str) -> str:
+    result: list[str] = []
+    index = 0
+    while index < len(value):
+        character = value[index]
+        if character != "\\":
+            result.append(character)
+            index += 1
+            continue
+        index += 1
+        if index >= len(value):
+            raise SmokeError("server.properties contains a trailing escape")
+        escaped = value[index]
+        index += 1
+        translations = {"t": "\t", "n": "\n", "r": "\r", "f": "\f"}
+        if escaped == "u":
+            digits = value[index : index + 4]
+            if len(digits) != 4 or re.fullmatch(r"[0-9A-Fa-f]{4}", digits) is None:
+                raise SmokeError("server.properties contains an invalid Unicode escape")
+            result.append(chr(int(digits, 16)))
+            index += 4
+        else:
+            result.append(translations.get(escaped, escaped))
+    return "".join(result)
+
+
+def parse_java_properties(payload: bytes) -> dict[str, str]:
+    """Parse the Java ``Properties.load(InputStream)`` subset used by the server.
+
+    Duplicate keys are rejected instead of applying Java's last-value-wins rule so an
+    evidence receipt cannot hide an ambiguous critical setting.
+    """
+    if not isinstance(payload, bytes) or len(payload) > 1024 * 1024:
+        raise SmokeError("server.properties payload is invalid or exceeds 1 MiB")
+    text = payload.decode("iso-8859-1")
+    # Java Properties.load(Reader) recognizes only CR, LF, and CRLF as line
+    # terminators. str.splitlines() also splits NEL/VT/FS/GS/RS and could turn
+    # bytes that Java treats as comment/value content into a trusted property.
+    physical_lines = re.split(r"\r\n|\r|\n", text)
+    logical_lines: list[str] = []
+    pending = ""
+    for physical in physical_lines:
+        line = physical.lstrip(" \t\f") if pending else physical
+        combined = pending + line
+        trailing_slashes = len(combined) - len(combined.rstrip("\\"))
+        if trailing_slashes % 2:
+            pending = combined[:-1]
+            continue
+        logical_lines.append(combined)
+        pending = ""
+    if pending:
+        logical_lines.append(pending)
+
+    properties: dict[str, str] = {}
+    for logical in logical_lines:
+        stripped = logical.lstrip(" \t\f")
+        if not stripped or stripped[0] in "#!":
+            continue
+        escaped = False
+        separator = len(stripped)
+        whitespace_separator = False
+        for index, character in enumerate(stripped):
+            if character == "\\":
+                escaped = not escaped
+                continue
+            if not escaped and character in "=:\t\f ":
+                separator = index
+                whitespace_separator = character in "\t\f "
+                break
+            escaped = False
+        key_text = stripped[:separator]
+        value_start = separator
+        if separator < len(stripped):
+            if whitespace_separator:
+                while value_start < len(stripped) and stripped[value_start] in " \t\f":
+                    value_start += 1
+                if value_start < len(stripped) and stripped[value_start] in "=:":
+                    value_start += 1
+            else:
+                value_start += 1
+            while value_start < len(stripped) and stripped[value_start] in " \t\f":
+                value_start += 1
+        key = _unescape_java_property(key_text)
+        value = _unescape_java_property(stripped[value_start:])
+        if not key:
+            raise SmokeError("server.properties contains an empty key")
+        if key in properties:
+            raise SmokeError(f"server.properties contains duplicate key: {key}")
+        properties[key] = value
+    return properties
+
+
+def verify_active_server_properties(payload: bytes, port: int) -> dict[str, str]:
+    """Verify and return the active critical properties for the offline harness."""
+    properties = parse_java_properties(payload)
+    expected = expected_server_properties(port, True)
+    mismatches = [
+        f"{key}={properties.get(key)!r} (expected {value!r})"
+        for key, value in expected.items()
+        if properties.get(key) != value
+    ]
+    if mismatches:
+        raise SmokeError(
+            "active server.properties differs from the harness protocol: "
+            + "; ".join(mismatches)
+        )
+    return {key: properties[key] for key in sorted(expected)}
 
 
 def write_server_configuration(server: Path, port: int, offline_mode: bool) -> str:
@@ -1039,7 +1181,10 @@ def main() -> int:
         cycle_documents: list[dict[str, object]] = []
         for cycle in cycles:
             cycle_document: dict[str, object] = {
-                **log_audit_counts(cycle.lines),
+                **summary_log_audit_counts(
+                    cycle.lines,
+                    manual_player_cycles=args.manual_player_cycles,
+                ),
                 "completed_at": cycle.completed_at,
                 "cycle_id": cycle.cycle_id,
                 "exit_code": cycle.exit_code,

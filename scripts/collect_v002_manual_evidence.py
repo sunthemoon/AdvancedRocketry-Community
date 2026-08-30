@@ -23,20 +23,41 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 if __package__:
+    from .run_dedicated_server_smoke import (
+        SmokeError,
+        expected_server_properties,
+        verify_active_server_properties,
+    )
     from .validate_bootstrap_provenance import (
         APPROVED_RECORD_STATUS,
         validate_bootstrap_provenance_at_commit,
     )
+    from .validate_v002_final_g0_review import (
+        APPROVED as FINAL_G0_APPROVED,
+        validate_v002_final_g0_review_at_commit,
+    )
 else:
+    # Isolated script execution omits this directory from sys.path. Add only
+    # the already-selected repository scripts directory after stdlib imports.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from run_dedicated_server_smoke import (
+        SmokeError,
+        expected_server_properties,
+        verify_active_server_properties,
+    )
     from validate_bootstrap_provenance import (
         APPROVED_RECORD_STATUS,
         validate_bootstrap_provenance_at_commit,
+    )
+    from validate_v002_final_g0_review import (
+        APPROVED as FINAL_G0_APPROVED,
+        validate_v002_final_g0_review_at_commit,
     )
 
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "v0.0.2"
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 CONTENT_MANIFEST = Path(
     "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json"
 )
@@ -53,6 +74,7 @@ MAX_PNG_CHUNK_BYTES = 16 * 1024 * 1024
 MIN_PNG_WIDTH = 640
 MIN_PNG_HEIGHT = 360
 MAX_LOG_BYTES = 32 * 1024 * 1024
+MAX_SERVER_MODS_ENTRIES = 16
 MAX_EXCERPT_LINES = 200
 MAX_EXCERPT_BYTES = 64 * 1024
 MAX_PEM_PRIVATE_KEY_CHARS = 32 * 1024
@@ -113,6 +135,7 @@ CREDENTIAL_PATTERNS = (
 PRIVACY_CATEGORIES = ("player_name", "uuid", "credential", "home", "ip")
 ERROR_LINE = re.compile(r"\[[^\]\r\n]+/ERROR\]")
 WARNING_LINE = re.compile(r"\[[^\]\r\n]+/WARN\]")
+FATAL_LINE = re.compile(r"\[[^\]\r\n]+/FATAL\]")
 PROJECT_LOGGER = re.compile(
     r"\[[^\]\r\n]*advancedrocketrycommunity[^\]\r\n]*/[^\]\r\n]*\]",
     re.I,
@@ -126,16 +149,45 @@ CLIENT_LINKAGE_MARKERS = (
 LOG_AUDIT_FIELDS = (
     "error_count",
     "warning_count",
+    "fatal_count",
     "project_error_count",
     "project_warning_count",
+    "project_fatal_count",
     "client_linkage_failure_count",
 )
-SERVER_SUMMARY_SCHEMA_VERSION = 3
+SERVER_SUMMARY_SCHEMA_VERSION = 4
 SERVER_SUMMARY_ARCHIVE = "server/server-summary.json"
-MISMATCH_RECEIPT_SCHEMA_VERSION = 1
+MISMATCH_RECEIPT_SCHEMA_VERSION = 2
 MISMATCH_RECEIPT_ARCHIVE = "server/mismatch-server-receipt.json"
-MISMATCH_PROPERTIES_SCHEMA_VERSION = 1
+MISMATCH_RECEIPT_FIELDS = {
+    "schema_version",
+    "run_id",
+    "session_id",
+    "harness_summary_sha256",
+    "harness_cycle_log_sha256",
+    "started_at",
+    "completed_at",
+    "duration_millis",
+    "java_version",
+    "exit_code",
+    "previous_runtime_log_sha256",
+    "full_log_sha256",
+    "server_artifact_sha256",
+    "active_server_properties_sha256",
+    "critical_server_properties",
+    "server_mods_files",
+}
+MISMATCH_PROPERTIES_SCHEMA_VERSION = 2
 MISMATCH_PROPERTIES_ARCHIVE = "server/mismatch-server-properties.json"
+MISMATCH_PROPERTIES_FIELDS = {
+    "schema_version",
+    "server_bind",
+    "server_port",
+    "level_name",
+    "source_sha256",
+    "active_source_sha256",
+    "critical_properties",
+}
 SERVER_PROPERTIES_IDENTITY_FILE = "server.properties.v002-startup"
 PROFILE_SNAPSHOT_SCHEMA_VERSION = 1
 PROFILE_ROLES = ("matching", "missing_mod")
@@ -146,6 +198,7 @@ PROFILE_ARCHIVES = {
     for phase in PROFILE_PHASES
 }
 SESSION_ID_RE = re.compile(r"v002-[0-9a-f]{24}")
+MISMATCH_RUN_ID_RE = re.compile(r"v002-mismatch-[0-9a-f]{24}")
 MINECRAFT_SERVER_LOGGER = (
     r"(?:minecraft/MinecraftServer|net\.minecraft\.server\.MinecraftServer)/?"
 )
@@ -254,12 +307,12 @@ OBSERVATIONS = {
     "MANUAL-V002-001": (
         "The current rendered README and packaged-client metadata match the "
         "approved identity, and the client enters a disposable single-player "
-        "world without a project-source ERROR."
+        "world without a project-source ERROR or FATAL."
     ),
     "MANUAL-V002-002": (
         "The matching packaged client joins the loopback server, disconnects, "
         "and reconnects after a clean same-world restart without a project-source "
-        "ERROR or client-class linkage failure."
+        "ERROR/FATAL or client-class linkage failure."
     ),
     "MANUAL-V002-003": (
         "The missing-project-mod client exposes the actual MATCH_VERSION indicator, "
@@ -1079,6 +1132,46 @@ def profile_capture_timeline_errors(
     return errors
 
 
+def mismatch_profile_capture_timeline_errors(
+    captures: dict[str, dict[str, str]], receipt: dict[str, Any]
+) -> list[str]:
+    """Require missing-mod inventory captures to bracket the third cycle."""
+
+    missing_capture = captures.get("missing_mod")
+    if not isinstance(missing_capture, dict) or not all(
+        isinstance(missing_capture.get(phase), str) for phase in PROFILE_PHASES
+    ):
+        # Honest non-strict BLOCKED/FAIL archives may omit snapshots. Their
+        # readiness blockers are reported elsewhere; there is no timeline to
+        # compare until both captures exist.
+        return []
+    try:
+        missing_before = dt.datetime.fromisoformat(missing_capture["before"])
+        missing_after = dt.datetime.fromisoformat(missing_capture["after"])
+        cycle_start = dt.datetime.fromisoformat(receipt["started_at"])
+        cycle_end = dt.datetime.fromisoformat(receipt["completed_at"])
+    except (KeyError, TypeError, ValueError):
+        return ["missing-project-mod profile and third-cycle timestamps are invalid"]
+    if any(
+        value.tzinfo is None
+        for value in (missing_before, missing_after, cycle_start, cycle_end)
+    ):
+        return [
+            "missing-project-mod profile and third-cycle timestamps must be "
+            "timezone-aware"
+        ]
+    errors: list[str] = []
+    if missing_before > cycle_start:
+        errors.append(
+            "missing-project-mod before snapshot must not follow the third-cycle start"
+        )
+    if missing_after < cycle_end:
+        errors.append(
+            "missing-project-mod after snapshot must not predate the third-cycle end"
+        )
+    return errors
+
+
 def _parse_content_manifest(document: Any) -> dict[str, str]:
     if not isinstance(document, dict):
         raise ValueError("committed content manifest must contain a JSON object")
@@ -1266,6 +1359,26 @@ def approved_source_provenance_errors(
     return []
 
 
+def approved_final_g0_source_review_errors(
+    repository_root: Path, source_commit: str
+) -> list[str]:
+    errors, details = validate_v002_final_g0_review_at_commit(
+        repository_root.resolve(), source_commit
+    )
+    if errors:
+        return [
+            "source-commit final-G0 review record is invalid: " + "; ".join(errors)
+        ]
+    outcome = details.get("source_review_outcome")
+    if outcome != FINAL_G0_APPROVED:
+        return [
+            "acceptance-ready client evidence requires the exact-commit final-G0 "
+            f"source/resource review outcome {FINAL_G0_APPROVED} at source commit "
+            f"{source_commit}; found {outcome}"
+        ]
+    return []
+
+
 def _redact_ip(match: re.Match[str], counts: dict[str, int]) -> str:
     candidate = match.group(0)
     unwrapped = candidate[1:-1] if candidate.startswith("[") else candidate
@@ -1362,17 +1475,37 @@ def scan_log_text(text: str) -> dict[str, int]:
             counts["warning_count"] += 1
             if is_project:
                 counts["project_warning_count"] += 1
+        if FATAL_LINE.search(line):
+            counts["fatal_count"] += 1
+            if is_project:
+                counts["project_fatal_count"] += 1
         lowered = line.casefold()
         if any(marker.casefold() in lowered for marker in CLIENT_LINKAGE_MARKERS):
             counts["client_linkage_failure_count"] += 1
     return counts
 
 
+def decode_log_payload(payload: bytes) -> str:
+    """Decode a complete bounded Forge log using deterministic supported encodings."""
+
+    try:
+        return payload.decode("utf-8", errors="strict")
+    except UnicodeDecodeError:
+        try:
+            # Windows Forge logs may use the Chinese system code page. GB18030
+            # is a deterministic strict superset of GBK/CP936.
+            return payload.decode("gb18030", errors="strict")
+        except UnicodeDecodeError as gb18030_error:
+            raise ValueError(
+                "log source is neither strict UTF-8 nor strict GB18030"
+            ) from gb18030_error
+
+
 def read_log_snapshot(
     path: Path,
 ) -> tuple[bytes, str, dict[str, int], str, int]:
     payload = read_bounded_bytes(path, MAX_LOG_BYTES, "log source")
-    text = payload.decode("utf-8", errors="strict")
+    text = decode_log_payload(payload)
     return (
         payload,
         text,
@@ -1518,11 +1651,13 @@ def validate_mismatch_receipt(
     document: Any,
     *,
     full_log_sha256: str,
+    summary: dict[str, Any],
+    harness_summary_sha256: str,
     expected_exit_code: int | None = None,
 ) -> dict[str, Any]:
     if not isinstance(document, dict):
         raise ValueError("mismatch server receipt must contain a JSON object")
-    expected_keys = {"schema_version", "exit_code", "full_log_sha256"}
+    expected_keys = MISMATCH_RECEIPT_FIELDS
     actual_keys = set(document)
     if actual_keys != expected_keys:
         missing = sorted(expected_keys - actual_keys)
@@ -1540,6 +1675,53 @@ def validate_mismatch_receipt(
             "mismatch server receipt schema_version must be "
             f"{MISMATCH_RECEIPT_SCHEMA_VERSION}"
         )
+    run_id = document.get("run_id")
+    if not isinstance(run_id, str) or MISMATCH_RUN_ID_RE.fullmatch(run_id) is None:
+        raise ValueError("mismatch server receipt run_id is invalid")
+    if document.get("session_id") != summary["session_id"]:
+        raise ValueError("mismatch server receipt session_id differs from the harness")
+    if document.get("harness_summary_sha256") != harness_summary_sha256:
+        raise ValueError("mismatch server receipt summary hash differs from the harness")
+    cycle_hashes = document.get("harness_cycle_log_sha256")
+    expected_cycle_hashes = {
+        str(cycle["name"]): str(cycle["full_log_sha256"])
+        for cycle in summary["cycles"]
+    }
+    if cycle_hashes != expected_cycle_hashes:
+        raise ValueError("mismatch server receipt cycle hashes differ from the harness")
+
+    started_at = _aware_timestamp(document.get("started_at"))
+    completed_at = _aware_timestamp(document.get("completed_at"))
+    harness_completed_at = _aware_timestamp(summary.get("completed_at"))
+    if (
+        started_at is None
+        or completed_at is None
+        or harness_completed_at is None
+        or started_at < harness_completed_at
+        or completed_at < started_at
+    ):
+        raise ValueError(
+            "mismatch server receipt timestamps must be aware, ordered, and follow "
+            "the two harness cycles"
+        )
+    duration_millis = document.get("duration_millis")
+    if (
+        not isinstance(duration_millis, int)
+        or isinstance(duration_millis, bool)
+        or not 0 <= duration_millis <= 24 * 60 * 60 * 1000
+    ):
+        raise ValueError("mismatch server receipt duration_millis is invalid")
+    wall_millis = round((completed_at - started_at).total_seconds() * 1000)
+    if abs(wall_millis - duration_millis) > 120_000:
+        raise ValueError(
+            "mismatch server receipt monotonic duration is inconsistent with timestamps"
+        )
+    java_version = document.get("java_version")
+    if not isinstance(java_version, str) or re.search(
+        r"(?<!\d)17(?:[.\s]|$)", java_version
+    ) is None:
+        raise ValueError("mismatch server receipt must identify Java 17")
+
     exit_code = document.get("exit_code")
     if not isinstance(exit_code, int) or isinstance(exit_code, bool):
         raise ValueError("mismatch server receipt exit_code must be an integer")
@@ -1559,11 +1741,45 @@ def validate_mismatch_receipt(
         raise ValueError(
             "mismatch server receipt exit_code differs from the session record"
         )
-    return {
-        "schema_version": MISMATCH_RECEIPT_SCHEMA_VERSION,
-        "exit_code": exit_code,
-        "full_log_sha256": receipt_log_sha256,
-    }
+    previous_hash = document.get("previous_runtime_log_sha256")
+    if not isinstance(previous_hash, str) or SHA256_RE.fullmatch(previous_hash) is None:
+        raise ValueError("mismatch server receipt previous runtime-log hash is invalid")
+    harness_hashes = set(expected_cycle_hashes.values())
+    if receipt_log_sha256 == previous_hash:
+        raise ValueError("mismatch server receipt does not prove a fresh runtime log")
+    if receipt_log_sha256 in harness_hashes:
+        raise ValueError("mismatch server receipt reuses a harness-cycle log hash")
+    if document.get("server_artifact_sha256") != summary["server_artifact_sha256"]:
+        raise ValueError("mismatch server receipt artifact differs from the harness")
+    active_properties_hash = document.get("active_server_properties_sha256")
+    if (
+        not isinstance(active_properties_hash, str)
+        or SHA256_RE.fullmatch(active_properties_hash) is None
+    ):
+        raise ValueError("mismatch server receipt active properties hash is invalid")
+    critical_properties = document.get("critical_server_properties")
+    try:
+        expected_properties = expected_server_properties(summary["server_port"], True)
+    except SmokeError as exc:
+        raise ValueError(str(exc)) from exc
+    if critical_properties != {
+        key: expected_properties[key] for key in sorted(expected_properties)
+    }:
+        raise ValueError(
+            "mismatch server receipt critical properties differ from the offline harness"
+        )
+    server_mods_files = document.get("server_mods_files")
+    expected_server_mods_files = [
+        {
+            "filename": summary["artifact"],
+            "sha256": summary["server_artifact_sha256"],
+        }
+    ]
+    if server_mods_files != expected_server_mods_files:
+        raise ValueError(
+            "mismatch server receipt must bind the singleton project server-mod inventory"
+        )
+    return {key: copy.deepcopy(document[key]) for key in sorted(expected_keys)}
 
 
 def mismatch_receipt_payload(document: dict[str, Any]) -> bytes:
@@ -1593,13 +1809,7 @@ def validate_mismatch_properties(
 ) -> dict[str, Any]:
     if not isinstance(document, dict):
         raise ValueError("mismatch server properties archive must contain a JSON object")
-    expected_keys = {
-        "schema_version",
-        "server_bind",
-        "server_port",
-        "level_name",
-        "source_sha256",
-    }
+    expected_keys = MISMATCH_PROPERTIES_FIELDS
     if set(document) != expected_keys:
         raise ValueError("mismatch server properties archive fields are invalid")
     if document.get("schema_version") != MISMATCH_PROPERTIES_SCHEMA_VERSION:
@@ -1630,22 +1840,43 @@ def validate_mismatch_properties(
             "mismatch server properties source SHA-256 differs from the "
             "harness world binding"
         )
+    active_source_sha256 = document.get("active_source_sha256")
+    if (
+        not isinstance(active_source_sha256, str)
+        or SHA256_RE.fullmatch(active_source_sha256) is None
+    ):
+        raise ValueError("mismatch active server.properties SHA-256 is invalid")
+    try:
+        expected_properties = expected_server_properties(summary["server_port"], True)
+    except SmokeError as exc:
+        raise ValueError(str(exc)) from exc
+    critical_properties = document.get("critical_properties")
+    expected_critical = {
+        key: expected_properties[key] for key in sorted(expected_properties)
+    }
+    if critical_properties != expected_critical:
+        raise ValueError(
+            "mismatch active server.properties critical values differ from the harness"
+        )
     return {
         "schema_version": MISMATCH_PROPERTIES_SCHEMA_VERSION,
         "server_bind": document["server_bind"],
         "server_port": document["server_port"],
         "level_name": document["level_name"],
         "source_sha256": source_sha256,
+        "active_source_sha256": active_source_sha256,
+        "critical_properties": expected_critical,
     }
 
 
 def build_mismatch_properties(
-    path: Path,
+    identity_path: Path,
+    active_path: Path,
     *,
     summary: dict[str, Any],
 ) -> tuple[dict[str, Any], bytes]:
     source_payload = read_bounded_bytes(
-        path, MAX_JSON_BYTES, "mismatch startup-properties identity"
+        identity_path, MAX_JSON_BYTES, "mismatch startup-properties identity"
     )
     expected_payload = server_configuration_payload(summary["server_port"])
     if source_payload != expected_payload:
@@ -1654,6 +1885,15 @@ def build_mismatch_properties(
             "ASCII canonical properties; duplicate keys, alternate separators, "
             "escapes, comments, and rewritten values are not allowed"
         )
+    active_payload = read_bounded_bytes(
+        active_path, MAX_JSON_BYTES, "mismatch active server.properties"
+    )
+    try:
+        critical_properties = verify_active_server_properties(
+            active_payload, summary["server_port"]
+        )
+    except SmokeError as exc:
+        raise ValueError(str(exc)) from exc
     document = validate_mismatch_properties(
         {
             "schema_version": MISMATCH_PROPERTIES_SCHEMA_VERSION,
@@ -1661,10 +1901,48 @@ def build_mismatch_properties(
             "server_port": summary["server_port"],
             "level_name": summary["world"]["level_name"],
             "source_sha256": hashlib.sha256(source_payload).hexdigest(),
+            "active_source_sha256": hashlib.sha256(active_payload).hexdigest(),
+            "critical_properties": critical_properties,
         },
         summary=summary,
     )
     return document, mismatch_properties_payload(document)
+
+
+def inspect_server_mods_inventory(
+    server_artifact: Path, expected_sha256: str
+) -> list[dict[str, str]]:
+    """Verify the physical server has exactly the expected project mod JAR."""
+
+    mods = server_artifact.parent
+    server_root = mods.parent
+    _reject_link_components(mods.absolute(), server_root.absolute())
+    if _is_link(mods) or not mods.is_dir():
+        raise ValueError("server mods directory is missing or unsafe")
+    entries: list[Path] = []
+    with os.scandir(mods) as stream:
+        for entry in stream:
+            entries.append(Path(entry.path))
+            if len(entries) > MAX_SERVER_MODS_ENTRIES:
+                raise ValueError(
+                    "server mods directory exceeds the bounded inventory limit"
+                )
+    if len(entries) != 1 or entries[0].name != server_artifact.name:
+        names = sorted(item.name for item in entries)
+        raise ValueError(
+            "server mods directory must contain only the project JAR; found: "
+            + (", ".join(names) if names else "<empty>")
+        )
+    entry = entries[0]
+    _reject_link_components(entry.absolute(), server_root.absolute())
+    if _is_link(entry) or not entry.is_file():
+        raise ValueError("server mods inventory project JAR is missing or unsafe")
+    if not os.path.samefile(entry, server_artifact):
+        raise ValueError("server artifact is not the inventoried project JAR")
+    observed_hash = file_sha256(entry)
+    if observed_hash != expected_sha256:
+        raise ValueError("server mods inventory project JAR hash differs from harness")
+    return [{"filename": entry.name, "sha256": observed_hash}]
 
 
 def build_mismatch_server_binding(
@@ -1676,6 +1954,7 @@ def build_mismatch_server_binding(
     summary: dict[str, Any],
     server_exit_code: int,
     receipt_sha256: str,
+    receipt_document: dict[str, Any],
 ) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
     server_root = server_artifact.parent.parent
     server_root_anchor = server_root.absolute()
@@ -1704,7 +1983,41 @@ def build_mismatch_server_binding(
         raise ValueError(
             "mismatch server log is not the retained runtime logs/latest.log content"
         )
-    text = source_payload.decode("utf-8", errors="strict")
+    harness_cycle_hashes = {
+        str(cycle["name"]): str(cycle["full_log_sha256"])
+        for cycle in summary["cycles"]
+    }
+    for cycle_name, cycle_hash in harness_cycle_hashes.items():
+        cycle_path = server_root / f"{cycle_name}-full.txt"
+        _reject_link_components(cycle_path.absolute(), server_root_anchor)
+        if _is_link(cycle_path) or not cycle_path.is_file():
+            raise ValueError(f"harness cycle full log is missing or unsafe: {cycle_name}")
+        if file_sha256(cycle_path) != cycle_hash:
+            raise ValueError(f"harness cycle full log changed after summary: {cycle_name}")
+        if source_sha256 == cycle_hash or os.path.samefile(source_log, cycle_path):
+            raise ValueError(
+                "mismatch server log reuses the hash or physical file of harness cycle "
+                + cycle_name
+            )
+    if receipt_document["full_log_sha256"] != runtime_hash:
+        raise ValueError("mismatch receipt is not bound to runtime latest.log")
+    receipt_start = _aware_timestamp(receipt_document.get("started_at"))
+    receipt_end = _aware_timestamp(receipt_document.get("completed_at"))
+    if receipt_start is None or receipt_end is None:
+        raise ValueError("mismatch receipt timestamps are invalid")
+    runtime_modified = dt.datetime.fromtimestamp(
+        runtime_log.stat().st_mtime, tz=dt.timezone.utc
+    )
+    clock_tolerance = dt.timedelta(minutes=2)
+    if not (
+        receipt_start - clock_tolerance
+        <= runtime_modified
+        <= receipt_end + clock_tolerance
+    ):
+        raise ValueError(
+            "mismatch runtime latest.log modification time is outside the attested run"
+        )
+    text = decode_log_payload(source_payload)
     bind_matches = [
         match for line in text.splitlines()
         if (match := SERVER_BIND_LINE.search(line)) is not None
@@ -1737,8 +2050,13 @@ def build_mismatch_server_binding(
         raise ValueError(
             "harness startup server.properties identity is missing or unsafe"
         )
+    active_properties_path = server_root / "server.properties"
+    _reject_link_components(active_properties_path.absolute(), server_root_anchor)
+    if _is_link(active_properties_path) or not active_properties_path.is_file():
+        raise ValueError("active mismatch server.properties is missing or unsafe")
     properties_document, properties_payload = build_mismatch_properties(
         properties_path,
+        active_properties_path,
         summary=summary,
     )
     properties_sha256 = properties_document["source_sha256"]
@@ -1771,6 +2089,18 @@ def build_mismatch_server_binding(
     artifact_hash = file_sha256(server_artifact)
     if artifact_hash != summary["server_artifact_sha256"]:
         raise ValueError("mismatch server artifact differs from player harness")
+    server_mods_files = inspect_server_mods_inventory(
+        server_artifact, summary["server_artifact_sha256"]
+    )
+    if server_mods_files != receipt_document["server_mods_files"]:
+        raise ValueError("mismatch receipt differs from the active server mods inventory")
+    if (
+        receipt_document["active_server_properties_sha256"]
+        != properties_document["active_source_sha256"]
+        or receipt_document["critical_server_properties"]
+        != properties_document["critical_properties"]
+    ):
+        raise ValueError("mismatch receipt differs from active server.properties")
     binding = {
         "session_id": summary["session_id"],
         "server_artifact_sha256": artifact_hash,
@@ -1780,10 +2110,22 @@ def build_mismatch_server_binding(
         "runtime_world_level_name": runtime_world_level_name,
         "world_identity_marker_sha256": marker_hash,
         "server_properties_sha256": properties_sha256,
+        "active_server_properties_sha256": properties_document[
+            "active_source_sha256"
+        ],
         "runtime_latest_log_sha256": runtime_hash,
         "full_log_sha256": source_sha256,
         "server_exit_code": server_exit_code,
         "receipt_sha256": receipt_sha256,
+        "run_id": receipt_document["run_id"],
+        "third_cycle_started_at": receipt_document["started_at"],
+        "third_cycle_completed_at": receipt_document["completed_at"],
+        "java_version": receipt_document["java_version"],
+        "previous_runtime_log_sha256": receipt_document[
+            "previous_runtime_log_sha256"
+        ],
+        "harness_summary_sha256": receipt_document["harness_summary_sha256"],
+        "server_mods_files": server_mods_files,
     }
     return binding, properties_payload, properties_document
 
@@ -2667,7 +3009,9 @@ def validate_server_summary(
             item.get(field) != 0
             for field in (
                 "error_count",
+                "fatal_count",
                 "project_error_count",
+                "project_fatal_count",
                 "project_warning_count",
                 "client_linkage_failure_count",
             )
@@ -2866,6 +3210,17 @@ def _review_blockers(record: dict[str, Any]) -> list[str]:
                 blockers.append(
                     f"{role} raw log has {error_count} broad ERROR finding(s)"
                 )
+            fatal_count = audit_counts.get("fatal_count")
+            if isinstance(fatal_count, int) and fatal_count > 0:
+                blockers.append(
+                    f"{role} raw log has {fatal_count} broad FATAL finding(s)"
+                )
+            linkage_count = audit_counts.get("client_linkage_failure_count")
+            if isinstance(linkage_count, int) and linkage_count > 0:
+                blockers.append(
+                    f"{role} raw log has {linkage_count} client-class linkage "
+                    "failure(s)"
+                )
         disposition = item.get("warning_disposition", {})
         if disposition.get("status") not in {"NONE", "ACCEPTED"}:
             blockers.append(
@@ -2947,6 +3302,11 @@ def collect_evidence(
         )
         if provenance_errors:
             return provenance_errors, None
+        final_g0_errors = approved_final_g0_source_review_errors(
+            repository_root, session["metadata"]["source_commit"]
+        )
+        if final_g0_errors:
+            return final_g0_errors, None
 
     payloads: dict[str, bytes] = {}
     artifacts: dict[str, dict[str, Any]] = {}
@@ -3224,6 +3584,7 @@ def collect_evidence(
                 "note": "Invalid server summary was not archived.",
             }
 
+    profile_captures: dict[str, dict[str, str]] = {}
     if server_summary:
         profile_captures = {
             role: {
@@ -3266,10 +3627,12 @@ def collect_evidence(
 
     raw_log_audits: dict[str, dict[str, Any]] = {}
     resolved_client_log_sources: list[tuple[str, str, Path]] = []
+    resolved_server_log_sources: list[tuple[str, Path]] = []
     collected_log_snapshots: list[
         tuple[Path, tuple[bytes, str, dict[str, int], str, int]]
     ] = []
     observed_player_names: dict[str, str] = {}
+    mismatch_receipt_for_timeline: dict[str, Any] | None = None
     for role, item in session["log_excerpts"].items():
         if item["status"] == "MISSING":
             log_record[role] = {
@@ -3310,6 +3673,14 @@ def collect_evidence(
                             "and missing-project-mod profiles"
                         )
                 resolved_client_log_sources.append((profile_role, role, source))
+            if role in SERVER_LOG_ROLES:
+                for previous_role, previous_source in resolved_server_log_sources:
+                    if os.path.samefile(source, previous_source):
+                        raise ValueError(
+                            f"{role} and {previous_role} server raw logs must not "
+                            "reuse one physical file or hard link"
+                        )
+                resolved_server_log_sources.append((role, source))
             snapshot = next(
                 (
                     previous_snapshot
@@ -3356,7 +3727,11 @@ def collect_evidence(
                         "physical_file_identity": physical_file_identity(source),
                     }
                     if profile_role is not None
-                    else {}
+                    else (
+                        {"physical_file_identity": physical_file_identity(source)}
+                        if role in SERVER_LOG_ROLES
+                        else {}
+                    )
                 ),
             }
             payload, counts = extract_log_excerpt_from_text(
@@ -3471,8 +3846,11 @@ def collect_evidence(
                 receipt_document = validate_mismatch_receipt(
                     receipt_source_document,
                     full_log_sha256=raw_sha256,
+                    summary=server_summary,
+                    harness_summary_sha256=server_harness_record["source_sha256"],
                     expected_exit_code=item["server_exit_code"],
                 )
+                mismatch_receipt_for_timeline = receipt_document
                 receipt_payload = mismatch_receipt_payload(receipt_document)
                 receipt_sha256 = hashlib.sha256(receipt_payload).hexdigest()
                 payloads[MISMATCH_RECEIPT_ARCHIVE] = receipt_payload
@@ -3502,6 +3880,7 @@ def collect_evidence(
                     summary=server_summary,
                     server_exit_code=receipt_document["exit_code"],
                     receipt_sha256=receipt_sha256,
+                    receipt_document=receipt_document,
                 )
                 properties_sha256 = hashlib.sha256(properties_payload).hexdigest()
                 payloads[MISMATCH_PROPERTIES_ARCHIVE] = properties_payload
@@ -3515,6 +3894,13 @@ def collect_evidence(
                 log_record[role]["server_exit_code"] = receipt_document["exit_code"]
         except (OSError, UnicodeError, ValueError) as exc:
             errors.append(f"log_excerpts.{role}: {exc}")
+
+    if mismatch_receipt_for_timeline is not None:
+        errors.extend(
+            mismatch_profile_capture_timeline_errors(
+                profile_captures, mismatch_receipt_for_timeline
+            )
+        )
 
     if len(observed_player_names) == 2 and (
         observed_player_names.get("first-start")
@@ -3548,7 +3934,8 @@ def collect_evidence(
         "server_project_warning_count": server_audit["project_warning_count"],
         "client_class_linkage_failure_count": client_audit[
             "client_linkage_failure_count"
-        ],
+        ]
+        + server_audit["client_linkage_failure_count"],
     }
     for field, computed in computed_findings.items():
         declared = session["findings"][field]
@@ -3766,10 +4153,15 @@ def validate_bundle(
             errors.extend(
                 approved_source_provenance_errors(repository_root, source_commit)
             )
+            errors.extend(
+                approved_final_g0_source_review_errors(
+                    repository_root, source_commit
+                )
+            )
         else:
             errors.append(
                 "acceptance-ready client evidence requires a valid source commit "
-                "for provenance validation"
+                "for provenance and final-G0 source-review validation"
             )
     manifest_payload = b""
     artifact_metadata = {"filename": "", "sha256": ""}
@@ -4366,11 +4758,13 @@ def validate_bundle(
     _exact_keys(record_logs, set(LOG_ROLES), "log_excerpts", errors)
     validated_source_audits: dict[str, dict[str, Any]] = {}
     validated_client_physical_identities: dict[str, tuple[str, str]] = {}
+    validated_server_physical_identities: dict[str, str] = {}
     resolved_validation_client_log_sources: list[tuple[str, str, Path]] = []
     validation_log_snapshots: list[
         tuple[Path, tuple[bytes, str, dict[str, int], str, int]]
     ] = []
     validated_player_names: dict[str, str] = {}
+    validated_mismatch_receipt: dict[str, Any] | None = None
     for role, item_value in record_logs.items():
         if role not in LOG_ROLES:
             continue
@@ -4459,9 +4853,9 @@ def validate_bundle(
                 raise ValueError(f"archived log audit mismatch: {role}")
             source_audit_keys = {"source_path", "sha256", "size", "audit_counts"}
             if profile_role is not None:
-                source_audit_keys.update(
-                    {"profile_role", "physical_file_identity"}
-                )
+                source_audit_keys.add("profile_role")
+            if profile_role is not None or role in SERVER_LOG_ROLES:
+                source_audit_keys.add("physical_file_identity")
             source_audit = _exact_keys(
                 item.get("source_audit"),
                 source_audit_keys,
@@ -4477,17 +4871,18 @@ def validate_bundle(
             if not isinstance(raw_size, int) or isinstance(raw_size, bool) or not 0 < raw_size <= MAX_LOG_BYTES:
                 raise ValueError(f"raw log audit size is invalid: {role}")
             physical_identity = source_audit.get("physical_file_identity")
-            if profile_role is not None:
-                if source_audit.get("profile_role") != profile_role:
-                    raise ValueError(
-                        f"raw log audit client profile role is invalid: {role}"
-                    )
+            if profile_role is not None or role in SERVER_LOG_ROLES:
                 if (
                     not isinstance(physical_identity, str)
                     or SHA256_RE.fullmatch(physical_identity) is None
                 ):
                     raise ValueError(
                         f"raw log physical file identity is invalid: {role}"
+                    )
+            if profile_role is not None:
+                if source_audit.get("profile_role") != profile_role:
+                    raise ValueError(
+                        f"raw log audit client profile role is invalid: {role}"
                     )
                 previous_identity = validated_client_physical_identities.get(
                     physical_identity
@@ -4505,6 +4900,16 @@ def validate_bundle(
                     profile_role,
                     role,
                 )
+            if role in SERVER_LOG_ROLES:
+                previous_server_role = validated_server_physical_identities.get(
+                    physical_identity
+                )
+                if previous_server_role is not None:
+                    raise ValueError(
+                        f"{role} and {previous_server_role} server raw logs reuse "
+                        "one physical-file identity"
+                    )
+                validated_server_physical_identities[physical_identity] = role
             raw_counts = _exact_keys(
                 source_audit.get("audit_counts"),
                 set(LOG_AUDIT_FIELDS),
@@ -4593,7 +4998,7 @@ def validate_bundle(
                 ):
                     raise ValueError(f"raw log source no longer matches its audit: {role}")
                 if (
-                    profile_role is not None
+                    (profile_role is not None or role in SERVER_LOG_ROLES)
                     and physical_file_identity(raw_path) != physical_identity
                 ):
                     raise ValueError(
@@ -4682,15 +5087,13 @@ def validate_bundle(
                     )
                 receipt = _exact_keys(
                     item.get("receipt"),
-                    {
+                    MISMATCH_RECEIPT_FIELDS
+                    | {
                         "source_path",
                         "file",
                         "source_sha256",
                         "sha256",
                         "size",
-                        "schema_version",
-                        "exit_code",
-                        "full_log_sha256",
                     },
                     f"log_excerpts.{role}.receipt",
                     errors,
@@ -4724,8 +5127,11 @@ def validate_bundle(
                         receipt_payload, "mismatch server receipt archive"
                     ),
                     full_log_sha256=raw_hash,
+                    summary=server_summary,
+                    harness_summary_sha256=record_harness.get("source_sha256"),
                     expected_exit_code=item.get("server_exit_code"),
                 )
+                validated_mismatch_receipt = receipt_document
                 if receipt_payload != mismatch_receipt_payload(receipt_document):
                     raise ValueError(
                         "archived mismatch server receipt is not canonical JSON"
@@ -4733,11 +5139,7 @@ def validate_bundle(
                 validated_bundle_bindings[MISMATCH_RECEIPT_ARCHIVE] = _payload_binding(
                     receipt_payload
                 )
-                for field in (
-                    "schema_version",
-                    "exit_code",
-                    "full_log_sha256",
-                ):
+                for field in MISMATCH_RECEIPT_FIELDS:
                     if receipt.get(field) != receipt_document[field]:
                         raise ValueError(
                             "mismatch server receipt record differs from archive: "
@@ -4774,6 +5176,8 @@ def validate_bundle(
                     physical_receipt = validate_mismatch_receipt(
                         raw_receipt_document,
                         full_log_sha256=raw_hash,
+                        summary=server_summary,
+                        harness_summary_sha256=record_harness.get("source_sha256"),
                         expected_exit_code=item.get("server_exit_code"),
                     )
                     if physical_receipt != receipt_document:
@@ -4782,15 +5186,11 @@ def validate_bundle(
                         )
                 properties_record = _exact_keys(
                     item.get("server_properties"),
-                    {
+                    MISMATCH_PROPERTIES_FIELDS
+                    | {
                         "file",
                         "sha256",
                         "size",
-                        "schema_version",
-                        "server_bind",
-                        "server_port",
-                        "level_name",
-                        "source_sha256",
                     },
                     f"log_excerpts.{role}.server_properties",
                     errors,
@@ -4827,6 +5227,15 @@ def validate_bundle(
                     ),
                     summary=server_summary,
                 )
+                if (
+                    receipt_document["active_server_properties_sha256"]
+                    != properties_document["active_source_sha256"]
+                    or receipt_document["critical_server_properties"]
+                    != properties_document["critical_properties"]
+                ):
+                    raise ValueError(
+                        "mismatch receipt differs from active server.properties"
+                    )
                 if properties_payload != mismatch_properties_payload(
                     properties_document
                 ):
@@ -4853,10 +5262,18 @@ def validate_bundle(
                         "runtime_world_level_name",
                         "world_identity_marker_sha256",
                         "server_properties_sha256",
+                        "active_server_properties_sha256",
                         "runtime_latest_log_sha256",
                         "full_log_sha256",
                         "server_exit_code",
                         "receipt_sha256",
+                        "run_id",
+                        "third_cycle_started_at",
+                        "third_cycle_completed_at",
+                        "java_version",
+                        "previous_runtime_log_sha256",
+                        "harness_summary_sha256",
+                        "server_mods_files",
                     },
                     f"log_excerpts.{role}.mismatch_server_binding",
                     errors,
@@ -4876,10 +5293,24 @@ def validate_bundle(
                     "server_properties_sha256": properties_document[
                         "source_sha256"
                     ],
+                    "active_server_properties_sha256": properties_document[
+                        "active_source_sha256"
+                    ],
                     "runtime_latest_log_sha256": raw_hash,
                     "full_log_sha256": raw_hash,
                     "server_exit_code": item.get("server_exit_code"),
                     "receipt_sha256": receipt_hash,
+                    "run_id": receipt_document["run_id"],
+                    "third_cycle_started_at": receipt_document["started_at"],
+                    "third_cycle_completed_at": receipt_document["completed_at"],
+                    "java_version": receipt_document["java_version"],
+                    "previous_runtime_log_sha256": receipt_document[
+                        "previous_runtime_log_sha256"
+                    ],
+                    "harness_summary_sha256": receipt_document[
+                        "harness_summary_sha256"
+                    ],
+                    "server_mods_files": receipt_document["server_mods_files"],
                 }
                 for field, expected in expected_binding_values.items():
                     if binding.get(field) != expected:
@@ -4908,6 +5339,7 @@ def validate_bundle(
                         summary=server_summary,
                         server_exit_code=item.get("server_exit_code"),
                         receipt_sha256=receipt_hash,
+                        receipt_document=receipt_document,
                     )
                     if binding != physical_binding:
                         raise ValueError(
@@ -4923,6 +5355,13 @@ def validate_bundle(
                         )
         except (OSError, UnicodeError, ValueError) as exc:
             errors.append(str(exc))
+
+    if validated_mismatch_receipt is not None:
+        errors.extend(
+            mismatch_profile_capture_timeline_errors(
+                validated_profile_captures, validated_mismatch_receipt
+            )
+        )
 
     errors.extend(source_audit_consistency_errors(validated_source_audits))
     if len(validated_player_names) == 2 and (
@@ -4962,7 +5401,8 @@ def validate_bundle(
         "server_project_warning_count": server_audit["project_warning_count"],
         "client_class_linkage_failure_count": client_audit[
             "client_linkage_failure_count"
-        ],
+        ]
+        + server_audit["client_linkage_failure_count"],
     }
     record_findings = record.get("findings")
     if isinstance(record_findings, dict):
