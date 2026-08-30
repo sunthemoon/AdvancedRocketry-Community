@@ -58,6 +58,7 @@ class V002G0ReviewPacketTests(unittest.TestCase):
         cls.seed_git("config", "user.email", "g0-packet@example.invalid")
         cls.seed_git("config", "core.autocrlf", "false")
         cls.seed_git("config", "core.filemode", "false")
+        cls.ensure_pending_seed_state()
 
         for _, relative in TOOL_DEFINITIONS:
             source = cls.source_root / relative
@@ -118,6 +119,111 @@ class V002G0ReviewPacketTests(unittest.TestCase):
         return cls.run_command(
             ["git", "-C", str(cls.seed_root), *arguments]
         ).stdout.strip()
+
+    @classmethod
+    def ensure_pending_seed_state(cls) -> None:
+        """Keep pending-workflow tests independent of the real review lifecycle."""
+
+        manifest_path = cls.seed_root / PROVENANCE_MANIFEST
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+        status = document["review"]["record_status"]
+        if status == "EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING":
+            return
+        if status != "THIRD_PARTY_APPROVED":
+            raise AssertionError(f"unsupported real provenance review state: {status}")
+
+        document["review"] = {
+            "record_status": "EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING",
+            "reviewer": None,
+            "reviewed_at": None,
+            "final_status_after_review": None,
+            "reviewed_audited_target_commit": None,
+            "reviewed_content_sha256": None,
+        }
+        for target in document["targets"]:
+            target["status"] = "PENDING_HUMAN_REVIEW"
+            target["proposed_status_after_review"] = "THIRD_PARTY_APPROVED"
+
+        record_path = cls.seed_root / PROVENANCE_RECORD
+        notice_path = cls.seed_root / THIRD_PARTY_NOTICE
+        record = record_path.read_text(encoding="utf-8")
+        notice = notice_path.read_text(encoding="utf-8")
+
+        def replace_exact(
+            text: str, pattern: str, replacement: str, expected: int, label: str
+        ) -> str:
+            updated, count = re.subn(pattern, replacement, text, flags=re.MULTILINE)
+            if count != expected:
+                raise AssertionError(
+                    f"pending fixture {label} replacement count {count} != {expected}"
+                )
+            return updated
+
+        for field, value in (
+            ("record_status", "EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING"),
+            ("final_status_after_review", "null"),
+            ("reviewed_audited_target_commit", "null"),
+            ("reviewed_content_sha256", "null"),
+        ):
+            record = replace_exact(
+                record,
+                rf"^{field}:\s*.*$",
+                f"{field}: {value}",
+                1,
+                field,
+            )
+        record = replace_exact(
+            record, r"^reviewer:\s*.*$", "reviewer: null", 3, "record reviewers"
+        )
+        record = replace_exact(
+            record,
+            r"^reviewed_at:\s*.*$",
+            "reviewed_at: null",
+            3,
+            "record review dates",
+        )
+        record = replace_exact(
+            record,
+            r"^status:\s*THIRD_PARTY_APPROVED\s*$",
+            "status: PENDING_HUMAN_REVIEW",
+            2,
+            "target statuses",
+        )
+        record = replace_exact(
+            record,
+            r"^proposed_status_after_review:\s*null\s*$",
+            "proposed_status_after_review: THIRD_PARTY_APPROVED",
+            2,
+            "target proposed statuses",
+        )
+        notice = replace_exact(
+            notice,
+            r"^status:\s*THIRD_PARTY_APPROVED\s*$",
+            "status: PENDING_HUMAN_REVIEW",
+            1,
+            "notice status",
+        )
+        notice = replace_exact(
+            notice, r"^reviewer:\s*.*$", "reviewer: null", 1, "notice reviewer"
+        )
+        notice = replace_exact(
+            notice,
+            r"^reviewed_at:\s*.*$",
+            "reviewed_at: null",
+            1,
+            "notice review date",
+        )
+
+        manifest_path.write_bytes(_canonical_json(document))
+        record_path.write_text(record, encoding="utf-8", newline="\n")
+        notice_path.write_text(notice, encoding="utf-8", newline="\n")
+        cls.seed_git(
+            "add",
+            "--",
+            PROVENANCE_MANIFEST,
+            PROVENANCE_RECORD,
+            THIRD_PARTY_NOTICE,
+        )
 
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory()
