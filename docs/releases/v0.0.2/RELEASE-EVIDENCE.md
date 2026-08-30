@@ -14,12 +14,16 @@ required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
 tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863
 tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838
-documentation_checkpoint: d2b571f7dd63cc7d87bc3acf9197e8fd72ab3cfa
-last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040688
-last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040675
-checkpoint_forge_artifact_id: 9721907600
-checkpoint_g0_review_packet_artifact_id: 9721841271
-checkpoint_g0_review_packet_commit: 08e8c4813f4cbc4913ff8fb9c78162bdf6dbc5b4
+documentation_checkpoint: da67cfafe8d130b312884f8930cd919e522408dc
+last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285098959
+last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285099023
+checkpoint_forge_artifact_id: 9724241324
+checkpoint_g0_review_packet_artifact_id: 9724184181
+checkpoint_g0_review_packet_commit: da67cfafe8d130b312884f8930cd919e522408dc
+checkpoint_g0_review_packet_manifest_sha256: cdd23d96a075a4fde5936c1c0cadc9ba00c62f68a25de830793eeeb30b9b0a74
+checkpoint_final_g0_review_inputs_artifact_id: 9724184322
+checkpoint_final_g0_review_inputs_commit: da67cfafe8d130b312884f8930cd919e522408dc
+checkpoint_final_g0_review_inputs_sha256: 798aad75aa78c5e93f912b43a94155ac0caf19d609afbb67cc24c97a1b0f2973
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
@@ -110,10 +114,15 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 - The release checksum validator covers all nine committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for the tested implementation.
-  Documentation checkpoint `d2b571f` also had 3/3 successful last-observed
-  checks in Forge run 33277040688 and governance run 33277040675. The latter
-  uploaded the 33-file PR-merge review packet as artifact 9721841271; its
-  diagnostic binding does not approve G0.
+  Hardened documentation checkpoint `da67cfa` also had 3/3 successful last-
+  observed checks in Forge run 33285098959 and governance run 33285099023.
+  Governance bound the immutable pull-request head to 35 exact-Git input
+  payloads plus generated review instructions (36 payloads and 37 total files)
+  in packet artifact 9724184181. It also uploaded exact-Git final-G0 input
+  report artifact 9724184322, covering 18 distributable source/resource/legal
+  files, 11 bootstrap targets, 20 commits, and 38 path changes. The downloaded
+  CI artifacts were byte-identical to the locally verified packet and report;
+  these mechanical bindings do not approve either G0 review.
 
 See [`TEST-REPORT.md`](TEST-REPORT.md),
 [`checksums.txt`](checksums.txt), and

@@ -15,10 +15,13 @@ pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3"
 tested_implementation_pull_request_checks: "3/3 PASS"
 tested_implementation_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863"
 tested_implementation_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838"
-documentation_checkpoint: "d2b571f7dd63cc7d87bc3acf9197e8fd72ab3cfa"
+documentation_checkpoint: "da67cfafe8d130b312884f8930cd919e522408dc"
 last_observed_checkpoint_pull_request_checks: "3/3 PASS"
-last_observed_checkpoint_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040688"
-last_observed_checkpoint_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040675"
+last_observed_checkpoint_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285098959"
+last_observed_checkpoint_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285099023"
+checkpoint_forge_artifact_id: 9724241324
+checkpoint_g0_review_packet_artifact_id: 9724184181
+checkpoint_final_g0_review_inputs_artifact_id: 9724184322
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 gates:
@@ -45,12 +48,14 @@ human_approved_at: ""
 ```
 
 `PASS` above records evidence-backed automated Gates. Runs 33258532863 and
-33258532838 are the tested-implementation CI; runs 33277040688 and 33277040675
-are the last observed CI for documentation checkpoint `d2b571f`. This does not
-mark the version `PASSED`. G0 retains rendered README and human review work, and
-no Required Gate is waived. A GitHub Release is not required before acceptance;
-if one is created after human acceptance, it must be classified as a
-pre-release rather than a stable release.
+33258532838 are the tested-implementation CI; runs 33285098959 and 33285099023
+are the last observed CI for hardened documentation checkpoint `da67cfa`. The
+governance run uploaded exact-head packet and final-G0 input-report artifacts,
+but neither mechanical artifact contains a human decision. This does not mark
+the version `PASSED`. G0 retains rendered README and human review work, and no
+Required Gate is waived. A GitHub Release is not required before acceptance; if
+one is created after human acceptance, it must be classified as a pre-release
+rather than a stable release.
 
 The G0 provenance/license subreview is the next ordering dependency: approving
 its packaged third-party notice changes JAR bytes. Rebuild, refresh artifact

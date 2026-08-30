@@ -5,7 +5,7 @@ test_date: 2026-08-30
 version: v0.0.2
 build: 1.20.1-0.0.2-dev
 tested_implementation_commit: 0fa080fdff3ab025c6b764b02d2d07fa9221c5ae
-documentation_checkpoint: d2b571f7dd63cc7d87bc3acf9197e8fd72ab3cfa
+documentation_checkpoint: da67cfafe8d130b312884f8930cd919e522408dc
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13.13 / CI Python 3.12 / Minecraft 1.20.1 / Forge 47.4.10
 ```
@@ -19,8 +19,9 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13
 | `gradlew test --rerun-tasks --no-daemon --stacktrace` | PASS | 3/3 JUnit tests executed in a 13-second uncached task run, with 0 failures or errors |
 | `python -m unittest discover -s tests -v` | PASS | 396/396 Python tests passed in 1797.580 seconds |
 | `python -I -S scripts/validate_bootstrap_provenance.py` | PASS_WITH_HUMAN_PENDING | Schema-3 evidence matched 2 pinned components, 11 imported targets, Git object/mode/blob identities, and current content; `--require-approved-review` returned the expected blocking exit 1 |
-| `python -I -S scripts/prepare_v002_g0_review_packet.py generate/verify ...` | PASS | Local checkpoint packet bound 33 files to `d2b571f`; governance CI generated and verified the corresponding PR-merge packet before uploading artifact 9721841271 |
+| `python -I -S scripts/prepare_v002_g0_review_packet.py generate/verify ...` | PASS | Checkpoint `da67cfa` bound 35 exact-Git inputs plus generated instructions (36 payloads, 37 total files); authoritative and content-only verification passed, governance CI uploaded artifact 9724184181, and its manifest SHA-256 is `cdd23d96...` |
 | Focused final-G0 review-input generator/verifier tests | PASS | 16/16 tests cover exact-Git reconstruction, deterministic create-once output, isolated CLI execution, history/resource bounds, and link/reparse/hardlink/traversal rejection; the tool records inputs only |
+| `python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate/verify ...` | PASS | Exact checkpoint `da67cfa` report covers 18 distributable source/resource/legal files, 11 bootstrap targets, 20 commits, and 38 path changes; governance artifact 9724184322 and the local report are byte-identical with SHA-256 `798aad75...` |
 | `python scripts/validate_build_artifact.py <jar> --content-manifest <path>` | PASS | 34 entries; metadata, exact notices/licenses, paths, generated-cache exclusion, placeholders, and credential scans passed |
 | `python scripts/generate_v002_g0_evidence.py verify <jar> <sources-jar> ...` | PASS | Committed mechanical G0 evidence matches both current JARs |
 | `python scripts/validate_release_checksums.py --artifact <jar>` | PASS | 10 entries; all 9 committed evidence files and the external JAR matched |
@@ -31,8 +32,10 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13
 | `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS | Fresh schema-2 session `v002-22fb01477178d45fc51e007e` completed in 76.015 seconds on its first installer attempt; first start/status/save/stop and same-world restart/status/save/stop passed with zero ERROR, project WARN, or client linkage findings |
 | GitHub Actions repository governance | PASS | [Run 33258532838](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838) passed at the tested implementation commit |
 | GitHub Actions Forge bootstrap | PASS | [Run 33258532863](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863) passed baseline plus advisory jobs and uploaded the Linux artifacts |
-| Documentation-checkpoint repository governance | PASS_AFTER_FIX | [Run 33277040675](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040675) passed 353/353 tests, packet generation/verification, and 15/15 strict checks at checkpoint `d2b571f` |
-| Documentation-checkpoint Forge bootstrap | PASS | [Run 33277040688](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040688) passed baseline plus advisory jobs at checkpoint `d2b571f` |
+| Earlier documentation-checkpoint repository governance | PASS_AFTER_FIX | [Run 33277040675](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040675) passed 353/353 tests, packet generation/verification, and 15/15 strict checks at checkpoint `d2b571f` |
+| Earlier documentation-checkpoint Forge bootstrap | PASS | [Run 33277040688](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040688) passed baseline plus advisory jobs at checkpoint `d2b571f` |
+| Hardened documentation-checkpoint repository governance | PASS | [Run 33285099023](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285099023) passed 396/396 tests, exact-head packet/report generation and verification, 15/15 strict checks, and uploaded both review-input artifacts at `da67cfa` |
+| Hardened documentation-checkpoint Forge bootstrap | PASS | [Run 33285098959](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285098959) passed baseline plus advisory jobs and packaged-server smoke at `da67cfa` |
 | Tested-implementation clean-worktree checks | PASS | `git diff --exit-code` and `python scripts/check_clean_worktree.py` passed in CI at `0fa080f` |
 
 ## Artifact identity
@@ -48,9 +51,13 @@ linux_ci_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f28072239294
 linux_ci_sources_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 linux_ci_content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
 linux_ci_artifact_id: 9716650737
-checkpoint_linux_ci_artifact_id: 9721907600
-checkpoint_g0_review_packet_artifact_id: 9721841271
-checkpoint_g0_review_packet_commit: 08e8c4813f4cbc4913ff8fb9c78162bdf6dbc5b4
+checkpoint_linux_ci_artifact_id: 9724241324
+checkpoint_g0_review_packet_artifact_id: 9724184181
+checkpoint_g0_review_packet_commit: da67cfafe8d130b312884f8930cd919e522408dc
+checkpoint_g0_review_packet_manifest_sha256: cdd23d96a075a4fde5936c1c0cadc9ba00c62f68a25de830793eeeb30b9b0a74
+checkpoint_final_g0_review_inputs_artifact_id: 9724184322
+checkpoint_final_g0_review_inputs_commit: da67cfafe8d130b312884f8930cd919e522408dc
+checkpoint_final_g0_review_inputs_sha256: 798aad75aa78c5e93f912b43a94155ac0caf19d609afbb67cc24c97a1b0f2973
 cross_platform_byte_identity_proven: true
 ```
 
@@ -61,8 +68,8 @@ with SHA-256
 The ten-entry release list is [`checksums.txt`](checksums.txt). The artifacts
 downloaded from Forge run 33258532863 match the Windows main JAR, sources JAR,
 and committed content manifest byte-for-byte.
-The same three hashes were independently confirmed in checkpoint Forge artifact
-9721907600 from run 33277040688.
+The same three hashes were independently confirmed again in checkpoint Forge
+artifact 9724241324 from run 33285098959.
 
 ## Test inventory
 
@@ -128,7 +135,7 @@ local_automated_baseline: PASS
 tested_implementation_governance_ci: PASS
 tested_implementation_forge_ci: PASS
 tested_implementation_checks: 3/3_PASS
-documentation_checkpoint: d2b571f7dd63cc7d87bc3acf9197e8fd72ab3cfa
+documentation_checkpoint: da67cfafe8d130b312884f8930cd919e522408dc
 last_observed_checkpoint_governance_ci: PASS
 last_observed_checkpoint_forge_ci: PASS
 last_observed_checkpoint_checks: 3/3_PASS
