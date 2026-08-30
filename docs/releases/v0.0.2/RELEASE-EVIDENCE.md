@@ -251,23 +251,23 @@ or infers either human outcome.
     "visible_pixel_judgment": "HUMAN_ONLY"
   },
   "final_g0_source_resource_review": {
-    "outcome": "PENDING_HUMAN_REVIEW",
-    "selected_implementation_commit": null,
-    "selected_tree_oid": null,
-    "review_inputs_report": null,
-    "review_inputs_report_sha256": null,
-    "reviewer": null,
-    "reviewed_at": null,
+    "outcome": "APPROVED",
+    "selected_implementation_commit": "d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b",
+    "selected_tree_oid": "878d0c682d15915ed44804420a21f0220b87bb3d",
+    "review_inputs_report": "docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/final-g0-review-inputs.json",
+    "review_inputs_report_sha256": "7b8aef7c8308f0896fc50bd29c7285342de24f93def3c62d6cb87f310e659623",
+    "reviewer": "sunthemoon",
+    "reviewed_at": "2026-08-30",
     "findings": []
   },
   "final_g0_readme_visual_review": {
-    "outcome": "PENDING_HUMAN_REVIEW",
-    "selected_commit": null,
-    "selected_tree_oid": null,
-    "screenshot_file": null,
-    "screenshot_sha256": null,
-    "reviewer": null,
-    "reviewed_at": null,
+    "outcome": "APPROVED",
+    "selected_commit": "d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b",
+    "selected_tree_oid": "878d0c682d15915ed44804420a21f0220b87bb3d",
+    "screenshot_file": "docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/readme-full-window.png",
+    "screenshot_sha256": "a89318c28e8ba2a65ab040a91ad6f1e49da2f8484c126d2735ae42e6646a8ebc",
+    "reviewer": "sunthemoon",
+    "reviewed_at": "2026-08-30",
     "findings": []
   }
 }
