@@ -259,6 +259,59 @@ class ClientEvidenceProvenanceTests(unittest.TestCase):
             self.assertEqual(1, len(results.passes))
             validate_provenance.assert_not_called()
 
+    def test_broken_reparse_bundle_path_is_rejected_instead_of_treated_as_absent(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle = root / COMMITTED_BUNDLE
+            results = Results()
+            with (
+                patch("scripts.validate_repository.ROOT", root),
+                patch.object(type(bundle), "lstat", return_value=object()),
+                patch("scripts.validate_repository._is_link", return_value=True),
+                patch(
+                    "scripts.validate_repository.validate_bootstrap_provenance"
+                ) as validate_provenance,
+                patch(
+                    "scripts.validate_repository.validate_bundle"
+                ) as validate_client_bundle,
+            ):
+                check_optional_v002_client_evidence(results)
+
+            self.assertTrue(
+                any("reparse point" in failure for failure in results.failures),
+                results.failures,
+            )
+            self.assertEqual([], results.passes)
+            validate_provenance.assert_not_called()
+            validate_client_bundle.assert_not_called()
+
+    def test_canonical_bundle_lstat_error_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle = root / COMMITTED_BUNDLE
+            results = Results()
+            with (
+                patch("scripts.validate_repository.ROOT", root),
+                patch.object(
+                    type(bundle),
+                    "lstat",
+                    side_effect=OSError("inspection denied"),
+                ),
+                patch(
+                    "scripts.validate_repository.validate_bootstrap_provenance"
+                ) as validate_provenance,
+            ):
+                check_optional_v002_client_evidence(results)
+
+            self.assertTrue(
+                any("Cannot safely inspect" in failure for failure in results.failures),
+                results.failures,
+            )
+            self.assertEqual([], results.passes)
+            validate_provenance.assert_not_called()
+
     def test_bundle_is_rejected_until_provenance_is_approved(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -313,7 +366,43 @@ class ClientEvidenceProvenanceTests(unittest.TestCase):
 
             self.assertEqual([], results.failures)
             self.assertEqual(1, len(results.passes))
-            validate_client_bundle.assert_called_once_with(bundle, repository_root=root)
+            validate_client_bundle.assert_called_once_with(
+                bundle,
+                repository_root=root,
+                require_acceptance_ready=True,
+            )
+
+    def test_incomplete_canonical_bundle_is_rejected_defensively(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle = root / COMMITTED_BUNDLE
+            bundle.mkdir(parents=True)
+            results = Results()
+            with (
+                patch("scripts.validate_repository.ROOT", root),
+                patch(
+                    "scripts.validate_repository.validate_bootstrap_provenance",
+                    return_value=([], {"review_status": APPROVED_RECORD_STATUS}),
+                ),
+                patch(
+                    "scripts.validate_repository.validate_bundle",
+                    return_value=(
+                        [],
+                        {"review_readiness": {"status": "INCOMPLETE"}},
+                    ),
+                ) as validate_client_bundle,
+            ):
+                check_optional_v002_client_evidence(results)
+
+            self.assertTrue(
+                any("not acceptance-ready" in failure for failure in results.failures),
+                results.failures,
+            )
+            validate_client_bundle.assert_called_once_with(
+                bundle,
+                repository_root=root,
+                require_acceptance_ready=True,
+            )
 
 
 class WorkflowStructureTests(unittest.TestCase):
@@ -353,11 +442,11 @@ class WorkflowStructureTests(unittest.TestCase):
             ),
             (
                 "          python -I -S scripts/prepare_v002_g0_review_packet.py generate "
-                '--commit "$GITHUB_SHA" --output build/v0.0.2-g0-review-packet'
+                '--commit "$REVIEW_COMMIT" --output build/v0.0.2-g0-review-packet'
             ),
             (
                 "          python -I -S scripts/prepare_v002_g0_review_packet.py verify "
-                '--commit "$GITHUB_SHA" --packet build/v0.0.2-g0-review-packet'
+                '--commit "$REVIEW_COMMIT" --packet build/v0.0.2-g0-review-packet'
             ),
         )
 
@@ -369,6 +458,34 @@ class WorkflowStructureTests(unittest.TestCase):
 
                 self.assertIn(
                     "exact isolated G0 review-packet "
+                    "setup/generate/verify command sequence",
+                    errors,
+                )
+
+    def test_final_g0_review_input_commands_are_required(self) -> None:
+        commands = (
+            (
+                "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
+                "generate "
+                '--commit "$REVIEW_COMMIT" --output '
+                "build/v0.0.2-final-g0-review-inputs"
+            ),
+            (
+                "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
+                "verify "
+                '--commit "$REVIEW_COMMIT" --output '
+                "build/v0.0.2-final-g0-review-inputs"
+            ),
+        )
+
+        for command in commands:
+            with self.subTest(command=command):
+                tampered = self.repository_workflow.replace(command, "          true", 1)
+
+                errors = validate_repository_workflow_text(tampered)
+
+                self.assertIn(
+                    "exact isolated final-G0 review-input "
                     "setup/generate/verify command sequence",
                     errors,
                 )
@@ -413,7 +530,7 @@ class WorkflowStructureTests(unittest.TestCase):
             ),
             (
                 "artifact name",
-                "name: v0.0.2-g0-review-packet-${{ github.sha }}",
+                "name: v0.0.2-g0-review-packet-${{ env.REVIEW_COMMIT }}",
                 "name: v0.0.2-g0-review-packet",
                 "exact enabled action contract actions/upload-artifact@v7",
             ),
@@ -435,6 +552,18 @@ class WorkflowStructureTests(unittest.TestCase):
                 "path: build/",
                 "exact enabled action contract actions/upload-artifact@v7",
             ),
+            (
+                "final G0 artifact name",
+                "name: v0.0.2-final-g0-review-inputs-${{ env.REVIEW_COMMIT }}",
+                "name: v0.0.2-final-g0-review-inputs",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
+            (
+                "final G0 artifact path",
+                "path: build/v0.0.2-final-g0-review-inputs/",
+                "path: build/v0.0.2-final-g0-review-inputs.json",
+                "exact enabled action contract actions/upload-artifact@v7",
+            ),
         )
 
         for name, original, replacement, expected in cases:
@@ -450,6 +579,28 @@ class WorkflowStructureTests(unittest.TestCase):
         tampered = self.repository_workflow.replace(
             "          include-hidden-files: true",
             "          include-hidden-files: true\n          retention-days: 7",
+            1,
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact enabled action contract actions/upload-artifact@v7", errors
+        )
+
+    def test_repository_workflow_rejects_an_additional_upload_step(self) -> None:
+        marker = "          path: build/v0.0.2-final-g0-review-inputs/"
+        tampered = self.repository_workflow.replace(
+            marker,
+            marker
+            + "\n\n"
+            + "      - name: Unexpected upload\n"
+            + "        uses: actions/upload-artifact@v7\n"
+            + "        with:\n"
+            + "          name: unexpected\n"
+            + "          if-no-files-found: error\n"
+            + "          include-hidden-files: true\n"
+            + "          path: build/",
             1,
         )
 
@@ -479,6 +630,21 @@ class WorkflowStructureTests(unittest.TestCase):
                     any("permissions" in error for error in errors), errors
                 )
 
+    def test_repository_workflow_binds_review_inputs_to_head_or_push_commit(self) -> None:
+        original = (
+            "REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}"
+        )
+        for replacement in (
+            "REVIEW_COMMIT: ${{ github.sha }}",
+            "REVIEW_COMMIT: ${{ github.event.pull_request.head.ref }}",
+        ):
+            with self.subTest(replacement=replacement):
+                tampered = self.repository_workflow.replace(original, replacement, 1)
+
+                errors = validate_repository_workflow_text(tampered)
+
+                self.assertIn("exact immutable review-commit job environment", errors)
+
     def test_g0_review_packet_sequence_requires_python_isolation(self) -> None:
         tampered = self.repository_workflow.replace(
             "python -I -S scripts/prepare_v002_g0_review_packet.py generate",
@@ -496,7 +662,7 @@ class WorkflowStructureTests(unittest.TestCase):
     def test_g0_review_packet_sequence_rejects_an_extra_command(self) -> None:
         generate = (
             "          python -I -S scripts/prepare_v002_g0_review_packet.py generate "
-            '--commit "$GITHUB_SHA" --output build/v0.0.2-g0-review-packet'
+            '--commit "$REVIEW_COMMIT" --output build/v0.0.2-g0-review-packet'
         )
         tampered = self.repository_workflow.replace(
             generate, generate + "\n          python --version", 1
@@ -506,6 +672,38 @@ class WorkflowStructureTests(unittest.TestCase):
 
         self.assertIn(
             "exact isolated G0 review-packet setup/generate/verify command sequence",
+            errors,
+        )
+
+    def test_final_g0_review_input_sequence_requires_python_isolation(self) -> None:
+        tampered = self.repository_workflow.replace(
+            "python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate",
+            "python -S scripts/prepare_v002_final_g0_review_inputs.py generate",
+            1,
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact isolated final-G0 review-input setup/generate/verify command sequence",
+            errors,
+        )
+
+    def test_final_g0_review_input_sequence_rejects_an_extra_command(self) -> None:
+        generate = (
+            "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
+            "generate "
+            '--commit "$REVIEW_COMMIT" --output '
+            "build/v0.0.2-final-g0-review-inputs"
+        )
+        tampered = self.repository_workflow.replace(
+            generate, generate + "\n          python --version", 1
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "exact isolated final-G0 review-input setup/generate/verify command sequence",
             errors,
         )
 

@@ -43,6 +43,10 @@ from scripts.run_dedicated_server_smoke import (
     SERVER_PROPERTIES_IDENTITY_FILE,
     server_configuration_payload as smoke_server_configuration_payload,
 )
+from scripts.validate_bootstrap_provenance import (
+    APPROVED_RECORD_STATUS,
+    PENDING_RECORD_STATUS,
+)
 
 
 def png_chunk(chunk_type: bytes, content: bytes) -> bytes:
@@ -59,6 +63,8 @@ def make_png(
     height: int = 360,
     *,
     metadata: tuple[bytes, bytes] | None = None,
+    before_idat: tuple[tuple[bytes, bytes], ...] = (),
+    after_idat: tuple[tuple[bytes, bytes], ...] = (),
     seed: int = 0,
 ) -> bytes:
     header = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
@@ -67,9 +73,10 @@ def make_png(
     chunks = [png_chunk(b"IHDR", header)]
     if metadata is not None:
         chunks.append(png_chunk(*metadata))
-    chunks.extend(
-        [png_chunk(b"IDAT", zlib.compress(scanline * height)), png_chunk(b"IEND", b"")]
-    )
+    chunks.extend(png_chunk(*item) for item in before_idat)
+    chunks.append(png_chunk(b"IDAT", zlib.compress(scanline * height)))
+    chunks.extend(png_chunk(*item) for item in after_idat)
+    chunks.append(png_chunk(b"IEND", b""))
     return b"\x89PNG\r\n\x1a\n" + b"".join(chunks)
 
 
@@ -77,6 +84,13 @@ class ManualEvidenceTests(unittest.TestCase):
     artifact_name = "advancedrocketry-community-1.20.1-0.0.2-dev.jar"
 
     def setUp(self) -> None:
+        provenance_patcher = patch(
+            "scripts.collect_v002_manual_evidence."
+            "validate_bootstrap_provenance_at_commit",
+            return_value=([], {"review_status": APPROVED_RECORD_STATUS}),
+        )
+        self.provenance_validator = provenance_patcher.start()
+        self.addCleanup(provenance_patcher.stop)
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
@@ -1531,6 +1545,22 @@ class ManualEvidenceTests(unittest.TestCase):
 
         self.assertTrue(any("symlink or junction" in error for error in errors), errors)
 
+    def test_bounded_read_rechecks_pathname_identity_after_read(self) -> None:
+        path = self.build / "bounded-path-identity.txt"
+        replacement = self.build / "bounded-path-replacement.txt"
+        path.write_bytes(b"original")
+        replacement.write_bytes(b"replaced")
+        initial_stat = path.stat()
+        replacement_stat = replacement.stat()
+
+        with patch.object(
+            type(path),
+            "stat",
+            side_effect=[initial_stat, replacement_stat],
+        ):
+            with self.assertRaisesRegex(ValueError, "pathname changed"):
+                read_bounded_bytes(path, 64, "bounded fixture")
+
     def test_png_crc_and_privacy_metadata_are_rejected(self) -> None:
         valid = self.build / "valid.png"
         valid.write_bytes(make_png())
@@ -1560,6 +1590,62 @@ class ManualEvidenceTests(unittest.TestCase):
         with patch("scripts.collect_v002_manual_evidence.MAX_PNG_CHUNKS", 2):
             with self.assertRaisesRegex(ValueError, "chunks"):
                 inspect_png(valid)
+
+    def test_png_accepts_safe_physical_pixel_dimensions(self) -> None:
+        for axis, unit in ((3779, 0), (3779, 1), (0x7FFFFFFF, 1)):
+            with self.subTest(axis=axis, unit=unit):
+                path = self.build / f"physical-{axis}-unit-{unit}.png"
+                path.write_bytes(
+                    make_png(
+                        metadata=(b"pHYs", struct.pack(">IIB", axis, axis, unit))
+                    )
+                )
+
+                details = inspect_png(path)
+
+                self.assertEqual(["pHYs"], details["metadata_chunks"])
+
+    def test_png_rejects_invalid_physical_pixel_dimensions(self) -> None:
+        cases = {
+            "wrong-size": (b"\0" * 8, "invalid size"),
+            "zero-x": (struct.pack(">IIB", 0, 3779, 1), "31-bit unsigned"),
+            "zero-y": (struct.pack(">IIB", 3779, 0, 1), "31-bit unsigned"),
+            "large-x": (
+                struct.pack(">IIB", 0x80000000, 3779, 1),
+                "31-bit unsigned",
+            ),
+            "large-y": (
+                struct.pack(">IIB", 3779, 0xFFFFFFFF, 1),
+                "31-bit unsigned",
+            ),
+            "unknown-unit": (
+                struct.pack(">IIB", 3779, 3779, 2),
+                "unit must be 0 or 1",
+            ),
+        }
+        for name, (payload, message) in cases.items():
+            with self.subTest(name=name):
+                path = self.build / f"physical-{name}.png"
+                path.write_bytes(make_png(metadata=(b"pHYs", payload)))
+                with self.assertRaisesRegex(ValueError, message):
+                    inspect_png(path)
+
+    def test_png_physical_dimensions_must_be_unique_and_precede_idat(self) -> None:
+        payload = struct.pack(">IIB", 3779, 3779, 1)
+        duplicate = self.build / "physical-duplicate.png"
+        duplicate.write_bytes(
+            make_png(
+                metadata=(b"pHYs", payload),
+                before_idat=((b"pHYs", payload),),
+            )
+        )
+        late = self.build / "physical-after-idat.png"
+        late.write_bytes(make_png(after_idat=((b"pHYs", payload),)))
+
+        with self.assertRaisesRegex(ValueError, "must be unique"):
+            inspect_png(duplicate)
+        with self.assertRaisesRegex(ValueError, "must precede IDAT"):
+            inspect_png(late)
 
     def test_png_dimensions_are_bounded(self) -> None:
         tiny = self.build / "tiny.png"
@@ -2140,6 +2226,149 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertIsNone(record)
         self.assertTrue(any("chunk_unload_behavior" in error for error in errors), errors)
         self.assertFalse(output.exists())
+
+    def test_committed_output_implicitly_requires_acceptance_readiness(self) -> None:
+        session = self.ready_session()
+        review = session["applicability_reviews"]["chunk_unload_behavior"]
+        review.update(decision="PENDING", reviewed_by="", reviewed_at="", notes="")
+        output = self.root / COMMITTED_BUNDLE
+
+        errors, record = collect_evidence(
+            self.write_session(session, "canonical-incomplete-session.json"),
+            output,
+            self.root,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any("chunk_unload_behavior" in error for error in errors), errors)
+        self.assertFalse(output.exists())
+
+    def test_strict_collect_requires_approved_source_commit_provenance(self) -> None:
+        session = self.ready_session()
+        output = self.build / "strict-pending-provenance"
+        self.provenance_validator.reset_mock()
+        self.provenance_validator.return_value = (
+            [],
+            {"review_status": PENDING_RECORD_STATUS},
+        )
+
+        errors, record = collect_evidence(
+            self.write_session(session, "strict-pending-provenance-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any(APPROVED_RECORD_STATUS in error for error in errors), errors)
+        self.assertFalse(output.exists())
+        self.provenance_validator.assert_called_once_with(
+            self.root.resolve(), self.source_commit
+        )
+
+    def test_committed_collect_implicitly_requires_approved_provenance(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        self.provenance_validator.reset_mock()
+        self.provenance_validator.return_value = (
+            [],
+            {"review_status": PENDING_RECORD_STATUS},
+        )
+
+        errors, record = collect_evidence(
+            self.write_session(session, "canonical-pending-provenance-session.json"),
+            output,
+            self.root,
+        )
+
+        self.assertIsNone(record)
+        self.assertTrue(any(APPROVED_RECORD_STATUS in error for error in errors), errors)
+        self.assertFalse(output.exists())
+        self.provenance_validator.assert_called_once_with(
+            self.root.resolve(), self.source_commit
+        )
+
+    def test_non_strict_build_failure_archive_allows_pending_provenance(self) -> None:
+        session = self.ready_session()
+        session["observations"]["MANUAL-V002-003"].update(
+            outcome="FAIL",
+            actual="The observed mismatch policy needs human investigation.",
+        )
+        output = self.build / "pending-provenance-failure"
+        self.provenance_validator.reset_mock()
+        self.provenance_validator.return_value = (
+            [],
+            {"review_status": PENDING_RECORD_STATUS},
+        )
+
+        errors, record = collect_evidence(
+            self.write_session(session, "pending-provenance-failure-session.json"),
+            output,
+            self.root,
+        )
+
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        assert record is not None
+        self.assertEqual("INCOMPLETE", record["review_readiness"]["status"])
+        self.assertTrue(output.is_dir())
+        self.provenance_validator.assert_not_called()
+
+    def test_committed_validation_requires_source_commit_provenance(self) -> None:
+        session = self.ready_session()
+        output = self.root / COMMITTED_BUNDLE
+        errors, record = collect_evidence(
+            self.write_session(session, "canonical-provenance-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        self.provenance_validator.reset_mock()
+        self.provenance_validator.return_value = (
+            [],
+            {"review_status": PENDING_RECORD_STATUS},
+        )
+
+        validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(APPROVED_RECORD_STATUS in error for error in validation_errors),
+            validation_errors,
+        )
+        self.provenance_validator.assert_called_once_with(
+            self.root.resolve(), self.source_commit
+        )
+
+    def test_strict_build_validation_requires_source_commit_provenance(self) -> None:
+        session = self.ready_session()
+        output = self.build / "strict-validation-pending-provenance"
+        errors, record = collect_evidence(
+            self.write_session(session, "strict-validation-session.json"),
+            output,
+            self.root,
+        )
+        self.assertEqual([], errors)
+        self.assertIsNotNone(record)
+        self.provenance_validator.reset_mock()
+        self.provenance_validator.return_value = (
+            [],
+            {"review_status": PENDING_RECORD_STATUS},
+        )
+
+        validation_errors, _ = validate_bundle(
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertTrue(
+            any(APPROVED_RECORD_STATUS in error for error in validation_errors),
+            validation_errors,
+        )
+        self.provenance_validator.assert_called_once_with(
+            self.root.resolve(), self.source_commit
+        )
 
     def test_dirty_worktree_is_rejected_before_collection(self) -> None:
         session = self.ready_session()
@@ -2822,6 +3051,109 @@ class ManualEvidenceTests(unittest.TestCase):
         staging = self.build / ".v002-evidence-staging"
         self.assertFalse(staging.exists())
         self.assertEqual("build", validator.call_args.kwargs["_validation_mode"])
+
+    def test_validation_rereads_payload_binding_before_success(self) -> None:
+        errors, _, output = self.collect(
+            self.ready_session(), "payload-binding-reread"
+        )
+        self.assertEqual([], errors)
+        target = output / "logs" / "client_startup_world.txt"
+        target_absolute = target.absolute()
+        target_reads = 0
+
+        def mutate_after_validated_read(
+            path: Path, maximum: int, label: str
+        ) -> bytes:
+            nonlocal target_reads
+            payload = read_bounded_bytes(path, maximum, label)
+            if path.absolute() == target_absolute:
+                target_reads += 1
+                if target_reads == 1:
+                    target.write_bytes(b"X" + payload[1:])
+            return payload
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.read_bounded_bytes",
+            side_effect=mutate_after_validated_read,
+        ):
+            validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "validated bundle payload changed after validation" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+        self.assertEqual(2, target_reads)
+
+    def test_validation_rescans_inventory_after_final_payload_reads(self) -> None:
+        errors, _, output = self.collect(
+            self.ready_session(), "final-inventory-rescan"
+        )
+        self.assertEqual([], errors)
+        added = False
+
+        def add_file_during_final_binding_read(
+            path: Path, maximum: int, label: str
+        ) -> bytes:
+            nonlocal added
+            payload = read_bounded_bytes(path, maximum, label)
+            if label.startswith("validated bundle payload ") and not added:
+                added = True
+                (output / "late-extra.txt").write_text("late\n", encoding="utf-8")
+            return payload
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.read_bounded_bytes",
+            side_effect=add_file_during_final_binding_read,
+        ):
+            validation_errors, _ = validate_bundle(output, self.root)
+
+        self.assertTrue(
+            any(
+                "file set changed during final binding verification" in error
+                for error in validation_errors
+            ),
+            validation_errors,
+        )
+        self.assertTrue(added)
+
+    def test_collect_rechecks_generated_record_binding_before_publish(self) -> None:
+        session = self.ready_session()
+        output = self.build / "staged-record-binding"
+        mutated = False
+
+        def mutate_record_after_validation(*args, **kwargs):
+            nonlocal mutated
+            result = validate_bundle(*args, **kwargs)
+            if not mutated:
+                mutated = True
+                record_path = Path(args[0]) / RECORD_NAME
+                payload = record_path.read_bytes()
+                record_path.write_bytes(b"[" + payload[1:])
+            return result
+
+        with patch(
+            "scripts.collect_v002_manual_evidence.validate_bundle",
+            side_effect=mutate_record_after_validation,
+        ):
+            errors, record = collect_evidence(
+                self.write_session(session, "staged-record-binding-session.json"),
+                output,
+                self.root,
+            )
+
+        self.assertIsNone(record)
+        self.assertTrue(
+            any(
+                "staged evidence payload changed after validation" in error
+                for error in errors
+            ),
+            errors,
+        )
+        self.assertFalse(output.exists())
+        self.assertFalse((self.build / ".v002-evidence-staging").exists())
 
     def test_shared_raw_log_uses_one_immutable_snapshot_per_validation_phase(
         self,

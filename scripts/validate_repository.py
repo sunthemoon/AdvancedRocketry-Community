@@ -15,7 +15,11 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
 if __package__:
-    from .collect_v002_manual_evidence import COMMITTED_BUNDLE, validate_bundle
+    from .collect_v002_manual_evidence import (
+        COMMITTED_BUNDLE,
+        _is_link,
+        validate_bundle,
+    )
     from .validate_bootstrap_provenance import (
         APPROVED_RECORD_STATUS,
         EXCLUDED_RESOURCE_PREFIXES,
@@ -25,7 +29,11 @@ if __package__:
     )
     from .validate_release_checksums import validate_release_checksums
 else:
-    from collect_v002_manual_evidence import COMMITTED_BUNDLE, validate_bundle
+    from collect_v002_manual_evidence import (
+        COMMITTED_BUNDLE,
+        _is_link,
+        validate_bundle,
+    )
     from validate_bootstrap_provenance import (
         APPROVED_RECORD_STATUS,
         EXCLUDED_RESOURCE_PREFIXES,
@@ -74,6 +82,7 @@ REQUIRED_PATHS = (
     "scripts/check_clean_worktree.py",
     "scripts/collect_v002_manual_evidence.py",
     "scripts/generate_v002_g0_evidence.py",
+    "scripts/prepare_v002_final_g0_review_inputs.py",
     "scripts/prepare_v002_g0_review_packet.py",
     "scripts/run_dedicated_server_smoke.py",
     "scripts/validate_bootstrap_provenance.py",
@@ -84,6 +93,7 @@ REQUIRED_PATHS = (
     "tests/test_collect_v002_manual_evidence.py",
     "tests/test_dedicated_server_smoke.py",
     "tests/test_generate_v002_g0_evidence.py",
+    "tests/test_prepare_v002_final_g0_review_inputs.py",
     "tests/test_prepare_v002_g0_review_packet.py",
     "tests/test_validate_bootstrap_provenance.py",
     "tests/test_validate_build_artifact.py",
@@ -1111,6 +1121,29 @@ def _job_has_exact_action_contract(
     return actual_inputs == expected_inputs
 
 
+def _job_has_exact_action_contracts(
+    job: WorkflowJob,
+    action: str,
+    expected_inputs: tuple[dict[str, str], ...],
+) -> bool:
+    steps = _job_action_steps(job, action)
+    actual = sorted(
+        tuple(
+            sorted(
+                (
+                    key.removeprefix("with."),
+                    value,
+                )
+                for key, value in step.fields.items()
+                if key.startswith("with.")
+            )
+        )
+        for step in steps
+    )
+    expected = sorted(tuple(sorted(inputs.items())) for inputs in expected_inputs)
+    return actual == expected
+
+
 def _run_commands(run: str) -> list[tuple[str, ...]]:
     commands: list[tuple[str, ...]] = []
     for line in run.splitlines() or [run]:
@@ -1157,25 +1190,38 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         return errors
     if "permissions" in job.fields:
         errors.append("no job-level permissions override")
+    if job.env != {
+        "REVIEW_COMMIT": "${{ github.event.pull_request.head.sha || github.sha }}"
+    }:
+        errors.append("exact immutable review-commit job environment")
     action_contracts = (
         (
             "actions/checkout@v7",
             {"fetch-depth": "0", "persist-credentials": "false"},
         ),
         ("actions/setup-python@v7", {"python-version": "3.12"}),
-        (
-            "actions/upload-artifact@v7",
-            {
-                "name": "v0.0.2-g0-review-packet-${{ github.sha }}",
-                "if-no-files-found": "error",
-                "include-hidden-files": "true",
-                "path": "build/v0.0.2-g0-review-packet/",
-            },
-        ),
     )
     for action, inputs in action_contracts:
         if not _job_has_exact_action_contract(job, action, inputs):
             errors.append(f"exact enabled action contract {action}")
+    upload_contracts = (
+        {
+            "name": "v0.0.2-g0-review-packet-${{ env.REVIEW_COMMIT }}",
+            "if-no-files-found": "error",
+            "include-hidden-files": "true",
+            "path": "build/v0.0.2-g0-review-packet/",
+        },
+        {
+            "name": "v0.0.2-final-g0-review-inputs-${{ env.REVIEW_COMMIT }}",
+            "if-no-files-found": "error",
+            "include-hidden-files": "true",
+            "path": "build/v0.0.2-final-g0-review-inputs/",
+        },
+    )
+    if not _job_has_exact_action_contracts(
+        job, "actions/upload-artifact@v7", upload_contracts
+    ):
+        errors.append("exact enabled action contract actions/upload-artifact@v7")
 
     packet_commands = (
         (
@@ -1192,7 +1238,7 @@ def validate_repository_workflow_text(text: str) -> list[str]:
             "scripts/prepare_v002_g0_review_packet.py",
             "generate",
             "--commit",
-            "$GITHUB_SHA",
+            "$REVIEW_COMMIT",
             "--output",
             "build/v0.0.2-g0-review-packet",
         ),
@@ -1203,7 +1249,7 @@ def validate_repository_workflow_text(text: str) -> list[str]:
             "scripts/prepare_v002_g0_review_packet.py",
             "verify",
             "--commit",
-            "$GITHUB_SHA",
+            "$REVIEW_COMMIT",
             "--packet",
             "build/v0.0.2-g0-review-packet",
         ),
@@ -1218,10 +1264,52 @@ def validate_repository_workflow_text(text: str) -> list[str]:
             "exact isolated G0 review-packet setup/generate/verify command sequence"
         )
 
+    final_g0_commands = (
+        (
+            "python",
+            "-I",
+            "-S",
+            "-c",
+            "from pathlib import Path; Path('build').mkdir(exist_ok=True)",
+        ),
+        (
+            "python",
+            "-I",
+            "-S",
+            "scripts/prepare_v002_final_g0_review_inputs.py",
+            "generate",
+            "--commit",
+            "$REVIEW_COMMIT",
+            "--output",
+            "build/v0.0.2-final-g0-review-inputs",
+        ),
+        (
+            "python",
+            "-I",
+            "-S",
+            "scripts/prepare_v002_final_g0_review_inputs.py",
+            "verify",
+            "--commit",
+            "$REVIEW_COMMIT",
+            "--output",
+            "build/v0.0.2-final-g0-review-inputs",
+        ),
+    )
+    final_g0_steps = [
+        step
+        for step in _required_steps(job)
+        if tuple(_run_commands(step.fields.get("run", ""))) == final_g0_commands
+    ]
+    if len(final_g0_steps) != 1:
+        errors.append(
+            "exact isolated final-G0 review-input setup/generate/verify command sequence"
+        )
+
     for command in (
         ("python", "-m", "unittest", "discover", "-s", "tests", "-v"),
         ("python", "scripts/validate_bootstrap_provenance.py"),
         *packet_commands,
+        *final_g0_commands,
         (
             "python",
             "scripts/validate_repository.py",
@@ -1399,9 +1487,23 @@ def check_bootstrap_provenance(results: Results) -> None:
 
 def check_optional_v002_client_evidence(results: Results) -> None:
     bundle = ROOT / COMMITTED_BUNDLE
-    if not bundle.exists() and not bundle.is_symlink():
+    try:
+        bundle.lstat()
+    except FileNotFoundError:
         results.passed(
             "No v0.0.2 client evidence bundle is committed; G4/G8 remain unproven"
+        )
+        return
+    except OSError as exc:
+        results.fail(
+            "Cannot safely inspect the canonical v0.0.2 client evidence path: "
+            f"{exc}"
+        )
+        return
+    if _is_link(bundle):
+        results.fail(
+            "Canonical v0.0.2 client evidence path must not be a symlink, "
+            "junction, or reparse point"
         )
         return
 
@@ -1419,14 +1521,30 @@ def check_optional_v002_client_evidence(results: Results) -> None:
         )
         return
 
-    errors, record = validate_bundle(bundle, repository_root=ROOT)
+    errors, record = validate_bundle(
+        bundle,
+        repository_root=ROOT,
+        require_acceptance_ready=True,
+    )
     if errors:
         results.fail("v0.0.2 client evidence errors: " + "; ".join(errors))
         return
     assert record is not None
+    readiness_record = record.get("review_readiness")
+    readiness = (
+        readiness_record.get("status")
+        if isinstance(readiness_record, dict)
+        else None
+    )
+    if readiness != "READY_FOR_HUMAN_GATE_REVIEW":
+        results.fail(
+            "v0.0.2 canonical client evidence is not acceptance-ready: "
+            f"{readiness}"
+        )
+        return
     results.passed(
-        "v0.0.2 client evidence bundle is structurally valid; readiness is "
-        f"{record['review_readiness']['status']}"
+        "v0.0.2 client evidence bundle is structurally valid and mechanically "
+        f"{readiness}"
     )
 
 

@@ -229,6 +229,15 @@ APPROVED_DOCUMENT_CONTRADICTIONS = (
             re.IGNORECASE,
         ),
     ),
+    (
+        "incomplete binary-distribution obligations disclaimer",
+        re.compile(
+            r"does\s+not\s+claim(?:\s+that)?\s+"
+            r"binary(?:-|\s+)distribution(?:\s+notice)?\s+"
+            r"obligations\s+are\s+complete",
+            re.IGNORECASE,
+        ),
+    ),
 )
 UNCHECKED_CHECKBOX = re.compile(r"^\s*-\s*\[\s\]\s+", re.MULTILINE)
 YAML_FENCE = re.compile(

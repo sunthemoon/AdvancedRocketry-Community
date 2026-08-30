@@ -15,12 +15,20 @@ packaged_client_tested: false
 
 **Preconditions**
 
-- Complete the human G0 provenance/license subreview first, commit its notice
-  and review changes, rebuild, refresh artifact evidence, and obtain successful
+- Complete the human G0 provenance/license subreview first, rebuild with its
+  notice/review changes, refresh artifact evidence, commit those changes and the
+  regenerated evidence together, and obtain successful
   blocking CI for the exact source commit. That subreview changes packaged JAR
   bytes, so evidence captured against a pre-approval artifact is invalid. This
-  is only the first phase of G0; final G0 remains `IN_PROGRESS` until the
-  rendered README captured below receives human visual review.
+  is only the first phase of G0; final G0 remains `IN_PROGRESS` until the exact
+  implementation's complete distributable source/resource inventory and history
+  are reviewed and the rendered README captured below receives human visual
+  review.
+- Generate and verify the exact-commit final-G0 input report, compare it with
+  the blocking governance CI artifact, inspect every reported Git blob and
+  relevant history entry, and archive the report with the human decision as
+  specified by the test-machine handoff. Do not begin client capture when that
+  decision is pending or `CHANGES_REQUIRED`.
 - Before handoff, the evidence owner must update and commit the identity block
   above with the post-provenance-approval artifact-producing commit and rebuilt
   artifact SHA-256.
@@ -33,6 +41,9 @@ packaged_client_tested: false
 - Install only that newly selected post-provenance-approval distributable JAR.
 - Use the schema-4 collector template and the fixed matching profile directory
   under ignored `build/`; its `mods/` directory must contain exactly that JAR.
+- Create the game directory below the repository, resolve it to an absolute
+  path, and paste that exact absolute path into the launcher. A relative
+  `build/...` launcher value is not bound to the repository checkout.
 - Do not use ForgeGradle `runClient` as packaged release evidence.
 
 **Steps**
@@ -45,6 +56,8 @@ packaged_client_tested: false
 5. Create and enter a disposable single-player world.
 6. Review the full client log from that profile, then archive only privacy-
    reviewed evidence.
+7. Keep the same client process open for MANUAL-V002-002; do not relaunch and
+   rotate its `logs/latest.log` between the world and player-cycle observations.
 
 **Expected**
 
@@ -79,8 +92,9 @@ excluded from acceptance.
 2. Verify source, server, and client JAR SHA-256 equality.
 3. Start the server and connect with the isolated matching client.
 4. Disconnect, save, stop, restart the same world, reconnect, and stop again.
-5. After the harness completes, capture the matching profile's unchanged
-   canonical `after` inventory.
+5. After the harness completes, fully exit the matching client and wait for its
+   Java process and raw log writes to stop.
+6. Capture the matching profile's unchanged canonical `after` inventory.
 
 **Expected**
 
@@ -127,15 +141,20 @@ client-class linkage findings block harness success.
 1. Create a second isolated Forge 47.4.10 client with an empty `mods/`
    directory and capture its canonical `before` inventory only after the
    matching `after` snapshot.
-2. After the two-cycle harness exits, use the exact third-start command in
+2. Only after its `before` snapshot succeeds, launch that Forge-only profile and
+   leave it at the title screen.
+3. After the two-cycle harness exits, use the exact third-start command in
    `docs/work/v0.0.2-test-machine-handoff.md` section 6; do not try to reuse the
    harness session through its CLI.
-3. Observe the retained loopback server's compatibility indicator and message.
-4. Attempt one connection and record the actual result without assuming it,
+4. Add the same `127.0.0.1:<recorded-port>` endpoint to this distinct profile's
+   empty multiplayer list without copying the matching profile's `servers.dat`.
+5. Observe the retained loopback server's compatibility indicator and message.
+6. Attempt one connection and record the actual result without assuming it,
    then save and stop the server cleanly and retain the third-start full log
    plus its exit-code/log-hash receipt.
-5. Capture the missing-project-mod profile's unchanged canonical `after`
-   inventory and retain its own raw client log under that profile's `logs/`.
+7. Fully exit the client, wait for its process and log writes to stop, capture
+   the missing-project-mod profile's unchanged canonical `after` inventory, and
+   retain its own raw client log under that profile's `logs/`.
 
 **Expected**
 
@@ -219,6 +238,9 @@ review.
 - [ ] Distinct matching and missing-project-mod profile paths, four canonical
   inventory snapshots, exact matching JAR, and empty missing-mod inventory.
 - [ ] Current rendered README screenshot from the tested checkout.
+- [ ] Final G0 full distributable source/resource inventory-history decision is
+      recorded for the selected implementation commit and tree, with the
+      verified report archived at its commit-named tracked path.
 - [ ] Full-window packaged-client Mods page screenshot.
 - [ ] Packaged-client single-player in-world screenshot and selected log.
 - [x] Current tested-JAR packaged-server first-start and restart excerpts.
@@ -257,6 +279,14 @@ to be `PASS`, all five scoped decisions to be `ACCEPT_NOT_APPLICABLE`, the bound
 harness evidence, and all other mechanical checks. Its success means only
 `READY_FOR_HUMAN_GATE_REVIEW`.
 
+The canonical client-evidence destination is implicitly acceptance-ready even
+if the strict flag is omitted. Strict collection and strict or canonical
+validation require the record's exact source commit—not merely the current
+worktree—to contain digest-bound `THIRD_PARTY_APPROVED` bootstrap provenance.
+Non-strict ignored `build/` bundles remain permitted to preserve honest failure
+diagnostics, but are not acceptance artifacts and must later pass strict
+validation before use in human Gate review.
+
 Profile `captured_at` values are local self-attestation, not trusted timestamps.
 The before/after binding does not replace human confirmation that the intended
 profile was selected and no temporary mod change occurred between captures.
@@ -269,7 +299,16 @@ running the case; do not relabel an applicable test as `NOT_APPLICABLE`.
 PNG evidence is restricted to full-window RGB/RGBA files at least 640x360 with
 no more than 16,777,216 decoded pixels, 16 MiB per file, 40 MiB in aggregate,
 and 128 PNG chunks per file. Log excerpts are limited to 200 lines and 64 KiB
-each. Unknown,
-textual, and other nonessential ancillary PNG chunks are rejected; human pixel
-review remains required because structural validation cannot identify visible
-private information.
+each. One fixed nine-byte `pHYs` chunk with axes from `1` through
+`2,147,483,647` and unit `0` or `1` is permitted alongside recognized
+color/transparency chunks. Unknown, textual, and other nonessential ancillary
+PNG chunks are rejected; human pixel review
+remains required because structural validation cannot identify visible private
+information.
+
+All manual-session outputs are create-once. Preserve a failed attempt by moving
+the verified `build/v0.0.2-manual` directory to a fresh timestamped sibling
+below the same ignored `build/` root only after every client/server process has
+stopped, then begin again from a new template and new absolute launcher
+directories. The exact safety-checked PowerShell procedure is in the handoff
+document; never merge inputs from two attempts or delete the failed evidence.

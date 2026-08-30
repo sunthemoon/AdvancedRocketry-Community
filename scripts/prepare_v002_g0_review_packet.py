@@ -48,11 +48,14 @@ _LOADED_GENERATOR_MODULE_CODE = sys._getframe().f_code
 
 ROOT = Path(__file__).resolve().parents[1]
 GIT_EXECUTABLE_CANDIDATE = shutil.which("git")
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 SCOPE_VERSION = "v0.0.2"
 MANIFEST_NAME = "packet-manifest.json"
+REVIEW_INSTRUCTIONS_NAME = "REVIEW-INSTRUCTIONS.md"
 PAYLOAD_ROOT = "files"
 DEFAULT_COMMIT = "HEAD"
+DEFAULT_PACKET_DIRECTORY = "build/v0.0.2-g0-review-packet"
+POST_DECISION_PACKET_DIRECTORY = "build/v0.0.2-g0-review-packet-after-decision"
 
 FULL_COMMIT = re.compile(r"[0-9a-f]{40}")
 OBJECT_ID = re.compile(r"[0-9a-f]{40,64}")
@@ -156,11 +159,13 @@ STATIC_REVIEW_PATHS = (
     PROVENANCE_MANIFEST,
     "docs/06-RELEASE-AND-ACCEPTANCE-GATES.md",
     "docs/08-ASSET-LICENSE-AND-PROVENANCE.md",
+    "docs/releases/v0.0.2/INSTALLATION.md",
     "docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json",
     "docs/releases/v0.0.2/evidence/g0-mechanical/README.md",
     "docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json",
     "docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml",
     "docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json",
+    "docs/work/v0.0.2-test-machine-handoff.md",
     *(path for _, path in TOOL_DEFINITIONS),
 )
 
@@ -1284,6 +1289,29 @@ def _ordinary_path_error(path: Path, *, directory: bool) -> str | None:
     return None
 
 
+def _stable_file_identity(status: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        stat.S_IFMT(status.st_mode),
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+    )
+
+
+def _stable_directory_identity(
+    status: os.stat_result,
+) -> tuple[int, int, int, int, int, int]:
+    return (
+        stat.S_IFMT(status.st_mode),
+        status.st_dev,
+        status.st_ino,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+        getattr(status, "st_file_attributes", 0),
+    )
+
+
 def _read_bounded_regular_file(
     path: Path,
     label: str,
@@ -1291,11 +1319,21 @@ def _read_bounded_regular_file(
     maximum_size: int,
     expected_size: int | None = None,
 ) -> bytes:
-    error = _ordinary_path_error(path, directory=False)
-    if error:
-        raise PacketError(f"{label} is not a safe ordinary file: {error}")
     try:
-        declared_size = path.lstat().st_size
+        initial_status = path.lstat()
+        if stat.S_ISLNK(initial_status.st_mode) or _is_reparse_point(
+            path, initial_status
+        ):
+            raise PacketError(
+                f"{label} is not a safe ordinary file: symbolic links, junctions, "
+                "and reparse points are forbidden"
+            )
+        if not stat.S_ISREG(initial_status.st_mode):
+            raise PacketError(
+                f"{label} is not a safe ordinary file: entry is not an "
+                "ordinary file"
+            )
+        declared_size = initial_status.st_size
         if declared_size < 0 or declared_size > maximum_size:
             raise PacketError(f"{label} exceeds {maximum_size} bytes")
         if expected_size is not None and declared_size != expected_size:
@@ -1306,7 +1344,23 @@ def _read_bounded_regular_file(
             opened_status = os.fstat(stream.fileno())
             if not stat.S_ISREG(opened_status.st_mode):
                 raise PacketError(f"{label} changed to a non-regular file while reading")
+            if _stable_file_identity(opened_status) != _stable_file_identity(
+                initial_status
+            ):
+                raise PacketError(f"{label} changed identity before reading")
             content = stream.read(maximum_size + 1)
+            opened_after = os.fstat(stream.fileno())
+            if _stable_file_identity(opened_after) != _stable_file_identity(
+                opened_status
+            ):
+                raise PacketError(f"{label} changed while reading")
+        final_status = path.lstat()
+        if stat.S_ISLNK(final_status.st_mode) or _is_reparse_point(path, final_status):
+            raise PacketError(f"{label} changed to a link or reparse point while reading")
+        if _stable_file_identity(final_status) != _stable_file_identity(
+            initial_status
+        ):
+            raise PacketError(f"{label} changed identity or metadata while reading")
     except PacketError:
         raise
     except OSError as exc:
@@ -1399,6 +1453,26 @@ def _safe_ignored_directory(
             raise PacketError(
                 f"{label} parent must be an existing ordinary directory: {parent_error}"
             )
+    return candidate
+
+
+def _safe_offline_packet_directory(value: Path) -> Path:
+    raw = value if value.is_absolute() else Path.cwd() / value
+    try:
+        # The caller explicitly selects this root. Resolve its host path once so
+        # legitimate workspace symlinks/junctions above the packet do not make
+        # the offline verifier unusable. Packet-internal entries remain subject
+        # to strict no-link inventory and per-read component checks.
+        candidate = raw.resolve(strict=True)
+    except OSError as exc:
+        raise PacketError(
+            f"cannot resolve offline packet directory {raw}: {exc}"
+        ) from exc
+    error = _ordinary_path_error(candidate, directory=True)
+    if error:
+        raise PacketError(
+            f"offline packet must be an existing ordinary directory: {error}"
+        )
     return candidate
 
 
@@ -1827,6 +1901,161 @@ def _review_content_binding(
     raise PacketError(f"unsupported validated review status: {status}")
 
 
+def _reviewer_instructions(
+    commit: str,
+    tree_oid: str,
+    review_status: str,
+) -> bytes:
+    authoritative_command = (
+        f"python -I -S {GENERATOR_PATH} --repository-root . verify "
+        f"--commit {commit} --packet {DEFAULT_PACKET_DIRECTORY}"
+    )
+    content_only_command = (
+        f"python -I -S {GENERATOR_PATH} verify-content-only "
+        f"--packet {DEFAULT_PACKET_DIRECTORY}"
+    )
+    decision_lines = "\n".join(
+        (
+            f"{definition['source_decision_number']}. "
+            f"`{definition['id']}` - {definition['subject']}"
+        )
+        for definition in QUESTION_DEFINITIONS
+    )
+    if review_status == PENDING_RECORD_STATUS:
+        decision_intro = (
+            "Review the exact wording of these four existing decision items in the\n"
+            "authoritative provenance record:"
+        )
+        state_workflow = f"""## Pending-review workflow
+
+This selected commit is pending. Review each decision independently; the packet
+does not supply an answer. Do not edit packet files and do not copy the pending
+diagnostic digest into approval metadata.
+
+If the independent decision is applied as an approval, complete the documented
+authoritative metadata and digest procedure, then use this order:
+
+1. Before committing, follow the bundled installation/handoff procedure to
+   clean-build both JARs and refresh the artifact manifest, all G0 mechanical
+   packaging evidence, and release checksums. Run their validators so the
+   packet cannot carry packaging evidence from the pending notice bytes.
+2. Commit the exact decision application and refreshed evidence together, then
+   leave the checkout clean.
+3. Run the complete provenance validator against that committed state:
+
+   ```text
+   python -I -S {VALIDATOR_PATH} --require-approved-review
+   ```
+
+4. Generate and authoritatively verify a new packet for the new commit:
+
+   ```text
+   python -I -S {GENERATOR_PATH} generate --commit HEAD --output {POST_DECISION_PACKET_DIRECTORY}
+   python -I -S {GENERATOR_PATH} verify --commit HEAD --packet {POST_DECISION_PACKET_DIRECTORY}
+   ```
+
+5. Review the new commit-bound packet before relying on the approved-state
+   observation. The pending packet cannot authenticate the later source edits.
+
+If any substantive decision is negative or requires changes, or if it changes a
+target, recorded source, notice obligation, tooling, manifest, test, or intended
+subreview scope, keep the authoritative state pending and record the change
+request in the documented correction log. Rebuild and refresh every affected
+packaging/evidence file before committing the revised pending material, then
+generate and verify a new packet and re-review the affected scope. Do not carry
+this packet's observations forward as approval for different content.
+"""
+    elif review_status == APPROVED_RECORD_STATUS:
+        decision_intro = (
+            "For observation only, inspect the exact wording of these four recorded\n"
+            "decision items in the authoritative provenance record:"
+        )
+        state_workflow = """## Approved-state observation
+
+This selected commit already contains a mechanically valid, digest-bound
+approved-state record. This packet only exposes that existing state for
+observation. It does not ask the reviewer to rewrite decisions or metadata and
+does not create, renew, or broaden approval.
+
+Any later change to a target, recorded source, notice obligation, review-bound
+content, tooling, manifest, test, or intended scope requires a new committed
+state, complete validation, a newly generated and verified packet, and human
+review of the affected scope.
+"""
+    else:
+        raise PacketError(
+            f"unsupported review status for instructions: {review_status}"
+        )
+    content = f"""# v0.0.2 Forge/Gradle provenance and license subreview
+
+This packet supports only the human provenance and license subreview for the
+recorded Forge MDK and Gradle Wrapper inputs and their target files. It does not
+establish the originality of the full repository, approve unrelated content, or
+complete Gate G0. Packet generation, mechanical validation, and either
+verification command below do not answer a review question or create approval.
+
+## Exact review scope
+
+- Selected commit: `{commit}`
+- Selected root tree: `{tree_oid}`
+- Authoritative target list: `files/{PROVENANCE_MANIFEST}` (`targets`)
+- Authoritative decision text: `files/{PROVENANCE_RECORD}`; the manifest binds
+  the decision section and each source-question digest without reproducing
+  free-form source headings here
+- Supplemental operating context: `files/docs/releases/v0.0.2/INSTALLATION.md`
+  and `files/docs/work/v0.0.2-test-machine-handoff.md`
+
+{decision_intro}
+
+{decision_lines}
+
+The identifiers and subjects above locate the items; they do not prescribe an
+answer.
+
+{state_workflow}
+
+## Authoritative exact-Git verification
+
+From a checkout containing the selected commit and the exact committed tool,
+place the packet at `{DEFAULT_PACKET_DIRECTORY}`, then run:
+
+```text
+{authoritative_command}
+```
+
+`verify` is authoritative for packet construction: it resolves and validates the
+selected Git commit and tree, checks the executing tools against their selected
+Git blobs, rebuilds the expected packet from exact Git objects, and compares the
+manifest and every payload byte.
+
+## Weaker offline content-only check
+
+Never execute `files/{GENERATOR_PATH}` or any other code from an unauthenticated
+packet. `-I -S` isolates Python imports but does not sandbox a script. Obtain the
+verifier from a separately authenticated trusted checkout or tool distribution,
+place the packet at `{DEFAULT_PACKET_DIRECTORY}`, and run from that trusted
+checkout:
+
+```text
+{content_only_command}
+```
+
+`verify-content-only` checks only a bounded packet inventory and the sizes
+and SHA-256 values declared by the bundled manifest. Because that manifest is
+itself only packet content, this weaker check does not authenticate the claimed
+Git commit or tree, prove repository origin, validate provenance semantics, or
+create/confirm human approval.
+
+Both verification modes assume a private, quiescent packet copy that other
+processes cannot rewrite during the check. File and component identities are
+checked before and after reads, but this cross-platform verifier is not a
+sandbox and does not defend against an actor that can concurrently replace
+directories. Copy the artifact to a private ordinary directory and stop sync or
+extraction tools before verification.
+"""
+    return content.encode("utf-8")
+
+
 def _build_packet(
     repository_root: Path,
     commit: str,
@@ -1858,7 +2087,7 @@ def _build_packet(
         raise PacketError("full-validator review status differs from selected manifest")
 
     required_paths = _required_paths_from_manifest(source_document)
-    if len(required_paths) > MAX_PACKET_FILES:
+    if len(required_paths) + 1 > MAX_PACKET_FILES:
         raise PacketError(f"packet requires more than {MAX_PACKET_FILES} payload files")
     bindings: dict[str, GitBlob] = {PROVENANCE_MANIFEST: manifest_binding}
     total_size = len(manifest_binding.content)
@@ -1927,6 +2156,16 @@ def _build_packet(
         for definition in QUESTION_DEFINITIONS
     ]
 
+    selected_tree_oid = root_tree_oid or _git_tree_oid(repository_root, commit)
+    instruction_content = _reviewer_instructions(
+        commit,
+        selected_tree_oid,
+        review_status,
+    )
+    total_size += len(instruction_content)
+    if total_size > MAX_PACKET_BYTES:
+        raise PacketError(f"packet payload exceeds {MAX_PACKET_BYTES} total bytes")
+
     file_entries: list[dict[str, object]] = []
     payloads: dict[str, bytes] = {}
     for repository_path in sorted(bindings):
@@ -1948,6 +2187,17 @@ def _build_packet(
         )
         payloads[packet_path] = binding.content
 
+    instruction_entry = {
+        "packet_path": REVIEW_INSTRUCTIONS_NAME,
+        "media_type": "text/markdown; charset=utf-8",
+        "content_role": "REVIEWER_ENTRY_POINT",
+        "scope": "FORGE_GRADLE_PROVENANCE_LICENSE_SUBREVIEW_ONLY",
+        "binding": "PACKET_MANIFEST_SIZE_AND_SHA256",
+        "raw_sha256": _sha256(instruction_content),
+        "size": len(instruction_content),
+    }
+    payloads[REVIEW_INSTRUCTIONS_NAME] = instruction_content
+
     tools = [
         _tool_descriptor(role, path, commit, tool_bindings[path])
         for role, path in TOOL_DEFINITIONS
@@ -1958,12 +2208,14 @@ def _build_packet(
         "packet_purpose": "HUMAN_REVIEW_INPUTS_ONLY",
         "scope_statement": (
             "This packet is a read-only snapshot of selected-commit Git-object "
-            "inputs. Complete mechanical validation does not answer a human "
-            "decision, author review metadata, or change any release Gate."
+            "inputs for the Forge/Gradle provenance and license subreview only. "
+            "It does not establish full-repository originality or final G0. "
+            "Complete mechanical validation does not answer a human decision, "
+            "author review metadata, or change any release Gate."
         ),
         "source_commit": commit,
         "source_commit_object_type": "commit",
-        "source_tree_oid": root_tree_oid or _git_tree_oid(repository_root, commit),
+        "source_tree_oid": selected_tree_oid,
         "tool_identity": {
             "tool_commit": commit,
             "runtime_match_policy": (
@@ -1973,6 +2225,7 @@ def _build_packet(
             "tools": tools,
         },
         "files": file_entries,
+        "reviewer_instructions": instruction_entry,
         "mechanical_validation": {
             "status": "PASS",
             "scope": "COMPLETE_SCHEMA3_PROVENANCE_SELECTED_COMMIT",
@@ -1988,6 +2241,10 @@ def _build_packet(
         "packet_construction": {
             "bound_payload_file_count": len(file_entries),
             "bound_payload_bytes": sum(entry["size"] for entry in file_entries),
+            "generated_payload_file_count": 1,
+            "generated_payload_bytes": len(instruction_content),
+            "total_payload_file_count": len(payloads),
+            "total_payload_bytes": sum(len(content) for content in payloads.values()),
             "mechanical_evidence_json_count": len(MECHANICAL_JSON_PATHS),
         },
         "observed_review_state": {
@@ -2052,6 +2309,62 @@ def _destination(packet_root: Path, packet_path: str) -> Path:
     except ValueError as exc:
         raise PacketError(f"packet path escapes packet directory: {packet_path}") from exc
     return destination
+
+
+def _packet_directory_component_snapshot(
+    packet_root: Path,
+    packet_path: str,
+    label: str,
+) -> tuple[tuple[str, tuple[int, int, int, int, int, int]], ...]:
+    _destination(packet_root, packet_path)
+    components: list[tuple[str, tuple[int, int, int, int, int, int]]] = []
+    cursor = packet_root
+    relative_components = (".", *PurePosixPath(packet_path).parts[:-1])
+    for index, component in enumerate(relative_components):
+        if index:
+            cursor /= component
+        try:
+            status = cursor.lstat()
+        except OSError as exc:
+            raise PacketError(
+                f"cannot inspect {label} directory component {cursor}: {exc}"
+            ) from exc
+        if stat.S_ISLNK(status.st_mode) or _is_reparse_point(cursor, status):
+            raise PacketError(
+                f"{label} traverses a symlink, junction, or reparse point: {cursor}"
+            )
+        if not stat.S_ISDIR(status.st_mode):
+            raise PacketError(
+                f"{label} directory component is not an ordinary directory: {cursor}"
+            )
+        components.append(
+            (
+                "." if index == 0 else component,
+                _stable_directory_identity(status),
+            )
+        )
+    return tuple(components)
+
+
+def _read_bounded_packet_file(
+    packet_root: Path,
+    packet_path: str,
+    label: str,
+    *,
+    maximum_size: int,
+    expected_size: int | None = None,
+) -> bytes:
+    before = _packet_directory_component_snapshot(packet_root, packet_path, label)
+    content = _read_bounded_regular_file(
+        _destination(packet_root, packet_path),
+        label,
+        maximum_size=maximum_size,
+        expected_size=expected_size,
+    )
+    after = _packet_directory_component_snapshot(packet_root, packet_path, label)
+    if after != before:
+        raise PacketError(f"{label} parent directory components changed while reading")
+    return content
 
 
 def _expected_directories(files: set[str]) -> set[str]:
@@ -2160,6 +2473,25 @@ def _packet_inventory(
 
 
 def _validate_untrusted_manifest(document: dict[str, Any], errors: list[str]) -> None:
+    expected_top_level_fields = {
+        "schema_version",
+        "scope_version",
+        "packet_purpose",
+        "scope_statement",
+        "source_commit",
+        "source_commit_object_type",
+        "source_tree_oid",
+        "tool_identity",
+        "files",
+        "reviewer_instructions",
+        "mechanical_validation",
+        "packet_construction",
+        "observed_review_state",
+        "question_section",
+        "review_content_binding",
+    }
+    if set(document) != expected_top_level_fields:
+        errors.append("packet manifest top-level fields are invalid")
     if document.get("schema_version") != SCHEMA_VERSION:
         errors.append(f"packet schema_version must be {SCHEMA_VERSION}")
     if document.get("scope_version") != SCOPE_VERSION:
@@ -2168,6 +2500,8 @@ def _validate_untrusted_manifest(document: dict[str, Any], errors: list[str]) ->
         errors.append("packet purpose is invalid")
     if FULL_COMMIT.fullmatch(str(document.get("source_commit", ""))) is None:
         errors.append("packet source_commit must be a full lowercase commit SHA")
+    if document.get("source_commit_object_type") != "commit":
+        errors.append("packet source_commit_object_type must be commit")
     if OBJECT_ID.fullmatch(str(document.get("source_tree_oid", ""))) is None:
         errors.append("packet source_tree_oid is invalid")
 
@@ -2175,8 +2509,10 @@ def _validate_untrusted_manifest(document: dict[str, Any], errors: list[str]) ->
     if not isinstance(entries, list):
         errors.append("packet files must be a list")
         return
-    if len(entries) > MAX_PACKET_FILES:
-        errors.append(f"packet files exceeds {MAX_PACKET_FILES} entries")
+    if len(entries) + 1 > MAX_PACKET_FILES:
+        errors.append(
+            f"packet files plus reviewer instructions exceeds {MAX_PACKET_FILES} entries"
+        )
         return
     seen_repository: set[str] = set()
     seen_packet: set[str] = set()
@@ -2223,6 +2559,18 @@ def _validate_untrusted_manifest(document: dict[str, Any], errors: list[str]) ->
                     )
                 else:
                     portable_seen[portable_key] = value
+        repository_path = entry.get("repository_path")
+        packet_path = entry.get("packet_path")
+        if (
+            isinstance(repository_path, str)
+            and _relative_path_error(repository_path) is None
+            and isinstance(packet_path, str)
+            and _relative_path_error(packet_path) is None
+            and packet_path != f"{PAYLOAD_ROOT}/{repository_path}"
+        ):
+            errors.append(
+                f"packet files[{index}] packet_path is not derived from repository_path"
+            )
         if entry.get("git_mode") not in ALLOWED_GIT_MODES:
             errors.append(f"packet files[{index}] git_mode is invalid")
         if entry.get("git_object_type") != "blob":
@@ -2236,8 +2584,164 @@ def _validate_untrusted_manifest(document: dict[str, Any], errors: list[str]) ->
             errors.append(f"packet files[{index}] size is invalid")
         else:
             declared_size += size
+
+    valid_repository_paths = [
+        entry.get("repository_path")
+        for entry in entries
+        if isinstance(entry, dict)
+        and isinstance(entry.get("repository_path"), str)
+        and _relative_path_error(entry.get("repository_path")) is None
+    ]
+    if valid_repository_paths != sorted(valid_repository_paths):
+        errors.append("packet files must be sorted by repository_path")
+
+    instruction = document.get("reviewer_instructions")
+    instruction_size: int | None = None
+    if not isinstance(instruction, dict):
+        errors.append("packet reviewer_instructions must be an object")
+    else:
+        expected_instruction_fields = {
+            "packet_path",
+            "media_type",
+            "content_role",
+            "scope",
+            "binding",
+            "raw_sha256",
+            "size",
+        }
+        if set(instruction) != expected_instruction_fields:
+            errors.append("packet reviewer_instructions fields are invalid")
+        instruction_path = instruction.get("packet_path")
+        instruction_path_error = _relative_path_error(instruction_path)
+        if instruction_path_error:
+            errors.append(
+                "packet reviewer instructions packet_path is unsafe: "
+                f"{_bounded_error_text(repr(instruction_path))}: "
+                f"{instruction_path_error}"
+            )
+        else:
+            assert isinstance(instruction_path, str)
+            if instruction_path != REVIEW_INSTRUCTIONS_NAME:
+                errors.append(
+                    "packet reviewer instructions path must be "
+                    f"{REVIEW_INSTRUCTIONS_NAME}"
+                )
+            if instruction_path in seen_packet:
+                errors.append(
+                    f"packet contains duplicate packet_path: {instruction_path}"
+                )
+            portable_key = _portable_path_key(instruction_path)
+            previous = portable_packet.get(portable_key)
+            if previous is not None and previous != instruction_path:
+                errors.append(
+                    "packet contains a case-insensitive or Unicode-normalized "
+                    f"packet_path collision: {previous} and {instruction_path}"
+                )
+            seen_packet.add(instruction_path)
+            portable_packet[portable_key] = instruction_path
+        if instruction.get("media_type") != "text/markdown; charset=utf-8":
+            errors.append("packet reviewer instructions media_type is invalid")
+        if instruction.get("content_role") != "REVIEWER_ENTRY_POINT":
+            errors.append("packet reviewer instructions content_role is invalid")
+        if (
+            instruction.get("scope")
+            != "FORGE_GRADLE_PROVENANCE_LICENSE_SUBREVIEW_ONLY"
+        ):
+            errors.append("packet reviewer instructions scope is invalid")
+        if instruction.get("binding") != "PACKET_MANIFEST_SIZE_AND_SHA256":
+            errors.append("packet reviewer instructions binding is invalid")
+        if SHA256.fullmatch(str(instruction.get("raw_sha256", ""))) is None:
+            errors.append("packet reviewer instructions raw_sha256 is invalid")
+        raw_instruction_size = instruction.get("size")
+        if (
+            type(raw_instruction_size) is not int
+            or raw_instruction_size < 0
+            or raw_instruction_size > MAX_FILE_BYTES
+        ):
+            errors.append("packet reviewer instructions size is invalid")
+        else:
+            instruction_size = raw_instruction_size
+            declared_size += raw_instruction_size
+
     if declared_size > MAX_PACKET_BYTES:
         errors.append(f"packet manifest declares more than {MAX_PACKET_BYTES} payload bytes")
+
+    construction = document.get("packet_construction")
+    expected_construction_fields = {
+        "bound_payload_file_count",
+        "bound_payload_bytes",
+        "generated_payload_file_count",
+        "generated_payload_bytes",
+        "total_payload_file_count",
+        "total_payload_bytes",
+        "mechanical_evidence_json_count",
+    }
+    if not isinstance(construction, dict):
+        errors.append("packet packet_construction must be an object")
+    elif set(construction) != expected_construction_fields:
+        errors.append("packet packet_construction fields are invalid")
+    else:
+        bound_size = sum(
+            entry.get("size", 0)
+            for entry in entries
+            if isinstance(entry, dict) and type(entry.get("size")) is int
+        )
+        expected_counts = {
+            "bound_payload_file_count": len(entries),
+            "bound_payload_bytes": bound_size,
+            "generated_payload_file_count": 1,
+            "generated_payload_bytes": instruction_size,
+            "total_payload_file_count": len(entries) + 1,
+            "total_payload_bytes": (
+                None if instruction_size is None else bound_size + instruction_size
+            ),
+            "mechanical_evidence_json_count": len(MECHANICAL_JSON_PATHS),
+        }
+        for field, expected in expected_counts.items():
+            if construction.get(field) != expected:
+                errors.append(
+                    f"packet packet_construction {field} is inconsistent with payload declarations"
+                )
+
+
+def _manifest_payload_declarations(
+    document: dict[str, Any],
+) -> dict[str, tuple[int, str]]:
+    declarations: dict[str, tuple[int, str]] = {}
+    entries = document.get("files")
+    if isinstance(entries, list):
+        for entry in entries[:MAX_PACKET_FILES]:
+            if not isinstance(entry, dict):
+                continue
+            path = entry.get("packet_path")
+            size = entry.get("size")
+            digest = entry.get("raw_sha256")
+            if (
+                isinstance(path, str)
+                and _relative_path_error(path) is None
+                and type(size) is int
+                and 0 <= size <= MAX_FILE_BYTES
+                and isinstance(digest, str)
+                and SHA256.fullmatch(digest) is not None
+                and path not in declarations
+            ):
+                declarations[path] = (size, digest)
+    instruction = document.get("reviewer_instructions")
+    if isinstance(instruction, dict):
+        path = instruction.get("packet_path")
+        size = instruction.get("size")
+        digest = instruction.get("raw_sha256")
+        if (
+            isinstance(path, str)
+            and _relative_path_error(path) is None
+            and type(size) is int
+            and 0 <= size <= MAX_FILE_BYTES
+            and isinstance(digest, str)
+            and SHA256.fullmatch(digest) is not None
+            and path not in declarations
+        ):
+            declarations[path] = (size, digest)
+    return declarations
 
 
 def _generate_packet_resolved(
@@ -2278,10 +2782,147 @@ def generate_packet(
     return _generate_packet_resolved(repository_root, commit, output_directory)
 
 
+def _read_declared_payloads(
+    packet_root: Path,
+    declarations: dict[str, tuple[int, str]],
+    observed_files: set[str],
+    errors: list[str],
+    *,
+    pass_label: str,
+) -> dict[str, bytes]:
+    snapshots: dict[str, bytes] = {}
+    for packet_path, (expected_size, expected_digest) in sorted(
+        declarations.items()
+    ):
+        if packet_path not in observed_files:
+            continue
+        try:
+            content = _read_bounded_packet_file(
+                packet_root,
+                packet_path,
+                f"packet payload {packet_path}",
+                maximum_size=MAX_FILE_BYTES,
+                expected_size=expected_size,
+            )
+        except PacketError as exc:
+            errors.append(
+                f"cannot read packet payload during {pass_label} pass "
+                f"{packet_path}: {exc}"
+            )
+            continue
+        if _sha256(content) != expected_digest:
+            errors.append(
+                f"packet payload SHA-256 differs during {pass_label} pass: "
+                f"{packet_path}"
+            )
+        snapshots[packet_path] = content
+    return snapshots
+
+
+def _inspect_packet_content(
+    packet_root: Path,
+) -> tuple[list[str], dict[str, Any] | None, dict[str, bytes]]:
+    errors: list[str] = []
+    manifest_path = packet_root / MANIFEST_NAME
+    manifest_error = _ordinary_path_error(manifest_path, directory=False)
+    if manifest_error:
+        return (
+            [f"packet is missing a safe ordinary {MANIFEST_NAME}: {manifest_error}"],
+            None,
+            {},
+        )
+    try:
+        manifest_content = _read_bounded_packet_file(
+            packet_root,
+            MANIFEST_NAME,
+            "packet manifest",
+            maximum_size=MAX_MANIFEST_BYTES,
+        )
+        document = _load_json(manifest_content, MANIFEST_NAME)
+    except (OSError, PacketError) as exc:
+        return [f"cannot read packet manifest: {exc}"], None, {}
+
+    _validate_untrusted_manifest(document, errors)
+    try:
+        canonical_manifest = _canonical_json(document)
+    except PacketError as exc:
+        errors.append(f"packet manifest cannot be canonically encoded: {exc}")
+    else:
+        if manifest_content != canonical_manifest:
+            errors.append("packet manifest is not the deterministic canonical encoding")
+
+    declarations = _manifest_payload_declarations(document)
+    observed_files, observed_directories, inventory_errors = _packet_inventory(
+        packet_root
+    )
+    errors.extend(inventory_errors)
+    expected_files = {MANIFEST_NAME, *declarations}
+    expected_directories = _expected_directories(expected_files)
+    missing = sorted(expected_files - observed_files)
+    extra = sorted(observed_files - expected_files)
+    extra_directories = sorted(observed_directories - expected_directories)
+    if missing:
+        errors.append("packet is missing files: " + ", ".join(missing))
+    if extra:
+        errors.append("packet has unexpected files: " + ", ".join(extra))
+    if extra_directories:
+        errors.append(
+            "packet has unexpected directories: " + ", ".join(extra_directories)
+        )
+
+    first_snapshots = _read_declared_payloads(
+        packet_root,
+        declarations,
+        observed_files,
+        errors,
+        pass_label="initial",
+    )
+
+    final_files, final_directories, final_inventory_errors = _packet_inventory(
+        packet_root
+    )
+    errors.extend(f"final inventory: {error}" for error in final_inventory_errors)
+    if final_files != observed_files or final_directories != observed_directories:
+        errors.append("packet inventory changed during verification")
+    try:
+        final_manifest_content = _read_bounded_packet_file(
+            packet_root,
+            MANIFEST_NAME,
+            "packet manifest final snapshot",
+            maximum_size=MAX_MANIFEST_BYTES,
+            expected_size=len(manifest_content),
+        )
+    except PacketError as exc:
+        errors.append(f"cannot re-read packet manifest: {exc}")
+    else:
+        if final_manifest_content != manifest_content:
+            errors.append("packet manifest changed during verification")
+    final_snapshots = _read_declared_payloads(
+        packet_root,
+        declarations,
+        final_files,
+        errors,
+        pass_label="final",
+    )
+    if final_snapshots != first_snapshots:
+        errors.append("packet payload bytes changed during verification")
+    return errors, document, final_snapshots
+
+
+def verify_packet_content_only(packet_directory: Path) -> list[str]:
+    """Verify a private, quiescent packet copy without Git authenticity."""
+
+    try:
+        packet_root = _safe_offline_packet_directory(packet_directory)
+    except PacketError as exc:
+        return [str(exc)]
+    errors, _, _ = _inspect_packet_content(packet_root)
+    return errors
+
+
 def _verify_packet_resolved(
     repository_root: Path, commit: str, packet_directory: Path
 ) -> list[str]:
-    errors: list[str] = []
     try:
         packet_root = _safe_ignored_directory(
             repository_root,
@@ -2292,28 +2933,9 @@ def _verify_packet_resolved(
     except PacketError as exc:
         return [str(exc)]
 
-    manifest_path = packet_root / MANIFEST_NAME
-    manifest_error = _ordinary_path_error(manifest_path, directory=False)
-    if manifest_error:
-        return [f"packet is missing a safe ordinary {MANIFEST_NAME}: {manifest_error}"]
-    try:
-        manifest_content = _read_bounded_regular_file(
-            manifest_path,
-            "packet manifest",
-            maximum_size=MAX_MANIFEST_BYTES,
-        )
-        document = _load_json(manifest_content, MANIFEST_NAME)
-    except (OSError, PacketError) as exc:
-        return [f"cannot read packet manifest: {exc}"]
-
-    _validate_untrusted_manifest(document, errors)
-    try:
-        canonical_manifest = _canonical_json(document)
-    except PacketError as exc:
-        errors.append(f"packet manifest cannot be canonically encoded: {exc}")
-    else:
-        if manifest_content != canonical_manifest:
-            errors.append("packet manifest is not the deterministic canonical encoding")
+    errors, document, observed_payloads = _inspect_packet_content(packet_root)
+    if document is None:
+        return errors
     if document.get("source_commit") != commit:
         errors.append(
             f"packet commit binding is {document.get('source_commit')}, expected {commit}"
@@ -2328,47 +2950,13 @@ def _verify_packet_resolved(
         return errors
     if document != expected_manifest:
         errors.append("packet manifest differs from authoritative selected-commit inputs")
-
-    observed_files, observed_directories, inventory_errors = _packet_inventory(
-        packet_root
-    )
-    errors.extend(inventory_errors)
-    expected_files = {MANIFEST_NAME, *expected_payloads}
-    expected_directories = _expected_directories(expected_files)
-    missing = sorted(expected_files - observed_files)
-    extra = sorted(observed_files - expected_files)
-    extra_directories = sorted(observed_directories - expected_directories)
-    if missing:
-        errors.append("packet is missing files: " + ", ".join(missing))
-    if extra:
-        errors.append("packet has unexpected files: " + ", ".join(extra))
-    if extra_directories:
-        errors.append(
-            "packet has unexpected directories: " + ", ".join(extra_directories)
-        )
-
-    entries = {entry["packet_path"]: entry for entry in expected_manifest["files"]}
     for packet_path, expected_content in sorted(expected_payloads.items()):
-        if packet_path not in observed_files:
-            continue
-        path = _destination(packet_root, packet_path)
-        try:
-            entry = entries[packet_path]
-            observed_content = _read_bounded_regular_file(
-                path,
-                f"packet payload {packet_path}",
-                maximum_size=MAX_FILE_BYTES,
-                expected_size=entry["size"],
+        observed_content = observed_payloads.get(packet_path)
+        if observed_content is not None and observed_content != expected_content:
+            errors.append(
+                "packet payload differs from authoritative selected-commit "
+                f"expectation: {packet_path}"
             )
-        except PacketError as exc:
-            errors.append(f"cannot read packet payload {packet_path}: {exc}")
-            continue
-        if len(observed_content) != entry["size"]:
-            errors.append(f"packet payload size differs: {packet_path}")
-        if _sha256(observed_content) != entry["raw_sha256"]:
-            errors.append(f"packet payload SHA-256 differs: {packet_path}")
-        if observed_content != expected_content:
-            errors.append(f"packet payload differs from selected Git blob: {packet_path}")
     return errors
 
 
@@ -2403,12 +2991,40 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             subparser.add_argument("--output", type=Path, required=True)
         else:
             subparser.add_argument("--packet", type=Path, required=True)
+    content_only = subparsers.add_parser(
+        "verify-content-only",
+        help=(
+            "weaker offline check of packet-local inventory, sizes, and hashes; "
+            "requires a separately trusted verifier and a private quiescent copy; "
+            "does not authenticate Git or approval"
+        ),
+    )
+    content_only.add_argument("--packet", type=Path, required=True)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
+        if args.command == "verify-content-only":
+            errors = verify_packet_content_only(args.packet)
+            if errors:
+                for error in errors:
+                    print(f"[FAIL] {error}", file=sys.stderr)
+                return 1
+            print("[PASS] Verified bounded packet-local inventory, sizes, and hashes")
+            print(
+                "[INFO] CONTENT-ONLY CHECK: Git commit/tree authenticity, provenance "
+                "semantics, and human approval were not verified."
+            )
+            print(
+                "[INFO] Use only a separately authenticated verifier and a private, "
+                "quiescent packet copy; never execute code from an unauthenticated "
+                "packet. Hostile concurrent directory replacement is outside this "
+                "check's guarantee."
+            )
+            return 0
+
         repository_root = _repository_root(args.repository_root)
         commit = resolve_commit(repository_root, args.commit)
         if args.command == "generate":
@@ -2416,8 +3032,9 @@ def main(argv: list[str] | None = None) -> int:
                 repository_root, commit, args.output
             )
             print(
-                f"[PASS] Generated {len(manifest['files'])} commit-bound G0 review "
-                f"inputs for {commit} at {args.output}"
+                "[PASS] Generated "
+                f"{manifest['packet_construction']['total_payload_file_count']} "
+                f"manifest-bound G0 subreview payloads for {commit} at {args.output}"
             )
             print(
                 "[INFO] Complete mechanical validation does not approve G0 or "
@@ -2434,6 +3051,11 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "[INFO] Verification observes selected-commit state and does not "
             "approve G0 or author human review data."
+        )
+        print(
+            "[INFO] Verification assumes a private, quiescent packet directory; "
+            "hostile concurrent directory replacement is outside this "
+            "cross-platform check's guarantee."
         )
         return 0
     except PacketError as exc:

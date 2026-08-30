@@ -1896,6 +1896,44 @@ reviewed_at: 2026-08-28"""
             errors,
         )
 
+    def test_approved_review_rejects_incomplete_binary_obligations_disclaimers(
+        self,
+    ) -> None:
+        cases = (
+            (
+                EXPECTED_RECORD_PATH,
+                "provenance Markdown",
+                "This record does not claim binary-distribution notice "
+                "obligations are complete.",
+            ),
+            (
+                EXPECTED_NOTICE_PATH,
+                "third-party notice",
+                "This notice does not claim that binary-distribution "
+                "obligations are complete.",
+            ),
+        )
+        for relative_path, document_label, disclaimer in cases:
+            with self.subTest(relative_path=relative_path):
+                self.approve_current_content()
+                path = self.root / relative_path
+                path.write_text(
+                    path.read_text(encoding="utf-8") + f"\n{disclaimer}\n",
+                    encoding="utf-8",
+                )
+
+                errors, _ = self.validate()
+
+                self.assertTrue(
+                    any(
+                        f"approved review {document_label} still contains "
+                        "incomplete binary-distribution obligations disclaimer"
+                        in error
+                        for error in errors
+                    ),
+                    errors,
+                )
+
     def test_approved_review_is_invalid_after_audited_commit_changes(self) -> None:
         self.approve_current_content()
         previous = self.document["audited_target_commit"]

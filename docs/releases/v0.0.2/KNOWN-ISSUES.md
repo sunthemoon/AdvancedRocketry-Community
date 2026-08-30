@@ -6,6 +6,10 @@
   the source/binary notice treatment. The schema-3 provenance record remains
   `EVIDENCE_COMPLETE_HUMAN_REVIEW_PENDING`; its individual target and notice
   decisions remain `PENDING_HUMAN_REVIEW`.
+- Final G0 has not reviewed the exact implementation's complete distributable
+  source/resource inventory and relevant history for unrecorded upstream or
+  community-fork content. Deterministic exact-Git input generation and CI
+  artifact upload exist, but they make no human provenance/license decision.
 - An isolated packaged client has not captured the Mods page or disposable
   single-player world evidence.
 - A matching packaged client has not joined, disconnected, or reconnected after
@@ -19,9 +23,10 @@
   evidence. Its transition changes `THIRD-PARTY-NOTICES.md`, which is packaged
   into both JARs; approval therefore requires a rebuild, refreshed artifact
   evidence, and successful CI before the client/server JAR is selected. This
-  subreview does not pass G0; the post-rebuild rendered README capture and human
-  visual review remain required. Any earlier client capture would describe
-  obsolete bytes.
+  subreview does not pass G0; the full source/resource inventory-history
+  decision must then be approved before client capture, and the post-rebuild
+  rendered README visual review remains required. Any earlier client capture
+  could bind bytes or source scope that a required correction supersedes.
 - Provenance and future client evidence bind historical Git commits. PR #3 must
   use a normal merge commit when accepted; squash/rebase history rewriting
   requires new bindings, mechanical validation, and the affected human reviews.

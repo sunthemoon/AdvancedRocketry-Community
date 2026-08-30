@@ -22,6 +22,17 @@ import zlib
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
+if __package__:
+    from .validate_bootstrap_provenance import (
+        APPROVED_RECORD_STATUS,
+        validate_bootstrap_provenance_at_commit,
+    )
+else:
+    from validate_bootstrap_provenance import (
+        APPROVED_RECORD_STATUS,
+        validate_bootstrap_provenance_at_commit,
+    )
+
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "v0.0.2"
@@ -315,7 +326,14 @@ SCOPE_STATEMENT = (
 )
 PNG_PRIVACY_CHUNKS = {b"tEXt", b"zTXt", b"iTXt", b"eXIf", b"tIME"}
 PNG_CRITICAL_CHUNKS = {b"IHDR", b"PLTE", b"IDAT", b"IEND"}
-PNG_ALLOWED_ANCILLARY = {b"cHRM": 32, b"gAMA": 4, b"sRGB": 1, b"tRNS": 6}
+PNG_ALLOWED_ANCILLARY = {
+    b"cHRM": 32,
+    b"gAMA": 4,
+    b"pHYs": 9,
+    b"sRGB": 1,
+    b"tRNS": 6,
+}
+PNG_PHYS_AXIS_MAX = (1 << 31) - 1
 SERVER_LOG_CYCLES = {
     "server_first_join_leave_save_stop": "first-start",
     "server_restart_reconnect_save_stop": "restart",
@@ -394,6 +412,12 @@ def read_bounded_bytes(path: Path, maximum: int, label: str) -> bytes:
             raise ValueError(f"{label} exceeds {maximum} bytes: {path}")
         payload = stream.read(maximum + 1)
         final_stat = os.fstat(stream.fileno())
+        try:
+            final_path_stat = path.stat()
+        except OSError as exc:
+            raise ValueError(
+                f"{label} pathname changed while it was being read: {path}"
+            ) from exc
     if len(payload) > maximum:
         raise ValueError(f"{label} exceeds {maximum} bytes: {path}")
     if (
@@ -402,7 +426,105 @@ def read_bounded_bytes(path: Path, maximum: int, label: str) -> bytes:
         or len(payload) != final_stat.st_size
     ):
         raise ValueError(f"{label} changed while it was being read: {path}")
+    if (
+        not stat.S_ISREG(final_path_stat.st_mode)
+        or (final_path_stat.st_dev, final_path_stat.st_ino)
+        != (final_stat.st_dev, final_stat.st_ino)
+        or final_path_stat.st_size != final_stat.st_size
+        or final_path_stat.st_mtime_ns != final_stat.st_mtime_ns
+    ):
+        raise ValueError(
+            f"{label} pathname changed while it was being read: {path}"
+        )
     return payload
+
+
+def _payload_binding(payload: bytes) -> tuple[int, str]:
+    return len(payload), hashlib.sha256(payload).hexdigest()
+
+
+def _safe_bundle_file_inventory(bundle: Path) -> set[str]:
+    if _is_link(bundle) or not bundle.is_dir():
+        raise ValueError(f"bundle must be a safe directory: {bundle}")
+    actual_files: set[str] = set()
+    pending_directories = [bundle]
+    scanned_entries = 0
+    while pending_directories:
+        directory = pending_directories.pop()
+        with os.scandir(directory) as entries:
+            for entry in entries:
+                scanned_entries += 1
+                if scanned_entries > MAX_BUNDLE_ENTRIES:
+                    raise ValueError(
+                        "bundle contains more than "
+                        f"{MAX_BUNDLE_ENTRIES} filesystem entries"
+                    )
+                path = Path(entry.path)
+                if _is_link(path):
+                    raise ValueError(
+                        f"bundle must not contain symlinks or junctions: {path}"
+                    )
+                if entry.is_file(follow_symlinks=False):
+                    actual_files.add(path.relative_to(bundle).as_posix())
+                elif entry.is_dir(follow_symlinks=False):
+                    pending_directories.append(path)
+                else:
+                    raise ValueError(
+                        f"bundle contains an unsupported filesystem entry: {path}"
+                    )
+    return actual_files
+
+
+def _verify_bundle_payload_bindings(
+    bundle: Path,
+    expected_bindings: dict[str, tuple[int, str]],
+    *,
+    label: str,
+) -> None:
+    actual_files = _safe_bundle_file_inventory(bundle)
+    expected_files = set(expected_bindings)
+    if actual_files != expected_files:
+        raise ValueError(
+            f"{label} file set changed: expected "
+            + ", ".join(sorted(expected_files))
+            + "; found "
+            + ", ".join(sorted(actual_files))
+        )
+    for relative, (expected_size, expected_sha256) in sorted(
+        expected_bindings.items()
+    ):
+        posix = PurePosixPath(relative)
+        windows = PureWindowsPath(relative)
+        if (
+            not relative
+            or posix.is_absolute()
+            or windows.is_absolute()
+            or windows.drive
+            or "\\" in relative
+            or any(part in ("", ".", "..") for part in relative.split("/"))
+        ):
+            raise ValueError(f"{label} contains an unsafe payload path: {relative}")
+        path = bundle.joinpath(*posix.parts)
+        _reject_link_components(path.absolute(), bundle.absolute())
+        if _is_link(path) or not path.is_file():
+            raise ValueError(f"{label} payload is no longer a safe file: {relative}")
+        payload = read_bounded_bytes(
+            path,
+            expected_size,
+            f"{label} payload {relative}",
+        )
+        if _payload_binding(payload) != (expected_size, expected_sha256):
+            raise ValueError(
+                f"{label} payload changed after validation: {relative}"
+            )
+    final_files = _safe_bundle_file_inventory(bundle)
+    if final_files != expected_files:
+        raise ValueError(
+            f"{label} file set changed during final binding verification: expected "
+            + ", ".join(sorted(expected_files))
+            + "; found "
+            + ", ".join(sorted(final_files))
+        )
 
 
 def read_bounded_text(path: Path, maximum: int, label: str) -> str:
@@ -1124,6 +1246,26 @@ def validate_source_revision(
     return errors
 
 
+def approved_source_provenance_errors(
+    repository_root: Path, source_commit: str
+) -> list[str]:
+    errors, details = validate_bootstrap_provenance_at_commit(
+        repository_root.resolve(), source_commit
+    )
+    if errors:
+        return [
+            "source-commit bootstrap provenance is invalid: " + "; ".join(errors)
+        ]
+    status = details.get("review_status")
+    if status != APPROVED_RECORD_STATUS:
+        return [
+            "acceptance-ready client evidence requires digest-bound bootstrap "
+            f"provenance status {APPROVED_RECORD_STATUS} at source commit "
+            f"{source_commit}; found {status}"
+        ]
+    return []
+
+
 def _redact_ip(match: re.Match[str], counts: dict[str, int]) -> str:
     candidate = match.group(0)
     unwrapped = candidate[1:-1] if candidate.startswith("[") else candidate
@@ -1711,6 +1853,18 @@ def inspect_png(path: Path) -> dict[str, Any]:
                 raise ValueError(
                     f"PNG ancillary chunk {chunk_type.decode()} must precede IDAT: {path}"
                 )
+            if chunk_type == b"pHYs":
+                pixels_x, pixels_y, unit = struct.unpack(">IIB", data)
+                if not (
+                    1 <= pixels_x <= PNG_PHYS_AXIS_MAX
+                    and 1 <= pixels_y <= PNG_PHYS_AXIS_MAX
+                ):
+                    raise ValueError(
+                        "PNG pHYs axes must be 31-bit unsigned integers from 1 "
+                        f"through {PNG_PHYS_AXIS_MAX}: {path}"
+                    )
+                if unit not in {0, 1}:
+                    raise ValueError(f"PNG pHYs unit must be 0 or 1: {path}")
         chunks.append(chunk_type)
         if chunk_type == b"IDAT":
             if idat_ended:
@@ -2765,6 +2919,9 @@ def collect_evidence(
         output_dir, output_mode = resolve_bundle_path(
             output_dir, repository_root, must_exist=False
         )
+        acceptance_ready_required = (
+            require_acceptance_ready or output_mode == "committed"
+        )
         if output_dir.exists():
             raise ValueError(f"output directory already exists: {output_dir}")
         manifest_path, artifact_metadata = load_content_manifest(repository_root)
@@ -2784,6 +2941,12 @@ def collect_evidence(
         )
     except (OSError, UnicodeError, ValueError) as exc:
         return [str(exc)], None
+    if acceptance_ready_required:
+        provenance_errors = approved_source_provenance_errors(
+            repository_root, session["metadata"]["source_commit"]
+        )
+        if provenance_errors:
+            return provenance_errors, None
 
     payloads: dict[str, bytes] = {}
     artifacts: dict[str, dict[str, Any]] = {}
@@ -3459,12 +3622,17 @@ def collect_evidence(
         "status": "READY_FOR_HUMAN_GATE_REVIEW" if not blockers else "INCOMPLETE",
         "blockers": blockers,
     }
-    if require_acceptance_ready and blockers:
+    if acceptance_ready_required and blockers:
         return [
             "evidence is not mechanically ready for human Gate review: "
             + "; ".join(blockers)
         ], None
     serialized = json.dumps(record, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    record_payload = serialized.encode("utf-8")
+    generated_bindings = {
+        relative: _payload_binding(payload) for relative, payload in payloads.items()
+    }
+    generated_bindings[RECORD_NAME] = _payload_binding(record_payload)
     findings = privacy_findings_in_value(record)
     if findings:
         return ["generated record still contains: " + ", ".join(findings)], None
@@ -3485,7 +3653,7 @@ def collect_evidence(
             target = temporary / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(payload)
-        (temporary / RECORD_NAME).write_text(serialized, encoding="utf-8", newline="\n")
+        (temporary / RECORD_NAME).write_bytes(record_payload)
         validation_modes = [output_mode]
         if output_mode != "build":
             # The committed bundle intentionally omits raw inputs. Re-run the
@@ -3496,7 +3664,7 @@ def collect_evidence(
             validation_errors, _ = validate_bundle(
                 temporary,
                 repository_root,
-                require_acceptance_ready=require_acceptance_ready,
+                require_acceptance_ready=acceptance_ready_required,
                 _validation_mode=validation_mode,
             )
             if validation_errors:
@@ -3505,6 +3673,12 @@ def collect_evidence(
                     + error
                     for error in validation_errors
                 ], None
+
+        _verify_bundle_payload_bindings(
+            temporary,
+            generated_bindings,
+            label="staged evidence",
+        )
 
         output_dir.parent.mkdir(parents=True, exist_ok=True)
         _reject_link_components(
@@ -3541,12 +3715,20 @@ def validate_bundle(
         if _validation_mode not in {None, "build", "committed"}:
             raise ValueError("internal bundle validation mode is invalid")
         bundle_mode = _validation_mode or detected_bundle_mode
+        acceptance_ready_required = (
+            require_acceptance_ready or bundle_mode == "committed"
+        )
         if not bundle.is_dir():
             raise ValueError("bundle path must be a directory")
         record_path = bundle / RECORD_NAME
         if _is_link(record_path) or not record_path.is_file():
             raise ValueError(f"bundle is missing safe {RECORD_NAME}")
-        record = load_json(record_path)
+        record_payload, record = load_json_payload(
+            record_path, "manual evidence record"
+        )
+        validated_bundle_bindings = {
+            RECORD_NAME: _payload_binding(record_payload),
+        }
     except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
         return [str(exc)], None
     if not isinstance(record, dict):
@@ -3579,6 +3761,16 @@ def validate_bundle(
             record.get("source_revision"), repository_root, source_commit
         )
     )
+    if acceptance_ready_required:
+        if isinstance(source_commit, str) and COMMIT_RE.fullmatch(source_commit):
+            errors.extend(
+                approved_source_provenance_errors(repository_root, source_commit)
+            )
+        else:
+            errors.append(
+                "acceptance-ready client evidence requires a valid source commit "
+                "for provenance validation"
+            )
     manifest_payload = b""
     artifact_metadata = {"filename": "", "sha256": ""}
     if isinstance(source_commit, str) and COMMIT_RE.fullmatch(source_commit):
@@ -3901,6 +4093,9 @@ def validate_bundle(
                     raise ValueError(
                         f"archived {role} {phase} profile snapshot contains private data"
                     )
+                validated_bundle_bindings[archive] = _payload_binding(
+                    archive_payload
+                )
                 documents[phase] = document
                 if bundle_mode == "build":
                     source_path = resolve_build_path(
@@ -4080,6 +4275,9 @@ def validate_bundle(
                 raise ValueError("server harness record differs from its archived summary")
             if privacy_findings_in_value(summary):
                 raise ValueError("server harness summary contains private data")
+            validated_bundle_bindings[SERVER_SUMMARY_ARCHIVE] = _payload_binding(
+                summary_payload
+            )
             source_hash = record_harness.get("source_sha256")
             if not isinstance(source_hash, str) or SHA256_RE.fullmatch(source_hash) is None:
                 raise ValueError("server harness source SHA-256 is invalid")
@@ -4141,6 +4339,10 @@ def validate_bundle(
                     raise ValueError(f"screenshot metadata mismatch for {role}: {key}")
             if item.get("file") != expected_file:
                 raise ValueError(f"unexpected screenshot archive role path: {role}")
+            validated_bundle_bindings[expected_file] = (
+                details["size"],
+                details["sha256"],
+            )
         except (OSError, ValueError) as exc:
             errors.append(str(exc))
     if screenshot_total > MAX_SCREENSHOT_TOTAL:
@@ -4245,6 +4447,7 @@ def validate_bundle(
                 raise ValueError(f"log excerpt line count mismatch: {role}")
             if item.get("file") != expected_file:
                 raise ValueError(f"unexpected log archive role path: {role}")
+            validated_bundle_bindings[expected_file] = _payload_binding(content)
             excerpt_audit = scan_log_text(text)
             recorded_excerpt_audit = _exact_keys(
                 item.get("excerpt_audit_counts"),
@@ -4527,6 +4730,9 @@ def validate_bundle(
                     raise ValueError(
                         "archived mismatch server receipt is not canonical JSON"
                     )
+                validated_bundle_bindings[MISMATCH_RECEIPT_ARCHIVE] = _payload_binding(
+                    receipt_payload
+                )
                 for field in (
                     "schema_version",
                     "exit_code",
@@ -4627,6 +4833,9 @@ def validate_bundle(
                     raise ValueError(
                         "archived mismatch server properties are not canonical JSON"
                     )
+                validated_bundle_bindings[
+                    MISMATCH_PROPERTIES_ARCHIVE
+                ] = _payload_binding(properties_payload)
                 for field, expected in properties_document.items():
                     if properties_record.get(field) != expected:
                         raise ValueError(
@@ -4837,11 +5046,28 @@ def validate_bundle(
     }
     if record.get("review_readiness") != expected_readiness:
         errors.append("review readiness does not match the evidence contents")
-    if require_acceptance_ready and not errors and blockers:
+    if acceptance_ready_required and not errors and blockers:
         errors.append(
             "evidence is not mechanically ready for human Gate review: "
             + "; ".join(blockers)
         )
+    if not errors:
+        if set(validated_bundle_bindings) != expected_files:
+            errors.append(
+                "validated bundle binding set mismatch: expected "
+                + ", ".join(sorted(expected_files))
+                + "; validated "
+                + ", ".join(sorted(validated_bundle_bindings))
+            )
+        else:
+            try:
+                _verify_bundle_payload_bindings(
+                    bundle,
+                    validated_bundle_bindings,
+                    label="validated bundle",
+                )
+            except (OSError, UnicodeError, ValueError) as exc:
+                errors.append(str(exc))
     return errors, record
 
 

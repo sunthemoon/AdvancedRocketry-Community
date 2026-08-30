@@ -12,6 +12,8 @@ permissions:
 jobs:
   validate-repository-docs:
     runs-on: ubuntu-latest
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -33,8 +35,14 @@ jobs:
       - name: Generate and verify commit-bound G0 review packet
         run: |
           python -I -S -c "from pathlib import Path; Path('build').mkdir(exist_ok=True)"
-          python -I -S scripts/prepare_v002_g0_review_packet.py generate --commit "$GITHUB_SHA" --output build/v0.0.2-g0-review-packet
-          python -I -S scripts/prepare_v002_g0_review_packet.py verify --commit "$GITHUB_SHA" --packet build/v0.0.2-g0-review-packet
+          python -I -S scripts/prepare_v002_g0_review_packet.py generate --commit "$REVIEW_COMMIT" --output build/v0.0.2-g0-review-packet
+          python -I -S scripts/prepare_v002_g0_review_packet.py verify --commit "$REVIEW_COMMIT" --packet build/v0.0.2-g0-review-packet
+
+      - name: Generate and verify final G0 source review inputs
+        run: |
+          python -I -S -c "from pathlib import Path; Path('build').mkdir(exist_ok=True)"
+          python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate --commit "$REVIEW_COMMIT" --output build/v0.0.2-final-g0-review-inputs
+          python -I -S scripts/prepare_v002_final_g0_review_inputs.py verify --commit "$REVIEW_COMMIT" --output build/v0.0.2-final-g0-review-inputs
 
       - name: Enforce governance baseline
         run: python scripts/validate_repository.py --require-approved-identity
@@ -42,7 +50,15 @@ jobs:
       - name: Upload commit-bound G0 review packet
         uses: actions/upload-artifact@v7
         with:
-          name: v0.0.2-g0-review-packet-${{ github.sha }}
+          name: v0.0.2-g0-review-packet-${{ env.REVIEW_COMMIT }}
           if-no-files-found: error
           include-hidden-files: true
           path: build/v0.0.2-g0-review-packet/
+
+      - name: Upload final G0 source review inputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: v0.0.2-final-g0-review-inputs-${{ env.REVIEW_COMMIT }}
+          if-no-files-found: error
+          include-hidden-files: true
+          path: build/v0.0.2-final-g0-review-inputs/

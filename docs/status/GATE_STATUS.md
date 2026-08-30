@@ -35,7 +35,7 @@ gates:
 overall: IN_PROGRESS
 remaining_items:
   - "Human Forge/Gradle provenance/license subreview before the final rebuild"
-  - "Post-rebuild rendered README screenshot and human G0 visual review"
+  - "Final G0 full source/resource inventory-history review and rendered README visual review"
   - "Packaged-client Mods screen and disposable world evidence"
   - "Three-way JAR hash equality and matching-client join/disconnect/restart/reconnect"
   - "Missing-project-mod behavior and human decisions for proposed G4 N/A cases"
@@ -54,6 +54,9 @@ pre-release rather than a stable release.
 
 The G0 provenance/license subreview is the next ordering dependency: approving
 its packaged third-party notice changes JAR bytes. Rebuild, refresh artifact
-evidence, and obtain CI for that exact commit before collecting packaged-client
-and rendered README evidence. This subreview is not final G0 `PASS`; G0 remains
-`IN_PROGRESS` until the later screenshot and human visual review also pass.
+evidence, and obtain CI for that exact commit before the full source/resource
+review. That review must be `APPROVED` before collecting packaged-client and
+rendered README evidence. Neither subreview alone is final G0 `PASS`; G0 remains
+`IN_PROGRESS` until the rendered README visual review also passes. Governance CI now generates a bounded,
+exact-Git final-G0 source/resource review-input artifact for each commit; that
+mechanical input neither supplies nor predicts the human outcome.

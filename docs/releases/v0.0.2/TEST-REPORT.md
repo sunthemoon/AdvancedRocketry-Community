@@ -15,19 +15,20 @@ environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13
 | Command | Result | Detail |
 |---|---|---|
 | `gradlew --version` | PASS | Gradle 8.8 on JVM 17.0.8 |
-| `gradlew clean build --no-daemon --stacktrace` | PASS_AFTER_LOCAL_LOG_RECOVERY | The first current attempt kept its own log open under `build/` and made `clean` fail; the unchanged command passed after the log moved to the system temporary directory, and the JAR hashes remained identical |
-| `gradlew test --rerun-tasks --no-daemon --stacktrace` | PASS | 3/3 JUnit tests executed, with 0 failures, errors, or skips |
-| `python -m unittest discover -s tests -v` | PASS | 353/353 Python tests passed in 1745.791 seconds |
+| `gradlew clean build --no-daemon --stacktrace` | PASS | The current Java 17 clean build completed in 12 seconds; main JAR, sources JAR, and content-manifest hashes remain byte-identical to the tested implementation |
+| `gradlew test --rerun-tasks --no-daemon --stacktrace` | PASS | 3/3 JUnit tests executed in a 13-second uncached task run, with 0 failures or errors |
+| `python -m unittest discover -s tests -v` | PASS | 396/396 Python tests passed in 1797.580 seconds |
 | `python -I -S scripts/validate_bootstrap_provenance.py` | PASS_WITH_HUMAN_PENDING | Schema-3 evidence matched 2 pinned components, 11 imported targets, Git object/mode/blob identities, and current content; `--require-approved-review` returned the expected blocking exit 1 |
 | `python -I -S scripts/prepare_v002_g0_review_packet.py generate/verify ...` | PASS | Local checkpoint packet bound 33 files to `d2b571f`; governance CI generated and verified the corresponding PR-merge packet before uploading artifact 9721841271 |
+| Focused final-G0 review-input generator/verifier tests | PASS | 16/16 tests cover exact-Git reconstruction, deterministic create-once output, isolated CLI execution, history/resource bounds, and link/reparse/hardlink/traversal rejection; the tool records inputs only |
 | `python scripts/validate_build_artifact.py <jar> --content-manifest <path>` | PASS | 34 entries; metadata, exact notices/licenses, paths, generated-cache exclusion, placeholders, and credential scans passed |
 | `python scripts/generate_v002_g0_evidence.py verify <jar> <sources-jar> ...` | PASS | Committed mechanical G0 evidence matches both current JARs |
 | `python scripts/validate_release_checksums.py --artifact <jar>` | PASS | 10 entries; all 9 committed evidence files and the external JAR matched |
 | `python scripts/check_client_imports.py` | PASS | No common/server client references |
 | `python scripts/validate_repository.py --require-approved-identity` | PASS | 15 passed, 0 warnings, 0 failed |
-| `gradlew runData --no-daemon --stacktrace` | PASS | The current 18.059-second run left the tracked diff, index, status, and non-ignored untracked-content snapshot unchanged; one historical Mojang download retry remains recorded below |
-| `gradlew runGameTestServer --no-daemon --stacktrace` | PASS | 1/1 required GameTest passed in the current 22.930-second run |
-| `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS_AFTER_RECOVERY | A fresh 74.214-second schema-2 session passed first start/status/save/stop and same-world restart/status/save/stop with bound log, world, and canonical startup-properties evidence; the older installer-timeout recovery remains recorded below |
+| `gradlew runData --no-daemon --stacktrace` | PASS | The current 17-second run left the tracked diff, index, status, generated-resource hashes, and non-ignored untracked-content snapshot unchanged; one historical Mojang download retry remains recorded below |
+| `gradlew runGameTestServer --no-daemon --stacktrace` | PASS | 1/1 required GameTest passed in the current 22-second run |
+| `python scripts/run_dedicated_server_smoke.py <jar> ...` | PASS | Fresh schema-2 session `v002-22fb01477178d45fc51e007e` completed in 76.015 seconds on its first installer attempt; first start/status/save/stop and same-world restart/status/save/stop passed with zero ERROR, project WARN, or client linkage findings |
 | GitHub Actions repository governance | PASS | [Run 33258532838](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838) passed at the tested implementation commit |
 | GitHub Actions Forge bootstrap | PASS | [Run 33258532863](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863) passed baseline plus advisory jobs and uploaded the Linux artifacts |
 | Documentation-checkpoint repository governance | PASS_AFTER_FIX | [Run 33277040675](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33277040675) passed 353/353 tests, packet generation/verification, and 15/15 strict checks at checkpoint `d2b571f` |
@@ -68,7 +69,7 @@ The same three hashes were independently confirmed in checkpoint Forge artifact
 | Layer | Count | Result | Notes |
 |---|---:|---|---|
 | Java unit | 3 | PASS | Approved identity and expanded Forge metadata |
-| Python unit | 353 | PASS | Repository/workflow contracts, schema-3 provenance approval binding, commit-bound G0 review packet, schema-4 client-profile evidence, bounded JAR/G0, side, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
+| Python unit | 396 | PASS | Repository/workflow contracts, schema-3 provenance approval binding, commit-bound G0 subreview packet, final-G0 exact-Git review inputs, schema-4 client-profile evidence, bounded JAR/G0, side, checksum, worktree, status protocol, installer recovery, lifecycle, path, privacy, and credential checks |
 | DataGen | 1 provider | PASS | Minimal GameTest structure remained byte-stable and the current run left the worktree unchanged |
 | Forge GameTest | 1 | PASS | Entrypoint and approved mod ID agree |
 | Packaged dedicated server | 2 cycles | PASS | Current JAR schema-2 first start and same-world restart both exited 0 after artifact/status/save/stop, world, and canonical startup-properties identity checks |
@@ -136,6 +137,7 @@ required_classification_if_created: PRE_RELEASE
 release_status: IN_PROGRESS
 blocking_items:
   - Human Forge/Gradle provenance/license subreview before the final rebuild
+  - Exact-commit final G0 source/resource inventory-history review and archived input report
   - Post-rebuild rendered README screenshot and human G0 visual review
   - Isolated packaged-client Mods page and single-player evidence
   - Three-way JAR equality and matching-client join/disconnect/restart/reconnect evidence
