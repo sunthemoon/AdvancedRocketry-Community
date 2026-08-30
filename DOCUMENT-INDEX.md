@@ -7,6 +7,7 @@
 | `PROJECT-CONFIG.md` | 唯一项目变量和人工决策入口 |
 | `AGENTS.md` | Codex 的长期工程约束、Gate 和输出格式 |
 | `00-READ-ME-FIRST.md` | 人工启动顺序 |
+| `MASTER-EXECUTION-PLAN.md` | 完整单文件开发计划；分文件与当前 ADR/状态冲突时以后者为准 |
 | `codex-prompts/00-initialize-repository.md` | 第一次执行，只完成 v0.0.1 |
 
 ## 产品与总体方案
@@ -49,6 +50,7 @@
 
 | 文件 | 用途 |
 |---|---|
+| `CHANGELOG.md` | 玩家与服主可见的版本变化；未发布版本必须明确标注状态 |
 | `docs/05-MASTER-TEST-PLAN.md` | 单元、GameTest、专服、重启、多人、性能 |
 | `docs/06-RELEASE-AND-ACCEPTANCE-GATES.md` | G0–G9 的通过门槛 |
 | `docs/07-SAVE-DATA-AND-NETWORK-VERSIONING.md` | schema、迁移、journal、包大小 |
@@ -56,6 +58,16 @@
 | `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` | 人工测试用例 |
 | `docs/templates/PERFORMANCE-REPORT-TEMPLATE.md` | 性能报告 |
 | `docs/templates/RELEASE-EVIDENCE-TEMPLATE.md` | 每版最终证据 |
+| `docs/releases/v0.0.2/` | Forge bootstrap 的自动、人工、产物和风险证据 |
+| `docs/releases/v0.0.2/INSTALLATION.md` | 未发布开发预览的环境、客户端/服务端安装和存档边界 |
+
+## 实施记录
+
+| 文件 | 用途 |
+|---|---|
+| `docs/work/v0.0.1-implementation-log.md` | 仓库治理基线实施记录 |
+| `docs/work/v0.0.2-implementation-log.md` | Forge 工程初始化、来源和验证记录 |
+| `docs/work/v0.0.2-test-machine-handoff.md` | 换机继续客户端与玩家连接验收的命令和证据要求 |
 
 ## 分版本执行文件
 
@@ -102,12 +114,14 @@ Codex 报告格式
 
 ## 决策记录
 
-`docs/decisions/` 内提供五份 ADR：
+`docs/decisions/` 内提供六份 ADR：
 
 - 项目身份与 namespace；
 - 固定 Moon/Space 维度；
 - 火箭事务；
-- 大气扫描预算。
-- 私有仓库下的 v0.0.1 G8 证据接受与公开前复查条件。
+- 大气扫描预算；
+- 私有仓库下的 v0.0.1 G8 证据接受与公开前复查条件；
+- v0.0.2 bootstrap 范围内的 G4 适用性判断。
 
-ADR-000 与 ADR-004 已由维护者接受；其余初始 ADR 默认 `PROPOSED`，需在对应版本前由人工接受。
+ADR-000 与 ADR-004 已由维护者接受；ADR-005 和其余初始 ADR 默认
+`PROPOSED`，需在对应版本前由人工接受。

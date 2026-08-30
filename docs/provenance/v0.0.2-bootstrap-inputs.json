@@ -1,0 +1,329 @@
+{
+  "audited_target_commit": "67929aaf8c21593e1f5b7b75ab941064b084e2f4",
+  "components": [
+    {
+      "id": "forge_mdk",
+      "license": "LGPL-2.1-only",
+      "license_copy_target": "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "license_copy_target_sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "license_source_path": "LICENSE.txt",
+      "license_source_sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "source_artifact": "forge-1.20.1-47.4.10-mdk.zip",
+      "source_commit": "132704e5f23dbee28d776738eb1c0c42fefc0bf6",
+      "source_repository": "https://github.com/MinecraftForge/MinecraftForge",
+      "source_sha256": "73e0122becd05e39b47eced54e030380d66411850ed86786a2d58ecd886b0451",
+      "source_tree_materializations": [
+        {
+          "artifact_eol": "CRLF",
+          "artifact_member": "build.gradle",
+          "artifact_member_sha256": "f50947b2af27e834f58860360a084825951fe987d9dd8ea180e7eee261629d77",
+          "comparison": "BYTE_IDENTICAL_AFTER_CRLF_TO_LF_NORMALIZATION",
+          "source_eol": "LF",
+          "source_path": "mdk/build.gradle",
+          "source_raw_sha256": "c068e44d6b6eca1f1588527ad23554c5798e146515ff321fe7a0804d0daefb07"
+        },
+        {
+          "artifact_eol": "CRLF",
+          "artifact_member": "settings.gradle",
+          "artifact_member_sha256": "21c8c1cfea9f78f7fed6d7ad325aafa24e0d1bd330a40719997c303d2217b830",
+          "comparison": "BYTE_IDENTICAL_AFTER_CRLF_TO_LF_NORMALIZATION",
+          "source_eol": "LF",
+          "source_path": "mdk/settings.gradle",
+          "source_raw_sha256": "f0caadd216f2cccbe612f85ba95f8c4996e84c16a5abfe5b9daef30acfc93945"
+        }
+      ]
+    },
+    {
+      "id": "gradle_wrapper",
+      "license": "Apache-2.0",
+      "license_copy_target": "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "license_copy_target_sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "license_source_path": "LICENSE",
+      "license_source_sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "source_artifact": "gradle/wrapper/gradle-wrapper.jar",
+      "source_commit": "1cf537a851c635c364a4214885f8b9798051175b",
+      "source_repository": "https://github.com/gradle/gradle",
+      "source_sha256": "ed2c26eba7cfb93cc2b7785d05e534f07b5b48b5e7fc941921cd098628abca58"
+    }
+  ],
+  "import_commit": "1b5f28094619081bc901bc1c7472cd19b129505a",
+  "local_assets": [
+    {
+      "audited_git_blob_oid": "9cf3bd98ae5b8003d6fa9cce4062b99c07e4c8f0",
+      "audited_git_mode": "100644",
+      "audited_git_object_type": "blob",
+      "audited_raw_blob_sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "description": "Original geometric bootstrap logo authored for this repository.",
+      "introduced_commit": "1b5f28094619081bc901bc1c7472cd19b129505a",
+      "introduced_git_blob_oid": "9cf3bd98ae5b8003d6fa9cce4062b99c07e4c8f0",
+      "introduced_git_mode": "100644",
+      "introduced_git_object_type": "blob",
+      "introduced_raw_blob_sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "license": "MIT",
+      "path": "src/main/resources/advancedrocketrycommunity.png",
+      "status": "NEW",
+      "target_sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690"
+    },
+    {
+      "audited_git_blob_oid": "7234628794b5478abc97df6ef0a125a2797197bf",
+      "audited_git_mode": "100644",
+      "audited_git_object_type": "blob",
+      "audited_raw_blob_sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "description": "One-block empty structure generated for the bootstrap GameTest.",
+      "generation_command": "./gradlew runData",
+      "generator_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.java",
+      "generator_sha256": "ded43afc23290507695004fc1e4d8a80f83f2b2428247b831982d44c004b4131",
+      "introduced_commit": "1b5f28094619081bc901bc1c7472cd19b129505a",
+      "introduced_git_blob_oid": "7234628794b5478abc97df6ef0a125a2797197bf",
+      "introduced_git_mode": "100644",
+      "introduced_git_object_type": "blob",
+      "introduced_raw_blob_sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "license": "MIT",
+      "path": "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
+      "status": "GENERATED",
+      "target_sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559"
+    }
+  ],
+  "record_path": "docs/provenance/v0.0.2-forge-mdk-and-gradle-wrapper.md",
+  "review": {
+    "final_status_after_review": "THIRD_PARTY_APPROVED",
+    "record_status": "THIRD_PARTY_APPROVED",
+    "reviewed_at": "2026-08-30",
+    "reviewed_audited_target_commit": "67929aaf8c21593e1f5b7b75ab941064b084e2f4",
+    "reviewed_content_sha256": "ca9b1ed39e6e295f1eca522ebe94d0bb5d2312e11d11ebd917d9a1f1c7b7f16c",
+    "reviewer": "sunthemoon"
+  },
+  "schema_version": 3,
+  "scope_version": "v0.0.2",
+  "targets": [
+    {
+      "audited_target_git_blob_oid": "57c1edba9ec4912376c1b8d0f99b046fd6524303",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "287fd402312d9d5225d3b3833a7ad768f2ba42c0d3f9a0e118bd25fe7e0dd1fc",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "0338cc64f9c0c2a11f9b8cbdbdafa3e0a5f4dd3d",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "4537e63764a79b012086e201112494c0577809aab6bfe73fb02f732bceda2ece",
+      "license": "LGPL-2.1-only",
+      "path": ".gitattributes",
+      "proposed_status_after_review": null,
+      "source_path": ".gitattributes",
+      "source_sha256": "448fc4f5b88765df18eec1a82fb0ed09d7fb148e50fe49bd004be05effb06285",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Replaced the MDK rules with repository-wide text, binary, EOL, and exact-license whitespace rules.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "bc2843e86e23737eaf045afe313f01273de2ced8",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "40008860dc1c7ff0291040a34fd45d930f0879b27a9a75d59924b3f45cd88333",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "569bc44d583f4f162533d73a3f4e3a46d4fb2e15",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "31985920aac7931f12e004189cc62ac0adfa45b16712f1ea3957e0cbd65065b8",
+      "license": "LGPL-2.1-only",
+      "path": ".gitignore",
+      "proposed_status_after_review": null,
+      "source_path": ".gitignore",
+      "source_sha256": "efc7995172c172d5e2a5dfad4484abc9f4b6030aa2bf5bb9453180043f8d593f",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Merged relevant IDE, Gradle, Forge-run, Python, log, and crash-output exclusions.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "2730077915f804ce495a54283f0f119e9005485f",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "7ac67aef90b1cf44d6cf15440d367347265f48f8cec52602717a4a421a07097e",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "cff8c0ac1bf2d9a21464867d75630ae05eeaa00e",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "533b1d4dddebd9234ca719da1d01be9803306a81dd86ea54bad946a7cb512879",
+      "license": "LGPL-2.1-only",
+      "path": "build.gradle",
+      "proposed_status_after_review": null,
+      "source_path": "build.gradle",
+      "source_sha256": "f50947b2af27e834f58860360a084825951fe987d9dd8ea180e7eee261629d77",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Removed MDK examples and replaced project identity, runs, tests, reproducible archives, evidence arguments, notices, publication settings, and exclusion of DataGen cache metadata from packaged resources.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "2fe947315823fa9121c979435762165f9fda1bb0",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "d31069844151c0726afb2b08d7c13cc2c5a4821996da9ac66b09e8258defc2f6",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "aee53b9ba4b1df67de8efaa4b0b5937ac12b10af",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "e8d61db701d18d4c916a9195519a1bcb84cf6e5f0d44a0d3c68536be96304cdb",
+      "license": "LGPL-2.1-only",
+      "path": "gradle.properties",
+      "proposed_status_after_review": null,
+      "source_path": "gradle.properties",
+      "source_sha256": "5b5aa1d63c2d02c2a39f8a207bdc91a7fbcddbfb50e0e92c59da3ecd6a6478a6",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Removed template commentary and pinned Forge, mappings, compatibility, and approved project identity values.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "198dcf686e543028b70615e313c65a0723023dbf",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "b2c41bf9515febafc2b14068552dc09eb32707c6fc285ca5137d7531aa09f70d",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "7a860cac863913585f25ecf3d1b53005d17ee97a",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "ac0b7f3c0e4a4652f9ff0081ca3b799dfa40e06aca551ddf163e28d5582b07f2",
+      "license": "LGPL-2.1-only",
+      "path": "settings.gradle",
+      "proposed_status_after_review": null,
+      "source_path": "settings.gradle",
+      "source_sha256": "21c8c1cfea9f78f7fed6d7ad325aafa24e0d1bd330a40719997c303d2217b830",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Preserved Forge plugin repositories and toolchain resolution, then added the project name.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "8e60b0da4b7e3b2d948ac210636139ef58f24e9f",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "82161d07e885e9b5fd92231c5404aed31c95a8a5c2253f806d87973e5550013a",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "d296387b57c631cc8697e9c264a91bd9f492315b",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "6ad01e25fe9ce18af11f9053651624e6e6655d390e0d58b2f23eacdcf7d7c08b",
+      "license": "LGPL-2.1-only",
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+      "proposed_status_after_review": null,
+      "source_path": "gradle/wrapper/gradle-wrapper.properties",
+      "source_sha256": "0c0c22ccb8e653a13a7df19493b11fe5ce0f5fae7ee4835223d2d2ad028799da",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Added the official Gradle 8.8 distribution SHA-256 and retained the MDK wrapper settings.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "8383aa885cb10514490121903bbd63e62c436348",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "274410d8be324811ac1524e28595406834ac6b356b3baabfe391483e13582e18",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "ae03c9b7f625748f8f4e7b403df7b2366f447202",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "18c50663587d8c124e49471ba8605738cde39151a209c23f26ffbc94c022db4a",
+      "license": "LGPL-2.1-only",
+      "path": "src/main/resources/pack.mcmeta",
+      "proposed_status_after_review": null,
+      "source_path": "src/main/resources/pack.mcmeta",
+      "source_sha256": "69e4b682449054686cb0e5918f13501cd53ea33477d306d9d27f82f0fd9da3f1",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Retained the pack format, replaced the description, and normalized formatting.",
+        "Added a namespaced in-file LGPL provenance and dated modification metadata field on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "f39cc787fc39bbdbd221e405704893dbf6201f70",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "8c7a42cf665e01d300b835b053d40856e18880279911fa05764ca22067d6c918",
+      "component": "forge_mdk",
+      "import_target_git_blob_oid": "c4f72e4d0e2a4d7ea842bc555474c902730c672a",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "f61c8966ff191a90c01978cd91203188a675512e8fb01102096d427534f80c9f",
+      "license": "LGPL-2.1-only",
+      "path": "src/main/resources/META-INF/mods.toml",
+      "proposed_status_after_review": null,
+      "source_path": "src/main/resources/META-INF/mods.toml",
+      "source_sha256": "ed0e7e454f6f1c1ffbfcabdece14ded32321450a23e7203acf1382523b87415a",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Removed MDK examples and replaced project identity, URLs, logo, credits, Java feature, description, and dependency ranges.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "aeb74cbb43e3931a2455a838345c3f6b8131aaa2",
+      "audited_target_git_mode": "100755",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "fb3cbfe6d066ee52bc07f62ed61ff77bde195384f52496c94280a83008d9f531",
+      "component": "gradle_wrapper",
+      "import_target_git_blob_oid": "aeb74cbb43e3931a2455a838345c3f6b8131aaa2",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "fb3cbfe6d066ee52bc07f62ed61ff77bde195384f52496c94280a83008d9f531",
+      "license": "Apache-2.0",
+      "path": "gradlew",
+      "proposed_status_after_review": null,
+      "source_path": "gradlew",
+      "source_sha256": "fb3cbfe6d066ee52bc07f62ed61ff77bde195384f52496c94280a83008d9f531",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Preserved all bytes; a later commit changed only the Git executable mode."
+      ]
+    },
+    {
+      "audited_target_git_blob_oid": "93e3f59f135dd2dd498de4beb5c64338cc33beeb",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa",
+      "component": "gradle_wrapper",
+      "import_target_git_blob_oid": "93e3f59f135dd2dd498de4beb5c64338cc33beeb",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa",
+      "license": "Apache-2.0",
+      "path": "gradlew.bat",
+      "proposed_status_after_review": null,
+      "source_path": "gradlew.bat",
+      "source_sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Preserved script content; Git stores normalized LF blob bytes while Windows checkout materializes the original CRLF source bytes."
+      ],
+      "worktree_materialized_sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+    },
+    {
+      "audited_target_git_blob_oid": "c1962a79e29d3e0ab67b14947c167a862655af9b",
+      "audited_target_git_mode": "100644",
+      "audited_target_git_object_type": "blob",
+      "audited_target_raw_blob_sha256": "ed2c26eba7cfb93cc2b7785d05e534f07b5b48b5e7fc941921cd098628abca58",
+      "component": "gradle_wrapper",
+      "import_target_git_blob_oid": "c1962a79e29d3e0ab67b14947c167a862655af9b",
+      "import_target_git_mode": "100644",
+      "import_target_git_object_type": "blob",
+      "import_target_raw_blob_sha256": "ed2c26eba7cfb93cc2b7785d05e534f07b5b48b5e7fc941921cd098628abca58",
+      "license": "Apache-2.0",
+      "path": "gradle/wrapper/gradle-wrapper.jar",
+      "proposed_status_after_review": null,
+      "source_path": "gradle/wrapper/gradle-wrapper.jar",
+      "source_sha256": "ed2c26eba7cfb93cc2b7785d05e534f07b5b48b5e7fc941921cd098628abca58",
+      "status": "THIRD_PARTY_APPROVED",
+      "transformations": [
+        "Preserved all bytes."
+      ]
+    }
+  ]
+}

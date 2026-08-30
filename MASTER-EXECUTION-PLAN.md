@@ -3783,12 +3783,13 @@ docs/releases/v0.0.1/
 
 ```yaml
 version: v0.0.1
-status: PLANNED
-commit: ""
+status: PASSED
+commit: "ca4d2a89219cc09e8ac4f4146f875ce2a3fbf505"
 build: ""
-required_gates: []
-human_approved_by: ""
-human_approved_at: ""
+required_gates: [G0, G8, G9]
+human_approved_by: "sunthemoon"
+human_approved_at: "2026-08-26"
+accepted_exception: "docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md"
 ```
 
 
@@ -3808,9 +3809,9 @@ human_approved_at: ""
 
 ### 2. 前置 Gate
 
-- [ ] v0.0.1 PASSED
-- [ ] 项目身份变量冻结
-- [ ] JDK 17 可用
+- [x] v0.0.1 PASSED
+- [x] 项目身份变量冻结
+- [x] JDK 17 可用
 
 前置版本未 `PASSED` 时，本版本只能进行文档、测试设计或不产生主线依赖的审计工作。
 
@@ -3823,7 +3824,7 @@ human_approved_at: ""
 - 创建正确的 `META-INF/mods.toml`、`pack.mcmeta`、logo 占位（原创或纯文本生成）。
 - 建立 GitHub Actions：build、unit、runData clean、GameTest；专服 smoke 可先脚本化。
 - 建立客户端/服务端代码分包和静态检查。
-- 将 LICENSE/NOTICE 打包进 JAR。
+- 将项目 LICENSE/NOTICE、第三方 notice 和精确许可副本打包进 JAR。
 
 ### 4. 明确不做
 
@@ -3852,23 +3853,33 @@ Codex 应将这些步骤拆成小提交，不应在一个不可审查提交中�
 
 ### 6. 自动测试
 
-- [ ] `./gradlew clean build`。
-- [ ] `./gradlew test`。
-- [ ] `./gradlew runData` 后 `git diff --exit-code`。
-- [ ] `./gradlew runGameTestServer`。
-- [ ] 解包 JAR 检查 mods.toml、LICENSE、NOTICE、pack metadata。
-- [ ] 扫描 common 源码中是否导入 `net.minecraft.client`。
-- [ ] CI 分别在 Forge baseline 和 latest lane 编译；baseline 为阻断，latest 记录兼容。
+- [x] `./gradlew clean build`。
+- [x] `./gradlew test`。
+- [x] `./gradlew runData` 后 `git diff --exit-code`。
+- [x] `./gradlew runGameTestServer`。
+- [x] 解包 JAR 检查 mods.toml、LICENSE、NOTICE、pack metadata。
+- [x] 扫描 common 源码中是否导入 `net.minecraft.client`。
+- [x] CI 分别在 Forge baseline 和 latest lane 编译；baseline 为阻断，latest 记录兼容。
 
 所有打勾项必须有实际命令、日志或测试报告，不以代码存在代替运行结果。
 
 ### 7. 人工/专服测试
 
-- [ ] 运行客户端开发配置，进入主菜单和 Mods 列表，确认名称、版本、描述和 credits。
+开始任何最终 JAR 的客户端、玩家连接或截图验收前，必须先完成人工 G0
+来源/许可子审核并提交批准记录；因该子审核会修改打包 notice，随后必须重建
+JAR、刷新制品与校验和证据，并让该准确提交的阻断 CI 通过。批准前的 JAR
+及其客户端证据不得复用。该子审核不等于 G0 已通过；重建后的 README 截图
+和人工视觉审核仍是 G0 的剩余证据。
+
+- [ ] 运行只含 Forge 与最终发布 JAR 的隔离客户端，进入主菜单和 Mods 列表，确认名称、版本、描述和 credits。
 - [ ] 创建测试世界，确认没有 ERROR。
-- [ ] 启动专用服务端，接受测试 EULA 后完成启动、保存、停止和重启。
+- [x] 启动专用服务端，接受测试 EULA 后完成启动、保存、停止和同世界重启。
 - [ ] 客户端连接专服，确认 mod mismatch 规则符合预期。
-- [ ] 检查发布 JAR 名称和 GitHub artifact 不带 `NONE`/`unspecified` 版本。
+- [x] 检查发布 JAR 名称和 GitHub artifact 不带 `NONE`/`unspecified` 版本。
+
+匹配客户端和缺少项目 JAR 的客户端必须使用两个互不嵌套的隔离游戏目录；
+schema-4 证据记录绑定两边 `mods/` 的前后清单、准确 JAR/空清单和各自目录内的
+原始日志，不接受复用同一 profile 或跨 profile 的物理日志文件。
 
 使用 `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` 记录构建 hash、步骤、预期、实际和证据。
 
@@ -3876,12 +3887,13 @@ Codex 应将这些步骤拆成小提交，不应在一个不可审查提交中�
 
 版本只有全部满足下列条件，才可由人工标记 `PASSED`：
 
-- [ ] Java 17 干净环境可构建。
-- [ ] baseline Forge 47.4.10 全部自动任务通过。
+- [x] Java 17 干净环境可构建。
+- [x] baseline Forge 47.4.10 全部自动任务通过。
 - [ ] 专服不加载客户端类且能接受玩家连接。
-- [ ] `runData` 结果稳定、工作树无 diff。
-- [ ] JAR 内有 LICENSE/NOTICE，mods.toml 声明准确。
-- [ ] 日志无项目来源 ERROR；可解释 WARN 已记录。
+- [x] `runData` 结果稳定、工作树无 diff。
+- [x] JAR 内有 LICENSE/NOTICE，mods.toml 声明准确。
+- [ ] 绑定原始日志无任何 ERROR，且无项目来源 WARN；可解释的非项目 WARN
+      已记录并复核。
 - [ ] 不含任何未经审计上游资产或功能代码。
 
 ### 9. 必须归档的证据
@@ -3933,10 +3945,10 @@ docs/releases/v0.0.2/
 
 ```yaml
 version: v0.0.2
-status: PLANNED
-commit: ""
-build: ""
-required_gates: []
+status: IN_PROGRESS
+tested_implementation_commit: "0fa080fdff3ab025c6b764b02d2d07fa9221c5ae"
+build: "1.20.1-0.0.2-dev"
+required_gates: [G0, G1, G2, G3, G4, G8, G9]
 human_approved_by: ""
 human_approved_at: ""
 ```

@@ -1,0 +1,139 @@
+name: Forge bootstrap
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forge-bootstrap-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    name: Forge 47.4.10 baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable Gradle wrapper execution
+        run: chmod +x ./gradlew
+
+      - name: Build and run unit tests
+        run: ./gradlew clean build --no-daemon --stacktrace
+
+      - name: Validate bootstrap provenance allowlist
+        run: python scripts/validate_bootstrap_provenance.py
+
+      - name: Verify G0 binary and sources packaging evidence
+        run: >-
+          python scripts/generate_v002_g0_evidence.py verify
+          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar
+          --evidence-dir docs/releases/v0.0.2/evidence/g0-mechanical
+
+      - name: Audit distributable JAR
+        run: >-
+          python scripts/validate_build_artifact.py
+          build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+          --content-manifest build/release-evidence/jar-content-manifest.json
+
+      - name: Compare generated and committed content manifests
+        run: >-
+          diff --unified
+          docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
+          build/release-evidence/jar-content-manifest.json
+
+      - name: Validate release checksums and artifact evidence
+        run: >-
+          python scripts/validate_release_checksums.py
+          --artifact build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+
+      - name: Enforce client-side package boundary
+        run: python scripts/check_client_imports.py
+
+      - name: Generate deterministic resources
+        run: ./gradlew runData --no-daemon --stacktrace
+
+      - name: Require a clean DataGen worktree
+        run: git diff --exit-code
+
+      - name: Reject untracked DataGen outputs
+        run: python scripts/check_clean_worktree.py
+
+      - name: Run Forge GameTests
+        run: ./gradlew runGameTestServer --no-daemon --stacktrace
+
+      - name: Run packaged dedicated-server smoke test
+        run: python scripts/run_dedicated_server_smoke.py --evidence-dir build/dedicated-server-smoke/evidence
+
+      - name: Upload baseline JAR and test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
+          if-no-files-found: error
+          path: |
+            build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+            build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar
+            build/reports/tests/test/
+            build/test-results/test/
+            build/release-evidence/jar-content-manifest.json
+            build/dedicated-server-smoke/evidence/
+
+  latest-compatibility:
+    name: Forge 47.4.23 compatibility (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      ORG_GRADLE_PROJECT_forge_version: "47.4.23"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable Gradle wrapper execution
+        run: chmod +x ./gradlew
+
+      - name: Compile and test against latest Forge lane
+        run: ./gradlew clean build --no-daemon --stacktrace

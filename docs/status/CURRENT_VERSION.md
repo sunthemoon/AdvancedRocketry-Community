@@ -1,11 +1,10 @@
 # CURRENT_VERSION
 
 ```yaml
-current_version: v0.0.1
+current_version: v0.0.2
 status: PASSED
-next_action: Start v0.0.2 Forge bootstrap on a new branch
-last_updated: 2026-08-26
-passed_by: sunthemoon
-passed_at: 2026-08-26
-acceptance_decision: docs/decisions/ADR-004-PRIVATE-REPOSITORY-G8-ACCEPTANCE.md
+next_action: Merge PR #3 with a normal merge commit, then begin v0.1.0 on a new version branch
+last_updated: 2026-08-30
+started_from: 86b9db01b1cb4c8b8f673590baf1dc185d1716b3
+work_branch: codex/v0.0.2-forge-bootstrap
 ```

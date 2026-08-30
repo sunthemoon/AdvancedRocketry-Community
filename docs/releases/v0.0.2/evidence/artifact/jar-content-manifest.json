@@ -1,0 +1,178 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+  "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+  "entries": [
+    {
+      "path": "META-INF/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/LICENSE",
+      "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+      "size": 1125
+    },
+    {
+      "path": "META-INF/MANIFEST.MF",
+      "sha256": "5b6baa822d4a2ab2ec7b44ec7011e3569eab8a2c63be95b8352428d86e63fc94",
+      "size": 304
+    },
+    {
+      "path": "META-INF/NOTICE.md",
+      "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+      "size": 2141
+    },
+    {
+      "path": "META-INF/THIRD-PARTY-NOTICES.md",
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
+    },
+    {
+      "path": "META-INF/licenses/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "size": 23606
+    },
+    {
+      "path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "size": 27732
+    },
+    {
+      "path": "META-INF/mods.toml",
+      "sha256": "c7887b35cdf14b1dfc9175e2c71c71f2cd054b2de6f04d5096854a29b1ebb351",
+      "size": 1350
+    },
+    {
+      "path": "advancedrocketrycommunity.png",
+      "sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "size": 6214
+    },
+    {
+      "path": "data/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/empty.nbt",
+      "sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "size": 124
+    },
+    {
+      "path": "io/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.class",
+      "sha256": "00c10421ee2dec066aa8aeb61c41898a913960648215780e13396e5e2a5b243f",
+      "size": 3848
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.class",
+      "sha256": "d1ddd079f1b326665c4dced14a6baec267f7bb0468d67c3ca2d3d766d88342ef",
+      "size": 522
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.class",
+      "sha256": "e8d4c1ae5ae9cdcb3f71132f770a0b68d2044b4965c524c0ff7aa49d2f63662f",
+      "size": 1398
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.class",
+      "sha256": "c748322e661de6a07e768d81c9a212bd3b13db25cb713fc819c5e7b78af652be",
+      "size": 1325
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.class",
+      "sha256": "dd154aeccde061e2e52d9aba649210eaa9883079902befd8888e600b785624b8",
+      "size": 1618
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.class",
+      "sha256": "12c166ea48c698787d29d0b74ac31726448a90c9b4c408f6d8e50855975ab881",
+      "size": 3947
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.class",
+      "sha256": "6650d257304175489ed1d9b6ae9d7a70f94623e995e7b03464090383f5326c8d",
+      "size": 1204
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.class",
+      "sha256": "b7d447541ae4548504c759ff58cfca2e53e4d50d04c89c2bde35bfed0a7cce64",
+      "size": 1307
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/ServerBootstrap.class",
+      "sha256": "ae922ac7a9d2f31d0717e8d94b3d755ab4e592a54658c8047a6fc3cb8afbaa33",
+      "size": 1445
+    },
+    {
+      "path": "pack.mcmeta",
+      "sha256": "5158c85fae5a50457af193a115f4f9d8b74ba30173cd36f14c683f1b98bc9a73",
+      "size": 322
+    }
+  ],
+  "entry_count": 34,
+  "schema_version": 1
+}

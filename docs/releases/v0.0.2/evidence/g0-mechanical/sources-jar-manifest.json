@@ -1,0 +1,307 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar",
+  "artifact_sha256": "f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe",
+  "entries": [
+    {
+      "path": "META-INF/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/LICENSE",
+      "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+      "size": 1125
+    },
+    {
+      "path": "META-INF/MANIFEST.MF",
+      "sha256": "566ad1a80220026d05099562645ce968ff0e7c36cde22634332605bb34cc3eff",
+      "size": 25
+    },
+    {
+      "path": "META-INF/NOTICE.md",
+      "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+      "size": 2141
+    },
+    {
+      "path": "META-INF/THIRD-PARTY-NOTICES.md",
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
+    },
+    {
+      "path": "META-INF/licenses/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "size": 23606
+    },
+    {
+      "path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "size": 27732
+    },
+    {
+      "path": "META-INF/mods.toml",
+      "sha256": "8c7a42cf665e01d300b835b053d40856e18880279911fa05764ca22067d6c918",
+      "size": 945
+    },
+    {
+      "path": "advancedrocketrycommunity.png",
+      "sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "size": 6214
+    },
+    {
+      "path": "data/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/empty.nbt",
+      "sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "size": 124
+    },
+    {
+      "path": "io/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "7d08c8f300e15ab9a799565b88cb3e87fb4a9279f21898dbbcd685244e45ff32",
+      "size": 1438
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "sha256": "f723494adf1f5123c634db2b0cf040faa3da41fa5eebdb1ee4a094486de2e6af",
+      "size": 360
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "sha256": "ace6c4636b2b9bed2071a84b1591071d074eb18d152b4a76da3c06820a5a797f",
+      "size": 758
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java",
+      "sha256": "0a8aa5663611fd8d4ce6a51f6df983a1628561aa590f742bfa93446129bb5e7e",
+      "size": 578
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "b4b680a3e8aaa79b73b829f60af11af2debe2fc8104fbe0fc57f15691a747ed1",
+      "size": 780
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.java",
+      "sha256": "ded43afc23290507695004fc1e4d8a80f83f2b2428247b831982d44c004b4131",
+      "size": 2823
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.java",
+      "sha256": "b96ec776d15f43bd391c3178fe7613539923ff9b378c19a825cd5e1c12f21158",
+      "size": 966
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.java",
+      "sha256": "b91993d5a332e94270eb1dc3eb4e4a2308aec7b14c92fa39f7bdc3a18eb40b44",
+      "size": 1008
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/ServerBootstrap.java",
+      "sha256": "61dfa7c534da12ab3e22fff7cd95b70430ac41293da5d8080147407612dfb8a4",
+      "size": 805
+    },
+    {
+      "path": "pack.mcmeta",
+      "sha256": "274410d8be324811ac1524e28595406834ac6b356b3baabfe391483e13582e18",
+      "size": 297
+    }
+  ],
+  "entry_count": 34,
+  "generated_inputs": [
+    {
+      "archive_path": "META-INF/MANIFEST.MF",
+      "generator": "Gradle Jar default manifest",
+      "sha256": "566ad1a80220026d05099562645ce968ff0e7c36cde22634332605bb34cc3eff",
+      "size": 25
+    }
+  ],
+  "license_notice_paths": [
+    "META-INF/LICENSE",
+    "META-INF/NOTICE.md",
+    "META-INF/THIRD-PARTY-NOTICES.md",
+    "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+    "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt"
+  ],
+  "paired_binary_artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+  "paired_binary_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+  "repository_input_count": 18,
+  "repository_inputs": [
+    {
+      "archive_path": "META-INF/LICENSE",
+      "repository_path": "LICENSE",
+      "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+      "size": 1125
+    },
+    {
+      "archive_path": "META-INF/NOTICE.md",
+      "repository_path": "NOTICE.md",
+      "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+      "size": 2141
+    },
+    {
+      "archive_path": "META-INF/THIRD-PARTY-NOTICES.md",
+      "repository_path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
+    },
+    {
+      "archive_path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "repository_path": "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "size": 23606
+    },
+    {
+      "archive_path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "repository_path": "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "size": 27732
+    },
+    {
+      "archive_path": "META-INF/mods.toml",
+      "repository_path": "src/main/resources/META-INF/mods.toml",
+      "sha256": "8c7a42cf665e01d300b835b053d40856e18880279911fa05764ca22067d6c918",
+      "size": 945
+    },
+    {
+      "archive_path": "advancedrocketrycommunity.png",
+      "repository_path": "src/main/resources/advancedrocketrycommunity.png",
+      "sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "size": 6214
+    },
+    {
+      "archive_path": "data/advancedrocketrycommunity/structures/empty.nbt",
+      "repository_path": "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
+      "sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "size": 124
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "7d08c8f300e15ab9a799565b88cb3e87fb4a9279f21898dbbcd685244e45ff32",
+      "size": 1438
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "sha256": "f723494adf1f5123c634db2b0cf040faa3da41fa5eebdb1ee4a094486de2e6af",
+      "size": 360
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "sha256": "ace6c4636b2b9bed2071a84b1591071d074eb18d152b4a76da3c06820a5a797f",
+      "size": 758
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java",
+      "sha256": "0a8aa5663611fd8d4ce6a51f6df983a1628561aa590f742bfa93446129bb5e7e",
+      "size": 578
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "b4b680a3e8aaa79b73b829f60af11af2debe2fc8104fbe0fc57f15691a747ed1",
+      "size": 780
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.java",
+      "sha256": "ded43afc23290507695004fc1e4d8a80f83f2b2428247b831982d44c004b4131",
+      "size": 2823
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.java",
+      "sha256": "b96ec776d15f43bd391c3178fe7613539923ff9b378c19a825cd5e1c12f21158",
+      "size": 966
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.java",
+      "sha256": "b91993d5a332e94270eb1dc3eb4e4a2308aec7b14c92fa39f7bdc3a18eb40b44",
+      "size": 1008
+    },
+    {
+      "archive_path": "io/github/sunthemoon/advancedrocketrycommunity/server/ServerBootstrap.java",
+      "repository_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/server/ServerBootstrap.java",
+      "sha256": "61dfa7c534da12ab3e22fff7cd95b70430ac41293da5d8080147407612dfb8a4",
+      "size": 805
+    },
+    {
+      "archive_path": "pack.mcmeta",
+      "repository_path": "src/main/resources/pack.mcmeta",
+      "sha256": "274410d8be324811ac1524e28595406834ac6b356b3baabfe391483e13582e18",
+      "size": 297
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Mechanical packaging evidence only. It does not constitute legal approval and does not replace human review of the rendered project README or other visual release material."
+}

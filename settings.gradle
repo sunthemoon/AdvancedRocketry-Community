@@ -1,0 +1,17 @@
+// Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
+// Modified by AdvancedRocketry-Community on 2026-08-26 and 2026-08-30; see THIRD-PARTY-NOTICES.md.
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            name = 'MinecraftForge'
+            url = 'https://maven.minecraftforge.net/'
+        }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
+}
+
+rootProject.name = 'AdvancedRocketry-Community'

@@ -8,16 +8,19 @@
 
 ## Status
 
-**Pre-alpha / planning and architecture phase. No playable public release is available yet.**
+**Pre-alpha / staged Forge development. The authoritative build and acceptance
+state is recorded in [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md);
+no stable playable public release is available.**
 
 Current target:
 
 - Minecraft `1.20.1`
 - Forge baseline `47.4.10`
+- Forge compatibility lane `47.4.23`
 - Java `17`
 - License `MIT`
 
-See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) once development begins.
+The active milestone is `v0.0.2`, which establishes the build, metadata, side separation, DataGen, and GameTest foundations. See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for verified and pending gates.
 
 ## What this project is
 

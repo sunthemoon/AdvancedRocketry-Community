@@ -1,0 +1,21 @@
+[308月2026 18:17:05.593] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Preparing level "world"
+[308月2026 18:17:06.082] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[308月2026 18:17:07.463] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[308月2026 18:17:07.463] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[308月2026 18:17:07.463] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[308月2026 18:17:07.582] [Worker-Main-3/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[308月2026 18:17:08.058] [Server thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 1975 ms
+[308月2026 18:17:08.058] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (2.482s)! For help, type "help"
+[308月2026 18:17:08.077] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[308月2026 18:26:38.402] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: [REDACTED_TEST_PLAYER][/127.0.0.1:57034] logged in with entity id 109 at (1.5, 120.0, 2.5)
+[308月2026 18:26:38.428] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [REDACTED_TEST_PLAYER] joined the game
+[308月2026 18:27:48.281] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: [REDACTED_TEST_PLAYER] lost connection: Disconnected
+[308月2026 18:27:48.281] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [REDACTED_TEST_PLAYER] left the game
+[308月2026 18:28:03.880] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving the game (this may take a moment!)
+[308月2026 18:28:03.912] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[308月2026 18:28:03.912] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[308月2026 18:28:03.912] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[308月2026 18:28:03.912] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[308月2026 18:28:03.912] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saved the game
+[308月2026 18:28:22.479] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping the server
+[308月2026 18:28:22.530] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server

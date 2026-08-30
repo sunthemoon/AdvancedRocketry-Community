@@ -1,0 +1,114 @@
+{
+  "artifacts": [
+    {
+      "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
+      "artifact_sha256": "cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad",
+      "entry_count": 34,
+      "license_notice_entries": [
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/LICENSE",
+          "repository_source": "LICENSE",
+          "repository_source_sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+          "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+          "size": 1125
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/NOTICE.md",
+          "repository_source": "NOTICE.md",
+          "repository_source_sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+          "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+          "size": 2141
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/THIRD-PARTY-NOTICES.md",
+          "repository_source": "THIRD-PARTY-NOTICES.md",
+          "repository_source_sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+          "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+          "size": 6872
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+          "repository_source": "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
+          "repository_source_sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+          "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+          "size": 23606
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+          "repository_source": "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+          "repository_source_sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+          "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+          "size": 27732
+        }
+      ],
+      "role": "binary"
+    },
+    {
+      "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar",
+      "artifact_sha256": "f958f4334e8f95062a6ed15257fb9c5d940759490f3dc335c70e2764f1acacbe",
+      "entry_count": 34,
+      "license_notice_entries": [
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/LICENSE",
+          "repository_source": "LICENSE",
+          "repository_source_sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+          "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+          "size": 1125
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/NOTICE.md",
+          "repository_source": "NOTICE.md",
+          "repository_source_sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+          "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+          "size": 2141
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/THIRD-PARTY-NOTICES.md",
+          "repository_source": "THIRD-PARTY-NOTICES.md",
+          "repository_source_sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+          "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+          "size": 6872
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+          "repository_source": "docs/licenses/GRADLE-8.1.1-LICENSE.txt",
+          "repository_source_sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+          "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+          "size": 23606
+        },
+        {
+          "matches_repository_source": true,
+          "path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+          "repository_source": "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+          "repository_source_sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+          "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+          "size": 27732
+        }
+      ],
+      "role": "sources"
+    }
+  ],
+  "limitations": [
+    "This scan records archive paths, sizes, hashes, and exact repository-source matches.",
+    "A human reviewer must decide legal sufficiency and approve licensing conclusions.",
+    "A human reviewer must visually inspect the rendered project README and release presentation."
+  ],
+  "required_license_notice_paths": [
+    "META-INF/LICENSE",
+    "META-INF/NOTICE.md",
+    "META-INF/THIRD-PARTY-NOTICES.md",
+    "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+    "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt"
+  ],
+  "schema_version": 1,
+  "scope": "Mechanical packaging evidence only. It does not constitute legal approval and does not replace human review of the rendered project README or other visual release material."
+}

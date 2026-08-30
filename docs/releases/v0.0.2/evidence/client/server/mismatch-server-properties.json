@@ -1,0 +1,25 @@
+{
+  "active_source_sha256": "3ceb777586e1e60920a1e923368d3be891e278e0ab7eb4116e5294768914c7e5",
+  "critical_properties": {
+    "difficulty": "peaceful",
+    "enable-command-block": "false",
+    "enforce-secure-profile": "false",
+    "generate-structures": "false",
+    "level-name": "world",
+    "level-type": "minecraft:normal",
+    "max-players": "2",
+    "motd": "ARCE v0.0.2 dedicated smoke",
+    "online-mode": "false",
+    "server-ip": "127.0.0.1",
+    "server-port": "56318",
+    "simulation-distance": "2",
+    "spawn-protection": "0",
+    "sync-chunk-writes": "true",
+    "view-distance": "2"
+  },
+  "level_name": "world",
+  "schema_version": 2,
+  "server_bind": "127.0.0.1",
+  "server_port": 56318,
+  "source_sha256": "6f022e35d35729f522c745db6a47d5b65fda140cd0594471620ab806ff1e0641"
+}

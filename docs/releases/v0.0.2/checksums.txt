@@ -1,0 +1,37 @@
+# SHA-256 checksums for the v0.0.2 distributable and committed evidence.
+# The build/libs JAR is intentionally not committed; CI verifies it separately.
+cd5ae579bae1bc21c1f67df2c3e00f196e0ee4a9ead01653c926b88ca37f32ad  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
+4118a8c70e3dcedff60cd74fffe96fe75050aaace34e043052533943fd6af9e9  docs/releases/v0.0.2/evidence/client/client-profiles/matching-after.json
+70cdcae9cdad06f10da5a68124a119336566ccf8594c1ddbf480c697233fcf64  docs/releases/v0.0.2/evidence/client/client-profiles/matching-before.json
+025e374ceff139646143f75389e53f900034a533ab94bd0b89c0185a82663245  docs/releases/v0.0.2/evidence/client/client-profiles/missing_mod-after.json
+90cccd8ea3da5e268be69f251128936ef47478a5844d232c38825a1d144c3298  docs/releases/v0.0.2/evidence/client/client-profiles/missing_mod-before.json
+657ec73f96211062729840285df50ad3d64343582ab691c4c61ab16dad4559b9  docs/releases/v0.0.2/evidence/client/logs/client_startup_world.txt
+cd6c9b3d373a1ad4672c3dc60c4101b4aa544baf3f9441ff3f638720d879549a  docs/releases/v0.0.2/evidence/client/logs/matching_client_connection.txt
+fbd76879de69169daf81bbf8efdadaf5ad2d710245d32c5629b084a819db90e7  docs/releases/v0.0.2/evidence/client/logs/mismatch_attempt.txt
+c070b72055831032b86e3d22faa35c8db442cfdf3e723d0ab44b91d83f363eca  docs/releases/v0.0.2/evidence/client/logs/mismatch_server_attempt_save_stop.txt
+46220ff6073e72203bde4ffb998ab6b9b069eee5fb827d31089909c037d68f68  docs/releases/v0.0.2/evidence/client/logs/server_first_join_leave_save_stop.txt
+322160c5ba0adaa5fd349983c3dbfa17f2a335424fc4f0ebbb46d32d6f53468b  docs/releases/v0.0.2/evidence/client/logs/server_restart_reconnect_save_stop.txt
+8d5cab6e962319f380368f7836b891d95be3d57a8003e3ebecea30c23654d17a  docs/releases/v0.0.2/evidence/client/manual-evidence.json
+7cfceb93407a752b13f2fcf1a00e898d080cb26b57c0f76611773d30ce7f8407  docs/releases/v0.0.2/evidence/client/screenshots/matching_first_join.png
+4b0cbd302eb2f5e3feef551267836d93fbcbeb50c6320ab097b5fcfb05400a8b  docs/releases/v0.0.2/evidence/client/screenshots/matching_reconnect.png
+0d53c0f175c39705d73cb2e768245a1fe541145ba84377661518341d72497766  docs/releases/v0.0.2/evidence/client/screenshots/matching_server_list.png
+33e6472bcf81348330db107ebdbe6767995fb7d1264d37f6a0a891b23adc48da  docs/releases/v0.0.2/evidence/client/screenshots/missing_mod_connection_result.png
+629c9767c48023061e847af10356d4b2b1c4c96a002f671cfdc398bdd6ffc093  docs/releases/v0.0.2/evidence/client/screenshots/missing_mod_server_list.png
+0310354fda6254a82f5cf12428a9bb7ff37561517d76f4648344e64cee8e0ff6  docs/releases/v0.0.2/evidence/client/screenshots/mods_page.png
+a89318c28e8ba2a65ab040a91ad6f1e49da2f8484c126d2735ae42e6646a8ebc  docs/releases/v0.0.2/evidence/client/screenshots/readme_render.png
+2c79d37cde9a391389f8172e8f1dfc93fecc4ffdc8365c2757ee4c1c2b8efdd6  docs/releases/v0.0.2/evidence/client/screenshots/singleplayer_world.png
+4f9366c74a862b73a43845c06a24b9d3c750ccb7578dd6ec5e2a14f7552c5ec9  docs/releases/v0.0.2/evidence/client/server/mismatch-server-properties.json
+98f1ff1438e2df9e5afe350d6507cb7fb1676d5c2332c5952d3a40a5342a0fbd  docs/releases/v0.0.2/evidence/client/server/mismatch-server-receipt.json
+f1fe584d46769238903ff063926ba1ad25dd31bb1cdcfb7454f30e0a01b20562  docs/releases/v0.0.2/evidence/client/server/server-summary.json
+dfa33ca011a0a4c9fe7f681180ba8c8c561b6e1b69e04c23b6eb3005e880564a  docs/releases/v0.0.2/evidence/dedicated-server/README.md
+79ad47b208404d555cfe80653ce4ddf440ce641849b41b96dcb7b99d561852a5  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
+cc23c817def71110aa69d096306ea32f0a4754b6193f7e6d93044a4ccc199144  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
+37be93f86779121854223980207ff4228a534d47dacecae837d70e2c11b17cfa  docs/releases/v0.0.2/evidence/dedicated-server/summary.json
+a064d2c2fce4955f7a9a46c3c44da3c08de35f38934a3160586b03f5606c1789  docs/releases/v0.0.2/evidence/g0-final/3b5a26168c5702606f460e14824c13d952636359/final-g0-review-inputs.json
+7b8aef7c8308f0896fc50bd29c7285342de24f93def3c62d6cb87f310e659623  docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/final-g0-review-inputs.json
+a89318c28e8ba2a65ab040a91ad6f1e49da2f8484c126d2735ae42e6646a8ebc  docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/readme-full-window.png
+54eb141cef09deee8b9e6eeffb4cb6d47b3b33cf0e9a9e2461b421d803c7acd5  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
+5e84ea8b62d202de8162ca974af5cacffae331f0a5ecc7d4c947282310f712d3  docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json
+c7887b35cdf14b1dfc9175e2c71c71f2cd054b2de6f04d5096854a29b1ebb351  docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml
+492ec7b2e6d51b996c5583801d2e73c7f61bea3a4bd54907b3cf207676ce46db  docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json
