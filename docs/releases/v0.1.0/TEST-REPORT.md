@@ -19,7 +19,7 @@ artifact_sha256: 07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6e
 |---|---|---|
 | `gradlew clean build` — first run | PASS | Main JAR 95,924 bytes, SHA-256 `07f5c108…` |
 | `gradlew clean build` — second run | PASS | Byte-identical main JAR |
-| Python test suite | PASS (combined rerun) | 547 methods: initial 544 pass/3 fail; corrected historical-version test binding; 4/4 affected/control methods pass |
+| Python test suite | PASS (combined rerun) | 548 current methods: CI passed the prior 547/547; new Git-blob portability case is included in the 22/22 focused v0.1.0 rerun; final-head CI pending |
 | JAR audit | PASS | 112 entries; version/metadata/license/resource audit passed |
 | Client package-boundary scan | PASS | No common/server import of `net.minecraft.client.*` |
 | Strict repository validator | PASS | 20 passed, 0 pending, 0 warnings, 0 failed |
@@ -89,6 +89,9 @@ Failures were not relabeled as passes:
 | PR head `c14d7c5` baseline CI | FAIL | Checksum inventory was computed from CRLF working-tree bytes while Git stores the six evidence text files as LF |
 | PR head `c14d7c5` governance CI | FAIL | The same checksum issue plus obsolete v0.0.2 review-packet generation against the v0.1.0 head |
 | CI recovery validation | PASS locally | Checksums now bind Git-canonical LF bytes; v0.0.2 packet unit fixtures use the archived commit, and governance forbids regenerating retired review inputs at later-version heads |
+| PR head `5370392` Forge CI | PASS | Forge 47.4.10 baseline and 47.4.23 compatibility both pass; accepted main JAR hash reproduced on Linux |
+| PR head `5370392` governance CI | FAIL after 547/547 tests passed | Four audit CSV files recorded Windows-smudged upstream worktree byte counts/hashes instead of raw Git blob bytes |
+| Audit portability recovery | PASS locally | Audit reads bounded blobs from the exact Git tree, CSV uses LF, regenerated 18-file manifest verifies, and 7/7 audit tests include a clean CRLF materialization case |
 
 No timeout was enlarged and no assertion was removed. The recovery command
 used `--resume-install-session`, which refuses a directory containing server

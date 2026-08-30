@@ -155,12 +155,30 @@ def load_tracked_files(repository: Path, expected_commit: str) -> list[TrackedFi
     dirty = _run_git(repository, "status", "--porcelain", "--untracked-files=all")
     if dirty:
         raise ValueError("upstream checkout is not clean")
-    raw_paths = _run_git(repository, "ls-files", "-z").split(b"\0")
-    paths = [
-        _safe_relative(raw.decode("utf-8", errors="strict"))
-        for raw in raw_paths
-        if raw
-    ]
+    raw_entries = _run_git(
+        repository, "ls-tree", "-r", "-z", "--full-tree", expected_commit
+    ).split(b"\0")
+    entries: list[tuple[str, str]] = []
+    for raw in raw_entries:
+        if not raw:
+            continue
+        metadata, separator, raw_path = raw.partition(b"\t")
+        fields = metadata.split()
+        if separator != b"\t" or len(fields) != 3:
+            raise ValueError("Git returned a malformed tree entry")
+        mode, object_type, raw_oid = fields
+        if mode not in {b"100644", b"100755"} or object_type != b"blob":
+            path_label = raw_path.decode("utf-8", errors="replace")
+            raise ValueError(f"tracked path is not a regular file: {path_label}")
+        try:
+            oid = raw_oid.decode("ascii", errors="strict")
+            relative = _safe_relative(raw_path.decode("utf-8", errors="strict"))
+        except UnicodeError as exc:
+            raise ValueError("Git tree entry is not valid UTF-8/ASCII") from exc
+        if len(oid) not in {40, 64} or any(character not in "0123456789abcdef" for character in oid):
+            raise ValueError(f"Git returned an invalid blob object ID: {oid!r}")
+        entries.append((relative, oid))
+    paths = [path for path, _ in entries]
     if not paths or len(paths) > MAX_FILES:
         raise ValueError(f"tracked file count outside bounds: {len(paths)}")
     if len(paths) != len(set(paths)) or len(paths) != len({p.casefold() for p in paths}):
@@ -170,17 +188,58 @@ def load_tracked_files(repository: Path, expected_commit: str) -> list[TrackedFi
             raise ValueError("duplicate tracked paths returned by Git")
     files: list[TrackedFile] = []
     total = 0
-    for relative in sorted(paths):
-        path = repository.joinpath(*PurePosixPath(relative).parts)
-        if path.is_symlink() or not path.is_file():
-            raise ValueError(f"tracked path is not a regular file: {relative}")
-        size = path.stat().st_size
-        if size > MAX_FILE_BYTES:
-            raise ValueError(f"tracked file exceeds {MAX_FILE_BYTES} bytes: {relative}")
-        total += size
-        if total > MAX_TOTAL_BYTES:
-            raise ValueError("tracked input exceeds aggregate audit byte limit")
-        files.append(TrackedFile(relative, path.read_bytes()))
+    process = subprocess.Popen(
+        ["git", "-C", str(repository), "cat-file", "--batch"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    assert process.stdin is not None
+    assert process.stdout is not None
+    assert process.stderr is not None
+    try:
+        for relative, expected_oid in sorted(entries):
+            process.stdin.write(expected_oid.encode("ascii") + b"\n")
+            process.stdin.flush()
+            header = process.stdout.readline()
+            parts = header.rstrip(b"\n").split()
+            if len(parts) != 3 or parts[1] != b"blob":
+                raise ValueError(f"Git returned a malformed blob header for {relative}")
+            observed_oid = parts[0].decode("ascii", errors="strict")
+            try:
+                size = int(parts[2])
+            except ValueError as exc:
+                raise ValueError(f"Git returned an invalid blob size for {relative}") from exc
+            if observed_oid != expected_oid:
+                raise ValueError(f"Git blob identity changed while reading: {relative}")
+            if size < 0 or size > MAX_FILE_BYTES:
+                raise ValueError(f"tracked file exceeds {MAX_FILE_BYTES} bytes: {relative}")
+            total += size
+            if total > MAX_TOTAL_BYTES:
+                raise ValueError("tracked input exceeds aggregate audit byte limit")
+            chunks: list[bytes] = []
+            remaining = size
+            while remaining:
+                chunk = process.stdout.read(remaining)
+                if not chunk:
+                    raise ValueError(f"Git blob ended early: {relative}")
+                chunks.append(chunk)
+                remaining -= len(chunk)
+            if process.stdout.read(1) != b"\n":
+                raise ValueError(f"Git blob framing is invalid: {relative}")
+            files.append(TrackedFile(relative, b"".join(chunks)))
+        process.stdin.close()
+        return_code = process.wait(timeout=GIT_TIMEOUT_SECONDS)
+        if return_code:
+            detail = process.stderr.read().decode("utf-8", errors="replace").strip()
+            raise ValueError(f"git cat-file --batch failed: {detail}")
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait(timeout=GIT_TIMEOUT_SECONDS)
+        for stream in (process.stdin, process.stdout, process.stderr):
+            if stream is not None and not stream.closed:
+                stream.close()
     license_file = next((item for item in files if item.path == "LICENSE"), None)
     if license_file is None:
         raise ValueError("upstream root LICENSE is missing")

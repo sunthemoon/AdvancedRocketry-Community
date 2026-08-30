@@ -26,6 +26,8 @@ class AuditUpstreamTests(unittest.TestCase):
         self.git("init")
         self.git("config", "user.name", "Audit Fixture")
         self.git("config", "user.email", "audit@example.invalid")
+        self.git("config", "core.autocrlf", "true")
+        self.write(".gitattributes", "*.java text\n*.json text\n")
         self.write("LICENSE", MIT_LICENSE)
         self.write(
             "src/main/java/zmaster587/advancedRocketry/network/PacketFixture.java",
@@ -86,6 +88,33 @@ public final class PacketFixture extends BasePacket {
         self.assertEqual(set(EXPECTED_OUTPUTS), {path.name for path in first.iterdir()})
         for name in EXPECTED_OUTPUTS:
             self.assertEqual((first / name).read_bytes(), (second / name).read_bytes(), name)
+
+    def test_clean_checkout_line_endings_do_not_change_blob_audit(self) -> None:
+        expected = self.root / "expected"
+        converted = self.root / "converted"
+        build_manifest(self.upstream, self.commit, expected)
+
+        java_path = self.upstream / (
+            "src/main/java/zmaster587/advancedRocketry/network/PacketFixture.java"
+        )
+        lf_bytes = java_path.read_bytes().replace(b"\r\n", b"\n")
+        java_path.write_bytes(lf_bytes.replace(b"\n", b"\r\n"))
+        self.git(
+            "add",
+            "--",
+            "src/main/java/zmaster587/advancedRocketry/network/PacketFixture.java",
+        )
+        self.assertIn(b"\r\n", java_path.read_bytes())
+        self.assertEqual("", self.git("status", "--porcelain"))
+
+        build_manifest(self.upstream, self.commit, converted)
+
+        for name in EXPECTED_OUTPUTS:
+            self.assertEqual(
+                (expected / name).read_bytes(),
+                (converted / name).read_bytes(),
+                name,
+            )
 
     def test_java_risk_indexes_include_fixture(self) -> None:
         output = self.root / "manifest"

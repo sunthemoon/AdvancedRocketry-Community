@@ -74,9 +74,9 @@ code or resource was copied.
 - Generated targets: 27, bound by the generated-resource manifest.
 - Total managed distributable resources: 37.
 - Human sample: all 10 imported targets, approved by `sunthemoon` on
-  2026-08-30 with no finding.
+  2026-08-31 with no finding.
 - Provenance content digest:
-  `d1357ba67a7b8a2029ffe4cd51bc7c7e6413b247d0934f338e8ea2df8739cb79`.
+  `b33ce1c901d68cdf2d21311fad9c540873fbe06a32470edcdfb41c12fd451805`.
 
 Records:
 
@@ -141,10 +141,12 @@ Forge/Vanilla/Netty warnings are classified in
 
 ## Approval boundary
 
-Repository maintainer `sunthemoon` approved G0, G8, and G9 on 2026-08-30. The
-approval is bound to the provenance content digest, evidence hashes, and JAR
-SHA-256 above. Any changed imported/generated resource, packaged JAR byte, or
-visual evidence invalidates the affected approval and requires revalidation.
+Repository maintainer `sunthemoon` approved G8/G9 on 2026-08-30 and renewed G0
+on 2026-08-31 after the two language-source hashes were rebound from a Windows
+checkout representation to the exact upstream Git blobs. The approval is bound
+to the provenance content digest, evidence hashes, and JAR SHA-256 above. Any
+changed imported/generated resource, packaged JAR byte, or visual evidence
+invalidates the affected approval and requires revalidation.
 
 CI and pull-request URLs will replace the pending identity fields before the
 version status changes to `PASSED`.

@@ -75,7 +75,9 @@ is not part of this batch. No custom model-loader dependency was introduced.
 
 All ten imported targets, rather than a smaller random subset, were checked
 against the exact upstream commit and target transforms. Maintainer
-`sunthemoon` approved content digest `d1357ba6…` with no finding. See
+`sunthemoon` approved content digest `b33ce1c9…` with no finding on 2026-08-31.
+The renewal binds raw upstream Git blobs rather than platform-smudged checkout
+bytes. See
 [`evidence/provenance/human-review.json`](evidence/provenance/human-review.json).
 
 ## Human Gate decision
@@ -85,7 +87,8 @@ G0: APPROVED
 G8: APPROVED
 G9: APPROVED
 reviewer: sunthemoon
-reviewed_at: 2026-08-30
+G0_reviewed_at: 2026-08-31
+G8_G9_reviewed_at: 2026-08-30
 findings: []
 ```
 
