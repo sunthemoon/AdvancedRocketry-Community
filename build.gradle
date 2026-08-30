@@ -1,3 +1,5 @@
+// Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, and 2026-08-30; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
