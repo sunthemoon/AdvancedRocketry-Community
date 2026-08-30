@@ -86,6 +86,9 @@ Failures were not relabeled as passes:
 | Explicit installer-only recovery | PASS | Reused only the validated partial downloads, completed installation, then performed both player cycles |
 | First final Python suite | FAIL (3/547) | Later-version worktree was incorrectly used for historical v0.0.2 provenance, and two mocks targeted the superseded mutable helper |
 | Focused historical-boundary rerun | PASS | Historical evidence now validates at accepted commit `9359257…`; all four affected/control methods pass |
+| PR head `c14d7c5` baseline CI | FAIL | Checksum inventory was computed from CRLF working-tree bytes while Git stores the six evidence text files as LF |
+| PR head `c14d7c5` governance CI | FAIL | The same checksum issue plus obsolete v0.0.2 review-packet generation against the v0.1.0 head |
+| CI recovery validation | PASS locally | Checksums now bind Git-canonical LF bytes; v0.0.2 packet unit fixtures use the archived commit, and governance forbids regenerating retired review inputs at later-version heads |
 
 No timeout was enlarged and no assertion was removed. The recovery command
 used `--resume-install-session`, which refuses a directory containing server

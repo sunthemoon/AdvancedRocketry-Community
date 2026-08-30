@@ -1631,106 +1631,25 @@ def validate_repository_workflow_text(text: str) -> list[str]:
     for action, inputs in action_contracts:
         if not _job_has_exact_action_contract(job, action, inputs):
             errors.append(f"exact enabled action contract {action}")
-    upload_contracts = (
-        {
-            "name": "v0.0.2-g0-review-packet-${{ env.REVIEW_COMMIT }}",
-            "if-no-files-found": "error",
-            "include-hidden-files": "true",
-            "path": "build/v0.0.2-g0-review-packet/",
-        },
-        {
-            "name": "v0.0.2-final-g0-review-inputs-${{ env.REVIEW_COMMIT }}",
-            "if-no-files-found": "error",
-            "include-hidden-files": "true",
-            "path": "build/v0.0.2-final-g0-review-inputs/",
-        },
-    )
-    if not _job_has_exact_action_contracts(
-        job, "actions/upload-artifact@v7", upload_contracts
+    upload_steps = [
+        step
+        for step in _required_steps(job)
+        if step.fields.get("uses", "").startswith("actions/upload-artifact@")
+    ]
+    if upload_steps:
+        errors.append("no governance artifact uploads after v0.0.2 archival")
+
+    retired_v002_tools = {
+        "scripts/prepare_v002_g0_review_packet.py",
+        "scripts/prepare_v002_final_g0_review_inputs.py",
+    }
+    if any(
+        token in retired_v002_tools
+        for step in _required_steps(job)
+        for command in _run_commands(step.fields.get("run", ""))
+        for token in command
     ):
-        errors.append("exact enabled action contract actions/upload-artifact@v7")
-
-    packet_commands = (
-        (
-            "python",
-            "-I",
-            "-S",
-            "-c",
-            "from pathlib import Path; Path('build').mkdir(exist_ok=True)",
-        ),
-        (
-            "python",
-            "-I",
-            "-S",
-            "scripts/prepare_v002_g0_review_packet.py",
-            "generate",
-            "--commit",
-            "$REVIEW_COMMIT",
-            "--output",
-            "build/v0.0.2-g0-review-packet",
-        ),
-        (
-            "python",
-            "-I",
-            "-S",
-            "scripts/prepare_v002_g0_review_packet.py",
-            "verify",
-            "--commit",
-            "$REVIEW_COMMIT",
-            "--packet",
-            "build/v0.0.2-g0-review-packet",
-        ),
-    )
-    packet_steps = [
-        step
-        for step in _required_steps(job)
-        if tuple(_run_commands(step.fields.get("run", ""))) == packet_commands
-    ]
-    if len(packet_steps) != 1:
-        errors.append(
-            "exact isolated G0 review-packet setup/generate/verify command sequence"
-        )
-
-    final_g0_commands = (
-        (
-            "python",
-            "-I",
-            "-S",
-            "-c",
-            "from pathlib import Path; Path('build').mkdir(exist_ok=True)",
-        ),
-        (
-            "python",
-            "-I",
-            "-S",
-            "scripts/prepare_v002_final_g0_review_inputs.py",
-            "generate",
-            "--commit",
-            "$REVIEW_COMMIT",
-            "--output",
-            "build/v0.0.2-final-g0-review-inputs",
-        ),
-        (
-            "python",
-            "-I",
-            "-S",
-            "scripts/prepare_v002_final_g0_review_inputs.py",
-            "verify",
-            "--commit",
-            "$REVIEW_COMMIT",
-            "--output",
-            "build/v0.0.2-final-g0-review-inputs",
-        ),
-    )
-    final_g0_steps = [
-        step
-        for step in _required_steps(job)
-        if tuple(_run_commands(step.fields.get("run", ""))) == final_g0_commands
-    ]
-    if len(final_g0_steps) != 1:
-        errors.append(
-            "exact isolated final-G0 review-input setup/generate/verify command sequence"
-        )
+        errors.append("no retired v0.0.2 review-input generation at the current head")
 
     for command in (
         ("python", "-m", "unittest", "discover", "-s", "tests", "-v"),
@@ -1770,8 +1689,6 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ("python", "scripts/manage_v010_generated_manifest.py", "verify"),
         ("python", "scripts/validate_v010_asset_baseline.py"),
         ("python", "scripts/validate_v010_release_evidence.py"),
-        *packet_commands,
-        *final_g0_commands,
         (
             "python",
             "scripts/validate_repository.py",

@@ -58,6 +58,12 @@ class V002G0ReviewPacketTests(unittest.TestCase):
         cls.seed_git("config", "user.email", "g0-packet@example.invalid")
         cls.seed_git("config", "core.autocrlf", "false")
         cls.seed_git("config", "core.filemode", "false")
+        cls.seed_git(
+            "checkout",
+            "--quiet",
+            "--detach",
+            validator_module.HISTORICAL_V002_RECORD_COMMIT,
+        )
         cls.ensure_pending_seed_state()
 
         for _, relative in TOOL_DEFINITIONS:
