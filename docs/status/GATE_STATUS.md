@@ -3,6 +3,7 @@
 ```yaml
 version: v0.1.0
 status: IN_PROGRESS
+tested_implementation_commit: "ccae3a79242a1901daed0cadf0c15bb058f89c0b"
 base_commit: "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
 branch: "codex/v0.1.0-asset-registry-baseline"
 build: "1.20.1-0.1.0-dev"

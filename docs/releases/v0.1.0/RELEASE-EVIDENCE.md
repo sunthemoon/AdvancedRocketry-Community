@@ -6,7 +6,7 @@
 version: v0.1.0
 status: IN_PROGRESS
 build: 1.20.1-0.1.0-dev
-tested_implementation_commit: PENDING_FINAL_COMMIT
+tested_implementation_commit: ccae3a79242a1901daed0cadf0c15bb058f89c0b
 upstream_commit: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
 minecraft: 1.20.1
 forge_baseline: 47.4.10
