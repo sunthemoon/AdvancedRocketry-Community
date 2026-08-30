@@ -31,9 +31,47 @@ from scripts.validate_repository import (
     repository_files,
     tracked_markdown_files,
     validate_v002_gate_status_text,
+    validate_v010_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
+
+
+def v010_gate_document(
+    *,
+    status: str = "IN_PROGRESS",
+    overall: str = "IN_PROGRESS",
+    g0: str = "IN_PROGRESS",
+    g1: str = "IN_PROGRESS",
+    g2: str = "IN_PROGRESS",
+    g3: str = "IN_PROGRESS",
+    g4: str = "NOT_STARTED",
+    g8: str = "NOT_STARTED",
+    g9: str = "NOT_STARTED",
+    reviewer: str = "",
+    reviewed_at: str = "",
+) -> str:
+    return f"""# GATE_STATUS
+
+```yaml
+version: v0.1.0
+status: {status}
+gates:
+  G0: {g0}
+  G1: {g1}
+  G2: {g2}
+  G3: {g3}
+  G4: {g4}
+  G5: NOT_APPLICABLE
+  G6: NOT_APPLICABLE
+  G7: NOT_APPLICABLE
+  G8: {g8}
+  G9: {g9}
+overall: {overall}
+human_approved_by: "{reviewer}"
+human_approved_at: "{reviewed_at}"
+```
+"""
 
 
 class RepositoryCliTests(unittest.TestCase):
@@ -542,6 +580,48 @@ class ApprovedThirdPartyLicenseTests(unittest.TestCase):
         self.assertFalse(is_approved_third_party_license("docs/licenses/other.txt", b""))
 
 
+class V010GateStatusTests(unittest.TestCase):
+    def test_honest_in_progress_status_accepts_pending_provenance(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v010_gate_status_text(
+                v010_gate_document(),
+                asset_details={
+                    "review_status": "PENDING_HUMAN_REVIEW",
+                    "resource_count": 37,
+                },
+            ),
+        )
+
+    def test_g0_pass_requires_approved_provenance(self) -> None:
+        errors = validate_v010_gate_status_text(
+            v010_gate_document(g0="PASS"),
+            asset_details={
+                "review_status": "PENDING_HUMAN_REVIEW",
+                "resource_count": 37,
+            },
+        )
+        self.assertTrue(any("G0 cannot be PASS" in error for error in errors))
+
+    def test_passed_status_requires_all_gates_and_owner_approval(self) -> None:
+        errors = validate_v010_gate_status_text(
+            v010_gate_document(
+                status="PASSED",
+                overall="PASSED",
+                g0="PASS",
+                g1="PASS",
+                g2="PASS",
+                g3="PASS",
+                g4="PASS",
+                g8="PASS",
+                g9="PASS",
+            ),
+            asset_details={"review_status": "APPROVED", "resource_count": 37},
+        )
+        self.assertTrue(any("G8 cannot be PASS" in error for error in errors))
+        self.assertTrue(any("human approval" in error for error in errors))
+
+
 class V002ResourceInventoryTests(unittest.TestCase):
     def test_all_current_text_and_binary_resources_are_allowlisted(self) -> None:
         paths = [
@@ -799,7 +879,7 @@ class FinalG0RepositoryCheckTests(unittest.TestCase):
     def test_invalid_final_g0_record_fails_repository_validation(self) -> None:
         results = Results()
         with patch(
-            "scripts.validate_repository.validate_v002_final_g0_review",
+            "scripts.validate_repository._validate_v002_final_g0_history",
             return_value=(["bad binding"], {}),
         ):
             check_v002_final_g0_review(results)
@@ -813,7 +893,7 @@ class FinalG0RepositoryCheckTests(unittest.TestCase):
     def test_pending_final_g0_record_is_valid_without_gate_conclusion(self) -> None:
         results = Results()
         with patch(
-            "scripts.validate_repository.validate_v002_final_g0_review",
+            "scripts.validate_repository._validate_v002_final_g0_history",
             return_value=(
                 [],
                 {
@@ -833,7 +913,7 @@ class FinalG0RepositoryCheckTests(unittest.TestCase):
     def test_approved_records_still_do_not_compute_gate(self) -> None:
         results = Results()
         with patch(
-            "scripts.validate_repository.validate_v002_final_g0_review",
+            "scripts.validate_repository._validate_v002_final_g0_history",
             return_value=(
                 [],
                 {
@@ -1182,61 +1262,45 @@ class WorkflowStructureTests(unittest.TestCase):
             errors,
         )
 
-    def test_g0_review_packet_commands_are_required(self) -> None:
-        commands = (
-            (
-                "          python -I -S -c \"from pathlib import Path; "
-                "Path('build').mkdir(exist_ok=True)\""
-            ),
-            (
-                "          python -I -S scripts/prepare_v002_g0_review_packet.py generate "
-                '--commit "$REVIEW_COMMIT" --output build/v0.0.2-g0-review-packet'
-            ),
-            (
-                "          python -I -S scripts/prepare_v002_g0_review_packet.py verify "
-                '--commit "$REVIEW_COMMIT" --packet build/v0.0.2-g0-review-packet'
-            ),
+    def test_retired_g0_review_packet_commands_are_rejected(self) -> None:
+        self.assertNotIn(
+            "prepare_v002_g0_review_packet.py", self.repository_workflow
+        )
+        marker = "      - name: Enforce governance baseline"
+        tampered = self.repository_workflow.replace(
+            marker,
+            "      - name: Recreate retired packet\n"
+            "        run: python -I -S scripts/prepare_v002_g0_review_packet.py "
+            "generate --commit \"$REVIEW_COMMIT\" --output build/packet\n\n"
+            + marker,
+            1,
         )
 
-        for command in commands:
-            with self.subTest(command=command):
-                tampered = self.repository_workflow.replace(command, "          true", 1)
+        errors = validate_repository_workflow_text(tampered)
 
-                errors = validate_repository_workflow_text(tampered)
-
-                self.assertIn(
-                    "exact isolated G0 review-packet "
-                    "setup/generate/verify command sequence",
-                    errors,
-                )
-
-    def test_final_g0_review_input_commands_are_required(self) -> None:
-        commands = (
-            (
-                "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
-                "generate "
-                '--commit "$REVIEW_COMMIT" --output '
-                "build/v0.0.2-final-g0-review-inputs"
-            ),
-            (
-                "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
-                "verify "
-                '--commit "$REVIEW_COMMIT" --output '
-                "build/v0.0.2-final-g0-review-inputs"
-            ),
+        self.assertIn(
+            "no retired v0.0.2 review-input generation at the current head", errors
         )
 
-        for command in commands:
-            with self.subTest(command=command):
-                tampered = self.repository_workflow.replace(command, "          true", 1)
+    def test_retired_final_g0_review_input_commands_are_rejected(self) -> None:
+        self.assertNotIn(
+            "prepare_v002_final_g0_review_inputs.py", self.repository_workflow
+        )
+        marker = "      - name: Enforce governance baseline"
+        tampered = self.repository_workflow.replace(
+            marker,
+            "      - name: Recreate retired final review inputs\n"
+            "        run: python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
+            "generate --commit \"$REVIEW_COMMIT\" --output build/final-inputs\n\n"
+            + marker,
+            1,
+        )
 
-                errors = validate_repository_workflow_text(tampered)
+        errors = validate_repository_workflow_text(tampered)
 
-                self.assertIn(
-                    "exact isolated final-G0 review-input "
-                    "setup/generate/verify command sequence",
-                    errors,
-                )
+        self.assertIn(
+            "no retired v0.0.2 review-input generation at the current head", errors
+        )
 
     def test_repository_workflow_action_contract_mutations_are_rejected(self) -> None:
         cases = (
@@ -1276,48 +1340,6 @@ class WorkflowStructureTests(unittest.TestCase):
                 'python-version: "3.11"',
                 "exact enabled action contract actions/setup-python@v7",
             ),
-            (
-                "upload action version",
-                "uses: actions/upload-artifact@v7",
-                "uses: actions/upload-artifact@v6",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
-            (
-                "artifact name",
-                "name: v0.0.2-g0-review-packet-${{ env.REVIEW_COMMIT }}",
-                "name: v0.0.2-g0-review-packet",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
-            (
-                "missing artifact behavior",
-                "if-no-files-found: error",
-                "if-no-files-found: warn",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
-            (
-                "hidden files",
-                "include-hidden-files: true",
-                "include-hidden-files: false",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
-            (
-                "artifact path",
-                "path: build/v0.0.2-g0-review-packet/",
-                "path: build/",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
-            (
-                "final G0 artifact name",
-                "name: v0.0.2-final-g0-review-inputs-${{ env.REVIEW_COMMIT }}",
-                "name: v0.0.2-final-g0-review-inputs",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
-            (
-                "final G0 artifact path",
-                "path: build/v0.0.2-final-g0-review-inputs/",
-                "path: build/v0.0.2-final-g0-review-inputs.json",
-                "exact enabled action contract actions/upload-artifact@v7",
-            ),
         )
 
         for name, original, replacement, expected in cases:
@@ -1330,39 +1352,39 @@ class WorkflowStructureTests(unittest.TestCase):
                 self.assertIn(expected, errors)
 
     def test_repository_workflow_rejects_additional_upload_inputs(self) -> None:
-        tampered = self.repository_workflow.replace(
-            "          include-hidden-files: true",
-            "          include-hidden-files: true\n          retention-days: 7",
-            1,
-        )
-
-        errors = validate_repository_workflow_text(tampered)
-
-        self.assertIn(
-            "exact enabled action contract actions/upload-artifact@v7", errors
-        )
-
-    def test_repository_workflow_rejects_an_additional_upload_step(self) -> None:
-        marker = "          path: build/v0.0.2-final-g0-review-inputs/"
+        marker = "      - name: Enforce governance baseline"
         tampered = self.repository_workflow.replace(
             marker,
-            marker
-            + "\n\n"
-            + "      - name: Unexpected upload\n"
-            + "        uses: actions/upload-artifact@v7\n"
-            + "        with:\n"
-            + "          name: unexpected\n"
-            + "          if-no-files-found: error\n"
-            + "          include-hidden-files: true\n"
-            + "          path: build/",
+            "      - name: Stale evidence upload\n"
+            "        uses: actions/upload-artifact@v7\n"
+            "        with:\n"
+            "          name: stale\n"
+            "          path: build/stale/\n"
+            "          retention-days: 7\n\n"
+            + marker,
             1,
         )
 
         errors = validate_repository_workflow_text(tampered)
 
-        self.assertIn(
-            "exact enabled action contract actions/upload-artifact@v7", errors
+        self.assertIn("no governance artifact uploads after v0.0.2 archival", errors)
+
+    def test_repository_workflow_rejects_an_additional_upload_step(self) -> None:
+        marker = "      - name: Enforce governance baseline"
+        tampered = self.repository_workflow.replace(
+            marker,
+            "      - name: Unexpected upload\n"
+            "        uses: actions/upload-artifact@v6\n"
+            "        with:\n"
+            "          name: unexpected\n"
+            "          path: build/\n\n"
+            + marker,
+            1,
         )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn("no governance artifact uploads after v0.0.2 archival", errors)
 
     def test_repository_workflow_permissions_are_read_only(self) -> None:
         mutations = (
@@ -1496,65 +1518,75 @@ class WorkflowStructureTests(unittest.TestCase):
                 )
 
     def test_g0_review_packet_sequence_requires_python_isolation(self) -> None:
+        marker = "      - name: Enforce governance baseline"
         tampered = self.repository_workflow.replace(
-            "python -I -S scripts/prepare_v002_g0_review_packet.py generate",
-            "python -S scripts/prepare_v002_g0_review_packet.py generate",
+            marker,
+            "      - name: Retired nonisolated packet\n"
+            "        run: python -S scripts/prepare_v002_g0_review_packet.py "
+            "generate --commit \"$REVIEW_COMMIT\" --output build/packet\n\n"
+            + marker,
             1,
         )
 
         errors = validate_repository_workflow_text(tampered)
 
         self.assertIn(
-            "exact isolated G0 review-packet setup/generate/verify command sequence",
-            errors,
+            "no retired v0.0.2 review-input generation at the current head", errors
         )
 
     def test_g0_review_packet_sequence_rejects_an_extra_command(self) -> None:
-        generate = (
-            "          python -I -S scripts/prepare_v002_g0_review_packet.py generate "
-            '--commit "$REVIEW_COMMIT" --output build/v0.0.2-g0-review-packet'
-        )
+        marker = "      - name: Enforce governance baseline"
         tampered = self.repository_workflow.replace(
-            generate, generate + "\n          python --version", 1
-        )
-
-        errors = validate_repository_workflow_text(tampered)
-
-        self.assertIn(
-            "exact isolated G0 review-packet setup/generate/verify command sequence",
-            errors,
-        )
-
-    def test_final_g0_review_input_sequence_requires_python_isolation(self) -> None:
-        tampered = self.repository_workflow.replace(
-            "python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate",
-            "python -S scripts/prepare_v002_final_g0_review_inputs.py generate",
+            marker,
+            "      - name: Retired packet plus extra command\n"
+            "        run: |\n"
+            "          python -I -S scripts/prepare_v002_g0_review_packet.py "
+            "generate --commit \"$REVIEW_COMMIT\" --output build/packet\n"
+            "          python --version\n\n"
+            + marker,
             1,
         )
 
         errors = validate_repository_workflow_text(tampered)
 
         self.assertIn(
-            "exact isolated final-G0 review-input setup/generate/verify command sequence",
-            errors,
+            "no retired v0.0.2 review-input generation at the current head", errors
         )
 
-    def test_final_g0_review_input_sequence_rejects_an_extra_command(self) -> None:
-        generate = (
-            "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
-            "generate "
-            '--commit "$REVIEW_COMMIT" --output '
-            "build/v0.0.2-final-g0-review-inputs"
-        )
+    def test_final_g0_review_input_sequence_requires_python_isolation(self) -> None:
+        marker = "      - name: Enforce governance baseline"
         tampered = self.repository_workflow.replace(
-            generate, generate + "\n          python --version", 1
+            marker,
+            "      - name: Retired nonisolated final inputs\n"
+            "        run: python -S scripts/prepare_v002_final_g0_review_inputs.py "
+            "generate --commit \"$REVIEW_COMMIT\" --output build/final-inputs\n\n"
+            + marker,
+            1,
         )
 
         errors = validate_repository_workflow_text(tampered)
 
         self.assertIn(
-            "exact isolated final-G0 review-input setup/generate/verify command sequence",
-            errors,
+            "no retired v0.0.2 review-input generation at the current head", errors
+        )
+
+    def test_final_g0_review_input_sequence_rejects_an_extra_command(self) -> None:
+        marker = "      - name: Enforce governance baseline"
+        tampered = self.repository_workflow.replace(
+            marker,
+            "      - name: Retired final inputs plus extra command\n"
+            "        run: |\n"
+            "          python -I -S scripts/prepare_v002_final_g0_review_inputs.py "
+            "generate --commit \"$REVIEW_COMMIT\" --output build/final-inputs\n"
+            "          python --version\n\n"
+            + marker,
+            1,
+        )
+
+        errors = validate_repository_workflow_text(tampered)
+
+        self.assertIn(
+            "no retired v0.0.2 review-input generation at the current head", errors
         )
 
     def test_if_false_validator_step_does_not_satisfy_requirement(self) -> None:

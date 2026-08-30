@@ -1,0 +1,11 @@
+{
+  "block.advancedrocketrycommunity.machine_casing": "机器外壳",
+  "item.advancedrocketrycommunity.advanced_circuit": "高级芯片",
+  "item.advancedrocketrycommunity.basic_circuit": "基础芯片",
+  "item.advancedrocketrycommunity.data_storage_unit": "数据存储单位",
+  "item.advancedrocketrycommunity.silicon_wafer": "硅晶片",
+  "itemGroup.advancedrocketrycommunity.main": "高级火箭：社区版",
+  "message.advancedrocketrycommunity.machine_casing_inert": "机器功能将在 v0.2.0 开始实现",
+  "subtitle.advancedrocketrycommunity.ui_select": "界面选择",
+  "tooltip.advancedrocketrycommunity.development_component": "开发组件——v0.1.0 尚无机器功能"
+}

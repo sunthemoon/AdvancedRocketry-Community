@@ -1,0 +1,10 @@
+[308月2026 23:12:15.276] [Worker-Main-8/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.1.0-dev initialized
+[308月2026 23:13:51.559] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-08-30_23.13.51.png
+[308月2026 23:15:28.316] [Netty Local Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[308月2026 23:15:28.368] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: sunthemoon[local:<session>] logged in with entity id 207 at (0.5, 79.0, 1.5)
+[308月2026 23:16:18.839] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-08-30_23.16.18.png
+[308月2026 23:16:57.259] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-08-30_23.16.57.png
+[308月2026 23:17:34.000] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
+[308月2026 23:17:34.061] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[308月2026 23:17:34.061] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[308月2026 23:17:34.635] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved

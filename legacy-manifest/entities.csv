@@ -1,0 +1,33 @@
+path,class_name,base_types,domain
+src/main/java/zmaster587/advancedRocketry/api/EntityRocketBase.java,EntityRocketBase,Entity,api
+src/main/java/zmaster587/advancedRocketry/client/render/entity/RenderButtonUIEntity.java,RenderButtonUIEntity,Render<EntityUIButton> | IRenderFactory<EntityUIButton>,client
+src/main/java/zmaster587/advancedRocketry/client/render/entity/RenderElevatorCapsule.java,RenderElevatorCapsule,Render<EntityElevatorCapsule> | IRenderFactory<EntityElevatorCapsule>,client
+src/main/java/zmaster587/advancedRocketry/client/render/entity/RenderHoverCraft.java,RenderHoverCraft,Render<EntityHoverCraft> | IRenderFactory<EntityHoverCraft>,client
+src/main/java/zmaster587/advancedRocketry/client/render/entity/RenderPlanetUIEntity.java,RenderPlanetUIEntity,Render<EntityUIPlanet> | IRenderFactory<EntityUIPlanet>,client
+src/main/java/zmaster587/advancedRocketry/client/render/entity/RenderStarUIEntity.java,RenderStarUIEntity,Render<EntityUIStar> | IRenderFactory<EntityUIStar>,client
+src/main/java/zmaster587/advancedRocketry/client/render/entity/RendererItem.java,RendererItem,Render<EntityItemAbducted> | IRenderFactory<EntityItemAbducted>,client
+src/main/java/zmaster587/advancedRocketry/entity/EntityDummy.java,EntityDummy,Entity,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityElevatorCapsule.java,EntityElevatorCapsule,Entity | INetworkEntity,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityHoverCraft.java,EntityHoverCraft,"Entity | IInventory, INetworkEntity",entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityHoverCraft.java,VehicleType,,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityItemAbducted.java,EntityItemAbducted,Entity,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityLaserNode.java,EntityLaserNode,Entity,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java,EntityRocket,"EntityRocketBase | INetworkEntity, IModularInventory, IProgressBar, IButtonInventory, ISelectionNotify, IPlanetDefiner",entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java,PacketType,,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityStationDeployedRocket.java,EntityStationDeployedRocket,EntityRocket,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityUIButton.java,EntityUIButton,EntityUIPlanet,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityUIPlanet.java,EntityUIPlanet,Entity,entity
+src/main/java/zmaster587/advancedRocketry/entity/EntityUIStar.java,EntityUIStar,EntityUIPlanet,entity
+src/main/java/zmaster587/advancedRocketry/entity/FxSkyLaser.java,FxSkyLaser,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/FxElectricArc.java,FxElectricArc,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/FxGravityEffect.java,FxGravityEffect,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/FxLaser.java,FxLaser,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/FxLaserHeat.java,FxLaserHeat,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/FxLaserSpark.java,FxLaserSpark,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/FxSystemElectricArc.java,FxSystemElectricArc,,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/InverseTrailFluid.java,InverseTrailFluid,InverseTrailFx,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/InverseTrailFx.java,InverseTrailFx,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/OxygenCloudFX.java,OxygenCloudFX,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/OxygenTraceFX.java,OxygenTraceFX,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/RocketFx.java,RocketFx,Particle,entity
+src/main/java/zmaster587/advancedRocketry/entity/fx/TrailFx.java,TrailFx,InverseTrailFx,entity

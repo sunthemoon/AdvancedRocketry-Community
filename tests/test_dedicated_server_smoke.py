@@ -198,6 +198,12 @@ class StatusParsingTests(unittest.TestCase):
     def test_expected_status_identity_is_accepted(self) -> None:
         validate_status_identity(self.valid_status())
 
+    def test_explicit_release_status_identity_is_accepted(self) -> None:
+        status = self.valid_status()
+        status["forgeData"]["mods"][0]["modmarker"] = "1.20.1-0.1.0-dev"
+
+        validate_status_identity(status, "1.20.1-0.1.0-dev")
+
     def test_wrong_minecraft_version_is_rejected(self) -> None:
         status = self.valid_status()
         status["version"]["name"] = "1.20.2"

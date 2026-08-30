@@ -1,0 +1,18 @@
+path,line,kind,evidence,migration_status
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,11,class_or_interface,AdvancedRocketryPlugin,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,11,code_reference,public class AdvancedRocketryPlugin implements IFMLLoadingPlugin {,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,19,code_reference,return new String[] {ClassTransformer.class.getName()};,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,3,code_reference,import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,4,code_reference,import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.MCVersion;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,5,code_reference,import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/AdvancedRocketryPlugin.java,9,code_reference,"@TransformerExclusions(value = {""zmaster587.advancedRocketry.asm.ClassTransformer""})",REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,14,class_or_interface,ClassTransformer,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,14,code_reference,public class ClassTransformer implements IClassTransformer {,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,3,code_reference,import net.minecraft.launchwrapper.IClassTransformer;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,5,code_reference,import org.objectweb.asm.ClassReader;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,6,code_reference,import org.objectweb.asm.ClassWriter;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,7,code_reference,import org.objectweb.asm.Opcodes;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,73,class_or_interface,ClassEntry,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,8,code_reference,import org.objectweb.asm.tree.*;,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java,87,code_reference,public ClassTransformer() {,REJECTED_NO_PORT
+src/main/java/zmaster587/advancedRocketry/asm/ModContainer.java,16,class_or_interface,ModContainer,REJECTED_NO_PORT

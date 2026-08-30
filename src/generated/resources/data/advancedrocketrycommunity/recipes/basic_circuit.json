@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "advancedrocketrycommunity:silicon_wafers"
+    },
+    {
+      "tag": "forge:ingots/copper"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 2,
+    "item": "advancedrocketrycommunity:basic_circuit"
+  }
+}

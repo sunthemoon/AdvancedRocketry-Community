@@ -1,0 +1,208 @@
+{
+  "artifact_binding": {
+    "all_equal": true,
+    "client_sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea",
+    "server_sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea",
+    "source_sha256": "07f5c108233ba14dad518a64f4141caa70f2338166b139b31415d6f284b8e6ea"
+  },
+  "build": "1.20.1-0.1.0-dev",
+  "environment": {
+    "effective_gui_scales": [
+      2,
+      3
+    ],
+    "forge": "47.4.10",
+    "java": "17.0.8",
+    "languages": [
+      "zh_cn",
+      "en_us"
+    ],
+    "launcher": "Plain Craft Launcher 2.8.9",
+    "minecraft": "1.20.1",
+    "other_content_mods": 0,
+    "profile_type": "isolated packaged Forge client"
+  },
+  "human_gate_approval": {
+    "G8": "APPROVED",
+    "G9": "APPROVED",
+    "authority": "repository maintainer"
+  },
+  "known_findings": [
+    "Non-project Forge/Vanilla/Netty startup warnings are enumerated in client-log-review.json; project logger and linkage findings are zero."
+  ],
+  "localized_names": {
+    "en_us": [
+      "Machine Casing",
+      "Silicon Wafer",
+      "Basic Circuit",
+      "Advanced Circuit",
+      "Data Storage Unit"
+    ],
+    "zh_cn": [
+      "机器外壳",
+      "硅晶片",
+      "基础芯片",
+      "高级芯片",
+      "数据存储单位"
+    ]
+  },
+  "log_review": "docs/releases/v0.1.0/evidence/client/logs/client-log-review.json",
+  "observations": {
+    "clean_shutdown_both_runs": "PASS",
+    "creative_tab_all_five_entries": "PASS",
+    "dedicated_first_join": "PASS",
+    "dedicated_restart_rejoin": "PASS",
+    "dedicated_same_player_identity": "PASS",
+    "en_us_names": "PASS",
+    "expected_inert_behavior_notice": "PASS",
+    "item_model_findings": 0,
+    "machine_casing_orientation_models": "PASS",
+    "manual_block_break": "PASS",
+    "manual_block_place": "PASS",
+    "missing_texture_findings": 0,
+    "mods_page_identity": "PASS",
+    "singleplayer_world_entry": "PASS",
+    "zh_cn_names": "PASS"
+  },
+  "reviewed_at": "2026-08-30",
+  "reviewed_by": "sunthemoon",
+  "schema_version": 1,
+  "screenshots": [
+    {
+      "bytes": 145335,
+      "description": "English dedicated creative tab shows all five entries",
+      "dimensions": [
+        873,
+        508
+      ],
+      "effective_gui_scale": 2,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/creative_tab_en_us.png",
+      "language": "en_us",
+      "sha256": "0c9deb9908f8b0ee67a45ea37236dcbc64487e98aa09838971eba7ab84e2503d"
+    },
+    {
+      "bytes": 283421,
+      "description": "Dedicated creative tab shows all five v0.1.0 entries",
+      "dimensions": [
+        1247,
+        765
+      ],
+      "effective_gui_scale": 3,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/creative_tab_zh_cn.png",
+      "language": "zh_cn",
+      "sha256": "a15d40598f9fecc71c76aee499948f5fe13dd0711ca82aef54991f43caacbfcc"
+    },
+    {
+      "bytes": 151019,
+      "description": "English item name and v0.1.0 inert-component tooltip",
+      "dimensions": [
+        873,
+        508
+      ],
+      "effective_gui_scale": 2,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/data_storage_tooltip_en_us.png",
+      "language": "en_us",
+      "sha256": "96928ba8ea43bcc554f3fba8753c1ba919fc672fbad03629dab1da06ab04b0c8"
+    },
+    {
+      "bytes": 274939,
+      "description": "Chinese item name and v0.1.0 inert-component tooltip",
+      "dimensions": [
+        1247,
+        765
+      ],
+      "effective_gui_scale": 3,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/data_storage_tooltip_zh_cn.png",
+      "language": "zh_cn",
+      "sha256": "6ab69dc6758b04c07107f97f73073f987606540cab79a5fd6448ea3fd09a7cdf"
+    },
+    {
+      "bytes": 437370,
+      "description": "Matching packaged client joined the first dedicated-server cycle",
+      "dimensions": [
+        873,
+        508
+      ],
+      "effective_gui_scale": 2,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/dedicated_first_join.png",
+      "language": "en_us",
+      "sha256": "7ecc41eef49e58553bb809a5f4ce3f2066026c23bbd8bcb8ea26f49e62b6d4ed"
+    },
+    {
+      "bytes": 434359,
+      "description": "The same packaged client rejoined after same-world server restart",
+      "dimensions": [
+        873,
+        508
+      ],
+      "effective_gui_scale": 2,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/dedicated_restart_rejoin.png",
+      "language": "en_us",
+      "sha256": "e41ec5730489ecf16f507c561875e7bfede2177728218bdfe8626addf60e6c30"
+    },
+    {
+      "bytes": 382633,
+      "description": "Manual creative-mode break exposes backing block and particles",
+      "dimensions": [
+        1247,
+        765
+      ],
+      "effective_gui_scale": 3,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/machine_casing_break_zh_cn.png",
+      "language": "zh_cn",
+      "sha256": "1630487cf785d0360317c36a54d3d0f766d444fd3f1f9214cc2e1894d3570398"
+    },
+    {
+      "bytes": 378171,
+      "description": "Three machine-casing orientations render without missing textures",
+      "dimensions": [
+        1247,
+        765
+      ],
+      "effective_gui_scale": 3,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/machine_casing_orientations_zh_cn.png",
+      "language": "zh_cn",
+      "sha256": "6048ac58e7632ca1fa79933dd66228452bd54c65b78b35dfef2eb68047976e06"
+    },
+    {
+      "bytes": 393204,
+      "description": "Manual item placement restores casing and shows expected v0.2.0 notice",
+      "dimensions": [
+        1247,
+        765
+      ],
+      "effective_gui_scale": 3,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/machine_casing_place_zh_cn.png",
+      "language": "zh_cn",
+      "sha256": "7521d69c6213b5a2098d4f8af72d6e8dfe01de21b339bf5319dbf816542121c8"
+    },
+    {
+      "bytes": 69488,
+      "description": "English Forge Mods page shows project identity/version/license",
+      "dimensions": [
+        873,
+        508
+      ],
+      "effective_gui_scale": 2,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/mods_en_us.png",
+      "language": "en_us",
+      "sha256": "3f75a34d61ef55b7378144e38aa0dcb0db284af5b0547e67e39e530f93853222"
+    },
+    {
+      "bytes": 75891,
+      "description": "Forge Mods page shows project identity/version/logo",
+      "dimensions": [
+        873,
+        508
+      ],
+      "effective_gui_scale": 2,
+      "file": "docs/releases/v0.1.0/evidence/client/screenshots/mods_zh_cn.png",
+      "language": "zh_cn",
+      "sha256": "b9aecb998df1bd7e036f52fb1d185af675bdc6e3c88978628c9e21c7892d0545"
+    }
+  ],
+  "status": "PASS",
+  "tested_at": "2026-08-30",
+  "tested_by": "Codex-assisted packaged-client execution",
+  "version": "v0.1.0"
+}

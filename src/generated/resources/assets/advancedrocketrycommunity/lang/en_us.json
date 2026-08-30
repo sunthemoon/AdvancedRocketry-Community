@@ -1,0 +1,11 @@
+{
+  "block.advancedrocketrycommunity.machine_casing": "Machine Casing",
+  "item.advancedrocketrycommunity.advanced_circuit": "Advanced Circuit",
+  "item.advancedrocketrycommunity.basic_circuit": "Basic Circuit",
+  "item.advancedrocketrycommunity.data_storage_unit": "Data Storage Unit",
+  "item.advancedrocketrycommunity.silicon_wafer": "Silicon Wafer",
+  "itemGroup.advancedrocketrycommunity.main": "Advanced Rocketry: Community Edition",
+  "message.advancedrocketrycommunity.machine_casing_inert": "Machine behavior begins in v0.2.0",
+  "subtitle.advancedrocketrycommunity.ui_select": "Interface selection",
+  "tooltip.advancedrocketrycommunity.development_component": "Development component — no machine behavior in v0.1.0"
+}

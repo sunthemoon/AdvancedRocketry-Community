@@ -1,0 +1,106 @@
+{
+  "content_digest": "b33ce1c901d68cdf2d21311fad9c540873fbe06a32470edcdfb41c12fd451805",
+  "entries": [
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/lang/en_US.lang",
+      "source_sha256": "1fdafbce014a08d78ef7ead76f72d0bd2ebc8c68d0d1657797bad814ea7ab886",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/en_us.json",
+      "target_sha256": "1795e6c4c6a92f0a1678a5aa5fcbb1abaaece7b2dfc8c5ac11571b39c2d489b9"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/lang/zh_CN.lang",
+      "source_sha256": "014992a448e670086736f27f1326287f386d71f102bbb22027ea9445b9866e15",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/zh_cn.json",
+      "target_sha256": "dca61b612857a186ee1657651b4a33280681d3ecf6c5b83ff65dfe05dfb0f87d"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/sounds/buttonblipa.ogg",
+      "source_sha256": "44ab8402681ee7684293f64e26fd96309e8309d07cc9af6ddcc866e4edec9fd6",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/sounds/ui_select.ogg",
+      "target_sha256": "44ab8402681ee7684293f64e26fd96309e8309d07cc9af6ddcc866e4edec9fd6"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinewarning.png",
+      "source_sha256": "133cd0c9f8abb5eba85f29629007933c675fe4284ba4c8c094288bd736857db8",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_front.png",
+      "target_sha256": "133cd0c9f8abb5eba85f29629007933c675fe4284ba4c8c094288bd736857db8"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinestorage.png",
+      "source_sha256": "5c0435081c9c0d8c11cbbeea3278b293ffa17fd43a73e91c4fe3bffab110f62b",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_side.png",
+      "target_sha256": "5c0435081c9c0d8c11cbbeea3278b293ffa17fd43a73e91c4fe3bffab110f62b"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/machinevent.png",
+      "source_sha256": "4e0e841b02eca215643571024d784e71f75ee9b32523bb946bb49f65b2644b41",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/block/machine_casing_top.png",
+      "target_sha256": "4e0e841b02eca215643571024d784e71f75ee9b32523bb946bb49f65b2644b41"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/advancedcircuit.png",
+      "source_sha256": "3b0a52abc227438a0e16b5ad999883829e453d63b3e00962d98e199244c9cb7a",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/advanced_circuit.png",
+      "target_sha256": "3b0a52abc227438a0e16b5ad999883829e453d63b3e00962d98e199244c9cb7a"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/basiccircuit.png",
+      "source_sha256": "68ccf0a13ff55141a8c95ea81afbb6956f5f60db4348a012dd2544eefecfc10e",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/basic_circuit.png",
+      "target_sha256": "68ccf0a13ff55141a8c95ea81afbb6956f5f60db4348a012dd2544eefecfc10e"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/datastorageunit.png",
+      "source_sha256": "4a341ea614d7adb8b7cf1ac056575d83be0311be317516f04f97e80fd9651e22",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/data_storage_unit.png",
+      "target_sha256": "4a341ea614d7adb8b7cf1ac056575d83be0311be317516f04f97e80fd9651e22"
+    },
+    {
+      "license": "MIT",
+      "outcome": "MATCH",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/siliconwafer.png",
+      "source_sha256": "cb2a7cb7292cb399af37138918b8104baf62049d985dcd21448ab580c8034b8d",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/silicon_wafer.png",
+      "target_sha256": "cb2a7cb7292cb399af37138918b8104baf62049d985dcd21448ab580c8034b8d"
+    }
+  ],
+  "findings": [],
+  "manifest": "docs/provenance/v0.1.0-minimal-content.json",
+  "mechanical_result": "All source and target SHA-256 values matched the exact upstream commit and deterministic transform output.",
+  "outcome": "APPROVED",
+  "record_kind": "V0_1_0_PROVENANCE_HUMAN_REVIEW",
+  "reviewed_at": "2026-08-31",
+  "reviewer": "sunthemoon",
+  "sample_scope": "all imported targets in the minimal v0.1.0 batch",
+  "sample_size": 10,
+  "schema_version": 1,
+  "version": "v0.1.0"
+}

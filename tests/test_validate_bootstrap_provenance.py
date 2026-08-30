@@ -2097,10 +2097,13 @@ reviewed_at: 2026-08-28"""
 
 
 class RealBootstrapProvenanceValidationTests(unittest.TestCase):
-    def test_real_repository_validates_without_presuming_review_state(self) -> None:
+    def test_real_historical_repository_record_validates_without_presuming_review_state(self) -> None:
         repository_root = Path(__file__).resolve().parents[1]
 
-        errors, details = validate_bootstrap_provenance(repository_root=repository_root)
+        errors, details = validate_bootstrap_provenance_at_commit(
+            repository_root,
+            validator_module.HISTORICAL_V002_RECORD_COMMIT,
+        )
 
         self.assertEqual([], errors)
         self.assertRegex(details["review_content_sha256"], r"^[0-9a-f]{64}$")
