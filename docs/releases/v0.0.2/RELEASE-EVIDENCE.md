@@ -6,37 +6,37 @@
 version: v0.0.2
 status: IN_PROGRESS
 build: 1.20.1-0.0.2-dev
-tested_implementation_commit: 0fa080fdff3ab025c6b764b02d2d07fa9221c5ae
+tested_implementation_commit: 7441cd245251040ef2b1629257be978b4796fe0e
 tag: NOT_CREATED
 release: NOT_CREATED
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
-tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532863
-tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33258532838
-documentation_checkpoint: da67cfafe8d130b312884f8930cd919e522408dc
-last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285098959
-last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33285099023
-checkpoint_forge_artifact_id: 9724241324
-checkpoint_g0_review_packet_artifact_id: 9724184181
-checkpoint_g0_review_packet_commit: da67cfafe8d130b312884f8930cd919e522408dc
-checkpoint_g0_review_packet_manifest_sha256: cdd23d96a075a4fde5936c1c0cadc9ba00c62f68a25de830793eeeb30b9b0a74
-checkpoint_final_g0_review_inputs_artifact_id: 9724184322
-checkpoint_final_g0_review_inputs_commit: da67cfafe8d130b312884f8930cd919e522408dc
-checkpoint_final_g0_review_inputs_sha256: 798aad75aa78c5e93f912b43a94155ac0caf19d609afbb67cc24c97a1b0f2973
+tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33293732867
+tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33293732862
+documentation_checkpoint: 7441cd245251040ef2b1629257be978b4796fe0e
+last_observed_checkpoint_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33293732867
+last_observed_checkpoint_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33293732862
+checkpoint_forge_artifact_id: 9726838947
+checkpoint_g0_review_packet_artifact_id: 9726778456
+checkpoint_g0_review_packet_commit: 7441cd245251040ef2b1629257be978b4796fe0e
+checkpoint_g0_review_packet_manifest_sha256: 395c753fc9d723aa358e27dfaca182bd906fa830bb820ad013a95c95e869f795
+checkpoint_final_g0_review_inputs_artifact_id: 9726778602
+checkpoint_final_g0_review_inputs_commit: 7441cd245251040ef2b1629257be978b4796fe0e
+checkpoint_final_g0_review_inputs_sha256: 9f87d1a82a7d5b8583c6be3cfb2548c9d9018143a9f64407a0232165ec8cd023
 minecraft: 1.20.1
 forge_baseline: 47.4.10
 forge_compat_lane: 47.4.23
 java: 17.0.8
 gradle: 8.8
-built_at: 2026-08-29
+built_at: 2026-08-30
 built_by: Codex-assisted local development
 jar_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 linux_jar_sha256: 58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944
 linux_sources_jar_sha256: 2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293
 content_manifest_sha256: a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5
-linux_ci_artifact_id: 9716650737
+linux_ci_artifact_id: 9726838947
 tested_implementation_pull_request_checks: 3/3_PASS
 last_observed_checkpoint_pull_request_checks: 3/3_PASS
 ```
@@ -48,7 +48,7 @@ last_observed_checkpoint_pull_request_checks: 3/3_PASS
 | G0 Identity/License/Provenance | IN_PROGRESS | Machine-readable input/target mapping, exact license copies, sources-JAR evidence, JAR packaging, and hash checks exist; the Forge/Gradle subreview, full source/resource inventory-history decision, and rendered README review remain |
 | G1 Reproducible Build | PASS | Repeated Windows clean builds and tested-implementation Linux CI produced byte-identical main JARs, sources JARs, and content manifests |
 | G2 Data/Assets | PASS | DataGen passed after one retained network retry and left no generated-resource or committed worktree change |
-| G3 Automated Behavior | PASS | 3 JUnit, 396 Python, and 1 Forge GameTest pass |
+| G3 Automated Behavior | PASS | 3 JUnit, 517 Python, and 1 Forge GameTest pass at exact head `7441cd2` |
 | G4 Dedicated/Sides | IN_PROGRESS | Packaged first-start/save/stop/restart passes; packaged player join/reconnect and mismatch observation remain |
 | G5 Persistence/Recovery | NOT_APPLICABLE | No project persistent data in v0.0.2 |
 | G6 Security/Authority | NOT_APPLICABLE | No project packets or gameplay authority in v0.0.2 |
@@ -66,7 +66,11 @@ would bind a superseded JAR. This subreview does not pass G0: the later full
 source/resource inventory-history decision and rendered README visual review
 remain part of final G0 acceptance.
 
-## Commands actually run for the tested implementation
+## Earlier artifact-baseline commands
+
+The following commands belong to the earlier `0fa080f` artifact baseline. The
+artifact bytes remain current; the separate acceptance-hardening checkpoint
+below records the full validation of `7441cd2`.
 
 ```powershell
 $env:JAVA_HOME = Join-Path $env:APPDATA '.minecraft\runtime\java-runtime-gamma-snapshot'
@@ -96,6 +100,48 @@ historical server command failed on the 600-second Forge installer timeout.
 Neither was reported as a pass; their successful retries and recovery are
 recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 
+## Acceptance-hardening checkpoint
+
+The exact committed tree at
+`7441cd245251040ef2b1629257be978b4796fe0e` was independently revalidated after
+the evidence-contract hardening:
+
+```powershell
+$env:JAVA_HOME = Join-Path $env:APPDATA '.minecraft\runtime\java-runtime-gamma-snapshot'
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+python -B -m unittest discover -s tests
+.\gradlew.bat clean build --no-daemon --stacktrace
+.\gradlew.bat test --rerun-tasks --no-daemon --stacktrace
+python scripts/generate_v002_g0_evidence.py verify build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar --evidence-dir docs/releases/v0.0.2/evidence/g0-mechanical
+python scripts/validate_build_artifact.py build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar --content-manifest build/release-evidence/jar-content-manifest.json
+python scripts/validate_release_checksums.py --artifact build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+python scripts/check_client_imports.py
+.\gradlew.bat runData --no-daemon --stacktrace
+.\gradlew.bat runGameTestServer --no-daemon --stacktrace
+python scripts/run_dedicated_server_smoke.py --evidence-dir build/dedicated-server-smoke/evidence
+python -I -S scripts/validate_repository.py --require-approved-identity
+python -I -S scripts/validate_v002_final_g0_review.py
+python -I -S scripts/validate_v002_g4_applicability.py
+python scripts/validate_bootstrap_provenance.py
+python -I -S scripts/prepare_v002_final_g0_review_inputs.py generate --commit 7441cd245251040ef2b1629257be978b4796fe0e --output build/v0.0.2-final-g0-review-inputs
+python -I -S scripts/prepare_v002_final_g0_review_inputs.py verify --commit 7441cd245251040ef2b1629257be978b4796fe0e --output build/v0.0.2-final-g0-review-inputs
+python -I -S scripts/prepare_v002_g0_review_packet.py generate --commit 7441cd245251040ef2b1629257be978b4796fe0e --output build/v0.0.2-g0-review-packet
+python -I -S scripts/prepare_v002_g0_review_packet.py verify --commit 7441cd245251040ef2b1629257be978b4796fe0e --packet build/v0.0.2-g0-review-packet
+git diff --check
+python scripts/check_clean_worktree.py
+```
+
+The Python suite passed 517/517. Strict repository validation returned 15 PASS,
+3 PENDING, 0 WARN, and 0 FAIL: the pending final-G0 reviews, absent client
+bundle, and proposed ADR-005 remain visible acceptance work. The local
+final-G0 report is schema 2 `INPUTS_ONLY`, has SHA-256
+`9f87d1a82a7d5b8583c6be3cfb2548c9d9018143a9f64407a0232165ec8cd023`,
+and covers 18 inventory files, 11 bootstrap targets, 22 commits, and 286 path
+changes. The G0 packet manifest SHA-256 is
+`395c753fc9d723aa358e27dfaca182bd906fa830bb820ad013a95c95e869f795`.
+Neither output is copied into the pending human-review record or treated as G0
+approval.
+
 ## Artifact and automated tests
 
 - Current tested artifact (pre-provenance-subreview approval):
@@ -105,7 +151,7 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
 - Sources JAR SHA-256:
   `2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293`.
 - Two same-environment clean builds produced identical bytes.
-- Tested-implementation Forge run 33258532863's Linux upload matches the Windows main JAR
+- Tested-implementation Forge run 33293732867's Linux upload matches the Windows main JAR
   (`58622a5ad...`), sources JAR (`2e18a573...`), and content manifest
   (`a5128fff...`) byte-for-byte.
 - The content manifest records 34 sorted entries with per-entry size and hash.
@@ -113,14 +159,13 @@ recorded in [`TEST-REPORT.md`](TEST-REPORT.md).
   `THIRD-PARTY-NOTICES.md`, and exact Forge/Gradle supplemental license copies.
 - The release checksum validator covers all nine committed evidence files and
   verifies the external JAR against the content manifest.
-- Pull request #3 reports 3/3 successful checks for the tested implementation.
-  Hardened documentation checkpoint `da67cfa` also had 3/3 successful last-
-  observed checks in Forge run 33285098959 and governance run 33285099023.
-  Governance bound the immutable pull-request head to 35 exact-Git input
+- Pull request #3 reports 3/3 successful checks for exact tested head `7441cd2`
+  in Forge run 33293732867 and governance run 33293732862. Governance bound the
+  immutable pull-request head to 35 exact-Git input
   payloads plus generated review instructions (36 payloads and 37 total files)
-  in packet artifact 9724184181. It also uploaded exact-Git final-G0 input
-  report artifact 9724184322, covering 18 distributable source/resource/legal
-  files, 11 bootstrap targets, 20 commits, and 38 path changes. The downloaded
+  in packet artifact 9726778456. It also uploaded exact-Git final-G0 input
+  report artifact 9726778602, covering 18 distributable source/resource/legal
+  files, 11 bootstrap targets, 22 commits, and 286 path changes. The downloaded
   CI artifacts were byte-identical to the locally verified packet and report;
   these mechanical bindings do not approve either G0 review.
 
