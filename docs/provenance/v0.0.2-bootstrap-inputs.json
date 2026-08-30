@@ -1,5 +1,5 @@
 {
-  "audited_target_commit": "7567dbb60332526789ee3b2824c582ff1909203e",
+  "audited_target_commit": "67929aaf8c21593e1f5b7b75ab941064b084e2f4",
   "components": [
     {
       "id": "forge_mdk",
@@ -97,10 +97,10 @@
   "scope_version": "v0.0.2",
   "targets": [
     {
-      "audited_target_git_blob_oid": "376e644ebb8b2b6235bb5b958f379ad81f49a2f2",
+      "audited_target_git_blob_oid": "57c1edba9ec4912376c1b8d0f99b046fd6524303",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "007b780fac0f25f5c19af4db998e56990aeaa1bd56e16e69302a31af4bf5d5b9",
+      "audited_target_raw_blob_sha256": "287fd402312d9d5225d3b3833a7ad768f2ba42c0d3f9a0e118bd25fe7e0dd1fc",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "0338cc64f9c0c2a11f9b8cbdbdafa3e0a5f4dd3d",
       "import_target_git_mode": "100644",
@@ -113,14 +113,15 @@
       "source_sha256": "448fc4f5b88765df18eec1a82fb0ed09d7fb148e50fe49bd004be05effb06285",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Replaced the MDK rules with repository-wide text, binary, EOL, and exact-license whitespace rules."
+        "Replaced the MDK rules with repository-wide text, binary, EOL, and exact-license whitespace rules.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "569bc44d583f4f162533d73a3f4e3a46d4fb2e15",
+      "audited_target_git_blob_oid": "bc2843e86e23737eaf045afe313f01273de2ced8",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "31985920aac7931f12e004189cc62ac0adfa45b16712f1ea3957e0cbd65065b8",
+      "audited_target_raw_blob_sha256": "40008860dc1c7ff0291040a34fd45d930f0879b27a9a75d59924b3f45cd88333",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "569bc44d583f4f162533d73a3f4e3a46d4fb2e15",
       "import_target_git_mode": "100644",
@@ -133,14 +134,15 @@
       "source_sha256": "efc7995172c172d5e2a5dfad4484abc9f4b6030aa2bf5bb9453180043f8d593f",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Merged relevant IDE, Gradle, Forge-run, Python, log, and crash-output exclusions."
+        "Merged relevant IDE, Gradle, Forge-run, Python, log, and crash-output exclusions.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "c92a2519a16092c72a3dc321530ee994853505e7",
+      "audited_target_git_blob_oid": "2730077915f804ce495a54283f0f119e9005485f",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "2b4648ae97eceed5f74138e6241ee3c3be86371bb24442a2e772b67cb682bdea",
+      "audited_target_raw_blob_sha256": "7ac67aef90b1cf44d6cf15440d367347265f48f8cec52602717a4a421a07097e",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "cff8c0ac1bf2d9a21464867d75630ae05eeaa00e",
       "import_target_git_mode": "100644",
@@ -153,14 +155,15 @@
       "source_sha256": "f50947b2af27e834f58860360a084825951fe987d9dd8ea180e7eee261629d77",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Removed MDK examples and replaced project identity, runs, tests, reproducible archives, evidence arguments, notices, publication settings, and exclusion of DataGen cache metadata from packaged resources."
+        "Removed MDK examples and replaced project identity, runs, tests, reproducible archives, evidence arguments, notices, publication settings, and exclusion of DataGen cache metadata from packaged resources.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "aee53b9ba4b1df67de8efaa4b0b5937ac12b10af",
+      "audited_target_git_blob_oid": "2fe947315823fa9121c979435762165f9fda1bb0",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "e8d61db701d18d4c916a9195519a1bcb84cf6e5f0d44a0d3c68536be96304cdb",
+      "audited_target_raw_blob_sha256": "d31069844151c0726afb2b08d7c13cc2c5a4821996da9ac66b09e8258defc2f6",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "aee53b9ba4b1df67de8efaa4b0b5937ac12b10af",
       "import_target_git_mode": "100644",
@@ -173,14 +176,15 @@
       "source_sha256": "5b5aa1d63c2d02c2a39f8a207bdc91a7fbcddbfb50e0e92c59da3ecd6a6478a6",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Removed template commentary and pinned Forge, mappings, compatibility, and approved project identity values."
+        "Removed template commentary and pinned Forge, mappings, compatibility, and approved project identity values.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "7a860cac863913585f25ecf3d1b53005d17ee97a",
+      "audited_target_git_blob_oid": "198dcf686e543028b70615e313c65a0723023dbf",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "ac0b7f3c0e4a4652f9ff0081ca3b799dfa40e06aca551ddf163e28d5582b07f2",
+      "audited_target_raw_blob_sha256": "b2c41bf9515febafc2b14068552dc09eb32707c6fc285ca5137d7531aa09f70d",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "7a860cac863913585f25ecf3d1b53005d17ee97a",
       "import_target_git_mode": "100644",
@@ -193,14 +197,15 @@
       "source_sha256": "21c8c1cfea9f78f7fed6d7ad325aafa24e0d1bd330a40719997c303d2217b830",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Preserved Forge plugin repositories and toolchain resolution, then added the project name."
+        "Preserved Forge plugin repositories and toolchain resolution, then added the project name.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "d296387b57c631cc8697e9c264a91bd9f492315b",
+      "audited_target_git_blob_oid": "8e60b0da4b7e3b2d948ac210636139ef58f24e9f",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "6ad01e25fe9ce18af11f9053651624e6e6655d390e0d58b2f23eacdcf7d7c08b",
+      "audited_target_raw_blob_sha256": "82161d07e885e9b5fd92231c5404aed31c95a8a5c2253f806d87973e5550013a",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "d296387b57c631cc8697e9c264a91bd9f492315b",
       "import_target_git_mode": "100644",
@@ -213,14 +218,15 @@
       "source_sha256": "0c0c22ccb8e653a13a7df19493b11fe5ce0f5fae7ee4835223d2d2ad028799da",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Added the official Gradle 8.8 distribution SHA-256 and retained the MDK wrapper settings."
+        "Added the official Gradle 8.8 distribution SHA-256 and retained the MDK wrapper settings.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "ae03c9b7f625748f8f4e7b403df7b2366f447202",
+      "audited_target_git_blob_oid": "8383aa885cb10514490121903bbd63e62c436348",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "18c50663587d8c124e49471ba8605738cde39151a209c23f26ffbc94c022db4a",
+      "audited_target_raw_blob_sha256": "274410d8be324811ac1524e28595406834ac6b356b3baabfe391483e13582e18",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "ae03c9b7f625748f8f4e7b403df7b2366f447202",
       "import_target_git_mode": "100644",
@@ -233,14 +239,15 @@
       "source_sha256": "69e4b682449054686cb0e5918f13501cd53ea33477d306d9d27f82f0fd9da3f1",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Retained the pack format, replaced the description, and normalized formatting."
+        "Retained the pack format, replaced the description, and normalized formatting.",
+        "Added a namespaced in-file LGPL provenance and dated modification metadata field on 2026-08-30."
       ]
     },
     {
-      "audited_target_git_blob_oid": "c4f72e4d0e2a4d7ea842bc555474c902730c672a",
+      "audited_target_git_blob_oid": "f39cc787fc39bbdbd221e405704893dbf6201f70",
       "audited_target_git_mode": "100644",
       "audited_target_git_object_type": "blob",
-      "audited_target_raw_blob_sha256": "f61c8966ff191a90c01978cd91203188a675512e8fb01102096d427534f80c9f",
+      "audited_target_raw_blob_sha256": "8c7a42cf665e01d300b835b053d40856e18880279911fa05764ca22067d6c918",
       "component": "forge_mdk",
       "import_target_git_blob_oid": "c4f72e4d0e2a4d7ea842bc555474c902730c672a",
       "import_target_git_mode": "100644",
@@ -253,7 +260,8 @@
       "source_sha256": "ed0e7e454f6f1c1ffbfcabdece14ded32321450a23e7203acf1382523b87415a",
       "status": "PENDING_HUMAN_REVIEW",
       "transformations": [
-        "Removed MDK examples and replaced project identity, URLs, logo, credits, Java feature, description, and dependency ranges."
+        "Removed MDK examples and replaced project identity, URLs, logo, credits, Java feature, description, and dependency ranges.",
+        "Added an in-file LGPL provenance and dated modification notice on 2026-08-30."
       ]
     },
     {

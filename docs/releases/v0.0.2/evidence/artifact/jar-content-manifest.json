@@ -1,6 +1,6 @@
 {
   "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-  "artifact_sha256": "58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944",
+  "artifact_sha256": "215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743",
   "entries": [
     {
       "path": "META-INF/",
@@ -24,8 +24,8 @@
     },
     {
       "path": "META-INF/THIRD-PARTY-NOTICES.md",
-      "sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-      "size": 5340
+      "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+      "size": 6739
     },
     {
       "path": "META-INF/licenses/",
@@ -44,8 +44,8 @@
     },
     {
       "path": "META-INF/mods.toml",
-      "sha256": "5baecb565c0d10b57b6373f465708b69cbd12176f63677fc836cbc7b9725e57c",
-      "size": 1180
+      "sha256": "c7887b35cdf14b1dfc9175e2c71c71f2cd054b2de6f04d5096854a29b1ebb351",
+      "size": 1350
     },
     {
       "path": "advancedrocketrycommunity.png",
@@ -169,8 +169,8 @@
     },
     {
       "path": "pack.mcmeta",
-      "sha256": "1c87f78d30c3eaa6700442ec123c59cbdf4216dbe0a73d07edde495ca2110950",
-      "size": 111
+      "sha256": "5158c85fae5a50457af193a115f4f9d8b74ba30173cd36f14c683f1b98bc9a73",
+      "size": 322
     }
   ],
   "entry_count": 34,

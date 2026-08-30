@@ -1,6 +1,6 @@
 {
   "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar",
-  "artifact_sha256": "2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293",
+  "artifact_sha256": "6bec332fb0818f90be3e27b183af09d3ad6fd0b63f4b9275ae90a8bdb062a4d6",
   "entries": [
     {
       "path": "META-INF/",
@@ -24,8 +24,8 @@
     },
     {
       "path": "META-INF/THIRD-PARTY-NOTICES.md",
-      "sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-      "size": 5340
+      "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+      "size": 6739
     },
     {
       "path": "META-INF/licenses/",
@@ -44,8 +44,8 @@
     },
     {
       "path": "META-INF/mods.toml",
-      "sha256": "f61c8966ff191a90c01978cd91203188a675512e8fb01102096d427534f80c9f",
-      "size": 775
+      "sha256": "8c7a42cf665e01d300b835b053d40856e18880279911fa05764ca22067d6c918",
+      "size": 945
     },
     {
       "path": "advancedrocketrycommunity.png",
@@ -169,8 +169,8 @@
     },
     {
       "path": "pack.mcmeta",
-      "sha256": "18c50663587d8c124e49471ba8605738cde39151a209c23f26ffbc94c022db4a",
-      "size": 86
+      "sha256": "274410d8be324811ac1524e28595406834ac6b356b3baabfe391483e13582e18",
+      "size": 297
     }
   ],
   "entry_count": 34,
@@ -190,7 +190,7 @@
     "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt"
   ],
   "paired_binary_artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-  "paired_binary_sha256": "58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944",
+  "paired_binary_sha256": "215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743",
   "repository_input_count": 18,
   "repository_inputs": [
     {
@@ -208,8 +208,8 @@
     {
       "archive_path": "META-INF/THIRD-PARTY-NOTICES.md",
       "repository_path": "THIRD-PARTY-NOTICES.md",
-      "sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-      "size": 5340
+      "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+      "size": 6739
     },
     {
       "archive_path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
@@ -226,8 +226,8 @@
     {
       "archive_path": "META-INF/mods.toml",
       "repository_path": "src/main/resources/META-INF/mods.toml",
-      "sha256": "f61c8966ff191a90c01978cd91203188a675512e8fb01102096d427534f80c9f",
-      "size": 775
+      "sha256": "8c7a42cf665e01d300b835b053d40856e18880279911fa05764ca22067d6c918",
+      "size": 945
     },
     {
       "archive_path": "advancedrocketrycommunity.png",
@@ -298,8 +298,8 @@
     {
       "archive_path": "pack.mcmeta",
       "repository_path": "src/main/resources/pack.mcmeta",
-      "sha256": "18c50663587d8c124e49471ba8605738cde39151a209c23f26ffbc94c022db4a",
-      "size": 86
+      "sha256": "274410d8be324811ac1524e28595406834ac6b356b3baabfe391483e13582e18",
+      "size": 297
     }
   ],
   "schema_version": 1,

@@ -13,6 +13,7 @@
 | Java | 17, for client, build, and dedicated-server execution |
 | Evidence tooling | Python 3.12, for repository validators and the manual-evidence helper |
 | Project JAR | `advancedrocketry-community-1.20.1-0.0.2-dev.jar` |
+| Companion source artifact | `advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar` |
 | Optional dependencies | None |
 
 Forge 47.4.23 is an advisory CI compatibility lane, not the packaged-client
@@ -93,6 +94,18 @@ The distributable artifact is:
 ```text
 build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
 ```
+
+The corresponding source artifact is:
+
+```text
+build/libs/advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar
+```
+
+For any v0.0.2 distribution, offer both files from the same download location
+and link the exact repository source revision that produced them. The sources
+JAR carries the source form of both adapted MDK resources packaged by the main
+JAR; the repository revision carries the adapted build/bootstrap targets. Do
+not distribute the main JAR alone under the reviewed provenance treatment.
 
 Record its SHA-256 before copying it. A manual client/server test is valid only
 when the source artifact, the client copy, and the server copy have identical

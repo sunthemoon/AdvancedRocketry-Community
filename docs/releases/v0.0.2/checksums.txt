@@ -1,12 +1,12 @@
 # SHA-256 checksums for the v0.0.2 distributable and committed evidence.
 # The build/libs JAR is intentionally not committed; CI verifies it separately.
-58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
-a5128fffaca624155a00b8a60bdc6eb3f7c3451b97414cfe9935dbe7408d3cd5  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
+215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743  build/libs/advancedrocketry-community-1.20.1-0.0.2-dev.jar
+0bdf03c202ad31f5a11d19bd2da2e2bbf645ac14ae4a36fb87489161500756de  docs/releases/v0.0.2/evidence/artifact/jar-content-manifest.json
 dfa33ca011a0a4c9fe7f681180ba8c8c561b6e1b69e04c23b6eb3005e880564a  docs/releases/v0.0.2/evidence/dedicated-server/README.md
 79ad47b208404d555cfe80653ce4ddf440ce641849b41b96dcb7b99d561852a5  docs/releases/v0.0.2/evidence/dedicated-server/first-start.txt
 cc23c817def71110aa69d096306ea32f0a4754b6193f7e6d93044a4ccc199144  docs/releases/v0.0.2/evidence/dedicated-server/restart.txt
 37be93f86779121854223980207ff4228a534d47dacecae837d70e2c11b17cfa  docs/releases/v0.0.2/evidence/dedicated-server/summary.json
-c142ba57806534341a136366253f8c45b6acc259c8b18329c4c2b5f1976f68fc  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
-fc67b24054003444581b38a79d5877bb9fede3abcdf67b7bf9f7ee96fc8f4c26  docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json
-5baecb565c0d10b57b6373f465708b69cbd12176f63677fc836cbc7b9725e57c  docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml
-a2257825e2c2cd79268d3b3edeca3cf9dceb65c6b1db8600d5fff8b63bfdf28c  docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json
+c66ba3261cf3986c65a2b5441dbdbf898fddbe44bb3467098878a91ec26353a9  docs/releases/v0.0.2/evidence/g0-mechanical/README.md
+527cbcb19b6222be021327aaac46038dfbaec18b1901d7e31aa2cf09483003a1  docs/releases/v0.0.2/evidence/g0-mechanical/license-notice-scan.json
+c7887b35cdf14b1dfc9175e2c71c71f2cd054b2de6f04d5096854a29b1ebb351  docs/releases/v0.0.2/evidence/g0-mechanical/mods.toml
+9eb539e2ce1220dbb97dc7bc5747575dbb5b81fa1c5f631945dc6a57b85f0a6f  docs/releases/v0.0.2/evidence/g0-mechanical/sources-jar-manifest.json

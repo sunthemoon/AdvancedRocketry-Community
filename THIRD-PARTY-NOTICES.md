@@ -43,6 +43,25 @@ Affected repository paths:
 - `src/main/resources/pack.mcmeta`
 - `src/main/resources/META-INF/mods.toml`
 
+Each retained target carries an in-file notice identifying the Forge MDK
+license, the community project as modifier, and its modification dates. The
+comment-capable formats use leading comments. `pack.mcmeta` instead uses the
+namespaced top-level `advancedrocketrycommunity:provenance` metadata field so
+the JSON remains valid.
+
+Recorded modification dates:
+
+| Target | Modification dates |
+|---|---|
+| `.gitattributes` | 2026-08-26, 2026-08-27, 2026-08-30 |
+| `.gitignore` | 2026-08-26, 2026-08-30 |
+| `build.gradle` | 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30 |
+| `gradle.properties` | 2026-08-26, 2026-08-30 |
+| `settings.gradle` | 2026-08-26, 2026-08-30 |
+| `gradle/wrapper/gradle-wrapper.properties` | 2026-08-26, 2026-08-30 |
+| `src/main/resources/pack.mcmeta` | 2026-08-26, 2026-08-30 |
+| `src/main/resources/META-INF/mods.toml` | 2026-08-26, 2026-08-30 |
+
 Exact license/notice copy:
 
 ```yaml
@@ -58,6 +77,14 @@ copy_transformation: none; byte-for-byte copy
 The exact repository copy is
 `docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt`; distributable JARs
 carry it as `META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt`.
+
+The binary JAR contains only two adapted MDK targets: `pack.mcmeta` and
+`META-INF/mods.toml`. The companion sources JAR contains their exact source
+forms and carries the same notice and license copies. The remaining adapted
+build/bootstrap targets are available in the corresponding repository source
+revision and source archive. A v0.0.2 distribution must offer the sources JAR
+and repository source revision alongside the binary JAR; omitting that source
+access falls outside this recorded treatment and requires a new review.
 
 ## Gradle Wrapper
 

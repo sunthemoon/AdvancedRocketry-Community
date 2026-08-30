@@ -2,7 +2,7 @@
   "artifacts": [
     {
       "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev.jar",
-      "artifact_sha256": "58622a5ad3795d89b087b05f40ed6b4c458602bdf2d07c17176f280722392944",
+      "artifact_sha256": "215dd737b34a52f02a7b11520b208276a8da10a8575ff481100fbc0465088743",
       "entry_count": 34,
       "license_notice_entries": [
         {
@@ -25,9 +25,9 @@
           "matches_repository_source": true,
           "path": "META-INF/THIRD-PARTY-NOTICES.md",
           "repository_source": "THIRD-PARTY-NOTICES.md",
-          "repository_source_sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-          "sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-          "size": 5340
+          "repository_source_sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+          "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+          "size": 6739
         },
         {
           "matches_repository_source": true,
@@ -50,7 +50,7 @@
     },
     {
       "artifact": "advancedrocketry-community-1.20.1-0.0.2-dev-sources.jar",
-      "artifact_sha256": "2e18a57345583d1541ef169c0364929711e579b03e7dffde97bff878de834293",
+      "artifact_sha256": "6bec332fb0818f90be3e27b183af09d3ad6fd0b63f4b9275ae90a8bdb062a4d6",
       "entry_count": 34,
       "license_notice_entries": [
         {
@@ -73,9 +73,9 @@
           "matches_repository_source": true,
           "path": "META-INF/THIRD-PARTY-NOTICES.md",
           "repository_source": "THIRD-PARTY-NOTICES.md",
-          "repository_source_sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-          "sha256": "9932bdd7d6b984e2ad354321517c96c546855b0c5e09f53fdaa9f8e65f0ca71a",
-          "size": 5340
+          "repository_source_sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+          "sha256": "af0a459154975bbb9328527517a7f0f73c5b17249f61d96f0b3d6c4caac2a11e",
+          "size": 6739
         },
         {
           "matches_repository_source": true,
