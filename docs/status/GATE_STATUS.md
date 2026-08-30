@@ -17,6 +17,7 @@ tested_implementation_forge_workflow_run: "https://github.com/sunthemoon/Advance
 tested_implementation_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877802"
 documentation_checkpoint: "db9ce96113712dd93e8db05736b3a9ed764e41a8"
 acceptance_evidence_source_commit: "cf476b9601fc482977d1716617c87e4b2cbf704f"
+accepted_merge_commit: "b8ec149284a14d174f60f09f236ac36c515fd4c5"
 last_observed_checkpoint_pull_request_checks: "3/3 PASS"
 last_observed_checkpoint_forge_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33308011345"
 last_observed_checkpoint_governance_workflow_run: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33308011373"
@@ -48,8 +49,8 @@ human_approved_at: "2026-08-30"
 `PASS` above records evidence-backed Gates and the explicit 2026-08-30 owner
 approval. Runs 33302877815 and 33302877802 are the exact-head CI for tested
 implementation `d6c8464`; the Linux main JAR, sources JAR, and content manifest
-are byte-identical to the Windows build. The renewed final-G0 source record is
-in `db9ce96`. The canonical schema-5 client bundle binds exact JAR equality,
+are byte-identical to the Windows build. The final-G0 source review is renewed
+at normal merge commit `b8ec149`. The canonical schema-5 client bundle binds exact JAR equality,
 packaged Mods/world screenshots, matching join/reconnect, the missing-project-
 mod observation, privacy-reviewed excerpts, and the accepted ADR-005 decisions.
 No Required Gate is waived.

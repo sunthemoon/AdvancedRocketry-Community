@@ -7,6 +7,7 @@ build: 1.20.1-0.0.2-dev
 tested_implementation_commit: d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b
 documentation_checkpoint: db9ce96113712dd93e8db05736b3a9ed764e41a8
 acceptance_evidence_source_commit: cf476b9601fc482977d1716617c87e4b2cbf704f
+accepted_merge_commit: b8ec149284a14d174f60f09f236ac36c515fd4c5
 branch: codex/v0.0.2-forge-bootstrap
 environment: Windows 11 / Microsoft Java 17.0.8 / Gradle 8.8 / local Python 3.13.13 / CI Python 3.12 / Minecraft 1.20.1 / Forge 47.4.10
 ```
@@ -129,7 +130,7 @@ The committed per-entry manifest is
 [`evidence/artifact/jar-content-manifest.json`](evidence/artifact/jar-content-manifest.json),
 with SHA-256
 `1384c9c47c9b4e40d1ae8d670689bd14101458422c4452728ac2a2abcc6bf80f`.
-The 35-entry release list is [`checksums.txt`](checksums.txt) and covers 34
+The 37-entry release list is [`checksums.txt`](checksums.txt) and covers 36
 committed evidence files plus the external JAR. The earlier
 artifacts downloaded from Forge run 33258532863 match the Windows main JAR,
 sources JAR, and committed content manifest byte-for-byte.
@@ -152,6 +153,7 @@ artifact 9726838947 from run 33293732867.
 | Attempt | Result | Resolution |
 |---|---|---|
 | Final-G0 record-only checkpoint `3d82740` CI | FAIL | Forge baseline run 33303577846 and governance run 33303577844 correctly rejected two newly tracked G0 files omitted from the old checksum list. Regenerated the deterministic list to 12 entries, verified all 11 committed evidence files plus the current JAR, and reran strict validation to 16 PASS / 2 PENDING / 0 FAIL before the recovery commit. |
+| First PR #3 merge governance run | FAIL | Run 33310679994 interpreted the normal merge commit relative to its first parent and required a merge-commit-bound final-G0 report. The accepted merge tree was byte-identical to `dcf3ba7`; the exact `b8ec149` report and checksum update preserve that topology explicitly. |
 | Accidental Java 8 clean build | FAIL | Re-ran with the pinned Microsoft Java 17.0.8 runtime; the current artifact built successfully |
 | Acceptance-hardening ambient-runtime clean build | FAIL | The shell selected IBM Java 8 and ForgeGradle stopped before compilation; setting `JAVA_HOME` explicitly to Microsoft Java 17.0.8 made the unchanged clean build pass |
 | Acceptance-hardening first sources-JAR audit | FAIL | A verified-empty, untracked `src/main/java/example/` directory added an unwanted archive entry; removing only that empty directory and rerunning `sourcesJar` restored the expected `2e18a573...` hash |

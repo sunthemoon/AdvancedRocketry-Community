@@ -12,6 +12,8 @@ release: NOT_CREATED
 release_publication: NOT_CREATED
 required_classification_if_created: PRE_RELEASE
 pull_request: https://github.com/sunthemoon/AdvancedRocketry-Community/pull/3
+pull_request_status: MERGED
+accepted_merge_commit: b8ec149284a14d174f60f09f236ac36c515fd4c5
 tested_implementation_forge_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877815
 tested_implementation_governance_workflow_run: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33302877802
 documentation_checkpoint: db9ce96113712dd93e8db05736b3a9ed764e41a8
@@ -152,15 +154,18 @@ SHA-256 `cd5ae579...`, sources JAR SHA-256 `f958f433...`, and content-manifest
 SHA-256 `1384c9c4...`. Forge run 33302877815 and governance run 33302877802
 provide 3/3 successful pull-request checks; governance ran 517/517 Python tests.
 
-The final-G0 source review was renewed after the evidence-collector hardening at
-`3b5a26168c5702606f460e14824c13d952636359`. Its exact-Git report has SHA-256
-`a064d2c2...`, inventories 18 distributable source/resource/legal files, covers
-11 bootstrap targets and 30 commits with 337 path changes, and reports no
-exact-blob rename/copy lineage. Reviewer `sunthemoon` approved that report on
-2026-08-30 with no findings. The complete 1440x5000 rendered README screenshot
-remains bound to `d6c8464` because no README change followed its visual review;
-that review also remains approved without findings. These human decisions, not
-the input hashes alone, support G0 `PASS`.
+The final-G0 source review is bound to normal PR #3 merge commit
+`b8ec149284a14d174f60f09f236ac36c515fd4c5`. Its tree is byte-identical to the
+accepted PR head; the exact-Git report has SHA-256 `835dc8c9...`, inventories 18
+distributable source/resource/legal files, and covers 11 bootstrap targets, 34
+commits, and 487 path changes. Its one exact-blob lineage entry is the intentional
+copy of the already approved README screenshot into canonical client evidence,
+not a source/resource import. Reviewer `sunthemoon` retained approval on
+2026-08-30 with no findings. The complete 1440x5000 rendered README visual review
+was originally approved at `d6c8464`; the README blob and screenshot are byte-
+identical at `b8ec149`, where the canonical copy records the normal-merge
+topology without changing the reviewed pixels. These human decisions, not the
+input hashes alone, support G0 `PASS`.
 
 ## Artifact and automated tests
 
@@ -177,7 +182,7 @@ the input hashes alone, support G0 `PASS`.
 - The content manifest records 34 sorted entries with per-entry size and hash.
 - The artifact contains byte-identical project LICENSE/NOTICE,
   `THIRD-PARTY-NOTICES.md`, and exact Forge/Gradle supplemental license copies.
-- The release checksum validator covers all 34 committed evidence files and
+- The release checksum validator covers all 36 committed evidence files and
   verifies the external JAR against the content manifest.
 - Pull request #3 reports 3/3 successful checks for exact tested head `d6c8464`
   in Forge run 33302877815 and governance run 33302877802. Governance bound the
@@ -276,19 +281,19 @@ checks those bindings but did not create or infer the human outcomes.
   },
   "final_g0_source_resource_review": {
     "outcome": "APPROVED",
-    "selected_implementation_commit": "3b5a26168c5702606f460e14824c13d952636359",
-    "selected_tree_oid": "e529ca795cbf5daa9424c40fa971f390964eb77c",
-    "review_inputs_report": "docs/releases/v0.0.2/evidence/g0-final/3b5a26168c5702606f460e14824c13d952636359/final-g0-review-inputs.json",
-    "review_inputs_report_sha256": "a064d2c2fce4955f7a9a46c3c44da3c08de35f38934a3160586b03f5606c1789",
+    "selected_implementation_commit": "b8ec149284a14d174f60f09f236ac36c515fd4c5",
+    "selected_tree_oid": "29822b546ea43ddd8c19f612008223e06d4de7d5",
+    "review_inputs_report": "docs/releases/v0.0.2/evidence/g0-final/b8ec149284a14d174f60f09f236ac36c515fd4c5/final-g0-review-inputs.json",
+    "review_inputs_report_sha256": "835dc8c9efe2e5413f5ca170218b447497e8d59ac5432c34ac5b5ef7c7e63002",
     "reviewer": "sunthemoon",
     "reviewed_at": "2026-08-30",
     "findings": []
   },
   "final_g0_readme_visual_review": {
     "outcome": "APPROVED",
-    "selected_commit": "d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b",
-    "selected_tree_oid": "878d0c682d15915ed44804420a21f0220b87bb3d",
-    "screenshot_file": "docs/releases/v0.0.2/evidence/g0-final/d6c8464b0e75fe10d64fcb579ab08345f7d4cd3b/readme-full-window.png",
+    "selected_commit": "b8ec149284a14d174f60f09f236ac36c515fd4c5",
+    "selected_tree_oid": "29822b546ea43ddd8c19f612008223e06d4de7d5",
+    "screenshot_file": "docs/releases/v0.0.2/evidence/g0-final/b8ec149284a14d174f60f09f236ac36c515fd4c5/readme-full-window.png",
     "screenshot_sha256": "a89318c28e8ba2a65ab040a91ad6f1e49da2f8484c126d2735ae42e6646a8ebc",
     "reviewer": "sunthemoon",
     "reviewed_at": "2026-08-30",
