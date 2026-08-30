@@ -151,8 +151,11 @@ client-class linkage findings block harness success.
   ambiguous or contradictory behavior remains an open finding.
 - The evidence contains either an ordered logger-anchored server connection
   marker or the exact client `ConnectScreen` marker for this session's
-  `127.0.0.1:<port>`. A UI result with neither marker remains `BLOCKED` because
-  the helper cannot mechanically prove that the connection was attempted.
+  `127.0.0.1:<port>`. The client marker may use the normal bracketed Forge log
+  format or a complete three-line Log4j XmlLayout event that preserves the
+  exact logger and message. A UI result with neither marker remains `BLOCKED`
+  because the helper cannot mechanically prove that the connection was
+  attempted.
 
 **Actual**
 

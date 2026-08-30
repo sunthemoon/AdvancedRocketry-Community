@@ -258,6 +258,17 @@ LOG_LOGGER_LINE = re.compile(
     r"\[(?P<logger>[^\]\r\n]+)/?\]\s*:\s*(?P<message>.*)$",
     re.I,
 )
+LOG4J_XML_EVENT_LINE = re.compile(
+    r'^\s*<log4j:Event\s+(?P<attributes>[^>\r\n]+)>\s*$', re.I
+)
+LOG4J_XML_ATTRIBUTE = re.compile(
+    r'(?P<name>[A-Za-z_:][A-Za-z0-9_.:-]*)="(?P<value>[^"\r\n]*)"'
+)
+LOG4J_XML_MESSAGE_LINE = re.compile(
+    r"^\s*<log4j:Message><!\[CDATA\[(?P<message>[^\r\n]*)\]\]></log4j:Message>\s*$",
+    re.I,
+)
+LOG4J_XML_EVENT_END = re.compile(r"^\s*</log4j:Event>\s*$", re.I)
 SERVER_CONNECTION_ATTEMPT_LOGGERS = {
     "forge/handshakehandler/fmlhandshake",
     "forge/networkdispatcher",
@@ -1466,7 +1477,23 @@ def privacy_findings(text: str, player_names: list[str] | None = None) -> list[s
 def scan_log_text(text: str) -> dict[str, int]:
     counts = {field: 0 for field in LOG_AUDIT_FIELDS}
     for line in text.splitlines():
+        xml_event = _parse_log4j_xml_event_line(line)
         is_project = PROJECT_LOGGER.search(line) is not None
+        if xml_event is not None:
+            logger, level = xml_event
+            is_project = "advancedrocketrycommunity" in logger.casefold()
+            if level == "ERROR":
+                counts["error_count"] += 1
+                if is_project:
+                    counts["project_error_count"] += 1
+            elif level == "WARN":
+                counts["warning_count"] += 1
+                if is_project:
+                    counts["project_warning_count"] += 1
+            elif level == "FATAL":
+                counts["fatal_count"] += 1
+                if is_project:
+                    counts["project_fatal_count"] += 1
         if ERROR_LINE.search(line):
             counts["error_count"] += 1
             if is_project:
@@ -1483,6 +1510,65 @@ def scan_log_text(text: str) -> dict[str, int]:
         if any(marker.casefold() in lowered for marker in CLIENT_LINKAGE_MARKERS):
             counts["client_linkage_failure_count"] += 1
     return counts
+
+
+def _parse_log4j_xml_event_line(line: str) -> tuple[str, str] | None:
+    """Parse the identity and level from one Log4j XmlLayout event header."""
+
+    parsed = LOG4J_XML_EVENT_LINE.fullmatch(line)
+    if parsed is None:
+        return None
+    attributes: dict[str, list[str]] = {}
+    for attribute in LOG4J_XML_ATTRIBUTE.finditer(parsed.group("attributes")):
+        attributes.setdefault(attribute.group("name").casefold(), []).append(
+            attribute.group("value")
+        )
+    logger_values = attributes.get("logger", [])
+    level_values = attributes.get("level", [])
+    if len(logger_values) != 1 or len(level_values) != 1:
+        return None
+    level = level_values[0].upper()
+    if level not in {"INFO", "WARN", "ERROR", "FATAL"}:
+        return None
+    return logger_values[0], level
+
+
+def _logger_events(text: str) -> list[tuple[int, str, str]]:
+    """Return logger-anchored plain or three-line Log4j XmlLayout events."""
+
+    events: list[tuple[int, str, str]] = []
+    lines = text.splitlines()
+    index = 0
+    while index < len(lines):
+        plain = LOG_LOGGER_LINE.search(lines[index])
+        if plain is not None:
+            events.append((index, _normalized_logger(plain), plain.group("message")))
+            index += 1
+            continue
+
+        xml_event = _parse_log4j_xml_event_line(lines[index])
+        if xml_event is None:
+            index += 1
+            continue
+        logger, _ = xml_event
+        if index + 2 < len(lines):
+            message = LOG4J_XML_MESSAGE_LINE.fullmatch(lines[index + 1])
+            end = LOG4J_XML_EVENT_END.fullmatch(lines[index + 2])
+            if message is not None and end is not None:
+                events.append(
+                    (index + 1, logger.rstrip("/").casefold(), message.group("message"))
+                )
+                index += 3
+                continue
+
+        # Do not treat lines inside a malformed or multiline XML event as new
+        # logger headers. Only complete, adjacent XmlLayout events can prove a
+        # connection marker.
+        index += 1
+        while index < len(lines) and LOG4J_XML_EVENT_END.fullmatch(lines[index]) is None:
+            index += 1
+        index += 1
+    return events
 
 
 def decode_log_payload(payload: bytes) -> str:
@@ -1573,11 +1659,9 @@ def server_connection_attempt_marker_result(
 ) -> dict[str, Any]:
     matches: list[dict[str, Any]] = []
     lines = text.splitlines()
-    for index, line in enumerate(lines):
-        parsed = LOG_LOGGER_LINE.search(line)
-        if parsed is None or CONNECTION_ATTEMPT_TERMS.search(parsed.group("message")) is None:
+    for index, logger, message in _logger_events(text):
+        if CONNECTION_ATTEMPT_TERMS.search(message) is None:
             continue
-        logger = _normalized_logger(parsed)
         if logger in SERVER_CONNECTION_ATTEMPT_LOGGERS:
             matches.append({"line_index": index, "logger": logger})
 
@@ -1615,14 +1699,10 @@ def client_connection_attempt_marker_result(
 ) -> dict[str, Any]:
     candidates: list[dict[str, Any]] = []
     matching: list[dict[str, Any]] = []
-    for index, line in enumerate(text.splitlines()):
-        parsed = LOG_LOGGER_LINE.search(line)
-        if parsed is None:
-            continue
-        logger = _normalized_logger(parsed)
+    for index, logger, message in _logger_events(text):
         if logger not in CLIENT_CONNECTION_ATTEMPT_LOGGERS:
             continue
-        target = CLIENT_CONNECTION_TARGET.fullmatch(parsed.group("message"))
+        target = CLIENT_CONNECTION_TARGET.fullmatch(message)
         if target is None:
             continue
         port = int(target.group("port"))

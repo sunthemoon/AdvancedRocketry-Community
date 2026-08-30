@@ -38,6 +38,7 @@ from scripts.collect_v002_manual_evidence import (
     privacy_findings,
     read_bounded_bytes,
     redact_text,
+    scan_log_text,
     validate_bundle,
     validate_session,
 )
@@ -1501,6 +1502,28 @@ class ManualEvidenceTests(unittest.TestCase):
         self.assertEqual([], errors)
         self.assertIsNotNone(record)
         self.assertTrue(output.is_dir())
+
+    def test_log4j_xml_fragment_levels_and_project_logger_are_scanned(self) -> None:
+        text = """\
+  <log4j:Event logger="io.github.example.AdvancedRocketryCommunity" timestamp="1" level="WARN" thread="main">
+    <log4j:Message><![CDATA[project warning]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraftforge.network.NetworkHooks" timestamp="2" level="ERROR" thread="main">
+    <log4j:Message><![CDATA[forge error]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraft.client.Minecraft" timestamp="3" level="INFO" thread="main">
+    <log4j:Message><![CDATA[type=ERROR NoClassDefFoundError: net.minecraft.client.Example]]></log4j:Message>
+  </log4j:Event>
+"""
+
+        counts = scan_log_text(text)
+
+        self.assertEqual(1, counts["warning_count"])
+        self.assertEqual(1, counts["project_warning_count"])
+        self.assertEqual(1, counts["error_count"])
+        self.assertEqual(0, counts["project_error_count"])
+        self.assertEqual(0, counts["fatal_count"])
+        self.assertEqual(1, counts["client_linkage_failure_count"])
 
     def test_gb18030_mismatch_server_log_is_scanned_and_bound(self) -> None:
         session = self.ready_session()
@@ -3262,6 +3285,65 @@ class ManualEvidenceTests(unittest.TestCase):
             record["log_excerpts"]["mismatch_attempt"][
                 "connection_attempt_marker"
             ]["source"],
+        )
+
+    def test_strict_mismatch_accepts_log4j_xml_client_marker(self) -> None:
+        session = self.ready_session()
+        server_role = "mismatch_server_attempt_save_stop"
+        server_source = self.root / session["log_excerpts"][server_role]["source"]
+        server_payload = "\n".join(
+            line
+            for line in server_source.read_text(encoding="utf-8").splitlines()
+            if "Disconnecting VANILLA connection attempt" not in line
+        ) + "\n"
+        self.replace_mismatch_server_log(session, server_payload)
+
+        client_role = "mismatch_attempt"
+        client_item = session["log_excerpts"][client_role]
+        client_source = self.root / client_item["source"]
+        client_source.write_text(
+            """\
+  <log4j:Event logger="net.minecraftforge.client.ForgeHooksClient" timestamp="1" level="WARN" thread="Netty Client IO #0">
+    <log4j:Message><![CDATA[Server has additional mods that may be needed on the client]]></log4j:Message>
+  </log4j:Event>
+  <log4j:Event logger="net.minecraft.client.gui.screens.ConnectScreen" timestamp="2" level="INFO" thread="Render thread">
+    <log4j:Message><![CDATA[Connecting to 127.0.0.1, 25565]]></log4j:Message>
+  </log4j:Event>
+""",
+            encoding="utf-8",
+        )
+        client_item.update(
+            line_start=1,
+            line_end=6,
+            warning_disposition={
+                "status": "ACCEPTED",
+                "warning_count": 1,
+                "origins": ["ForgeHooksClient"],
+                "explanation": "Reviewed structured Forge client warning.",
+            },
+        )
+        output = self.build / "xml-client-connection-marker"
+
+        errors, record = collect_evidence(
+            self.write_session(session, "xml-client-connection-marker-session.json"),
+            output,
+            self.root,
+            require_acceptance_ready=True,
+        )
+
+        self.assertEqual([], errors)
+        assert record is not None
+        marker = record["log_excerpts"][client_role]["connection_attempt_marker"]
+        self.assertEqual("client", marker["source"])
+        self.assertEqual(
+            ["net.minecraft.client.gui.screens.connectscreen"], marker["loggers"]
+        )
+        self.assertTrue(marker["target_verified"])
+        self.assertEqual(
+            1,
+            record["log_excerpts"][client_role]["source_audit"]["audit_counts"][
+                "warning_count"
+            ],
         )
 
     def test_strict_mismatch_rejects_client_marker_for_other_port(self) -> None:
