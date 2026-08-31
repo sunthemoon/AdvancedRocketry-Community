@@ -1,0 +1,33 @@
+{
+  "environment": {
+    "java": "17.0.8 Microsoft",
+    "os": "Windows 11 amd64"
+  },
+  "maximum_scan": {
+    "blocks": 2048,
+    "elapsed_nanos": 18911700,
+    "inspections": 10242,
+    "maximum_inspections": 12289,
+    "per_tick_budget": 256,
+    "result": "PASS",
+    "ticks": 41
+  },
+  "maximum_visual_projection": {
+    "blocks": 2048,
+    "chunk_byte_limit": 32768,
+    "chunks": 2,
+    "encode_chunk_decode_elapsed_nanos": 9589700,
+    "payload_bytes": 32888,
+    "payload_byte_limit": 524288,
+    "result": "PASS"
+  },
+  "render_cache": {
+    "content_hash_keyed": true,
+    "maximum_cached_entities": 256,
+    "per_frame_block_state_restore": false,
+    "visible_evidence": "docs/releases/v0.5.0/evidence/client/screenshots/rocket-render.png"
+  },
+  "schema_version": 1,
+  "source": "Focused JUnit execution on 2026-09-01",
+  "version": "v0.5.0"
+}

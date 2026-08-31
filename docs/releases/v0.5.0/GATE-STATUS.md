@@ -1,4 +1,4 @@
-# GATE_STATUS
+# GATE_STATUS — v0.5.0 release candidate
 
 ```yaml
 version: v0.5.0
@@ -32,9 +32,12 @@ human_approved_by: "sunthemoon"
 human_approved_at: "2026-09-01"
 ```
 
-The accepted v0.4.0 record remains immutable at
-[`../releases/v0.4.0/GATE-STATUS.md`](../releases/v0.4.0/GATE-STATUS.md). v0.5
-uses the repository-approved 2,048-block / 32,768-volume / 1 MiB snapshot
-limits and rejects every BlockEntity without an explicit bounded adapter. The
-local evidence bundle and owner review are complete; `PASSED` remains reserved
-for the post-CI, post-merge accepted snapshot.
+Repository owner `sunthemoon` approved the zero-copy provenance record and the
+G0, G8, and G9 decisions on 2026-09-01. The exact tested implementation is
+`5cbd912bb1ad30afd242e21ca8095e53f265dab9`; subsequent candidate commits may
+add tests, evidence, and documentation but must not change its distributable
+JAR bytes.
+
+The candidate remains `READY_FOR_AUDIT`, not `PASSED`, until its pull-request
+checks complete and the accepted JAR is reproduced after merge. No tag or
+public release is created by this milestone record.

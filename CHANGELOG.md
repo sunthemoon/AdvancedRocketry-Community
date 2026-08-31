@@ -4,14 +4,36 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.4.0 — development in progress, unreleased developer preview
+## v0.5.0 — release candidate, unreleased developer preview
 
-**Status:** Atmosphere limits and fail-closed recovery behavior are fixed;
-implementation, automated/server/performance verification, client evidence,
-and owner acceptance remain. No acceptance claim, tag, or public release
+**Status:** Local implementation, build, unit/GameTest, packaged-server
+restart/recovery, maximum-structure performance, visible client evidence, and
+owner acceptance are complete. Pull-request checks and post-merge artifact
+reproduction remain; no tag or public release exists.
+
+### Added
+
+- Loaded-chunk-only bounded rocket structure scanning and readable diagnostics.
+- Canonical schema-1 snapshots with server-recomputed mass, thrust, capacity,
+  seat, engine, and guidance statistics.
+- Region-locked transactional assembly/disassembly with fault-injected rollback
+  and exact approved container restoration.
+- A restart-safe same-dimension `RocketEntity` and stale-journal recovery.
+- Bounded tracking-player visual synchronization and cached block rendering.
+- Rocket Assembler, motor, fuel tank, seat, guidance computer, recipes, tags,
+  models, localization, and GameTest data.
+
+This milestone does not launch, consume fuel, fly, or change dimensions. Those
+behaviors remain in v0.6.0.
+
+## v0.4.0 — PASSED, unreleased developer preview
+
+**Status:** `PASSED` on 2026-09-01 after repeated build, automated tests,
+packaged-server persistence/performance, two-player client evidence, owner
+review, and all 3/3 pull-request checks completed. No tag or public release
 exists.
 
-Planned player-visible result: Moon and Space require a complete suit with
+Moon and Space require a complete suit with
 finite oxygen unless a powered Oxygen Vent has established a bounded sealed
 room. Opening the boundary or losing supply returns the room to vacuum.
 

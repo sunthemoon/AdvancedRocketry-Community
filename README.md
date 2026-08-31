@@ -20,11 +20,10 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest accepted milestone is `v0.3.0`: bounded celestial data, stable
-Earth/Moon/Space identities, fixed Moon and Space test dimensions, persistent
-discovery state, and secure legacy XML import. Active development targets
-`v0.4.0`: vacuum, life support, and budgeted sealed-space detection. Rocket
-gameplay is not yet available. See
+The latest accepted milestone is `v0.4.0`: server-authoritative vacuum, finite
+life support, and budgeted sealed-space detection. The `v0.5.0` transactional
+rocket-assembly candidate has complete local evidence and owner review and is
+awaiting pull-request verification; launch and travel are not yet available. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
 sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
 verified and pending evidence.

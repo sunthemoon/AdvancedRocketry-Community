@@ -1,0 +1,249 @@
+{
+  "allowed_file_types": [
+    ".json",
+    ".nbt"
+  ],
+  "expected_resource_paths": [
+    "assets/advancedrocketrycommunity/blockstates/guidance_computer.json",
+    "assets/advancedrocketrycommunity/blockstates/rocket_assembler.json",
+    "assets/advancedrocketrycommunity/blockstates/rocket_fuel_tank.json",
+    "assets/advancedrocketrycommunity/blockstates/rocket_motor.json",
+    "assets/advancedrocketrycommunity/blockstates/rocket_seat.json",
+    "assets/advancedrocketrycommunity/models/block/guidance_computer.json",
+    "assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
+    "assets/advancedrocketrycommunity/models/block/rocket_fuel_tank.json",
+    "assets/advancedrocketrycommunity/models/block/rocket_motor.json",
+    "assets/advancedrocketrycommunity/models/block/rocket_seat.json",
+    "assets/advancedrocketrycommunity/models/item/guidance_computer.json",
+    "assets/advancedrocketrycommunity/models/item/rocket_assembler.json",
+    "assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json",
+    "assets/advancedrocketrycommunity/models/item/rocket_motor.json",
+    "assets/advancedrocketrycommunity/models/item/rocket_seat.json",
+    "assets/advancedrocketrycommunity_v050/lang/en_us.json",
+    "assets/advancedrocketrycommunity_v050/lang/zh_cn.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/guidance_computer.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_assembler.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fuel_tank.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_motor.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_seat.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/guidance_computer.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/rocket_assembler.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/rocket_fuel_tank.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/rocket_motor.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/rocket_seat.json",
+    "data/advancedrocketrycommunity/recipes/guidance_computer.json",
+    "data/advancedrocketrycommunity/recipes/rocket_assembler.json",
+    "data/advancedrocketrycommunity/recipes/rocket_fuel_tank.json",
+    "data/advancedrocketrycommunity/recipes/rocket_motor.json",
+    "data/advancedrocketrycommunity/recipes/rocket_seat.json",
+    "data/advancedrocketrycommunity/structures/rocket_test.nbt",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_engines.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_forbidden.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_fuel_tanks.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_guidance.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_movable.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_seats.json"
+  ],
+  "generated_root": "src/generated/v0.5/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.5.0",
+  "targets": [
+    {
+      "bytes": 106,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/blockstates/guidance_computer.json",
+      "sha256": "9c65ef44d289372a60d4638952686efbd822998b2ef5f7fc521526d3640398c7"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/blockstates/rocket_assembler.json",
+      "sha256": "e5a8e3574c668f3e5ee026a706b738734a328dc6c80adbaa95d3eb3d120db21e"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/blockstates/rocket_fuel_tank.json",
+      "sha256": "6b9ea74005b20e703b5033fdab93b0a729c2c80036e19148eeb18e30ff862b44"
+    },
+    {
+      "bytes": 101,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/blockstates/rocket_motor.json",
+      "sha256": "702aa16aae9ab956aac84c31f695e8803ef21854bdd3304f81ee85c02443ad45"
+    },
+    {
+      "bytes": 100,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/blockstates/rocket_seat.json",
+      "sha256": "3f2b61e071fdcf6e32f2cc1fbe194945c9dae454858f49f3d33c36e88e66e5bd"
+    },
+    {
+      "bytes": 249,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/guidance_computer.json",
+      "sha256": "e8aad37f4a039472731e560dcbd4378d2887abfdc24cea3aa30fc40221e295dd"
+    },
+    {
+      "bytes": 248,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
+      "sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3"
+    },
+    {
+      "bytes": 150,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_fuel_tank.json",
+      "sha256": "6bc7a8caecd14fd09145721fd9198128fe0727ebd68e9d6ae76811323074c756"
+    },
+    {
+      "bytes": 157,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_motor.json",
+      "sha256": "36090226697d18af44dabd0de09b831edb1a3f257ef4c3041506770f6f003964"
+    },
+    {
+      "bytes": 206,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_seat.json",
+      "sha256": "5d7a8f83a1f6f7ed3ce8b70055b6126452fca7936690b8279f2d6b93f4a0c2fd"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/item/guidance_computer.json",
+      "sha256": "cadcb6d0b7e8785c4cac9a9cf716497c1e2385891cfb5929814b23ce0b2c30c5"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/item/rocket_assembler.json",
+      "sha256": "de16ed5611e3abad80ad3191cbfba40681af6c4791f4262f1a0d934da735df04"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json",
+      "sha256": "648f6ab1f35b533b5c6fdff4859ba1986741032e7eccc06f68ad221520b3902c"
+    },
+    {
+      "bytes": 62,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/item/rocket_motor.json",
+      "sha256": "ea407497b92e4bf5329d056a57b766da5bfbecba407c99e1dc440775ca9286e8"
+    },
+    {
+      "bytes": 61,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/item/rocket_seat.json",
+      "sha256": "41ac0d11dfbcc59071a34b7473218152e0e7894565f104f711b8a965603dc091"
+    },
+    {
+      "bytes": 4627,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity_v050/lang/en_us.json",
+      "sha256": "cb678a4c14305b73ee4568fe49c61c5e6046b6baf23ab37ae0561f9c9c251524"
+    },
+    {
+      "bytes": 4399,
+      "path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity_v050/lang/zh_cn.json",
+      "sha256": "2e0e1a871518cd37ace2e11bbdb8b46af23c9303aa630b66355904acd0a876ec"
+    },
+    {
+      "bytes": 714,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/advancements/recipes/misc/guidance_computer.json",
+      "sha256": "d1fdfcc14859078c96feb55c9bbec7636e0e15e1335a7a9b54a4e92cd1fce369"
+    },
+    {
+      "bytes": 706,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_assembler.json",
+      "sha256": "380dcaf1c837b0b806cb647de764cf7cd21b9d5edbdd92a94007a56cf629d9f4"
+    },
+    {
+      "bytes": 643,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fuel_tank.json",
+      "sha256": "c6253d8c84ea111e896f883917a2fc346330ad8d66f4da4a21f2cfb8eeeddc9c"
+    },
+    {
+      "bytes": 695,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_motor.json",
+      "sha256": "22cbe47f6b9769c2aba1e6021155dca53950ebd11f5e50eddb583aa9e9cafcd8"
+    },
+    {
+      "bytes": 618,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_seat.json",
+      "sha256": "fe18d9f79327e526494261e1bda561ef6d126f861c8692ed823e688fec2c9fd2"
+    },
+    {
+      "bytes": 434,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/loot_tables/blocks/guidance_computer.json",
+      "sha256": "05bb94895d2ba1a339ce346bbe72bbf67b3c29f5aaa9c34a5a0c303d92e94c05"
+    },
+    {
+      "bytes": 432,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/loot_tables/blocks/rocket_assembler.json",
+      "sha256": "684343df24419ea2119601422ed4389290c65e6cad45c8d3c4d33e04c82d43a9"
+    },
+    {
+      "bytes": 432,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/loot_tables/blocks/rocket_fuel_tank.json",
+      "sha256": "f0b529baa2c00794e524e456f86ec45682c494e6709699d982000ba15589534f"
+    },
+    {
+      "bytes": 424,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/loot_tables/blocks/rocket_motor.json",
+      "sha256": "8b4744abd87b7d49ca1f474a4e52ce5361879ae9043336946a4b92745134cc3a"
+    },
+    {
+      "bytes": 422,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/loot_tables/blocks/rocket_seat.json",
+      "sha256": "4d26ce6ef96c21ff194d5528dc0d1cef8378506aa74d94514d8e290ab4a27a61"
+    },
+    {
+      "bytes": 537,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/recipes/guidance_computer.json",
+      "sha256": "852bd08c1ffd8dfe080cf3b4b27649021c7de5c9a912a8b265fe1d8d5890c2c9"
+    },
+    {
+      "bytes": 542,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/recipes/rocket_assembler.json",
+      "sha256": "200b31fb400832355c347fc5e2e4b2fa46b8f5770acb2e5579fe45c1abf339ac"
+    },
+    {
+      "bytes": 331,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/recipes/rocket_fuel_tank.json",
+      "sha256": "a43268ccb94c67696f7e237b9fa87e71a07a8e2ec50a2475ce6101a80c572125"
+    },
+    {
+      "bytes": 409,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/recipes/rocket_motor.json",
+      "sha256": "3b00400c20bc9e77316b7d75054f525debae270bf07cdf6b176bfc27c1474569"
+    },
+    {
+      "bytes": 329,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/recipes/rocket_seat.json",
+      "sha256": "a19f5dde3f9527518d448f993b82496666226bdb3a752594fbcdcd073dd13540"
+    },
+    {
+      "bytes": 127,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/structures/rocket_test.nbt",
+      "sha256": "423b9f732fa8f2e932f754c84f785b173f17c9f19bf39539e804c7f45bc42712"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/tags/blocks/rocket_engines.json",
+      "sha256": "79d610d17ebceac95a3e2e491c088b470be0e105b5246abe7cad3e50ff47d70b"
+    },
+    {
+      "bytes": 364,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/tags/blocks/rocket_forbidden.json",
+      "sha256": "53dbd8e810602cad9e1d177510aea4978f1f2f07f56866e0ff062f09aa591b38"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/tags/blocks/rocket_fuel_tanks.json",
+      "sha256": "1c80a893109cce7174e30cd727ba7513183c5526cb6e98a6488be068a027582b"
+    },
+    {
+      "bytes": 71,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/tags/blocks/rocket_guidance.json",
+      "sha256": "0c6a6ce28760a8b3490e6a42374b2abe62bea18fde660ddfd55753424241448d"
+    },
+    {
+      "bytes": 388,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/tags/blocks/rocket_movable.json",
+      "sha256": "136383d7182d2ad4a82ded81f2fcffca4e2c4294994e02c182617818aece26fb"
+    },
+    {
+      "bytes": 65,
+      "path": "src/generated/v0.5/resources/data/advancedrocketrycommunity/tags/blocks/rocket_seats.json",
+      "sha256": "7581a0d3cdcbe10b33090040be6c827f4f1a4338424387571448ede415b36264"
+    }
+  ]
+}

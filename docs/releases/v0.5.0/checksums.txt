@@ -1,0 +1,16 @@
+# SHA-256  repository-relative-path
+6bf36e40cec68595a71762c9b1c797f558ae1aee42868313448a32c48f525b0e  build/libs/advancedrocketry-community-1.20.1-0.5.0-dev-sources.jar
+0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b  build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar
+8b2168cd6050ce2637e25da855d7a4e2802312affbad8faaadaa4184bd4b63f0  docs/releases/v0.5.0/evidence/artifact/artifact-summary.json
+23bc73400a489394d55832f3ef56641cfd021f0d35dad0431010f68103078581  docs/releases/v0.5.0/evidence/artifact/jar-content-manifest.json
+537c0ab81c2a9b94099569efbbbe412ad971db29d964e5c7ec6bd20c579d6c52  docs/releases/v0.5.0/evidence/automated/summary.json
+b5641c9c61413f53d212fd9593d38c82e04a93d61bcc7eae15954561a9cc1f30  docs/releases/v0.5.0/evidence/client/logs/client.txt
+4847c530ceec88fa1d7ef31e634ee13869aa474d7fd56a9289ab7885ad4a5dee  docs/releases/v0.5.0/evidence/client/logs/server.txt
+8fe0f09e4c77b9f9a1ad6f2e337d3320801739e32eb01d716e72f03a50adcab0  docs/releases/v0.5.0/evidence/client/manual-evidence.json
+dde6c4c63f19f2426ce15b37c9bb958fe2db588b7dc073472c3792e8ee5d43da  docs/releases/v0.5.0/evidence/client/screenshots/rocket-render.png
+48125d66d79994555534f4d5035167c7f5489bddba66f862d5ef705c17b6b87b  docs/releases/v0.5.0/evidence/dedicated-server/first-start.txt
+b5e1ddc3af1356e5857bb88766442e30ddc4dad85d073f1e6db7e675a2363712  docs/releases/v0.5.0/evidence/dedicated-server/restart.txt
+f79fe3a8a84a43eaa1469ee5edac2e189871041aa313e0e97f836da82e1269c5  docs/releases/v0.5.0/evidence/dedicated-server/summary.json
+9ded05f0a0c1f8c31cfd4ddc452f6ef2e57bc20bb3f2d389017e4a92b5fa19fb  docs/releases/v0.5.0/evidence/performance/summary.json
+d8e1e639754f140d30ec89ee1f591458311952706f4d765d9983cad504861f44  docs/releases/v0.5.0/evidence/rocket-server/lifecycle.txt
+882bc2c84a98cec905962b302e77a24d292aabcf402b97184ca31b8d671878c3  docs/releases/v0.5.0/evidence/rocket-server/summary.json
