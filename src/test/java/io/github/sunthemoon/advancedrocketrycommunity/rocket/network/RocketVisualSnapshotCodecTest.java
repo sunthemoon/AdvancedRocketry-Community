@@ -83,14 +83,26 @@ final class RocketVisualSnapshotCodecTest {
     @Test
     void maximumBlockProjectionUsesBoundedMultipleChunks() {
         RocketVisualSnapshot maximum = visual(2_048);
+        long started = System.nanoTime();
         List<RocketVisualChunkPacket> chunks = RocketVisualChunker.chunk(UUID.randomUUID(), maximum);
+        byte[] encoded = RocketVisualSnapshotCodec.encode(maximum);
+        RocketVisualSnapshot decoded = RocketVisualSnapshotCodec.decode(encoded);
+        long elapsedNanos = System.nanoTime() - started;
 
-        assertTrue(chunks.size() >= 2);
+        assertEquals(2, chunks.size());
         assertTrue(chunks.stream().allMatch(packet -> packet.chunk().length <= 32_768));
         assertEquals(chunks.size(), chunks.get(0).chunkCount());
         assertEquals(
-                RocketVisualSnapshotCodec.encode(maximum).length,
+                encoded.length,
                 chunks.stream().mapToInt(packet -> packet.chunk().length).sum()
+        );
+        assertEquals(maximum.blocks(), decoded.blocks());
+        System.out.printf(
+                "ARCE_ROCKET_VISUAL_PERF blocks=%d payload_bytes=%d chunks=%d elapsed_nanos=%d%n",
+                maximum.blocks().size(),
+                encoded.length,
+                chunks.size(),
+                elapsedNanos
         );
     }
 

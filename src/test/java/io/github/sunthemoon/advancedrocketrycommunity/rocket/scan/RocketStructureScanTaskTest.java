@@ -153,6 +153,40 @@ final class RocketStructureScanTaskTest {
     }
 
     @Test
+    void maximumStructureCompletesWithinFixedTickBudget() {
+        FakeWorld world = lineWorld(
+                RocketLimits.MAX_BLOCKS,
+                state("test:combined"),
+                combinedMetrics()
+        );
+        RocketStructureScanTask task = task(world);
+        RocketScanResult result;
+        int ticks = 0;
+        long started = System.nanoTime();
+        do {
+            result = task.step(RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK);
+            ticks++;
+        } while (result.status() == RocketScanResult.Status.RUNNING);
+        long elapsedNanos = System.nanoTime() - started;
+
+        assertEquals(RocketScanResult.Status.SUCCESS, result.status());
+        assertEquals(RocketLimits.MAX_BLOCKS, result.capturedBlocks());
+        assertTrue(result.totalInspections() <= RocketLimits.MAX_SCAN_INSPECTIONS);
+        assertEquals(
+                (result.totalInspections() + RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK - 1)
+                        / RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK,
+                ticks
+        );
+        System.out.printf(
+                "ARCE_ROCKET_SCAN_PERF blocks=%d ticks=%d inspections=%d elapsed_nanos=%d%n",
+                result.capturedBlocks(),
+                ticks,
+                result.totalInspections(),
+                elapsedNanos
+        );
+    }
+
+    @Test
     void sparseConnectedShapeCannotHideAnOversizedBoundingVolume() {
         FakeWorld world = new FakeWorld();
         for (int x = 0; x <= 31; x++) {
