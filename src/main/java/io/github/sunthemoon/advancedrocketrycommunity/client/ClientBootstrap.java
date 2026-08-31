@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -42,5 +43,10 @@ public final class ClientBootstrap {
                 (stack, tintIndex) -> tintIndex == 0 ? 0x79AFFF : 0xFFFFFF,
                 ModItems.OXYGEN_CANISTER.get()
         );
+    }
+
+    @SubscribeEvent
+    public static void onRegisterGuiOverlays(RegisterGuiOverlaysEvent event) {
+        event.registerAboveAll("life_support", LifeSupportHud.OVERLAY);
     }
 }

@@ -1,0 +1,189 @@
+{
+  "allowed_file_types": [
+    ".json",
+    ".nbt"
+  ],
+  "expected_resource_paths": [
+    "assets/advancedrocketrycommunity/blockstates/oxygen_vent.json",
+    "assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
+    "assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
+    "assets/advancedrocketrycommunity/models/item/oxygen_vent.json",
+    "assets/advancedrocketrycommunity/models/item/space_suit_boots.json",
+    "assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json",
+    "assets/advancedrocketrycommunity/models/item/space_suit_helmet.json",
+    "assets/advancedrocketrycommunity/models/item/space_suit_leggings.json",
+    "assets/advancedrocketrycommunity_v040/lang/en_us.json",
+    "assets/advancedrocketrycommunity_v040/lang/zh_cn.json",
+    "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_boots.json",
+    "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_chestplate.json",
+    "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_helmet.json",
+    "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_leggings.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/oxygen_vent.json",
+    "data/advancedrocketrycommunity/damage_type/vacuum.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/oxygen_vent.json",
+    "data/advancedrocketrycommunity/recipes/oxygen_vent.json",
+    "data/advancedrocketrycommunity/recipes/space_suit_boots.json",
+    "data/advancedrocketrycommunity/recipes/space_suit_chestplate.json",
+    "data/advancedrocketrycommunity/recipes/space_suit_helmet.json",
+    "data/advancedrocketrycommunity/recipes/space_suit_leggings.json",
+    "data/advancedrocketrycommunity/structures/atmosphere_test.nbt",
+    "data/advancedrocketrycommunity/tags/blocks/atmosphere_permeable.json",
+    "data/advancedrocketrycommunity/tags/blocks/atmosphere_sealing.json",
+    "data/minecraft/tags/damage_type/bypasses_armor.json",
+    "data/minecraft/tags/damage_type/bypasses_enchantments.json",
+    "data/minecraft/tags/damage_type/bypasses_invulnerability.json",
+    "data/minecraft/tags/damage_type/bypasses_shield.json"
+  ],
+  "generated_root": "src/generated/v0.4/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.4.0",
+  "targets": [
+    {
+      "bytes": 202,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/blockstates/oxygen_vent.json",
+      "sha256": "bde7314ebb8a0e4e9da9c17c8ff48c525ccbc3b4e181cf035da0c8c4cad0a0bd"
+    },
+    {
+      "bytes": 270,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
+      "sha256": "bc0fded8d64336919beaa5b3a80cbd2f94f815a2393196e83a945f0e43dc408d"
+    },
+    {
+      "bytes": 247,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
+      "sha256": "4678c52a927d7eabd7c569ba1d7eb8641b41f36a3d5a4c608b2cc0615c6db050"
+    },
+    {
+      "bytes": 61,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/oxygen_vent.json",
+      "sha256": "ad7fa603ce0dc4ac0dd5b9ca83967fc36baf323303d9f3df46beffe41fc165ef"
+    },
+    {
+      "bytes": 43,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_boots.json",
+      "sha256": "82650205eba67373d9be037681b1de0685d72e53e6e16efe903550c342fa16c8"
+    },
+    {
+      "bytes": 48,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json",
+      "sha256": "d903c52c95f88457d0bee6b49fbefb601ac28e717affeeb902df6257f436acdf"
+    },
+    {
+      "bytes": 44,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_helmet.json",
+      "sha256": "2afc2d34c5645f06d2cc2be3550fd682c162c5b2406eceb726c281bdaed927ea"
+    },
+    {
+      "bytes": 46,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_leggings.json",
+      "sha256": "d8d944ba1e62a8adccb43f895330a28fb929111da12874edc9a5e96198e3b7e7"
+    },
+    {
+      "bytes": 3155,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity_v040/lang/en_us.json",
+      "sha256": "f38c66a75f3834a7ec8679f9f0d1399a3e699ef31b9742a2256ba2f05b28a230"
+    },
+    {
+      "bytes": 3216,
+      "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity_v040/lang/zh_cn.json",
+      "sha256": "8f543ac8cb1ae0e51c1cc8fd161eb454faf6de6961fe6486ff22ccaaa54e2c65"
+    },
+    {
+      "bytes": 703,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_boots.json",
+      "sha256": "0fbb658f22cc32fb8448d0848f52ccfa5f871b060e27b5167c0c4cc5ba50153c"
+    },
+    {
+      "bytes": 713,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_chestplate.json",
+      "sha256": "0d066b049f0433c07c8decde5d940987fa60c461a3bd45604d9d63cf187f234a"
+    },
+    {
+      "bytes": 705,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_helmet.json",
+      "sha256": "7da7c64da7ef6a6856bfcc27aceacf8498a07043fd89a07c6c424414608448e3"
+    },
+    {
+      "bytes": 709,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_leggings.json",
+      "sha256": "1b89add44b0a3e48da203b220b9f101c171367daea5a5f9610b9071b1b1780ee"
+    },
+    {
+      "bytes": 699,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/advancements/recipes/misc/oxygen_vent.json",
+      "sha256": "190253b58500f6269c85278787a866145cc705123effee42d00b000fc187d142"
+    },
+    {
+      "bytes": 118,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/damage_type/vacuum.json",
+      "sha256": "7b5ef24d03ff1f9e5af57fc0402adfa48e3ee4cce1471493ef2c01f9f341c2af"
+    },
+    {
+      "bytes": 422,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/loot_tables/blocks/oxygen_vent.json",
+      "sha256": "91be055ee537828519b1c3a5fa103277b05d0c89a6acebf1afbdc6002121c227"
+    },
+    {
+      "bytes": 528,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/recipes/oxygen_vent.json",
+      "sha256": "ce620814240ae9f92b90a091719eb881058714d74704924e35079f4af2b3ee24"
+    },
+    {
+      "bytes": 354,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/recipes/space_suit_boots.json",
+      "sha256": "d9ffb5fd74fd9ae31eb2b0a754d6dc63f1db06f79d268d524792cd375405b8a6"
+    },
+    {
+      "bytes": 370,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/recipes/space_suit_chestplate.json",
+      "sha256": "71b583f18820ffad56e50656b080ab012662056285ae8ff51da19206c4b6337f"
+    },
+    {
+      "bytes": 411,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/recipes/space_suit_helmet.json",
+      "sha256": "df01b5bf7ddafacf5c430d70d6ef7d3f026893826307c567eadfcc713d0db596"
+    },
+    {
+      "bytes": 368,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/recipes/space_suit_leggings.json",
+      "sha256": "a1c82978eef392923f90c48901a2b8eb7adb4f6d7acfc2a90c89bbf23a4bedba"
+    },
+    {
+      "bytes": 129,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/structures/atmosphere_test.nbt",
+      "sha256": "ca60e3491dab09f642d99a42c1ce670f6efad1466113afdab1a79ab10e038991"
+    },
+    {
+      "bytes": 102,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/tags/blocks/atmosphere_permeable.json",
+      "sha256": "41cf33f13b3cd9cf654130c9c3fa2352fb3c304ea8f0bc1911491227f6ee07be"
+    },
+    {
+      "bytes": 159,
+      "path": "src/generated/v0.4/resources/data/advancedrocketrycommunity/tags/blocks/atmosphere_sealing.json",
+      "sha256": "b31bb7dbddfa212ff253e4ff0ca1cab382ed4250e6b32d5f22235acda6cb3f6b"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v0.4/resources/data/minecraft/tags/damage_type/bypasses_armor.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v0.4/resources/data/minecraft/tags/damage_type/bypasses_enchantments.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v0.4/resources/data/minecraft/tags/damage_type/bypasses_invulnerability.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v0.4/resources/data/minecraft/tags/damage_type/bypasses_shield.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138"
+    }
+  ]
+}
