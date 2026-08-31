@@ -14,11 +14,11 @@
 | 普通配方 | `assets/advancedrocketry/recipes/*.json`（157 条已索引） | 旧格式、内容规模 | 当前五个最小配方由 DataGen 生成，其余按版本引入 | `v0.1.0+` | runData clean + JSON/reference audit | PASSED |
 | 基础机器 | `tile/multiblock/machine/TileElectrolyser.java`、`recipe/RecipeElectrolyser.java`、`recipes/hydrogenoxygen.json` | 巨型 LibVulpes 多方块基类、隐式配方/能力状态 | 单方块 Electrolyzer；纯 Java tick model + 具体 BlockEntity/Menu/Screen | `v0.2.0` | item/fluid/FE process + 50-cycle conservation + restart/automation | PASSED |
 | 多方块 | tile + LibVulpes | 结构匹配、区块 | internal MultiblockPattern | `v0.2.0+` | rotation/failure/unloaded | DEFERRED |
-| 天体定义 | dimension/api/XML | 数字维度 ID、静态 manager | Codec + datapack + SavedData | `v0.3.0` | roundtrip/cycle validation | NOT_AUDITED |
-| XML 行星 | Template.xml / XML reader | DOM 耦合 | import-only adapter | `v0.3.0` | fixture conversion | NOT_AUDITED |
-| 月球维度 | dimension/world/client | 动态维度、天空 | fixed Moon Level + profile | `v0.3.0` | dedicated reload | NOT_AUDITED |
-| 空间维度 | stations/dimension | station/level 耦合 | shared Space Level | `v0.3.0` | safe teleport | NOT_AUDITED |
-| 重力 | dimension/entity/event | 全局事件、兼容 | server attribute/effect service | `v0.3.0` | player/entity behavior | NOT_AUDITED |
+| 天体定义 | dimension/api/XML | 数字维度 ID、静态 manager | Codec + datapack + SavedData | `v0.3.0` | roundtrip/cycle validation | IN_PROGRESS |
+| XML 行星 | Template.xml / XML reader | DOM 耦合 | import-only adapter | `v0.3.0` | fixture conversion | IN_PROGRESS |
+| 月球维度 | dimension/world/client | 动态维度、天空 | fixed Moon Level + profile | `v0.3.0` | dedicated reload | IN_PROGRESS |
+| 空间维度 | stations/dimension | station/level 耦合 | shared Space Level | `v0.3.0` | safe teleport | IN_PROGRESS |
+| 重力 | dimension/entity/event | 全局事件、兼容 | server attribute/effect service | `v0.3.0` | player/entity behavior | IN_PROGRESS |
 | 真空伤害 | atmosphere/armor/event | 装备同步 | life support service | `v0.4.0` | suit/no-suit tests | NOT_AUDITED |
 | 氧气设备 | atmosphere/tile | flood fill | budgeted atmosphere service | `v0.4.0` | sealed/open/perf | NOT_AUDITED |
 | 火箭扫描 | tile assembler/entity | 任意结构、LibVulpes storage | validator + snapshot | `v0.5.0` | limits and diagnostics | NOT_AUDITED |

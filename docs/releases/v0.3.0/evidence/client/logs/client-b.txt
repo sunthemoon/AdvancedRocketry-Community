@@ -1,0 +1,13 @@
+# Filtered packaged-client lifecycle; machine paths omitted.
+[first-cycle]
+[15:50:20] [Worker-Main-6/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.3.0-dev initialized
+[15:50:25] [Netty Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[15:52:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ARCEV030B: Teleported to advancedrocketrycommunity:space at fixed safe destination]
+[15:58:53] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ARCEV030B: Teleported to advancedrocketrycommunity:earth at fixed safe destination]
+[16:00:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server: Stopping the server]
+[16:03:25] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[same-world-restart]
+[16:09:38] [Worker-Main-7/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.3.0-dev initialized
+[16:09:44] [Netty Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[16:11:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server: Stopping the server]
+[16:12:05] [Render thread/INFO] [minecraft/Minecraft]: Stopping!

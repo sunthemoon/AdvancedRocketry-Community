@@ -1,0 +1,96 @@
+{
+  "after_restart": {
+    "completed_at": "2026-08-31T07:31:57.185204+00:00",
+    "exit_code": 0,
+    "expected_catalog_rejections": 0,
+    "full_log_file": "v030-celestial-after-restart-full.txt",
+    "full_log_sha256": "ecb97d0f8cd10470a82bc0324c58555a9bdc1f89b3c01121ac938338fa05f0d6",
+    "name": "v030-celestial-after-restart",
+    "observed": {
+      "earth": "[15:31:55] [Server thread/INFO] [minecraft/MinecraftServer]: advancedrocketrycommunity:earth -> minecraft:overworld gravity=1.0 atmosphere=advancedrocketrycommunity:earth",
+      "list": "[15:31:55] [Server thread/INFO] [minecraft/MinecraftServer]: Celestial bodies: 3",
+      "moon": "[15:31:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V030_MOON_LEVEL_READY",
+      "moon_persisted": "[15:31:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V030_MOON_BLOCK_PERSISTED",
+      "space": "[15:31:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V030_SPACE_LEVEL_READY",
+      "space_persisted": "[15:31:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V030_SPACE_BLOCK_PERSISTED",
+      "validate": "[15:31:54] [Server thread/INFO] [minecraft/MinecraftServer]: Celestial catalog generation 1 is valid with 3 bodies"
+    },
+    "started_at": "2026-08-31T07:31:42.591863+00:00"
+  },
+  "artifact_sha256": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb",
+  "artifact_version": "1.20.1-0.3.0-dev",
+  "baseline_session_id": "v002-f78cee4c4eb2ea8597016acc",
+  "before_restart": {
+    "completed_at": "2026-08-31T07:31:42.584193+00:00",
+    "exit_code": 0,
+    "expected_catalog_rejections": 1,
+    "full_log_file": "v030-celestial-before-restart-full.txt",
+    "full_log_sha256": "d34f4bf2a0efb736f505e0c4ec361f1c5a5d19f2888fed98dfff57e8ead64ca6",
+    "name": "v030-celestial-before-restart",
+    "observed": {
+      "earth": "[15:31:39] [Server thread/INFO] [minecraft/MinecraftServer]: advancedrocketrycommunity:earth -> minecraft:overworld gravity=1.0 atmosphere=advancedrocketrycommunity:earth",
+      "invalid_reload": "[15:31:40] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Rejected celestial catalog; last valid generation remains active: Missing parent advancedrocketrycommunity:missing_parent for advancedrocketrycommunity:moon",
+      "list": "[15:31:39] [Server thread/INFO] [minecraft/MinecraftServer]: Celestial bodies: 3",
+      "moon": "[15:31:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V030_MOON_LEVEL_READY",
+      "recovered_reload": "[15:31:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted celestial catalog generation 2 with 3 bodies",
+      "recovered_validate": "[15:31:40] [Server thread/INFO] [minecraft/MinecraftServer]: Celestial catalog generation 2 is valid with 3 bodies",
+      "retained_generation": "[15:31:40] [Server thread/INFO] [minecraft/MinecraftServer]: Celestial catalog generation 1 retained after rejected reload: Missing parent advancedrocketrycommunity:missing_parent for advancedrocketrycommunity:moon",
+      "space": "[15:31:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V030_SPACE_LEVEL_READY",
+      "validate": "[15:31:39] [Server thread/INFO] [minecraft/MinecraftServer]: Celestial catalog generation 1 is valid with 3 bodies"
+    },
+    "started_at": "2026-08-31T07:31:26.957629+00:00"
+  },
+  "catalog_body_count": 3,
+  "completed_at": "2026-08-31T07:31:57.192609+00:00",
+  "dimensions_after_restart": {
+    "moon": {
+      "region_bytes": 3035136,
+      "region_file_count": 4,
+      "region_sha256": [
+        "b5624c412617dfc1a04ff0025807dea53d01f0fae446033ce50d1ea163abd5f2",
+        "9596309777c5b42e57b4157af5824e00bbf3d343638dcd1bd86ee57d2356c7ad",
+        "24bcdcca8630646add38bef5b7327c3c0499e27f9204afcdf88e0727306b06a1",
+        "595661462a39e2948e292d06f8160b2d3f5be606fb75e38c060cb5e6a47d62e0"
+      ]
+    },
+    "space": {
+      "region_bytes": 3035136,
+      "region_file_count": 4,
+      "region_sha256": [
+        "cb4c35986b04e228295120d8af857b6ba30a9c23e189b93ee5817d1e91e7ac3e",
+        "84609aa9635f37fb4303bd38abd713dac62ce71e19996b1c0b36f3034f8f961e",
+        "3438c9fa31eb77138e374860a2e312022edc7e47efb22efcb36bf073e0851558",
+        "c68223cdadda6d2489329df52609c00ae2590dfe67a32e99f5a2a2ad6218a86a"
+      ]
+    }
+  },
+  "dimensions_before_restart": {
+    "moon": {
+      "region_bytes": 3035136,
+      "region_file_count": 4,
+      "region_sha256": [
+        "89e8c366eee626175310b2c1c6db7c22f233066a030abafffcc7586543a78519",
+        "f723a3c9ca9e9e599fb0308ac362376a140f66f2f26e7872fde3f20cc0a0bbce",
+        "03de15bd0153080ad6fde4efe64f2abb8abc05acf8e2af03aa666686b6c6e2a8",
+        "d80e3fc635f8cfc8eaed8ffa4260dacd7a909bed4850cd6226108bf2513b095e"
+      ]
+    },
+    "space": {
+      "region_bytes": 3035136,
+      "region_file_count": 4,
+      "region_sha256": [
+        "cbd4221744925ebdd5001d8d8bcc1cbb171effce5b2ba13dcefeba0548952340",
+        "123276c01ebc4a0b718139558ffef05ea029ae5750667e5b5f23c8052536fc3a",
+        "c6477c88d19522f892077966149290851b4a3a24bdfcc136c2cc48d01c341e56",
+        "907c30bdd431b515544b30993d3bc2dfcb97dfb449aee4471446491dc61bc182"
+      ]
+    }
+  },
+  "fixed_level_blocks_persisted": true,
+  "invalid_reload_rejected": true,
+  "java": "17.0.8",
+  "last_valid_catalog_retained": true,
+  "port": 25586,
+  "schema_version": 1,
+  "valid_catalog_recovered": true
+}

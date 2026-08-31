@@ -1,0 +1,24 @@
+{
+  "batch": "v0.3.0-upstream-xml-fixture",
+  "status": "UPSTREAM_AR_MIT",
+  "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+  "source_branch": "1.12",
+  "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "license": "MIT",
+  "reviewed_at": "2026-08-31",
+  "reviewer": "Codex-assisted audit",
+  "files": [
+    {
+      "target_path": "src/test/resources/io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/upstream/Template-c5cd5af6.xml",
+      "source_path": "Template.xml",
+      "source_url": "https://raw.githubusercontent.com/Advanced-Rocketry/AdvancedRocketry/c5cd5af62fc07cd4e0d24f06a16033f181c47c04/Template.xml",
+      "source_sha256": "40674cb8a730e5b6baf2baa3943d34d1712f6f24ffa07db79467627b9c0176e1",
+      "target_sha256": "40674cb8a730e5b6baf2baa3943d34d1712f6f24ffa07db79467627b9c0176e1",
+      "transformation": [
+        "none; exact byte-for-byte test fixture copy",
+        "renamed to include abbreviated source commit"
+      ],
+      "distribution": "test fixture only; excluded from the release JAR"
+    }
+  ]
+}

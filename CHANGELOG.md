@@ -4,6 +4,27 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v0.3.0 — PASSED, unreleased developer preview
+
+**Status:** `PASSED` on 2026-08-31 after repeated build, automated, packaged
+client, two-player dedicated-server restart, persistence, provenance, owner
+review, and all 3/3 pull-request checks completed. No tag or public release
+exists.
+
+### Implemented player-visible result
+
+- Operators can list and validate the Earth/Moon/Space catalog.
+- Development players can enter fixed Moon and Space Levels through controlled
+  commands and return safely; rocket travel remains unavailable.
+- Discovery and first-visit state survives a dedicated-server restart.
+
+The three-body catalog is a bounded display snapshot, invalid datapack reloads
+retain the last valid catalog, and legacy XML conversion produces deterministic
+JSON plus explicit warnings without registering runtime dimensions.
+
+This milestone does not add random planets, atmosphere damage, life support,
+rockets, stations, or a custom sky renderer.
+
 ## v0.2.0 — PASSED, unreleased developer preview
 
 **Status:** `PASSED` on 2026-08-31 after repeated build, automated, packaged

@@ -66,6 +66,9 @@
 | `docs/releases/v0.2.0/` | 电解机垂直切片的产物、自动测试、客户端、专服、重启和人工验收证据 |
 | `docs/releases/v0.2.0/GATE-STATUS.md` | v0.2.0 全部 Required Gate 的接受快照与 CI 绑定 |
 | `docs/releases/v0.2.0/INSTALLATION.md` | v0.2.0 开发预览的安装、机器行为和存档边界 |
+| `docs/releases/v0.3.0/` | 天体 Codec、固定 Moon/Space、XML 导入、双客户端和重启证据 |
+| `docs/releases/v0.3.0/GATE-STATUS.md` | v0.3.0 Required Gate 审核状态与最终 CI/PR 绑定 |
+| `docs/releases/v0.3.0/INSTALLATION.md` | v0.3.0 开发预览的安装、命令、固定维度和存档边界 |
 
 ## 实施记录
 
@@ -76,6 +79,7 @@
 | `docs/work/v0.0.2-test-machine-handoff.md` | 换机继续客户端与玩家连接验收的命令和证据要求 |
 | `docs/work/v0.1.0-implementation-log.md` | 上游审计、最小资产批次、注册/DataGen 与验证记录 |
 | `docs/work/v0.2.0-implementation-log.md` | Electrolyzer 领域、Forge 适配、持久化、客户端和验收记录 |
+| `docs/work/v0.3.0-implementation-log.md` | 天体 Codec、固定维度、SavedData、XML 导入与验收进度 |
 
 ## 分版本执行文件
 

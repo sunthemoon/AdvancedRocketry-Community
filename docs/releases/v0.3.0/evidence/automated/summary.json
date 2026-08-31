@@ -1,0 +1,70 @@
+{
+  "artifact_sha256": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb",
+  "build": "1.20.1-0.3.0-dev",
+  "performance": {
+    "catalog_lookup_constant_time": true,
+    "catalog_rebuild_per_tick": false,
+    "persistent_forced_chunks": 0,
+    "snapshot_max_bytes": 98304,
+    "world_write_budget_per_travel": 100
+  },
+  "results": {
+    "celestial_identity": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "clean_builds": {
+      "byte_identical": true,
+      "result": "PASS",
+      "runs": 2
+    },
+    "client_boundary": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "datagen": {
+      "files": 7,
+      "git_diff_clean": true,
+      "result": "PASS",
+      "written": 0
+    },
+    "gametest": {
+      "failed": 0,
+      "passed": 15,
+      "result": "PASS"
+    },
+    "jar_audit": {
+      "entries": 226,
+      "findings": 0,
+      "result": "PASS"
+    },
+    "junit": {
+      "failed": 0,
+      "passed": 50,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "python": {
+      "failed": 0,
+      "passed": 580,
+      "result": "PASS",
+      "skipped": 1
+    },
+    "repository": {
+      "failed": 0,
+      "result": "PASS",
+      "warnings": 0
+    }
+  },
+  "schema_version": 1,
+  "security": {
+    "bounded_network_payload": true,
+    "bounded_saved_data": true,
+    "legacy_xml_dtd_xxe_disabled": true,
+    "operator_only_travel": true,
+    "runtime_numeric_dimension_ids": 0,
+    "server_authoritative": true
+  },
+  "tested_implementation_commit": "63d159ef3d9e489862b0d517b76bcc523df852c9",
+  "version": "v0.3.0"
+}

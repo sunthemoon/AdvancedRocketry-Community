@@ -1,0 +1,24 @@
+{
+  "bodies": [
+    {
+      "discovered_at": 6005,
+      "first_visit_at": 6005,
+      "id": "advancedrocketrycommunity:earth"
+    },
+    {
+      "discovered_at": 7377,
+      "first_visit_at": 7377,
+      "id": "advancedrocketrycommunity:moon"
+    },
+    {
+      "discovered_at": 10492,
+      "first_visit_at": 10492,
+      "id": "advancedrocketrycommunity:space"
+    }
+  ],
+  "body_count": 3,
+  "compressed_bytes": 179,
+  "schema_version": 1,
+  "source_file": "advancedrocketrycommunity_celestial.dat",
+  "source_sha256": "1a385871267e5e72a93ec6c13cdc1bd0e3414ded492152fdbaee524a51ee501e"
+}
