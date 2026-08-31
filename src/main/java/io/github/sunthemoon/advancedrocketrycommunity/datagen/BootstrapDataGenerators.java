@@ -20,17 +20,6 @@ public final class BootstrapDataGenerators {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
 
-        generator.addProvider(event.includeClient(), new ModBlockStateProvider(
-                output,
-                event.getExistingFileHelper()
-        ));
-        generator.addProvider(event.includeClient(), new ModItemModelProvider(
-                output,
-                event.getExistingFileHelper()
-        ));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider(output, "zh_cn"));
-        generator.addProvider(event.includeServer(), ModLootTableProvider.create(output));
-        generator.addProvider(event.includeServer(), new ModRecipeProvider(output));
+        generator.addProvider(event.includeServer(), new CelestialDefinitionProvider(output));
     }
 }

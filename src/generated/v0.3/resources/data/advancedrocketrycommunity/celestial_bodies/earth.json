@@ -1,0 +1,17 @@
+{
+  "atmosphere": {
+    "breathable": true,
+    "pressure": 1.0,
+    "profile": "advancedrocketrycommunity:earth",
+    "temperature_kelvin": 288.0
+  },
+  "gravity_multiplier": 1.0,
+  "id": "advancedrocketrycommunity:earth",
+  "level": "minecraft:overworld",
+  "orbit": {
+    "distance": 0,
+    "inclination_degrees": 0.0,
+    "period_ticks": 0
+  },
+  "visual_profile": "advancedrocketrycommunity:earth"
+}

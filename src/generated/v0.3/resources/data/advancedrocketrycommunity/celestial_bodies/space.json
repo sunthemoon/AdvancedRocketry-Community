@@ -1,0 +1,18 @@
+{
+  "parent": "advancedrocketrycommunity:earth",
+  "atmosphere": {
+    "breathable": false,
+    "pressure": 0.0,
+    "profile": "advancedrocketrycommunity:vacuum",
+    "temperature_kelvin": 3.0
+  },
+  "gravity_multiplier": 0.0,
+  "id": "advancedrocketrycommunity:space",
+  "level": "advancedrocketrycommunity:space",
+  "orbit": {
+    "distance": 1,
+    "inclination_degrees": 0.0,
+    "period_ticks": 1
+  },
+  "visual_profile": "advancedrocketrycommunity:space"
+}
