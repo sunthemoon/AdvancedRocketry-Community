@@ -11,11 +11,11 @@
   "logs": [
     {
       "file": "docs/releases/v0.5.0/evidence/client/logs/client.txt",
-      "sha256": "b5641c9c61413f53d212fd9593d38c82e04a93d61bcc7eae15954561a9cc1f30"
+      "sha256": "68ba75993cab30a439b0f1b5f5dd3565169b5b783a48ad4b039b0939dc41a2bf"
     },
     {
       "file": "docs/releases/v0.5.0/evidence/client/logs/server.txt",
-      "sha256": "4847c530ceec88fa1d7ef31e634ee13869aa474d7fd56a9289ab7885ad4a5dee"
+      "sha256": "50feacc9ae9fd5309530fb6786bb5d4cfb2d40522f14adf3115f86e6f17e2058"
     }
   ],
   "observations": {
