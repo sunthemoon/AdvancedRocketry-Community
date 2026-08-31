@@ -95,6 +95,25 @@ class VolumeScanCoordinatorTest {
         assertEquals(2, coordinator.drainCompleted().get(0).sealedVolume().orElseThrow().cells().size());
     }
 
+    @Test
+    void dirtyCancellationAndChunkResumeRemainBounded() {
+        VolumeScanCoordinator coordinator = new VolumeScanCoordinator(4, 16);
+        VolumePosition first = new VolumePosition(0, 0, 0);
+        VolumePosition second = new VolumePosition(32, 0, 0);
+        coordinator.schedule(first);
+        coordinator.schedule(second);
+        coordinator.tick(position -> CellObservation.UNLOADED, 2);
+
+        assertEquals(java.util.Set.of(first), coordinator.cancelAround(java.util.Set.of(first)));
+        assertEquals(1, coordinator.activeTaskCount());
+        assertEquals(1, coordinator.resumePendingWhere(position -> position.x() >> 4 == 2));
+        assertTrue(coordinator.outcomeForSeed(second).isPresent());
+
+        coordinator.clear();
+        assertEquals(0, coordinator.activeTaskCount());
+        assertFalse(coordinator.taskForSeed(second).isPresent());
+    }
+
     private static int runUntilIdle(
             VolumeScanCoordinator coordinator,
             VolumeWorldView world,

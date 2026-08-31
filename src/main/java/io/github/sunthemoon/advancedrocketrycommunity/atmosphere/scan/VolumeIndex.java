@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /** Bounded access-ordered index; eviction and invalidation always fail closed. */
 public final class VolumeIndex {
@@ -83,6 +84,20 @@ public final class VolumeIndex {
             VolumeId id = cells.get(position);
             if (id != null) {
                 invalidated.add(id);
+            }
+        }
+        for (VolumeId id : invalidated) {
+            remove(id);
+        }
+        return Set.copyOf(invalidated);
+    }
+
+    public Set<VolumeId> invalidateWhere(Predicate<VolumePosition> predicate) {
+        Objects.requireNonNull(predicate, "predicate");
+        Set<VolumeId> invalidated = new HashSet<>();
+        for (Map.Entry<VolumePosition, VolumeId> entry : cells.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                invalidated.add(entry.getValue());
             }
         }
         for (VolumeId id : invalidated) {

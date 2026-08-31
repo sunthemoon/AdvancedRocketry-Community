@@ -39,7 +39,6 @@ public final class ModBlocks {
             "oxygen_vent",
             () -> new OxygenVentBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
-                    .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)
                     .lightLevel(state -> state.getValue(OxygenVentBlock.LIT) ? 8 : 0)
                     .sound(SoundType.METAL))

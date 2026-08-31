@@ -42,6 +42,7 @@ public final class VentSupplyEngine {
                 case OPEN -> VentOperatingStatus.OPEN;
                 case TOO_LARGE -> VentOperatingStatus.TOO_LARGE;
                 case PENDING -> VentOperatingStatus.PENDING;
+                case BUSY -> VentOperatingStatus.BUSY;
                 case CANCELLED -> VentOperatingStatus.CANCELLED;
                 case SEALED -> throw new IllegalStateException("unreachable");
             };

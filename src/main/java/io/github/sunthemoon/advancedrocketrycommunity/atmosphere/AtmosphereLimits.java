@@ -9,6 +9,8 @@ public final class AtmosphereLimits {
     public static final int MAX_INDEXED_VOLUMES = 128;
     public static final int MAX_INDEXED_CELLS = 65_536;
     public static final int MAX_DIRTY_POSITIONS = 8_192;
+    public static final int MAX_DIRTY_POSITIONS_PER_TICK = 256;
+    public static final int MAX_TRACKED_VENTS = 1_024;
 
     public static final int OXYGEN_UNITS_PER_CANISTER = 1_000;
     public static final int SUIT_OXYGEN_CAPACITY = 2_000;

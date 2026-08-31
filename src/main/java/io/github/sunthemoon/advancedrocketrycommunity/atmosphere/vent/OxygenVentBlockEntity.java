@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupply
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupplyInput;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupplyResult;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanOutcome;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import javax.annotation.Nonnull;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -65,6 +67,9 @@ public final class OxygenVentBlockEntity extends BlockEntity {
             OxygenVentBlockEntity vent
     ) {
         vent.processAutomationCanister();
+        if (level instanceof ServerLevel serverLevel) {
+            AtmosphereRuntime.observe(serverLevel, vent);
+        }
     }
 
     public VentSupplyResult applySupply(VolumeScanOutcome scanOutcome, boolean electedProvider) {
@@ -288,6 +293,13 @@ public final class OxygenVentBlockEntity extends BlockEntity {
 
     public VentOperatingStatus status() {
         return status;
+    }
+
+    public boolean canSupplyAtmosphere() {
+        return !futureSchemaBlocked
+                && !invalidDataBlocked
+                && oxygenUnits > 0
+                && energy.getEnergyStored() >= AtmosphereLimits.VENT_ENERGY_PER_TICK;
     }
 
     public IItemHandler itemHandler() {

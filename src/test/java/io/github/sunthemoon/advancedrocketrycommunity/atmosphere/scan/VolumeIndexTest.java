@@ -57,6 +57,22 @@ class VolumeIndexTest {
         )));
     }
 
+    @Test
+    void predicateInvalidationRemovesOnlyIntersectingVolumes() {
+        VolumeIndex index = new VolumeIndex(3, 8);
+        AtmosphereVolume first = volume(new VolumePosition(1, 0, 1));
+        AtmosphereVolume second = volume(new VolumePosition(17, 0, 1));
+        index.put(first);
+        index.put(second);
+
+        assertEquals(
+                Set.of(first.id()),
+                index.invalidateWhere(position -> position.x() >> 4 == 0)
+        );
+        assertFalse(index.find(first.id()).isPresent());
+        assertTrue(index.find(second.id()).isPresent());
+    }
+
     private static AtmosphereVolume volume(VolumePosition... positions) {
         Set<VolumePosition> cells = Set.of(positions);
         VolumeBounds bounds = null;

@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -73,7 +75,9 @@ public final class OxygenVentBlock extends BaseEntityBlock {
         }
         player.displayClientMessage(Component.translatable(
                 "message.advancedrocketrycommunity.vent.status",
-                vent.status().diagnosticKey(),
+                Component.translatable(
+                        "status.advancedrocketrycommunity.vent." + vent.status().diagnosticKey()
+                ),
                 vent.oxygenUnits(),
                 vent.energyStored()
         ), true);
@@ -83,6 +87,9 @@ public final class OxygenVentBlock extends BaseEntityBlock {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos position, BlockState newState, boolean moved) {
         if (!level.isClientSide && !state.is(newState.getBlock())) {
+            if (level instanceof ServerLevel serverLevel) {
+                AtmosphereRuntime.remove(serverLevel, position);
+            }
             BlockEntity blockEntity = level.getBlockEntity(position);
             if (blockEntity instanceof OxygenVentBlockEntity vent) {
                 SimpleContainer drops = new SimpleContainer(OxygenVentBlockEntity.SLOT_COUNT);

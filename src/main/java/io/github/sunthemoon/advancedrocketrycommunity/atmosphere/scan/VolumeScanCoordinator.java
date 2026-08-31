@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /** Round-robin task coordinator with collision-based connected-component merge. */
 public final class VolumeScanCoordinator {
@@ -152,6 +153,85 @@ public final class VolumeScanCoordinator {
         return id == null || !tasks.containsKey(id) ? OptionalLong.empty() : OptionalLong.of(id);
     }
 
+    public Optional<VolumeScanOutcome> outcomeForSeed(VolumePosition seed) {
+        Long id = seedOwners.get(seed);
+        CoordinatedTask task = id == null ? null : tasks.get(id);
+        return task == null ? Optional.empty() : Optional.of(task.task.outcome());
+    }
+
+    public boolean isScanningPosition(VolumePosition position) {
+        Objects.requireNonNull(position, "position");
+        return cellOwners.containsKey(position) || seedOwners.containsKey(position);
+    }
+
+    public Set<VolumePosition> cancelAround(Set<VolumePosition> positions) {
+        Objects.requireNonNull(positions, "positions");
+        Set<Long> taskIds = new LinkedHashSet<>();
+        for (VolumePosition position : positions) {
+            Long seedOwner = seedOwners.get(position);
+            if (seedOwner != null) {
+                taskIds.add(seedOwner);
+            }
+            Long cellOwner = cellOwners.get(position);
+            if (cellOwner != null) {
+                taskIds.add(cellOwner);
+            }
+        }
+        return cancelTasks(taskIds);
+    }
+
+    public Set<VolumePosition> cancelWhere(Predicate<VolumePosition> predicate) {
+        Objects.requireNonNull(predicate, "predicate");
+        Set<Long> taskIds = new LinkedHashSet<>();
+        for (Map.Entry<VolumePosition, Long> entry : seedOwners.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                taskIds.add(entry.getValue());
+            }
+        }
+        for (Map.Entry<VolumePosition, Long> entry : cellOwners.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                taskIds.add(entry.getValue());
+            }
+        }
+        return cancelTasks(taskIds);
+    }
+
+    public int resumePendingWhere(Predicate<VolumePosition> predicate) {
+        Objects.requireNonNull(predicate, "predicate");
+        int resumed = 0;
+        for (CoordinatedTask task : tasks.values()) {
+            Optional<VolumePosition> pending = task.task.snapshot().pendingPosition();
+            if (pending.isPresent() && predicate.test(pending.orElseThrow())
+                    && task.task.resumePending()) {
+                resumed++;
+            }
+        }
+        return resumed;
+    }
+
+    public void clear() {
+        for (CoordinatedTask task : tasks.values()) {
+            task.task.cancel();
+        }
+        tasks.clear();
+        seedOwners.clear();
+        cellOwners.clear();
+        completed.clear();
+        roundRobinOffset = 0;
+    }
+
+    private Set<VolumePosition> cancelTasks(Set<Long> taskIds) {
+        Set<VolumePosition> cancelledSeeds = new LinkedHashSet<>();
+        for (Long taskId : taskIds) {
+            CoordinatedTask task = tasks.get(taskId);
+            if (task != null) {
+                cancelledSeeds.addAll(task.seeds);
+                removeTask(taskId, false, 0L);
+            }
+        }
+        return Set.copyOf(cancelledSeeds);
+    }
+
     private MergeResult claim(long currentId, Set<VolumePosition> newCells) {
         int merged = 0;
         for (VolumePosition position : newCells) {
@@ -220,11 +300,8 @@ public final class VolumeScanCoordinator {
                 seedOwners.put(seed, replacementId);
             }
         }
-        Iterator<Map.Entry<VolumePosition, Long>> iterator = cellOwners.entrySet().iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().getValue() == id) {
-                iterator.remove();
-            }
+        for (VolumePosition position : removed.task.snapshot().cells()) {
+            cellOwners.remove(position, id);
         }
     }
 

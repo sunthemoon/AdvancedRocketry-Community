@@ -7,6 +7,7 @@ public enum VolumeScanOutcome {
     OPEN(true, "open"),
     TOO_LARGE(true, "too_large"),
     PENDING(false, "pending_unloaded_chunk"),
+    BUSY(true, "busy"),
     CANCELLED(true, "cancelled");
 
     private final boolean terminal;

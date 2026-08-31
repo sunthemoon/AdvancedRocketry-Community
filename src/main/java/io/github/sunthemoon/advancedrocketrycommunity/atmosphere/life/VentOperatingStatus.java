@@ -9,6 +9,7 @@ public enum VentOperatingStatus {
     OPEN("open"),
     TOO_LARGE("too_large"),
     PENDING("pending_unloaded_chunk"),
+    BUSY("busy"),
     CANCELLED("cancelled"),
     INVALID_DATA("invalid_data"),
     UNSUPPORTED_DATA("unsupported_data");

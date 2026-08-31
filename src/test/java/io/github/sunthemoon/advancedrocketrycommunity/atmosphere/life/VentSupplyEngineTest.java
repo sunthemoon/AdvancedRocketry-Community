@@ -52,6 +52,7 @@ class VentSupplyEngineTest {
         assertEquals(VentOperatingStatus.OPEN, status(VolumeScanOutcome.OPEN, 100, 100));
         assertEquals(VentOperatingStatus.TOO_LARGE, status(VolumeScanOutcome.TOO_LARGE, 100, 100));
         assertEquals(VentOperatingStatus.PENDING, status(VolumeScanOutcome.PENDING, 100, 100));
+        assertEquals(VentOperatingStatus.BUSY, status(VolumeScanOutcome.BUSY, 100, 100));
         assertEquals(VentOperatingStatus.SCANNING, status(VolumeScanOutcome.SCANNING, 100, 100));
     }
 
