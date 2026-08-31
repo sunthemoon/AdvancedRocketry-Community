@@ -16,6 +16,8 @@ public final class RocketLimits {
     public static final int MAX_VISUAL_SNAPSHOT_BYTES = 524_288;
     public static final int MAX_VISUAL_CHUNK_BYTES = 32_768;
     public static final int MAX_VISUAL_REASSEMBLIES = 8;
+    public static final int MAX_SCAN_INSPECTIONS_PER_TICK = 256;
+    public static final int MAX_SCAN_INSPECTIONS = MAX_BLOCKS * 6 + 1;
 
     private RocketLimits() {
     }

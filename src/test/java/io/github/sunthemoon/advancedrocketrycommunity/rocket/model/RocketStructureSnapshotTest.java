@@ -18,7 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
 final class RocketStructureSnapshotTest {
-    private static final ResourceLocation OVERWORLD = new ResourceLocation("minecraft", "overworld");
+    private static final ResourceLocation OVERWORLD = ResourceLocation.tryParse("minecraft:overworld");
     private static final UUID SNAPSHOT_ID = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 
     @Test
@@ -59,10 +59,10 @@ final class RocketStructureSnapshotTest {
         CompoundTag data = new CompoundTag();
         data.putInt("Count", 3);
         RocketBlockEntityPayload payload = new RocketBlockEntityPayload(
-                new ResourceLocation("advancedrocketrycommunity", "vanilla_container"),
+                ResourceLocation.tryParse("advancedrocketrycommunity:vanilla_container"),
                 data
         );
-        RocketBlockState state = new RocketBlockState(new ResourceLocation("minecraft", "chest"), properties);
+        RocketBlockState state = new RocketBlockState(ResourceLocation.tryParse("minecraft:chest"), properties);
         RocketBlock block = new RocketBlock(new RocketPosition(0, 0, 0), state, payload);
         RocketStructureSnapshot snapshot = snapshot(
                 List.of(block),
@@ -291,7 +291,7 @@ final class RocketStructureSnapshotTest {
     ) {
         return new RocketBlock(
                 new RocketPosition(x, y, z),
-                new RocketBlockState(new ResourceLocation(id), properties)
+                new RocketBlockState(ResourceLocation.tryParse(id), properties)
         );
     }
 
@@ -304,14 +304,14 @@ final class RocketStructureSnapshotTest {
     ) {
         return new RocketBlock(
                 new RocketPosition(x, y, z),
-                new RocketBlockState(new ResourceLocation("minecraft", "chest"), properties),
+                new RocketBlockState(ResourceLocation.tryParse("minecraft:chest"), properties),
                 payload(data)
         );
     }
 
     private static RocketBlockEntityPayload payload(CompoundTag data) {
         return new RocketBlockEntityPayload(
-                new ResourceLocation("advancedrocketrycommunity", "vanilla_container"),
+                ResourceLocation.tryParse("advancedrocketrycommunity:vanilla_container"),
                 data
         );
     }

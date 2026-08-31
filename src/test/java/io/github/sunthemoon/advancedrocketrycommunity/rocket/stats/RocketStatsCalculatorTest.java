@@ -64,7 +64,7 @@ final class RocketStatsCalculatorTest {
     }
 
     private static RocketBlock block(String id, CompoundTag blockEntityData) {
-        RocketBlockState state = new RocketBlockState(new ResourceLocation(id), Map.of());
+        RocketBlockState state = new RocketBlockState(ResourceLocation.tryParse(id), Map.of());
         if (blockEntityData == null) {
             return new RocketBlock(new RocketPosition(0, 0, id.hashCode()), state);
         }
@@ -72,7 +72,7 @@ final class RocketStatsCalculatorTest {
                 new RocketPosition(0, 0, id.hashCode()),
                 state,
                 new RocketBlockEntityPayload(
-                        new ResourceLocation("advancedrocketrycommunity", "test"),
+                        ResourceLocation.tryParse("advancedrocketrycommunity:test"),
                         blockEntityData
                 )
         );
