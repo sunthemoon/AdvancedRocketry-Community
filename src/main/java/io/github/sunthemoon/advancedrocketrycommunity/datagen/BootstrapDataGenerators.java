@@ -21,5 +21,6 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
 
         generator.addProvider(event.includeServer(), new CelestialDefinitionProvider(output));
+        generator.addProvider(event.includeServer(), new FixedDimensionProvider(output));
     }
 }

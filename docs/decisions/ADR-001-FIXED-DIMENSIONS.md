@@ -60,7 +60,7 @@ No arbitrary runtime Level registration before a post-v1.0 ADR and prototype.
 
 - [x] Codec round trip and bounded field tests
 - [x] parent existence, duplicate ID, and cycle rejection
-- [ ] Moon/Space keys available on dedicated GameTest server
+- [x] Moon/Space keys available on dedicated GameTest server
 - [ ] SavedData restart evidence
 - [ ] reload preserves the last valid catalog on invalid input
 - [ ] static scan finds no persisted numeric dimension identity

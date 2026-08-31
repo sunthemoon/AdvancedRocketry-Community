@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -81,6 +82,82 @@ public final class BootstrapGameTests {
                 "Celestial state did not survive an NBT round trip"
         );
         helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void fixedMoonAndSpaceLevelsResolveWithStableTypes(GameTestHelper helper) {
+        net.minecraft.server.MinecraftServer server = helper.getLevel().getServer();
+        net.minecraft.server.level.ServerLevel moon = server.getLevel(CelestialIds.MOON_LEVEL);
+        net.minecraft.server.level.ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
+
+        helper.assertTrue(moon != null, "Fixed Moon Level did not load");
+        helper.assertTrue(space != null, "Fixed Space Level did not load");
+        helper.assertTrue(
+                CelestialIds.MOON_LEVEL.equals(moon.dimension()),
+                "Moon Level key changed"
+        );
+        helper.assertTrue(
+                CelestialIds.SPACE_LEVEL.equals(space.dimension()),
+                "Space Level key changed"
+        );
+        helper.assertTrue(
+                CelestialIds.MOON_TYPE.equals(moon.dimensionTypeId()),
+                "Moon dimension type key changed"
+        );
+        helper.assertTrue(
+                CelestialIds.SPACE_TYPE.equals(space.dimensionTypeId()),
+                "Space dimension type key changed"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 80)
+    public static void celestialCommandsReachFixedSafeDestinations(GameTestHelper helper) {
+        net.minecraft.server.MinecraftServer server = helper.getLevel().getServer();
+        net.minecraftforge.common.util.FakePlayer player =
+                net.minecraftforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel());
+        com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher =
+                server.getCommands().getDispatcher();
+        try {
+            int validated = dispatcher.execute(
+                    "arce celestial validate",
+                    player.createCommandSourceStack().withPermission(2).withSuppressedOutput()
+            );
+            int listed = dispatcher.execute(
+                    "arce celestial list",
+                    player.createCommandSourceStack().withPermission(2).withSuppressedOutput()
+            );
+            int moonTravel = dispatcher.execute(
+                    "arce celestial goto moon",
+                    player.createCommandSourceStack().withPermission(2).withSuppressedOutput()
+            );
+
+            helper.assertTrue(validated == 3, "Celestial validate command did not report three bodies");
+            helper.assertTrue(listed == 3, "Celestial list command did not report three bodies");
+            helper.assertTrue(moonTravel == 1, "Moon travel command failed");
+            helper.assertTrue(
+                    CelestialIds.MOON_LEVEL.equals(player.serverLevel().dimension()),
+                    "Operator travel did not move the player to Moon"
+            );
+            BlockPos floor = SafeCelestialTravel.FIXED_FEET_POSITION.below();
+            helper.assertTrue(
+                    player.serverLevel().getBlockState(floor).is(net.minecraft.world.level.block.Blocks.SEA_LANTERN),
+                    "Moon safe platform center is missing"
+            );
+
+            int earthTravel = dispatcher.execute(
+                    "arce celestial goto earth",
+                    player.createCommandSourceStack().withPermission(2).withSuppressedOutput()
+            );
+            helper.assertTrue(earthTravel == 1, "Earth return command failed");
+            helper.assertTrue(
+                    net.minecraft.world.level.Level.OVERWORLD.equals(player.serverLevel().dimension()),
+                    "Operator travel did not return the player to Overworld"
+            );
+            helper.succeed();
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException exception) {
+            helper.fail("Celestial command failed: " + exception.getMessage());
+        }
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)

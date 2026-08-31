@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 
 /** Stable logical-body and fixed-Level identities for the v0.3.0 slice. */
 public final class CelestialIds {
@@ -18,6 +19,14 @@ public final class CelestialIds {
     );
     public static final ResourceKey<Level> SPACE_LEVEL = ResourceKey.create(
             Registries.DIMENSION,
+            ModIdentity.id("space")
+    );
+    public static final ResourceKey<DimensionType> MOON_TYPE = ResourceKey.create(
+            Registries.DIMENSION_TYPE,
+            ModIdentity.id("moon")
+    );
+    public static final ResourceKey<DimensionType> SPACE_TYPE = ResourceKey.create(
+            Registries.DIMENSION_TYPE,
             ModIdentity.id("space")
     );
 
