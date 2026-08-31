@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.entity;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotDecodeResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
@@ -31,6 +32,7 @@ public final class RocketEntity extends Entity {
     private UUID assemblyTransactionId;
     private UUID ownerId;
     private CompoundTag preservedBlockedData;
+    private boolean activeStateLogged;
 
     public RocketEntity(EntityType<? extends RocketEntity> entityType, Level level) {
         super(entityType, level);
@@ -149,6 +151,28 @@ public final class RocketEntity extends Entity {
         super.tick();
         setNoGravity(true);
         setDeltaMovement(Vec3.ZERO);
+        if (!level().isClientSide && !activeStateLogged) {
+            activeStateLogged = true;
+            AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_ROCKET_ENTITY_ACTIVE entity={} operational={} snapshot={}",
+                    getUUID(),
+                    operational(),
+                    snapshot().map(RocketStructureSnapshot::contentHash).orElse("none")
+            );
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!level().isClientSide) {
+            AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_ROCKET_ENTITY_REMOVED entity={} reason={} operational={}",
+                    getUUID(),
+                    reason,
+                    operational()
+            );
+        }
+        super.remove(reason);
     }
 
     @Override

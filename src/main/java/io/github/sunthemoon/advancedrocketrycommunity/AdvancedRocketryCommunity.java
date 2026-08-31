@@ -18,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualNetwork;
@@ -60,6 +61,7 @@ public final class AdvancedRocketryCommunity {
         rocketManager = new RocketManager();
         RocketRuntime.install(rocketManager);
         MinecraftForge.EVENT_BUS.addListener(rocketManager::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(new RocketCommands(rocketManager)::register);
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
         MinecraftForge.EVENT_BUS.addListener(rocketVisualSynchronizer::onStartTracking);

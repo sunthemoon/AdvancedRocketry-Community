@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
@@ -24,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -44,6 +46,7 @@ public final class RocketManager implements RocketOperationService {
     private final RocketTransactionRecoveryService recovery;
     private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
+    private boolean recoverySuppressedForReleaseTest;
 
     public RocketManager() {
         this(RocketBlockEntityAdapters.defaults());
@@ -78,31 +81,55 @@ public final class RocketManager implements RocketOperationService {
             return;
         }
 
-        AssemblerKey key = new AssemblerKey(level.dimension(), immutablePosition);
-        if (pending.containsKey(key)) {
-            notify(player, RocketValidationCode.REGION_BUSY, "an assembler scan is already active");
-            return;
-        }
-        if (pending.size() >= RocketLimits.MAX_ACTIVE_TRANSACTIONS) {
-            notify(player, RocketValidationCode.OPERATION_LEDGER_FULL, "too many rocket scans are active");
-            return;
-        }
-
-        BlockPos seed = immutablePosition.above();
-        RocketStructureScanTask task = new RocketStructureScanTask(
-                new ServerLevelRocketScanWorld(level, adapters),
-                level.dimension().location(),
-                toRocketPosition(seed),
-                UUID.randomUUID(),
-                level.getGameTime()
+        RocketValidationCode queued = enqueueScan(
+                level,
+                immutablePosition,
+                player.getUUID(),
+                player.getUUID(),
+                assemble
         );
-        pending.put(key, new PendingScan(task, player.getUUID(), assemble));
-        scanOrder.addLast(key);
-        update(assembler, RocketValidationCode.SCAN_IN_PROGRESS, null, "queued", level);
+        if (queued != RocketValidationCode.SCAN_IN_PROGRESS) {
+            notify(player, queued, "assembler scan was not queued");
+            return;
+        }
         player.displayClientMessage(
                 Component.translatable("message.advancedrocketrycommunity.rocket.scan_started"),
                 true
         );
+    }
+
+    /** Queues an operator-authorized scan without inventing a fake player identity. */
+    public RocketValidationCode requestAdminAssembler(
+            ServerLevel level,
+            BlockPos assemblerPosition,
+            UUID ownerId,
+            boolean assemble
+    ) {
+        Objects.requireNonNull(level, "level");
+        Objects.requireNonNull(assemblerPosition, "assemblerPosition");
+        Objects.requireNonNull(ownerId, "ownerId");
+        BlockPos immutablePosition = assemblerPosition.immutable();
+        if (!level.hasChunkAt(immutablePosition) || !level.hasChunkAt(immutablePosition.above())) {
+            return RocketValidationCode.UNLOADED_CHUNK;
+        }
+        RocketAssemblerBlockEntity assembler = assembler(level, immutablePosition);
+        if (assembler == null) {
+            return RocketValidationCode.ENTITY_STATE_INVALID;
+        }
+        if (assembler.blockedByFutureData()) {
+            return RocketValidationCode.UNSUPPORTED_SCHEMA;
+        }
+        RocketValidationCode result = enqueueScan(level, immutablePosition, ownerId, null, assemble);
+        if (result == RocketValidationCode.SCAN_IN_PROGRESS) {
+            AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_ROCKET_SCAN_QUEUED operation={} dimension={} assembler={} owner={}",
+                    assemble ? "assemble" : "validate",
+                    level.dimension().location(),
+                    immutablePosition.toShortString(),
+                    ownerId
+            );
+        }
+        return result;
     }
 
     @Override
@@ -162,7 +189,13 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        recovery.recoverOne(server);
+        if (!recoverySuppressedForReleaseTest) {
+            RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server);
+            if (outcome == RocketTransactionRecoveryService.Outcome.RECOVERED
+                    || outcome == RocketTransactionRecoveryService.Outcome.CONFLICT) {
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_RECOVERY outcome={}", outcome);
+            }
+        }
         while (!scanOrder.isEmpty()) {
             AssemblerKey key = scanOrder.removeFirst();
             PendingScan active = pending.get(key);
@@ -185,6 +218,15 @@ public final class RocketManager implements RocketOperationService {
         scanOrder.clear();
         locks.clear();
         ledger.clear();
+        recoverySuppressedForReleaseTest = false;
+    }
+
+    /** Prevents the deliberately staged release-test record from recovering before shutdown. */
+    public void suppressRecoveryUntilStopForReleaseTest() {
+        if (!Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks")) {
+            throw new IllegalStateException("Rocket release-test hooks are disabled");
+        }
+        recoverySuppressedForReleaseTest = true;
     }
 
     public int pendingScans() {
@@ -200,15 +242,18 @@ public final class RocketManager implements RocketOperationService {
         if (assembler == null || assembler.blockedByFutureData()) {
             return false;
         }
-        ServerPlayer player = server.getPlayerList().getPlayer(active.playerId());
-        if (player == null || player.level() != level) {
-            update(assembler, RocketValidationCode.UNAUTHORIZED, null, "requesting player disconnected or changed dimension", level);
-            return false;
-        }
-        if (!withinRange(player, key.position())) {
-            update(assembler, RocketValidationCode.OUT_OF_RANGE, null, "requesting player left interaction range", level);
-            notify(player, RocketValidationCode.OUT_OF_RANGE, "assembler scan cancelled");
-            return false;
+        ServerPlayer player = null;
+        if (active.playerId().isPresent()) {
+            player = server.getPlayerList().getPlayer(active.playerId().orElseThrow());
+            if (player == null || player.level() != level) {
+                update(assembler, RocketValidationCode.UNAUTHORIZED, null, "requesting player disconnected or changed dimension", level);
+                return false;
+            }
+            if (!withinRange(player, key.position())) {
+                update(assembler, RocketValidationCode.OUT_OF_RANGE, null, "requesting player left interaction range", level);
+                notify(player, RocketValidationCode.OUT_OF_RANGE, "assembler scan cancelled");
+                return false;
+            }
         }
 
         RocketScanResult result = active.task().step(RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK);
@@ -228,34 +273,44 @@ public final class RocketManager implements RocketOperationService {
             RocketValidationIssue issue = result.issues().get(0);
             String detail = issueDetail(issue);
             update(assembler, issue.code(), result.stats().orElse(null), detail, level);
-            notify(player, issue.code(), detail);
+            if (player != null) {
+                notify(player, issue.code(), detail);
+            }
+            logScanResult(level, key.position(), active, issue.code(), detail, null);
             return false;
         }
 
         RocketStructureSnapshot snapshot = result.snapshot().orElseThrow();
         update(assembler, RocketValidationCode.SUCCESS, snapshot.stats(), "validated " + snapshot.contentHash(), level);
         if (!active.assemble()) {
-            notifyStats(player, snapshot, "validated");
+            if (player != null) {
+                notifyStats(player, snapshot, "validated");
+            }
+            logScanResult(level, key.position(), active, RocketValidationCode.SUCCESS, "validated", snapshot);
             return false;
         }
         RocketTransactionSavedData savedData = RocketTransactionSavedData.get(server);
         if (!savedData.operational()) {
             update(assembler, RocketValidationCode.UNSUPPORTED_SCHEMA, snapshot.stats(), "transaction journal is blocked", level);
-            notify(player, RocketValidationCode.UNSUPPORTED_SCHEMA, "transaction journal is blocked by unsupported data");
+            if (player != null) {
+                notify(player, RocketValidationCode.UNSUPPORTED_SCHEMA, "transaction journal is blocked by unsupported data");
+            }
             return false;
         }
         if (hasPendingRecovery(savedData, snapshot)) {
             update(assembler, RocketValidationCode.REGION_BUSY, snapshot.stats(), "unfinished transaction owns the region", level);
-            notify(player, RocketValidationCode.REGION_BUSY, "an unfinished transaction still owns this region");
+            if (player != null) {
+                notify(player, RocketValidationCode.REGION_BUSY, "an unfinished transaction still owns this region");
+            }
             return false;
         }
 
         UUID transactionId = UUID.randomUUID();
         RocketTransactionResult transaction = new RocketAssemblyTransaction(
-                new ServerLevelRocketTransactionWorld(level, adapters, player.getUUID()),
+                new ServerLevelRocketTransactionWorld(level, adapters, active.ownerId()),
                 locks,
                 ledger,
-                savedData.journalFor(snapshot, player.getUUID())
+                savedData.journalFor(snapshot, active.ownerId())
         ).execute(transactionId, snapshot);
         reportTransaction(level, snapshot, player, transaction, "assembly");
         return false;
@@ -283,10 +338,70 @@ public final class RocketManager implements RocketOperationService {
             update(assembler, result.code(), snapshot.stats(), detail, level);
         }
         if (result.success()) {
-            notifyStats(player, snapshot, operation + " committed");
-        } else {
+            if (player != null) {
+                notifyStats(player, snapshot, operation + " committed");
+            }
+        } else if (player != null) {
             notify(player, result.code(), detail);
         }
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_ROCKET_TRANSACTION operation={} code={} blocks={} snapshot={} entity={}",
+                operation,
+                result.code(),
+                result.changedBlocks(),
+                snapshot.contentHash(),
+                result.rocketEntityId().map(UUID::toString).orElse("none")
+        );
+    }
+
+    private RocketValidationCode enqueueScan(
+            ServerLevel level,
+            BlockPos assemblerPosition,
+            UUID ownerId,
+            UUID playerId,
+            boolean assemble
+    ) {
+        AssemblerKey key = new AssemblerKey(level.dimension(), assemblerPosition);
+        if (pending.containsKey(key)) {
+            return RocketValidationCode.REGION_BUSY;
+        }
+        if (pending.size() >= RocketLimits.MAX_ACTIVE_TRANSACTIONS) {
+            return RocketValidationCode.OPERATION_LEDGER_FULL;
+        }
+        RocketStructureScanTask task = new RocketStructureScanTask(
+                new ServerLevelRocketScanWorld(level, adapters),
+                level.dimension().location(),
+                toRocketPosition(assemblerPosition.above()),
+                UUID.randomUUID(),
+                level.getGameTime()
+        );
+        pending.put(key, new PendingScan(task, ownerId, Optional.ofNullable(playerId), assemble));
+        scanOrder.addLast(key);
+        RocketAssemblerBlockEntity assembler = assembler(level, assemblerPosition);
+        if (assembler != null) {
+            update(assembler, RocketValidationCode.SCAN_IN_PROGRESS, null, "queued", level);
+        }
+        return RocketValidationCode.SCAN_IN_PROGRESS;
+    }
+
+    private static void logScanResult(
+            ServerLevel level,
+            BlockPos assemblerPosition,
+            PendingScan active,
+            RocketValidationCode code,
+            String detail,
+            RocketStructureSnapshot snapshot
+    ) {
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_ROCKET_SCAN operation={} code={} dimension={} assembler={} blocks={} snapshot={} detail={}",
+                active.assemble() ? "assemble" : "validate",
+                code,
+                level.dimension().location(),
+                assemblerPosition.toShortString(),
+                snapshot == null ? 0 : snapshot.stats().blockCount(),
+                snapshot == null ? "none" : snapshot.contentHash(),
+                detail
+        );
     }
 
     private static RocketValidationCode validateAssemblerRequest(
@@ -388,9 +503,15 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
-    private record PendingScan(RocketStructureScanTask task, UUID playerId, boolean assemble) {
+    private record PendingScan(
+            RocketStructureScanTask task,
+            UUID ownerId,
+            Optional<UUID> playerId,
+            boolean assemble
+    ) {
         private PendingScan {
             Objects.requireNonNull(task, "task");
+            Objects.requireNonNull(ownerId, "ownerId");
             Objects.requireNonNull(playerId, "playerId");
         }
     }

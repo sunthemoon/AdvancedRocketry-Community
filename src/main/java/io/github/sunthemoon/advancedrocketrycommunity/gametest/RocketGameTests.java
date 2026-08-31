@@ -14,14 +14,20 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEn
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketAssemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketDisassemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegionLockManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionJournal;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -329,6 +335,64 @@ public final class RocketGameTests {
                 "Unloaded scan returned " + result.issues().get(0).code()
         );
         helper.assertTrue(!level.hasChunkAt(far), "Rocket scan force-loaded a chunk");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void adminManagerAssemblyAndRecoveryUseServerAuthority(GameTestHelper helper) {
+        BlockPos assemblerPosition = new BlockPos(3, 1, 3);
+        BlockPos rocketOrigin = assemblerPosition.above();
+        helper.setBlock(assemblerPosition, ModBlocks.ROCKET_ASSEMBLER.get());
+        placeLegalRocket(helper, rocketOrigin, true);
+        ChestBlockEntity sourceChest = (ChestBlockEntity) helper.getBlockEntity(rocketOrigin.east());
+        sourceChest.setItem(0, new ItemStack(Items.DIAMOND, 17));
+        UUID ownerId = UUID.randomUUID();
+        ServerLevel level = helper.getLevel();
+        RocketManager manager = new RocketManager();
+
+        RocketValidationCode queued = manager.requestAdminAssembler(
+                level,
+                helper.absolutePos(assemblerPosition),
+                ownerId,
+                true
+        );
+        helper.assertTrue(queued == RocketValidationCode.SCAN_IN_PROGRESS,
+                "Admin assembly was not queued: " + queued);
+        manager.tick(level.getServer());
+
+        BlockPos absoluteOrigin = helper.absolutePos(rocketOrigin);
+        var rockets = level.getEntitiesOfClass(
+                RocketEntity.class,
+                new AABB(absoluteOrigin).inflate(3.0D)
+        );
+        helper.assertTrue(rockets.size() == 1, "Manager did not create exactly one RocketEntity");
+        RocketEntity rocket = rockets.get(0);
+        RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
+        RocketTransactionSavedData savedData = RocketTransactionSavedData.get(level.getServer());
+        RocketTransactionRecord stale = new RocketTransactionRecord(
+                rocket.assemblyTransactionId().orElseThrow(),
+                RocketTransactionType.ASSEMBLY,
+                RocketTransactionPhase.EXTRACTING,
+                snapshot.snapshotId(),
+                snapshot.contentHash(),
+                RocketRegion.fromSnapshot(snapshot),
+                snapshot.blocks().size(),
+                rocket.getUUID()
+        );
+        savedData.journalFor(snapshot, ownerId).write(stale);
+
+        manager.tick(level.getServer());
+        helper.assertTrue(!rocket.isAlive(), "Recovery left the stale RocketEntity alive");
+        helper.assertTrue(helper.getBlockState(rocketOrigin).is(ModBlocks.ROCKET_MOTOR.get()),
+                "Recovery did not restore the motor");
+        ChestBlockEntity restoredChest = (ChestBlockEntity) helper.getBlockEntity(rocketOrigin.east());
+        helper.assertTrue(
+                restoredChest.getItem(0).is(Items.DIAMOND)
+                        && restoredChest.getItem(0).getCount() == 17,
+                "Recovery changed the approved chest payload"
+        );
+        helper.assertTrue(savedData.entries().isEmpty(), "Recovery did not clear the durable journal");
+        manager.clear();
         helper.succeed();
     }
 

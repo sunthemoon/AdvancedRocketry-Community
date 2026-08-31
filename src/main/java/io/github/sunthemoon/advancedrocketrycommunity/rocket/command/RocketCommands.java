@@ -1,0 +1,161 @@
+package io.github.sunthemoon.advancedrocketrycommunity.rocket.command;
+
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+import java.util.Objects;
+import java.util.UUID;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.RegisterCommandsEvent;
+
+/** Operator diagnostics that reuse the normal bounded, server-authoritative rocket service. */
+public final class RocketCommands {
+    public static final String RELEASE_TEST_HOOK_PROPERTY =
+            "advancedrocketrycommunity.releaseTestHooks";
+    private static final String ASSEMBLER_ARGUMENT = "assembler";
+    private static final String ROCKET_ARGUMENT = "rocket";
+    private static final UUID SERVER_CONSOLE_OWNER =
+            UUID.fromString("00000000-0000-0000-0000-000000000005");
+
+    private final RocketManager rockets;
+
+    public RocketCommands(RocketManager rockets) {
+        this.rockets = Objects.requireNonNull(rockets, "rockets");
+    }
+
+    public void register(RegisterCommandsEvent event) {
+        var root = Commands.literal("rocket")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("validate")
+                        .then(Commands.argument(ASSEMBLER_ARGUMENT, BlockPosArgument.blockPos())
+                                .executes(context -> queue(context, false))))
+                .then(Commands.literal("assemble")
+                        .then(Commands.argument(ASSEMBLER_ARGUMENT, BlockPosArgument.blockPos())
+                                .executes(context -> queue(context, true))))
+                .then(Commands.literal("status")
+                        .then(Commands.argument(ASSEMBLER_ARGUMENT, BlockPosArgument.blockPos())
+                                .executes(this::status)));
+        if (Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
+            root.then(Commands.literal("release-test")
+                    .then(Commands.literal("stage-recovery")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .executes(this::stageRecovery))));
+        }
+        event.getDispatcher().register(Commands.literal("arce").then(root));
+    }
+
+    private int queue(CommandContext<CommandSourceStack> context, boolean assemble) {
+        CommandSourceStack source = context.getSource();
+        ServerLevel level = source.getLevel();
+        BlockPos position = BlockPosArgument.getBlockPos(context, ASSEMBLER_ARGUMENT);
+        UUID ownerId = source.getEntity() instanceof ServerPlayer player
+                ? player.getUUID()
+                : SERVER_CONSOLE_OWNER;
+        RocketValidationCode result = rockets.requestAdminAssembler(
+                level,
+                position,
+                ownerId,
+                assemble
+        );
+        if (result != RocketValidationCode.SCAN_IN_PROGRESS) {
+            source.sendFailure(Component.literal("Rocket request rejected: " + result));
+            return 0;
+        }
+        source.sendSuccess(
+                () -> Component.literal(
+                        "Queued bounded rocket " + (assemble ? "assembly" : "validation")
+                                + " at " + position.toShortString()
+                ),
+                true
+        );
+        return 1;
+    }
+
+    private int status(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        BlockPos position = BlockPosArgument.getBlockPos(context, ASSEMBLER_ARGUMENT);
+        if (!(source.getLevel().getBlockEntity(position) instanceof RocketAssemblerBlockEntity assembler)) {
+            source.sendFailure(Component.literal("No rocket assembler at " + position.toShortString()));
+            return 0;
+        }
+        RocketAssemblerReport report = assembler.report();
+        String stats = report.optionalStats()
+                .map(value -> " blocks=" + value.blockCount()
+                        + " mass=" + value.mass()
+                        + " thrust=" + value.thrust()
+                        + " fuel=" + value.fuelCapacity()
+                        + " seats=" + value.seatCount())
+                .orElse("");
+        source.sendSuccess(
+                () -> Component.literal(
+                        "Rocket assembler code=" + report.code() + stats + " detail=" + report.detail()
+                ),
+                false
+        );
+        return report.code() == RocketValidationCode.SUCCESS ? 1 : 0;
+    }
+
+    /**
+     * Creates a durable pre-commit journal record for packaged restart testing.
+     * The command is absent unless the dedicated release-test JVM property is set.
+     */
+    private int stageRecovery(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        if (!(EntityArgument.getEntity(context, ROCKET_ARGUMENT) instanceof RocketEntity rocket)
+                || !rocket.operational()
+                || rocket.level() != source.getLevel()) {
+            source.sendFailure(Component.literal("Target is not an operational rocket in this level"));
+            return 0;
+        }
+        RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
+        UUID transactionId = rocket.assemblyTransactionId().orElseThrow();
+        UUID ownerId = rocket.ownerId().orElseThrow();
+        RocketTransactionSavedData data = RocketTransactionSavedData.get(source.getServer());
+        if (!data.operational()) {
+            source.sendFailure(Component.literal("Rocket transaction journal is not operational"));
+            return 0;
+        }
+        RocketTransactionRecord record = new RocketTransactionRecord(
+                transactionId,
+                RocketTransactionType.ASSEMBLY,
+                RocketTransactionPhase.EXTRACTING,
+                snapshot.snapshotId(),
+                snapshot.contentHash(),
+                RocketRegion.fromSnapshot(snapshot),
+                snapshot.blocks().size(),
+                rocket.getUUID()
+        );
+        rockets.suppressRecoveryUntilStopForReleaseTest();
+        data.journalFor(snapshot, ownerId).write(record);
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_ROCKET_RECOVERY_STAGED transaction={} rocket={} snapshot={} blocks={}",
+                transactionId,
+                rocket.getUUID(),
+                snapshot.contentHash(),
+                snapshot.blocks().size()
+        );
+        source.sendSuccess(
+                () -> Component.literal("Staged bounded rocket recovery record " + transactionId),
+                true
+        );
+        return 1;
+    }
+}
