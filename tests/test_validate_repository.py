@@ -34,6 +34,7 @@ from scripts.validate_repository import (
     validate_v010_gate_status_text,
     validate_v020_gate_status_text,
     validate_v030_gate_status_text,
+    validate_v040_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
@@ -120,6 +121,33 @@ def v030_gate_document(
 
 ```yaml
 version: v0.3.0
+status: {status}
+gates:
+{gate_lines}
+overall: {overall}
+human_approved_by: "{reviewer}"
+human_approved_at: "{reviewed_at}"
+```
+"""
+
+
+def v040_gate_document(
+    *,
+    status: str = "IN_PROGRESS",
+    overall: str = "IN_PROGRESS",
+    gates: dict[str, str] | None = None,
+    reviewer: str = "",
+    reviewed_at: str = "",
+) -> str:
+    values = {f"G{index}": "NOT_STARTED" for index in range(10)}
+    values["G0"] = "IN_PROGRESS"
+    if gates:
+        values.update(gates)
+    gate_lines = "\n".join(f"  {gate}: {values[gate]}" for gate in sorted(values))
+    return f"""# GATE_STATUS
+
+```yaml
+version: v0.4.0
 status: {status}
 gates:
 {gate_lines}
@@ -811,6 +839,59 @@ class V030GateStatusTests(unittest.TestCase):
                     gates={f"G{index}": "PASS" for index in range(10)},
                     reviewer="sunthemoon",
                     reviewed_at="2026-08-31",
+                ),
+                evidence_details=self.complete_evidence(human_approved=True),
+            ),
+        )
+
+
+class V040GateStatusTests(unittest.TestCase):
+    @staticmethod
+    def complete_evidence(*, human_approved: bool = False) -> dict[str, object]:
+        return {
+            "provenance_ready": True,
+            "artifact_ready": True,
+            "data_ready": True,
+            "automated_ready": True,
+            "server_ready": True,
+            "persistence_ready": True,
+            "authority_ready": True,
+            "performance_ready": True,
+            "client_ready": True,
+            "docs_ready": True,
+            "human_approved": human_approved,
+        }
+
+    def test_required_gates_cannot_be_waived(self) -> None:
+        errors = validate_v040_gate_status_text(
+            v040_gate_document(gates={"G7": "NOT_APPLICABLE"})
+        )
+        self.assertTrue(any("G7" in error for error in errors))
+
+    def test_ready_for_audit_requires_bound_technical_evidence(self) -> None:
+        errors = validate_v040_gate_status_text(
+            v040_gate_document(
+                status="READY_FOR_AUDIT",
+                overall="READY_FOR_AUDIT",
+                gates={f"G{index}": "PASS" for index in range(10)},
+                reviewer="sunthemoon",
+                reviewed_at="2026-09-01",
+            ),
+            evidence_details=self.complete_evidence(human_approved=False),
+        )
+        self.assertTrue(any("bound evidence review" in error for error in errors))
+        self.assertTrue(any("G8 cannot be PASS" in error for error in errors))
+
+    def test_passed_status_accepts_complete_bound_owner_approval(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v040_gate_status_text(
+                v040_gate_document(
+                    status="PASSED",
+                    overall="PASSED",
+                    gates={f"G{index}": "PASS" for index in range(10)},
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-09-01",
                 ),
                 evidence_details=self.complete_evidence(human_approved=True),
             ),

@@ -79,6 +79,12 @@ jobs:
       - name: Validate v0.3.0 release evidence
         run: python scripts/validate_v030_release_evidence.py
 
+      - name: Validate v0.4.0 release evidence
+        run: >-
+          python scripts/validate_v040_release_evidence.py
+          --artifact build/libs/advancedrocketry-community-1.20.1-0.4.0-dev.jar
+          --require-approved
+
       - name: Generate deterministic resources
         run: ./gradlew runData --no-daemon --stacktrace
 
