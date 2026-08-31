@@ -14,6 +14,7 @@ public final class ModRegistries {
         ModMenuTypes.register(modBus);
         ModRecipes.register(modBus);
         ModSounds.register(modBus);
+        ModEntities.register(modBus);
         ModCreativeTabs.register(modBus);
     }
 }

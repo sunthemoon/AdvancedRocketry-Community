@@ -1,0 +1,68 @@
+{
+  "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
+  "build": "1.20.1-0.5.0-dev",
+  "results": {
+    "clean_builds": {
+      "byte_identical": true,
+      "result": "PASS",
+      "runs": 2
+    },
+    "client_boundary": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "datagen": {
+      "files": 39,
+      "git_diff_clean": true,
+      "result": "PASS"
+    },
+    "gametest": {
+      "failed": 0,
+      "passed": 34,
+      "result": "PASS"
+    },
+    "jar_audit": {
+      "entries": 497,
+      "findings": 0,
+      "result": "PASS"
+    },
+    "junit": {
+      "failed": 0,
+      "passed": 156,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "packaged_rocket_restart": {
+      "container_items_conserved": true,
+      "entity_nbt_restart_byte_equal": true,
+      "result": "PASS",
+      "stale_transaction_recovered": true
+    },
+    "python": {
+      "discovered": 609,
+      "failed": 0,
+      "passed": 606,
+      "result": "PASS",
+      "skipped": 3
+    },
+    "repository": {
+      "failed": 0,
+      "result": "PASS",
+      "warnings": 0
+    }
+  },
+  "schema_version": 1,
+  "security": {
+    "block_entity_default_deny": true,
+    "bounded_client_reassembly": true,
+    "bounded_network_payload": true,
+    "bounded_snapshot_nbt": true,
+    "client_final_decisions": 0,
+    "forced_chunk_loads": 0,
+    "loaded_chunk_scan_only": true,
+    "server_recomputed_stats": true,
+    "transaction_region_locking": true
+  },
+  "tested_implementation_commit": "eae8d9224c708924930b781d7332eb69b6a4bf8d",
+  "version": "v0.5.0"
+}

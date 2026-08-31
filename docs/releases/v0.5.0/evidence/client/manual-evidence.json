@@ -1,0 +1,58 @@
+{
+  "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
+  "build": "1.20.1-0.5.0-dev",
+  "client": {
+    "kind": "forge_userdev",
+    "minecraft": "1.20.1",
+    "forge": "47.4.10",
+    "matching_implementation": true,
+    "visual_source_artifact_sha256": "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b"
+  },
+  "completed_at": "2026-09-01T05:54:40+08:00",
+  "logs": [
+    {
+      "file": "docs/releases/v0.5.0/evidence/client/logs/client.txt",
+      "sha256": "68ba75993cab30a439b0f1b5f5dd3565169b5b783a48ad4b039b0939dc41a2bf"
+    },
+    {
+      "file": "docs/releases/v0.5.0/evidence/client/logs/server.txt",
+      "sha256": "50feacc9ae9fd5309530fb6786bb5d4cfb2d40522f14adf3115f86e6f17e2058"
+    }
+  ],
+  "observations": {
+    "clean_client_shutdown": true,
+    "matching_modded_connection": true,
+    "rocket_blocks_visible": 4,
+    "rocket_entity_operational": true,
+    "server_saved_and_stopped_cleanly": true,
+    "snapshot_hash": "dd8ec4af274608874f9038969d98e0995423b5c72c0e2c8047fb2e907e2fadb7",
+    "visual_cache_rendered_after_server_restart": true
+  },
+  "owner_review": {
+    "approved_at": "2026-09-01",
+    "approved_by": "sunthemoon",
+    "g8_visible_client_acceptance": "PASS",
+    "g9_release_acceptance": "PASS"
+  },
+  "candidate_revalidation": {
+    "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
+    "carry_forward_reason": "The accepted candidate differs only in the GameTest-only fresh-Moon heightmap scheduling method; rocket runtime classes and resources are unchanged.",
+    "packaged_server_and_recovery": "PASS"
+  },
+  "schema_version": 1,
+  "screenshots": [
+    {
+      "file": "docs/releases/v0.5.0/evidence/client/screenshots/rocket-render.png",
+      "height": 540,
+      "observation": "The restarted server's four-block RocketEntity renders as one cached motor-seat-guidance-chest structure.",
+      "sha256": "dde6c4c63f19f2426ce15b37c9bb958fe2db588b7dc073472c3792e8ee5d43da",
+      "width": 960
+    }
+  ],
+  "server": {
+    "artifact_sha256": "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b",
+    "kind": "packaged_forge_server",
+    "loopback_only": true
+  },
+  "version": "v0.5.0"
+}

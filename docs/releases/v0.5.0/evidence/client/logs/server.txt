@@ -1,0 +1,11 @@
+# Filtered v0.5.0 dedicated-client lifecycle evidence
+# Full log omitted because it contains machine-local paths.
+[019��2026 05:48:11.556] [modloading-worker-0/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.5.0-dev initialized
+[019��2026 05:48:17.644] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=a1528c2a-85f0-45f4-a6e6-e67b646bd525 operational=true snapshot=dd8ec4af274608874f9038969d98e0995423b5c72c0e2c8047fb2e907e2fadb7
+[019��2026 05:49:18.940] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[/127.0.0.1:62947] logged in with entity id 117 at (10.5, 74.0, 8.5)
+[019��2026 05:49:18.947] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[019��2026 05:49:18.969] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[019��2026 05:54:24.822] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
+[019��2026 05:54:24.822] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
+[019��2026 05:54:39.869] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saved the game
+[019��2026 05:54:39.870] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server

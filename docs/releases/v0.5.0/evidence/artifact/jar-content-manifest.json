@@ -1,0 +1,2493 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.5.0-dev.jar",
+  "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
+  "entries": [
+    {
+      "path": "META-INF/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/LICENSE",
+      "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+      "size": 1125
+    },
+    {
+      "path": "META-INF/MANIFEST.MF",
+      "sha256": "d06a2d2ae92522498fa0267b71899d28d089c755f945bfad5084006e9343515e",
+      "size": 304
+    },
+    {
+      "path": "META-INF/NOTICE.md",
+      "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+      "size": 2141
+    },
+    {
+      "path": "META-INF/THIRD-PARTY-NOTICES.md",
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
+    },
+    {
+      "path": "META-INF/licenses/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "size": 23606
+    },
+    {
+      "path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "size": 27732
+    },
+    {
+      "path": "META-INF/mods.toml",
+      "sha256": "2ef592deccd2ee439749e240041ebb8db07ffc829993be600fcee649b111095e",
+      "size": 1494
+    },
+    {
+      "path": "advancedrocketrycommunity.png",
+      "sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "size": 6214
+    },
+    {
+      "path": "assets/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/electrolyzer.json",
+      "sha256": "6809c0c5527ee06ba02a27de5015ce0e1b6c39ccc8e2b6f819d07d32489c8dc2",
+      "size": 2082
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/guidance_computer.json",
+      "sha256": "9c65ef44d289372a60d4638952686efbd822998b2ef5f7fc521526d3640398c7",
+      "size": 106
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/machine_casing.json",
+      "sha256": "afc8dbb026dc3ed0d37bf36941b087b36a6c8a1fd38a46adafba707539fa8784",
+      "size": 439
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/oxygen_vent.json",
+      "sha256": "bde7314ebb8a0e4e9da9c17c8ff48c525ccbc3b4e181cf035da0c8c4cad0a0bd",
+      "size": 202
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/rocket_assembler.json",
+      "sha256": "e5a8e3574c668f3e5ee026a706b738734a328dc6c80adbaa95d3eb3d120db21e",
+      "size": 105
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/rocket_fuel_tank.json",
+      "sha256": "6b9ea74005b20e703b5033fdab93b0a729c2c80036e19148eeb18e30ff862b44",
+      "size": 105
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/rocket_motor.json",
+      "sha256": "702aa16aae9ab956aac84c31f695e8803ef21854bdd3304f81ee85c02443ad45",
+      "size": 101
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/rocket_seat.json",
+      "sha256": "3f2b61e071fdcf6e32f2cc1fbe194945c9dae454858f49f3d33c36e88e66e5bd",
+      "size": 100
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/lang/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/lang/en_us.json",
+      "sha256": "1795e6c4c6a92f0a1678a5aa5fcbb1abaaece7b2dfc8c5ac11571b39c2d489b9",
+      "size": 730
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/lang/zh_cn.json",
+      "sha256": "dca61b612857a186ee1657651b4a33280681d3ecf6c5b83ff65dfe05dfb0f87d",
+      "size": 694
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb",
+      "size": 345
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+      "sha256": "e2e8445f320b6173819d077676a0b68ca8f49ee6cd4ab807a4a5eb186046451b",
+      "size": 320
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/guidance_computer.json",
+      "sha256": "e8aad37f4a039472731e560dcbd4378d2887abfdc24cea3aa30fc40221e295dd",
+      "size": 249
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/machine_casing.json",
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb",
+      "size": 345
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
+      "sha256": "bc0fded8d64336919beaa5b3a80cbd2f94f815a2393196e83a945f0e43dc408d",
+      "size": 270
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
+      "sha256": "4678c52a927d7eabd7c569ba1d7eb8641b41f36a3d5a4c608b2cc0615c6db050",
+      "size": 247
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
+      "sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3",
+      "size": 248
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/rocket_fuel_tank.json",
+      "sha256": "6bc7a8caecd14fd09145721fd9198128fe0727ebd68e9d6ae76811323074c756",
+      "size": 150
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/rocket_motor.json",
+      "sha256": "36090226697d18af44dabd0de09b831edb1a3f257ef4c3041506770f6f003964",
+      "size": 157
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/rocket_seat.json",
+      "sha256": "5d7a8f83a1f6f7ed3ce8b70055b6126452fca7936690b8279f2d6b93f4a0c2fd",
+      "size": 206
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/advanced_circuit.json",
+      "sha256": "3ec0b0b2ab25b938903b877e3fe1e71b2969430d4bdf6eb1af763461a26efc48",
+      "size": 127
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/basic_circuit.json",
+      "sha256": "ff82ff636c90e8bef171ff4391a092f002629cd7f9a87fd0b97d26924484a589",
+      "size": 124
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/data_storage_unit.json",
+      "sha256": "57db35b04249c906318814bac45be0775b9f991e9eccb6128af2ba90f2760a60",
+      "size": 128
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/electrolyzer.json",
+      "sha256": "8b37cb8e9c48fbd302a7aba452cfa417e8940b3a8a65662f979e55e9eaffe2ad",
+      "size": 62
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/empty_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce",
+      "size": 107
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/guidance_computer.json",
+      "sha256": "cadcb6d0b7e8785c4cac9a9cf716497c1e2385891cfb5929814b23ce0b2c30c5",
+      "size": 67
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/hydrogen_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce",
+      "size": 107
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/machine_casing.json",
+      "sha256": "7fc0bc4269a675b377be4ed8779089c3a946d4a56f2a098d8419b914b8783e8c",
+      "size": 64
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/oxygen_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce",
+      "size": 107
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/oxygen_vent.json",
+      "sha256": "ad7fa603ce0dc4ac0dd5b9ca83967fc36baf323303d9f3df46beffe41fc165ef",
+      "size": 61
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/rocket_assembler.json",
+      "sha256": "de16ed5611e3abad80ad3191cbfba40681af6c4791f4262f1a0d934da735df04",
+      "size": 66
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json",
+      "sha256": "648f6ab1f35b533b5c6fdff4859ba1986741032e7eccc06f68ad221520b3902c",
+      "size": 66
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/rocket_motor.json",
+      "sha256": "ea407497b92e4bf5329d056a57b766da5bfbecba407c99e1dc440775ca9286e8",
+      "size": 62
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/rocket_seat.json",
+      "sha256": "41ac0d11dfbcc59071a34b7473218152e0e7894565f104f711b8a965603dc091",
+      "size": 61
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/silicon_wafer.json",
+      "sha256": "8a96925f63c40828a229eb8dcff9e82fc83a3fdeb51024075adf10f38a5445ba",
+      "size": 124
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/space_suit_boots.json",
+      "sha256": "82650205eba67373d9be037681b1de0685d72e53e6e16efe903550c342fa16c8",
+      "size": 43
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json",
+      "sha256": "d903c52c95f88457d0bee6b49fbefb601ac28e717affeeb902df6257f436acdf",
+      "size": 48
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/space_suit_helmet.json",
+      "sha256": "2afc2d34c5645f06d2cc2be3550fd682c162c5b2406eceb726c281bdaed927ea",
+      "size": 44
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/space_suit_leggings.json",
+      "sha256": "d8d944ba1e62a8adccb43f895330a28fb929111da12874edc9a5e96198e3b7e7",
+      "size": 46
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/sounds.json",
+      "sha256": "a76413e97bbbad694e6a25227286cb9fb3f3bcd1e4b41f4538fd6c58d78236e2",
+      "size": 154
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/sounds/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/sounds/ui_select.ogg",
+      "sha256": "44ab8402681ee7684293f64e26fd96309e8309d07cc9af6ddcc866e4edec9fd6",
+      "size": 4943
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/machine_casing_front.png",
+      "sha256": "133cd0c9f8abb5eba85f29629007933c675fe4284ba4c8c094288bd736857db8",
+      "size": 2155
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/machine_casing_side.png",
+      "sha256": "5c0435081c9c0d8c11cbbeea3278b293ffa17fd43a73e91c4fe3bffab110f62b",
+      "size": 180
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/machine_casing_top.png",
+      "sha256": "4e0e841b02eca215643571024d784e71f75ee9b32523bb946bb49f65b2644b41",
+      "size": 2161
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/advanced_circuit.png",
+      "sha256": "3b0a52abc227438a0e16b5ad999883829e453d63b3e00962d98e199244c9cb7a",
+      "size": 344
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/basic_circuit.png",
+      "sha256": "68ccf0a13ff55141a8c95ea81afbb6956f5f60db4348a012dd2544eefecfc10e",
+      "size": 283
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/data_storage_unit.png",
+      "sha256": "4a341ea614d7adb8b7cf1ac056575d83be0311be317516f04f97e80fd9651e22",
+      "size": 2418
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/silicon_wafer.png",
+      "sha256": "cb2a7cb7292cb399af37138918b8104baf62049d985dcd21448ab580c8034b8d",
+      "size": 725
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/lang/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/lang/en_us.json",
+      "sha256": "63f46d81576ba9ddc7cf39c58e44cfb2cbecde2b0f098218335563c0a83e1603",
+      "size": 1267
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/lang/zh_cn.json",
+      "sha256": "771f6ff50b939f5aa34209df704b1f2d6549c275f2a66738cfaa06922df33c80",
+      "size": 1219
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v040/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v040/lang/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v040/lang/en_us.json",
+      "sha256": "f38c66a75f3834a7ec8679f9f0d1399a3e699ef31b9742a2256ba2f05b28a230",
+      "size": 3155
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v040/lang/zh_cn.json",
+      "sha256": "8f543ac8cb1ae0e51c1cc8fd161eb454faf6de6961fe6486ff22ccaaa54e2c65",
+      "size": 3216
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v050/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v050/lang/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v050/lang/en_us.json",
+      "sha256": "cb678a4c14305b73ee4568fe49c61c5e6046b6baf23ab37ae0561f9c9c251524",
+      "size": 4627
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v050/lang/zh_cn.json",
+      "sha256": "2e0e1a871518cd37ace2e11bbdb8b46af23c9303aa630b66355904acd0a876ec",
+      "size": 4399
+    },
+    {
+      "path": "data/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/building_blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/building_blocks/machine_casing.json",
+      "sha256": "0f4fe0b084352d2ca5b3103fdb64b3fc64ac83d3958f43f864236f66bb715075",
+      "size": 668
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/combat/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_boots.json",
+      "sha256": "0fbb658f22cc32fb8448d0848f52ccfa5f871b060e27b5167c0c4cc5ba50153c",
+      "size": 703
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_chestplate.json",
+      "sha256": "0d066b049f0433c07c8decde5d940987fa60c461a3bd45604d9d63cf187f234a",
+      "size": 713
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_helmet.json",
+      "sha256": "7da7c64da7ef6a6856bfcc27aceacf8498a07043fd89a07c6c424414608448e3",
+      "size": 705
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/combat/space_suit_leggings.json",
+      "sha256": "1b89add44b0a3e48da203b220b9f101c171367daea5a5f9610b9071b1b1780ee",
+      "size": 709
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/advanced_circuit.json",
+      "sha256": "9f7837c0a8b9861db37ad90265f4062752716886a99ce736a1ce014afa389297",
+      "size": 672
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/basic_circuit.json",
+      "sha256": "5fdcee18b1f70997e84d3baceb03441cb3053e794b790e197c5ab6827a57df8f",
+      "size": 666
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/data_storage_unit.json",
+      "sha256": "8ac994625baae6d38ed80124780d562a2257da7c8f2402cbb10474a08c8ad2df",
+      "size": 683
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/electrolyzer.json",
+      "sha256": "4e68efc73d7ff9e0dd5fae5c7e935bec6757662ad01c47c02c57e0bf76c5ac75",
+      "size": 698
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/empty_canister.json",
+      "sha256": "25569966a4236f46562594276ac080b29319c4f06c81e51fc79d1d3516ceb1ee",
+      "size": 623
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/guidance_computer.json",
+      "sha256": "d1fdfcc14859078c96feb55c9bbec7636e0e15e1335a7a9b54a4e92cd1fce369",
+      "size": 714
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/oxygen_vent.json",
+      "sha256": "190253b58500f6269c85278787a866145cc705123effee42d00b000fc187d142",
+      "size": 699
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_assembler.json",
+      "sha256": "380dcaf1c837b0b806cb647de764cf7cd21b9d5edbdd92a94007a56cf629d9f4",
+      "size": 706
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fuel_tank.json",
+      "sha256": "c6253d8c84ea111e896f883917a2fc346330ad8d66f4da4a21f2cfb8eeeddc9c",
+      "size": 643
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_motor.json",
+      "sha256": "22cbe47f6b9769c2aba1e6021155dca53950ebd11f5e50eddb583aa9e9cafcd8",
+      "size": 695
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_seat.json",
+      "sha256": "fe18d9f79327e526494261e1bda561ef6d126f861c8692ed823e688fec2c9fd2",
+      "size": 618
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/silicon_wafer.json",
+      "sha256": "aa81d18c1d4ac1e1fcb309dd649ada44d91577c49f6cea7006ac7a45b9bbce43",
+      "size": 629
+    },
+    {
+      "path": "data/advancedrocketrycommunity/celestial_bodies/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/celestial_bodies/earth.json",
+      "sha256": "6f511da6bef7f4a3ab7827bdb58704e6b6f7f8013e6bdd01b04acbeda596013b",
+      "size": 404
+    },
+    {
+      "path": "data/advancedrocketrycommunity/celestial_bodies/moon.json",
+      "sha256": "d01c28163a2b3f4b360acd71174f6b0d7b6299cf748bc875a12ab4a9090478c6",
+      "size": 477
+    },
+    {
+      "path": "data/advancedrocketrycommunity/celestial_bodies/space.json",
+      "sha256": "18e197a179a1cec3d2a984aca1098b95a8aa13d62574c32fe844ff0ab198cd21",
+      "size": 463
+    },
+    {
+      "path": "data/advancedrocketrycommunity/damage_type/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/damage_type/vacuum.json",
+      "sha256": "7b5ef24d03ff1f9e5af57fc0402adfa48e3ee4cce1471493ef2c01f9f341c2af",
+      "size": 118
+    },
+    {
+      "path": "data/advancedrocketrycommunity/dimension/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/dimension/moon.json",
+      "sha256": "5be61829b130fb1a7ff922003e27d5a0f4fb821614fe56790b977043dafcade8",
+      "size": 430
+    },
+    {
+      "path": "data/advancedrocketrycommunity/dimension/space.json",
+      "sha256": "72ec260272226ca52cb61647ad62a93c841f5df999115c3d3c6afa99928609d1",
+      "size": 259
+    },
+    {
+      "path": "data/advancedrocketrycommunity/dimension_type/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/dimension_type/moon.json",
+      "sha256": "5c760adf297c7718bb6d6a8542be87c91038b96bb6eecebe627d9f7a8d25d232",
+      "size": 483
+    },
+    {
+      "path": "data/advancedrocketrycommunity/dimension_type/space.json",
+      "sha256": "3208bcdcdf0fafca9583df85f0ccc3eb489610707c6c428ec3029ac40cf2046a",
+      "size": 482
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/electrolyzer.json",
+      "sha256": "96211399209b5fd1cd0ad0c057c2632887d207e0574ab4d91630f7b346f514ed",
+      "size": 424
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/guidance_computer.json",
+      "sha256": "05bb94895d2ba1a339ce346bbe72bbf67b3c29f5aaa9c34a5a0c303d92e94c05",
+      "size": 434
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/machine_casing.json",
+      "sha256": "17006dbe80e84e52ad793fb95f2e4a8a586f370ae435725c718cb6779e444545",
+      "size": 428
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/oxygen_vent.json",
+      "sha256": "91be055ee537828519b1c3a5fa103277b05d0c89a6acebf1afbdc6002121c227",
+      "size": 422
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/rocket_assembler.json",
+      "sha256": "684343df24419ea2119601422ed4389290c65e6cad45c8d3c4d33e04c82d43a9",
+      "size": 432
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/rocket_fuel_tank.json",
+      "sha256": "f0b529baa2c00794e524e456f86ec45682c494e6709699d982000ba15589534f",
+      "size": 432
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/rocket_motor.json",
+      "sha256": "8b4744abd87b7d49ca1f474a4e52ce5361879ae9043336946a4b92745134cc3a",
+      "size": 424
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/rocket_seat.json",
+      "sha256": "4d26ce6ef96c21ff194d5528dc0d1cef8378506aa74d94514d8e290ab4a27a61",
+      "size": 422
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/advanced_circuit.json",
+      "sha256": "f3384f662a473fd0f560690a605802eee74ac96789f00a74c7c3ad8677b295b4",
+      "size": 327
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/basic_circuit.json",
+      "sha256": "a041d676e55718970315e95d010c20f7ab4f3202f43758ba50e418ab0d6da09d",
+      "size": 343
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/data_storage_unit.json",
+      "sha256": "04c1796a93ec6eb019687f3db9a0beeedbf6760167c5db0bc664e749540c7f66",
+      "size": 336
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/electrolyzer.json",
+      "sha256": "0e1fb5109f91ed68b80a465f61a110026dd07c2841dfd975ddb680600531179d",
+      "size": 529
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/electrolyzer_water.json",
+      "sha256": "b3cc933186fbeb1238939ed02a203dee03e3db18817584ed1f28c8de6521c415",
+      "size": 464
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/empty_canister.json",
+      "sha256": "571bbe2f287750c7cd15a606a7501db5b2b811c0c324bea7954d62d207c322ce",
+      "size": 294
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/guidance_computer.json",
+      "sha256": "852bd08c1ffd8dfe080cf3b4b27649021c7de5c9a912a8b265fe1d8d5890c2c9",
+      "size": 537
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/machine_casing.json",
+      "sha256": "2c1e40f9396bb5298cbef52799179fc11e30ab8909a5fb2440f71535222e4949",
+      "size": 378
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/oxygen_vent.json",
+      "sha256": "ce620814240ae9f92b90a091719eb881058714d74704924e35079f4af2b3ee24",
+      "size": 528
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/rocket_assembler.json",
+      "sha256": "200b31fb400832355c347fc5e2e4b2fa46b8f5770acb2e5579fe45c1abf339ac",
+      "size": 542
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/rocket_fuel_tank.json",
+      "sha256": "a43268ccb94c67696f7e237b9fa87e71a07a8e2ec50a2475ce6101a80c572125",
+      "size": 331
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/rocket_motor.json",
+      "sha256": "3b00400c20bc9e77316b7d75054f525debae270bf07cdf6b176bfc27c1474569",
+      "size": 409
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/rocket_seat.json",
+      "sha256": "a19f5dde3f9527518d448f993b82496666226bdb3a752594fbcdcd073dd13540",
+      "size": 329
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/silicon_wafer.json",
+      "sha256": "15a2b46c745f6ae5bfaec7bc7fa712a01c5eecfce7545ce7d83d7a556667382a",
+      "size": 272
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/space_suit_boots.json",
+      "sha256": "d9ffb5fd74fd9ae31eb2b0a754d6dc63f1db06f79d268d524792cd375405b8a6",
+      "size": 354
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/space_suit_chestplate.json",
+      "sha256": "71b583f18820ffad56e50656b080ab012662056285ae8ff51da19206c4b6337f",
+      "size": 370
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/space_suit_helmet.json",
+      "sha256": "df01b5bf7ddafacf5c430d70d6ef7d3f026893826307c567eadfcc713d0db596",
+      "size": 411
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/space_suit_leggings.json",
+      "sha256": "a1c82978eef392923f90c48901a2b8eb7adb4f6d7acfc2a90c89bbf23a4bedba",
+      "size": 368
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/atmosphere_test.nbt",
+      "sha256": "ca60e3491dab09f642d99a42c1ce670f6efad1466113afdab1a79ab10e038991",
+      "size": 129
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/empty.nbt",
+      "sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "size": 124
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/rocket_test.nbt",
+      "sha256": "423b9f732fa8f2e932f754c84f785b173f17c9f19bf39539e804c7f45bc42712",
+      "size": 127
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/atmosphere_permeable.json",
+      "sha256": "41cf33f13b3cd9cf654130c9c3fa2352fb3c304ea8f0bc1911491227f6ee07be",
+      "size": 102
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/atmosphere_sealing.json",
+      "sha256": "b31bb7dbddfa212ff253e4ff0ca1cab382ed4250e6b32d5f22235acda6cb3f6b",
+      "size": 159
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/rocket_engines.json",
+      "sha256": "79d610d17ebceac95a3e2e491c088b470be0e105b5246abe7cad3e50ff47d70b",
+      "size": 66
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/rocket_forbidden.json",
+      "sha256": "53dbd8e810602cad9e1d177510aea4978f1f2f07f56866e0ff062f09aa591b38",
+      "size": 364
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/rocket_fuel_tanks.json",
+      "sha256": "1c80a893109cce7174e30cd727ba7513183c5526cb6e98a6488be068a027582b",
+      "size": 70
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/rocket_guidance.json",
+      "sha256": "0c6a6ce28760a8b3490e6a42374b2abe62bea18fde660ddfd55753424241448d",
+      "size": 71
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/rocket_movable.json",
+      "sha256": "136383d7182d2ad4a82ded81f2fcffca4e2c4294994e02c182617818aece26fb",
+      "size": 388
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/blocks/rocket_seats.json",
+      "sha256": "7581a0d3cdcbe10b33090040be6c827f4f1a4338424387571448ede415b36264",
+      "size": 65
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/circuits/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/circuits/advanced.json",
+      "sha256": "0ccc15537a49795389cea373f0beab849a76a9b93d99680d341fe086b59b83d1",
+      "size": 70
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/circuits/basic.json",
+      "sha256": "8ac5d39b8ca41e42de4d641908db432994b231a86f85c623da57c110719fc96c",
+      "size": 67
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/data_storage_units.json",
+      "sha256": "04531391f7c9c032f79f63b1bd29b19bfe06c574844baa38554069f9157fa198",
+      "size": 71
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/machine_casings.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f",
+      "size": 68
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/silicon_wafers.json",
+      "sha256": "2177f4f11599e34efde585f5f771e1f5cd8f03249ba474d16c55cf059e601552",
+      "size": 67
+    },
+    {
+      "path": "data/minecraft/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/blocks/mineable/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f",
+      "size": 68
+    },
+    {
+      "path": "data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f",
+      "size": 68
+    },
+    {
+      "path": "data/minecraft/tags/damage_type/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/damage_type/bypasses_armor.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138",
+      "size": 105
+    },
+    {
+      "path": "data/minecraft/tags/damage_type/bypasses_enchantments.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138",
+      "size": 105
+    },
+    {
+      "path": "data/minecraft/tags/damage_type/bypasses_invulnerability.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138",
+      "size": 105
+    },
+    {
+      "path": "data/minecraft/tags/damage_type/bypasses_shield.json",
+      "sha256": "9869c3b80d8a763ad45d50fe1f635c47e2a27a648baf4c355a86a1c59cf7a138",
+      "size": 105
+    },
+    {
+      "path": "io/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.class",
+      "sha256": "1d97aa51fef2c8360e219e764ed58be031b8f00c40f82d15dfcdb3856e9ff552",
+      "size": 15348
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.class",
+      "sha256": "92b8d866618094869afe170f925a72a76b03b48d9fc13bc08a6e0a424d93bc87",
+      "size": 1493
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/AtmosphereLimits.class",
+      "sha256": "03de04266c70616dc9088d7fa5cfe6721d2af9ac3019c0ad67570e682871a429",
+      "size": 1040
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/command/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/command/AtmosphereCommands.class",
+      "sha256": "75a2d5a93b4282f2ec951592cbc74b295d2634854d6069ffdd9739770cabf6c7",
+      "size": 6855
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/OxygenCanisterItem.class",
+      "sha256": "2e3372b08fd3d9316b4fa25698a93237cbe933ac2599355f920fd2005e522387",
+      "size": 4679
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/SpaceSuitArmorItem.class",
+      "sha256": "0f076183fda335607ff06334289c4cde430b804444d9a91783ea73d9b55c1118",
+      "size": 4679
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/SpaceSuitOxygen$DataStatus.class",
+      "sha256": "5f65399afffca5870d86fd06fcf83e4453f7b6ed614e44a1480c4b2e49af3901",
+      "size": 1639
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/SpaceSuitOxygen$ReadResult.class",
+      "sha256": "2a461beb145f8345253e28b7e29d71b08e3ec5aa815b219f1fb8a79e4ec266d6",
+      "size": 2352
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/SpaceSuitOxygen.class",
+      "sha256": "c1f449b34f21c1379ccd4ea128396cc7603abb564c99b9073148e79abe819f81",
+      "size": 5062
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/BreathabilityState.class",
+      "sha256": "517c1b7e905ecd97a3c3b3dc025ff82a2bcd0ec609167179bb77ecd91e0ba5d1",
+      "size": 1431
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/OxygenTransfer.class",
+      "sha256": "0ecfb9554bacfb810e71981b636f2b3c4c1e32aa21e4dd98d1ed67cee2094502",
+      "size": 988
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/OxygenTransferResult.class",
+      "sha256": "322b23fd6472fec28a335d4aca9f57477cd80155b0902537fcc8a585529481da",
+      "size": 2242
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/PlayerLifeSupportDecision.class",
+      "sha256": "934b4fbf66432fd96bdb6931d28e58c30dee091aa99e6dfa0ab72d484e90e6c5",
+      "size": 3332
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/PlayerLifeSupportEngine.class",
+      "sha256": "8b2ccc0bf0c735a17d54603d59fbcba3a83e9064400201e506c7aa8a1460d78c",
+      "size": 2756
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/PlayerLifeSupportInput.class",
+      "sha256": "0e44250bfa80d1ee379ed02a19dc6ccda2ef59c04acaa73fed389931fc97c989",
+      "size": 3198
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/PlayerProtectionStatus.class",
+      "sha256": "44a013b3e91b2fa624a34708786de05ac5d69ff271e4f93c68964bd710e67ddf",
+      "size": 2296
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/VentOperatingStatus.class",
+      "sha256": "37e77804fda35f197116fb1da2b71cddeede6a06c2cecd13b8455bd1c18e0278",
+      "size": 2387
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/VentSupplyEngine$1.class",
+      "sha256": "fe584e1e9145a60375eaff355c179125203b5ee3ee421ef456299347325524b2",
+      "size": 1244
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/VentSupplyEngine.class",
+      "sha256": "a7b47a7dd482021f6ac0fe4de7e320fbee1f23fb846c2103c669cf7aee339384",
+      "size": 2936
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/VentSupplyInput.class",
+      "sha256": "fd03fae9f2004c34dc0ff31b1d76c78354b0a2cc6c838a52d2ba58a8fe2c2f80",
+      "size": 3052
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/VentSupplyResult.class",
+      "sha256": "4cffdf0ba408b7d66d9963718fc5d41a3cf9002a187edd5a99e577a75aeeb1e6",
+      "size": 3455
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/network/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/network/LifeSupportClientCache.class",
+      "sha256": "203e1080e7b89d5c5c84d7147af5b5799879590dd4691bcc8db4e748ea08f405",
+      "size": 1098
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/network/LifeSupportNetwork.class",
+      "sha256": "75706d5184053463ae9508f1554ca48876f1c010623b2bf5a2d0ede7a87bfa09",
+      "size": 5154
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/network/LifeSupportStatusPacket.class",
+      "sha256": "7c43dd9b143e5edad9da551298bdeb90fd9d76b021a2f8a75d77d86e85b822d4",
+      "size": 6596
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/AtmosphereVolume.class",
+      "sha256": "7367a8703a7513d87064741073a29f78ae9fbc0b59e5b088bc4ab75d55f8a358",
+      "size": 5604
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/CellObservation.class",
+      "sha256": "9259f1a7c7b0819457f9aea1ec75674957890679dbaeae95d8350e02811d6ee4",
+      "size": 1463
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/CompletedVolumeScan.class",
+      "sha256": "03f83377eea4675cc86a7c35846ad86ed1c76f958af1c96a8485037494484b39",
+      "size": 4098
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/CoordinatorTickReport.class",
+      "sha256": "d67e38d12aa18c30e808f0443656e4eec39cfec775422f419c16c9a806b72b5e",
+      "size": 2420
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/ScanScheduleResult.class",
+      "sha256": "e141752322afc449010ceac4d7e296d106c326ec479c4fd9ce0dde8c1f1e4fd9",
+      "size": 2677
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/ScanScheduleStatus.class",
+      "sha256": "1d6c65c53e87526fe5700a1ea36b98c1d4c445614ed6f018bf86e2c3b480be16",
+      "size": 1427
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeBounds.class",
+      "sha256": "0f809e8abb518f0009aaa0aeb8f20404c076ae0ab0abdd34057813ff19846918",
+      "size": 3411
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeId.class",
+      "sha256": "a36fa4c4f6f5f21fe8d5973e54d643b7fbe246775fec2f7a969608dc86a04e0b",
+      "size": 2249
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeIdentity.class",
+      "sha256": "2bbe81409a31927f81eb7765278ccba2c68db98d8e31572050cfe083a94d2bc2",
+      "size": 4108
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeIndex.class",
+      "sha256": "805767c2d268a58a4557f0e33982643dfbf4c20f7fc6759df9f4637d7c70ebc2",
+      "size": 7727
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumePosition.class",
+      "sha256": "a9f0af66b3cd57437ea2aa854f2abf88ad8dedd448770754c1e333d8e1425be8",
+      "size": 2603
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanCoordinator$CoordinatedTask.class",
+      "sha256": "e52b2e75b4f5b87b82ead5b34249f364efe8285ddcd432eb3bc0500d6596b5fa",
+      "size": 2742
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanCoordinator$MergeResult.class",
+      "sha256": "0b1a3b1fbe4638ce42dcfd562b0e33acf43a0d69ee3750bad645bafde1d025cc",
+      "size": 2002
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanCoordinator.class",
+      "sha256": "b9c2d7c7c204d0378e1797f1ff3bff8adbe23a1e5e2af304db9cbbd92b20314d",
+      "size": 16835
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanOutcome.class",
+      "sha256": "92df9ce07c25c840617fa0e44ae840ade26f78e8cfd9b1254978944c85d626fc",
+      "size": 2099
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanResult.class",
+      "sha256": "6bc114007835bae43b188b45c820cd4fb458b18436233950ab563a2720038a34",
+      "size": 5304
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanStep.class",
+      "sha256": "19b40a370010e54679f084b2e90cfdffc4aca00b6dc11f684f35c3afebc3271e",
+      "size": 3135
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeScanTask.class",
+      "sha256": "d9d71f9aa8cf01e999991ac8f4189a37c729a8dfceb2031db55099161a598b1e",
+      "size": 6317
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/scan/VolumeWorldView.class",
+      "sha256": "137908c607ded07b67cdfeca50d171b3ca90d265a21cec226aa76c8b2c2bedf8",
+      "size": 430
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereLevelMetrics.class",
+      "sha256": "cc4a0c13e82a5046463ea2b0bd35c49430a7ce2b2d0355fca973012e25700edb",
+      "size": 2996
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereLevelService$VentState.class",
+      "sha256": "4646ba1667f9f5b46820aab116758097045d32653edb9f8cb1ba55aaea2403d4",
+      "size": 1712
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereLevelService.class",
+      "sha256": "ab0830516195b8fa4c813eae83fa1ce76048effff68875c49fb86db581f86409",
+      "size": 23916
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereManager$EnvironmentState.class",
+      "sha256": "bfce8e5622da245d1db8ef97f0608386df5c294a7569405c88bada7563fe7160",
+      "size": 1992
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereManager.class",
+      "sha256": "2160693175964a6df20e1130776879028c8eb0bf014e494571bb8869a1ef2d34",
+      "size": 10185
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereRuntime.class",
+      "sha256": "70b461abf6d780c7ccbdc3490ffd9310b1f361dff3d99cbd4ea074f4aacddca8",
+      "size": 2248
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereServerEvents.class",
+      "sha256": "ee1d474237b02bbeac67bd9d75dd02d0eb164266309703bd5a15919246432217",
+      "size": 7061
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/PlayerLifeSupportService$PlayerState.class",
+      "sha256": "a2bf149dc853652e708610a010d3399a6c4704aa0fc2313b18928632fd4497f9",
+      "size": 815
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/PlayerLifeSupportService$SnapshotSink.class",
+      "sha256": "0a00aefb02939664404cb2e3f5c4db13288d67d7dcdebad6e26021c0300b26d9",
+      "size": 595
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/PlayerLifeSupportService.class",
+      "sha256": "a6d25f8464cc6fd96f95fdffd756da836c61b430365a3bee327f868670c9c46c",
+      "size": 10210
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/PlayerLifeSupportSnapshot.class",
+      "sha256": "d2778db85da278499a48a0a9417355551389654ca88329a55abf13a5e15f4487",
+      "size": 3229
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/ServerLevelVolumeWorldView.class",
+      "sha256": "fb38a6b7bf4cae3d76babfa74597e63caf5c98f93d0b4c571b2d07fb236f90a8",
+      "size": 4657
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentBlock.class",
+      "sha256": "91717352ecc39986e1d78df198bf24e135afa174dea4303c2571b4ca24d82b53",
+      "size": 10870
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentBlockEntity$VentEnergyStorage.class",
+      "sha256": "a2004e9ef3532f4d3c8b420ba066d5253a2f280f5b4d149396006a221bc9d328",
+      "size": 1456
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentBlockEntity$VentInventory.class",
+      "sha256": "13a3c78c841be0f00d78fa58b625c7e6528935093bebe4221c9d52a59f43d058",
+      "size": 3383
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentBlockEntity.class",
+      "sha256": "19f97799354d8288ab23df7b76c6d6e46b4e24ce7a3c5980e37d4cf5394280ff",
+      "size": 15488
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentPersistence$DecodeResult.class",
+      "sha256": "0d86f85631c27277359aa9f38a88f89b467e4043139764d103bf6fbee536547c",
+      "size": 4127
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentPersistence$DecodeStatus.class",
+      "sha256": "e2c5fb49df9ec5581237bfa415dbc65158a0e82385802fdfc41d9926da774217",
+      "size": 1680
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/atmosphere/vent/OxygenVentPersistence.class",
+      "sha256": "289bbbfb8c91fd70fd4ae1602e136c87b556a18ab17fb395164f7f1b79a1819b",
+      "size": 3531
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialDefaults.class",
+      "sha256": "cf6d0b1fe996351ffff5f06fd46b6b7276f10d1c35ef139d7a7820c23e6d0b4f",
+      "size": 2279
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialIds.class",
+      "sha256": "2dbc8ba0b7284d99216e19e7663543a937821a18fb822a4e34194eda5b890f52",
+      "size": 1522
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/command/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/command/CelestialCommands.class",
+      "sha256": "bd5a8a8d1cd901087df1ab98058a4464eff853809e8e7d8655b43be4f606abed",
+      "size": 15613
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyCelestialImportCli.class",
+      "sha256": "a242b6fe5f938a99a26d01845e2c0e7cd1387f9dee7eadcfbe160e50a18a5e63",
+      "size": 3661
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyCelestialImporter$ImportResult.class",
+      "sha256": "769b1baa10c8d869e5955df32bdb13b789bcd8da2030c4d2a32e92855ed100b0",
+      "size": 5025
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyCelestialImporter$NumericDimensionMetadata.class",
+      "sha256": "5e5b450464c48dda99304d4da72950c216765788cb8baf0e88b2e039053fcca0",
+      "size": 2392
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyCelestialImporter.class",
+      "sha256": "f2f591c38074f5cefb50d93048389d0f2ae3a272c81c799ad2c79f987608faa9",
+      "size": 18593
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyImportBootstrap.class",
+      "sha256": "948f1246ac271409637b71ffc9f81e1aff542412f82cd4c4333bdafe8cc39e66",
+      "size": 1333
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyImportExporter$ExportSummary.class",
+      "sha256": "261e5da8b18890e75d377bc0e4f6dc97fc4eb8bd535c73fc652f1da9de5bc96f",
+      "size": 2492
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyImportExporter.class",
+      "sha256": "2f0c428b51036348aecd24279cf92835fab1686e9d97b7ac9afc69dce7c7d76f",
+      "size": 11499
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyImportIssue$Severity.class",
+      "sha256": "8f5e2accaf5cdc5c071dbe7db24c85a1b126af33edcbdec1aa6455a24f8f8764",
+      "size": 1574
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyImportIssue.class",
+      "sha256": "5fff91fee0f70270c3841ef455b701127282e7bbb5724325aed9596be6ead278",
+      "size": 3272
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser$ElementFrame.class",
+      "sha256": "dde8eef4066e36e49f38e9eff1d04b1a276fe97f4334027a2fa731f74ae7c5fd",
+      "size": 1524
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser$GalaxyDto.class",
+      "sha256": "8e003716515dde74d90f7790559d37eb960cb4d2e3de4fe6096c0408f24a8714",
+      "size": 2474
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser$ImportLimitException.class",
+      "sha256": "08ef8b4e772989ba20ffa31e9a0bfea88d98dcc40150bd4c7d7a5ebc8d7bb9dc",
+      "size": 672
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser$ParseResult.class",
+      "sha256": "1b54678039693a8750c75dbfb5ca3c41e8f44b07f9cf4dcc6a564e069162cd09",
+      "size": 3159
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser$PlanetBuilder.class",
+      "sha256": "838b2bea31acf972ee0f3d80d8d397de71cbe1fcb66b4f61280f25e340c6922c",
+      "size": 2944
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser$PlanetDto.class",
+      "sha256": "136acd36be8a142b155e481ed637e275d6726c72c6e6d972d15813ebed4c390f",
+      "size": 4484
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyXmlParser.class",
+      "sha256": "623aef3bbecf95c77cb1d0d3aa34de1df03a8ba07ee1d5f87ca77a6e86037843",
+      "size": 22700
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/model/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/model/AtmosphereDefinition.class",
+      "sha256": "0af58d6a04538d1115222ff5f6580bb0bbcb18d4767562e8a19d1e19d3df9974",
+      "size": 6910
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/model/BoundedCelestialCodecs.class",
+      "sha256": "d3db8617f1bd8702d2d1d291dd473818db725289f82be0904190b7c5b025373a",
+      "size": 4281
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/model/CelestialBodyDefinition.class",
+      "sha256": "83c022ddb4820a418105432948ad8df4966ee09c06309e0034905531d63222fc",
+      "size": 11248
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/model/OrbitDefinition.class",
+      "sha256": "f2643580a03f3ab6e348e52e97a50375229556ec89e43ecadef9ebfd72bf3f21",
+      "size": 8170
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialClientCache$AcceptResult.class",
+      "sha256": "dd386a86510cfbe9c7107bae0d51e9cc6896e3c7472cd47fcdee2493f8ab7eb3",
+      "size": 1761
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialClientCache$State.class",
+      "sha256": "8a22b1044c9dfb92b727c111bac598bd11ab551cffb85170f88ae519a3883d93",
+      "size": 3150
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialClientCache.class",
+      "sha256": "5d2218db314b41d59f185436c0903e2218bdc63e89ae8ec72be1f3476b982668",
+      "size": 4650
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialNetwork.class",
+      "sha256": "ea40855e471f59fd1e959f3a8966c59e7961ed570ec6c9286f74f07b69d6bb09",
+      "size": 4912
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshot$Entry.class",
+      "sha256": "05660c8314c8b456c78ac94fbd1a0ecc9c2c550c62663de05a36f26441e32a92",
+      "size": 3554
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshot.class",
+      "sha256": "9b257eb44dabb97201849f97a637ecf6d7fe00d136ad60b12735df595e7ae74e",
+      "size": 2489
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshotCodec.class",
+      "sha256": "707ef9e6cc91b0428b5456c345be854fb498f8b02a8a6f28caa369767cdad6d7",
+      "size": 11671
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshotPacket.class",
+      "sha256": "097309c962fb3a6a8951319b09d9f7aaeefa9571f28d52b50de469db700953f9",
+      "size": 6273
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshotSynchronizer.class",
+      "sha256": "718b36f1cc771d8cf72b6bef3ef4d52313fd75a1511ed84ce8c10453c318f80d",
+      "size": 5071
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/persistence/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/persistence/CelestialSavedData$BodyProgress.class",
+      "sha256": "3af2a3b3f3e6100c8546e4e65738a8358fb0e71047d379d3aac4270f88202b30",
+      "size": 2884
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/persistence/CelestialSavedData$MutationResult.class",
+      "sha256": "e81d050731e80cad455310f3ec6a31d5441d67695c5b1c0ddc5bed7713b81fe0",
+      "size": 1791
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/persistence/CelestialSavedData.class",
+      "sha256": "e0a5e9df6dbcb9728099c263ab2ccc52dfd76bab304b2f121d8049df66c8c337",
+      "size": 11453
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalog$VisitState.class",
+      "sha256": "e9e099b431e27d023e3e97e7cf11ac809ee6549318bf2ad3336f686a0a00dba6",
+      "size": 1587
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalog.class",
+      "sha256": "e50641e5ea737ee95ee62b14aae0fa9168b6915bcbef4a908ef8aa2b4567e788",
+      "size": 12887
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalogDecoder.class",
+      "sha256": "5aef67981636ca19a0748167c9032e824fc2245180c0998533e35b701af1d163",
+      "size": 6840
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalogManager$ReloadStatus.class",
+      "sha256": "901147981292c73c4c57cba89dea7019adb36b226ac6c41b7963819faa702825",
+      "size": 2475
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalogManager$State.class",
+      "sha256": "caa48e2ec1b005d60d24d104b67c1f7459a675a4b379cc781f366ddca20f845a",
+      "size": 2887
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalogManager.class",
+      "sha256": "2f48ecfab4145aafa3dc417b0170d079d2305a894988034099cb27682e232413",
+      "size": 4358
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialDefinitionReloadListener.class",
+      "sha256": "c487d218e3f351527aee981e94c03f896a9bdc790cbb0f9b682e71e8e87be3ca",
+      "size": 4604
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialEnvironmentService$EnvironmentProfile.class",
+      "sha256": "baad52f37c905980a6adc8d4ad07ee232417fe5f0afcf69e10a3cc96c7e87e13",
+      "size": 2686
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialEnvironmentService.class",
+      "sha256": "d79333be97af22e1643f8e93dfcc826dbcd64d1e24b9bbc20ee8d6108e11e018",
+      "size": 4000
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityController.class",
+      "sha256": "a274db296309cddf5ddf35d52108dbf5193659ac373896e17d6cd6a68cfa27a4",
+      "size": 4943
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialVisitTracker.class",
+      "sha256": "fa5cb28faa2b935bda4a849f8c9893c1b4a449d6be31119f6ca66d66755ce6e4",
+      "size": 5793
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/SafeCelestialTravel$Destination.class",
+      "sha256": "111c33e93e9869dc7b6896274d1b09af44ca75e683f20fa23013b8f751c640e9",
+      "size": 2447
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/celestial/service/SafeCelestialTravel.class",
+      "sha256": "04a48f20b9f93097dd53c5ebf8a5e84e0ec5c2f0e9f5ed941a90687efd4fe075",
+      "size": 5774
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.class",
+      "sha256": "6e15a43bc95c6ad979ca6f04b9c3ca249cf483afd3d4e213feecaabd76f9ca57",
+      "size": 6758
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientCelestialEvents.class",
+      "sha256": "26a2d0ef8fec80f75fb74708d361a8e8f9c3f1354707d58a830c94d75e4d1440",
+      "size": 1477
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientLifeSupportEvents.class",
+      "sha256": "d6c872ba1308a1e4ab90cb2fd05a23b95cff67579f07630ccae7f56b80f6d3c6",
+      "size": 1486
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientRocketEvents.class",
+      "sha256": "9a4cc64534c10d527793e37faa75b8c49001be2a6e1e3f9d4395bba3ba8fdf54",
+      "size": 2254
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ElectrolyzerScreen.class",
+      "sha256": "8f37d4956d3b8d962a70c7b38070e552eeae1dbb6f053099e361fb65a9fbb975",
+      "size": 5838
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/LifeSupportHud.class",
+      "sha256": "99facfffd5ff6f8da653a0e990b726fe1248d048410a677f124943ee468dad0e",
+      "size": 5109
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/RocketEntityRenderer$CachedBlock.class",
+      "sha256": "7033770702f903a06f692c48e71dfc5d06ad8b829166b2a3152439f957ab3ea8",
+      "size": 2293
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/RocketEntityRenderer$CachedRocket.class",
+      "sha256": "a4aa235c070696448ddf9220c019465e9c9d9b1d49cdd1a1f7cb7825786bfc24",
+      "size": 2989
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/RocketEntityRenderer.class",
+      "sha256": "92225eb9263d035adbb3f5180b14a98463436ec78ec45511eb7f72b1be3cf29f",
+      "size": 9358
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.class",
+      "sha256": "a6663d4bce8c0753752d65f55a4d3015bd8ef7c1801861933e8e1a422ee10373",
+      "size": 1940
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/content/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/content/DevelopmentComponentItem.class",
+      "sha256": "8f60bab5b84cb37414fa5daa334b69c1957c40c2b8f1eb8cc94aec08af4423ec",
+      "size": 1989
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/content/MachineCasingBlock.class",
+      "sha256": "d7d0c0d3c5f287728a268e7137527694afeb7cccff756fe31bdfdb8600691310",
+      "size": 5979
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereBlockStateProvider.class",
+      "sha256": "ef86df8831b6ade55c45085a56a881f65cb6a4cd14db9d77aeae4a8501c7d3af",
+      "size": 3544
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereBlockTagsProvider.class",
+      "sha256": "9b8664950fe3e3881c7b273cd9b1fa63055995971d7b1a813b7a1ea38fdd4771",
+      "size": 2743
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereDamageTypeProvider.class",
+      "sha256": "44d81a80a382ceb1cb78edb2f7a6ee770d42a8d77393e8fabba82d07bf069f65",
+      "size": 2074
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereDamageTypeTagsProvider.class",
+      "sha256": "20a425e86cb94da6dd09f2f132626aec39959637d1cea526ef6083bc1342ef00",
+      "size": 2323
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereGameTestStructureProvider.class",
+      "sha256": "0cb6b6554a16631fbcf62ee57fc1494d962520c31277977af0e8d5bc1fdd4e83",
+      "size": 3956
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereItemModelProvider.class",
+      "sha256": "df529cd2419153b6c32dff80dba377e6383adddf9c1d7edd1de2fc8b5b1829da",
+      "size": 1394
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereLanguageProvider.class",
+      "sha256": "73d485e0833048447b7bfd350ec2fd8c3d63e5fb80259d3d437cc5aad32d4252",
+      "size": 8232
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereLootTableProvider$AtmosphereBlockLoot.class",
+      "sha256": "3478df1fd496cb5b407e42a04b65c638ca5d25bc7f458dbcf61fe84ce40d486e",
+      "size": 1700
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereLootTableProvider.class",
+      "sha256": "543da2924ab294981c6d05e6403d7576e9e4ac18e412fc1b43801e73327f2c7f",
+      "size": 2007
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/AtmosphereRecipeProvider.class",
+      "sha256": "ebad9672fd78c1888174dc9b94e12b98723475a6b78f9317b33101d7ecff1e76",
+      "size": 5000
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.class",
+      "sha256": "df2fa936d8c6f4e0543a69643cdcc8b7d890a089d804f14494fecbd204b9b0c4",
+      "size": 3003
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/CelestialDefinitionProvider.class",
+      "sha256": "55945573c3f5548603d8350da074674a87a9f79484d38ff3da166ea4924b0e90",
+      "size": 4958
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.class",
+      "sha256": "12c166ea48c698787d29d0b74ac31726448a90c9b4c408f6d8e50855975ab881",
+      "size": 3947
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/FixedDimensionProvider.class",
+      "sha256": "e82b85a445af06987cdd2466fb8e4fa00332dcf4e5652cde77531c23a0bd0dd8",
+      "size": 5381
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModBlockStateProvider.class",
+      "sha256": "e927a8c206571df8d1c69b98b0886bbf407c9443490bae42a3ff4aa928aaa57f",
+      "size": 4032
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModBlockTagsProvider.class",
+      "sha256": "b761e606ccf578f15af2f41aa68b8b91131b68a198a978ac5db0d162feb19cf3",
+      "size": 2408
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModItemModelProvider.class",
+      "sha256": "aa0735ae73e82e88f4cd8f420467421131a0a5f7bc39eb5ed423985eb8bb7a02",
+      "size": 1528
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModItemTagsProvider.class",
+      "sha256": "3d9aef6889df506ee75bcdc48977e5aa709b217ef961f69a20434645745271cf",
+      "size": 3202
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModLanguageProvider.class",
+      "sha256": "a6b4cb829d23b0d6a326dc8827ba3483a1d54a46e7a70ff3984fc337ee6452bb",
+      "size": 4826
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModLootTableProvider$ModBlockLoot.class",
+      "sha256": "3fbbf2e75eecfec1f2af88883917e9558c149f4e2f5e99aeccb63292aab92738",
+      "size": 1652
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModLootTableProvider.class",
+      "sha256": "ff1b839b207532d499db186f872d17124d1077770229b06749c83bc712049fe2",
+      "size": 1965
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModRecipeProvider$ElectrolyzingFinishedRecipe.class",
+      "sha256": "470c264572bf2f8923e6fe162c3d447d2e0558fbee268ab5f6b0cd3ee4f81780",
+      "size": 4558
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModRecipeProvider.class",
+      "sha256": "cb1dbb6d8815c6da923b63fb61cb68bfd62e2481a18dc94a402032604f77c53d",
+      "size": 3680
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModSoundDefinitionsProvider.class",
+      "sha256": "938c52b25e1e030a2316f5700ba2483dc77254e484979dc2990de758a6ec8901",
+      "size": 1811
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketBlockStateProvider.class",
+      "sha256": "75c5ac708ea348feabdb185c0cd4894f5b18021655ed612862380f74d497a45d",
+      "size": 3323
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketBlockTagsProvider.class",
+      "sha256": "7231a502e4aa2a3f2be0631b63fe6a80c3d83c31bd338d48c51ff1c9510e178f",
+      "size": 3502
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketGameTestStructureProvider.class",
+      "sha256": "bd9751fee4051839142662ae06999949bfb61347caaf061ed482b8659251d112",
+      "size": 3925
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketLanguageProvider$1.class",
+      "sha256": "6c58837681c94a125d6d4c1ac7187840535b5f0e86bef45862091434e318b4d4",
+      "size": 3116
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketLanguageProvider.class",
+      "sha256": "d62943368a69afa9af12e5f65bb18ce99a4ac7f112ebeeba46980f53b35eef6d",
+      "size": 8258
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketLootTableProvider$RocketBlockLoot.class",
+      "sha256": "821a38f91db75b21b9a310f4e897d51003ac3f26af57004085313a551ff10b0c",
+      "size": 3032
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketLootTableProvider.class",
+      "sha256": "3ecd2b4823c1030be05e1ecc199de41474bac0fde50dc8f18b4315e024e98176",
+      "size": 1983
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketRecipeProvider.class",
+      "sha256": "2f625943ec4379edddf4bb9cb0149deb5ec4bd792983f5f9059aeb79447209d7",
+      "size": 3978
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/AtmosphereGameTests$DamageableFakePlayer.class",
+      "sha256": "210482c8ad4f5661abc221798cec803f112d52d65dbb41d39be4dca51d5e1a27",
+      "size": 1245
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/AtmosphereGameTests.class",
+      "sha256": "f57a43325540f91629059ae2cfd9f534f6ae9456954fda9b2bedf87860ca92f0",
+      "size": 28947
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/AtmospherePerformanceGameTests.class",
+      "sha256": "9597e4eb3838913c5b0b70bb84da310e7dfd53cacba391bc88f5aa9bb692ff0b",
+      "size": 15275
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.class",
+      "sha256": "640299b4f62302873f69005ec36f75a925f00824e2ce23a58c5dfa23ad33c53c",
+      "size": 39023
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketGameTests.class",
+      "sha256": "84c094d245adc6064fffd7307635f2821b445d7ae7e6d6a8420673124990c84e",
+      "size": 27439
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerBlock.class",
+      "sha256": "f1b928c299148e62bb14111498bfc8303faef502b01c4b800721aa15cf4a641b",
+      "size": 12375
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerBlockEntity.class",
+      "sha256": "3d1a5a1645622a762c3d17541b3ead1e1a334ca26833aeadd7b2921f0e182b65",
+      "size": 24349
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerEnergyStorage.class",
+      "sha256": "0e43cf0558ef7b9d19a4bae7f68bf1cb90af5b418b64fda2a009442a6eda46e0",
+      "size": 1488
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerFluidTank.class",
+      "sha256": "58dc93fa79d3e44d10ecc79564141033a85269e4a3732f6fb792bdc15a5bb4cb",
+      "size": 2962
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerInventory.class",
+      "sha256": "4b06f0e4fbc645267a7ce0c5c7d4034ba25ce986c588b87422f20faaf1514822",
+      "size": 3538
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMaterialLedger.class",
+      "sha256": "7c794442fd69c3bbb39eeeed9ec4c2346745545ffc4e83c18c2b0475a1d9f633",
+      "size": 4059
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMenu$OutputSlot.class",
+      "sha256": "c47f0ffb4946cae58dadfd352e6fb02792c154c828c3f0a879a1a0a31c22ccf3",
+      "size": 938
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMenu.class",
+      "sha256": "28f43a12b8e6b71d6cdf52f9474e81376846349fd807759febf8860a4749bed8",
+      "size": 8612
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMenuData.class",
+      "sha256": "149917135098f2d747048c550ddcfd99984baf315e3a5570e4c0189ad471eafa",
+      "size": 1442
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence$DecodeResult.class",
+      "sha256": "c046f17af8d830b23e4161c36e342d63949e9acc6ae05e67f48838da811826e5",
+      "size": 4259
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence$FluidResult.class",
+      "sha256": "3dbebf28bfc43e1390eab9095f7df2dce4d13876ee5c217127fb03aa2b5489d9",
+      "size": 2131
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence$InventoryResult.class",
+      "sha256": "b73063c80694589f4f573a2d4b48de37fba4114b387c9922fe939f5c3766d1c3",
+      "size": 2154
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence.class",
+      "sha256": "6d5ef1a1a766e159fc569dc5fb52131adcd29aca824803e7fdbc997763fc84fd",
+      "size": 8849
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerProcessEngine.class",
+      "sha256": "3e58bdbeca9b825dee7eea91ea43a7d4420ef6200fbad2b5fff846b3f2efbe27",
+      "size": 2583
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipe$Serializer.class",
+      "sha256": "14f80a7e680de0d7aca6e567e92cc5c2dadf6ecf7f820784ca7121487504f646",
+      "size": 9074
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipe.class",
+      "sha256": "1727370e57f72f97d199b84bb2222f0fb4f16d07373e3f2358300ef0ef505663",
+      "size": 7655
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipeSpec.class",
+      "sha256": "13a4044e0f224963dd675c8eeb936385e51a6598e666d217a05fb2885d18f3f6",
+      "size": 4236
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerStatus.class",
+      "sha256": "3ce9b591133d152a9a3e6898e3d4ba5a0d566656fb4d3f8ce16b522aadd3d6da",
+      "size": 3055
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerTickInput.class",
+      "sha256": "7e5462371969a68869bf85f047ed3c0fc38860f64c7e32ef026160b93bdf8266",
+      "size": 2680
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerTickResult.class",
+      "sha256": "0d5bcee3fff808863d65c47da8d81cf5a5067d9c581e0c25eeb1994835f45117",
+      "size": 2366
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/FillOnlyFluidHandler.class",
+      "sha256": "9654721bcbcb0b106c7e8df8b0012542231e9bccab7e38c201b9c048a3a74300",
+      "size": 2511
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.class",
+      "sha256": "2d8da4d482be4d21acd98d4c43b9ec82826da51f3e3f058d1c513b16e13a14e7",
+      "size": 5153
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockTags.class",
+      "sha256": "f212e4d65eef299b7be1fd25dc237cc07b3a63002deb52454d9a23a2af4c6585",
+      "size": 1843
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.class",
+      "sha256": "5190738bf7cad6d322748876b8d9cf532e17a7980e479b944af4d86bc310993a",
+      "size": 5865
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.class",
+      "sha256": "566ab1923ef358f7dac53e091552b8cc7d4292d3f900a90d2dfb6defcf1769e3",
+      "size": 4962
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModDamageTypes.class",
+      "sha256": "74e988ddc664ebe137bcecead4c323af71a49150384c79aa81ffb881b15935d6",
+      "size": 1834
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModEntities.class",
+      "sha256": "d09dcf5b88ee5921d0398f5cea4c325a28b974b6acf743cec894e268251b8f5c",
+      "size": 3721
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModItemTags.class",
+      "sha256": "c0802a59fb4c3393ba2a3c6a625b7589e53644d6729fd3fb9b392b89dd102ee6",
+      "size": 1429
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.class",
+      "sha256": "3fe770a237a221eeeffcccb9fd1fa75dc3ed1d0a24007f10113ca16c0e24b9b5",
+      "size": 7325
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.class",
+      "sha256": "6fafa00f967deabb8318a4c77be11af499f03e837e14e86290286446fef3b981",
+      "size": 2964
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRecipes$1.class",
+      "sha256": "7f6a9685a50544beb5a5f9652c6f66da26280974e9fbbeced811bd9e2c7ee32f",
+      "size": 904
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRecipes.class",
+      "sha256": "0bd8754401241c69859a93d6dbca39c23ee291168bb903790c62dc51e625d917",
+      "size": 3127
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.class",
+      "sha256": "505a25712c6814fa54079b282e7b44a3b7188c7783b9151dc6c91049a2a0dc84",
+      "size": 1247
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModSounds.class",
+      "sha256": "be15540360bd9667fa1ed7e2f7c88e51878b07385f99caa9187cb5e2e75229f4",
+      "size": 2373
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/RocketLimits.class",
+      "sha256": "4593abea474f2f118a6bb0fd8dda800c7d7c83907eca87f541d1abdfccd54cb5",
+      "size": 1165
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/assembler/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/assembler/RocketAssemblerBlock.class",
+      "sha256": "c8447905248de03a0d1efc327701a17102a4ba13812be0b5186572a29b9423df",
+      "size": 3709
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/assembler/RocketAssemblerBlockEntity.class",
+      "sha256": "1c846a90b903bc868b692ed22b9dd3723f9be19d824515c901dfed91b3fb1d4c",
+      "size": 7149
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/assembler/RocketAssemblerReport.class",
+      "sha256": "5dbf90035a0a6ce7e26a65d9e590929bce68c840a302767d940adc1bb678fd11",
+      "size": 3789
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/command/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/command/RocketCommands.class",
+      "sha256": "adf3a0b863e394d018039b130ed7abb4d7e0b23eb8d1640241ead2d6e034005f",
+      "size": 14890
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.class",
+      "sha256": "edc05f02ec0c67d5026bfe7c4d72568ebbcbe25b3bdcb0c98fb3b27f1c50e7d6",
+      "size": 9861
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketBlockEntityAdapter.class",
+      "sha256": "d8a6d89349752a6f5e33da85a7764f603dff1e10514e1a8ff4b30ec2bae5bb5f",
+      "size": 649
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketBlockEntityAdapters$CaptureResult.class",
+      "sha256": "dfba95b6dc3fa07a327f8a8ab1b20395765a752e0e16086a0ce76c08207c24fe",
+      "size": 3831
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketBlockEntityAdapters.class",
+      "sha256": "31d132f26716f31a0b1804a1edbc6e9295a4401f74fda071ce1963c1c9492225",
+      "size": 6249
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketBlockStateAdapter.class",
+      "sha256": "c6c8c54a9da24b26068f055706e4620ea72782d6275faba0b472203c2dfc81cf",
+      "size": 6979
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketForgeMetrics.class",
+      "sha256": "1538becc5dd8a65b0140ca3bffe7a07af129da1886f375f8217554d7373e24ae",
+      "size": 1834
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/ServerLevelRocketScanWorld.class",
+      "sha256": "d030cd19bd5d300562b8dbe03ffc466bdf2cf0d96702192758d3ac4c6aea250c",
+      "size": 6911
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/ServerLevelRocketTransactionWorld.class",
+      "sha256": "d1c00406bab4ee69edc6291c80fcaa7c2a27e98671899b481e4e29d4cfd609a8",
+      "size": 15029
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/VanillaContainerRocketAdapter.class",
+      "sha256": "dd4f36ae188ad0400abccce13449e8ef5392e9432262c5f8f0ab8b058b808113",
+      "size": 7852
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketBlock.class",
+      "sha256": "64fd1ecdb7aa7265ec993aec7eb8dc66de8779dcd64c30fe30bd5438e1ef6e41",
+      "size": 3159
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketBlockEntityPayload.class",
+      "sha256": "cfcd1ff024483776d59ac52d1f42de89ea3e69335d3b33f950f131b770dd7802",
+      "size": 3371
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketBlockState.class",
+      "sha256": "5b1ec7668ac9e44f40d4eeff14abae1cdcab8d78aa780ed8908de77894d64211",
+      "size": 5574
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketBounds.class",
+      "sha256": "ccff128119e950bb08862db8ce3376bdcf9572398b5c0df1df28bf76606eba6e",
+      "size": 5537
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketNbtSize.class",
+      "sha256": "878c8e1e09d843090cd2083455189f7c1dc9ded9cf8f4ceab1c0ccd6f5bc1c84",
+      "size": 1405
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition.class",
+      "sha256": "229349167293b324c97cb8a9b8bfe55ae5b0ab9728131e8e7d518dbfec8bce24",
+      "size": 3681
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketSnapshotException.class",
+      "sha256": "0b4b7e846779aecd7ad656aec0e3fcdf5fa8f2972b2f1f84b739fd544ce8c4d0",
+      "size": 2192
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketSnapshotHasher.class",
+      "sha256": "f7fef22af69943702343986d35ca64d0d2a5f218fe0cddabce8e7f739aae392c",
+      "size": 7932
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.class",
+      "sha256": "d850a008b5dbc9f719d349e4d839827aeeec3f52fa8e31969478a4e8d94730ed",
+      "size": 10701
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualBlock.class",
+      "sha256": "6028a49add7389f41d5fb14040e50db9f4cbd51d032e031d57af7e96da819822",
+      "size": 2906
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualChunkPacket.class",
+      "sha256": "db1c9e5789be06902a8cab97768fbebdd067b04991efe2d430900f23136d2bed",
+      "size": 6979
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualChunker.class",
+      "sha256": "1921e3e9ecb96b99ae6b0937b0c6e86fecf498c5b5427b3ac9f020bd6af1ca08",
+      "size": 2595
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualClientCache$AcceptResult.class",
+      "sha256": "43f5b9c6a4ad447139b6570c6d2fe58f65d9429a490c90715b7f1df0b9b1d17d",
+      "size": 1751
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualClientCache$Reassembly.class",
+      "sha256": "41e4466f72c6e50b6fcae8adcdff4258f93e199262678694efae6955439592a6",
+      "size": 1797
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualClientCache.class",
+      "sha256": "e4dbace4b99f021d08644e69c11ac3d3905b4daa8a8e0363571c18f8e94ea7ee",
+      "size": 8446
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualNetwork.class",
+      "sha256": "93620a76e30b5db04e86da22ffe2e3a6548fe6d12c37905f02999358849d7e1f",
+      "size": 6423
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualSnapshot.class",
+      "sha256": "e4b60f8f95f81b077939a6b562db620ac44c0663af012a92e9cf125c059c76aa",
+      "size": 5969
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualSnapshotCodec.class",
+      "sha256": "c785792def92d39ba2fe7a5c85b8c7569503fb6d5299fb300f866f87aa02553c",
+      "size": 12065
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualSynchronizer.class",
+      "sha256": "b04bd3bda63731db1be4b28dbeb8f113afb7f7a1d3aa3b78b43ccd6e1d631fbe",
+      "size": 2844
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketPersistedTransaction.class",
+      "sha256": "93725bb5a2217cad110ed9ae31ef694e9df29c02a51f1d854daaeedd2c192875",
+      "size": 3221
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketSnapshotDecodeResult$Status.class",
+      "sha256": "88b07bd7137ff737dd152cac844b5890ab6192541c370e7360ae908a2141ea90",
+      "size": 1706
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketSnapshotDecodeResult.class",
+      "sha256": "31397557ba1df5eb9a6ba9ffd10cc67478a822fbeccdd701e164aab070002e0c",
+      "size": 4413
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketSnapshotNbtCodec.class",
+      "sha256": "bbd77af4e6dc6b75d815997c809c665a8e973f9834c9cb7c8c18c47a278cb14d",
+      "size": 23762
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketTransactionSavedData$BoundJournal.class",
+      "sha256": "124351ed116a8bdb524b1b29ba0197027de1cc59bd484a75592708a92c70826a",
+      "size": 1897
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketTransactionSavedData.class",
+      "sha256": "e6f5a7b7117adbdcefe85b8552d8d1d71897881b8a9ec100a828af2628924256",
+      "size": 16896
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketScanObservation$Kind.class",
+      "sha256": "bc259cf0fd3a168ca40574a09e93b0874a0af28dc7d8519c29a85c555838b173",
+      "size": 1781
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketScanObservation.class",
+      "sha256": "631c35b717eb9af23b94f43eb1578796913b0044e1b3a1c1eb3bb9ae949d0b7d",
+      "size": 5069
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketScanResult$Status.class",
+      "sha256": "e10bffbc022214bec864a7ac7fc7e576ab3622d6e0e362a5746d4546ecfdb07a",
+      "size": 1572
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketScanResult.class",
+      "sha256": "90cf7ba3adf9e0fc8335899dd6e56509b3f8e8f1364b2c36b714675b7d8bf08d",
+      "size": 5340
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketScanWorld.class",
+      "sha256": "7a965b049c005415fb1cd88d03563f37d033b6cd501b61a64ab3c6f63b7aacfb",
+      "size": 425
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketStructureScanTask$1.class",
+      "sha256": "ebc0cf6f4c77def6fd8f116ba925f243d49f0ea2c656052158bf061134ca0c17",
+      "size": 1350
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/scan/RocketStructureScanTask.class",
+      "sha256": "b498f3178ee28d7c36ca8be04b411cd61bb6ea93101f2735984a009b27a39bce",
+      "size": 16377
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager$AssemblerKey.class",
+      "sha256": "a59c9c0f4f96027f6a28b8c827c75cf6f2c267bc8242095a88b605656109b934",
+      "size": 2670
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager$PendingScan.class",
+      "sha256": "34a77e15462c27871c07a2fbb8066448c3c738ba054ba80c8ac34b807872673d",
+      "size": 3019
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.class",
+      "sha256": "3795275ec42e349129507cd6ea9f086f4e44c5428730555eb7ebe254b8a6df61",
+      "size": 27889
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketOperationService.class",
+      "sha256": "2d36e55e54e7f3c71745ff9d19321f409c1eff6d5104bdd91d16ecb7f41f952d",
+      "size": 441
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketRuntime.class",
+      "sha256": "12c780fbfb0dc5de692d3b93ccf437eaf3f138a9e2e46c477fa37729a9b524cd",
+      "size": 2058
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransactionRecoveryService$Outcome.class",
+      "sha256": "7b4f188250f835f7d88e78b0e6be1719b7ad8042dfccba891f38c9a649b02883",
+      "size": 1789
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransactionRecoveryService.class",
+      "sha256": "0017df7ef4890e86fbf77524d3ab8f640f37512e6802f8581e95e12e9e4f2922",
+      "size": 13631
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/stats/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/stats/RocketBlockMetrics.class",
+      "sha256": "f91c44b9ef1c48a1662b4ba745a9c6a3fb812668768954920d2ebbab6277b8ed",
+      "size": 2798
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/stats/RocketStats.class",
+      "sha256": "f9819956be12f46b204612016b5668cfcae206a2bf8be3ca942c5bb0b6d02591",
+      "size": 3160
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/stats/RocketStatsCalculator.class",
+      "sha256": "c022cf72dab46e20bddf20ec89b1d4cbf31570a94a78c99b27cddf1dd375eb31",
+      "size": 3518
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketAssemblyTransaction$PlacedBlock.class",
+      "sha256": "97a77a8559c53b9d0c7fd09fa2cf4619ed813d29819e302f0b635b36840073a9",
+      "size": 2502
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketAssemblyTransaction.class",
+      "sha256": "3bc983cfdcebdbc4cf291b77051c9b4db71504467f748d63f1ac2719e0692dae",
+      "size": 20388
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketDisassemblyTransaction$PlacedBlock.class",
+      "sha256": "292b5ef1fc1084937be4717bc1f52809784e16c2c732e5ac982d015b23fa8d5d",
+      "size": 2523
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketDisassemblyTransaction.class",
+      "sha256": "a6f18e17e85df66d471cb3a2c426b1b652d11481d8daca79be3762eb9d1c1fd5",
+      "size": 20406
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketFailureInjector.class",
+      "sha256": "a4c4f92333068b884827954d9aafa503126b8d9ff4f2e7ed88ddc03fdc1bd6e3",
+      "size": 1348
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketFailurePoint.class",
+      "sha256": "b178be381ecc5af224ed4ef09c4417cb0b7db65c42e2b52894a9d020280f76d1",
+      "size": 1593
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketOperationLedger$BeginResult.class",
+      "sha256": "09df0a173b29c97e71c77589b31de87e3ab3686fca68b9a997ea055a512e4f0a",
+      "size": 1695
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketOperationLedger$Outcome.class",
+      "sha256": "c579c17ddd85687fa0313b53ebd4284ca4e2f15b2e60412665dbc3a2504f9c12",
+      "size": 1669
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketOperationLedger.class",
+      "sha256": "6a081e3954618176db98391e85d3beedefd1885401c1d37d7a68c0dd59caf881",
+      "size": 3631
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketRecoveryDecision$Authority.class",
+      "sha256": "326cc7a05bd7d02590dee0ea8dea6da7e4c6936305b70e9d343350519537180c",
+      "size": 1635
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketRecoveryDecision.class",
+      "sha256": "44c7f4b65867173dcba6dbab7d195e008ddfa329288346f905499bc8a4a74c33",
+      "size": 1889
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketRegion.class",
+      "sha256": "cc557e997090154fedb265a1ca8087582ac0127d87a11dd5f276fb7a76bc8ce8",
+      "size": 4392
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketRegionLockManager$LockToken.class",
+      "sha256": "6ec1d9dfe5d39aeeed677f8c1fc3bacefad6207d97b57b66273735f6e2617812",
+      "size": 1683
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketRegionLockManager.class",
+      "sha256": "bd7596ef8c936d94a6c2805d7f5801c2730d4b97e31b4be9552cc754a35e8089",
+      "size": 3578
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionAbortException.class",
+      "sha256": "12b9173fbe8cc22400ad74af359073808ad9dd2b89807e3d8ea0d2d79af7c3d5",
+      "size": 2116
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionJournal$1.class",
+      "sha256": "f4786b74fd13d93afccfc2adfa12e5dd57f8e1ff56d72a1c97b3d27c9d8d4602",
+      "size": 1017
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionJournal.class",
+      "sha256": "88602171700d743c3ac63f835ea338213a98d709ca2479d96a0e6e3d505673d5",
+      "size": 731
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionPhase.class",
+      "sha256": "f310de47dce4d97c68a8f4703f6a059c8fae584c4e4fb16bd6fe630d421e032c",
+      "size": 1946
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionRecord.class",
+      "sha256": "63fbb0a86dfed66706c0ea706c0ee17d8901bfbe6352b98b2c55b09898fb7f3d",
+      "size": 4518
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionResult.class",
+      "sha256": "7bb76e325adfb0b5565b315cbdc16a0ef483341d69255d82f35cf4c12ee40022",
+      "size": 3196
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionType.class",
+      "sha256": "fc27f9f7b7f65b6e323c310d81a9be2310cbfaba14457c62213a66162a1e07a1",
+      "size": 1419
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionWorld.class",
+      "sha256": "7ca311f54703422b8764712baf50d870a3cf9923d386fa11fc0c047cba0954c6",
+      "size": 1361
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketWorldBlock.class",
+      "sha256": "ad3f695bacde04536605f699cee5688e1d2a9e25dd39a5a5533f7f30a730b703",
+      "size": 2560
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/validation/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/validation/RocketStatsValidator.class",
+      "sha256": "001d97f8f16bc77d49f2a21f342112be89011b1a4dd70426c82a037b8d5fc1f1",
+      "size": 2441
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/validation/RocketValidationCode.class",
+      "sha256": "206b8f22f4bf2c6f5db6cb8292ecff63142f66139e292df6ca80600e9e0a1db2",
+      "size": 4500
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/validation/RocketValidationIssue.class",
+      "sha256": "d06a9438c7cfda9fa80cee38730c84a53ef0f868da78804a899a2fc9fe83c3b7",
+      "size": 4184
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/rocket/validation/RocketValidationResult.class",
+      "sha256": "9dd85dd0486d0666bb5eeb4aa713df740a2583a0a45300d62189e0481e40f19d",
+      "size": 4160
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/ServerBootstrap.class",
+      "sha256": "ae922ac7a9d2f31d0717e8d94b3d755ab4e592a54658c8047a6fc3cb8afbaa33",
+      "size": 1445
+    },
+    {
+      "path": "pack.mcmeta",
+      "sha256": "5158c85fae5a50457af193a115f4f9d8b74ba30173cd36f14c683f1b98bc9a73",
+      "size": 322
+    }
+  ],
+  "entry_count": 497,
+  "schema_version": 1
+}

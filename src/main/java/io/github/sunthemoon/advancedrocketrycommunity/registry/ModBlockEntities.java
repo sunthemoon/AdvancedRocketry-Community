@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -29,6 +30,14 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             OxygenVentBlockEntity::new,
                             ModBlocks.OXYGEN_VENT.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<RocketAssemblerBlockEntity>> ROCKET_ASSEMBLER =
+            BLOCK_ENTITIES.register(
+                    "rocket_assembler",
+                    () -> BlockEntityType.Builder.of(
+                            RocketAssemblerBlockEntity::new,
+                            ModBlocks.ROCKET_ASSEMBLER.get()
                     ).build(null)
             );
 

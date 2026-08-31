@@ -1,0 +1,8 @@
+# Filtered v0.5.0 client lifecycle evidence
+# Full log omitted because it contains machine-local paths.
+[019��2026 05:49:14.486] [Worker-Main-7/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.5.0-dev initialized
+[019��2026 05:49:18.924] [Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[019��2026 05:49:19.322] [Render thread/WARN] [net.minecraft.client.ClientRecipeBook/]: Unknown recipe category: advancedrocketrycommunity:electrolyzing/advancedrocketrycommunity:electrolyzer_water
+[019��2026 05:49:19.679] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 2 advancements
+[019��2026 05:53:29.764] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Saved screenshot as 2026-09-01_05.53.29.png
+[019��2026 05:54:24.815] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

@@ -51,12 +51,12 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
-      - name: Audit v0.4.0 distributable JAR
+      - name: Audit v0.5.0 distributable JAR
         run: >-
           python scripts/validate_build_artifact.py
-          build/libs/advancedrocketry-community-1.20.1-0.4.0-dev.jar
-          --expected-version 1.20.1-0.4.0-dev
-          --content-manifest build/release-evidence/v040-jar-content-manifest.json
+          build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar
+          --expected-version 1.20.1-0.5.0-dev
+          --content-manifest build/release-evidence/v050-jar-content-manifest.json
 
       - name: Validate frozen v0.1.0 resources
         run: python scripts/validate_v010_asset_baseline.py
@@ -70,6 +70,9 @@ jobs:
       - name: Validate v0.4.0 generated-resource inventory
         run: python scripts/manage_v040_generated_manifest.py verify
 
+      - name: Validate v0.5.0 generated-resource inventory
+        run: python scripts/manage_v050_generated_manifest.py verify
+
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
 
@@ -81,6 +84,9 @@ jobs:
 
       - name: Validate v0.4.0 release evidence
         run: python scripts/validate_v040_release_evidence.py --require-approved
+
+      - name: Validate v0.5.0 release evidence
+        run: python scripts/validate_v050_release_evidence.py --require-approved
 
       - name: Generate deterministic resources
         run: ./gradlew runData --no-daemon --stacktrace
@@ -97,8 +103,8 @@ jobs:
       - name: Run packaged dedicated-server smoke test
         run: >-
           python scripts/run_dedicated_server_smoke.py
-          build/libs/advancedrocketry-community-1.20.1-0.4.0-dev.jar
-          --expected-mod-version 1.20.1-0.4.0-dev
+          build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar
+          --expected-mod-version 1.20.1-0.5.0-dev
           --session-dir build/dedicated-server-smoke/session
           --evidence-dir build/dedicated-server-smoke/evidence
           --port 25585
@@ -109,7 +115,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v020-machine-server-smoke/evidence
-          --expected-version 1.20.1-0.4.0-dev
+          --expected-version 1.20.1-0.5.0-dev
 
       - name: Run packaged celestial restart and reload smoke test
         run: >-
@@ -117,7 +123,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v030-celestial-server-smoke/evidence
-          --expected-version 1.20.1-0.4.0-dev
+          --expected-version 1.20.1-0.5.0-dev
 
       - name: Run packaged atmosphere restart and five-minute smoke test
         run: >-
@@ -125,7 +131,15 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v040-atmosphere-server-smoke/evidence
-          --expected-version 1.20.1-0.4.0-dev
+          --expected-version 1.20.1-0.5.0-dev
+
+      - name: Run packaged rocket assembly and recovery smoke test
+        run: >-
+          python scripts/run_v050_rocket_server_smoke.py
+          build/dedicated-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v050-rocket-server-smoke/evidence
+          --expected-version 1.20.1-0.5.0-dev
 
       - name: Upload baseline JAR and test reports
         if: always()
@@ -134,15 +148,16 @@ jobs:
           name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
           if-no-files-found: error
           path: |
-            build/libs/advancedrocketry-community-1.20.1-0.4.0-dev.jar
-            build/libs/advancedrocketry-community-1.20.1-0.4.0-dev-sources.jar
+            build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar
+            build/libs/advancedrocketry-community-1.20.1-0.5.0-dev-sources.jar
             build/reports/tests/test/
             build/test-results/test/
-            build/release-evidence/v040-jar-content-manifest.json
+            build/release-evidence/v050-jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
             build/v020-machine-server-smoke/evidence/
             build/v030-celestial-server-smoke/evidence/
             build/v040-atmosphere-server-smoke/evidence/
+            build/v050-rocket-server-smoke/evidence/
 
   latest-compatibility:
     name: Forge 47.4.23 compatibility (advisory)

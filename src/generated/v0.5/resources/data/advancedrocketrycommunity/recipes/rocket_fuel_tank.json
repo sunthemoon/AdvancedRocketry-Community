@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "pattern": [
+    "III",
+    "G G",
+    "III"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:rocket_fuel_tank"
+  },
+  "show_notification": true
+}

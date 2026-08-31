@@ -1,0 +1,11 @@
+artifact_sha256=45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0
+baseline_session_id=v002-a1d8013be52b771275631354
+snapshot_hash=feec1e1eddc6fb1978645ce389faed0b66de17cb8b85acbbd15afb24ada09a4c
+rocket_id=e33ea82b-16cf-4f84-b500-305d11294281
+transaction_id=9deb0278-5ca8-4cf4-9a01-f64c36e54388
+assembled_blocks=4
+entity_nbt_restart_byte_equal=true
+stale_transaction_recovered=true
+durable_journal_cleared=true
+diamond_count_after_recovery=17
+iron_ingot_count_after_recovery=64

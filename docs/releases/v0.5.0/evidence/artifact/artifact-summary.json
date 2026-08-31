@@ -1,0 +1,35 @@
+{
+  "build": "1.20.1-0.5.0-dev",
+  "content_manifest": {
+    "entry_count": 497,
+    "path": "docs/releases/v0.5.0/evidence/artifact/jar-content-manifest.json",
+    "sha256": "0184e2c49061da76e91933c020447ad1f4c13e87fc34499843b8dc6952c9d24d"
+  },
+  "main_jar": {
+    "bytes": 703307,
+    "filename": "advancedrocketry-community-1.20.1-0.5.0-dev.jar",
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar",
+    "sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0"
+  },
+  "packaged_server_copy": {
+    "byte_equal": true,
+    "sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0"
+  },
+  "repeated_clean_builds": {
+    "byte_identical": true,
+    "count": 2,
+    "main_sha256_values": [
+      "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
+      "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0"
+    ]
+  },
+  "schema_version": 1,
+  "sources_jar": {
+    "bytes": 357173,
+    "filename": "advancedrocketry-community-1.20.1-0.5.0-dev-sources.jar",
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.5.0-dev-sources.jar",
+    "sha256": "a1220e5066c487e009edad46311f912430b8bd2ef39881e46bb79d96c9afc7eb"
+  },
+  "tested_implementation_commit": "eae8d9224c708924930b781d7332eb69b6a4bf8d",
+  "version": "v0.5.0"
+}

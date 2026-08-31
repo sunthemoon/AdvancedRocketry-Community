@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -43,8 +44,27 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(OxygenVentBlock.LIT) ? 8 : 0)
                     .sound(SoundType.METAL))
     );
+    public static final RegistryObject<Block> ROCKET_ASSEMBLER = BLOCKS.register(
+            "rocket_assembler",
+            () -> new RocketAssemblerBlock(metalProperties())
+    );
+    public static final RegistryObject<Block> ROCKET_MOTOR = metalBlock("rocket_motor");
+    public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");
+    public static final RegistryObject<Block> ROCKET_SEAT = metalBlock("rocket_seat");
+    public static final RegistryObject<Block> GUIDANCE_COMPUTER = metalBlock("guidance_computer");
 
     private ModBlocks() {
+    }
+
+    private static RegistryObject<Block> metalBlock(String name) {
+        return BLOCKS.register(name, () -> new Block(metalProperties()));
+    }
+
+    private static BlockBehaviour.Properties metalProperties() {
+        return BlockBehaviour.Properties.of()
+                .mapColor(MapColor.METAL)
+                .strength(5.0F, 6.0F)
+                .sound(SoundType.METAL);
     }
 
     public static void register(IEventBus modBus) {
