@@ -20,11 +20,11 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest accepted milestone is `v0.2.0`: one complete,
-server-authoritative Electrolyzer vertical slice with item, water, Forge
-Energy, progress, persistence, automation, and a readable menu. Active
-development targets `v0.3.0`: bounded celestial data plus fixed Moon and Space
-test dimensions. Rocket gameplay is not yet available. See
+The latest accepted milestone is `v0.3.0`: bounded celestial data, stable
+Earth/Moon/Space identities, fixed Moon and Space test dimensions, persistent
+discovery state, and secure legacy XML import. The next development target is
+`v0.4.0`: vacuum, life support, and budgeted sealed-space detection. Rocket
+gameplay is not yet available. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
 sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
 verified and pending evidence.

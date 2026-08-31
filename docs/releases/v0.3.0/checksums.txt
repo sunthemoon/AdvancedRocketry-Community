@@ -11,7 +11,7 @@ ad3fccb1acd907ad86501fc1bb07bcc007338732930e574f966567cc87158c2f  docs/releases/
 e99edb30311e2b323e59eff7c870cfc9506cebab0b7fa4d9bd28278ad5583fac  docs/releases/v0.3.0/evidence/client/logs/client-b.txt
 e75f9a40f648fbc2ea9623d952e2621dfd484ce6833b5bf9fe23c61fa7a61b20  docs/releases/v0.3.0/evidence/client/logs/server-after-restart.txt
 f944e9991fccdd8df9dc52d89e599467af0b45904bf87875ab72ca28e8424f09  docs/releases/v0.3.0/evidence/client/logs/server-before-restart.txt
-b778a47354c272790105bf984a7ba933f1c3e914eaa44efb1cf48bfafe93cde7  docs/releases/v0.3.0/evidence/client/manual-evidence.json
+ee48f9f19c509932dc063864f9712cb311f02f01a880669bdabca1db65169a19  docs/releases/v0.3.0/evidence/client/manual-evidence.json
 88b6b4da82a1706dc598003e3c9da10262e80f1122cab3591c5e3340a3924780  docs/releases/v0.3.0/evidence/client/screenshots/earth_after_restart.png
 603c48323aff76b48a4602dc9607b4325e3f0e730095cfba6e564a76b7ca6fd5  docs/releases/v0.3.0/evidence/client/screenshots/earth_safe_return.png
 54f6ec46109800b4dd0a7424d19dde16622bd2764de159555235a0c989813d2f  docs/releases/v0.3.0/evidence/client/screenshots/mods_v030.png

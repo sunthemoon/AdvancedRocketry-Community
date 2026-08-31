@@ -25,7 +25,7 @@ forge: 47.4.10
 | DataGen | PASS; 7 files, 0 written, clean Git diff | generated manifest and worktree check |
 | Forge GameTest | 15/15 PASS with completion marker | GameTest log |
 | Strict repository validation | 27 passed, 0 warnings, 0 failed | repository validator output |
-| Pull-request checks | 3/3 PASS on READY_FOR_AUDIT head `9c38e23` | Forge and governance URLs in `GATE-STATUS.md` |
+| Pull-request checks | 3/3 PASS on technical checkpoint `9a7f4db` | Forge and governance URLs in `GATE-STATUS.md` |
 
 ## Model, reload, save, and network coverage
 
@@ -59,3 +59,10 @@ The bounded StAX importer disables DTD/external entities, enforces input/node/
 depth/string/body/issue budgets, keeps numeric dimension IDs report-only, and
 produces deterministic LF JSON. Two runs over the exact 1,031-byte upstream
 fixture produced byte-identical output and an explicit warning report.
+
+## Human approval
+
+Repository owner `sunthemoon` approved G0, G8, and G9 on 2026-08-31 against
+the exact 296,189-byte JAR SHA-256
+`920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb`
+and the committed evidence inventory. All ten Required Gates are `PASS`.

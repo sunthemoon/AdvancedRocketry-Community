@@ -4,11 +4,12 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.3.0 — acceptance in progress, unreleased developer preview
+## v0.3.0 — PASSED, unreleased developer preview
 
-**Status:** Implementation and packaged client/server verification are complete.
-Owner review, blocking pull-request checks, merge, and post-merge rebuild remain.
-No acceptance claim, tag, or public release exists yet.
+**Status:** `PASSED` on 2026-08-31 after repeated build, automated, packaged
+client, two-player dedicated-server restart, persistence, provenance, owner
+review, and all 3/3 pull-request checks completed. No tag or public release
+exists.
 
 ### Implemented player-visible result
 

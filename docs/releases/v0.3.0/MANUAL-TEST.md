@@ -5,8 +5,9 @@
 ```yaml
 date: 2026-08-31
 tester: Codex-assisted packaged-client execution
-reviewer: ""
-review_status: READY_FOR_HUMAN_REVIEW
+reviewer: sunthemoon
+review_status: APPROVED
+reviewed_at: 2026-08-31
 minecraft: 1.20.1
 forge: 47.4.10
 java: 17.0.8
@@ -51,13 +52,15 @@ logs are bound by
 ## Human Gate decision
 
 ```yaml
-G0: READY_FOR_HUMAN_REVIEW
-G8: READY_FOR_HUMAN_REVIEW
-G9: READY_FOR_HUMAN_REVIEW
-reviewer: ""
-reviewed_at: ""
+G0: APPROVED
+G8: APPROVED
+G9: APPROVED
+reviewer: sunthemoon
+reviewed_at: 2026-08-31
 findings: []
 ```
 
-Approval must apply to the exact artifact and evidence hashes in
-[`checksums.txt`](checksums.txt). Changed bytes require renewed review.
+Repository owner `sunthemoon` approved these Gates against main JAR SHA-256
+`920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb`
+and the exact evidence inventory. [`checksums.txt`](checksums.txt) includes the
+approval record; changed artifact or evidence bytes require renewed review.
