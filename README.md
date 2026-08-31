@@ -22,7 +22,7 @@ Current target:
 
 The latest accepted milestone is `v0.3.0`: bounded celestial data, stable
 Earth/Moon/Space identities, fixed Moon and Space test dimensions, persistent
-discovery state, and secure legacy XML import. The next development target is
+discovery state, and secure legacy XML import. Active development targets
 `v0.4.0`: vacuum, life support, and budgeted sealed-space detection. Rocket
 gameplay is not yet available. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation

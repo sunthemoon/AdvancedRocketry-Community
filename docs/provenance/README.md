@@ -14,6 +14,9 @@ Use `docs/templates/SOURCE-PROVENANCE-TEMPLATE.md`.
 - [`v0.2.0-electrolyzer.md`](v0.2.0-electrolyzer.md) records the behavior-only
   upstream reference, zero copied assets, runtime texture IDs, and owner G0
   approval for the Electrolyzer slice.
+- [`v0.4.0-atmosphere.md`](v0.4.0-atmosphere.md) tracks the community-authored
+  atmosphere/life-support slice and currently records zero copied source files
+  or binary assets.
 
 Supplemental exact license copies are stored in `docs/licenses/` and mapped in
 [`THIRD-PARTY-NOTICES.md`](../../THIRD-PARTY-NOTICES.md). Adding a copy does not

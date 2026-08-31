@@ -1,0 +1,14 @@
+artifact_sha256=05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1
+baseline_session_id=v002-7fda49bd0305e6a89fe2770a
+dimension=advancedrocketrycommunity:moon
+vents=16
+sealed_room_traversable_cells=16
+duration_seconds=300.0
+sample_count=60
+sampled_mean_tick_ms_average=1.281
+sampled_mean_tick_ms_p95=1.44
+sampled_mean_tick_ms_maximum=11.182
+sampled_tps_average=20.0
+sampled_tps_minimum=20.0
+vent_nbt_restart_byte_equal=true
+post_restart_volume_rebuilt=true

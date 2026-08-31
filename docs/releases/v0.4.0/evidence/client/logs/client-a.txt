@@ -1,0 +1,19 @@
+# Filtered packaged-client lifecycle; machine paths and desktop content omitted.
+[before-restart]
+[23:29:03] [Worker-Main-10/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.4.0-dev initialized
+[23:29:09] [Netty Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[23:32:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_ROOM_ACTIVE
+[23:56:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_ROOM_RESEALED
+[23:57:59] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_ROOM_OPEN
+[23:58:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_ROOM_RECOVERED
+[00:02:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_ANIMATION_ROOM_OPEN
+[00:02:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_ANIMATION_ROOM_RESEALED
+[00:05:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server: Stopping the server]
+[00:07:28] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[after-restart]
+[00:09:02] [Worker-Main-3/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.4.0-dev initialized
+[00:09:07] [Netty Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[00:11:26] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server] V040_POST_RESTART_VOLUME_REBUILT
+[00:12:04] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ARCEV040A: Teleported to advancedrocketrycommunity:space at fixed safe destination]
+[00:12:04] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ARCEV040B: Teleported to advancedrocketrycommunity:space at fixed safe destination]
+[00:15:23] [Render thread/INFO] [minecraft/Minecraft]: Stopping!

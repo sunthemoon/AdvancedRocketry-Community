@@ -1,0 +1,45 @@
+{
+  "build": "1.20.1-0.4.0-dev",
+  "content_manifest": {
+    "entry_count": 346,
+    "path": "docs/releases/v0.4.0/evidence/artifact/jar-content-manifest.json",
+    "sha256": "baac22ee9fbb0319eb71f53366d996180d566c6bf9c7c6ae33aa9aa8894d914d"
+  },
+  "main_jar": {
+    "bytes": 466433,
+    "filename": "advancedrocketry-community-1.20.1-0.4.0-dev.jar",
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.4.0-dev.jar",
+    "sha256": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1"
+  },
+  "manual_tested_copy": {
+    "bytes": 466433,
+    "path": "run/v040-repro/manual-tested.jar",
+    "sha256": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1"
+  },
+  "packaged_copies": {
+    "all_equal": true,
+    "sha256_values": {
+      "client_a": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "client_b": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "server": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "source": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1"
+    }
+  },
+  "repeated_clean_builds": {
+    "byte_identical": true,
+    "count": 2,
+    "main_sha256_values": [
+      "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1"
+    ]
+  },
+  "schema_version": 1,
+  "sources_jar": {
+    "bytes": 242727,
+    "filename": "advancedrocketry-community-1.20.1-0.4.0-dev-sources.jar",
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.4.0-dev-sources.jar",
+    "sha256": "44841519742a54e43b27642eb2442435973b7d30e9e5a642dc95dca97b2f984d"
+  },
+  "tested_implementation_commit": "f880870aa4db0a46758dcc8615dfa2c16b2e3b59",
+  "version": "v0.4.0"
+}

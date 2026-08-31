@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "pattern": [
+    "III",
+    "ICI",
+    "I I"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:space_suit_leggings"
+  },
+  "show_notification": true
+}

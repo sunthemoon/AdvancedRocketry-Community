@@ -1,7 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.OxygenCanisterItem;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.content.DevelopmentComponentItem;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -33,7 +37,27 @@ public final class ModItems {
     );
     public static final RegistryObject<Item> OXYGEN_CANISTER = ITEMS.register(
             "oxygen_canister",
-            () -> new Item(new Item.Properties().stacksTo(16))
+            () -> new OxygenCanisterItem(new Item.Properties().stacksTo(16))
+    );
+    public static final RegistryObject<Item> OXYGEN_VENT = ITEMS.register(
+            "oxygen_vent",
+            () -> new BlockItem(ModBlocks.OXYGEN_VENT.get(), new Item.Properties())
+    );
+    public static final RegistryObject<Item> SPACE_SUIT_HELMET = spaceSuit(
+            "space_suit_helmet",
+            ArmorItem.Type.HELMET
+    );
+    public static final RegistryObject<Item> SPACE_SUIT_CHESTPLATE = spaceSuit(
+            "space_suit_chestplate",
+            ArmorItem.Type.CHESTPLATE
+    );
+    public static final RegistryObject<Item> SPACE_SUIT_LEGGINGS = spaceSuit(
+            "space_suit_leggings",
+            ArmorItem.Type.LEGGINGS
+    );
+    public static final RegistryObject<Item> SPACE_SUIT_BOOTS = spaceSuit(
+            "space_suit_boots",
+            ArmorItem.Type.BOOTS
     );
     public static final RegistryObject<Item> SILICON_WAFER = component("silicon_wafer");
     public static final RegistryObject<Item> BASIC_CIRCUIT = component("basic_circuit");
@@ -45,6 +69,13 @@ public final class ModItems {
 
     private static RegistryObject<Item> component(String name) {
         return ITEMS.register(name, () -> new DevelopmentComponentItem(new Item.Properties()));
+    }
+
+    private static RegistryObject<Item> spaceSuit(String name, ArmorItem.Type type) {
+        return ITEMS.register(
+                name,
+                () -> new SpaceSuitArmorItem(ArmorMaterials.IRON, type, new Item.Properties())
+        );
     }
 
     public static void register(IEventBus modBus) {

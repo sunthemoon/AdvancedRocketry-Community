@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "advancedrocketrycommunity:block/oxygen_vent"
+    },
+    "lit=true": {
+      "model": "advancedrocketrycommunity:block/oxygen_vent_active"
+    }
+  }
+}

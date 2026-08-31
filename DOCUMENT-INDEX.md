@@ -69,6 +69,10 @@
 | `docs/releases/v0.3.0/` | 天体 Codec、固定 Moon/Space、XML 导入、双客户端和重启证据 |
 | `docs/releases/v0.3.0/GATE-STATUS.md` | v0.3.0 Required Gate 审核状态与最终 CI/PR 绑定 |
 | `docs/releases/v0.3.0/INSTALLATION.md` | v0.3.0 开发预览的安装、命令、固定维度和存档边界 |
+| `docs/releases/v0.4.0/` | 真空、宇航服、氧气 Vent、预算扫描、双客户端、重启与性能证据 |
+| `docs/releases/v0.4.0/GATE-STATUS.md` | v0.4.0 Required Gate 审核状态与构建/人工批准绑定 |
+| `docs/releases/v0.4.0/PERFORMANCE.md` | 16-Vent GameTest 与五分钟专服采样结果 |
+| `docs/releases/v0.4.0/INSTALLATION.md` | v0.4.0 开发预览安装、内容与存档边界 |
 
 ## 实施记录
 
@@ -80,6 +84,7 @@
 | `docs/work/v0.1.0-implementation-log.md` | 上游审计、最小资产批次、注册/DataGen 与验证记录 |
 | `docs/work/v0.2.0-implementation-log.md` | Electrolyzer 领域、Forge 适配、持久化、客户端和验收记录 |
 | `docs/work/v0.3.0-implementation-log.md` | 天体 Codec、固定维度、SavedData、XML 导入与验收进度 |
+| `docs/work/v0.4.0-implementation-log.md` | 真空、宇航服、氧气 Vent、预算化密闭扫描与验收进度 |
 
 ## 分版本执行文件
 

@@ -1,0 +1,33 @@
+# SHA-256 checksums for v0.4.0 artifacts and committed evidence.
+# Artifact JARs are built and intentionally not committed.
+44841519742a54e43b27642eb2442435973b7d30e9e5a642dc95dca97b2f984d  build/libs/advancedrocketry-community-1.20.1-0.4.0-dev-sources.jar
+05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1  build/libs/advancedrocketry-community-1.20.1-0.4.0-dev.jar
+6ae6bb5387e7c1dd2023e66b1e73ccf6764a21002f937a6db0681f523aa1c92f  docs/releases/v0.4.0/evidence/artifact/artifact-summary.json
+baac22ee9fbb0319eb71f53366d996180d566c6bf9c7c6ae33aa9aa8894d914d  docs/releases/v0.4.0/evidence/artifact/jar-content-manifest.json
+7164ee85975db9a858e63ba75db6c18778dfdf7cbc8bdaaa5507a823bcda4d66  docs/releases/v0.4.0/evidence/atmosphere-server/lifecycle.txt
+82ef4ef64d32de0e2f96d93b771ec0f36cff4a86905c68af50fb5c75cb6ec99c  docs/releases/v0.4.0/evidence/atmosphere-server/summary.json
+ff0589137a75e56aea98bc1209bf1e412c6f86d903e773dcd246c0e1caef6f81  docs/releases/v0.4.0/evidence/automated/summary.json
+40d486acfb624c55b5006b7e97692174f8f6ec9a7abb2f9569319ac99facb9d7  docs/releases/v0.4.0/evidence/celestial-regression/lifecycle.txt
+349be2553d77d10a1efcc1dc529f8e5de059fb32dc3bc35ca048f402435b7a98  docs/releases/v0.4.0/evidence/celestial-regression/summary.json
+4a0f98015b6612a16a5fb24d6587c70d42c78cc795ce1e7949d0430a97790ffb  docs/releases/v0.4.0/evidence/client/logs/client-a.txt
+6b0908d0d574e66eeed8705152ff2b5e2cffa58b63c2fb2d0798e38460ec2389  docs/releases/v0.4.0/evidence/client/logs/client-b.txt
+a08295a3fe71e432a1ba7aad6f4079cc8fe53855aad473b1e1ccbee120ea9a64  docs/releases/v0.4.0/evidence/client/logs/server-after-restart.txt
+a2d6a77d2aa2378142882e7d4570b22e4bc70e49a95db54c9b69c81135c06bfc  docs/releases/v0.4.0/evidence/client/logs/server-before-restart.txt
+0c69d98d03c529600e613bf6b5805c0b4c5504fb366c556fc414d4f63d764158  docs/releases/v0.4.0/evidence/client/manual-evidence.json
+226af4f145bb2da70174dd24a88cba1c7cb8557787b0b366ac7f9dca55ea3fcd  docs/releases/v0.4.0/evidence/client/screenshots/a-after-restart-no-power.png
+2c16d5b0beaf61719c58dbd466c07e67c19777acfcfdfdee945322226984cbda  docs/releases/v0.4.0/evidence/client/screenshots/a-after-restart-recovered.png
+93646692a1f422448310651cb8294a04701a39362becccff1b85c0271c0d96d3  docs/releases/v0.4.0/evidence/client/screenshots/a-room-open.png
+6f17ad535a0ee0c6e9aeae1c7e999fe120c748f127e332e7f6a1bde3bb7b1faa  docs/releases/v0.4.0/evidence/client/screenshots/a-room-sealed.png
+6e009fa1dd87c94a423f5f49742d957b9afbd64680b6880ece3e41462e7e6fda  docs/releases/v0.4.0/evidence/client/screenshots/a-space-full-suit-separated.png
+e8608a311f24edb4bb0e4b157bf68c3a1185dfc4b909a5a86253ac6ee536e911  docs/releases/v0.4.0/evidence/client/screenshots/a-space-oxygen-empty.png
+9538064e33f824d9124a4751e3c05c1e93a9193d8ac449c3786ca40251c6a2aa  docs/releases/v0.4.0/evidence/client/screenshots/b-after-restart-recovered.png
+ff7959e3fc8be0aba2511be145dae6396b88c493b671c51046dcbdc8700479fb  docs/releases/v0.4.0/evidence/client/screenshots/b-room-open.png
+7e13e8293337a87981ac4f4324426a1a886a031248c1cba125b6e412cf62e756  docs/releases/v0.4.0/evidence/client/screenshots/b-room-sealed-scale3.png
+ce30e5e6c3303794c51f6f39e2db283c2ee8eed3b0b7b37bee812fe5641921e8  docs/releases/v0.4.0/evidence/client/screenshots/b-space-no-suit-separated.png
+74ca496ea5b38d26d5c40a4e17f5b12580410bc27ef12051da170f4d035beab0  docs/releases/v0.4.0/evidence/client/screenshots/b-space-partial-suit.png
+0b3f816c625b1a4be3985de7ba54fdd4a9f3a3fdac839b04b3a2cea19c0ec5d4  docs/releases/v0.4.0/evidence/client/screenshots/room-seal-flow.gif
+0bca70639894dff041cce2eb47788eb07552d5f9f3af73f734ec8055f197b7b5  docs/releases/v0.4.0/evidence/dedicated-server/first-start.txt
+143e1f618a023928e6f293f75ba6bf5bf86165f4b4f6b7a1cbcd5cd6f2ef3e7a  docs/releases/v0.4.0/evidence/dedicated-server/restart.txt
+434603108aaf883be9c123ff06cda1b8b6820b586e6588208a2f21d3c0967dec  docs/releases/v0.4.0/evidence/dedicated-server/summary.json
+b148bcec57f584b01b8293f609db3d69b0dc6c5c6b28cba68af79c4637a5c2a7  docs/releases/v0.4.0/evidence/machine-regression/lifecycle.txt
+0f7e6630572ec551c71b78899ba59406a5494e73b81239c4948f784a6d601444  docs/releases/v0.4.0/evidence/machine-regression/summary.json

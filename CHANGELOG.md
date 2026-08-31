@@ -4,6 +4,17 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v0.4.0 — development in progress, unreleased developer preview
+
+**Status:** Atmosphere limits and fail-closed recovery behavior are fixed;
+implementation, automated/server/performance verification, client evidence,
+and owner acceptance remain. No acceptance claim, tag, or public release
+exists.
+
+Planned player-visible result: Moon and Space require a complete suit with
+finite oxygen unless a powered Oxygen Vent has established a bounded sealed
+room. Opening the boundary or losing supply returns the room to vacuum.
+
 ## v0.3.0 — PASSED, unreleased developer preview
 
 **Status:** `PASSED` on 2026-08-31 after repeated build, automated, packaged
