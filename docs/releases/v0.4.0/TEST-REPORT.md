@@ -16,16 +16,17 @@ sha256: 05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1
 | Two clean builds | PASS; byte-identical main JAR | `evidence/artifact/artifact-summary.json` |
 | Java unit tests | PASS; 86/86, no skip | Gradle XML and `evidence/automated/summary.json` |
 | Targeted Python tests | PASS; 124/124 | `evidence/automated/summary.json` |
+| Full Python governance CI | PASS; 596 run, 4 documented skips | GitHub Actions run `33421129566` |
 | JAR audit | PASS; 346 entries, 0 findings | `evidence/artifact/jar-content-manifest.json` |
 | Client import boundary | PASS; 0 findings | static validator |
 | DataGen | PASS; 29 resources, 0 writes, clean diff | v0.4 generated manifest |
 | Forge GameTest | PASS; 25/25 | GameTest completion and performance marker |
 | Repository validation | PASS; 0 warnings, 0 failures | strict validator output |
 
-The governance CI executes the complete discovered Python inventory. Local
-release preparation intentionally ran the 124 directly affected tests rather
-than repeating expensive historical Git-fixture tests; the PR may not merge
-until the full remote lane passes.
+Local release preparation intentionally ran the 124 directly affected tests
+rather than repeating expensive historical Git-fixture tests. The governance
+CI then ran the complete 596-test inventory in 167.201 seconds with four
+documented skips and no failure.
 
 ## Packaged-server matrix
 

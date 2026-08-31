@@ -46,5 +46,6 @@ milestone is considered integrated.
 
 All technical Gates have local evidence, and repository owner `sunthemoon`
 approved the provenance, visible player flow, and release documentation on
-2026-09-01. The snapshot remains `READY_FOR_AUDIT` until the PR's complete CI
-matrix is recorded and merged. See [`GATE-STATUS.md`](GATE-STATUS.md).
+2026-09-01. PR #8 technical checkpoint `d3a1364` passed the Forge 47.4.10
+baseline, Forge 47.4.23 compatibility, and full governance lanes. All ten
+Required Gates are `PASS`; see [`GATE-STATUS.md`](GATE-STATUS.md).
