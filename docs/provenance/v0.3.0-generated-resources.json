@@ -1,0 +1,56 @@
+{
+  "allowed_file_types": [
+    ".json"
+  ],
+  "expected_resource_paths": [
+    "data/advancedrocketrycommunity/celestial_bodies/earth.json",
+    "data/advancedrocketrycommunity/celestial_bodies/moon.json",
+    "data/advancedrocketrycommunity/celestial_bodies/space.json",
+    "data/advancedrocketrycommunity/dimension/moon.json",
+    "data/advancedrocketrycommunity/dimension/space.json",
+    "data/advancedrocketrycommunity/dimension_type/moon.json",
+    "data/advancedrocketrycommunity/dimension_type/space.json"
+  ],
+  "generated_root": "src/generated/v0.3/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.3.0",
+  "targets": [
+    {
+      "bytes": 404,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/celestial_bodies/earth.json",
+      "sha256": "6f511da6bef7f4a3ab7827bdb58704e6b6f7f8013e6bdd01b04acbeda596013b"
+    },
+    {
+      "bytes": 477,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/celestial_bodies/moon.json",
+      "sha256": "d01c28163a2b3f4b360acd71174f6b0d7b6299cf748bc875a12ab4a9090478c6"
+    },
+    {
+      "bytes": 463,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/celestial_bodies/space.json",
+      "sha256": "18e197a179a1cec3d2a984aca1098b95a8aa13d62574c32fe844ff0ab198cd21"
+    },
+    {
+      "bytes": 430,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/dimension/moon.json",
+      "sha256": "5be61829b130fb1a7ff922003e27d5a0f4fb821614fe56790b977043dafcade8"
+    },
+    {
+      "bytes": 259,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/dimension/space.json",
+      "sha256": "72ec260272226ca52cb61647ad62a93c841f5df999115c3d3c6afa99928609d1"
+    },
+    {
+      "bytes": 483,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/dimension_type/moon.json",
+      "sha256": "5c760adf297c7718bb6d6a8542be87c91038b96bb6eecebe627d9f7a8d25d232"
+    },
+    {
+      "bytes": 482,
+      "path": "src/generated/v0.3/resources/data/advancedrocketrycommunity/dimension_type/space.json",
+      "sha256": "3208bcdcdf0fafca9583df85f0ccc3eb489610707c6c428ec3029ac40cf2046a"
+    }
+  ]
+}

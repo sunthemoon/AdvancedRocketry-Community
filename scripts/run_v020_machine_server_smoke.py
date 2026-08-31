@@ -13,23 +13,37 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from run_dedicated_server_smoke import (
-    CapturedProcess,
-    FORGE_COORDINATE,
-    READY_MARKER,
-    SAVE_MARKER,
-    SmokeError,
-    digest_file,
-    is_link_or_junction,
-    resolve_java,
-    scan_log,
-    validate_status_identity,
-    wait_for_status,
-)
+if __package__:
+    from .run_dedicated_server_smoke import (
+        CapturedProcess,
+        FORGE_COORDINATE,
+        READY_MARKER,
+        SAVE_MARKER,
+        SmokeError,
+        digest_file,
+        is_link_or_junction,
+        resolve_java,
+        scan_log,
+        validate_status_identity,
+        wait_for_status,
+    )
+else:
+    from run_dedicated_server_smoke import (
+        CapturedProcess,
+        FORGE_COORDINATE,
+        READY_MARKER,
+        SAVE_MARKER,
+        SmokeError,
+        digest_file,
+        is_link_or_junction,
+        resolve_java,
+        scan_log,
+        validate_status_identity,
+        wait_for_status,
+    )
 
 
 EXPECTED_VERSION = "1.20.1-0.2.0-dev"
-EXPECTED_ARTIFACT = f"advancedrocketry-community-{EXPECTED_VERSION}.jar"
 COORDINATES = "0 100 0"
 REDSTONE_COORDINATES = "1 100 0"
 BEFORE_MARKER = "V020_PERSISTED_BEFORE_RESTART"
@@ -47,20 +61,25 @@ def _load_summary(path: Path) -> dict[str, object]:
     return value
 
 
-def _verify_inputs(server: Path, summary: dict[str, object]) -> tuple[int, str]:
+def _verify_inputs(
+    server: Path,
+    summary: dict[str, object],
+    expected_version: str,
+) -> tuple[int, str]:
     if is_link_or_junction(server) or not server.is_dir():
         raise SmokeError(f"Installed server directory is missing or unsafe: {server}")
-    if summary.get("mod_version") != EXPECTED_VERSION:
-        raise SmokeError("Baseline summary is not for the v0.2.0 artifact")
+    if summary.get("mod_version") != expected_version:
+        raise SmokeError("Baseline summary does not match the expected artifact version")
     port = summary.get("server_port")
     artifact_sha256 = summary.get("artifact_sha256")
     if not isinstance(port, int) or not 1 <= port <= 65535:
         raise SmokeError("Baseline summary has an invalid server port")
     if not isinstance(artifact_sha256, str) or re.fullmatch(r"[0-9a-f]{64}", artifact_sha256) is None:
         raise SmokeError("Baseline summary has an invalid artifact SHA-256")
-    server_artifact = server / "mods" / EXPECTED_ARTIFACT
+    expected_artifact = f"advancedrocketry-community-{expected_version}.jar"
+    server_artifact = server / "mods" / expected_artifact
     if is_link_or_junction(server_artifact) or not server_artifact.is_file():
-        raise SmokeError(f"Installed v0.2.0 artifact is missing: {server_artifact}")
+        raise SmokeError(f"Installed artifact is missing: {server_artifact}")
     if digest_file(server_artifact) != artifact_sha256:
         raise SmokeError("Installed artifact does not match the baseline summary")
     return port, artifact_sha256
@@ -91,6 +110,7 @@ def _run_phase(
     port: int,
     startup_timeout: float,
     before_restart: bool,
+    expected_version: str,
 ) -> dict[str, object]:
     started_at = datetime.now(timezone.utc).isoformat()
     full_log = server / f"{name}-full.txt"
@@ -98,7 +118,7 @@ def _run_phase(
     try:
         process.wait_for(READY_MARKER, startup_timeout)
         status = wait_for_status(port)
-        validate_status_identity(status, EXPECTED_VERSION)
+        validate_status_identity(status, expected_version)
         if before_restart:
             process.command(f"forceload add {COORDINATES.split()[0]} {COORDINATES.split()[2]}")
             process.command(f"setblock {REDSTONE_COORDINATES} minecraft:redstone_block")
@@ -221,6 +241,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--baseline-summary", type=Path, required=True)
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--java", default=default_java)
+    parser.add_argument("--expected-version", default=EXPECTED_VERSION)
     parser.add_argument("--startup-timeout", type=float, default=240.0)
     return parser.parse_args()
 
@@ -231,7 +252,11 @@ def main() -> int:
         server = args.server_dir.resolve()
         baseline_summary_path = args.baseline_summary.resolve()
         baseline = _load_summary(baseline_summary_path)
-        port, artifact_sha256 = _verify_inputs(server, baseline)
+        port, artifact_sha256 = _verify_inputs(
+            server,
+            baseline,
+            args.expected_version,
+        )
         java, java_version = resolve_java(args.java)
         before = _run_phase(
             name="v020-machine-before-restart",
@@ -240,6 +265,7 @@ def main() -> int:
             port=port,
             startup_timeout=args.startup_timeout,
             before_restart=True,
+            expected_version=args.expected_version,
         )
         after = _run_phase(
             name="v020-machine-after-restart",
@@ -248,10 +274,12 @@ def main() -> int:
             port=port,
             startup_timeout=args.startup_timeout,
             before_restart=False,
+            expected_version=args.expected_version,
         )
         summary = {
             "schema_version": 1,
             "artifact_sha256": artifact_sha256,
+            "artifact_version": args.expected_version,
             "baseline_session_id": baseline.get("session_id"),
             "completed_at": datetime.now(timezone.utc).isoformat(),
             "coordinates": COORDINATES,

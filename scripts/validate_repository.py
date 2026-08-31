@@ -43,6 +43,7 @@ if __package__:
     from .validate_v010_release_evidence import validate_v010_release_evidence
     from .validate_v020_release_evidence import validate_v020_release_evidence
     from .manage_v020_generated_manifest import verify as verify_v020_generated_manifest
+    from .manage_v030_generated_manifest import verify as verify_v030_generated_manifest
 else:
     # Isolated script execution omits this directory from sys.path. Add only
     # the already-selected repository scripts directory after stdlib imports.
@@ -70,6 +71,7 @@ else:
     from validate_v010_release_evidence import validate_v010_release_evidence
     from validate_v020_release_evidence import validate_v020_release_evidence
     from manage_v020_generated_manifest import verify as verify_v020_generated_manifest
+    from manage_v030_generated_manifest import verify as verify_v030_generated_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -107,6 +109,7 @@ REQUIRED_PATHS = (
     "gradle/wrapper/gradle-wrapper.jar",
     "gradle/wrapper/gradle-wrapper.properties",
     "scripts/check_client_imports.py",
+    "scripts/check_celestial_identity.py",
     "scripts/check_clean_worktree.py",
     "scripts/collect_v002_manual_evidence.py",
     "scripts/generate_v002_g0_evidence.py",
@@ -115,6 +118,7 @@ REQUIRED_PATHS = (
     "scripts/run_dedicated_server_smoke.py",
     "scripts/run_v002_mismatch_server_cycle.py",
     "scripts/run_v020_machine_server_smoke.py",
+    "scripts/run_v030_celestial_server_smoke.py",
     "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
     "scripts/validate_release_checksums.py",
@@ -122,12 +126,14 @@ REQUIRED_PATHS = (
     "scripts/validate_v002_g4_applicability.py",
     "scripts/manage_v010_generated_manifest.py",
     "scripts/manage_v020_generated_manifest.py",
+    "scripts/manage_v030_generated_manifest.py",
     "scripts/validate_v010_asset_baseline.py",
     "scripts/validate_v020_release_evidence.py",
     "tools/audit/audit_upstream.py",
     "tools/import/import_v010_assets.py",
     "tools/import/v010-content-plan.json",
     "tests/test_check_client_imports.py",
+    "tests/test_check_celestial_identity.py",
     "tests/test_check_clean_worktree.py",
     "tests/test_collect_v002_manual_evidence.py",
     "tests/test_dedicated_server_smoke.py",
@@ -145,6 +151,8 @@ REQUIRED_PATHS = (
     "tests/test_manage_v010_generated_manifest.py",
     "tests/test_validate_v010_asset_baseline.py",
     "tests/test_validate_v020_release_evidence.py",
+    "tests/test_manage_v030_generated_manifest.py",
+    "tests/test_run_v030_celestial_server_smoke.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
@@ -153,6 +161,8 @@ REQUIRED_PATHS = (
     "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
     "docs/provenance/v0.2.0-electrolyzer.md",
     "docs/provenance/v0.2.0-generated-resources.json",
+    "docs/provenance/v0.3.0-generated-resources.json",
+    "docs/provenance/v0.3.0-upstream-xml-fixture.json",
     "docs/status/CURRENT_VERSION.md",
     "docs/status/GATE_STATUS.md",
     "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
@@ -1701,6 +1711,8 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ("python", "scripts/validate_v010_release_evidence.py"),
         ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
         ("python", "scripts/validate_v020_release_evidence.py"),
+        ("python", "scripts/manage_v030_generated_manifest.py", "verify"),
+        ("python", "scripts/check_celestial_identity.py"),
         (
             "python",
             "scripts/validate_repository.py",
@@ -1769,15 +1781,17 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.3.0-dev.jar",
                 "--expected-version",
-                "1.20.1-0.2.0-dev",
+                "1.20.1-0.3.0-dev",
                 "--content-manifest",
-                "build/release-evidence/v020-jar-content-manifest.json",
+                "build/release-evidence/v030-jar-content-manifest.json",
             ),
             ("python", "scripts/validate_v010_asset_baseline.py"),
             ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
+            ("python", "scripts/manage_v030_generated_manifest.py", "verify"),
             ("python", "scripts/check_client_imports.py"),
+            ("python", "scripts/check_celestial_identity.py"),
             ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
             ("git", "diff", "--exit-code"),
             ("python", "scripts/check_clean_worktree.py"),
@@ -1790,9 +1804,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.3.0-dev.jar",
                 "--expected-mod-version",
-                "1.20.1-0.2.0-dev",
+                "1.20.1-0.3.0-dev",
                 "--session-dir",
                 "build/dedicated-server-smoke/session",
                 "--evidence-dir",
@@ -1808,6 +1822,19 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
                 "build/v020-machine-server-smoke/evidence",
+                "--expected-version",
+                "1.20.1-0.3.0-dev",
+            ),
+            (
+                "python",
+                "scripts/run_v030_celestial_server_smoke.py",
+                "build/dedicated-server-smoke/session",
+                "--baseline-summary",
+                "build/dedicated-server-smoke/evidence/summary.json",
+                "--evidence-dir",
+                "build/v030-celestial-server-smoke/evidence",
+                "--expected-version",
+                "1.20.1-0.3.0-dev",
             ),
         )
         for command in baseline_commands:
@@ -2414,6 +2441,19 @@ def check_v020_generated_resources(results: Results) -> None:
         results.passed("v0.2.0 DataGen resources match the bounded authored-resource inventory")
 
 
+def check_v030_generated_resources(results: Results) -> None:
+    errors = verify_v030_generated_manifest(
+        ROOT,
+        ROOT / "docs/provenance/v0.3.0-generated-resources.json",
+    )
+    if errors:
+        results.fail("v0.3.0 generated-resource errors: " + "; ".join(errors))
+    else:
+        results.passed(
+            "v0.3.0 DataGen resources match the exact fixed-world inventory"
+        )
+
+
 def validate_v020_gate_status_text(
     text: str,
     *,
@@ -2651,6 +2691,7 @@ def main() -> int:
     check_release_checksums(results)
     check_v010_asset_baseline(results)
     check_v020_generated_resources(results)
+    check_v030_generated_resources(results)
     check_v020_gate_status(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
