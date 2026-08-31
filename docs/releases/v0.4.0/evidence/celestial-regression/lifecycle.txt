@@ -1,0 +1,12 @@
+artifact_sha256=05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1
+artifact_version=1.20.1-0.4.0-dev
+baseline_session_id=v002-7fda49bd0305e6a89fe2770a
+catalog_body_count=3
+fixed_levels=advancedrocketrycommunity:moon,advancedrocketrycommunity:space
+invalid_reload_rejected=true
+last_valid_catalog_retained=true
+valid_catalog_recovered=true
+moon_region_persisted=true
+space_region_persisted=true
+moon_marker=V030_MOON_BLOCK_PERSISTED
+space_marker=V030_SPACE_BLOCK_PERSISTED

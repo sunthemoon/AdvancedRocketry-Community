@@ -1,0 +1,12 @@
+artifact_sha256=05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1
+baseline_session_id=v002-7fda49bd0305e6a89fe2770a
+before_marker=V020_PERSISTED_BEFORE_RESTART
+after_marker=V020_PERSISTED_AFTER_RESTART
+completion_marker=V020_COMPLETED_AFTER_RESTART
+paused_progress=40
+paused_energy=1200
+completed_progress=0
+completed_energy=0
+hydrogen_count=1
+oxygen_count=1
+input_remaining=0

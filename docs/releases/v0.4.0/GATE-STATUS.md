@@ -1,4 +1,4 @@
-# GATE_STATUS
+# GATE_STATUS — v0.4.0 audit-ready snapshot
 
 ```yaml
 version: v0.4.0
@@ -30,12 +30,12 @@ human_approved_by: "sunthemoon"
 human_approved_at: "2026-09-01"
 ```
 
-The exact candidate JAR is 466,433 bytes with SHA-256
-`05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1`.
-Two clean rebuilds reproduced those bytes. Two packaged clients, same-world
-restart/rejoin, the five-minute 16-Vent server scenario, and all local technical
-checks passed. Owner `sunthemoon` approved G0, G8, and G9 on 2026-09-01.
+The exact tested implementation head is
+`f880870aa4db0a46758dcc8615dfa2c16b2e3b59`. Repository owner `sunthemoon`
+explicitly approved G0, G8, and G9 on 2026-09-01 against the artifact and
+evidence inventory in this directory.
 
-The version remains `READY_FOR_AUDIT` until the pull-request CI checkpoint is
-recorded and merged. The accepted v0.3.0 snapshot remains archived at
-[`../releases/v0.3.0/GATE-STATUS.md`](../releases/v0.3.0/GATE-STATUS.md).
+The accepted candidate is the 466,433-byte main JAR with SHA-256
+`05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1`.
+The milestone remains `READY_FOR_AUDIT` until the pull-request checks are
+recorded and the branch is merged. No tag or public release is created here.

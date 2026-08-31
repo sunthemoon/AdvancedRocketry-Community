@@ -1,0 +1,32 @@
+# Filtered dedicated-server lifecycle; machine paths and client ports omitted.
+[before-restart]
+[2026-08-31 23:28:03.037] [modloading-worker-0/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.4.0-dev initialized
+[2026-08-31 23:29:09.226] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: ARCEV040A[loopback-client] logged in with entity id 101 at (4.5, 67.0, 3.5)
+[2026-08-31 23:29:09.243] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[2026-08-31 23:29:09.279] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV040A joined the game
+[2026-08-31 23:29:28.092] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: ARCEV040B[loopback-client] logged in with entity id 141 at (-4.5, 65.0, 4.5)
+[2026-08-31 23:29:28.093] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[2026-08-31 23:29:28.097] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV040B joined the game
+[2026-08-31 23:32:54.793] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] V040_ROOM_ACTIVE
+[2026-08-31 23:32:54.798] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=BREATHABLE vents=1 providers=1 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:32:54.798] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=BREATHABLE vents=1 providers=1 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:32:54.806] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: ARCEV040A, ARCEV040B
+[2026-08-31 23:56:38.736] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] V040_ROOM_RESEALED
+[2026-08-31 23:56:38.736] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=BREATHABLE vents=1 providers=1 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:56:38.737] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=BREATHABLE vents=1 providers=1 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:56:38.739] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: ARCEV040A, ARCEV040B
+[2026-08-31 23:57:59.587] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] V040_ROOM_OPEN
+[2026-08-31 23:57:59.587] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=VACUUM vents=1 providers=0 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:57:59.587] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=VACUUM vents=1 providers=0 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:57:59.588] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: ARCEV040A, ARCEV040B
+[2026-08-31 23:58:50.586] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] V040_ROOM_RECOVERED
+[2026-08-31 23:58:50.587] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=BREATHABLE vents=1 providers=1 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-08-31 23:58:50.587] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=BREATHABLE vents=1 providers=1 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-09-01 00:02:38.287] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] V040_ANIMATION_ROOM_OPEN
+[2026-09-01 00:02:45.388] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] V040_ANIMATION_ROOM_RESEALED
+[2026-09-01 00:05:52.886] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: 22, 79, 22 has the following block data: {schema_version: 1, oxygen_canisters: 0, empty_canisters: 0, oxygen_phase: 0, oxygen_units: 3900, energy: 0}
+[2026-09-01 00:05:52.887] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=VACUUM vents=1 providers=0 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-09-01 00:05:52.888] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Atmosphere=VACUUM vents=1 providers=0 scans=0 pending=0 volumes=1 cells=27 dirty=0 inspections=0
+[2026-09-01 00:05:52.888] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: ARCEV040A, ARCEV040B
+[2026-09-01 00:05:52.941] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saved the game
+[2026-09-01 00:05:52.941] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server

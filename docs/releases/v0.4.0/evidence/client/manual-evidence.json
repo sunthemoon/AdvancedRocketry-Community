@@ -1,0 +1,245 @@
+{
+  "approved_gates": [
+    "G0",
+    "G8",
+    "G9"
+  ],
+  "artifact": {
+    "all_copies_equal": true,
+    "bytes": 466433,
+    "copies": {
+      "client_a": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "client_b": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "server": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+      "source": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1"
+    },
+    "filename": "advancedrocketry-community-1.20.1-0.4.0-dev.jar",
+    "sha256": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1"
+  },
+  "build": "1.20.1-0.4.0-dev",
+  "environment": {
+    "client_profiles": 2,
+    "forge": "47.4.10",
+    "gui_scales_tested": [
+      2,
+      3
+    ],
+    "java": "17.0.8",
+    "local_isolated_offline_mode": true,
+    "minecraft": "1.20.1",
+    "other_content_mods": 0,
+    "server_bind": "127.0.0.1",
+    "server_port": 25586
+  },
+  "executed_at": [
+    "2026-08-31",
+    "2026-09-01"
+  ],
+  "filtered_logs": [
+    {
+      "bytes": 1882,
+      "path": "docs/releases/v0.4.0/evidence/client/logs/client-a.txt",
+      "sha256": "4a0f98015b6612a16a5fb24d6587c70d42c78cc795ce1e7949d0430a97790ffb"
+    },
+    {
+      "bytes": 1883,
+      "path": "docs/releases/v0.4.0/evidence/client/logs/client-b.txt",
+      "sha256": "6b0908d0d574e66eeed8705152ff2b5e2cffa58b63c2fb2d0798e38460ec2389"
+    },
+    {
+      "bytes": 4037,
+      "path": "docs/releases/v0.4.0/evidence/client/logs/server-after-restart.txt",
+      "sha256": "a08295a3fe71e432a1ba7aad6f4079cc8fe53855aad473b1e1ccbee120ea9a64"
+    },
+    {
+      "bytes": 4933,
+      "path": "docs/releases/v0.4.0/evidence/client/logs/server-before-restart.txt",
+      "sha256": "a2d6a77d2aa2378142882e7d4570b22e4bc70e49a95db54c9b69c81135c06bfc"
+    }
+  ],
+  "known_observations": [
+    "The two-client evidence server used offline mode only on loopback for deterministic isolated identities; normal server settings were restored afterward.",
+    "One Forge authentication-key request was reset by the external service during a restart; the client retried and joined, with no project linkage failure.",
+    "Controlled operator teleports emitted vanilla moved-too-quickly diagnostics; player state, atmosphere authority, restart, and persistence observations remained correct.",
+    "Some captures include the vanilla tutorial prompt, but the life-support HUD state remains unobstructed and readable."
+  ],
+  "observations": {
+    "both_clients_rejoined_after_restart": true,
+    "client_exit_codes": {
+      "A": 0,
+      "B": 0
+    },
+    "hud_readable_gui_scale_2": true,
+    "hud_readable_gui_scale_3": true,
+    "post_restart_volume_rebuilt": true,
+    "project_client_linkage_failures": 0,
+    "room_sealed_breathable_both": true,
+    "same_world_server_restart": true,
+    "server_clean_stop": true,
+    "space_full_suit_safe": true,
+    "space_no_suit_vacuum": true,
+    "space_oxygen_empty_damage": true,
+    "space_oxygen_empty_death": true,
+    "space_partial_suit_incomplete": true,
+    "two_players_simultaneously_online": true,
+    "vacuum_death_message_observed": true,
+    "vent_nbt_restart_exact": true,
+    "wall_open_vacuum_both": true,
+    "wall_resealed_breathable_both": true
+  },
+  "persistence": {
+    "after_reenergize": "BREATHABLE",
+    "exact_nbt": "{schema_version:1, oxygen_canisters:0, empty_canisters:0, oxygen_phase:0, oxygen_units:3900, energy:0}",
+    "restart_without_power": "VACUUM",
+    "vent_schema": 1,
+    "volume_cache_strategy": "rebuilt, not persisted"
+  },
+  "players": [
+    {
+      "profile": "A",
+      "suit_case": "complete",
+      "username": "ARCEV040A",
+      "uuid": "8356d47d-12b9-3b5f-8d7a-79d056da7b1c"
+    },
+    {
+      "profile": "B",
+      "suit_cases": [
+        "none",
+        "partial"
+      ],
+      "username": "ARCEV040B",
+      "uuid": "1fb15292-eb7f-3075-9a67-2b107cca082e"
+    }
+  ],
+  "review_status": "APPROVED",
+  "reviewed_at": "2026-09-01",
+  "reviewer": "sunthemoon",
+  "schema_version": 1,
+  "screenshots": [
+    {
+      "bytes": 222399,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/a-after-restart-no-power.png",
+      "sha256": "226af4f145bb2da70174dd24a88cba1c7cb8557787b0b366ac7f9dca55ea3fcd",
+      "subject": "Player A rejoined the Moon room after restart; fail-closed VACUUM is visible before power returns"
+    },
+    {
+      "bytes": 267839,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/a-after-restart-recovered.png",
+      "sha256": "2c16d5b0beaf61719c58dbd466c07e67c19777acfcfdfdee945322226984cbda",
+      "subject": "Player A sees ROOM SEALED after the restarted volume is rebuilt"
+    },
+    {
+      "bytes": 233472,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/a-room-open.png",
+      "sha256": "93646692a1f422448310651cb8294a04701a39362becccff1b85c0271c0d96d3",
+      "subject": "Player A full-suit HUD changes to SUIT OXYGEN when the room opens to vacuum"
+    },
+    {
+      "bytes": 221867,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/a-room-sealed.png",
+      "sha256": "6f17ad535a0ee0c6e9aeae1c7e999fe120c748f127e332e7f6a1bde3bb7b1faa",
+      "subject": "Player A HUD shows ROOM SEALED in the powered sealed room at GUI scale 2"
+    },
+    {
+      "bytes": 1074411,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/a-space-full-suit-separated.png",
+      "sha256": "6e009fa1dd87c94a423f5f49742d957b9afbd64680b6880ece3e41462e7e6fda",
+      "subject": "Player A survives Space with a complete oxygenated suit; HUD shows SUIT OXYGEN"
+    },
+    {
+      "bytes": 1074740,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/a-space-oxygen-empty.png",
+      "sha256": "e8608a311f24edb4bb0e4b157bf68c3a1185dfc4b909a5a86253ac6ee536e911",
+      "subject": "Player A exhausted suit oxygen in Space; HUD shows OXYGEN EMPTY and health loss"
+    },
+    {
+      "bytes": 265441,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/b-after-restart-recovered.png",
+      "sha256": "9538064e33f824d9124a4751e3c05c1e93a9193d8ac449c3786ca40251c6a2aa",
+      "subject": "Player B sees ROOM SEALED after rejoining and volume rebuild"
+    },
+    {
+      "bytes": 245602,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/b-room-open.png",
+      "sha256": "ff7959e3fc8be0aba2511be145dae6396b88c493b671c51046dcbdc8700479fb",
+      "subject": "Player B without a suit sees red VACUUM when the room opens"
+    },
+    {
+      "bytes": 263556,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/b-room-sealed-scale3.png",
+      "sha256": "7e13e8293337a87981ac4f4324426a1a886a031248c1cba125b6e412cf62e756",
+      "subject": "Player B HUD remains readable at GUI scale 3 in the sealed room"
+    },
+    {
+      "bytes": 951335,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/b-space-no-suit-separated.png",
+      "sha256": "ce30e5e6c3303794c51f6f39e2db283c2ee8eed3b0b7b37bee812fe5641921e8",
+      "subject": "Player B without a suit sees VACUUM in Space"
+    },
+    {
+      "bytes": 994701,
+      "dimensions": [
+        1296,
+        759
+      ],
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/b-space-partial-suit.png",
+      "sha256": "74ca496ea5b38d26d5c40a4e17f5b12580410bc27ef12051da170f4d035beab0",
+      "subject": "Player B with one suit piece sees SUIT INCOMPLETE in Space"
+    },
+    {
+      "bytes": 4613982,
+      "dimensions": [
+        640,
+        375
+      ],
+      "duration_seconds": 20.0,
+      "frames": 80,
+      "path": "docs/releases/v0.4.0/evidence/client/screenshots/room-seal-flow.gif",
+      "sha256": "0b3f816c625b1a4be3985de7ba54fdd4a9f3a3fdac839b04b3a2cea19c0ec5d4",
+      "subject": "Twenty-second Minecraft-window capture of ROOM SEALED to SUIT OXYGEN to ROOM SEALED"
+    }
+  ],
+  "tested_implementation_commit": "f880870aa4db0a46758dcc8615dfa2c16b2e3b59",
+  "tester": "Codex-assisted packaged-client execution",
+  "version": "v0.4.0"
+}

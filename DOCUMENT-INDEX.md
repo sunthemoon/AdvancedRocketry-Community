@@ -69,6 +69,10 @@
 | `docs/releases/v0.3.0/` | 天体 Codec、固定 Moon/Space、XML 导入、双客户端和重启证据 |
 | `docs/releases/v0.3.0/GATE-STATUS.md` | v0.3.0 Required Gate 审核状态与最终 CI/PR 绑定 |
 | `docs/releases/v0.3.0/INSTALLATION.md` | v0.3.0 开发预览的安装、命令、固定维度和存档边界 |
+| `docs/releases/v0.4.0/` | 真空、宇航服、氧气 Vent、预算扫描、双客户端、重启与性能证据 |
+| `docs/releases/v0.4.0/GATE-STATUS.md` | v0.4.0 Required Gate 审核状态与构建/人工批准绑定 |
+| `docs/releases/v0.4.0/PERFORMANCE.md` | 16-Vent GameTest 与五分钟专服采样结果 |
+| `docs/releases/v0.4.0/INSTALLATION.md` | v0.4.0 开发预览安装、内容与存档边界 |
 
 ## 实施记录
 

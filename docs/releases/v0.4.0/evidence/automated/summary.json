@@ -1,0 +1,83 @@
+{
+  "artifact_sha256": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+  "build": "1.20.1-0.4.0-dev",
+  "performance": {
+    "full_gc_count": 0,
+    "gametest_peak_inspections": 102,
+    "gametest_simulated_ticks": 6000,
+    "gametest_vents": 16,
+    "max_rss_bytes": 1483173888,
+    "mean_tick_ms_average": 1.281,
+    "mean_tick_ms_maximum": 11.182,
+    "mean_tick_ms_p95": 1.44,
+    "packaged_duration_seconds": 300.0,
+    "packaged_sample_count": 60,
+    "packaged_vents": 16,
+    "tps_average": 20.0,
+    "tps_minimum": 20.0
+  },
+  "results": {
+    "celestial_identity": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "clean_builds": {
+      "byte_identical": true,
+      "result": "PASS",
+      "runs": 2
+    },
+    "client_boundary": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "datagen": {
+      "files": 29,
+      "git_diff_clean": true,
+      "result": "PASS",
+      "written": 0
+    },
+    "gametest": {
+      "failed": 0,
+      "passed": 25,
+      "result": "PASS"
+    },
+    "jar_audit": {
+      "entries": 346,
+      "findings": 0,
+      "result": "PASS"
+    },
+    "junit": {
+      "failed": 0,
+      "passed": 86,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "python_full_ci_inventory": {
+      "discovered": 596,
+      "result": "PENDING_CI"
+    },
+    "python_targeted": {
+      "failed": 0,
+      "passed": 124,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "repository": {
+      "failed": 0,
+      "result": "PASS",
+      "warnings": 0
+    }
+  },
+  "schema_version": 1,
+  "security": {
+    "bounded_network_payload": true,
+    "bounded_saved_data": true,
+    "client_final_decisions": 0,
+    "forced_chunk_loads": 0,
+    "scan_per_tick_budget": true,
+    "scan_total_cell_limit": true,
+    "server_authoritative_breathability": true
+  },
+  "tested_implementation_commit": "f880870aa4db0a46758dcc8615dfa2c16b2e3b59",
+  "version": "v0.4.0"
+}

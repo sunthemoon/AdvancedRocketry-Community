@@ -1,0 +1,141 @@
+{
+  "after_restart": {
+    "completed_at": "2026-08-31T15:19:26.283160+00:00",
+    "exit_code": 0,
+    "full_log_file": "v040-atmosphere-after-restart-full.txt",
+    "full_log_sha256": "1a9de25a702ccf8052e1231ed92e62fad3c77456bfe9cea5e485c6deb1317421",
+    "name": "v040-atmosphere-after-restart",
+    "performance": null,
+    "persisted_snapshot": "{schema_version: 1, oxygen_canisters: 0, empty_canisters: 0, oxygen_phase: 0, oxygen_units: 3700, energy: 0}",
+    "started_at": "2026-08-31T15:19:05.545723+00:00"
+  },
+  "artifact_sha256": "05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1",
+  "artifact_version": "1.20.1-0.4.0-dev",
+  "baseline_session_id": "v002-7fda49bd0305e6a89fe2770a",
+  "before_restart": {
+    "completed_at": "2026-08-31T15:19:05.544813+00:00",
+    "exit_code": 0,
+    "full_log_file": "v040-atmosphere-before-restart-full.txt",
+    "full_log_sha256": "0da70d81acad3be925ff2f30c437b11814573fa6b60d593ce3a32e9ddaed9158",
+    "name": "v040-atmosphere-before-restart",
+    "performance": {
+      "duration_seconds": 300.0,
+      "gc_after": {
+        "CCS": 95.57,
+        "CGC": 18.0,
+        "CGCT": 0.035,
+        "E": 68.59,
+        "FGC": 0.0,
+        "FGCT": 0.0,
+        "GCT": 0.301,
+        "M": 98.56,
+        "O": 68.26,
+        "S0": 0.0,
+        "S1": 61.89,
+        "YGC": 44.0,
+        "YGCT": 0.266
+      },
+      "gc_before": {
+        "CCS": 95.57,
+        "CGC": 16.0,
+        "CGCT": 0.032,
+        "E": 22.17,
+        "FGC": 0.0,
+        "FGCT": 0.0,
+        "GCT": 0.289,
+        "M": 98.55,
+        "O": 49.03,
+        "S0": 0.0,
+        "S1": 58.37,
+        "YGC": 39.0,
+        "YGCT": 0.257
+      },
+      "rss_bytes": {
+        "maximum": 1483173888,
+        "samples": 60
+      },
+      "sample_count": 60,
+      "sample_interval_seconds": 5.0,
+      "sampled_mean_tick_ms": {
+        "average": 1.281,
+        "maximum": 11.182,
+        "p95": 1.44
+      },
+      "sampled_tps": {
+        "average": 20.0,
+        "minimum": 20.0
+      }
+    },
+    "persisted_snapshot": "{schema_version: 1, oxygen_canisters: 0, empty_canisters: 0, oxygen_phase: 0, oxygen_units: 3700, energy: 0}",
+    "started_at": "2026-08-31T15:13:43.753266+00:00"
+  },
+  "completed_at": "2026-08-31T15:19:26.283944+00:00",
+  "environment": {
+    "cpu": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "forge": "1.20.1-47.4.10",
+    "java": "17.0.8",
+    "jvm_heap": "-Xms512M -Xmx1024M",
+    "logical_cpu_count": 20,
+    "minecraft": "1.20.1",
+    "mod": "1.20.1-0.4.0-dev",
+    "world": "advancedrocketrycommunity:moon"
+  },
+  "performance": {
+    "duration_seconds": 300.0,
+    "gc_after": {
+      "CCS": 95.57,
+      "CGC": 18.0,
+      "CGCT": 0.035,
+      "E": 68.59,
+      "FGC": 0.0,
+      "FGCT": 0.0,
+      "GCT": 0.301,
+      "M": 98.56,
+      "O": 68.26,
+      "S0": 0.0,
+      "S1": 61.89,
+      "YGC": 44.0,
+      "YGCT": 0.266
+    },
+    "gc_before": {
+      "CCS": 95.57,
+      "CGC": 16.0,
+      "CGCT": 0.032,
+      "E": 22.17,
+      "FGC": 0.0,
+      "FGCT": 0.0,
+      "GCT": 0.289,
+      "M": 98.55,
+      "O": 49.03,
+      "S0": 0.0,
+      "S1": 58.37,
+      "YGC": 39.0,
+      "YGCT": 0.257
+    },
+    "rss_bytes": {
+      "maximum": 1483173888,
+      "samples": 60
+    },
+    "sample_count": 60,
+    "sample_interval_seconds": 5.0,
+    "sampled_mean_tick_ms": {
+      "average": 1.281,
+      "maximum": 11.182,
+      "p95": 1.44
+    },
+    "sampled_tps": {
+      "average": 20.0,
+      "minimum": 20.0
+    }
+  },
+  "post_restart_volume_rebuilt": true,
+  "same_world_verified": true,
+  "scenario": {
+    "active_vents": 16,
+    "non_air_blocks": 416,
+    "rooms": 16,
+    "traversable_cells_per_room": 1
+  },
+  "schema_version": 1,
+  "vent_nbt_restart_byte_equal": true
+}
