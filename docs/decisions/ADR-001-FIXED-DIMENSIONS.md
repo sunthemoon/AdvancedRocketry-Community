@@ -58,8 +58,8 @@ No arbitrary runtime Level registration before a post-v1.0 ADR and prototype.
 
 ## Validation
 
-- [ ] Codec round trip and bounded field tests
-- [ ] parent existence, duplicate ID, and cycle rejection
+- [x] Codec round trip and bounded field tests
+- [x] parent existence, duplicate ID, and cycle rejection
 - [ ] Moon/Space keys available on dedicated GameTest server
 - [ ] SavedData restart evidence
 - [ ] reload preserves the last valid catalog on invalid input
