@@ -1,10 +1,10 @@
 # CURRENT_VERSION
 
 ```yaml
-current_version: v0.4.0
-status: PASSED
-next_action: Merge PR 8 and reproduce the accepted JAR twice on main
+current_version: v0.5.0
+status: IN_PROGRESS
+next_action: Implement and verify the bounded immutable rocket snapshot domain
 last_updated: 2026-09-01
-started_from: 93755bc2e89a788d5e1a9bad11fe535e4743333d
-work_branch: codex/v0.4.0-atmosphere-life-support
+started_from: 9c270e29673b97fc78dc73024c58d623b5869c48
+work_branch: codex/v0.5.0-rocket-snapshot
 ```

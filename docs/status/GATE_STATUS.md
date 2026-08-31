@@ -1,43 +1,41 @@
 # GATE_STATUS
 
 ```yaml
-version: v0.4.0
-status: PASSED
-tested_implementation_commit: "f880870aa4db0a46758dcc8615dfa2c16b2e3b59"
-base_commit: "93755bc2e89a788d5e1a9bad11fe535e4743333d"
-branch: "codex/v0.4.0-atmosphere-life-support"
-build: "1.20.1-0.4.0-dev"
+version: v0.5.0
+status: IN_PROGRESS
+tested_implementation_commit: ""
+base_commit: "9c270e29673b97fc78dc73024c58d623b5869c48"
+branch: "codex/v0.5.0-rocket-snapshot"
+build: "1.20.1-0.5.0-dev"
 upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
-provenance_review: APPROVED
-pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/8"
-forge_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33421129833"
-governance_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33421129566"
-pull_request_checks: 3/3_PASS
+provenance_review: IN_PROGRESS
+pull_request: ""
+forge_ci: ""
+governance_ci: ""
+pull_request_checks: NOT_STARTED
 gates:
-  G0: PASS
-  G1: PASS
-  G2: PASS
-  G3: PASS
-  G4: PASS
-  G5: PASS
-  G6: PASS
-  G7: PASS
-  G8: PASS
-  G9: PASS
-overall: PASSED
-remaining_items: []
-human_approved_by: "sunthemoon"
-human_approved_at: "2026-09-01"
+  G0: IN_PROGRESS
+  G1: NOT_STARTED
+  G2: NOT_STARTED
+  G3: NOT_STARTED
+  G4: NOT_STARTED
+  G5: NOT_STARTED
+  G6: NOT_STARTED
+  G7: NOT_STARTED
+  G8: NOT_STARTED
+  G9: NOT_STARTED
+overall: IN_PROGRESS
+remaining_items:
+  - bounded rocket snapshot and server-recomputed statistics
+  - loaded-only structure scan and BlockEntity allowlist
+  - transactional assembly/disassembly with rollback and region locking
+  - persistent thin RocketEntity and bounded visual synchronization
+  - automated, dedicated-server, performance, multiplayer, and manual evidence
+human_approved_by: ""
+human_approved_at: ""
 ```
 
-The exact candidate JAR is 466,433 bytes with SHA-256
-`05279656dfae21f682ca45a000517628dfcf706ebc4cce9ce2fe16e0723e96f1`.
-Two clean rebuilds reproduced those bytes. Two packaged clients, same-world
-restart/rejoin, the five-minute 16-Vent server scenario, and all local technical
-checks passed. Owner `sunthemoon` approved G0, G8, and G9 on 2026-09-01.
-
-PR technical checkpoint `d3a13642c3e21d6b9868b1a9e746935db17ceba9`
-passed all three checks, including the full 596-test governance inventory and
-the five-minute packaged atmosphere server lane. All ten Required Gates are
-`PASS`. The accepted v0.3.0 snapshot remains archived at
-[`../releases/v0.3.0/GATE-STATUS.md`](../releases/v0.3.0/GATE-STATUS.md).
+The accepted v0.4.0 record remains immutable at
+[`../releases/v0.4.0/GATE-STATUS.md`](../releases/v0.4.0/GATE-STATUS.md). v0.5
+uses the repository-approved 2,048-block / 32,768-volume / 1 MiB snapshot
+limits and rejects every BlockEntity without an explicit bounded adapter.
