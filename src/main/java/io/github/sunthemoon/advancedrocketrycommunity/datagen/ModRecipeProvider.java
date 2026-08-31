@@ -1,16 +1,25 @@
 package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
+import com.google.gson.JsonObject;
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpec;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
-import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItemTags;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.Tags;
 
 public final class ModRecipeProvider extends RecipeProvider {
@@ -20,40 +29,79 @@ public final class ModRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> output) {
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.SILICON_WAFER.get(), 2)
-                .requires(Tags.Items.GEMS_QUARTZ)
-                .requires(Items.REDSTONE)
-                .unlockedBy("has_quartz", has(Tags.Items.GEMS_QUARTZ))
-                .save(output);
-
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.BASIC_CIRCUIT.get(), 2)
-                .requires(ModItemTags.SILICON_WAFERS)
-                .requires(Tags.Items.INGOTS_COPPER)
-                .requires(Items.REDSTONE)
-                .unlockedBy("has_silicon_wafer", has(ModItemTags.SILICON_WAFERS))
-                .save(output);
-
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.ADVANCED_CIRCUIT.get())
-                .requires(ModItemTags.BASIC_CIRCUITS)
-                .requires(Tags.Items.INGOTS_GOLD)
-                .requires(Tags.Items.GEMS_DIAMOND)
-                .unlockedBy("has_basic_circuit", has(ModItemTags.BASIC_CIRCUITS))
-                .save(output);
-
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.DATA_STORAGE_UNIT.get())
-                .requires(ModItemTags.ADVANCED_CIRCUITS)
-                .requires(Items.COMPARATOR)
-                .requires(Items.REDSTONE)
-                .unlockedBy("has_advanced_circuit", has(ModItemTags.ADVANCED_CIRCUITS))
-                .save(output);
-
-        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.MACHINE_CASING.get(), 2)
-                .pattern("III")
-                .pattern("ICI")
-                .pattern("III")
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ELECTROLYZER.get())
+                .pattern("IGI")
+                .pattern("CMC")
+                .pattern("IRI")
                 .define('I', Tags.Items.INGOTS_IRON)
-                .define('C', ModItemTags.BASIC_CIRCUITS)
-                .unlockedBy("has_basic_circuit", has(ModItemTags.BASIC_CIRCUITS))
+                .define('G', Tags.Items.GLASS)
+                .define('C', ModItems.BASIC_CIRCUIT.get())
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
                 .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.EMPTY_CANISTER.get(), 4)
+                .pattern(" G ")
+                .pattern("G G")
+                .pattern(" G ")
+                .define('G', Tags.Items.GLASS)
+                .unlockedBy("has_glass", has(Tags.Items.GLASS))
+                .save(output);
+
+        output.accept(new ElectrolyzingFinishedRecipe());
+    }
+
+    private static final class ElectrolyzingFinishedRecipe implements FinishedRecipe {
+        private static final ElectrolyzerRecipeSpec SPEC = ElectrolyzerRecipeSpec.fixedRecipe();
+        private static final ResourceLocation ID = ModIdentity.id("electrolyzer_water");
+
+        @Override
+        public void serializeRecipeData(JsonObject json) {
+            json.addProperty("schema_version", SPEC.schemaVersion());
+            json.add("ingredient", Ingredient.of(ModItems.EMPTY_CANISTER.get()).toJson());
+            json.addProperty("input_count", SPEC.inputCount());
+
+            JsonObject fluid = new JsonObject();
+            fluid.addProperty("fluid", BuiltInRegistries.FLUID.getKey(Fluids.WATER).toString());
+            fluid.addProperty("amount", SPEC.waterAmount());
+            json.add("fluid", fluid);
+
+            json.addProperty("processing_time", SPEC.processingTicks());
+            json.addProperty("energy_per_tick", SPEC.energyPerTick());
+            json.add("hydrogen_result", result(ModItems.HYDROGEN_CANISTER.get().getDefaultInstance()));
+            json.add("oxygen_result", result(ModItems.OXYGEN_CANISTER.get().getDefaultInstance()));
+        }
+
+        private static JsonObject result(ItemStack stack) {
+            JsonObject result = new JsonObject();
+            result.addProperty("item", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+            if (stack.getCount() != 1) {
+                result.addProperty("count", stack.getCount());
+            }
+            return result;
+        }
+
+        @Override
+        public ResourceLocation getId() {
+            return ID;
+        }
+
+        @Override
+        public RecipeSerializer<?> getType() {
+            return ModRecipes.ELECTROLYZING_SERIALIZER.get();
+        }
+
+        @Nullable
+        @Override
+        public JsonObject serializeAdvancement() {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public ResourceLocation getAdvancementId() {
+            return null;
+        }
     }
 }

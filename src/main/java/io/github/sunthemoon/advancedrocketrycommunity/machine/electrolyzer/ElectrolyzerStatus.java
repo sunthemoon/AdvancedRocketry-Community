@@ -22,6 +22,10 @@ public enum ElectrolyzerStatus {
         return networkId;
     }
 
+    public String translationKey() {
+        return "status.advancedrocketrycommunity.electrolyzer." + name().toLowerCase(java.util.Locale.ROOT);
+    }
+
     public static ElectrolyzerStatus fromNetworkId(int networkId) {
         for (ElectrolyzerStatus status : values()) {
             if (status.networkId == networkId) {

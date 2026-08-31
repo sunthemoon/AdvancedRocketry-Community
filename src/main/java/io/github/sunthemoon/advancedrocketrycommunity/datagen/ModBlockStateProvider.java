@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import net.minecraft.data.PackOutput;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ModelFile;
@@ -14,14 +15,24 @@ public final class ModBlockStateProvider extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        ModelFile casing = models().orientableWithBottom(
-                "machine_casing",
+        ModelFile electrolyzerIdle = models().orientableWithBottom(
+                "electrolyzer",
                 modLoc("block/machine_casing_side"),
                 modLoc("block/machine_casing_front"),
                 modLoc("block/machine_casing_top"),
                 modLoc("block/machine_casing_top")
         );
-        horizontalBlock(ModBlocks.MACHINE_CASING.get(), casing);
-        simpleBlockItem(ModBlocks.MACHINE_CASING.get(), casing);
+        ModelFile electrolyzerActive = models().orientableWithBottom(
+                "electrolyzer_active",
+                modLoc("block/machine_casing_side"),
+                mcLoc("block/sea_lantern"),
+                modLoc("block/machine_casing_top"),
+                modLoc("block/machine_casing_top")
+        );
+        horizontalBlock(
+                ModBlocks.ELECTROLYZER.get(),
+                state -> state.getValue(ElectrolyzerBlock.LIT) ? electrolyzerActive : electrolyzerIdle
+        );
+        simpleBlockItem(ModBlocks.ELECTROLYZER.get(), electrolyzerIdle);
     }
 }

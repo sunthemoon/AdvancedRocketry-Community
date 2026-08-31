@@ -1,0 +1,18 @@
+{
+  "block.advancedrocketrycommunity.electrolyzer": "电解机",
+  "item.advancedrocketrycommunity.empty_canister": "空罐",
+  "item.advancedrocketrycommunity.hydrogen_canister": "氢气罐",
+  "item.advancedrocketrycommunity.oxygen_canister": "氧气罐",
+  "menu.advancedrocketrycommunity.electrolyzer": "电解机",
+  "status.advancedrocketrycommunity.electrolyzer.idle": "待机",
+  "status.advancedrocketrycommunity.electrolyzer.invalid_recipe": "配方或存档数据无效",
+  "status.advancedrocketrycommunity.electrolyzer.needs_energy": "需要能量",
+  "status.advancedrocketrycommunity.electrolyzer.needs_water": "需要水",
+  "status.advancedrocketrycommunity.electrolyzer.no_recipe": "放入两个空罐",
+  "status.advancedrocketrycommunity.electrolyzer.output_blocked": "输出槽已满",
+  "status.advancedrocketrycommunity.electrolyzer.redstone_disabled": "红石信号暂停",
+  "status.advancedrocketrycommunity.electrolyzer.running": "电解中",
+  "status.advancedrocketrycommunity.electrolyzer.unsupported_data": "存档来自新版 schema，已禁用处理",
+  "tooltip.advancedrocketrycommunity.energy": "能量：%s / %s FE",
+  "tooltip.advancedrocketrycommunity.water": "水：%s / %s mB"
+}

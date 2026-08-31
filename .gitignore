@@ -1,5 +1,5 @@
 # Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-# Modified by AdvancedRocketry-Community on 2026-08-26 and 2026-08-30; see THIRD-PARTY-NOTICES.md.
+# Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-30, and 2026-08-31; see THIRD-PARTY-NOTICES.md.
 # Operating systems and editors
 .DS_Store
 Thumbs.db
@@ -18,6 +18,7 @@ out/
 run/
 run-data/
 src/generated/resources/.cache/
+src/generated/v0.2/resources/.cache/
 mcmodsrepo/
 bin/
 .classpath

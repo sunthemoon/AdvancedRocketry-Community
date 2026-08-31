@@ -3,7 +3,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
@@ -33,14 +32,12 @@ public final class ModLootTableProvider {
 
         @Override
         protected void generate() {
-            dropSelf(ModBlocks.MACHINE_CASING.get());
+            dropSelf(ModBlocks.ELECTROLYZER.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return ModBlocks.BLOCKS.getEntries().stream()
-                    .flatMap(entry -> Stream.of(entry.get()))
-                    .toList();
+            return List.of(ModBlocks.ELECTROLYZER.get());
         }
     }
 }

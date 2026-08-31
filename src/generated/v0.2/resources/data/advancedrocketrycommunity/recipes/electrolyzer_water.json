@@ -1,0 +1,20 @@
+{
+  "type": "advancedrocketrycommunity:electrolyzing",
+  "energy_per_tick": 20,
+  "fluid": {
+    "amount": 1000,
+    "fluid": "minecraft:water"
+  },
+  "hydrogen_result": {
+    "item": "advancedrocketrycommunity:hydrogen_canister"
+  },
+  "ingredient": {
+    "item": "advancedrocketrycommunity:empty_canister"
+  },
+  "input_count": 2,
+  "oxygen_result": {
+    "item": "advancedrocketrycommunity:oxygen_canister"
+  },
+  "processing_time": 100,
+  "schema_version": 1
+}
