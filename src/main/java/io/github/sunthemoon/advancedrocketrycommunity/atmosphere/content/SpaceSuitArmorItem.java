@@ -25,7 +25,8 @@ public final class SpaceSuitArmorItem extends ArmorItem {
                 EquipmentSlot.LEGS,
                 EquipmentSlot.FEET
         }) {
-            if (entity.getItemBySlot(slot).getItem() instanceof SpaceSuitArmorItem) {
+            if (entity.getItemBySlot(slot).getItem() instanceof SpaceSuitArmorItem armor
+                    && armor.getEquipmentSlot() == slot) {
                 count++;
             }
         }

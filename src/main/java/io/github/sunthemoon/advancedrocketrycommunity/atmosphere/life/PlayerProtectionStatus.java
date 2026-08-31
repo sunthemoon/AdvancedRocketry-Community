@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life;
 
 /** Bounded status synchronized to the client for display only. */
 public enum PlayerProtectionStatus {
+    EXEMPT(true, "exempt"),
     BREATHABLE_ENVIRONMENT(true, "breathable_environment"),
     BREATHABLE_VOLUME(true, "breathable_volume"),
     SUIT_OXYGEN(true, "suit_oxygen"),
