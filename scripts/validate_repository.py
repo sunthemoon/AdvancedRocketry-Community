@@ -2372,7 +2372,11 @@ def check_v010_asset_baseline(results: Results) -> None:
             "v0.1.0 artifact, provenance, client, dedicated-server, and checksum evidence is valid"
         )
 
-    text = read_text(ROOT / "docs/status/GATE_STATUS.md", results)
+    historical = ROOT / "docs/releases/v0.1.0/GATE-STATUS.md"
+    text = read_text(
+        historical if historical.exists() else ROOT / "docs/status/GATE_STATUS.md",
+        results,
+    )
     gate_errors = validate_v010_gate_status_text(
         text,
         asset_details=details,
@@ -2382,6 +2386,88 @@ def check_v010_asset_baseline(results: Results) -> None:
         results.fail("v0.1.0 Gate status contradictions: " + "; ".join(gate_errors))
     else:
         results.passed("v0.1.0 Gate status does not overstate mechanical or human evidence")
+
+
+def validate_v020_gate_status_text(
+    text: str,
+    *,
+    evidence_details: dict[str, object] | None = None,
+) -> list[str]:
+    """Reject v0.2.0 Gate claims that exceed machine-slice evidence."""
+
+    errors, top, gates = _parse_gate_status_document(
+        text,
+        expected_version="v0.2.0",
+    )
+    if errors:
+        return errors
+    evidence = evidence_details or {}
+    reviewer = top.get("human_approved_by", "").strip()
+    reviewed_at = top.get("human_approved_at", "").strip()
+    human_approved = bool(
+        reviewer in AUTHORIZED_RELEASE_REVIEWERS
+        and _valid_gate_approval_timestamp(reviewed_at)
+    )
+    if (reviewer or reviewed_at) and not human_approved:
+        errors.append(
+            "v0.2.0 human approval fields must contain an authorized reviewer and ISO date/time"
+        )
+
+    required = tuple(f"G{index}" for index in range(10))
+    waived = [gate for gate in required if gates.get(gate) == "NOT_APPLICABLE"]
+    if waived:
+        errors.append(
+            "v0.2.0 Required Gates cannot be NOT_APPLICABLE: " + ", ".join(waived)
+        )
+
+    evidence_keys = {
+        "G0": "provenance_ready",
+        "G1": "artifact_ready",
+        "G2": "data_ready",
+        "G3": "automated_ready",
+        "G4": "server_ready",
+        "G5": "persistence_ready",
+        "G6": "authority_ready",
+        "G7": "performance_ready",
+        "G8": "client_ready",
+        "G9": "docs_ready",
+    }
+    for gate, key in evidence_keys.items():
+        if gates.get(gate) == "PASS" and evidence.get(key) is not True:
+            errors.append(f"{gate} cannot be PASS without bound v0.2.0 {key} evidence")
+    if gates.get("G8") == "READY_FOR_HUMAN_REVIEW" and evidence.get("client_ready") is not True:
+        errors.append("G8 cannot be ready for human review without bound client evidence")
+    if gates.get("G8") == "PASS" and not human_approved:
+        errors.append("G8 cannot be PASS without explicit owner approval")
+    if gates.get("G9") == "PASS" and not human_approved:
+        errors.append("G9 cannot be PASS without explicit owner approval")
+
+    status_passed = top.get("status") == "PASSED"
+    overall_passed = top.get("overall") in {"PASS", "PASSED"}
+    if status_passed != overall_passed:
+        errors.append("v0.2.0 status PASSED and overall PASS/PASSED must agree")
+    if status_passed or overall_passed:
+        unresolved = [gate for gate in required if gates.get(gate) != "PASS"]
+        if unresolved:
+            errors.append(
+                "v0.2.0 cannot be PASSED while Required Gates are unresolved: "
+                + ", ".join(unresolved)
+            )
+        if not human_approved or any(evidence.get(key) is not True for key in evidence_keys.values()):
+            errors.append("v0.2.0 cannot be PASSED without all bound evidence and human approval")
+    return errors
+
+
+def check_v020_gate_status(results: Results) -> None:
+    current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
+    if "current_version: v0.2.0" not in current:
+        return
+    text = read_text(ROOT / "docs/status/GATE_STATUS.md", results)
+    errors = validate_v020_gate_status_text(text)
+    if errors:
+        results.fail("v0.2.0 Gate status contradictions: " + "; ".join(errors))
+    else:
+        results.passed("v0.2.0 Gate status does not overstate incomplete machine evidence")
 
 
 def check_package_checksums(package_root: Path, results: Results) -> None:
@@ -2514,6 +2600,7 @@ def main() -> int:
     check_v002_gate_status(results)
     check_release_checksums(results)
     check_v010_asset_baseline(results)
+    check_v020_gate_status(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
     results.print_report()

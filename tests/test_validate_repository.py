@@ -32,6 +32,7 @@ from scripts.validate_repository import (
     tracked_markdown_files,
     validate_v002_gate_status_text,
     validate_v010_gate_status_text,
+    validate_v020_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
@@ -67,6 +68,33 @@ gates:
   G7: NOT_APPLICABLE
   G8: {g8}
   G9: {g9}
+overall: {overall}
+human_approved_by: "{reviewer}"
+human_approved_at: "{reviewed_at}"
+```
+"""
+
+
+def v020_gate_document(
+    *,
+    status: str = "IN_PROGRESS",
+    overall: str = "IN_PROGRESS",
+    gates: dict[str, str] | None = None,
+    reviewer: str = "",
+    reviewed_at: str = "",
+) -> str:
+    values = {f"G{index}": "NOT_STARTED" for index in range(10)}
+    values["G0"] = "IN_PROGRESS"
+    if gates:
+        values.update(gates)
+    gate_lines = "\n".join(f"  {gate}: {values[gate]}" for gate in sorted(values))
+    return f"""# GATE_STATUS
+
+```yaml
+version: v0.2.0
+status: {status}
+gates:
+{gate_lines}
 overall: {overall}
 human_approved_by: "{reviewer}"
 human_approved_at: "{reviewed_at}"
@@ -619,6 +647,52 @@ class V010GateStatusTests(unittest.TestCase):
             asset_details={"review_status": "APPROVED", "resource_count": 37},
         )
         self.assertTrue(any("G8 cannot be PASS" in error for error in errors))
+        self.assertTrue(any("human approval" in error for error in errors))
+
+
+class V020GateStatusTests(unittest.TestCase):
+    def test_honest_initial_status_needs_no_uncreated_evidence(self) -> None:
+        self.assertEqual([], validate_v020_gate_status_text(v020_gate_document()))
+
+    def test_persistence_security_and_performance_cannot_be_waived(self) -> None:
+        errors = validate_v020_gate_status_text(
+            v020_gate_document(
+                gates={
+                    "G5": "NOT_APPLICABLE",
+                    "G6": "NOT_APPLICABLE",
+                    "G7": "NOT_APPLICABLE",
+                }
+            )
+        )
+        self.assertTrue(any("G5, G6, G7" in error for error in errors))
+
+    def test_gate_pass_requires_matching_bound_evidence(self) -> None:
+        errors = validate_v020_gate_status_text(
+            v020_gate_document(gates={"G5": "PASS"})
+        )
+        self.assertTrue(any("G5 cannot be PASS" in error for error in errors))
+
+    def test_version_pass_requires_all_evidence_and_owner_approval(self) -> None:
+        errors = validate_v020_gate_status_text(
+            v020_gate_document(
+                status="PASSED",
+                overall="PASSED",
+                gates={f"G{index}": "PASS" for index in range(10)},
+            ),
+            evidence_details={
+                "provenance_ready": True,
+                "artifact_ready": True,
+                "data_ready": True,
+                "automated_ready": True,
+                "server_ready": True,
+                "persistence_ready": True,
+                "authority_ready": True,
+                "performance_ready": True,
+                "client_ready": True,
+                "docs_ready": True,
+            },
+        )
+        self.assertTrue(any("explicit owner approval" in error for error in errors))
         self.assertTrue(any("human approval" in error for error in errors))
 
 
