@@ -27,5 +27,5 @@ bin/
 
 # Local logs and crash output
 *.log
-logs/
+/logs/
 crash-reports/

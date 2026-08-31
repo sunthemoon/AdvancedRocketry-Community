@@ -1,0 +1,13 @@
+# Filtered packaged-client dedicated lifecycle; full raw logs are intentionally untracked.
+## first matching-client join
+[Worker-Main-4/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.2.0-dev initialized
+[Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 25586
+[Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[Render thread/WARN] [net.minecraft.client.ClientRecipeBook/]: Unknown recipe category: advancedrocketrycommunity:electrolyzing/advancedrocketrycommunity:electrolyzer_water
+[Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
+## same-world restart rejoin
+[Worker-Main-12/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.2.0-dev initialized
+[Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 25586
+[Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[Render thread/WARN] [net.minecraft.client.ClientRecipeBook/]: Unknown recipe category: advancedrocketrycommunity:electrolyzing/advancedrocketrycommunity:electrolyzer_water
+[Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

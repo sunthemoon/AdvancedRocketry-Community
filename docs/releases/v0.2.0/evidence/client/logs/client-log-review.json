@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "version": "v0.2.0",
+  "artifact_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+  "known_non_blocking_warning": {
+    "id": "minecraft-client-recipe-book-custom-type",
+    "message": "ClientRecipeBook reports the custom electrolyzing recipe category once per recipe sync; processing and recipe synchronization remain functional.",
+    "total_occurrences": 3
+  },
+  "runs": {
+    "singleplayer": {
+      "filtered_log": "docs/releases/v0.2.0/evidence/client/logs/singleplayer-client.txt",
+      "project_initialized": true,
+      "singleplayer_login_observed": true,
+      "clean_shutdown_observed": true,
+      "project_error_count": 0,
+      "project_fatal_count": 0,
+      "client_linkage_failure_count": 0,
+      "known_warning_occurrences": 1
+    },
+    "dedicated": {
+      "filtered_log": "docs/releases/v0.2.0/evidence/client/logs/dedicated-client.txt",
+      "project_initialized": true,
+      "first_join_observed": true,
+      "restart_rejoin_observed": true,
+      "clean_shutdown_observed": true,
+      "project_error_count": 0,
+      "project_fatal_count": 0,
+      "client_linkage_failure_count": 0,
+      "known_warning_occurrences": 2
+    }
+  }
+}
