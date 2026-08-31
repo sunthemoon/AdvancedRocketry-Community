@@ -42,6 +42,10 @@ public final class VolumeScanTask {
      * @return the exact number of world observations performed
      */
     public int step(VolumeWorldView world, int inspectionBudget) {
+        return advance(world, inspectionBudget).inspections();
+    }
+
+    public VolumeScanStep advance(VolumeWorldView world, int inspectionBudget) {
         Objects.requireNonNull(world, "world");
         if (inspectionBudget <= 0
                 || inspectionBudget > AtmosphereLimits.MAX_TASK_INSPECTIONS_PER_TICK) {
@@ -51,10 +55,11 @@ public final class VolumeScanTask {
             );
         }
         if (outcome != VolumeScanOutcome.SCANNING) {
-            return 0;
+            return new VolumeScanStep(0, Set.of(), outcome);
         }
 
         int inspected = 0;
+        Set<VolumePosition> newCells = new LinkedHashSet<>();
         while (inspected < inspectionBudget && !queue.isEmpty()) {
             VolumePosition position = queue.removeFirst();
             CellObservation observation = Objects.requireNonNull(
@@ -85,6 +90,7 @@ public final class VolumeScanTask {
                 break;
             }
             cells.add(position);
+            newCells.add(position);
             bounds = bounds == null ? VolumeBounds.single(position) : bounds.include(position);
             for (VolumePosition neighbor : position.neighbors()) {
                 if (enqueued.add(neighbor)) {
@@ -96,7 +102,7 @@ public final class VolumeScanTask {
         if (outcome == VolumeScanOutcome.SCANNING && queue.isEmpty()) {
             outcome = VolumeScanOutcome.SEALED;
         }
-        return inspected;
+        return new VolumeScanStep(inspected, newCells, outcome);
     }
 
     public boolean resumePending() {
