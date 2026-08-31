@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.CelestialCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
@@ -47,6 +49,12 @@ public final class AdvancedRocketryCommunity {
                 new SafeCelestialTravel()
         );
         MinecraftForge.EVENT_BUS.addListener(celestialCommands::register);
+        CelestialNetwork celestialNetwork = new CelestialNetwork();
+        CelestialSnapshotSynchronizer snapshotSynchronizer = new CelestialSnapshotSynchronizer(
+                celestialCatalogs,
+                celestialNetwork
+        );
+        MinecraftForge.EVENT_BUS.addListener(snapshotSynchronizer::onDatapackSync);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
