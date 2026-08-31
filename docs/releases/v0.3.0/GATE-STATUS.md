@@ -1,4 +1,4 @@
-# GATE_STATUS
+# GATE_STATUS — v0.3.0 review snapshot
 
 ```yaml
 version: v0.3.0
@@ -30,9 +30,6 @@ human_approved_by: ""
 human_approved_at: ""
 ```
 
-The fixed celestial implementation, packaged two-client flow, full local suite,
-release validator, and checksums are complete. G0/G8/G9 await owner review;
-pull-request checks, merge, and post-merge rebuild then remain.
-
-The accepted v0.2.0 snapshot remains archived at
-[`../releases/v0.2.0/GATE-STATUS.md`](../releases/v0.2.0/GATE-STATUS.md).
+The technical client/server flows, full local suites, release validator, and
+checksum inventory are complete and bound to the exact JAR in this directory.
+G0, G8, and G9 await repository-owner review; blocking PR checks follow.

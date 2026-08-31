@@ -73,6 +73,9 @@ jobs:
       - name: Enforce namespaced celestial identity boundary
         run: python scripts/check_celestial_identity.py
 
+      - name: Validate v0.3.0 release evidence
+        run: python scripts/validate_v030_release_evidence.py --require-approved
+
       - name: Generate deterministic resources
         run: ./gradlew runData --no-daemon --stacktrace
 

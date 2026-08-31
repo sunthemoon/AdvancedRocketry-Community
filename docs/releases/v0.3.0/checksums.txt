@@ -1,0 +1,32 @@
+# SHA-256 checksums for v0.3.0 artifacts and committed evidence.
+# Artifact JARs are built and intentionally not committed.
+920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb  build/libs/advancedrocketry-community-1.20.1-0.3.0-dev.jar
+c2e789df3129f46e7552b6121d2a8107d29009aeae65c61162382d2c98147ae9  build/libs/advancedrocketry-community-1.20.1-0.3.0-dev-sources.jar
+04d4a7700b5040c8027c42d377c8d7012b398c873ff19a0857c633592b6035d4  docs/releases/v0.3.0/evidence/artifact/artifact-summary.json
+2f7dea4af857f9f2768246cdb7bb8caf9a776ef989dc0ab593aa336c80908397  docs/releases/v0.3.0/evidence/artifact/jar-content-manifest.json
+5b0b7acea824e9300cbb3bec3ba5cd591bc6b9ae4a85fcb7bc61858784afcd1c  docs/releases/v0.3.0/evidence/automated/summary.json
+881147c7f1526b603677099f1a6abfde696dd55b5f84ce88bbcc8678c557848d  docs/releases/v0.3.0/evidence/celestial-server/lifecycle.txt
+ad3fccb1acd907ad86501fc1bb07bcc007338732930e574f966567cc87158c2f  docs/releases/v0.3.0/evidence/celestial-server/summary.json
+5bbd099fd8f8d15d3d9aeb2a9b7dc1682cc72b7143e6234e8ac56e409b1852b9  docs/releases/v0.3.0/evidence/client/logs/client-a.txt
+e99edb30311e2b323e59eff7c870cfc9506cebab0b7fa4d9bd28278ad5583fac  docs/releases/v0.3.0/evidence/client/logs/client-b.txt
+e75f9a40f648fbc2ea9623d952e2621dfd484ce6833b5bf9fe23c61fa7a61b20  docs/releases/v0.3.0/evidence/client/logs/server-after-restart.txt
+f944e9991fccdd8df9dc52d89e599467af0b45904bf87875ab72ca28e8424f09  docs/releases/v0.3.0/evidence/client/logs/server-before-restart.txt
+b778a47354c272790105bf984a7ba933f1c3e914eaa44efb1cf48bfafe93cde7  docs/releases/v0.3.0/evidence/client/manual-evidence.json
+88b6b4da82a1706dc598003e3c9da10262e80f1122cab3591c5e3340a3924780  docs/releases/v0.3.0/evidence/client/screenshots/earth_after_restart.png
+603c48323aff76b48a4602dc9607b4325e3f0e730095cfba6e564a76b7ca6fd5  docs/releases/v0.3.0/evidence/client/screenshots/earth_safe_return.png
+54f6ec46109800b4dd0a7424d19dde16622bd2764de159555235a0c989813d2f  docs/releases/v0.3.0/evidence/client/screenshots/mods_v030.png
+4b98ac93c1333874c7c385bc3d2a156149b348ab757479d385388f6dfe461358  docs/releases/v0.3.0/evidence/client/screenshots/moon_after_restart.png
+d5d8b375b1a039ba3e6896386f52d177bce1020e4db54a7ba3977b8c79207a1b  docs/releases/v0.3.0/evidence/client/screenshots/moon_before_restart.png
+ee4ed86eafee63240ac3c4b7cf9e4808416da80c2aa8f5d9f77a7cd730e82df8  docs/releases/v0.3.0/evidence/client/screenshots/space_before_restart.png
+fbdaad8e8485f46ead7f580ee21d2b0db80f6f3531be0b186f624804ee101c69  docs/releases/v0.3.0/evidence/dedicated-server/first-start.txt
+6005651db90f07821733f30813ebadc5b60dca37fa6b1b3aa498b96d9a090556  docs/releases/v0.3.0/evidence/dedicated-server/restart.txt
+492b795aa479bb56fbdf2ecb35fed0a38f48cec652efed02b84a59e8b44c5601  docs/releases/v0.3.0/evidence/dedicated-server/summary.json
+a83da794af2b7e1b6842ee9c0e8e9ab935e2a4ca367f70b43f279d1af8809715  docs/releases/v0.3.0/evidence/machine-regression/lifecycle.txt
+6e9bdc60714edc2985b228a6f7d2adfb9603aa4e0e593b542cd1f41bf9298bfa  docs/releases/v0.3.0/evidence/machine-regression/summary.json
+503deef7f5a81f2aaa2a7098662ab56de4281b2ed6dc3844c69f028ec2f39e24  docs/releases/v0.3.0/evidence/persistence/after-restart.json
+503deef7f5a81f2aaa2a7098662ab56de4281b2ed6dc3844c69f028ec2f39e24  docs/releases/v0.3.0/evidence/persistence/before-restart.json
+bcc2633b91da0f6bdcfc678b21ac118d69a58956632b87e7502aa22dbe94fea4  docs/releases/v0.3.0/evidence/persistence/comparison.json
+84eee060d16d978693c496cc18507fe7b19874cb483677580845c92f577a8621  docs/releases/v0.3.0/evidence/xml-import/data/advancedrocketrycommunity/celestial_bodies/imported/planet_a/planet_a_moon.json
+d4b52e4b98778aba50d87363000933886aed25b1a84079f8985c159819024409  docs/releases/v0.3.0/evidence/xml-import/data/advancedrocketrycommunity/celestial_bodies/imported/planet_a.json
+a316a1f43867584385443beb82c61f7b522084b31a52f59977cdb3af347ced8a  docs/releases/v0.3.0/evidence/xml-import/import-report.json
+9d2bef0cfa1156ef3fc397499e767904a6ba65677ebbde3935a92cea45e95957  docs/releases/v0.3.0/evidence/xml-import/README.md
