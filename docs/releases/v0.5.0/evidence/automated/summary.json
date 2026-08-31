@@ -1,5 +1,5 @@
 {
-  "artifact_sha256": "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b",
+  "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
   "build": "1.20.1-0.5.0-dev",
   "results": {
     "clean_builds": {
@@ -63,6 +63,6 @@
     "server_recomputed_stats": true,
     "transaction_region_locking": true
   },
-  "tested_implementation_commit": "5cbd912bb1ad30afd242e21ca8095e53f265dab9",
+  "tested_implementation_commit": "eae8d9224c708924930b781d7332eb69b6a4bf8d",
   "version": "v0.5.0"
 }

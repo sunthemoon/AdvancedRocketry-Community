@@ -48,14 +48,17 @@ EXPECTED_SOURCES_ARTIFACT = (
     "advancedrocketry-community-1.20.1-0.5.0-dev-sources.jar"
 )
 EXPECTED_ARTIFACT_SHA256 = (
-    "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b"
+    "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0"
 )
 EXPECTED_SOURCES_SHA256 = (
-    "6bf36e40cec68595a71762c9b1c797f558ae1aee42868313448a32c48f525b0e"
+    "a1220e5066c487e009edad46311f912430b8bd2ef39881e46bb79d96c9afc7eb"
 )
-EXPECTED_COMMIT = "5cbd912bb1ad30afd242e21ca8095e53f265dab9"
+EXPECTED_COMMIT = "eae8d9224c708924930b781d7332eb69b6a4bf8d"
 EXPECTED_MANIFEST_SHA256 = (
-    "23bc73400a489394d55832f3ef56641cfd021f0d35dad0431010f68103078581"
+    "0184e2c49061da76e91933c020447ad1f4c13e87fc34499843b8dc6952c9d24d"
+)
+VISUAL_SOURCE_ARTIFACT_SHA256 = (
+    "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b"
 )
 EXPECTED_GENERATED_SHA256 = (
     "2c6cc995ba2bd08f5202901d081e5d55938c417515bce44b1ca4049d3529b40e"
@@ -166,14 +169,14 @@ def _validate_artifact(
         != {
             "path": f"build/libs/{EXPECTED_ARTIFACT}",
             "filename": EXPECTED_ARTIFACT,
-            "bytes": 703103,
+            "bytes": 703307,
             "sha256": EXPECTED_ARTIFACT_SHA256,
         }
         or sources
         != {
             "path": f"build/libs/{EXPECTED_SOURCES_ARTIFACT}",
             "filename": EXPECTED_SOURCES_ARTIFACT,
-            "bytes": 356986,
+            "bytes": 357173,
             "sha256": EXPECTED_SOURCES_SHA256,
         }
         or repeated.get("count") != 2
@@ -201,7 +204,7 @@ def _validate_artifact(
         except OSError as exc:
             errors.append(f"artifact cannot be read: {exc}")
         else:
-            if not actual.is_file() or actual.is_symlink() or actual.stat().st_size != 703103:
+            if not actual.is_file() or actual.is_symlink() or actual.stat().st_size != 703307:
                 errors.append("artifact is missing, unsafe, or has the wrong size")
             elif _sha256(actual) != EXPECTED_ARTIFACT_SHA256:
                 errors.append("artifact SHA-256 differs from the v0.5.0 evidence")
@@ -348,6 +351,7 @@ def _validate_manual(
     server = manual.get("server")
     observations = manual.get("observations")
     owner = manual.get("owner_review")
+    candidate = manual.get("candidate_revalidation")
     if (
         manual.get("schema_version") != 1
         or manual.get("version") != EXPECTED_VERSION
@@ -358,10 +362,16 @@ def _validate_manual(
         or client.get("matching_implementation") is not True
         or client.get("minecraft") != "1.20.1"
         or client.get("forge") != "47.4.10"
+        or client.get("visual_source_artifact_sha256")
+        != VISUAL_SOURCE_ARTIFACT_SHA256
         or not isinstance(server, dict)
         or server.get("kind") != "packaged_forge_server"
-        or server.get("artifact_sha256") != artifact_hash
+        or server.get("artifact_sha256") != VISUAL_SOURCE_ARTIFACT_SHA256
         or server.get("loopback_only") is not True
+        or not isinstance(candidate, dict)
+        or candidate.get("artifact_sha256") != artifact_hash
+        or candidate.get("packaged_server_and_recovery") != "PASS"
+        or "GameTest-only" not in str(candidate.get("carry_forward_reason"))
         or not isinstance(observations, dict)
         or observations.get("matching_modded_connection") is not True
         or observations.get("visual_cache_rendered_after_server_restart") is not True

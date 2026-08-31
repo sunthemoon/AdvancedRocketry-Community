@@ -3,9 +3,9 @@
 ## Bound candidate
 
 - Build: `1.20.1-0.5.0-dev`
-- Tested implementation: `5cbd912bb1ad30afd242e21ca8095e53f265dab9`
+- Tested implementation: `eae8d9224c708924930b781d7332eb69b6a4bf8d`
 - Main JAR SHA-256:
-  `0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b`
+  `45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0`
 - Tester / approver: `sunthemoon`
 - Date: `2026-09-01`
 
@@ -36,6 +36,9 @@ The visible result is
 with privacy-filtered lifecycle excerpts under
 [`evidence/client/logs/`](evidence/client/logs/).
 
-The repository owner directly approved G8 and G9 against this bundle. The
+The visible recording predates a GameTest-only one-tick scheduling correction;
+the final candidate's packaged server and recovery flow were rerun, while all
+rocket runtime classes and resources remained byte-identical. The repository
+owner directly approved G8 and G9 against this disclosed bundle. The
 user-development client boundary and single visible client are retained in
 [`KNOWN-ISSUES.md`](KNOWN-ISSUES.md), not hidden from the acceptance record.

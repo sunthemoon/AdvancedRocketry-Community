@@ -14,19 +14,24 @@
 
 ## Runtime observations
 
-- The visible client was a Forge 47.4.10 user-development launch of the exact
-  tested implementation, connected to the packaged-JAR server. It was not a
-  separately packaged client installation.
+- The visible client was a Forge 47.4.10 user-development launch connected to
+  the prior packaged candidate. The final candidate differs only in the
+  GameTest scheduling method described below; all rocket runtime classes and
+  resources are unchanged. It was not a separately packaged client install.
 - The client log contains inherited warnings for three v0.2 recipe categories
   that Forge does not recognize. Recipe execution, rocket rendering, network
   synchronization, and server persistence were unaffected.
 - The manual bundle uses one visible client. Same-region two-request exclusion,
   tracking synchronization, and concurrent transaction behavior are covered by
   deterministic unit/GameTests rather than a second graphical recording.
-- One final local GameTest attempt saw the inherited closed-door atmosphere
-  test read a transient `seedSky=true` immediately after cross-dimension block
-  placement and failed. The unchanged rerun passed all 34 required tests. CI is
-  retained as the independent acceptance run; recurrence blocks the merge.
+- A clean local run and the first PR run showed that the inherited closed-door
+  atmosphere GameTest read `seedSky=true` in the same tick as fresh Moon block
+  placement. The test now waits one normal server tick for the heightmap; no
+  production decision, assertion, or timeout was relaxed. Clean local GameTests
+  pass 34/34, and the corrected PR run remains the merge gate.
+- The final candidate's packaged start/restart and rocket recovery flow was
+  rerun. Carry-forward of the visible client evidence is explicit in
+  `manual-evidence.json`.
 
 ## Reproducibility boundary
 

@@ -30,15 +30,15 @@ join/disconnect events, entity identity, recovery state, and clean-stop results.
 
 ## Reproducible artifact
 
-Two clean Windows builds and the packaged-server copy are exactly 703,103 bytes
+Two clean Windows builds and the packaged-server copy are exactly 703,307 bytes
 and share SHA-256:
 
 ```text
-0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b
+45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0
 ```
 
-The sources JAR is 356,986 bytes with SHA-256
-`6bf36e40cec68595a71762c9b1c797f558ae1aee42868313448a32c48f525b0e`.
+The sources JAR is 357,173 bytes with SHA-256
+`a1220e5066c487e009edad46311f912430b8bd2ef39881e46bb79d96c9afc7eb`.
 The audited main JAR contains 497 entries.
 
 ## Gate decision

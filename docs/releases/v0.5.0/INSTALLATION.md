@@ -16,7 +16,7 @@
 Verified Windows candidate SHA-256:
 
 ```text
-0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b
+45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0
 ```
 
 Install the same JAR in the client and dedicated-server `mods/` directories.

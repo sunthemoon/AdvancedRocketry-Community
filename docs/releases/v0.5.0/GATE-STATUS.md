@@ -3,13 +3,13 @@
 ```yaml
 version: v0.5.0
 status: READY_FOR_AUDIT
-tested_implementation_commit: "5cbd912bb1ad30afd242e21ca8095e53f265dab9"
+tested_implementation_commit: "eae8d9224c708924930b781d7332eb69b6a4bf8d"
 base_commit: "9c270e29673b97fc78dc73024c58d623b5869c48"
 branch: "codex/v0.5.0-rocket-snapshot"
 build: "1.20.1-0.5.0-dev"
 upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
 provenance_review: APPROVED
-pull_request: ""
+pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/9"
 forge_ci: ""
 governance_ci: ""
 pull_request_checks: PENDING
@@ -34,7 +34,7 @@ human_approved_at: "2026-09-01"
 
 Repository owner `sunthemoon` approved the zero-copy provenance record and the
 G0, G8, and G9 decisions on 2026-09-01. The exact tested implementation is
-`5cbd912bb1ad30afd242e21ca8095e53f265dab9`; subsequent candidate commits may
+`eae8d9224c708924930b781d7332eb69b6a4bf8d`; subsequent candidate commits may
 add tests, evidence, and documentation but must not change its distributable
 JAR bytes.
 

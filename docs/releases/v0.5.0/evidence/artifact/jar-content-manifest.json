@@ -1,6 +1,6 @@
 {
   "artifact": "advancedrocketry-community-1.20.1-0.5.0-dev.jar",
-  "artifact_sha256": "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b",
+  "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
   "entries": [
     {
       "path": "META-INF/",
@@ -1784,13 +1784,13 @@
     },
     {
       "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/AtmosphereGameTests$DamageableFakePlayer.class",
-      "sha256": "a83bbed19730f53f875048be71d08152437e5ae178b5f5bc7f410b1bb081c078",
+      "sha256": "210482c8ad4f5661abc221798cec803f112d52d65dbb41d39be4dca51d5e1a27",
       "size": 1245
     },
     {
       "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/AtmosphereGameTests.class",
-      "sha256": "94cbe4e240048afd635eb3906642dde981601e95ff9ae88945720bdd04baf6d6",
-      "size": 28050
+      "sha256": "f57a43325540f91629059ae2cfd9f534f6ae9456954fda9b2bedf87860ca92f0",
+      "size": 28947
     },
     {
       "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/AtmospherePerformanceGameTests.class",

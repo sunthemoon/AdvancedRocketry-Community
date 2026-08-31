@@ -38,9 +38,9 @@ observations, below the 12,289 hard limit and the 256-per-tick budget. The
 32,888-byte visual projection round-tripped in two chunks under the fixed
 32,768-byte packet limit and 524,288-byte aggregate cap.
 
-The first final GameTest attempt observed a transient pre-scan Moon heightmap
-state in the inherited closed-door atmosphere test and failed it honestly. An
-unchanged rerun completed all 34 required tests; CI remains a mandatory
-independent run. Exact structured results are under [`evidence/`](evidence/).
-Known scope and
-runtime observations are retained in [`KNOWN-ISSUES.md`](KNOWN-ISSUES.md).
+The first clean local and PR GameTest runs observed the inherited closed-door
+test reading the fresh Moon heightmap in its block-placement tick. The test now
+waits one normal server tick; production logic, assertions, and timeout remain
+unchanged. A clean corrected run completed all 34 required tests. Exact
+structured results are under [`evidence/`](evidence/). Known scope and runtime
+observations are retained in [`KNOWN-ISSUES.md`](KNOWN-ISSUES.md).

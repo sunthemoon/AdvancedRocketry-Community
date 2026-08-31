@@ -1,11 +1,12 @@
 {
-  "artifact_sha256": "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b",
+  "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
   "build": "1.20.1-0.5.0-dev",
   "client": {
     "kind": "forge_userdev",
     "minecraft": "1.20.1",
     "forge": "47.4.10",
-    "matching_implementation": true
+    "matching_implementation": true,
+    "visual_source_artifact_sha256": "0e232ace303912d8487c0b26853341801c9ffe4468d2a73ae322cfce049ff42b"
   },
   "completed_at": "2026-09-01T05:54:40+08:00",
   "logs": [
@@ -32,6 +33,11 @@
     "approved_by": "sunthemoon",
     "g8_visible_client_acceptance": "PASS",
     "g9_release_acceptance": "PASS"
+  },
+  "candidate_revalidation": {
+    "artifact_sha256": "45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0",
+    "carry_forward_reason": "The accepted candidate differs only in the GameTest-only fresh-Moon heightmap scheduling method; rocket runtime classes and resources are unchanged.",
+    "packaged_server_and_recovery": "PASS"
   },
   "schema_version": 1,
   "screenshots": [
