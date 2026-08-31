@@ -19,11 +19,11 @@ public final class ElectrolyzerScreen extends AbstractContainerScreen<Electrolyz
     public ElectrolyzerScreen(ElectrolyzerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         imageWidth = 176;
-        imageHeight = 166;
+        imageHeight = 176;
         titleLabelX = 8;
         titleLabelY = 7;
         inventoryLabelX = 8;
-        inventoryLabelY = 73;
+        inventoryLabelY = 83;
     }
 
     @Override

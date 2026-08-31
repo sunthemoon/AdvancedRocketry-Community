@@ -89,12 +89,12 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
                         inventory,
                         column + row * 9 + 9,
                         8 + column * 18,
-                        84 + row * 18
+                        94 + row * 18
                 ));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new net.minecraft.world.inventory.Slot(inventory, column, 8 + column * 18, 142));
+            addSlot(new net.minecraft.world.inventory.Slot(inventory, column, 8 + column * 18, 152));
         }
     }
 
