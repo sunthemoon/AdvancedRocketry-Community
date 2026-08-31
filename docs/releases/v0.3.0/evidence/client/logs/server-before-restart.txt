@@ -1,0 +1,17 @@
+# Filtered authoritative server lifecycle; machine paths and player IPs omitted.
+[15:42:42] [main/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Accepted celestial catalog generation 1 with 3 bodies
+[15:47:38] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[15:47:38] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030A joined the game
+[15:50:25] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[15:50:25] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030B joined the game
+[15:51:07] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: ARCEV030A, ARCEV030B
+[15:52:18] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Operator ARCEV030A teleported to fixed celestial destination advancedrocketrycommunity:moon
+[15:52:18] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Operator ARCEV030B teleported to fixed celestial destination advancedrocketrycommunity:space
+[15:58:19] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Value of attribute Gravity for entity ARCEV030A is 0.013200000000000003
+[15:58:19] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Value of attribute Gravity for entity ARCEV030B is 0.0
+[15:58:37] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030A has the following entity data: "advancedrocketrycommunity:moon"
+[15:58:37] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030B has the following entity data: "advancedrocketrycommunity:space"
+[15:58:53] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Operator ARCEV030B teleported to fixed celestial destination advancedrocketrycommunity:earth
+[15:59:09] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Value of attribute Gravity for entity ARCEV030B is 0.08
+[16:00:28] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[16:00:29] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved

@@ -1,0 +1,14 @@
+# Filtered authoritative same-world restart lifecycle; machine paths and player IPs omitted.
+[16:08:35] [main/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Accepted celestial catalog generation 1 with 3 bodies
+[16:09:42] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[16:09:42] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030A joined the game
+[16:09:44] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[16:09:44] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030B joined the game
+[16:10:26] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: ARCEV030A, ARCEV030B
+[16:10:26] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030A has the following entity data: "advancedrocketrycommunity:moon"
+[16:10:26] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ARCEV030B has the following entity data: "minecraft:overworld"
+[16:10:26] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Celestial bodies: 3
+[16:10:54] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Value of attribute Gravity for entity ARCEV030A is 0.013200000000000003
+[16:10:54] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Value of attribute Gravity for entity ARCEV030B is 0.08
+[16:11:48] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[16:11:49] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved

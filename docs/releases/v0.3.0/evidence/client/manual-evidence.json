@@ -1,0 +1,164 @@
+{
+  "artifact": {
+    "all_copies_equal": true,
+    "bytes": 296189,
+    "copies": {
+      "client_a": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb",
+      "client_b": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb",
+      "server": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb",
+      "source": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb"
+    },
+    "filename": "advancedrocketry-community-1.20.1-0.3.0-dev.jar",
+    "sha256": "920425eaeb8cf8b6e94f23ed3086ca290ae734315059bbcf8eea100272d8bdfb"
+  },
+  "build": "1.20.1-0.3.0-dev",
+  "environment": {
+    "forge": "47.4.10",
+    "java": "17.0.8",
+    "local_isolated_offline_mode": true,
+    "minecraft": "1.20.1",
+    "other_content_mods": 0,
+    "server_port": 25586
+  },
+  "executed_at": "2026-08-31",
+  "filtered_logs": [
+    {
+      "bytes": 1062,
+      "path": "docs/releases/v0.3.0/evidence/client/logs/client-a.txt",
+      "sha256": "5bbd099fd8f8d15d3d9aeb2a9b7dc1682cc72b7143e6234e8ac56e409b1852b9"
+    },
+    {
+      "bytes": 1222,
+      "path": "docs/releases/v0.3.0/evidence/client/logs/client-b.txt",
+      "sha256": "e99edb30311e2b323e59eff7c870cfc9506cebab0b7fa4d9bd28278ad5583fac"
+    },
+    {
+      "bytes": 1785,
+      "path": "docs/releases/v0.3.0/evidence/client/logs/server-after-restart.txt",
+      "sha256": "e75f9a40f648fbc2ea9623d952e2621dfd484ce6833b5bf9fe23c61fa7a61b20"
+    },
+    {
+      "bytes": 2425,
+      "path": "docs/releases/v0.3.0/evidence/client/logs/server-before-restart.txt",
+      "sha256": "f944e9991fccdd8df9dc52d89e599467af0b45904bf87875ab72ca28e8424f09"
+    }
+  ],
+  "known_observations": [
+    "Vanilla emitted one moved-too-quickly warning immediately after the fixed Space-to-Earth return; the destination, next-tick gravity, health, and save state were correct.",
+    "The evidence server used offline mode on loopback only so two deterministic isolated launcher identities could join; no public-server compatibility claim is made."
+  ],
+  "observations": {
+    "both_clients_rejoined_after_restart": true,
+    "catalog_body_count": 3,
+    "client_exit_codes": {
+      "A": 0,
+      "B": 0
+    },
+    "earth_safe_return": true,
+    "moon_safe_platform_visible": true,
+    "project_client_linkage_failures": 0,
+    "same_world_server_restart": true,
+    "server_clean_stop": true,
+    "snapshot_generation": 1,
+    "snapshot_payload_bytes_per_join": 469,
+    "space_safe_platform_visible": true,
+    "two_players_simultaneously_online": true
+  },
+  "persistence": {
+    "body_count": 3,
+    "body_state_identical": true,
+    "comparison_path": "docs/releases/v0.3.0/evidence/persistence/comparison.json",
+    "comparison_sha256": "bcc2633b91da0f6bdcfc678b21ac118d69a58956632b87e7502aa22dbe94fea4",
+    "saved_data_schema": 1,
+    "source_byte_identical": true,
+    "source_sha256": "1a385871267e5e72a93ec6c13cdc1bd0e3414ded492152fdbaee524a51ee501e"
+  },
+  "players": [
+    {
+      "after_restart_dimension": "advancedrocketrycommunity:moon",
+      "after_restart_gravity": 0.013200000000000003,
+      "before_restart_dimension": "advancedrocketrycommunity:moon",
+      "profile": "A",
+      "username": "ARCEV030A",
+      "uuid": "0b0ffed0-9221-33be-b1e2-b684b46d5cc6"
+    },
+    {
+      "after_restart_dimension": "minecraft:overworld",
+      "after_restart_gravity": 0.08,
+      "before_restart_dimension": "advancedrocketrycommunity:space",
+      "profile": "B",
+      "safe_return_dimension": "minecraft:overworld",
+      "space_gravity": 0.0,
+      "username": "ARCEV030B",
+      "uuid": "a48cbcab-2947-3061-8c8a-c8dbf6d86bad"
+    }
+  ],
+  "review_status": "READY_FOR_HUMAN_REVIEW",
+  "reviewer": "",
+  "schema_version": 1,
+  "screenshots": [
+    {
+      "bytes": 759027,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "docs/releases/v0.3.0/evidence/client/screenshots/earth_after_restart.png",
+      "sha256": "88b6b4da82a1706dc598003e3c9da10262e80f1122cab3591c5e3340a3924780",
+      "subject": "Player B rejoined same world in Overworld after server restart"
+    },
+    {
+      "bytes": 580747,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "docs/releases/v0.3.0/evidence/client/screenshots/earth_safe_return.png",
+      "sha256": "603c48323aff76b48a4602dc9607b4325e3f0e730095cfba6e564a76b7ca6fd5",
+      "subject": "Player B returned safely to Overworld"
+    },
+    {
+      "bytes": 105767,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "docs/releases/v0.3.0/evidence/client/screenshots/mods_v030.png",
+      "sha256": "54f6ec46109800b4dd0a7424d19dde16622bd2764de159555235a0c989813d2f",
+      "subject": "Forge Mods detail for build 1.20.1-0.3.0-dev"
+    },
+    {
+      "bytes": 100556,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "docs/releases/v0.3.0/evidence/client/screenshots/moon_after_restart.png",
+      "sha256": "4b98ac93c1333874c7c385bc3d2a156149b348ab757479d385388f6dfe461358",
+      "subject": "Player A rejoined same world in Moon after server restart"
+    },
+    {
+      "bytes": 100790,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "docs/releases/v0.3.0/evidence/client/screenshots/moon_before_restart.png",
+      "sha256": "d5d8b375b1a039ba3e6896386f52d177bce1020e4db54a7ba3977b8c79207a1b",
+      "subject": "Player A in fixed Moon Level at safe platform"
+    },
+    {
+      "bytes": 1494636,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "docs/releases/v0.3.0/evidence/client/screenshots/space_before_restart.png",
+      "sha256": "ee4ed86eafee63240ac3c4b7cf9e4808416da80c2aa8f5d9f77a7cd730e82df8",
+      "subject": "Player B in fixed Space Level at safe platform"
+    }
+  ],
+  "tested_implementation_commit": "63d159ef3d9e489862b0d517b76bcc523df852c9",
+  "tester": "Codex-assisted packaged-client execution",
+  "version": "v0.3.0"
+}

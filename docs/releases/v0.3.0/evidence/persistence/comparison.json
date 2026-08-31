@@ -1,0 +1,13 @@
+{
+  "after_report": "docs/releases/v0.3.0/evidence/persistence/after-restart.json",
+  "after_report_sha256": "503deef7f5a81f2aaa2a7098662ab56de4281b2ed6dc3844c69f028ec2f39e24",
+  "before_report": "docs/releases/v0.3.0/evidence/persistence/before-restart.json",
+  "before_report_sha256": "503deef7f5a81f2aaa2a7098662ab56de4281b2ed6dc3844c69f028ec2f39e24",
+  "body_count": 3,
+  "body_state_identical": true,
+  "saved_data_source_sha256_after": "1a385871267e5e72a93ec6c13cdc1bd0e3414ded492152fdbaee524a51ee501e",
+  "saved_data_source_sha256_before": "1a385871267e5e72a93ec6c13cdc1bd0e3414ded492152fdbaee524a51ee501e",
+  "schema_version": 1,
+  "source_byte_identical": true,
+  "version": "v0.3.0"
+}
