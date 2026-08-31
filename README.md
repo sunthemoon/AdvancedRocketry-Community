@@ -20,13 +20,13 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest accepted milestone is `v0.1.0`, which adds the audited
-asset/registry/DataGen baseline and a deliberately inert visible content slice:
-one machine casing and four development components. The next target is
-`v0.2.0`, one complete machine vertical slice. Machine and rocket gameplay are
-not yet available. See [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md)
-for the implementation sequence and
-[`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for accepted evidence.
+The latest accepted milestone is `v0.1.0`. Active development targets
+`v0.2.0`: one complete, server-authoritative Electrolyzer vertical slice with
+item, water, Forge Energy, progress, persistence, automation, and a readable
+menu. Rocket gameplay is not yet available. See
+[`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
+sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
+verified and pending evidence.
 
 ## What this project is
 

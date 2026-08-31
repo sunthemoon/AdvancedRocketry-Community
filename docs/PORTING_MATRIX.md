@@ -12,8 +12,8 @@
 | OBJ/MTL 模型 | `assets/advancedrocketry/models/**/*.obj`、`**/*.mtl`（43 OBJ / 20 MTL） | loader、引用、性能 | 复杂模型按后续垂直切片逐个审计；v0.1.0 仅用 JSON 模型 | 分批 | visual + ref validation | DEFERRED |
 | 声音 | `assets/advancedrocketry/sounds/buttonblipa.ogg`、`sounds.json` | 来源、旧事件 ID | `advancedrocketrycommunity:ui_select` + DeferredRegister/DataGen | `v0.1.0+` | OGG header/hash + packaged-client interaction | PASSED |
 | 普通配方 | `assets/advancedrocketry/recipes/*.json`（157 条已索引） | 旧格式、内容规模 | 当前五个最小配方由 DataGen 生成，其余按版本引入 | `v0.1.0+` | runData clean + JSON/reference audit | PASSED |
-| 基础机器 | tile/block/recipe + LibVulpes | 巨型基础库耦合 | 最小 machine vertical slice | `v0.2.0` | process/restart/automation | NOT_AUDITED |
-| 多方块 | tile + LibVulpes | 结构匹配、区块 | internal MultiblockPattern | `v0.2.0+` | rotation/failure/unloaded | NOT_AUDITED |
+| 基础机器 | `tile/multiblock/machine/TileElectrolyser.java`、`recipe/RecipeElectrolyser.java`、`recipes/hydrogenoxygen.json` | 巨型 LibVulpes 多方块基类、隐式配方/能力状态 | 单方块 Electrolyzer；纯 Java tick model + 具体 BlockEntity/Menu/Screen | `v0.2.0` | item/fluid/FE process + 50-cycle conservation + restart/automation | IN_PROGRESS |
+| 多方块 | tile + LibVulpes | 结构匹配、区块 | internal MultiblockPattern | `v0.2.0+` | rotation/failure/unloaded | DEFERRED |
 | 天体定义 | dimension/api/XML | 数字维度 ID、静态 manager | Codec + datapack + SavedData | `v0.3.0` | roundtrip/cycle validation | NOT_AUDITED |
 | XML 行星 | Template.xml / XML reader | DOM 耦合 | import-only adapter | `v0.3.0` | fixture conversion | NOT_AUDITED |
 | 月球维度 | dimension/world/client | 动态维度、天空 | fixed Moon Level + profile | `v0.3.0` | dedicated reload | NOT_AUDITED |
