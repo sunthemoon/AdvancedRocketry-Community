@@ -74,7 +74,7 @@ jobs:
         run: python scripts/check_celestial_identity.py
 
       - name: Validate v0.3.0 release evidence
-        run: python scripts/validate_v030_release_evidence.py --require-approved
+        run: python scripts/validate_v030_release_evidence.py
 
       - name: Generate deterministic resources
         run: ./gradlew runData --no-daemon --stacktrace

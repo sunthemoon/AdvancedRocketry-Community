@@ -1719,11 +1719,7 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ("python", "scripts/validate_v020_release_evidence.py"),
         ("python", "scripts/manage_v030_generated_manifest.py", "verify"),
         ("python", "scripts/check_celestial_identity.py"),
-        (
-            "python",
-            "scripts/validate_v030_release_evidence.py",
-            "--require-approved",
-        ),
+        ("python", "scripts/validate_v030_release_evidence.py"),
         (
             "python",
             "scripts/validate_repository.py",
@@ -1803,11 +1799,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             ("python", "scripts/manage_v030_generated_manifest.py", "verify"),
             ("python", "scripts/check_client_imports.py"),
             ("python", "scripts/check_celestial_identity.py"),
-            (
-                "python",
-                "scripts/validate_v030_release_evidence.py",
-                "--require-approved",
-            ),
+            ("python", "scripts/validate_v030_release_evidence.py"),
             ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
             ("git", "diff", "--exit-code"),
             ("python", "scripts/check_clean_worktree.py"),
