@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "status": "SUCCESS_WITH_WARNINGS",
+  "source_file": "Template-c5cd5af6.xml",
+  "source_sha256": "40674cb8a730e5b6baf2baa3943d34d1712f6f24ffa07db79467627b9c0176e1",
+  "definitions": [
+    "advancedrocketrycommunity:imported/planet_a",
+    "advancedrocketrycommunity:imported/planet_a/planet_a_moon"
+  ],
+  "numeric_dimension_metadata": [],
+  "issues": [
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_STAR_ATTRIBUTE",
+      "path": "/galaxy[1]/star[1]/@name",
+      "message": "Star metadata is report-only"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_STAR_ATTRIBUTE",
+      "path": "/galaxy[1]/star[1]/@numgasgiants",
+      "message": "Star metadata is report-only"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_STAR_ATTRIBUTE",
+      "path": "/galaxy[1]/star[1]/@numplanets",
+      "message": "Star metadata is report-only"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_STAR_ATTRIBUTE",
+      "path": "/galaxy[1]/star[1]/@temp",
+      "message": "Star metadata is report-only"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_STAR_ATTRIBUTE",
+      "path": "/galaxy[1]/star[1]/@x",
+      "message": "Star metadata is report-only"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_STAR_ATTRIBUTE",
+      "path": "/galaxy[1]/star[1]/@y",
+      "message": "Star metadata is report-only"
+    },
+    {
+      "severity": "WARNING",
+      "code": "DEFAULTED_OXYGEN",
+      "path": "/galaxy[1]/star[1]/planet[1]",
+      "message": "Missing hasOxygen defaulted to false"
+    },
+    {
+      "severity": "WARNING",
+      "code": "FIXED_LEVEL_MAPPING",
+      "path": "/galaxy[1]/star[1]/planet[1]",
+      "message": "Mapped to fixed advancedrocketrycommunity:space; importer never creates runtime dimensions"
+    },
+    {
+      "severity": "WARNING",
+      "code": "ROTATION_PERIOD_AS_DISPLAY_PERIOD",
+      "path": "/galaxy[1]/star[1]/planet[1]",
+      "message": "Legacy rotationalPeriod is preserved as non-physical display period metadata"
+    },
+    {
+      "severity": "WARNING",
+      "code": "TOP_LEVEL_PARENT_EARTH",
+      "path": "/galaxy[1]/star[1]/planet[1]",
+      "message": "Top-level legacy planet is attached to the fixed Earth baseline"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/biomeids[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/fogcolor[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/orbitaltheta[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "DEFAULTED_OXYGEN",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]",
+      "message": "Missing hasOxygen defaulted to false"
+    },
+    {
+      "severity": "WARNING",
+      "code": "FIXED_LEVEL_MAPPING",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]",
+      "message": "Mapped to fixed advancedrocketrycommunity:moon; importer never creates runtime dimensions"
+    },
+    {
+      "severity": "WARNING",
+      "code": "ROTATION_PERIOD_AS_DISPLAY_PERIOD",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]",
+      "message": "Legacy rotationalPeriod is preserved as non-physical display period metadata"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]/biomeids[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]/fogcolor[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]/orbitaltheta[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/planet[1]/skycolor[1]",
+      "message": "Legacy field is not imported"
+    },
+    {
+      "severity": "WARNING",
+      "code": "UNSUPPORTED_FIELD",
+      "path": "/galaxy[1]/star[1]/planet[1]/skycolor[1]",
+      "message": "Legacy field is not imported"
+    }
+  ]
+}

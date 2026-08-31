@@ -1,0 +1,18 @@
+{
+  "gravity_multiplier": 1.0,
+  "atmosphere": {
+    "pressure": 1.0,
+    "breathable": false,
+    "temperature_kelvin": 288.0,
+    "profile": "advancedrocketrycommunity:legacy_atmosphere"
+  },
+  "orbit": {
+    "distance": 1000,
+    "period_ticks": 24000,
+    "inclination_degrees": 0.0
+  },
+  "visual_profile": "advancedrocketrycommunity:legacy/planet",
+  "id": "advancedrocketrycommunity:imported/planet_a",
+  "parent": "advancedrocketrycommunity:earth",
+  "level": "advancedrocketrycommunity:space"
+}

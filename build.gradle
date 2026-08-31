@@ -96,6 +96,22 @@ tasks.named('test', Test).configure {
     useJUnitPlatform()
 }
 
+tasks.register('importLegacyCelestial', JavaExec) {
+    group = 'advanced rocketry community'
+    description = 'Convert one legacy planetDefs.xml/Template.xml into canonical bounded celestial JSON.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.github.sunthemoon.advancedrocketrycommunity.celestial.legacy.LegacyCelestialImportCli'
+    doFirst {
+        if (!project.hasProperty('legacyXml') || !project.hasProperty('legacyOutput')) {
+            throw new GradleException('Use -PlegacyXml=<file> -PlegacyOutput=<empty-directory>')
+        }
+        args = [
+                project.property('legacyXml').toString(),
+                project.property('legacyOutput').toString()
+        ]
+    }
+}
+
 def gameTestStartedAt = 0L
 tasks.matching { it.name == 'runGameTestServer' }.configureEach {
     doFirst {

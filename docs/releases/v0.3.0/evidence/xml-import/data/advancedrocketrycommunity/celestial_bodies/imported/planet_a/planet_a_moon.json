@@ -1,0 +1,18 @@
+{
+  "gravity_multiplier": 1.0,
+  "atmosphere": {
+    "pressure": 1.8,
+    "breathable": false,
+    "temperature_kelvin": 288.0,
+    "profile": "advancedrocketrycommunity:legacy_atmosphere"
+  },
+  "orbit": {
+    "distance": 150,
+    "period_ticks": 100,
+    "inclination_degrees": 0.0
+  },
+  "visual_profile": "advancedrocketrycommunity:legacy/moon",
+  "id": "advancedrocketrycommunity:imported/planet_a/planet_a_moon",
+  "parent": "advancedrocketrycommunity:imported/planet_a",
+  "level": "advancedrocketrycommunity:moon"
+}
