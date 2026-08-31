@@ -80,6 +80,7 @@
 | `docs/work/v0.1.0-implementation-log.md` | 上游审计、最小资产批次、注册/DataGen 与验证记录 |
 | `docs/work/v0.2.0-implementation-log.md` | Electrolyzer 领域、Forge 适配、持久化、客户端和验收记录 |
 | `docs/work/v0.3.0-implementation-log.md` | 天体 Codec、固定维度、SavedData、XML 导入与验收进度 |
+| `docs/work/v0.4.0-implementation-log.md` | 真空、宇航服、氧气 Vent、预算化密闭扫描与验收进度 |
 
 ## 分版本执行文件
 

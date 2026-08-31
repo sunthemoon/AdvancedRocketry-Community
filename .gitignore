@@ -20,6 +20,7 @@ run-data/
 src/generated/resources/.cache/
 src/generated/v0.2/resources/.cache/
 src/generated/v0.3/resources/.cache/
+src/generated/v0.4/resources/.cache/
 mcmodsrepo/
 bin/
 .classpath
