@@ -25,7 +25,7 @@ forge: 47.4.10
 | DataGen | PASS; 7 files, 0 written, clean Git diff | generated manifest and worktree check |
 | Forge GameTest | 15/15 PASS with completion marker | GameTest log |
 | Strict repository validation | 27 passed, 0 warnings, 0 failed | repository validator output |
-| Pull-request checks | Pending | URLs will be bound in `GATE-STATUS.md` |
+| Pull-request checks | 3/3 PASS on READY_FOR_AUDIT head `9c38e23` | Forge and governance URLs in `GATE-STATUS.md` |
 
 ## Model, reload, save, and network coverage
 

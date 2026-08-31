@@ -9,10 +9,10 @@ branch: "codex/v0.3.0-celestial-codec"
 build: "1.20.1-0.3.0-dev"
 upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
 provenance_review: READY_FOR_HUMAN_REVIEW
-pull_request: PENDING
-forge_ci: PENDING
-governance_ci: PENDING
-pull_request_checks: PENDING
+pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/7"
+forge_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33377626104"
+governance_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33377626076"
+pull_request_checks: 3/3_PASS
 gates:
   G0: READY_FOR_HUMAN_REVIEW
   G1: PASS
@@ -25,11 +25,11 @@ gates:
   G8: READY_FOR_HUMAN_REVIEW
   G9: READY_FOR_HUMAN_REVIEW
 overall: READY_FOR_AUDIT
-remaining_items: [owner_approval, blocking_ci, pr_merge, post_merge_rebuild]
+remaining_items: [owner_approval, pr_merge, post_merge_rebuild]
 human_approved_by: ""
 human_approved_at: ""
 ```
 
-The technical client/server flows, full local suites, release validator, and
-checksum inventory are complete and bound to the exact JAR in this directory.
-G0, G8, and G9 await repository-owner review; blocking PR checks follow.
+The technical client/server flows, full local suites, release validator,
+checksum inventory, and all three pull-request checks are complete. G0, G8,
+and G9 await repository-owner review before merge.

@@ -46,6 +46,11 @@ screenshot/log sets, PNG dimensions and hashes, artifact-copy equality,
 packaged-server contracts, persistence equality, provenance, and checksum
 inventory completeness.
 
+Pull request [#7](https://github.com/sunthemoon/AdvancedRocketry-Community/pull/7)
+passed all three checks on READY_FOR_AUDIT head `9c38e23`: the
+[Forge baseline and advisory run](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33377626104)
+and the [repository governance run](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33377626076).
+
 ## Release classification
 
 This is an unreleased developer preview, not a stable release. No tag or
