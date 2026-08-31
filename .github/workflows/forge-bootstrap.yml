@@ -51,22 +51,18 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
-      - name: Audit distributable JAR
+      - name: Audit v0.2.0 distributable JAR
         run: >-
           python scripts/validate_build_artifact.py
-          build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
-          --expected-version 1.20.1-0.1.0-dev
-          --content-manifest build/release-evidence/v010-jar-content-manifest.json
+          build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar
+          --expected-version 1.20.1-0.2.0-dev
+          --content-manifest build/release-evidence/v020-jar-content-manifest.json
 
-      - name: Validate v0.1.0 managed resources and packaged bytes
-        run: >-
-          python scripts/validate_v010_asset_baseline.py
-          --jar build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
+      - name: Validate frozen v0.1.0 resources
+        run: python scripts/validate_v010_asset_baseline.py
 
-      - name: Validate v0.1.0 release evidence and exact artifact binding
-        run: >-
-          python scripts/validate_v010_release_evidence.py
-          --artifact build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
+      - name: Validate v0.2.0 generated-resource inventory
+        run: python scripts/manage_v020_generated_manifest.py verify
 
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
@@ -86,8 +82,8 @@ jobs:
       - name: Run packaged dedicated-server smoke test
         run: >-
           python scripts/run_dedicated_server_smoke.py
-          build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
-          --expected-mod-version 1.20.1-0.1.0-dev
+          build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar
+          --expected-mod-version 1.20.1-0.2.0-dev
           --evidence-dir build/dedicated-server-smoke/evidence
 
       - name: Upload baseline JAR and test reports
@@ -97,11 +93,11 @@ jobs:
           name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
           if-no-files-found: error
           path: |
-            build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar
-            build/libs/advancedrocketry-community-1.20.1-0.1.0-dev-sources.jar
+            build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar
+            build/libs/advancedrocketry-community-1.20.1-0.2.0-dev-sources.jar
             build/reports/tests/test/
             build/test-results/test/
-            build/release-evidence/v010-jar-content-manifest.json
+            build/release-evidence/v020-jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
 
   latest-compatibility:

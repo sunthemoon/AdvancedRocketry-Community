@@ -41,6 +41,7 @@ if __package__:
     from .validate_v002_g4_applicability import validate_v002_g4_applicability
     from .validate_v010_asset_baseline import validate_v010_asset_baseline
     from .validate_v010_release_evidence import validate_v010_release_evidence
+    from .manage_v020_generated_manifest import verify as verify_v020_generated_manifest
 else:
     # Isolated script execution omits this directory from sys.path. Add only
     # the already-selected repository scripts directory after stdlib imports.
@@ -66,6 +67,7 @@ else:
     from validate_v002_g4_applicability import validate_v002_g4_applicability
     from validate_v010_asset_baseline import validate_v010_asset_baseline
     from validate_v010_release_evidence import validate_v010_release_evidence
+    from manage_v020_generated_manifest import verify as verify_v020_generated_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -116,6 +118,7 @@ REQUIRED_PATHS = (
     "scripts/validate_v002_final_g0_review.py",
     "scripts/validate_v002_g4_applicability.py",
     "scripts/manage_v010_generated_manifest.py",
+    "scripts/manage_v020_generated_manifest.py",
     "scripts/validate_v010_asset_baseline.py",
     "tools/audit/audit_upstream.py",
     "tools/import/import_v010_assets.py",
@@ -143,6 +146,8 @@ REQUIRED_PATHS = (
     "src/main/resources/pack.mcmeta",
     "src/main/resources/advancedrocketrycommunity.png",
     "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
+    "docs/provenance/v0.2.0-electrolyzer.md",
+    "docs/provenance/v0.2.0-generated-resources.json",
     "docs/status/CURRENT_VERSION.md",
     "docs/status/GATE_STATUS.md",
     "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
@@ -1689,6 +1694,7 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ("python", "scripts/manage_v010_generated_manifest.py", "verify"),
         ("python", "scripts/validate_v010_asset_baseline.py"),
         ("python", "scripts/validate_v010_release_evidence.py"),
+        ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
         (
             "python",
             "scripts/validate_repository.py",
@@ -1757,24 +1763,14 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
                 "--expected-version",
-                "1.20.1-0.1.0-dev",
+                "1.20.1-0.2.0-dev",
                 "--content-manifest",
-                "build/release-evidence/v010-jar-content-manifest.json",
+                "build/release-evidence/v020-jar-content-manifest.json",
             ),
-            (
-                "python",
-                "scripts/validate_v010_asset_baseline.py",
-                "--jar",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
-            ),
-            (
-                "python",
-                "scripts/validate_v010_release_evidence.py",
-                "--artifact",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
-            ),
+            ("python", "scripts/validate_v010_asset_baseline.py"),
+            ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
             ("python", "scripts/check_client_imports.py"),
             ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
             ("git", "diff", "--exit-code"),
@@ -1788,9 +1784,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
                 "--expected-mod-version",
-                "1.20.1-0.1.0-dev",
+                "1.20.1-0.2.0-dev",
                 "--evidence-dir",
                 "build/dedicated-server-smoke/evidence",
             ),
@@ -2388,6 +2384,17 @@ def check_v010_asset_baseline(results: Results) -> None:
         results.passed("v0.1.0 Gate status does not overstate mechanical or human evidence")
 
 
+def check_v020_generated_resources(results: Results) -> None:
+    errors = verify_v020_generated_manifest(
+        ROOT,
+        ROOT / "docs/provenance/v0.2.0-generated-resources.json",
+    )
+    if errors:
+        results.fail("v0.2.0 generated-resource errors: " + "; ".join(errors))
+    else:
+        results.passed("v0.2.0 DataGen resources match the bounded authored-resource inventory")
+
+
 def validate_v020_gate_status_text(
     text: str,
     *,
@@ -2600,6 +2607,7 @@ def main() -> int:
     check_v002_gate_status(results)
     check_release_checksums(results)
     check_v010_asset_baseline(results)
+    check_v020_generated_resources(results)
     check_v020_gate_status(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
