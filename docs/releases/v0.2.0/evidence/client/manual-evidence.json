@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "version": "v0.2.0",
+  "build": "1.20.1-0.2.0-dev",
+  "status": "PASS",
+  "reviewed_by": "sunthemoon",
+  "reviewed_at": "2026-08-31",
+  "human_gate_approval": {
+    "G8": "APPROVED",
+    "G9": "APPROVED",
+    "findings": []
+  },
+  "artifact_binding": {
+    "source_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+    "client_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+    "server_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+    "all_equal": true
+  },
+  "client_profile": {
+    "minecraft": "1.20.1",
+    "forge": "47.4.10",
+    "java": "17.0.8",
+    "type": "isolated packaged Forge client",
+    "other_content_mods": 0
+  },
+  "gui_scales_verified": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "observations": {
+    "mods_page_identity": "PASS",
+    "singleplayer_world_entry": "PASS",
+    "electrolyzer_place_and_open": "PASS",
+    "energy_water_progress_and_status_visible": "PASS",
+    "redstone_pause_visible": "PASS",
+    "inventory_labels_do_not_overlap": "PASS",
+    "gui_scale_1": "PASS",
+    "gui_scale_2": "PASS",
+    "gui_scale_3": "PASS",
+    "gui_scale_4": "PASS",
+    "dedicated_first_join": "PASS",
+    "dedicated_restart_rejoin": "PASS",
+    "clean_shutdown": "PASS",
+    "missing_texture_findings": 0
+  },
+  "screenshots": [
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/mods_zh_cn.png",
+      "sha256": "8a41ef8f5e1b02714e99e2563d02b4bb11473b69fb781d9c7aeda5738cdd7d7d",
+      "bytes": 111127,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": null,
+      "purpose": "mods-page"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/singleplayer_world.png",
+      "sha256": "bd8e31dabdcdad54df615bf04a8160cac938fff18eb80cdc0cdf6d1bff3246d9",
+      "bytes": 115544,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": null,
+      "purpose": "singleplayer-world"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_1.png",
+      "sha256": "b1f83527f93881544bff219be7cfd3ac0bc396a2630bfdaf4b52387d446e93ad",
+      "bytes": 93792,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": 1,
+      "purpose": "electrolyzer-gui"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_2.png",
+      "sha256": "beb61770940706cabf08513624a3e79d430384a6423faa64970265183a69e609",
+      "bytes": 88892,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": 2,
+      "purpose": "electrolyzer-gui"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_3.png",
+      "sha256": "cab4c9775a1cf7841ce440d8aa74926e5d40c4a65340f4cece747280713aff4d",
+      "bytes": 91552,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": 3,
+      "purpose": "electrolyzer-gui"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_4.png",
+      "sha256": "3089bce45246cd193b6c785b59c8856b8490105a847d18daa26509bbb73bef11",
+      "bytes": 138886,
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": 4,
+      "purpose": "electrolyzer-gui"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/dedicated_first_join.png",
+      "sha256": "cb2da03c66df9eb3c659be1888a394aab32f9b576919e2c071363e4613b1ad1b",
+      "bytes": 724708,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": null,
+      "purpose": "dedicated-first-join"
+    },
+    {
+      "file": "docs/releases/v0.2.0/evidence/client/screenshots/dedicated_restart_rejoin.png",
+      "sha256": "373551e31859706fec952b69ada2b0661fbe884eef1392b28493a779e3eabdf8",
+      "bytes": 724562,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "language": "zh_cn",
+      "effective_gui_scale": null,
+      "purpose": "dedicated-restart-rejoin"
+    }
+  ]
+}

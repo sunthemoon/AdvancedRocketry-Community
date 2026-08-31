@@ -1,17 +1,17 @@
 # GATE_STATUS
 
 ```yaml
-version: v0.1.0
+version: v0.2.0
 status: PASSED
-tested_implementation_commit: "cc8955547dd25589ea176f64663689975fdfce68"
-base_commit: "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
-branch: "codex/v0.1.0-asset-registry-baseline"
-build: "1.20.1-0.1.0-dev"
+tested_implementation_commit: "adc505fdd471eaccacb73a5e1247d60be83dd808"
+base_commit: "a28bb7516518dfda7c24b1336a435439848082a1"
+branch: "codex/v0.2.0-machine-vertical-slice"
+build: "1.20.1-0.2.0-dev"
 upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
 provenance_review: APPROVED
-pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/5"
-forge_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33325366158"
-governance_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33325366161"
+pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/6"
+forge_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33352199793"
+governance_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33352199800"
 pull_request_checks: 3/3_PASS
 gates:
   G0: PASS
@@ -19,9 +19,9 @@ gates:
   G2: PASS
   G3: PASS
   G4: PASS
-  G5: NOT_APPLICABLE
-  G6: NOT_APPLICABLE
-  G7: NOT_APPLICABLE
+  G5: PASS
+  G6: PASS
+  G7: PASS
   G8: PASS
   G9: PASS
 overall: PASSED
@@ -30,16 +30,10 @@ human_approved_by: "sunthemoon"
 human_approved_at: "2026-08-31"
 ```
 
-The exact upstream audit, ten-target provenance review, generated resources,
-packaged client, matching-client dedicated-server restart, release evidence,
-and owner review are complete. Exact tested head `cc895554` passed all three
-pull-request checks, including the Linux build, 3/3 GameTests, packaged-server
-smoke, 548-test Python suite, and strict governance validation. All Required
-Gates are accepted; this is an unreleased developer preview, not a stable
-public release.
-
-The accepted v0.0.2 snapshot is archived at
-[`../releases/v0.0.2/GATE-STATUS.md`](../releases/v0.0.2/GATE-STATUS.md).
+v0.2.0 completed one server-authoritative Electrolyzer vertical slice. The
+accepted JAR, automated tests, packaged-client screenshots/logs, matching-client
+server cycles, machine restart state, checksums, and owner approval are archived
+under [`../releases/v0.2.0/`](../releases/v0.2.0/).
 
 The accepted v0.1.0 snapshot is archived at
 [`../releases/v0.1.0/GATE-STATUS.md`](../releases/v0.1.0/GATE-STATUS.md).

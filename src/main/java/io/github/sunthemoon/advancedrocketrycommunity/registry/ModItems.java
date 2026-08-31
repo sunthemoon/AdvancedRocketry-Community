@@ -19,6 +19,22 @@ public final class ModItems {
             "machine_casing",
             () -> new BlockItem(ModBlocks.MACHINE_CASING.get(), new Item.Properties())
     );
+    public static final RegistryObject<Item> ELECTROLYZER = ITEMS.register(
+            "electrolyzer",
+            () -> new BlockItem(ModBlocks.ELECTROLYZER.get(), new Item.Properties())
+    );
+    public static final RegistryObject<Item> EMPTY_CANISTER = ITEMS.register(
+            "empty_canister",
+            () -> new Item(new Item.Properties().stacksTo(16))
+    );
+    public static final RegistryObject<Item> HYDROGEN_CANISTER = ITEMS.register(
+            "hydrogen_canister",
+            () -> new Item(new Item.Properties().stacksTo(16))
+    );
+    public static final RegistryObject<Item> OXYGEN_CANISTER = ITEMS.register(
+            "oxygen_canister",
+            () -> new Item(new Item.Properties().stacksTo(16))
+    );
     public static final RegistryObject<Item> SILICON_WAFER = component("silicon_wafer");
     public static final RegistryObject<Item> BASIC_CIRCUIT = component("basic_circuit");
     public static final RegistryObject<Item> ADVANCED_CIRCUIT = component("advanced_circuit");

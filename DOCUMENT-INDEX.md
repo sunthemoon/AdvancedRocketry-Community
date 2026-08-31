@@ -63,6 +63,9 @@
 | `docs/releases/v0.1.0/` | 资产/注册基线的来源、构建、客户端、专服和人工验收证据 |
 | `docs/releases/v0.1.0/GATE-STATUS.md` | v0.1.0 全部 Required Gate 的接受快照与 CI 绑定 |
 | `docs/releases/v0.1.0/INSTALLATION.md` | v0.1.0 开发预览的安装、内容与存档边界 |
+| `docs/releases/v0.2.0/` | 电解机垂直切片的产物、自动测试、客户端、专服、重启和人工验收证据 |
+| `docs/releases/v0.2.0/GATE-STATUS.md` | v0.2.0 全部 Required Gate 的接受快照与 CI 绑定 |
+| `docs/releases/v0.2.0/INSTALLATION.md` | v0.2.0 开发预览的安装、机器行为和存档边界 |
 
 ## 实施记录
 
@@ -72,6 +75,7 @@
 | `docs/work/v0.0.2-implementation-log.md` | Forge 工程初始化、来源和验证记录 |
 | `docs/work/v0.0.2-test-machine-handoff.md` | 换机继续客户端与玩家连接验收的命令和证据要求 |
 | `docs/work/v0.1.0-implementation-log.md` | 上游审计、最小资产批次、注册/DataGen 与验证记录 |
+| `docs/work/v0.2.0-implementation-log.md` | Electrolyzer 领域、Forge 适配、持久化、客户端和验收记录 |
 
 ## 分版本执行文件
 

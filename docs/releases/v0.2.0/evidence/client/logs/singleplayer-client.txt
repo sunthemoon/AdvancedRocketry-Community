@@ -1,0 +1,8 @@
+# Filtered packaged-client lifecycle; full raw log is intentionally untracked.
+[Worker-Main-2/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.2.0-dev initialized
+[Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.20.1
+[Netty Local Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[Server thread/INFO] [net.minecraft.server.players.PlayerList/]: ARCEEvidence[local:E:364235c6] logged in with entity id 333 at (8.5, 111.0, 6.5)
+[Render thread/WARN] [net.minecraft.client.ClientRecipeBook/]: Unknown recipe category: advancedrocketrycommunity:electrolyzing/advancedrocketrycommunity:electrolyzer_water
+[Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

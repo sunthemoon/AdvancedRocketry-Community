@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "version": "v0.2.0",
+  "build": "1.20.1-0.2.0-dev",
+  "tested_implementation_commit": "adc505fdd471eaccacb73a5e1247d60be83dd808",
+  "main_jar": {
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
+    "filename": "advancedrocketry-community-1.20.1-0.2.0-dev.jar",
+    "bytes": 173080,
+    "sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598"
+  },
+  "sources_jar": {
+    "path": "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev-sources.jar",
+    "filename": "advancedrocketry-community-1.20.1-0.2.0-dev-sources.jar",
+    "bytes": 112860,
+    "sha256": "94fe38d25abba3d12f30a4add2766ca55c05682986c8d4e7ba73233bfd769117"
+  },
+  "repeated_clean_builds": {
+    "count": 2,
+    "platform": "Windows 11 / Java 17.0.8",
+    "sha256_values": [
+      "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+      "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598"
+    ],
+    "byte_identical": true
+  },
+  "packaged_copies": {
+    "source_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+    "client_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+    "server_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+    "all_equal": true
+  },
+  "content_manifest": {
+    "path": "docs/releases/v0.2.0/evidence/artifact/jar-content-manifest.json",
+    "sha256": "637c901cfa24fc03a7b1ee87b319d682c822f110bc5c47320411ba1683e55092",
+    "entry_count": 158
+  }
+}

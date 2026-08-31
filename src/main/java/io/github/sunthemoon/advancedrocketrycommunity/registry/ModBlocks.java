@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -23,6 +24,14 @@ public final class ModBlocks {
                     .mapColor(MapColor.METAL)
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
+    );
+    public static final RegistryObject<Block> ELECTROLYZER = BLOCKS.register(
+            "electrolyzer",
+            () -> new ElectrolyzerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(5.0F, 6.0F)
+                    .lightLevel(state -> state.getValue(ElectrolyzerBlock.LIT) ? 8 : 0)
                     .sound(SoundType.METAL))
     );
 

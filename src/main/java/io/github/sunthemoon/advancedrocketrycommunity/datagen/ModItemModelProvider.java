@@ -13,9 +13,13 @@ public final class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        basicItem(ModItems.SILICON_WAFER.get());
-        basicItem(ModItems.BASIC_CIRCUIT.get());
-        basicItem(ModItems.ADVANCED_CIRCUIT.get());
-        basicItem(ModItems.DATA_STORAGE_UNIT.get());
+        canister("empty_canister");
+        canister("hydrogen_canister");
+        canister("oxygen_canister");
+    }
+
+    private void canister(String name) {
+        withExistingParent(name, mcLoc("item/generated"))
+                .texture("layer0", mcLoc("item/glass_bottle"));
     }
 }

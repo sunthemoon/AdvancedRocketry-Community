@@ -1,5 +1,5 @@
 // Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, and 2026-08-30; see THIRD-PARTY-NOTICES.md.
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, and 2026-08-31; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
@@ -64,13 +64,18 @@ minecraft {
 
         data {
             workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', mod_id,
+                    '--all',
+                    '--output', file('src/generated/v0.2/resources/'),
+                    '--existing', file('src/main/resources/'),
+                    '--existing', file('src/generated/resources/')
         }
     }
 }
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
+    srcDir 'src/generated/v0.2/resources'
     exclude '.cache/**'
 }
 
@@ -87,6 +92,23 @@ dependencies {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
+}
+
+def gameTestStartedAt = 0L
+tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+    doFirst {
+        gameTestStartedAt = System.currentTimeMillis()
+    }
+    doLast {
+        File latestLog = file('run/logs/latest.log')
+        if (!latestLog.isFile() || latestLog.lastModified() < gameTestStartedAt - 2_000L) {
+            throw new GradleException('Forge GameTest did not produce a fresh latest.log')
+        }
+        String logText = latestLog.getText('UTF-8')
+        if (!(logText =~ /All \d+ required tests passed/).find()) {
+            throw new GradleException('Forge GameTest completion marker is missing from latest.log')
+        }
+    }
 }
 
 def resourceProperties = [

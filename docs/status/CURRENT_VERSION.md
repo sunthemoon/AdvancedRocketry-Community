@@ -1,10 +1,10 @@
 # CURRENT_VERSION
 
 ```yaml
-current_version: v0.1.0
+current_version: v0.2.0
 status: PASSED
-next_action: Begin v0.2.0 on a new version branch with the machine vertical slice only
+next_action: Start v0.3.0 celestial data planning on a new version branch
 last_updated: 2026-08-31
-started_from: 8877ea2cbb84a45615fe653e15a8bd0214814d3e
-work_branch: codex/v0.1.0-asset-registry-baseline
+started_from: a28bb7516518dfda7c24b1336a435439848082a1
+work_branch: codex/v0.2.0-machine-vertical-slice
 ```

@@ -1,0 +1,25 @@
+# SHA-256 checksums for v0.2.0 artifacts and committed evidence.
+# Artifact JARs are built and intentionally not committed.
+a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598  build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar
+94fe38d25abba3d12f30a4add2766ca55c05682986c8d4e7ba73233bfd769117  build/libs/advancedrocketry-community-1.20.1-0.2.0-dev-sources.jar
+5ff718905969a7e04ba6ec1693194cded57f9168677234e24956a2b6c062e43f  docs/releases/v0.2.0/evidence/artifact/artifact-summary.json
+637c901cfa24fc03a7b1ee87b319d682c822f110bc5c47320411ba1683e55092  docs/releases/v0.2.0/evidence/artifact/jar-content-manifest.json
+da1b3a9b623cdf71bd9642ad3147484b0a5191ff6ce817b5bbb33de1b724b6e4  docs/releases/v0.2.0/evidence/automated/summary.json
+6701972f2dff640cd9de5cf0ca575bfb72eb3c9f3b968003d20b801b6b03d345  docs/releases/v0.2.0/evidence/client/logs/client-log-review.json
+d8f61e3b832b3e79947ab052f703fce565e423536b3b76ff3e47d880fa43b9b1  docs/releases/v0.2.0/evidence/client/logs/dedicated-client.txt
+437b414b7704f38d37b26e0cd49949144bf28916e76d53d6b2e214ce0f96c363  docs/releases/v0.2.0/evidence/client/logs/singleplayer-client.txt
+5ec215af6b4322212c186a280ec29103c303d81bd4490858c783fde5156456ed  docs/releases/v0.2.0/evidence/client/manual-evidence.json
+cb2da03c66df9eb3c659be1888a394aab32f9b576919e2c071363e4613b1ad1b  docs/releases/v0.2.0/evidence/client/screenshots/dedicated_first_join.png
+373551e31859706fec952b69ada2b0661fbe884eef1392b28493a779e3eabdf8  docs/releases/v0.2.0/evidence/client/screenshots/dedicated_restart_rejoin.png
+b1f83527f93881544bff219be7cfd3ac0bc396a2630bfdaf4b52387d446e93ad  docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_1.png
+beb61770940706cabf08513624a3e79d430384a6423faa64970265183a69e609  docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_2.png
+cab4c9775a1cf7841ce440d8aa74926e5d40c4a65340f4cece747280713aff4d  docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_3.png
+3089bce45246cd193b6c785b59c8856b8490105a847d18daa26509bbb73bef11  docs/releases/v0.2.0/evidence/client/screenshots/electrolyzer_gui_scale_4.png
+8a41ef8f5e1b02714e99e2563d02b4bb11473b69fb781d9c7aeda5738cdd7d7d  docs/releases/v0.2.0/evidence/client/screenshots/mods_zh_cn.png
+bd8e31dabdcdad54df615bf04a8160cac938fff18eb80cdc0cdf6d1bff3246d9  docs/releases/v0.2.0/evidence/client/screenshots/singleplayer_world.png
+3c13db13dbe92bbe1793fd559e0dd920aa1ed16696506808c7893054a7795da0  docs/releases/v0.2.0/evidence/dedicated-server/first-start.txt
+4a1111dba567d44eb0dcac60dc0deb8b8dc548897d3a590aaee31999552a8987  docs/releases/v0.2.0/evidence/dedicated-server/restart.txt
+1cbf502e9c3422497feb8bce060d6ef0182a6b353454f063104e64571aa345e0  docs/releases/v0.2.0/evidence/dedicated-server/summary.json
+7dee1ace94b84832153434cb7ddeb7aa3e3daea4c997a6be780866fb9b398c0b  docs/releases/v0.2.0/evidence/machine-restart/lifecycle.txt
+57727c0708dfb230cdaaae888548e023b474e1e184f71a8ab6330e22ffa40c0b  docs/releases/v0.2.0/evidence/machine-restart/summary.json
+2375cb8f1a5cd1365162689530530e70550822afdb5bd0782e00d9ba6a76c277  docs/releases/v0.2.0/evidence/provenance/human-review.json

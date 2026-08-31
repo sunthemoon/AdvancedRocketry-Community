@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/machine_casing_top",
+    "front": "minecraft:block/sea_lantern",
+    "side": "advancedrocketrycommunity:block/machine_casing_side",
+    "top": "advancedrocketrycommunity:block/machine_casing_top"
+  }
+}

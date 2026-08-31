@@ -10,6 +10,9 @@ public final class ModRegistries {
     public static void register(IEventBus modBus) {
         ModBlocks.register(modBus);
         ModItems.register(modBus);
+        ModBlockEntities.register(modBus);
+        ModMenuTypes.register(modBus);
+        ModRecipes.register(modBus);
         ModSounds.register(modBus);
         ModCreativeTabs.register(modBus);
     }

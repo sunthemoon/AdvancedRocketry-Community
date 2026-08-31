@@ -1,0 +1,87 @@
+{
+  "allowed_file_types": [
+    ".json"
+  ],
+  "generated_root": "src/generated/v0.2/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.2.0",
+  "targets": [
+    {
+      "bytes": 2082,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/blockstates/electrolyzer.json",
+      "sha256": "6809c0c5527ee06ba02a27de5015ce0e1b6c39ccc8e2b6f819d07d32489c8dc2"
+    },
+    {
+      "bytes": 345,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb"
+    },
+    {
+      "bytes": 320,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+      "sha256": "e2e8445f320b6173819d077676a0b68ca8f49ee6cd4ab807a4a5eb186046451b"
+    },
+    {
+      "bytes": 62,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/item/electrolyzer.json",
+      "sha256": "8b37cb8e9c48fbd302a7aba452cfa417e8940b3a8a65662f979e55e9eaffe2ad"
+    },
+    {
+      "bytes": 107,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/item/empty_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce"
+    },
+    {
+      "bytes": 107,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/item/hydrogen_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce"
+    },
+    {
+      "bytes": 107,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/item/oxygen_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce"
+    },
+    {
+      "bytes": 1267,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity_v020/lang/en_us.json",
+      "sha256": "63f46d81576ba9ddc7cf39c58e44cfb2cbecde2b0f098218335563c0a83e1603"
+    },
+    {
+      "bytes": 1219,
+      "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity_v020/lang/zh_cn.json",
+      "sha256": "771f6ff50b939f5aa34209df704b1f2d6549c275f2a66738cfaa06922df33c80"
+    },
+    {
+      "bytes": 698,
+      "path": "src/generated/v0.2/resources/data/advancedrocketrycommunity/advancements/recipes/misc/electrolyzer.json",
+      "sha256": "4e68efc73d7ff9e0dd5fae5c7e935bec6757662ad01c47c02c57e0bf76c5ac75"
+    },
+    {
+      "bytes": 623,
+      "path": "src/generated/v0.2/resources/data/advancedrocketrycommunity/advancements/recipes/misc/empty_canister.json",
+      "sha256": "25569966a4236f46562594276ac080b29319c4f06c81e51fc79d1d3516ceb1ee"
+    },
+    {
+      "bytes": 424,
+      "path": "src/generated/v0.2/resources/data/advancedrocketrycommunity/loot_tables/blocks/electrolyzer.json",
+      "sha256": "96211399209b5fd1cd0ad0c057c2632887d207e0574ab4d91630f7b346f514ed"
+    },
+    {
+      "bytes": 529,
+      "path": "src/generated/v0.2/resources/data/advancedrocketrycommunity/recipes/electrolyzer.json",
+      "sha256": "0e1fb5109f91ed68b80a465f61a110026dd07c2841dfd975ddb680600531179d"
+    },
+    {
+      "bytes": 464,
+      "path": "src/generated/v0.2/resources/data/advancedrocketrycommunity/recipes/electrolyzer_water.json",
+      "sha256": "b3cc933186fbeb1238939ed02a203dee03e3db18817584ed1f28c8de6521c415"
+    },
+    {
+      "bytes": 294,
+      "path": "src/generated/v0.2/resources/data/advancedrocketrycommunity/recipes/empty_canister.json",
+      "sha256": "571bbe2f287750c7cd15a606a7501db5b2b811c0c324bea7954d62d207c322ce"
+    }
+  ]
+}

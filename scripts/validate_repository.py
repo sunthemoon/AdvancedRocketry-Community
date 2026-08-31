@@ -41,6 +41,8 @@ if __package__:
     from .validate_v002_g4_applicability import validate_v002_g4_applicability
     from .validate_v010_asset_baseline import validate_v010_asset_baseline
     from .validate_v010_release_evidence import validate_v010_release_evidence
+    from .validate_v020_release_evidence import validate_v020_release_evidence
+    from .manage_v020_generated_manifest import verify as verify_v020_generated_manifest
 else:
     # Isolated script execution omits this directory from sys.path. Add only
     # the already-selected repository scripts directory after stdlib imports.
@@ -66,6 +68,8 @@ else:
     from validate_v002_g4_applicability import validate_v002_g4_applicability
     from validate_v010_asset_baseline import validate_v010_asset_baseline
     from validate_v010_release_evidence import validate_v010_release_evidence
+    from validate_v020_release_evidence import validate_v020_release_evidence
+    from manage_v020_generated_manifest import verify as verify_v020_generated_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,13 +114,16 @@ REQUIRED_PATHS = (
     "scripts/prepare_v002_g0_review_packet.py",
     "scripts/run_dedicated_server_smoke.py",
     "scripts/run_v002_mismatch_server_cycle.py",
+    "scripts/run_v020_machine_server_smoke.py",
     "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
     "scripts/validate_release_checksums.py",
     "scripts/validate_v002_final_g0_review.py",
     "scripts/validate_v002_g4_applicability.py",
     "scripts/manage_v010_generated_manifest.py",
+    "scripts/manage_v020_generated_manifest.py",
     "scripts/validate_v010_asset_baseline.py",
+    "scripts/validate_v020_release_evidence.py",
     "tools/audit/audit_upstream.py",
     "tools/import/import_v010_assets.py",
     "tools/import/v010-content-plan.json",
@@ -137,12 +144,15 @@ REQUIRED_PATHS = (
     "tests/test_import_v010_assets.py",
     "tests/test_manage_v010_generated_manifest.py",
     "tests/test_validate_v010_asset_baseline.py",
+    "tests/test_validate_v020_release_evidence.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
     "src/main/resources/pack.mcmeta",
     "src/main/resources/advancedrocketrycommunity.png",
     "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
+    "docs/provenance/v0.2.0-electrolyzer.md",
+    "docs/provenance/v0.2.0-generated-resources.json",
     "docs/status/CURRENT_VERSION.md",
     "docs/status/GATE_STATUS.md",
     "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
@@ -1689,6 +1699,8 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ("python", "scripts/manage_v010_generated_manifest.py", "verify"),
         ("python", "scripts/validate_v010_asset_baseline.py"),
         ("python", "scripts/validate_v010_release_evidence.py"),
+        ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
+        ("python", "scripts/validate_v020_release_evidence.py"),
         (
             "python",
             "scripts/validate_repository.py",
@@ -1757,24 +1769,14 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
                 "--expected-version",
-                "1.20.1-0.1.0-dev",
+                "1.20.1-0.2.0-dev",
                 "--content-manifest",
-                "build/release-evidence/v010-jar-content-manifest.json",
+                "build/release-evidence/v020-jar-content-manifest.json",
             ),
-            (
-                "python",
-                "scripts/validate_v010_asset_baseline.py",
-                "--jar",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
-            ),
-            (
-                "python",
-                "scripts/validate_v010_release_evidence.py",
-                "--artifact",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
-            ),
+            ("python", "scripts/validate_v010_asset_baseline.py"),
+            ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
             ("python", "scripts/check_client_imports.py"),
             ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
             ("git", "diff", "--exit-code"),
@@ -1788,11 +1790,24 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.1.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.2.0-dev.jar",
                 "--expected-mod-version",
-                "1.20.1-0.1.0-dev",
+                "1.20.1-0.2.0-dev",
+                "--session-dir",
+                "build/dedicated-server-smoke/session",
                 "--evidence-dir",
                 "build/dedicated-server-smoke/evidence",
+                "--port",
+                "25585",
+            ),
+            (
+                "python",
+                "scripts/run_v020_machine_server_smoke.py",
+                "build/dedicated-server-smoke/session",
+                "--baseline-summary",
+                "build/dedicated-server-smoke/evidence/summary.json",
+                "--evidence-dir",
+                "build/v020-machine-server-smoke/evidence",
             ),
         )
         for command in baseline_commands:
@@ -2372,7 +2387,11 @@ def check_v010_asset_baseline(results: Results) -> None:
             "v0.1.0 artifact, provenance, client, dedicated-server, and checksum evidence is valid"
         )
 
-    text = read_text(ROOT / "docs/status/GATE_STATUS.md", results)
+    historical = ROOT / "docs/releases/v0.1.0/GATE-STATUS.md"
+    text = read_text(
+        historical if historical.exists() else ROOT / "docs/status/GATE_STATUS.md",
+        results,
+    )
     gate_errors = validate_v010_gate_status_text(
         text,
         asset_details=details,
@@ -2382,6 +2401,123 @@ def check_v010_asset_baseline(results: Results) -> None:
         results.fail("v0.1.0 Gate status contradictions: " + "; ".join(gate_errors))
     else:
         results.passed("v0.1.0 Gate status does not overstate mechanical or human evidence")
+
+
+def check_v020_generated_resources(results: Results) -> None:
+    errors = verify_v020_generated_manifest(
+        ROOT,
+        ROOT / "docs/provenance/v0.2.0-generated-resources.json",
+    )
+    if errors:
+        results.fail("v0.2.0 generated-resource errors: " + "; ".join(errors))
+    else:
+        results.passed("v0.2.0 DataGen resources match the bounded authored-resource inventory")
+
+
+def validate_v020_gate_status_text(
+    text: str,
+    *,
+    evidence_details: dict[str, object] | None = None,
+) -> list[str]:
+    """Reject v0.2.0 Gate claims that exceed machine-slice evidence."""
+
+    errors, top, gates = _parse_gate_status_document(
+        text,
+        expected_version="v0.2.0",
+    )
+    if errors:
+        return errors
+    evidence = evidence_details or {}
+    reviewer = top.get("human_approved_by", "").strip()
+    reviewed_at = top.get("human_approved_at", "").strip()
+    human_approved = bool(
+        reviewer in AUTHORIZED_RELEASE_REVIEWERS
+        and _valid_gate_approval_timestamp(reviewed_at)
+    )
+    if (reviewer or reviewed_at) and not human_approved:
+        errors.append(
+            "v0.2.0 human approval fields must contain an authorized reviewer and ISO date/time"
+        )
+
+    required = tuple(f"G{index}" for index in range(10))
+    waived = [gate for gate in required if gates.get(gate) == "NOT_APPLICABLE"]
+    if waived:
+        errors.append(
+            "v0.2.0 Required Gates cannot be NOT_APPLICABLE: " + ", ".join(waived)
+        )
+
+    evidence_keys = {
+        "G0": "provenance_ready",
+        "G1": "artifact_ready",
+        "G2": "data_ready",
+        "G3": "automated_ready",
+        "G4": "server_ready",
+        "G5": "persistence_ready",
+        "G6": "authority_ready",
+        "G7": "performance_ready",
+        "G8": "client_ready",
+        "G9": "docs_ready",
+    }
+    for gate, key in evidence_keys.items():
+        if gates.get(gate) == "PASS" and evidence.get(key) is not True:
+            errors.append(f"{gate} cannot be PASS without bound v0.2.0 {key} evidence")
+    if gates.get("G8") == "READY_FOR_HUMAN_REVIEW" and evidence.get("client_ready") is not True:
+        errors.append("G8 cannot be ready for human review without bound client evidence")
+    if gates.get("G8") == "PASS" and not human_approved:
+        errors.append("G8 cannot be PASS without explicit owner approval")
+    if gates.get("G9") == "PASS" and not human_approved:
+        errors.append("G9 cannot be PASS without explicit owner approval")
+
+    status_passed = top.get("status") == "PASSED"
+    overall_passed = top.get("overall") in {"PASS", "PASSED"}
+    if status_passed != overall_passed:
+        errors.append("v0.2.0 status PASSED and overall PASS/PASSED must agree")
+    if status_passed or overall_passed:
+        unresolved = [gate for gate in required if gates.get(gate) != "PASS"]
+        if unresolved:
+            errors.append(
+                "v0.2.0 cannot be PASSED while Required Gates are unresolved: "
+                + ", ".join(unresolved)
+            )
+        if not human_approved or any(evidence.get(key) is not True for key in evidence_keys.values()):
+            errors.append("v0.2.0 cannot be PASSED without all bound evidence and human approval")
+    return errors
+
+
+def check_v020_gate_status(results: Results) -> None:
+    current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
+    historical = ROOT / "docs/releases/v0.2.0/GATE-STATUS.md"
+    is_current = "current_version: v0.2.0" in current
+    if not is_current and not historical.exists():
+        return
+
+    evidence_details: dict[str, object] = {}
+    if historical.exists():
+        release_errors, evidence_details = validate_v020_release_evidence(
+            repository_root=ROOT
+        )
+        if release_errors:
+            results.fail(
+                "v0.2.0 release evidence errors: " + "; ".join(release_errors)
+            )
+            evidence_details = {}
+        else:
+            results.passed(
+                "v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid"
+            )
+
+    text = read_text(
+        historical if historical.exists() else ROOT / "docs/status/GATE_STATUS.md",
+        results,
+    )
+    errors = validate_v020_gate_status_text(
+        text,
+        evidence_details=evidence_details,
+    )
+    if errors:
+        results.fail("v0.2.0 Gate status contradictions: " + "; ".join(errors))
+    else:
+        results.passed("v0.2.0 Gate status does not overstate machine-slice evidence")
 
 
 def check_package_checksums(package_root: Path, results: Results) -> None:
@@ -2514,6 +2650,8 @@ def main() -> int:
     check_v002_gate_status(results)
     check_release_checksums(results)
     check_v010_asset_baseline(results)
+    check_v020_generated_resources(results)
+    check_v020_gate_status(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
     results.print_report()
