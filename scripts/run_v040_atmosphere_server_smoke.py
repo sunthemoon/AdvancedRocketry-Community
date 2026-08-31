@@ -144,8 +144,21 @@ def _wait_for_marker(
     timeout: float = 45.0,
 ) -> None:
     start = len(process.lines)
-    process.command(command)
-    process.wait_for(re.compile(re.escape(marker)), timeout, start_at=start)
+    pattern = re.compile(re.escape(marker))
+    deadline = time.monotonic() + timeout
+    while True:
+        process.command(command)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise SmokeError(f"Timed out waiting for server marker {marker!r}")
+        try:
+            process.wait_for(pattern, min(1.0, remaining), start_at=start)
+            return
+        except SmokeError:
+            if process.process.poll() is not None:
+                raise
+            if time.monotonic() >= deadline:
+                raise SmokeError(f"Timed out waiting for server marker {marker!r}")
 
 
 def _configure_rooms(process: CapturedProcess) -> None:
