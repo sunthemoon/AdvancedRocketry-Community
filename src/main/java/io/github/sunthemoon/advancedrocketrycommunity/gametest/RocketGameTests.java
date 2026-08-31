@@ -1,16 +1,36 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockStateAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketTransactionWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketAssemblyTransaction;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketDisassemblyTransaction;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegionLockManager;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionJournal;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -18,16 +38,19 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketGameTests {
+    private static final String TEMPLATE = "rocket_test";
+
     private RocketGameTests() {
     }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
     public static void blockStateAdapterRoundTripsAllProperties(GameTestHelper helper) {
         BlockState source = Blocks.OAK_STAIRS.defaultBlockState()
                 .setValue(StairBlock.FACING, Direction.WEST)
@@ -45,7 +68,7 @@ public final class RocketGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
     public static void vanillaContainerAdapterConservesItemsAndRejectsMalformedSlots(GameTestHelper helper) {
         BlockPos sourcePosition = BlockPos.ZERO;
         BlockPos targetPosition = new BlockPos(2, 0, 0);
@@ -81,10 +104,276 @@ public final class RocketGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void legalRocketRoundTripConservesChestContents(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(3, 2, 3);
+        placeLegalRocket(helper, origin, true);
+        ChestBlockEntity sourceChest = (ChestBlockEntity) helper.getBlockEntity(origin.east());
+        sourceChest.setItem(0, new ItemStack(Items.DIAMOND, 17));
+        sourceChest.setItem(26, new ItemStack(Items.IRON_INGOT, 64));
+        RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
+        UUID owner = UUID.randomUUID();
+        ServerLevel level = helper.getLevel();
+        ServerLevelRocketTransactionWorld world = new ServerLevelRocketTransactionWorld(
+                level,
+                RocketBlockEntityAdapters.defaults(),
+                owner
+        );
+        RocketRegionLockManager locks = new RocketRegionLockManager();
+        RocketOperationLedger ledger = new RocketOperationLedger();
+
+        RocketTransactionResult assembled = new RocketAssemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        ).execute(UUID.randomUUID(), snapshot);
+        helper.assertTrue(assembled.success(), "Legal rocket assembly failed: " + assembled.code());
+        UUID rocketId = assembled.rocketEntityId().orElseThrow();
+        helper.assertTrue(level.getEntity(rocketId) instanceof RocketEntity, "Assembly did not create RocketEntity");
+        helper.assertTrue(helper.getBlockState(origin).isAir(), "Assembly left source motor behind");
+        helper.assertTrue(helper.getBlockState(origin.east()).isAir(), "Assembly left source chest behind");
+
+        RocketTransactionResult disassembled = new RocketDisassemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        ).execute(UUID.randomUUID(), rocketId, snapshot);
+        helper.assertTrue(disassembled.success(), "Legal rocket disassembly failed: " + disassembled.code());
+        ChestBlockEntity restoredChest = (ChestBlockEntity) helper.getBlockEntity(origin.east());
+        helper.assertTrue(
+                restoredChest.getItem(0).is(Items.DIAMOND) && restoredChest.getItem(0).getCount() == 17,
+                "Disassembly changed diamond contents"
+        );
+        helper.assertTrue(
+                restoredChest.getItem(26).is(Items.IRON_INGOT)
+                        && restoredChest.getItem(26).getCount() == 64,
+                "Disassembly changed iron contents"
+        );
+        helper.assertTrue(level.getEntity(rocketId) == null, "Disassembly left duplicate RocketEntity");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 30)
+    public static void illegalStructuresReturnStableDiagnostics(GameTestHelper helper) {
+        BlockPos noEngine = new BlockPos(2, 2, 2);
+        helper.setBlock(noEngine, ModBlocks.ROCKET_SEAT.get());
+        helper.setBlock(noEngine.above(), ModBlocks.GUIDANCE_COMPUTER.get());
+        RocketScanResult missingEngine = scan(helper, noEngine);
+        helper.assertTrue(missingEngine.status() == RocketScanResult.Status.FAILED, "Engine-less rocket passed");
+        helper.assertTrue(
+                missingEngine.issues().get(0).code() == RocketValidationCode.MISSING_ENGINE,
+                "Engine-less rocket returned " + missingEngine.issues().get(0).code()
+        );
+
+        BlockPos forbidden = new BlockPos(10, 2, 2);
+        placeLegalRocket(helper, forbidden, false);
+        helper.setBlock(forbidden.east(), Blocks.COMMAND_BLOCK);
+        RocketScanResult forbiddenResult = scan(helper, forbidden);
+        helper.assertTrue(forbiddenResult.status() == RocketScanResult.Status.FAILED, "Forbidden rocket passed");
+        helper.assertTrue(
+                forbiddenResult.issues().get(0).code() == RocketValidationCode.FORBIDDEN_BLOCK,
+                "Forbidden rocket returned " + forbiddenResult.issues().get(0).code()
+        );
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void occupiedDisassemblyDoesNotOverwriteOrRemoveRocket(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(3, 2, 3);
+        placeLegalRocket(helper, origin, false);
+        RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
+        UUID owner = UUID.randomUUID();
+        ServerLevel level = helper.getLevel();
+        ServerLevelRocketTransactionWorld world = new ServerLevelRocketTransactionWorld(
+                level,
+                RocketBlockEntityAdapters.defaults(),
+                owner
+        );
+        RocketRegionLockManager locks = new RocketRegionLockManager();
+        RocketOperationLedger ledger = new RocketOperationLedger();
+        RocketTransactionResult assembled = new RocketAssemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        ).execute(UUID.randomUUID(), snapshot);
+        UUID rocketId = assembled.rocketEntityId().orElseThrow();
+
+        helper.setBlock(origin, Blocks.STONE);
+        RocketTransactionResult blocked = new RocketDisassemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        ).execute(UUID.randomUUID(), rocketId, snapshot);
+        helper.assertTrue(blocked.code() == RocketValidationCode.TARGET_OCCUPIED,
+                "Occupied target returned " + blocked.code());
+        helper.assertTrue(helper.getBlockState(origin).is(Blocks.STONE), "Occupied block was overwritten");
+        helper.assertTrue(level.getEntity(rocketId) instanceof RocketEntity, "Blocked disassembly removed rocket");
+
+        helper.setBlock(origin, Blocks.AIR);
+        RocketTransactionResult cleanup = new RocketDisassemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        ).execute(UUID.randomUUID(), rocketId, snapshot);
+        helper.assertTrue(cleanup.success(), "Cleanup disassembly failed");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 30)
+    public static void duplicateAssemblyRequestCreatesOnlyOneRocket(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(3, 2, 3);
+        placeLegalRocket(helper, origin, false);
+        RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
+        UUID owner = UUID.randomUUID();
+        ServerLevel level = helper.getLevel();
+        ServerLevelRocketTransactionWorld world = new ServerLevelRocketTransactionWorld(
+                level,
+                RocketBlockEntityAdapters.defaults(),
+                owner
+        );
+        RocketRegionLockManager locks = new RocketRegionLockManager();
+        RocketOperationLedger ledger = new RocketOperationLedger();
+        RocketAssemblyTransaction transaction = new RocketAssemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        );
+        UUID requestId = UUID.randomUUID();
+        RocketTransactionResult first = transaction.execute(requestId, snapshot);
+        RocketTransactionResult replay = transaction.execute(requestId, snapshot);
+
+        helper.assertTrue(first.success(), "First assembly request failed");
+        helper.assertTrue(replay.code() == RocketValidationCode.REQUEST_REPLAYED, "Replay was not rejected");
+        BlockPos absolute = helper.absolutePos(origin);
+        helper.assertTrue(
+                level.getEntitiesOfClass(
+                        RocketEntity.class,
+                        new AABB(absolute).inflate(2.0D)
+                ).size() == 1,
+                "Replay created duplicate RocketEntity"
+        );
+        UUID rocketId = first.rocketEntityId().orElseThrow();
+        RocketTransactionResult cleanup = new RocketDisassemblyTransaction(
+                world,
+                locks,
+                ledger,
+                RocketTransactionJournal.NO_OP
+        ).execute(UUID.randomUUID(), rocketId, snapshot);
+        helper.assertTrue(cleanup.success(), "Replay test cleanup failed");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 30)
+    public static void rocketEntitySnapshotPersistsAndFutureSchemaFailsClosed(GameTestHelper helper) {
+        BlockPos origin = new BlockPos(3, 2, 3);
+        placeLegalRocket(helper, origin, false);
+        RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
+        UUID transactionId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        RocketEntity source = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(source != null, "Rocket entity type did not create an entity");
+        source.initialize(snapshot, transactionId, ownerId);
+        CompoundTag saved = source.saveWithoutId(new CompoundTag());
+
+        RocketEntity restored = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(restored != null, "Rocket entity type did not create restore target");
+        restored.load(saved.copy());
+        helper.assertTrue(restored.operational(), "Current entity schema did not reload operationally");
+        helper.assertTrue(
+                restored.snapshot().orElseThrow().contentHash().equals(snapshot.contentHash()),
+                "Entity reload changed snapshot hash"
+        );
+        helper.assertTrue(restored.ownerId().orElseThrow().equals(ownerId), "Entity reload changed owner");
+
+        CompoundTag futureSave = saved.copy();
+        CompoundTag futureData = futureSave.getCompound("RocketEntityData");
+        futureData.putInt("schema_version", 2);
+        futureData.putString("future_marker", "preserve-exactly");
+        RocketEntity future = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(future != null, "Rocket entity type did not create future-schema target");
+        future.load(futureSave);
+        helper.assertTrue(!future.operational(), "Future entity schema remained operational");
+        helper.assertTrue(
+                future.preservedBlockedData().orElseThrow().equals(futureData),
+                "Future entity payload was not preserved"
+        );
+        helper.assertTrue(
+                future.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData").equals(futureData),
+                "Future entity payload changed during re-save"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void unloadedScanCreatesNoChunkTicket(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos far = new BlockPos(25_000_000, level.getMinBuildHeight() + 8, 25_000_000);
+        helper.assertTrue(!level.hasChunkAt(far), "Far chunk was loaded before rocket scan");
+        RocketStructureScanTask task = new RocketStructureScanTask(
+                new ServerLevelRocketScanWorld(level, RocketBlockEntityAdapters.defaults()),
+                level.dimension().location(),
+                rocketPosition(far),
+                UUID.randomUUID(),
+                level.getGameTime()
+        );
+        RocketScanResult result = task.step(1);
+        helper.assertTrue(result.status() == RocketScanResult.Status.FAILED, "Unloaded scan did not stop");
+        helper.assertTrue(
+                result.issues().get(0).code() == RocketValidationCode.UNLOADED_CHUNK,
+                "Unloaded scan returned " + result.issues().get(0).code()
+        );
+        helper.assertTrue(!level.hasChunkAt(far), "Rocket scan force-loaded a chunk");
+        helper.succeed();
+    }
+
     private static CompoundTag stackTag(int slot, ItemStack stack) {
         CompoundTag tag = new CompoundTag();
         stack.save(tag);
         tag.putByte("Slot", (byte) slot);
         return tag;
+    }
+
+    private static void placeLegalRocket(GameTestHelper helper, BlockPos origin, boolean chest) {
+        helper.setBlock(origin, ModBlocks.ROCKET_MOTOR.get());
+        helper.setBlock(origin.above(), ModBlocks.ROCKET_SEAT.get());
+        helper.setBlock(origin.above(2), ModBlocks.GUIDANCE_COMPUTER.get());
+        if (chest) {
+            helper.setBlock(origin.east(), Blocks.CHEST);
+        }
+    }
+
+    private static RocketStructureSnapshot successfulSnapshot(GameTestHelper helper, BlockPos origin) {
+        RocketScanResult result = scan(helper, origin);
+        helper.assertTrue(result.status() == RocketScanResult.Status.SUCCESS,
+                "Legal rocket scan failed: " + (result.issues().isEmpty() ? "unknown" : result.issues().get(0).code()));
+        return result.snapshot().orElseThrow();
+    }
+
+    private static RocketScanResult scan(GameTestHelper helper, BlockPos relativeOrigin) {
+        ServerLevel level = helper.getLevel();
+        BlockPos absoluteOrigin = helper.absolutePos(relativeOrigin);
+        RocketStructureScanTask task = new RocketStructureScanTask(
+                new ServerLevelRocketScanWorld(level, RocketBlockEntityAdapters.defaults()),
+                level.dimension().location(),
+                rocketPosition(absoluteOrigin),
+                UUID.randomUUID(),
+                level.getGameTime()
+        );
+        RocketScanResult result = task.step(RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK);
+        int steps = 1;
+        while (result.status() == RocketScanResult.Status.RUNNING && steps++ < 64) {
+            result = task.step(RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK);
+        }
+        return result;
+    }
+
+    private static RocketPosition rocketPosition(BlockPos position) {
+        return new RocketPosition(position.getX(), position.getY(), position.getZ());
     }
 }

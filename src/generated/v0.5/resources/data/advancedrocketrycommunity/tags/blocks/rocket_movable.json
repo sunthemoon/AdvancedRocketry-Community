@@ -1,0 +1,14 @@
+{
+  "values": [
+    "advancedrocketrycommunity:machine_casing",
+    "advancedrocketrycommunity:rocket_motor",
+    "advancedrocketrycommunity:rocket_fuel_tank",
+    "advancedrocketrycommunity:rocket_seat",
+    "advancedrocketrycommunity:guidance_computer",
+    "minecraft:chest",
+    "minecraft:barrel",
+    "minecraft:iron_block",
+    "minecraft:copper_block",
+    "minecraft:glass"
+  ]
+}

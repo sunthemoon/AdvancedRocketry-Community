@@ -63,7 +63,6 @@ public final class ModBlocks {
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.METAL)
-                .requiresCorrectToolForDrops()
                 .strength(5.0F, 6.0F)
                 .sound(SoundType.METAL);
     }

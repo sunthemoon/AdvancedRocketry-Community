@@ -59,6 +59,7 @@ minecraft {
         }
 
         gameTestServer {
+            workingDirectory project.file('build/gametest')
             property 'forge.enabledGameTestNamespaces', mod_id
         }
 
@@ -66,11 +67,12 @@ minecraft {
             workingDirectory project.file('run-data')
             args '--mod', mod_id,
                     '--all',
-                    '--output', file('src/generated/v0.4/resources/'),
+                    '--output', file('src/generated/v0.5/resources/'),
                     '--existing', file('src/main/resources/'),
                     '--existing', file('src/generated/resources/'),
                     '--existing', file('src/generated/v0.2/resources/'),
-                    '--existing', file('src/generated/v0.3/resources/')
+                    '--existing', file('src/generated/v0.3/resources/'),
+                    '--existing', file('src/generated/v0.4/resources/')
         }
     }
 }
@@ -80,6 +82,7 @@ sourceSets.main.resources {
     srcDir 'src/generated/v0.2/resources'
     srcDir 'src/generated/v0.3/resources'
     srcDir 'src/generated/v0.4/resources'
+    srcDir 'src/generated/v0.5/resources'
     exclude '.cache/**'
 }
 
@@ -120,7 +123,7 @@ tasks.matching { it.name == 'runGameTestServer' }.configureEach {
         gameTestStartedAt = System.currentTimeMillis()
     }
     doLast {
-        File latestLog = file('run/logs/latest.log')
+        File latestLog = file('build/gametest/logs/latest.log')
         if (!latestLog.isFile() || latestLog.lastModified() < gameTestStartedAt - 2_000L) {
             throw new GradleException('Forge GameTest did not produce a fresh latest.log')
         }

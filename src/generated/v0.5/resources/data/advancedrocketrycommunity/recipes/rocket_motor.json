@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ICI",
+    "IRI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:rocket_motor"
+  },
+  "show_notification": true
+}

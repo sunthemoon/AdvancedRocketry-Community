@@ -5,7 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanObservation;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
@@ -30,7 +30,6 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
 
     private final ServerLevel level;
     private final RocketBlockEntityAdapters adapters;
-    private final ServerLevelRocketScanWorld scanWorld;
     private final UUID ownerId;
 
     public ServerLevelRocketTransactionWorld(
@@ -41,7 +40,6 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
         this.level = Objects.requireNonNull(level, "level");
         this.adapters = Objects.requireNonNull(adapters, "adapters");
         this.ownerId = Objects.requireNonNull(ownerId, "ownerId");
-        scanWorld = new ServerLevelRocketScanWorld(level, adapters);
     }
 
     @Override
@@ -73,18 +71,25 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
 
     @Override
     public Optional<RocketWorldBlock> readBlock(RocketPosition absolutePosition) {
-        RocketScanObservation observation = scanWorld.observe(absolutePosition);
-        return switch (observation.kind()) {
-            case EMPTY -> Optional.empty();
-            case MOVABLE -> Optional.of(new RocketWorldBlock(
-                    observation.state(),
-                    observation.payload().orElse(null)
-            ));
-            case UNLOADED -> throw new IllegalStateException("Rocket position is not loaded");
-            case BOUNDARY, FORBIDDEN, UNSUPPORTED_BLOCK_ENTITY -> throw new IllegalStateException(
-                    observation.kind() + ": " + observation.detail()
-            );
-        };
+        BlockPos position = ServerLevelRocketScanWorld.toBlockPos(absolutePosition);
+        if (!level.hasChunkAt(position)) {
+            throw new IllegalStateException("Rocket position is not loaded");
+        }
+        BlockState state = level.getBlockState(position);
+        if (state.isAir()) {
+            return Optional.empty();
+        }
+        RocketBlockEntityPayload payload = null;
+        BlockEntity blockEntity = level.getBlockEntity(position);
+        if (blockEntity != null) {
+            RocketBlockEntityAdapters.CaptureResult captured = adapters.capture(blockEntity);
+            if (captured.supported()) {
+                payload = captured.optionalPayload().orElseThrow();
+            }
+        }
+        // Non-movable/unsupported states remain observable as occupied, but can
+        // never equal an approved snapshot block with different adapter data.
+        return Optional.of(new RocketWorldBlock(RocketBlockStateAdapter.capture(state), payload));
     }
 
     @Override

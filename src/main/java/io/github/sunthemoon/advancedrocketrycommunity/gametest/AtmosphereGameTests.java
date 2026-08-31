@@ -119,7 +119,14 @@ public final class AtmosphereGameTests {
 
         service.observeVent(vent);
         service.tick();
-        helper.assertTrue(vent.status() == VentOperatingStatus.ACTIVE, "Closed door did not seal the room");
+        helper.assertTrue(vent.status() == VentOperatingStatus.ACTIVE,
+                "Closed door did not seal the room: status=" + vent.status()
+                        + " energy=" + vent.energyStored()
+                        + " oxygen=" + vent.oxygenUnits()
+                        + " door=" + moon.getBlockState(doorPosition)
+                        + " roof=" + moon.getBlockState(ventPosition.above(2))
+                        + " seedSky=" + moon.canSeeSky(ventPosition.above())
+                        + " metrics=" + service.metrics());
 
         setDoor(moon, doorPosition, true);
         service.markDirty(doorPosition);
