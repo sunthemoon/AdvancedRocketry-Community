@@ -1,0 +1,798 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.2.0-dev.jar",
+  "artifact_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+  "entries": [
+    {
+      "path": "META-INF/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/LICENSE",
+      "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+      "size": 1125
+    },
+    {
+      "path": "META-INF/MANIFEST.MF",
+      "sha256": "7510577607d7714fe1e06c14b26063019b9fa9153686fdf8ef8293037dd57038",
+      "size": 304
+    },
+    {
+      "path": "META-INF/NOTICE.md",
+      "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+      "size": 2141
+    },
+    {
+      "path": "META-INF/THIRD-PARTY-NOTICES.md",
+      "sha256": "b99c025661fb8bccb8eb938d302f8bb80c49f9ac358c7ce2fcf6229de292b913",
+      "size": 6872
+    },
+    {
+      "path": "META-INF/licenses/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
+      "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+      "size": 23606
+    },
+    {
+      "path": "META-INF/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt",
+      "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+      "size": 27732
+    },
+    {
+      "path": "META-INF/mods.toml",
+      "sha256": "b36913c31d1f2bf138aa5b17ec458893fcb61519c9250a66a9586fe0ac7849dc",
+      "size": 1450
+    },
+    {
+      "path": "advancedrocketrycommunity.png",
+      "sha256": "c5c6fbc63113a51da1ec28ef1227b358b41030b09cae4103f160f37d3a343690",
+      "size": 6214
+    },
+    {
+      "path": "assets/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/electrolyzer.json",
+      "sha256": "6809c0c5527ee06ba02a27de5015ce0e1b6c39ccc8e2b6f819d07d32489c8dc2",
+      "size": 2082
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/blockstates/machine_casing.json",
+      "sha256": "afc8dbb026dc3ed0d37bf36941b087b36a6c8a1fd38a46adafba707539fa8784",
+      "size": 439
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/lang/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/lang/en_us.json",
+      "sha256": "1795e6c4c6a92f0a1678a5aa5fcbb1abaaece7b2dfc8c5ac11571b39c2d489b9",
+      "size": 730
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/lang/zh_cn.json",
+      "sha256": "dca61b612857a186ee1657651b4a33280681d3ecf6c5b83ff65dfe05dfb0f87d",
+      "size": 694
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb",
+      "size": 345
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+      "sha256": "e2e8445f320b6173819d077676a0b68ca8f49ee6cd4ab807a4a5eb186046451b",
+      "size": 320
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/block/machine_casing.json",
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb",
+      "size": 345
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/advanced_circuit.json",
+      "sha256": "3ec0b0b2ab25b938903b877e3fe1e71b2969430d4bdf6eb1af763461a26efc48",
+      "size": 127
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/basic_circuit.json",
+      "sha256": "ff82ff636c90e8bef171ff4391a092f002629cd7f9a87fd0b97d26924484a589",
+      "size": 124
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/data_storage_unit.json",
+      "sha256": "57db35b04249c906318814bac45be0775b9f991e9eccb6128af2ba90f2760a60",
+      "size": 128
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/electrolyzer.json",
+      "sha256": "8b37cb8e9c48fbd302a7aba452cfa417e8940b3a8a65662f979e55e9eaffe2ad",
+      "size": 62
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/empty_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce",
+      "size": 107
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/hydrogen_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce",
+      "size": 107
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/machine_casing.json",
+      "sha256": "7fc0bc4269a675b377be4ed8779089c3a946d4a56f2a098d8419b914b8783e8c",
+      "size": 64
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/oxygen_canister.json",
+      "sha256": "65901faa40f184edd9ff91d0fc660fb14be35712ea72a354fd9f678f00fac2ce",
+      "size": 107
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/models/item/silicon_wafer.json",
+      "sha256": "8a96925f63c40828a229eb8dcff9e82fc83a3fdeb51024075adf10f38a5445ba",
+      "size": 124
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/sounds.json",
+      "sha256": "a76413e97bbbad694e6a25227286cb9fb3f3bcd1e4b41f4538fd6c58d78236e2",
+      "size": 154
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/sounds/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/sounds/ui_select.ogg",
+      "sha256": "44ab8402681ee7684293f64e26fd96309e8309d07cc9af6ddcc866e4edec9fd6",
+      "size": 4943
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/machine_casing_front.png",
+      "sha256": "133cd0c9f8abb5eba85f29629007933c675fe4284ba4c8c094288bd736857db8",
+      "size": 2155
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/machine_casing_side.png",
+      "sha256": "5c0435081c9c0d8c11cbbeea3278b293ffa17fd43a73e91c4fe3bffab110f62b",
+      "size": 180
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/block/machine_casing_top.png",
+      "sha256": "4e0e841b02eca215643571024d784e71f75ee9b32523bb946bb49f65b2644b41",
+      "size": 2161
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/advanced_circuit.png",
+      "sha256": "3b0a52abc227438a0e16b5ad999883829e453d63b3e00962d98e199244c9cb7a",
+      "size": 344
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/basic_circuit.png",
+      "sha256": "68ccf0a13ff55141a8c95ea81afbb6956f5f60db4348a012dd2544eefecfc10e",
+      "size": 283
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/data_storage_unit.png",
+      "sha256": "4a341ea614d7adb8b7cf1ac056575d83be0311be317516f04f97e80fd9651e22",
+      "size": 2418
+    },
+    {
+      "path": "assets/advancedrocketrycommunity/textures/item/silicon_wafer.png",
+      "sha256": "cb2a7cb7292cb399af37138918b8104baf62049d985dcd21448ab580c8034b8d",
+      "size": 725
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/lang/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/lang/en_us.json",
+      "sha256": "63f46d81576ba9ddc7cf39c58e44cfb2cbecde2b0f098218335563c0a83e1603",
+      "size": 1267
+    },
+    {
+      "path": "assets/advancedrocketrycommunity_v020/lang/zh_cn.json",
+      "sha256": "771f6ff50b939f5aa34209df704b1f2d6549c275f2a66738cfaa06922df33c80",
+      "size": 1219
+    },
+    {
+      "path": "data/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/building_blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/building_blocks/machine_casing.json",
+      "sha256": "0f4fe0b084352d2ca5b3103fdb64b3fc64ac83d3958f43f864236f66bb715075",
+      "size": 668
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/advanced_circuit.json",
+      "sha256": "9f7837c0a8b9861db37ad90265f4062752716886a99ce736a1ce014afa389297",
+      "size": 672
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/basic_circuit.json",
+      "sha256": "5fdcee18b1f70997e84d3baceb03441cb3053e794b790e197c5ab6827a57df8f",
+      "size": 666
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/data_storage_unit.json",
+      "sha256": "8ac994625baae6d38ed80124780d562a2257da7c8f2402cbb10474a08c8ad2df",
+      "size": 683
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/electrolyzer.json",
+      "sha256": "4e68efc73d7ff9e0dd5fae5c7e935bec6757662ad01c47c02c57e0bf76c5ac75",
+      "size": 698
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/empty_canister.json",
+      "sha256": "25569966a4236f46562594276ac080b29319c4f06c81e51fc79d1d3516ceb1ee",
+      "size": 623
+    },
+    {
+      "path": "data/advancedrocketrycommunity/advancements/recipes/misc/silicon_wafer.json",
+      "sha256": "aa81d18c1d4ac1e1fcb309dd649ada44d91577c49f6cea7006ac7a45b9bbce43",
+      "size": 629
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/electrolyzer.json",
+      "sha256": "96211399209b5fd1cd0ad0c057c2632887d207e0574ab4d91630f7b346f514ed",
+      "size": 424
+    },
+    {
+      "path": "data/advancedrocketrycommunity/loot_tables/blocks/machine_casing.json",
+      "sha256": "17006dbe80e84e52ad793fb95f2e4a8a586f370ae435725c718cb6779e444545",
+      "size": 428
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/advanced_circuit.json",
+      "sha256": "f3384f662a473fd0f560690a605802eee74ac96789f00a74c7c3ad8677b295b4",
+      "size": 327
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/basic_circuit.json",
+      "sha256": "a041d676e55718970315e95d010c20f7ab4f3202f43758ba50e418ab0d6da09d",
+      "size": 343
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/data_storage_unit.json",
+      "sha256": "04c1796a93ec6eb019687f3db9a0beeedbf6760167c5db0bc664e749540c7f66",
+      "size": 336
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/electrolyzer.json",
+      "sha256": "0e1fb5109f91ed68b80a465f61a110026dd07c2841dfd975ddb680600531179d",
+      "size": 529
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/electrolyzer_water.json",
+      "sha256": "b3cc933186fbeb1238939ed02a203dee03e3db18817584ed1f28c8de6521c415",
+      "size": 464
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/empty_canister.json",
+      "sha256": "571bbe2f287750c7cd15a606a7501db5b2b811c0c324bea7954d62d207c322ce",
+      "size": 294
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/machine_casing.json",
+      "sha256": "2c1e40f9396bb5298cbef52799179fc11e30ab8909a5fb2440f71535222e4949",
+      "size": 378
+    },
+    {
+      "path": "data/advancedrocketrycommunity/recipes/silicon_wafer.json",
+      "sha256": "15a2b46c745f6ae5bfaec7bc7fa712a01c5eecfce7545ce7d83d7a556667382a",
+      "size": 272
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/structures/empty.nbt",
+      "sha256": "f9e01cf43eb902d734062a122548fa84fa05a4f6c491a6f1c46652c85662b559",
+      "size": 124
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/circuits/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/circuits/advanced.json",
+      "sha256": "0ccc15537a49795389cea373f0beab849a76a9b93d99680d341fe086b59b83d1",
+      "size": 70
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/circuits/basic.json",
+      "sha256": "8ac5d39b8ca41e42de4d641908db432994b231a86f85c623da57c110719fc96c",
+      "size": 67
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/data_storage_units.json",
+      "sha256": "04531391f7c9c032f79f63b1bd29b19bfe06c574844baa38554069f9157fa198",
+      "size": 71
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/machine_casings.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f",
+      "size": 68
+    },
+    {
+      "path": "data/advancedrocketrycommunity/tags/items/silicon_wafers.json",
+      "sha256": "2177f4f11599e34efde585f5f771e1f5cd8f03249ba474d16c55cf059e601552",
+      "size": 67
+    },
+    {
+      "path": "data/minecraft/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/blocks/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/blocks/mineable/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f",
+      "size": 68
+    },
+    {
+      "path": "data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "9e58c8bd2ff370da961930725e659c65e24b26217c402bae160982b58e243c2f",
+      "size": 68
+    },
+    {
+      "path": "io/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.class",
+      "sha256": "00c10421ee2dec066aa8aeb61c41898a913960648215780e13396e5e2a5b243f",
+      "size": 3848
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.class",
+      "sha256": "92b8d866618094869afe170f925a72a76b03b48d9fc13bc08a6e0a424d93bc87",
+      "size": 1493
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.class",
+      "sha256": "b801ca17dc3d732600785240a5de4496d9a50cf2261ee5f8acc03953b58db5b1",
+      "size": 4932
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/client/ElectrolyzerScreen.class",
+      "sha256": "8f37d4956d3b8d962a70c7b38070e552eeae1dbb6f053099e361fb65a9fbb975",
+      "size": 5838
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.class",
+      "sha256": "c748322e661de6a07e768d81c9a212bd3b13db25cb713fc819c5e7b78af652be",
+      "size": 1325
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/content/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/content/DevelopmentComponentItem.class",
+      "sha256": "8f60bab5b84cb37414fa5daa334b69c1957c40c2b8f1eb8cc94aec08af4423ec",
+      "size": 1989
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/content/MachineCasingBlock.class",
+      "sha256": "d7d0c0d3c5f287728a268e7137527694afeb7cccff756fe31bdfdb8600691310",
+      "size": 5979
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.class",
+      "sha256": "f8890307136bedaa94d166fe3bf0c90012efc2c66c36b9f3ca1a2ff98d403f93",
+      "size": 2571
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/EmptyGameTestStructureProvider.class",
+      "sha256": "12c166ea48c698787d29d0b74ac31726448a90c9b4c408f6d8e50855975ab881",
+      "size": 3947
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModBlockStateProvider.class",
+      "sha256": "e927a8c206571df8d1c69b98b0886bbf407c9443490bae42a3ff4aa928aaa57f",
+      "size": 4032
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModBlockTagsProvider.class",
+      "sha256": "b761e606ccf578f15af2f41aa68b8b91131b68a198a978ac5db0d162feb19cf3",
+      "size": 2408
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModItemModelProvider.class",
+      "sha256": "aa0735ae73e82e88f4cd8f420467421131a0a5f7bc39eb5ed423985eb8bb7a02",
+      "size": 1528
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModItemTagsProvider.class",
+      "sha256": "3d9aef6889df506ee75bcdc48977e5aa709b217ef961f69a20434645745271cf",
+      "size": 3202
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModLanguageProvider.class",
+      "sha256": "a6b4cb829d23b0d6a326dc8827ba3483a1d54a46e7a70ff3984fc337ee6452bb",
+      "size": 4826
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModLootTableProvider$ModBlockLoot.class",
+      "sha256": "3fbbf2e75eecfec1f2af88883917e9558c149f4e2f5e99aeccb63292aab92738",
+      "size": 1652
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModLootTableProvider.class",
+      "sha256": "ff1b839b207532d499db186f872d17124d1077770229b06749c83bc712049fe2",
+      "size": 1965
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModRecipeProvider$ElectrolyzingFinishedRecipe.class",
+      "sha256": "470c264572bf2f8923e6fe162c3d447d2e0558fbee268ab5f6b0cd3ee4f81780",
+      "size": 4558
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModRecipeProvider.class",
+      "sha256": "cb1dbb6d8815c6da923b63fb61cb68bfd62e2481a18dc94a402032604f77c53d",
+      "size": 3680
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/datagen/ModSoundDefinitionsProvider.class",
+      "sha256": "938c52b25e1e030a2316f5700ba2483dc77254e484979dc2990de758a6ec8901",
+      "size": 1811
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.class",
+      "sha256": "1a4d7ad81e7f89857d2418056af76ebbc9ed5b4b79c8e3d37189cb7729e8658a",
+      "size": 32242
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerBlock.class",
+      "sha256": "f1b928c299148e62bb14111498bfc8303faef502b01c4b800721aa15cf4a641b",
+      "size": 12375
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerBlockEntity.class",
+      "sha256": "3d1a5a1645622a762c3d17541b3ead1e1a334ca26833aeadd7b2921f0e182b65",
+      "size": 24349
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerEnergyStorage.class",
+      "sha256": "0e43cf0558ef7b9d19a4bae7f68bf1cb90af5b418b64fda2a009442a6eda46e0",
+      "size": 1488
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerFluidTank.class",
+      "sha256": "58dc93fa79d3e44d10ecc79564141033a85269e4a3732f6fb792bdc15a5bb4cb",
+      "size": 2962
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerInventory.class",
+      "sha256": "4b06f0e4fbc645267a7ce0c5c7d4034ba25ce986c588b87422f20faaf1514822",
+      "size": 3538
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMaterialLedger.class",
+      "sha256": "7c794442fd69c3bbb39eeeed9ec4c2346745545ffc4e83c18c2b0475a1d9f633",
+      "size": 4059
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMenu$OutputSlot.class",
+      "sha256": "c47f0ffb4946cae58dadfd352e6fb02792c154c828c3f0a879a1a0a31c22ccf3",
+      "size": 938
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMenu.class",
+      "sha256": "28f43a12b8e6b71d6cdf52f9474e81376846349fd807759febf8860a4749bed8",
+      "size": 8612
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerMenuData.class",
+      "sha256": "149917135098f2d747048c550ddcfd99984baf315e3a5570e4c0189ad471eafa",
+      "size": 1442
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence$DecodeResult.class",
+      "sha256": "c046f17af8d830b23e4161c36e342d63949e9acc6ae05e67f48838da811826e5",
+      "size": 4259
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence$FluidResult.class",
+      "sha256": "3dbebf28bfc43e1390eab9095f7df2dce4d13876ee5c217127fb03aa2b5489d9",
+      "size": 2131
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence$InventoryResult.class",
+      "sha256": "b73063c80694589f4f573a2d4b48de37fba4114b387c9922fe939f5c3766d1c3",
+      "size": 2154
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerPersistence.class",
+      "sha256": "6d5ef1a1a766e159fc569dc5fb52131adcd29aca824803e7fdbc997763fc84fd",
+      "size": 8849
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerProcessEngine.class",
+      "sha256": "3e58bdbeca9b825dee7eea91ea43a7d4420ef6200fbad2b5fff846b3f2efbe27",
+      "size": 2583
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipe$Serializer.class",
+      "sha256": "14f80a7e680de0d7aca6e567e92cc5c2dadf6ecf7f820784ca7121487504f646",
+      "size": 9074
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipe.class",
+      "sha256": "1727370e57f72f97d199b84bb2222f0fb4f16d07373e3f2358300ef0ef505663",
+      "size": 7655
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipeSpec.class",
+      "sha256": "13a4044e0f224963dd675c8eeb936385e51a6598e666d217a05fb2885d18f3f6",
+      "size": 4236
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerStatus.class",
+      "sha256": "3ce9b591133d152a9a3e6898e3d4ba5a0d566656fb4d3f8ce16b522aadd3d6da",
+      "size": 3055
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerTickInput.class",
+      "sha256": "7e5462371969a68869bf85f047ed3c0fc38860f64c7e32ef026160b93bdf8266",
+      "size": 2680
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerTickResult.class",
+      "sha256": "0d5bcee3fff808863d65c47da8d81cf5a5067d9c581e0c25eeb1994835f45117",
+      "size": 2366
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/FillOnlyFluidHandler.class",
+      "sha256": "9654721bcbcb0b106c7e8df8b0012542231e9bccab7e38c201b9c048a3a74300",
+      "size": 2511
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.class",
+      "sha256": "6412cb9472b4cc8d711a99b1c8c3a0f15a528ec5eb0947b383a8aee9b3635c00",
+      "size": 3729
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.class",
+      "sha256": "170eb35b55cb70cae0dc9ae7cd020f06d4c89907ff23b92f51bc3439aa9a3570",
+      "size": 4276
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.class",
+      "sha256": "af0b2fe512900793a4262ebe0d84ff33720a517a6e2d2574c262d4af09207224",
+      "size": 4486
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModItemTags.class",
+      "sha256": "c0802a59fb4c3393ba2a3c6a625b7589e53644d6729fd3fb9b392b89dd102ee6",
+      "size": 1429
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.class",
+      "sha256": "d80d7480d76a1fb213d1419f4febdca7697a2c120a96d971cad18af486f2ec2d",
+      "size": 4203
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.class",
+      "sha256": "6fafa00f967deabb8318a4c77be11af499f03e837e14e86290286446fef3b981",
+      "size": 2964
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRecipes$1.class",
+      "sha256": "7f6a9685a50544beb5a5f9652c6f66da26280974e9fbbeced811bd9e2c7ee32f",
+      "size": 904
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRecipes.class",
+      "sha256": "0bd8754401241c69859a93d6dbca39c23ee291168bb903790c62dc51e625d917",
+      "size": 3127
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.class",
+      "sha256": "271e32667a84d1f0ada6736b11bd586e76a389ef1a799b4d0390581f68332272",
+      "size": 1161
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/registry/ModSounds.class",
+      "sha256": "be15540360bd9667fa1ed7e2f7c88e51878b07385f99caa9187cb5e2e75229f4",
+      "size": 2373
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "io/github/sunthemoon/advancedrocketrycommunity/server/ServerBootstrap.class",
+      "sha256": "ae922ac7a9d2f31d0717e8d94b3d755ab4e592a54658c8047a6fc3cb8afbaa33",
+      "size": 1445
+    },
+    {
+      "path": "pack.mcmeta",
+      "sha256": "5158c85fae5a50457af193a115f4f9d8b74ba30173cd36f14c683f1b98bc9a73",
+      "size": 322
+    }
+  ],
+  "entry_count": 158,
+  "schema_version": 1
+}

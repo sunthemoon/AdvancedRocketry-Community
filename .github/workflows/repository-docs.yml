@@ -47,7 +47,9 @@ jobs:
           python scripts/validate_v010_release_evidence.py
 
       - name: Verify v0.2.0 authored DataGen inventory
-        run: python scripts/manage_v020_generated_manifest.py verify
+        run: |
+          python scripts/manage_v020_generated_manifest.py verify
+          python scripts/validate_v020_release_evidence.py
 
       - name: Enforce governance baseline
         run: python scripts/validate_repository.py --require-approved-identity

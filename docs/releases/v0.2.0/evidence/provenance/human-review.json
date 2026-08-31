@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "version": "v0.2.0",
+  "outcome": "APPROVED",
+  "reviewer": "sunthemoon",
+  "reviewed_at": "2026-08-31",
+  "findings": [],
+  "copied_source_files": 0,
+  "copied_binary_assets": 0,
+  "generated_resource_targets": 15,
+  "provenance_document_sha256": "ca25a7818d28518eaf9f1ec0a969720e51a9dea2bb19e508aa19473b1f1d460f"
+}

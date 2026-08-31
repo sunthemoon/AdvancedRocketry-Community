@@ -1,4 +1,4 @@
-# GATE_STATUS
+# GATE_STATUS — v0.2.0 accepted snapshot
 
 ```yaml
 version: v0.2.0
@@ -30,10 +30,12 @@ human_approved_by: "sunthemoon"
 human_approved_at: "2026-08-31"
 ```
 
-v0.2.0 completed one server-authoritative Electrolyzer vertical slice. The
-accepted JAR, automated tests, packaged-client screenshots/logs, matching-client
-server cycles, machine restart state, checksums, and owner approval are archived
-under [`../releases/v0.2.0/`](../releases/v0.2.0/).
+Exact tested implementation head `adc505fdd471eaccacb73a5e1247d60be83dd808`
+passed all three pull-request checks. Repository owner `sunthemoon` explicitly
+approved G0, G8, and G9 on 2026-08-31 against the evidence and artifact hashes
+in this directory.
 
-The accepted v0.1.0 snapshot is archived at
-[`../releases/v0.1.0/GATE-STATUS.md`](../releases/v0.1.0/GATE-STATUS.md).
+The accepted 173,080-byte main JAR has SHA-256
+`a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598`.
+This snapshot records milestone acceptance only. No tag or public release was
+created, and the build remains an unreleased developer preview.

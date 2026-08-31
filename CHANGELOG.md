@@ -4,21 +4,29 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.2.0 — implementation in progress, unreleased developer preview
+## v0.2.0 — PASSED, unreleased developer preview
 
-**Status:** A single-block Electrolyzer vertical slice is under implementation.
-No acceptance claim, tag, or public release exists yet.
+**Status:** `PASSED` on 2026-08-31 after repeated build, automated, packaged
+client, matching-client server restart, machine persistence, maintainer review,
+and all 3/3 pull-request checks completed. No tag or public release exists.
 
-### Planned player-visible result
+### Added
 
 - Fill the machine with water, insert empty canisters, and supply Forge Energy
   or redstone charge material.
 - Observe server-authoritative progress and receive hydrogen and oxygen
   canisters after an exact, restart-safe processing cycle.
 - Read energy, water, progress, redstone pause, and failure states in one menu.
+- Use side-bounded item, fluid, and energy capabilities with schema-versioned
+  persistence and future-schema preservation.
+- Validate exact 50-cycle conservation, 12 JUnit cases, 12 Forge GameTests,
+  matching-client reconnect, and GUI scales 1–4.
 
 This milestone does not add a general power network, multiblock framework,
 JEI integration, dimensions, atmosphere, or rockets.
+
+Evidence and installation boundaries are documented in
+[`docs/releases/v0.2.0/`](docs/releases/v0.2.0/).
 
 ## v0.1.0 — PASSED, unreleased developer preview
 

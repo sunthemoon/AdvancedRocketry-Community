@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "version": "v0.2.0",
+  "build": "1.20.1-0.2.0-dev",
+  "artifact_sha256": "a8356cbeafdaffbd1192628c414c6996c402a757f6211c857d87e8ead52a2598",
+  "commands": {
+    "clean_build": {
+      "status": "PASS",
+      "executions": 2,
+      "byte_identical": true
+    },
+    "junit": {
+      "status": "PASS",
+      "tests": 12
+    },
+    "python_unittest": {
+      "status": "PASS",
+      "tests": 556,
+      "duration_seconds": 2007.278
+    },
+    "jar_audit": {
+      "status": "PASS",
+      "entries": 158
+    },
+    "client_boundary": {
+      "status": "PASS",
+      "findings": 0
+    },
+    "run_data": {
+      "status": "PASS",
+      "written_files": 0,
+      "git_diff_exit_code": 0
+    },
+    "game_tests": {
+      "status": "PASS",
+      "tests": 12,
+      "completion_marker": true
+    },
+    "repository_validation": {
+      "status": "PASS",
+      "passed_checks": 23,
+      "warnings": 0,
+      "failures": 0
+    }
+  },
+  "conservation": {
+    "cycles": 50,
+    "input_canisters": 100,
+    "output_canisters": 100,
+    "water_mb": 50000,
+    "energy_fe": 100000,
+    "duplication_or_loss": 0
+  },
+  "authority": {
+    "server_authoritative": true,
+    "custom_c2s_result_packets": 0,
+    "two_menu_viewers_consistent": true,
+    "bounded_serializer": true,
+    "unloaded_client_position_forcing": false
+  },
+  "performance": {
+    "idle_machines": 20,
+    "bounded_tick_work": true,
+    "idle_log_spam": false,
+    "unbounded_world_scan": false
+  },
+  "data_generation": {
+    "target_count": 15,
+    "worktree_clean": true,
+    "historical_v0_1_resources_unchanged": true
+  }
+}

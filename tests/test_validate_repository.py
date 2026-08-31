@@ -695,6 +695,33 @@ class V020GateStatusTests(unittest.TestCase):
         self.assertTrue(any("explicit owner approval" in error for error in errors))
         self.assertTrue(any("human approval" in error for error in errors))
 
+    def test_version_pass_accepts_complete_bound_evidence_and_owner_approval(self) -> None:
+        evidence = {
+            "provenance_ready": True,
+            "artifact_ready": True,
+            "data_ready": True,
+            "automated_ready": True,
+            "server_ready": True,
+            "persistence_ready": True,
+            "authority_ready": True,
+            "performance_ready": True,
+            "client_ready": True,
+            "docs_ready": True,
+        }
+        self.assertEqual(
+            [],
+            validate_v020_gate_status_text(
+                v020_gate_document(
+                    status="PASSED",
+                    overall="PASSED",
+                    gates={f"G{index}": "PASS" for index in range(10)},
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-08-31",
+                ),
+                evidence_details=evidence,
+            ),
+        )
+
 
 class V002ResourceInventoryTests(unittest.TestCase):
     def test_all_current_text_and_binary_resources_are_allowlisted(self) -> None:

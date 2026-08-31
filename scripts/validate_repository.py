@@ -41,6 +41,7 @@ if __package__:
     from .validate_v002_g4_applicability import validate_v002_g4_applicability
     from .validate_v010_asset_baseline import validate_v010_asset_baseline
     from .validate_v010_release_evidence import validate_v010_release_evidence
+    from .validate_v020_release_evidence import validate_v020_release_evidence
     from .manage_v020_generated_manifest import verify as verify_v020_generated_manifest
 else:
     # Isolated script execution omits this directory from sys.path. Add only
@@ -67,6 +68,7 @@ else:
     from validate_v002_g4_applicability import validate_v002_g4_applicability
     from validate_v010_asset_baseline import validate_v010_asset_baseline
     from validate_v010_release_evidence import validate_v010_release_evidence
+    from validate_v020_release_evidence import validate_v020_release_evidence
     from manage_v020_generated_manifest import verify as verify_v020_generated_manifest
 
 
@@ -121,6 +123,7 @@ REQUIRED_PATHS = (
     "scripts/manage_v010_generated_manifest.py",
     "scripts/manage_v020_generated_manifest.py",
     "scripts/validate_v010_asset_baseline.py",
+    "scripts/validate_v020_release_evidence.py",
     "tools/audit/audit_upstream.py",
     "tools/import/import_v010_assets.py",
     "tools/import/v010-content-plan.json",
@@ -141,6 +144,7 @@ REQUIRED_PATHS = (
     "tests/test_import_v010_assets.py",
     "tests/test_manage_v010_generated_manifest.py",
     "tests/test_validate_v010_asset_baseline.py",
+    "tests/test_validate_v020_release_evidence.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
@@ -1696,6 +1700,7 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ("python", "scripts/validate_v010_asset_baseline.py"),
         ("python", "scripts/validate_v010_release_evidence.py"),
         ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
+        ("python", "scripts/validate_v020_release_evidence.py"),
         (
             "python",
             "scripts/validate_repository.py",
@@ -2481,14 +2486,38 @@ def validate_v020_gate_status_text(
 
 def check_v020_gate_status(results: Results) -> None:
     current = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
-    if "current_version: v0.2.0" not in current:
+    historical = ROOT / "docs/releases/v0.2.0/GATE-STATUS.md"
+    is_current = "current_version: v0.2.0" in current
+    if not is_current and not historical.exists():
         return
-    text = read_text(ROOT / "docs/status/GATE_STATUS.md", results)
-    errors = validate_v020_gate_status_text(text)
+
+    evidence_details: dict[str, object] = {}
+    if historical.exists():
+        release_errors, evidence_details = validate_v020_release_evidence(
+            repository_root=ROOT
+        )
+        if release_errors:
+            results.fail(
+                "v0.2.0 release evidence errors: " + "; ".join(release_errors)
+            )
+            evidence_details = {}
+        else:
+            results.passed(
+                "v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid"
+            )
+
+    text = read_text(
+        historical if historical.exists() else ROOT / "docs/status/GATE_STATUS.md",
+        results,
+    )
+    errors = validate_v020_gate_status_text(
+        text,
+        evidence_details=evidence_details,
+    )
     if errors:
         results.fail("v0.2.0 Gate status contradictions: " + "; ".join(errors))
     else:
-        results.passed("v0.2.0 Gate status does not overstate incomplete machine evidence")
+        results.passed("v0.2.0 Gate status does not overstate machine-slice evidence")
 
 
 def check_package_checksums(package_root: Path, results: Results) -> None:
