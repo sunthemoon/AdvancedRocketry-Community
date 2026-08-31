@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialB
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogDecoder;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -86,6 +87,22 @@ class CelestialCatalogDecoderTest {
 
         assertEquals(CelestialCatalogManager.MAX_STATUS_MESSAGE_CHARS, manager.status().message().length());
         assertTrue(manager.status().message().endsWith("..."));
+    }
+
+    @Test
+    void environmentProfilesResolveFromPublishedCatalogInConstantTime() {
+        CelestialCatalogManager manager = new CelestialCatalogManager();
+        assertTrue(manager.applyCandidate(CelestialCatalogDecoder.decode(canonicalResources())));
+        CelestialEnvironmentService environments = new CelestialEnvironmentService(manager);
+
+        CelestialEnvironmentService.EnvironmentProfile moon = environments
+                .forLevel(CelestialIds.MOON_LEVEL)
+                .orElseThrow();
+
+        assertEquals(CelestialIds.MOON_ID, moon.bodyId());
+        assertEquals(0.165D, moon.gravityMultiplier());
+        assertTrue(moon.vacuum());
+        assertFalse(moon.breathable());
     }
 
     private static Map<ResourceLocation, JsonElement> canonicalResources() {

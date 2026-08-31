@@ -3,6 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialDefinitionReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import net.minecraftforge.common.MinecraftForge;
@@ -31,6 +34,12 @@ public final class AdvancedRocketryCommunity {
         modBus.addListener(this::onCommonSetup);
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
+        CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
+        MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);
+        MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
+        CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
+        CelestialGravityController gravityController = new CelestialGravityController(environments);
+        MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {

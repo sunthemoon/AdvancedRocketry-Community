@@ -20,9 +20,13 @@ public final class CelestialCatalog {
     public static final int MAX_BODIES = 128;
 
     private final Map<ResourceLocation, CelestialBodyDefinition> definitions;
+    private final Map<ResourceKey<Level>, CelestialBodyDefinition> definitionsByLevel;
 
     private CelestialCatalog(Map<ResourceLocation, CelestialBodyDefinition> definitions) {
         this.definitions = Collections.unmodifiableMap(new LinkedHashMap<>(definitions));
+        Map<ResourceKey<Level>, CelestialBodyDefinition> byLevel = new LinkedHashMap<>();
+        definitions.values().forEach(definition -> byLevel.putIfAbsent(definition.levelKey(), definition));
+        this.definitionsByLevel = Collections.unmodifiableMap(byLevel);
     }
 
     public static DataResult<CelestialCatalog> create(Collection<CelestialBodyDefinition> values) {
@@ -89,9 +93,7 @@ public final class CelestialCatalog {
     }
 
     public Optional<CelestialBodyDefinition> forLevel(ResourceKey<Level> levelKey) {
-        return definitions.values().stream()
-                .filter(definition -> definition.levelKey().equals(levelKey))
-                .findFirst();
+        return Optional.ofNullable(definitionsByLevel.get(levelKey));
     }
 
     private static String findCycle(Map<ResourceLocation, CelestialBodyDefinition> definitions) {

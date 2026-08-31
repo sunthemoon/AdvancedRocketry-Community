@@ -9,6 +9,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.Elect
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -52,6 +54,31 @@ public final class BootstrapGameTests {
         helper.assertTrue(
                 AdvancedRocketryCommunity.MOD_ID.equals(ModIdentity.MOD_ID),
                 "The Forge entrypoint and approved project identity must use the same mod id"
+        );
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void celestialSavedDataUsesOverworldAndRoundTrips(GameTestHelper helper) {
+        CelestialSavedData data = CelestialSavedData.get(helper.getLevel().getServer());
+        long gameTime = helper.getLevel().getServer().overworld().getGameTime();
+        CelestialSavedData.MutationResult result = data.recordVisit(CelestialIds.EARTH_ID, gameTime);
+
+        helper.assertTrue(
+                result == CelestialSavedData.MutationResult.CHANGED
+                        || result == CelestialSavedData.MutationResult.UNCHANGED,
+                "Schema-1 celestial state must accept or already contain the Earth visit"
+        );
+        helper.assertTrue(
+                data.get(CelestialIds.EARTH_ID)
+                        .filter(progress -> progress.firstVisitAt().isPresent())
+                        .isPresent(),
+                "Earth first-visit state was not recorded"
+        );
+        CelestialSavedData decoded = CelestialSavedData.load(data.save(new CompoundTag()));
+        helper.assertTrue(
+                decoded.get(CelestialIds.EARTH_ID).isPresent(),
+                "Celestial state did not survive an NBT round trip"
         );
         helper.succeed();
     }
