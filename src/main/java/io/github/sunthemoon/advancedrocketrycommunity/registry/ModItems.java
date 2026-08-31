@@ -43,6 +43,26 @@ public final class ModItems {
             "oxygen_vent",
             () -> new BlockItem(ModBlocks.OXYGEN_VENT.get(), new Item.Properties())
     );
+    public static final RegistryObject<Item> ROCKET_ASSEMBLER = blockItem(
+            "rocket_assembler",
+            ModBlocks.ROCKET_ASSEMBLER
+    );
+    public static final RegistryObject<Item> ROCKET_MOTOR = blockItem(
+            "rocket_motor",
+            ModBlocks.ROCKET_MOTOR
+    );
+    public static final RegistryObject<Item> ROCKET_FUEL_TANK = blockItem(
+            "rocket_fuel_tank",
+            ModBlocks.ROCKET_FUEL_TANK
+    );
+    public static final RegistryObject<Item> ROCKET_SEAT = blockItem(
+            "rocket_seat",
+            ModBlocks.ROCKET_SEAT
+    );
+    public static final RegistryObject<Item> GUIDANCE_COMPUTER = blockItem(
+            "guidance_computer",
+            ModBlocks.GUIDANCE_COMPUTER
+    );
     public static final RegistryObject<Item> SPACE_SUIT_HELMET = spaceSuit(
             "space_suit_helmet",
             ArmorItem.Type.HELMET
@@ -69,6 +89,13 @@ public final class ModItems {
 
     private static RegistryObject<Item> component(String name) {
         return ITEMS.register(name, () -> new DevelopmentComponentItem(new Item.Properties()));
+    }
+
+    private static RegistryObject<Item> blockItem(
+            String name,
+            RegistryObject<? extends net.minecraft.world.level.block.Block> block
+    ) {
+        return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 
     private static RegistryObject<Item> spaceSuit(String name, ArmorItem.Type type) {

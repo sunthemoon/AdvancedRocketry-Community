@@ -5,6 +5,7 @@ import java.util.Locale;
 /** Stable machine-readable diagnostics used by tests, commands, and player feedback. */
 public enum RocketValidationCode {
     SUCCESS,
+    SCAN_IN_PROGRESS,
     EMPTY_STRUCTURE,
     TOO_MANY_BLOCKS,
     BOUNDING_VOLUME_EXCEEDED,

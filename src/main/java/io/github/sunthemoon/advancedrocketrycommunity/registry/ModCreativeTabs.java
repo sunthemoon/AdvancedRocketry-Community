@@ -31,6 +31,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.SPACE_SUIT_CHESTPLATE.get());
                         output.accept(ModItems.SPACE_SUIT_LEGGINGS.get());
                         output.accept(ModItems.SPACE_SUIT_BOOTS.get());
+                        output.accept(ModItems.ROCKET_ASSEMBLER.get());
+                        output.accept(ModItems.ROCKET_MOTOR.get());
+                        output.accept(ModItems.ROCKET_FUEL_TANK.get());
+                        output.accept(ModItems.ROCKET_SEAT.get());
+                        output.accept(ModItems.GUIDANCE_COMPUTER.get());
                         output.accept(ModItems.SILICON_WAFER.get());
                         output.accept(ModItems.BASIC_CIRCUIT.get());
                         output.accept(ModItems.ADVANCED_CIRCUIT.get());

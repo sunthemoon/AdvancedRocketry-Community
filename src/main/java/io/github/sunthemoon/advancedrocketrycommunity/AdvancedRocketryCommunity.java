@@ -18,6 +18,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -37,6 +39,7 @@ public final class AdvancedRocketryCommunity {
     private final CelestialCatalogManager celestialCatalogs = new CelestialCatalogManager();
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
+    private final RocketManager rocketManager;
 
     public AdvancedRocketryCommunity(FMLJavaModLoadingContext context) {
         IEventBus modBus = context.getModEventBus();
@@ -52,6 +55,9 @@ public final class AdvancedRocketryCommunity {
         CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
         atmosphereManager = new AtmosphereManager(environments);
         AtmosphereRuntime.install(atmosphereManager);
+        rocketManager = new RocketManager();
+        RocketRuntime.install(rocketManager);
+        MinecraftForge.EVENT_BUS.addListener(rocketManager::onServerTick);
         LifeSupportNetwork lifeSupportNetwork = new LifeSupportNetwork();
         playerLifeSupport = new PlayerLifeSupportService(atmosphereManager, lifeSupportNetwork::send);
         AtmosphereServerEvents atmosphereEvents = new AtmosphereServerEvents(atmosphereManager);
@@ -96,6 +102,7 @@ public final class AdvancedRocketryCommunity {
     private void onServerStopped(ServerStoppedEvent event) {
         playerLifeSupport.clear();
         atmosphereManager.clear();
+        rocketManager.clear();
         celestialCatalogs.clear();
     }
 }

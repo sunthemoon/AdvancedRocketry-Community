@@ -18,6 +18,7 @@ public final class RocketLimits {
     public static final int MAX_VISUAL_REASSEMBLIES = 8;
     public static final int MAX_SCAN_INSPECTIONS_PER_TICK = 256;
     public static final int MAX_SCAN_INSPECTIONS = MAX_BLOCKS * 6 + 1;
+    public static final int MAX_ACTIVE_TRANSACTIONS = 256;
 
     private RocketLimits() {
     }
