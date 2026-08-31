@@ -26,6 +26,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.EMPTY_CANISTER.get());
                         output.accept(ModItems.HYDROGEN_CANISTER.get());
                         output.accept(ModItems.OXYGEN_CANISTER.get());
+                        output.accept(ModItems.OXYGEN_VENT.get());
+                        output.accept(ModItems.SPACE_SUIT_HELMET.get());
+                        output.accept(ModItems.SPACE_SUIT_CHESTPLATE.get());
+                        output.accept(ModItems.SPACE_SUIT_LEGGINGS.get());
+                        output.accept(ModItems.SPACE_SUIT_BOOTS.get());
                         output.accept(ModItems.SILICON_WAFER.get());
                         output.accept(ModItems.BASIC_CIRCUIT.get());
                         output.accept(ModItems.ADVANCED_CIRCUIT.get());

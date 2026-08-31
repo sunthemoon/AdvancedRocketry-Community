@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import net.minecraft.world.level.block.Block;
@@ -32,6 +33,15 @@ public final class ModBlocks {
                     .mapColor(MapColor.METAL)
                     .strength(5.0F, 6.0F)
                     .lightLevel(state -> state.getValue(ElectrolyzerBlock.LIT) ? 8 : 0)
+                    .sound(SoundType.METAL))
+    );
+    public static final RegistryObject<Block> OXYGEN_VENT = BLOCKS.register(
+            "oxygen_vent",
+            () -> new OxygenVentBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .lightLevel(state -> state.getValue(OxygenVentBlock.LIT) ? 8 : 0)
                     .sound(SoundType.METAL))
     );
 

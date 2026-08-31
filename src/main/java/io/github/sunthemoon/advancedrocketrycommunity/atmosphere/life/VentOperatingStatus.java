@@ -9,7 +9,9 @@ public enum VentOperatingStatus {
     OPEN("open"),
     TOO_LARGE("too_large"),
     PENDING("pending_unloaded_chunk"),
-    CANCELLED("cancelled");
+    CANCELLED("cancelled"),
+    INVALID_DATA("invalid_data"),
+    UNSUPPORTED_DATA("unsupported_data");
 
     private final String diagnosticKey;
 
