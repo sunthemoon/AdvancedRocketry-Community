@@ -4,6 +4,13 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v0.7.0 — IN PROGRESS
+
+**Status:** implementation started from the accepted v0.6.0 post-merge
+reproduction. ADR-008 fixes one shared Space Level, persistent 512-block
+station regions on a 1,024-block grid, centralized server permissions, and
+approved-pad-only rocket travel. No v0.7 Gate is yet claimed as passed.
+
 ## v0.6.0 — PASSED candidate, unreleased developer preview
 
 **Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-01 after two
