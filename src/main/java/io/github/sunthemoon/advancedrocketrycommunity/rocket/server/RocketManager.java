@@ -5,6 +5,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachine;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketTransactionWorld;
@@ -44,6 +48,7 @@ public final class RocketManager implements RocketOperationService {
     private final RocketRegionLockManager locks = new RocketRegionLockManager();
     private final RocketOperationLedger ledger = new RocketOperationLedger();
     private final RocketTransactionRecoveryService recovery;
+    private final RocketFlightService flights = new RocketFlightService();
     private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
     private boolean recoverySuppressedForReleaseTest;
@@ -156,6 +161,13 @@ public final class RocketManager implements RocketOperationService {
             notify(player, RocketValidationCode.UNAUTHORIZED, "only the owner or an operator may disassemble this rocket");
             return;
         }
+        if (!RocketFlightStateMachine.isLegal(
+                rocket.flightData().orElseThrow().state(),
+                RocketFlightEvent.DISASSEMBLE
+        )) {
+            notify(player, RocketValidationCode.ENTITY_STATE_INVALID, "rocket cannot disassemble during flight");
+            return;
+        }
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
         if (!snapshot.sourceDimension().equals(level.dimension().location())) {
             notify(player, RocketValidationCode.ENTITY_STATE_INVALID, "rocket is outside its captured dimension");
@@ -179,6 +191,22 @@ public final class RocketManager implements RocketOperationService {
                 savedData.journalFor(snapshot, owner)
         ).execute(transactionId, rocket.getUUID(), snapshot);
         reportTransaction(level, snapshot, player, result, "disassembly");
+    }
+
+    @Override
+    public void openFlightMenu(ServerPlayer player, RocketEntity rocket) {
+        flights.openMenu(player, rocket);
+    }
+
+    @Override
+    public void requestFlightIntent(
+            ServerPlayer player,
+            int rocketEntityId,
+            RocketFlightAction action,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        flights.request(player, rocketEntityId, action, destination, requestId);
     }
 
     public void onServerTick(TickEvent.ServerTickEvent event) {
@@ -218,6 +246,7 @@ public final class RocketManager implements RocketOperationService {
         scanOrder.clear();
         locks.clear();
         ledger.clear();
+        flights.clear();
         recoverySuppressedForReleaseTest = false;
     }
 

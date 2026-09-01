@@ -1,7 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import java.util.Objects;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,5 +50,36 @@ public final class RocketRuntime {
             return;
         }
         current.requestDisassembly(player, rocket);
+    }
+
+    public static void openFlightMenu(ServerPlayer player, RocketEntity rocket) {
+        RocketOperationService current = service;
+        if (current == null) {
+            unavailable(player);
+            return;
+        }
+        current.openFlightMenu(player, rocket);
+    }
+
+    public static void requestFlightIntent(
+            ServerPlayer player,
+            int rocketEntityId,
+            RocketFlightAction action,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        RocketOperationService current = service;
+        if (current == null) {
+            unavailable(player);
+            return;
+        }
+        current.requestFlightIntent(player, rocketEntityId, action, destination, requestId);
+    }
+
+    private static void unavailable(ServerPlayer player) {
+        player.displayClientMessage(
+                Component.translatable("message.advancedrocketrycommunity.rocket.service_unavailable"),
+                true
+        );
     }
 }

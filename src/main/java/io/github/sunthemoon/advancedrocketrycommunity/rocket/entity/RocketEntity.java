@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotDecodeResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
@@ -24,18 +25,22 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 
 /** Thin persistent rocket entity. Transactions and rendering remain separate services. */
-public final class RocketEntity extends Entity {
+public final class RocketEntity extends Entity implements MenuProvider {
     private static final String DATA_KEY = "RocketEntityData";
     private static final String FLIGHT_DATA_KEY = "flight_data";
     private static final int ENTITY_SCHEMA_VERSION = 2;
@@ -287,7 +292,11 @@ public final class RocketEntity extends Entity {
             return InteractionResult.SUCCESS;
         }
         if (player instanceof ServerPlayer serverPlayer) {
-            RocketRuntime.requestDisassembly(serverPlayer, this);
+            if (player.isShiftKeyDown()) {
+                RocketRuntime.requestDisassembly(serverPlayer, this);
+            } else {
+                RocketRuntime.openFlightMenu(serverPlayer, this);
+            }
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;
@@ -311,6 +320,16 @@ public final class RocketEntity extends Entity {
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("menu.advancedrocketrycommunity.rocket_flight");
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new RocketFlightMenu(containerId, inventory, this);
     }
 
     private void validateBindings() {

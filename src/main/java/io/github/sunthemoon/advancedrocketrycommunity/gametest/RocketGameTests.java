@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
@@ -19,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEn
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
@@ -421,6 +423,15 @@ public final class RocketGameTests {
                 unauthorized.flightData().orElseThrow().fuel().amount() == 0L,
                 "Unauthorized rocket changed while another rocket was fueled"
         );
+        var viewer = helper.makeMockPlayer();
+        viewer.setPos(authorized.getX(), authorized.getY(), authorized.getZ());
+        RocketFlightMenu menu = new RocketFlightMenu(7, viewer.getInventory(), authorized);
+        helper.assertTrue(menu.state() == RocketFlightState.FUELED, "Flight menu state is not authoritative");
+        helper.assertTrue(menu.currentDestination() == RocketDestination.EARTH, "Flight menu source is not Earth");
+        helper.assertTrue(menu.plannedDestination() == RocketDestination.MOON, "Flight menu did not quote Moon");
+        helper.assertTrue(menu.fuelAmount() == RocketFlightLimits.FUEL_CELL_UNITS, "Flight menu fuel is stale");
+        helper.assertTrue(menu.requiredFuel() > 0, "Flight menu omitted the server fuel quote");
+        helper.assertTrue(menu.canLaunch(), "Fueled legal rocket was not launchable in the menu");
         unauthorized.discard();
         authorized.discard();
         helper.succeed();
