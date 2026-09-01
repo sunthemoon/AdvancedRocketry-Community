@@ -55,6 +55,7 @@ public final class AtmosphereLevelService {
     private int lastPendingTasks;
     private long totalInspections;
     private long dirtyOverflows;
+    private long completedServiceTicks;
 
     public AtmosphereLevelService(
             ServerLevel level,
@@ -182,6 +183,7 @@ public final class AtmosphereLevelService {
             }
             lastTickInspections = 0;
             lastPendingTasks = 0;
+            completedServiceTicks++;
             return metrics();
         }
 
@@ -195,6 +197,7 @@ public final class AtmosphereLevelService {
         totalInspections += report.inspections();
         acceptCompletedScans();
         applyVentSupply();
+        completedServiceTicks++;
         return metrics();
     }
 
@@ -235,7 +238,8 @@ public final class AtmosphereLevelService {
                 dirtySet.size(),
                 lastTickInspections,
                 totalInspections,
-                dirtyOverflows
+                dirtyOverflows,
+                completedServiceTicks
         );
     }
 
@@ -252,6 +256,7 @@ public final class AtmosphereLevelService {
         index.clear();
         lastTickInspections = 0;
         lastPendingTasks = 0;
+        completedServiceTicks = 0L;
     }
 
     private void pruneUnobservedVents() {

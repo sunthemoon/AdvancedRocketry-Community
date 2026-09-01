@@ -63,6 +63,7 @@ public final class AtmospherePerformanceGameTests {
         int[] warmupTicks = {0};
         int[] peakInspections = {0};
         long[] startingInspections = {-1L};
+        long[] startingServiceTicks = {-1L};
         long[] startingGameTime = {-1L};
         long startedAt = System.nanoTime();
         helper.runAfterDelay(1, () -> placementReady[0] = true);
@@ -94,52 +95,58 @@ public final class AtmospherePerformanceGameTests {
 
                 if (!measuring[0]) {
                     warmupTicks[0]++;
-                    if (warmupTicks[0] == 90) {
-                        long activeVents = vents.stream()
-                                .filter(vent -> vent.status() == VentOperatingStatus.ACTIVE)
-                                .count();
-                        AdvancedRocketryCommunity.LOGGER.info(
-                                "ARCE_ATMOSPHERE_PERF_WARMUP ticks={} active_vents={} tracked={} pending={} "
-                                        + "inspections={} dirty={} statuses={}",
-                                warmupTicks[0],
-                                activeVents,
-                                metrics.trackedVents(),
-                                metrics.pendingScanTasks(),
-                                metrics.lastTickInspections(),
-                                metrics.dirtyPositions(),
-                                vents.stream().map(OxygenVentBlockEntity::status).toList()
-                        );
-                        helper.assertTrue(
-                                activeVents == vents.size(),
-                                "16-Vent warmup did not converge within 90 ticks: statuses="
-                                        + vents.stream().map(OxygenVentBlockEntity::status).toList()
-                                        + " metrics=" + metrics
-                        );
-                    }
-                    if (vents.stream().anyMatch(vent -> vent.status() != VentOperatingStatus.ACTIVE)) {
+                    if (warmupTicks[0] < 90) {
                         return;
                     }
+                    long activeVents = vents.stream()
+                            .filter(vent -> vent.status() == VentOperatingStatus.ACTIVE)
+                            .count();
+                    AdvancedRocketryCommunity.LOGGER.info(
+                            "ARCE_ATMOSPHERE_PERF_WARMUP ticks={} active_vents={} tracked={} pending={} "
+                                    + "inspections={} dirty={} statuses={}",
+                            warmupTicks[0],
+                            activeVents,
+                            metrics.trackedVents(),
+                            metrics.pendingScanTasks(),
+                            metrics.lastTickInspections(),
+                            metrics.dirtyPositions(),
+                            vents.stream().map(OxygenVentBlockEntity::status).toList()
+                    );
+                    helper.assertTrue(
+                            activeVents == vents.size()
+                                    && metrics.activeProviders() == vents.size()
+                                    && metrics.pendingScanTasks() == 0,
+                            "16-Vent warmup did not converge within 90 ticks: statuses="
+                                    + vents.stream().map(OxygenVentBlockEntity::status).toList()
+                                    + " metrics=" + metrics
+                    );
                     for (int index = 0; index < vents.size(); index++) {
                         startingOxygen[index] = vents.get(index).oxygenUnits();
                     }
                     startingInspections[0] = metrics.totalInspections();
+                    startingServiceTicks[0] = metrics.completedServiceTicks();
                     startingGameTime[0] = moon.getGameTime();
                     measuring[0] = true;
                     return;
                 }
 
                 helper.assertTrue(
-                        vents.stream().allMatch(vent -> vent.status() == VentOperatingStatus.ACTIVE),
+                        vents.stream().allMatch(vent -> vent.status() == VentOperatingStatus.ACTIVE)
+                                && metrics.activeProviders() == vents.size(),
                         "A Vent left ACTIVE during the five-minute measurement: statuses="
                                 + vents.stream().map(OxygenVentBlockEntity::status).toList()
+                                + " metrics=" + metrics
                 );
                 long elapsedGameTicks = moon.getGameTime() - startingGameTime[0];
+                long completedServiceTicks = metrics.completedServiceTicks() - startingServiceTicks[0];
                 helper.assertTrue(elapsedGameTicks >= 0L && elapsedGameTicks <= 6_001L,
-                        "Moon game time moved outside the bounded five-minute measurement");
-                completedActiveTicks[0] = Math.toIntExact(elapsedGameTicks);
-                // GameTest callbacks observe state before the ServerTick END supply pass. Waiting
-                // one boundary tick measures exactly 6,000 completed authoritative supply ticks.
-                if (elapsedGameTicks < 6_001L) {
+                        "Atmosphere runtime did not complete 6000 supply passes within the fixed bound");
+                helper.assertTrue(completedServiceTicks >= 0L && completedServiceTicks <= 6_000L,
+                        "Atmosphere service crossed the exact 6000-pass boundary");
+                completedActiveTicks[0] = Math.toIntExact(completedServiceTicks);
+                // completedServiceTicks advances only after the server authority applies supply,
+                // independent of GameTest callback ordering around ServerTick END.
+                if (completedServiceTicks < 6_000L) {
                     return;
                 }
 
