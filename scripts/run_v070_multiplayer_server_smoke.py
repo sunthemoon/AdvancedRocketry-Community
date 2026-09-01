@@ -49,7 +49,7 @@ else:
 
 
 EXPECTED_VERSION = "1.20.1-0.7.0-dev"
-CLIENT_NAMES = ("Dev", "PilotB")
+CLIENT_NAMES = ("ClientA", "PilotB")
 CLIENT_LOG_MARKERS = (
     "Setting user:",
     "Advanced Rocketry: Community Edition",
