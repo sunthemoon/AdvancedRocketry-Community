@@ -25,11 +25,13 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private Button moonButton;
     private Button launchButton;
     private Button cancelButton;
+    private Button boardButton;
+    private Button leaveButton;
 
     public RocketFlightScreen(RocketFlightMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 248;
-        imageHeight = 176;
+        imageHeight = 196;
         titleLabelX = 12;
         titleLabelY = 10;
         inventoryLabelY = 10_000;
@@ -53,11 +55,19 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         launchButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.launch"),
                 button -> send(RocketFlightAction.LAUNCH)
-        ).bounds(leftPos + 22, topPos + 132, 204, 24).build());
+        ).bounds(leftPos + 22, topPos + 156, 204, 24).build());
         cancelButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.cancel"),
                 button -> send(RocketFlightAction.CANCEL)
-        ).bounds(leftPos + 22, topPos + 132, 204, 24).build());
+        ).bounds(leftPos + 22, topPos + 156, 204, 24).build());
+        boardButton = addRenderableWidget(Button.builder(
+                Component.translatable("screen.advancedrocketrycommunity.rocket.board"),
+                button -> send(RocketFlightAction.BOARD)
+        ).bounds(leftPos + 22, topPos + 128, 98, 20).build());
+        leaveButton = addRenderableWidget(Button.builder(
+                Component.translatable("screen.advancedrocketrycommunity.rocket.leave"),
+                button -> send(RocketFlightAction.LEAVE)
+        ).bounds(leftPos + 128, topPos + 128, 98, 20).build());
         updateButtons();
     }
 
@@ -93,6 +103,13 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         launchButton.active = menu.canLaunch() && selected != null && selected != current;
         cancelButton.visible = countdown;
         cancelButton.active = countdown;
+        boolean stationary = menu.state() == RocketFlightState.ASSEMBLED
+                || menu.state() == RocketFlightState.FUELED
+                || menu.state() == RocketFlightState.LANDED;
+        boardButton.visible = stationary;
+        boardButton.active = stationary;
+        leaveButton.visible = stationary;
+        leaveButton.active = stationary;
     }
 
     private Component choiceLabel(RocketDestination destination) {
@@ -171,7 +188,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
                             menu.countdownRemaining()
                     ),
                     imageWidth / 2,
-                    116,
+                    120,
                     ACCENT
             );
         } else {

@@ -6,6 +6,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
@@ -19,6 +21,7 @@ import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -32,6 +35,7 @@ public final class RocketCommands {
             "advancedrocketrycommunity.releaseTestHooks";
     private static final String ASSEMBLER_ARGUMENT = "assembler";
     private static final String ROCKET_ARGUMENT = "rocket";
+    private static final String TRANSFER_ARGUMENT = "transfer";
     private static final UUID SERVER_CONSOLE_OWNER =
             UUID.fromString("00000000-0000-0000-0000-000000000005");
 
@@ -52,7 +56,13 @@ public final class RocketCommands {
                                 .executes(context -> queue(context, true))))
                 .then(Commands.literal("status")
                         .then(Commands.argument(ASSEMBLER_ARGUMENT, BlockPosArgument.blockPos())
-                                .executes(this::status)));
+                                .executes(this::status)))
+                .then(Commands.literal("inspect")
+                        .then(Commands.argument(TRANSFER_ARGUMENT, UuidArgument.uuid())
+                                .executes(this::inspectTransfer)))
+                .then(Commands.literal("recover")
+                        .then(Commands.argument(TRANSFER_ARGUMENT, UuidArgument.uuid())
+                                .executes(this::recoverTransfer)));
         if (Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             root.then(Commands.literal("release-test")
                     .then(Commands.literal("stage-recovery")
@@ -111,6 +121,58 @@ public final class RocketCommands {
                 false
         );
         return report.code() == RocketValidationCode.SUCCESS ? 1 : 0;
+    }
+
+    private int inspectTransfer(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        UUID transferId = UuidArgument.getUuid(context, TRANSFER_ARGUMENT);
+        RocketTransferInspection inspection = rockets.inspectTransfer(
+                source.getServer(),
+                transferId
+        ).orElse(null);
+        if (inspection == null) {
+            source.sendFailure(Component.literal(
+                    "No operational rocket transfer journal entry " + transferId
+            ));
+            return 0;
+        }
+        source.sendSuccess(
+                () -> Component.literal(
+                        "Transfer " + inspection.transferId()
+                                + " logical=" + inspection.logicalRocketId()
+                                + " phase=" + inspection.phase()
+                                + " source=" + inspection.sourceDimension()
+                                + " source_matches=" + inspection.sourceMatches()
+                                + " destination=" + inspection.destinationDimension()
+                                + " destination_matches=" + inspection.destinationMatches()
+                                + " fuel=" + inspection.fuelBefore() + "->" + inspection.fuelAfter()
+                                + " passengers=" + inspection.passengerCount()
+                                + " checksum=" + inspection.checksum()
+                ),
+                false
+        );
+        return 1;
+    }
+
+    private int recoverTransfer(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        UUID transferId = UuidArgument.getUuid(context, TRANSFER_ARGUMENT);
+        RocketTransferRecoveryReport report = rockets.recoverTransfer(source.getServer(), transferId);
+        Component result = Component.literal(
+                "Transfer recovery " + report.status()
+                        + " transfer=" + report.transferId()
+                        + " phase=" + report.phase().map(Enum::name).orElse("none")
+                        + " action=" + report.action().map(Enum::name).orElse("none")
+                        + " source_matches=" + report.sourceMatches()
+                        + " destination_matches=" + report.destinationMatches()
+        );
+        if (report.status() == RocketTransferRecoveryReport.Status.RECOVERED
+                || report.status() == RocketTransferRecoveryReport.Status.WAITING_FOR_PASSENGERS) {
+            source.sendSuccess(() -> result, true);
+            return 1;
+        }
+        source.sendFailure(result);
+        return 0;
     }
 
     /**

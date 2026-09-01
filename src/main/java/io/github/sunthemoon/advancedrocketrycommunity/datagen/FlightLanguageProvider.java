@@ -48,6 +48,8 @@ public final class FlightLanguageProvider extends LanguageProvider {
                 chinese ? "已登记乘客：%s" : "MANIFESTED PASSENGERS: %s");
         add("screen.advancedrocketrycommunity.rocket.launch", chinese ? "确认发射" : "CONFIRM LAUNCH");
         add("screen.advancedrocketrycommunity.rocket.cancel", chinese ? "取消倒计时" : "CANCEL COUNTDOWN");
+        add("screen.advancedrocketrycommunity.rocket.board", chinese ? "登乘" : "BOARD");
+        add("screen.advancedrocketrycommunity.rocket.leave", chinese ? "离开座位" : "LEAVE SEAT");
         for (FuelLoaderStatus status : FuelLoaderStatus.values()) {
             add(
                     "status.advancedrocketrycommunity.fuel_loader." + status.diagnosticKey(),
@@ -116,8 +118,16 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case UNAUTHORIZED -> "Only the owner or an operator may control this rocket";
             case INVALID_STATE -> "Rocket state does not allow that action";
             case INVALID_DESTINATION -> "Destination is not valid for this rocket";
+            case RATE_LIMITED -> "Flight requests are arriving too quickly";
             case REQUEST_REPLAYED -> "Duplicate flight request rejected";
             case REQUEST_LEDGER_FULL -> "Flight request queue is full";
+            case TRANSFER_JOURNAL_BLOCKED -> "Transfer journal is unavailable or uses unsupported data";
+            case TRANSFER_LIMIT_REACHED -> "The server transfer limit is currently reached";
+            case LANDING_PAD_UNAVAILABLE -> "All fixed destination pads are occupied or unsafe";
+            case TRANSFER_PREPARE_FAILED -> "The server could not prepare a durable transfer";
+            case NO_SEAT_AVAILABLE -> "No rocket seat is available";
+            case ALREADY_BOARDED -> "You are already assigned to this rocket";
+            case NOT_BOARDED -> "You are not assigned to this rocket";
             case MISSING_FLIGHT_COMPONENTS -> "Rocket is missing a motor, seat, or guidance computer";
             case INSUFFICIENT_THRUST -> "Rocket thrust is below its mass";
             case FUEL_STATE_MISMATCH -> "Rocket fuel state does not match its structure";
@@ -135,8 +145,16 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case UNAUTHORIZED -> "只有所有者或管理员可以控制这枚火箭";
             case INVALID_STATE -> "火箭当前状态不允许该操作";
             case INVALID_DESTINATION -> "该目的地不适用于这枚火箭";
+            case RATE_LIMITED -> "飞行请求过于频繁";
             case REQUEST_REPLAYED -> "已拒绝重复飞行请求";
             case REQUEST_LEDGER_FULL -> "飞行请求队列已满";
+            case TRANSFER_JOURNAL_BLOCKED -> "转移日志不可用或使用了不支持的数据";
+            case TRANSFER_LIMIT_REACHED -> "服务器当前已达到转移数量上限";
+            case LANDING_PAD_UNAVAILABLE -> "所有固定着陆点均被占用或不安全";
+            case TRANSFER_PREPARE_FAILED -> "服务器无法准备持久化转移";
+            case NO_SEAT_AVAILABLE -> "火箭没有可用座位";
+            case ALREADY_BOARDED -> "用户已登记在这枚火箭上";
+            case NOT_BOARDED -> "用户未登记在这枚火箭上";
             case MISSING_FLIGHT_COMPONENTS -> "火箭缺少发动机、座椅或导航计算机";
             case INSUFFICIENT_THRUST -> "火箭推力低于质量";
             case FUEL_STATE_MISMATCH -> "火箭燃料状态与结构不匹配";
