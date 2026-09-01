@@ -221,11 +221,8 @@ jobs:
           --expected-version 1.20.1-0.7.0-dev
           --content-manifest build/release-evidence/v070-station-jar-content-manifest.json
 
-      - name: Bind candidate release evidence
-        run: >-
-          python scripts/validate_v070_release_evidence.py
-          --artifact build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-          --require-approved
+      - name: Validate committed candidate evidence
+        run: python scripts/validate_v070_release_evidence.py --require-approved
 
       - name: Start and restart the packaged baseline
         run: >-

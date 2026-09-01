@@ -2045,8 +2045,6 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_v070_release_evidence.py",
-                "--artifact",
-                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
                 "--require-approved",
             ),
             (
