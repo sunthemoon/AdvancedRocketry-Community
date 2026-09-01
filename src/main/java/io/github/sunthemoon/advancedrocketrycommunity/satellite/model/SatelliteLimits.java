@@ -23,6 +23,7 @@ public final class SatelliteLimits {
     public static final int MAX_QUEUE_INSPECTIONS_PER_PASS = 64;
     public static final int SCHEDULER_INTERVAL_TICKS = 20;
     public static final int MAX_REGISTRY_NBT_BYTES = 4 * 1024 * 1024;
+    public static final int MAX_RECORD_NBT_BYTES = 4 * 1024;
     public static final int MAX_RESEARCH_BALANCE = 1_000_000;
     public static final long MAX_LIFETIME_RESEARCH = 1_000_000_000L;
 
