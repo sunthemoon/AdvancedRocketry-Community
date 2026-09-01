@@ -30,4 +30,3 @@ public final class StationRecipeProvider extends RecipeProvider {
                 .save(output);
     }
 }
-

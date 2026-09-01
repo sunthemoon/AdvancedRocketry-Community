@@ -8,4 +8,3 @@ public interface StationOperationService {
 
     StationCreationResult createForPlayer(ServerPlayer player);
 }
-

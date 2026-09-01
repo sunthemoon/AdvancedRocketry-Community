@@ -18,4 +18,3 @@ public record StationPlatformResult(boolean success, int inspected, int changed,
         return new StationPlatformResult(false, inspected, changed, chunksLoaded, detail);
     }
 }
-

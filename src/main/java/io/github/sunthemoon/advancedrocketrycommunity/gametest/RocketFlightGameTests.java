@@ -34,6 +34,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketR
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionJournal;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.UUID;
@@ -74,6 +78,111 @@ public final class RocketFlightGameTests {
     );
 
     private RocketFlightGameTests() {
+    }
+
+    @GameTest(template = TEMPLATE, batch = "station_flight", timeoutTicks = 800)
+    public static void earthStationEarthUsesApprovedPadAndPreservesNeighborSpace(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel();
+        ServerLevel space = earth.getServer().getLevel(CelestialIds.SPACE_LEVEL);
+        helper.assertTrue(space != null, "Space Level is unavailable");
+        clearTransferJournal(earth);
+        helper.runAfterDelay(40, () -> {
+            UUID owner = UUID.randomUUID();
+            StationPlatformGenerator platforms = new StationPlatformGenerator();
+            StationState station = new StationCreationService(platforms).create(
+                    earth.getServer(),
+                    owner,
+                    "Flight Test Station",
+                    CelestialIds.EARTH_ID,
+                    false
+            ).station().orElseThrow();
+            helper.assertTrue(platforms.intact(space, station.cell()),
+                    "Station platform was not generated exactly");
+
+            RocketEntity outbound = assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner);
+            UUID logical = outbound.assemblyTransactionId().orElseThrow();
+            long initialFuel = outbound.flightData().orElseThrow().fuel().amount();
+            RocketFlightRequestResult outward = RocketRuntime.requestAdminStationFlight(
+                    outbound,
+                    station.stationId(),
+                    UUID.randomUUID()
+            );
+            helper.assertTrue(outward.success(), "Earth-to-station launch failed: " + outward.code());
+
+            helper.runAfterDelay(270, () -> {
+                RocketEntity landedSpace = findLogicalRocket(space, logical);
+                helper.assertTrue(landedSpace != null, "Station transfer did not create a Space rocket");
+                helper.assertTrue(
+                        landedSpace.flightData().orElseThrow().state() == RocketFlightState.LANDED,
+                        "Station rocket did not land"
+                );
+                helper.assertTrue(
+                        station.region().contains(
+                                landedSpace.blockPosition().getX(),
+                                landedSpace.blockPosition().getZ()
+                        ),
+                        "Station rocket landed outside its committed region"
+                );
+                helper.assertTrue(
+                        landedSpace.snapshot().orElseThrow().sourceOrigin().y()
+                                + landedSpace.snapshot().orElseThrow().bounds().minimum().y()
+                                == station.landingPad().y(),
+                        "Station rocket did not use the approved landing elevation"
+                );
+                helper.assertTrue(platforms.intact(space, station.cell()),
+                        "Rocket landing changed the station platform");
+                helper.assertTrue(
+                        landedSpace.flightData().orElseThrow().fuel().amount()
+                                == initialFuel - outward.requiredFuel(),
+                        "Station outbound fuel debit changed"
+                );
+
+                var remaining = landedSpace.flightData().orElseThrow().fuel();
+                landedSpace.updateFlightData(landedSpace.flightData().orElseThrow().withFuel(
+                        remaining,
+                        space.getGameTime()
+                ));
+                RocketFlightRequestResult returning = RocketRuntime.requestAdminFlight(
+                        landedSpace,
+                        RocketDestination.EARTH,
+                        UUID.randomUUID()
+                );
+                helper.assertTrue(returning.success(),
+                        "Station-to-Earth launch failed: " + returning.code());
+
+                helper.runAfterDelay(270, () -> {
+                    RocketEntity landedEarth = findLogicalRocket(earth, logical);
+                    helper.assertTrue(landedEarth != null, "Station return did not create an Earth rocket");
+                    helper.assertTrue(
+                            landedEarth.flightData().orElseThrow().state() == RocketFlightState.LANDED,
+                            "Station return rocket did not land"
+                    );
+                    helper.assertTrue(findLogicalRocket(space, logical) == null,
+                            "Space source survived committed return");
+                    RocketStructureSnapshot returned = landedEarth.snapshot().orElseThrow();
+                    RocketTransactionResult cleanup = new RocketDisassemblyTransaction(
+                            new ServerLevelRocketTransactionWorld(
+                                    earth,
+                                    RocketBlockEntityAdapters.defaults(),
+                                    owner
+                            ),
+                            new RocketRegionLockManager(),
+                            new RocketOperationLedger(),
+                            RocketTransactionJournal.NO_OP
+                    ).execute(UUID.randomUUID(), landedEarth.getUUID(), returned);
+                    helper.assertTrue(cleanup.success(), "Station-return rocket cleanup failed");
+                    clearSnapshotBlocks(earth, returned);
+
+                    StationRegistrySavedData data = StationRegistrySavedData.get(earth.getServer());
+                    helper.assertTrue(data.delete(station.stationId()).isPresent(),
+                            "Station cleanup did not release its committed cell");
+                    platforms.removeTemplate(space, station.cell());
+                    data.flush(earth.getServer());
+                    clearTransferJournal(earth);
+                    helper.succeed();
+                });
+            });
+        });
     }
 
     @GameTest(template = TEMPLATE, batch = "flight", timeoutTicks = 1_000)
@@ -295,10 +404,79 @@ public final class RocketFlightGameTests {
                     helper,
                     new BlockPos(3, 2, 3)
             );
+            // Drain asynchronous entity-chunk reads so the recovery matrix observes a persisted,
+            // restart-equivalent boundary instead of racing the accelerated GameTest clock.
+            earth.getServer().saveEverything(false, true, true);
             RocketTransferRecoveryReport sourceOnlyReport = recoveryManager.recoverTransfer(
                     earth.getServer(),
                     sourceOnly.transferId()
             );
+            if (sourceOnlyReport.status() == RocketTransferRecoveryReport.Status.RETRY_LATER) {
+                retrySourceRecovery(
+                        helper,
+                        earth,
+                        moon,
+                        recoveryManager,
+                        sourceOnly,
+                        1
+                );
+                return;
+            }
+            continueRecoveryMatrix(
+                    helper,
+                    earth,
+                    moon,
+                    recoveryManager,
+                    sourceOnly,
+                    sourceOnlyReport
+            );
+        });
+    }
+
+    private static void retrySourceRecovery(
+            GameTestHelper helper,
+            ServerLevel earth,
+            ServerLevel moon,
+            RocketManager recoveryManager,
+            RocketTransferRecord sourceOnly,
+            int attempt
+    ) {
+        helper.runAfterDelay(1, () -> {
+            RocketTransferRecoveryReport report = recoveryManager.recoverTransfer(
+                    earth.getServer(),
+                    sourceOnly.transferId()
+            );
+            if (report.status() == RocketTransferRecoveryReport.Status.RETRY_LATER
+                    && attempt < 20) {
+                retrySourceRecovery(
+                        helper,
+                        earth,
+                        moon,
+                        recoveryManager,
+                        sourceOnly,
+                        attempt + 1
+                );
+                return;
+            }
+            continueRecoveryMatrix(
+                    helper,
+                    earth,
+                    moon,
+                    recoveryManager,
+                    sourceOnly,
+                    report
+            );
+        });
+    }
+
+    private static void continueRecoveryMatrix(
+            GameTestHelper helper,
+            ServerLevel earth,
+            ServerLevel moon,
+            RocketManager recoveryManager,
+            RocketTransferRecord sourceOnly,
+            RocketTransferRecoveryReport sourceOnlyReport
+    ) {
             assertRecovery(
                     helper,
                     sourceOnlyReport,
@@ -380,7 +558,6 @@ public final class RocketFlightGameTests {
 
             clearRecoveryScenario(earth, moon);
             helper.succeed();
-        });
     }
 
     private static RocketTransferRecord prepareRecoveryScenario(

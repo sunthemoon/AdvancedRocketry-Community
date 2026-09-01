@@ -34,4 +34,3 @@ public record StationCreationResult(StationCreationCode code, StationState value
         return Optional.ofNullable(value);
     }
 }
-

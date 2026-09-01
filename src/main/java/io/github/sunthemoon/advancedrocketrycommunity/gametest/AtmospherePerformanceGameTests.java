@@ -63,6 +63,7 @@ public final class AtmospherePerformanceGameTests {
         int[] warmupTicks = {0};
         int[] peakInspections = {0};
         long[] startingInspections = {-1L};
+        long[] startingGameTime = {-1L};
         long startedAt = System.nanoTime();
         helper.runAfterDelay(1, () -> placementReady[0] = true);
 
@@ -122,12 +123,23 @@ public final class AtmospherePerformanceGameTests {
                         startingOxygen[index] = vents.get(index).oxygenUnits();
                     }
                     startingInspections[0] = metrics.totalInspections();
+                    startingGameTime[0] = moon.getGameTime();
                     measuring[0] = true;
                     return;
                 }
 
-                completedActiveTicks[0]++;
-                if (completedActiveTicks[0] < 6_000) {
+                helper.assertTrue(
+                        vents.stream().allMatch(vent -> vent.status() == VentOperatingStatus.ACTIVE),
+                        "A Vent left ACTIVE during the five-minute measurement: statuses="
+                                + vents.stream().map(OxygenVentBlockEntity::status).toList()
+                );
+                long elapsedGameTicks = moon.getGameTime() - startingGameTime[0];
+                helper.assertTrue(elapsedGameTicks >= 0L && elapsedGameTicks <= 6_001L,
+                        "Moon game time moved outside the bounded five-minute measurement");
+                completedActiveTicks[0] = Math.toIntExact(elapsedGameTicks);
+                // GameTest callbacks observe state before the ServerTick END supply pass. Waiting
+                // one boundary tick measures exactly 6,000 completed authoritative supply ticks.
+                if (elapsedGameTicks < 6_001L) {
                     return;
                 }
 

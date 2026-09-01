@@ -145,4 +145,3 @@ public final class StationPlatformGenerator {
         return Blocks.SMOOTH_STONE.defaultBlockState();
     }
 }
-

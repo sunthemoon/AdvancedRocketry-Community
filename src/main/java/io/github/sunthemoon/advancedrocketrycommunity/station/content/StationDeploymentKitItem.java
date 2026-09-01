@@ -47,4 +47,3 @@ public final class StationDeploymentKitItem extends Item {
         return InteractionResultHolder.consume(stack);
     }
 }
-

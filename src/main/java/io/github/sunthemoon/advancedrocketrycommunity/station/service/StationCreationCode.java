@@ -18,4 +18,3 @@ public enum StationCreationCode {
                 + name().toLowerCase(Locale.ROOT);
     }
 }
-

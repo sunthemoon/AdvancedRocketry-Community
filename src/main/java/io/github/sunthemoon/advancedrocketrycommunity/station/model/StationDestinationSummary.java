@@ -14,4 +14,3 @@ public record StationDestinationSummary(UUID stationId, String name) {
         return new StationDestinationSummary(state.stationId(), state.name());
     }
 }
-

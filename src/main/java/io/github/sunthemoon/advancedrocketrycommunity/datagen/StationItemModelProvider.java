@@ -17,4 +17,3 @@ public final class StationItemModelProvider extends ItemModelProvider {
                 .texture("layer0", mcLoc("item/ender_eye"));
     }
 }
-
