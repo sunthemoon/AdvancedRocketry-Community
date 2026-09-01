@@ -1,0 +1,16 @@
+{
+  "block.advancedrocketrycommunity.fuel_loader": "Rocket Fuel Loader",
+  "item.advancedrocketrycommunity.rocket_fuel_cell": "Rocket Fuel Cell",
+  "message.advancedrocketrycommunity.fuel_loader.canister_returned": "Returned the empty canister",
+  "message.advancedrocketrycommunity.fuel_loader.cell_inserted": "Inserted one Rocket Fuel Cell",
+  "message.advancedrocketrycommunity.fuel_loader.cell_rejected": "The fuel cell cannot be inserted",
+  "message.advancedrocketrycommunity.fuel_loader.status": "Fuel Loader: %s; buffered fuel %s",
+  "message.advancedrocketrycommunity.fuel_loader.unauthorized": "You are not authorized to use this Fuel Loader",
+  "status.advancedrocketrycommunity.fuel_loader.idle": "idle",
+  "status.advancedrocketrycommunity.fuel_loader.invalid_data": "invalid saved data",
+  "status.advancedrocketrycommunity.fuel_loader.output_ready": "empty canister ready",
+  "status.advancedrocketrycommunity.fuel_loader.transferring": "transferring",
+  "status.advancedrocketrycommunity.fuel_loader.unclaimed": "unclaimed",
+  "status.advancedrocketrycommunity.fuel_loader.unsupported_data": "unsupported saved data",
+  "status.advancedrocketrycommunity.fuel_loader.waiting_for_rocket": "waiting for an eligible nearby rocket"
+}

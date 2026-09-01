@@ -1,0 +1,16 @@
+{
+  "block.advancedrocketrycommunity.fuel_loader": "火箭燃料装载机",
+  "item.advancedrocketrycommunity.rocket_fuel_cell": "火箭燃料单元",
+  "message.advancedrocketrycommunity.fuel_loader.canister_returned": "已取回空罐",
+  "message.advancedrocketrycommunity.fuel_loader.cell_inserted": "已插入一个火箭燃料单元",
+  "message.advancedrocketrycommunity.fuel_loader.cell_rejected": "燃料单元无法插入",
+  "message.advancedrocketrycommunity.fuel_loader.status": "燃料装载机：%s；缓冲燃料 %s",
+  "message.advancedrocketrycommunity.fuel_loader.unauthorized": "用户无权操作这台燃料装载机",
+  "status.advancedrocketrycommunity.fuel_loader.idle": "空闲",
+  "status.advancedrocketrycommunity.fuel_loader.invalid_data": "无效的存档数据",
+  "status.advancedrocketrycommunity.fuel_loader.output_ready": "空罐可取回",
+  "status.advancedrocketrycommunity.fuel_loader.transferring": "正在加注",
+  "status.advancedrocketrycommunity.fuel_loader.unclaimed": "未认领",
+  "status.advancedrocketrycommunity.fuel_loader.unsupported_data": "不支持的存档数据",
+  "status.advancedrocketrycommunity.fuel_loader.waiting_for_rocket": "等待符合条件的附近火箭"
+}

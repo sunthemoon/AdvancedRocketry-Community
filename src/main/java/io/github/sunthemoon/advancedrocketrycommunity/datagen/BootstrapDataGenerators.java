@@ -24,20 +24,12 @@ public final class BootstrapDataGenerators {
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
         generator.addProvider(
                 event.includeClient(),
-                new RocketBlockStateProvider(output, existingFiles)
+                new FlightBlockStateProvider(output, existingFiles)
         );
-        generator.addProvider(event.includeClient(), new RocketLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new RocketLanguageProvider(output, "zh_cn"));
-        generator.addProvider(event.includeServer(), new RocketRecipeProvider(output));
-        generator.addProvider(event.includeServer(), RocketLootTableProvider.create(output));
-        generator.addProvider(event.includeServer(), new RocketGameTestStructureProvider(output));
-        generator.addProvider(
-                event.includeServer(),
-                new RocketBlockTagsProvider(
-                        output,
-                        event.getLookupProvider(),
-                        existingFiles
-                )
-        );
+        generator.addProvider(event.includeClient(), new FlightItemModelProvider(output, existingFiles));
+        generator.addProvider(event.includeClient(), new FlightLanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new FlightLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeServer(), new FlightRecipeProvider(output));
+        generator.addProvider(event.includeServer(), FlightLootTableProvider.create(output));
     }
 }
