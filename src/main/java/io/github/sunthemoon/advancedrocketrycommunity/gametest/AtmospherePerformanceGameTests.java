@@ -36,7 +36,7 @@ public final class AtmospherePerformanceGameTests {
     private AtmospherePerformanceGameTests() {
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 6_100)
+    @GameTest(template = TEMPLATE, batch = "atmosphere_performance", timeoutTicks = 6_100)
     public static void sixteenVentsRespectBudgetsForFiveMinutes(GameTestHelper helper) {
         ServerLevel moon = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable for the 16-Vent run");
@@ -58,6 +58,7 @@ public final class AtmospherePerformanceGameTests {
         int[] completedActiveTicks = {0};
         int[] startingOxygen = new int[ventPositions.size()];
         boolean[] measuring = {false};
+        int[] warmupTicks = {0};
         int[] peakInspections = {0};
         long[] startingInspections = {-1L};
         long startedAt = System.nanoTime();
@@ -78,6 +79,22 @@ public final class AtmospherePerformanceGameTests {
                 );
 
                 if (!measuring[0]) {
+                    warmupTicks[0]++;
+                    if (warmupTicks[0] == 90) {
+                        long activeVents = vents.stream()
+                                .filter(vent -> vent.status() == VentOperatingStatus.ACTIVE)
+                                .count();
+                        AdvancedRocketryCommunity.LOGGER.info(
+                                "ARCE_ATMOSPHERE_PERF_WARMUP ticks={} active_vents={} tracked={} pending={} "
+                                        + "inspections={} dirty={}",
+                                warmupTicks[0],
+                                activeVents,
+                                metrics.trackedVents(),
+                                metrics.pendingScanTasks(),
+                                metrics.lastTickInspections(),
+                                metrics.dirtyPositions()
+                        );
+                    }
                     if (vents.stream().anyMatch(vent -> vent.status() != VentOperatingStatus.ACTIVE)) {
                         return;
                     }
