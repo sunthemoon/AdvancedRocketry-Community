@@ -1821,6 +1821,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
 
     jobs = parse_workflow_jobs(text)
     baseline = jobs.get("baseline")
+    station = jobs.get("station-acceptance")
     latest = jobs.get("latest-compatibility")
     if baseline is None or not baseline.blocking:
         errors.append("enabled blocking baseline job")
@@ -1978,21 +1979,106 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--expected-version",
                 "1.20.1-0.7.0-dev",
             ),
+        )
+        for command in baseline_commands:
+            if not _job_has_command(baseline, command):
+                errors.append("baseline enabled run command " + " ".join(command))
+
+    if station is None or not station.blocking:
+        errors.append("enabled blocking station-acceptance job")
+    else:
+        if station.env != {
+            "REVIEW_COMMIT": "${{ github.event.pull_request.head.sha || github.sha }}"
+        }:
+            errors.append(
+                "station-acceptance exact immutable review-commit job environment"
+            )
+        if station.fields.get("timeout-minutes") != "20":
+            errors.append("station-acceptance exact 20-minute job timeout")
+        if not _job_has_exact_action_contract(
+            station,
+            "actions/checkout@v7",
+            {
+                "fetch-depth": "0",
+                "persist-credentials": "false",
+                "ref": "${{ env.REVIEW_COMMIT }}",
+            },
+        ):
+            errors.append("station-acceptance exact head-bound checkout contract")
+        if not _job_has_exact_action_contract(
+            station,
+            "actions/setup-python@v7",
+            {"python-version": "3.12"},
+        ):
+            errors.append("station-acceptance exact Python action contract")
+        for action in (
+            "actions/setup-java@v6",
+            "gradle/actions/setup-gradle@v6",
+        ):
+            if not _job_has_action(station, action):
+                errors.append(f"station-acceptance enabled action {action}")
+        upload_steps = [
+            step
+            for step in _required_steps(station)
+            if step.fields.get("uses", "").startswith("actions/upload-artifact@")
+        ]
+        if (
+            len(upload_steps) != 1
+            or upload_steps[0].fields.get("uses") != "actions/upload-artifact@v7"
+            or upload_steps[0].fields.get("with.name")
+            != "v070-station-47.4.10-${{ env.REVIEW_COMMIT }}"
+            or upload_steps[0].fields.get("with.if-no-files-found") != "error"
+        ):
+            errors.append("station-acceptance exact head-bound artifact upload")
+        station_commands = (
+            ("chmod", "+x", "./gradlew"),
+            ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace"),
+            (
+                "python",
+                "scripts/validate_build_artifact.py",
+                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "--expected-version",
+                "1.20.1-0.7.0-dev",
+                "--content-manifest",
+                "build/release-evidence/v070-station-jar-content-manifest.json",
+            ),
+            (
+                "python",
+                "scripts/validate_v070_release_evidence.py",
+                "--artifact",
+                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "--require-approved",
+            ),
+            (
+                "python",
+                "scripts/run_dedicated_server_smoke.py",
+                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "--expected-mod-version",
+                "1.20.1-0.7.0-dev",
+                "--session-dir",
+                "build/v070-dedicated-server-smoke/session",
+                "--evidence-dir",
+                "build/v070-dedicated-server-smoke/evidence",
+                "--port",
+                "25595",
+            ),
             (
                 "python",
                 "scripts/run_v070_station_server_smoke.py",
-                "build/dedicated-server-smoke/session",
+                "build/v070-dedicated-server-smoke/session",
                 "--baseline-summary",
-                "build/dedicated-server-smoke/evidence/summary.json",
+                "build/v070-dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
                 "build/v070-station-server-smoke/evidence",
                 "--expected-version",
                 "1.20.1-0.7.0-dev",
             ),
         )
-        for command in baseline_commands:
-            if not _job_has_command(baseline, command):
-                errors.append("baseline enabled run command " + " ".join(command))
+        for command in station_commands:
+            if not _job_has_command(station, command):
+                errors.append(
+                    "station-acceptance enabled run command " + " ".join(command)
+                )
 
     if latest is None or not latest.enabled:
         errors.append("enabled latest-compatibility job")

@@ -1994,6 +1994,16 @@ class WorkflowStructureTests(unittest.TestCase):
                 "      REVIEW_COMMIT: ${{ github.sha }}\n",
                 "latest exact immutable review-commit and Forge 47.4.23 job environment",
             ),
+            (
+                "station-acceptance",
+                "",
+                "station-acceptance exact immutable review-commit job environment",
+            ),
+            (
+                "station-acceptance",
+                "      REVIEW_COMMIT: ${{ github.sha }}\n",
+                "station-acceptance exact immutable review-commit job environment",
+            ),
         )
         for job_id, replacement, expected in cases:
             with self.subTest(job_id=job_id, replacement=replacement):
@@ -2026,6 +2036,16 @@ class WorkflowStructureTests(unittest.TestCase):
                 "          ref: ${{ github.sha }}\n",
                 "latest exact head-bound checkout action contract",
             ),
+            (
+                "station-acceptance",
+                "",
+                "station-acceptance exact head-bound checkout contract",
+            ),
+            (
+                "station-acceptance",
+                "          ref: ${{ github.sha }}\n",
+                "station-acceptance exact head-bound checkout contract",
+            ),
         )
         for job_id, replacement, expected in cases:
             with self.subTest(job_id=job_id, replacement=replacement):
@@ -2036,21 +2056,41 @@ class WorkflowStructureTests(unittest.TestCase):
                 self.assertIn(expected, errors)
 
     def test_forge_artifact_identity_is_exact_head_bound(self) -> None:
-        original = "          name: forge-47.4.10-${{ env.REVIEW_COMMIT }}\n"
-        for replacement in (
-            "",
-            "          name: forge-47.4.10-${{ github.sha }}\n",
-        ):
-            with self.subTest(replacement=replacement):
-                tampered = self.mutate_forge_job(
-                    "baseline", original, replacement
-                )
+        cases = (
+            (
+                "baseline",
+                "          name: forge-47.4.10-${{ env.REVIEW_COMMIT }}\n",
+                "          name: forge-47.4.10-${{ github.sha }}\n",
+                "baseline exact head-bound artifact upload identity",
+            ),
+            (
+                "station-acceptance",
+                "          name: v070-station-47.4.10-${{ env.REVIEW_COMMIT }}\n",
+                "          name: v070-station-47.4.10-${{ github.sha }}\n",
+                "station-acceptance exact head-bound artifact upload",
+            ),
+        )
+        for job_id, original, changed, expected in cases:
+            for replacement in ("", changed):
+                with self.subTest(job_id=job_id, replacement=replacement):
+                    tampered = self.mutate_forge_job(
+                        job_id, original, replacement
+                    )
 
-                errors = validate_forge_workflow_text(tampered)
+                    errors = validate_forge_workflow_text(tampered)
 
-                self.assertIn(
-                    "baseline exact head-bound artifact upload identity", errors
-                )
+                    self.assertIn(expected, errors)
+
+        tampered = self.mutate_forge_job(
+            "station-acceptance",
+            "    timeout-minutes: 20\n",
+            "    timeout-minutes: 45\n",
+        )
+
+        self.assertIn(
+            "station-acceptance exact 20-minute job timeout",
+            validate_forge_workflow_text(tampered),
+        )
 
     def test_g0_review_packet_sequence_requires_python_isolation(self) -> None:
         marker = "      - name: Enforce governance baseline"
@@ -2321,15 +2361,29 @@ class WorkflowStructureTests(unittest.TestCase):
         self.assertIn("enabled blocking validate-repository-docs job", errors)
 
     def test_truthy_continue_on_error_rejects_baseline_job(self) -> None:
-        tampered = self.forge_workflow.replace(
-            "    name: Forge 47.4.10 baseline",
-            "    name: Forge 47.4.10 baseline\n    continue-on-error: 1",
-            1,
+        cases = (
+            (
+                "baseline",
+                "    name: Forge 47.4.10 baseline",
+                "enabled blocking baseline job",
+            ),
+            (
+                "station-acceptance",
+                "    name: v0.7.0 packaged station gate",
+                "enabled blocking station-acceptance job",
+            ),
         )
+        for job_id, marker, expected in cases:
+            with self.subTest(job_id=job_id):
+                tampered = self.mutate_forge_job(
+                    job_id,
+                    marker,
+                    marker + "\n    continue-on-error: 1",
+                )
 
-        errors = validate_forge_workflow_text(tampered)
+                errors = validate_forge_workflow_text(tampered)
 
-        self.assertIn("enabled blocking baseline job", errors)
+                self.assertIn(expected, errors)
 
     def test_truthy_continue_on_error_rejects_baseline_step(self) -> None:
         tampered = self.forge_workflow.replace(

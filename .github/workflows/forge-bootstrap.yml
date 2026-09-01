@@ -161,14 +161,6 @@ jobs:
           --evidence-dir build/v060-flight-server-smoke/evidence
           --expected-version 1.20.1-0.7.0-dev
 
-      - name: Run packaged station allocation and flight smoke test
-        run: >-
-          python scripts/run_v070_station_server_smoke.py
-          build/dedicated-server-smoke/session
-          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
-          --evidence-dir build/v070-station-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
-
       - name: Upload baseline JAR and test reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -187,6 +179,81 @@ jobs:
             build/v040-atmosphere-server-smoke/evidence/
             build/v050-rocket-server-smoke/evidence/
             build/v060-flight-server-smoke/evidence/
+
+  station-acceptance:
+    name: v0.7.0 packaged station gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable Gradle wrapper execution
+        run: chmod +x ./gradlew
+
+      - name: Build the exact station candidate
+        run: ./gradlew clean build --no-daemon --stacktrace
+
+      - name: Audit the station candidate
+        run: >-
+          python scripts/validate_build_artifact.py
+          build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
+          --expected-version 1.20.1-0.7.0-dev
+          --content-manifest build/release-evidence/v070-station-jar-content-manifest.json
+
+      - name: Bind candidate release evidence
+        run: >-
+          python scripts/validate_v070_release_evidence.py
+          --artifact build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
+          --require-approved
+
+      - name: Start and restart the packaged baseline
+        run: >-
+          python scripts/run_dedicated_server_smoke.py
+          build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
+          --expected-mod-version 1.20.1-0.7.0-dev
+          --session-dir build/v070-dedicated-server-smoke/session
+          --evidence-dir build/v070-dedicated-server-smoke/evidence
+          --port 25595
+
+      - name: Run packaged station allocation and flight smoke test
+        run: >-
+          python scripts/run_v070_station_server_smoke.py
+          build/v070-dedicated-server-smoke/session
+          --baseline-summary build/v070-dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v070-station-server-smoke/evidence
+          --expected-version 1.20.1-0.7.0-dev
+
+      - name: Upload station gate evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: v070-station-47.4.10-${{ env.REVIEW_COMMIT }}
+          if-no-files-found: error
+          path: |
+            build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
+            build/release-evidence/v070-station-jar-content-manifest.json
+            build/v070-dedicated-server-smoke/evidence/
             build/v070-station-server-smoke/evidence/
 
   latest-compatibility:
