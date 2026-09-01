@@ -1,0 +1,49 @@
+{
+  "artifact_sha256": "4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068",
+  "build": "1.20.1-0.7.0-dev",
+  "clients": [
+    {
+      "clean_shutdown": true,
+      "connected_to_modded_server": true,
+      "full_log_sha256": "1757da08209c0202b70c2cc587cb417d726636879746361aca0056faca6a3fa5",
+      "kind": "forge_userdev",
+      "received_shared_marker": true,
+      "username": "ClientA"
+    },
+    {
+      "clean_shutdown": true,
+      "connected_to_modded_server": true,
+      "full_log_sha256": "451823ebfc14b70b8298aeb054f6eca67fcb53ba7c7f3759abaf6e6ef8146371",
+      "kind": "forge_userdev",
+      "received_shared_marker": true,
+      "username": "PilotB"
+    }
+  ],
+  "completed_at": "2026-09-01T10:06:19.971173+00:00",
+  "java": "17.0.8",
+  "limitations": [
+    "Clients are Forge user-development launches from the exact tested source; the server uses the packaged JAR.",
+    "No screenshot or video is claimed by this G4 record; owner G8/G9 acceptance is separate."
+  ],
+  "observations": {
+    "client_linkage_failures": 0,
+    "same_server_marker_received_by_both": true,
+    "simultaneous_players": 2,
+    "station_count": 2,
+    "station_ids": [
+      "5eda287d-17ad-44cc-95b8-125c8db28f22",
+      "5d3d6921-8ae1-476c-b17f-000396f2d4d6"
+    ],
+    "two_player_station_owners": true
+  },
+  "schema_version": 1,
+  "server": {
+    "clean_save_and_stop": true,
+    "kind": "packaged_forge_server",
+    "loopback_only": true,
+    "port": 25587
+  },
+  "shared_marker": "ARCE_G4_SHARED_STATE players=2 stations=2 artifact=4c049a4e0c2a74f7",
+  "tested_implementation_commit": "e1c2db8ca3e67ae7f92fbbbbd5b6c23a25f7412f",
+  "version": "v0.7.0"
+}

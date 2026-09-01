@@ -24,6 +24,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntim
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.station.command.StationCommands;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -44,6 +47,7 @@ public final class AdvancedRocketryCommunity {
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
     private final RocketManager rocketManager;
+    private final StationManager stationManager;
 
     public AdvancedRocketryCommunity(FMLJavaModLoadingContext context) {
         IEventBus modBus = context.getModEventBus();
@@ -59,6 +63,12 @@ public final class AdvancedRocketryCommunity {
         CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
         atmosphereManager = new AtmosphereManager(environments);
         AtmosphereRuntime.install(atmosphereManager);
+        stationManager = new StationManager();
+        StationRuntime.install(stationManager);
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
+        MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
         rocketManager = new RocketManager();
         RocketRuntime.install(rocketManager);
         new RocketFlightNetwork();
@@ -113,6 +123,8 @@ public final class AdvancedRocketryCommunity {
         playerLifeSupport.clear();
         atmosphereManager.clear();
         rocketManager.clear();
+        stationManager.clear();
+        StationRuntime.clear();
         celestialCatalogs.clear();
     }
 }

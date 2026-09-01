@@ -3,10 +3,11 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 import java.util.Objects;
 import net.minecraft.resources.ResourceLocation;
 
-/** The complete fixed destination set for v0.6; network traffic carries only these bounded ids. */
+/** Bounded destination kinds; station coordinates remain server-owned. */
 public enum RocketDestination {
     EARTH(0, RocketFlightPlanner.EARTH),
-    MOON(1, RocketFlightPlanner.MOON);
+    MOON(1, RocketFlightPlanner.MOON),
+    SPACE_STATION(2, RocketFlightPlanner.SPACE_STATION);
 
     private final int networkId;
     private final RocketTravelProfile profile;
@@ -33,7 +34,10 @@ public enum RocketDestination {
     }
 
     public RocketDestination opposite() {
-        return this == EARTH ? MOON : EARTH;
+        return switch (this) {
+            case EARTH -> MOON;
+            case MOON, SPACE_STATION -> EARTH;
+        };
     }
 
     public static RocketDestination fromNetworkId(int networkId) {
@@ -52,7 +56,7 @@ public enum RocketDestination {
                 return destination;
             }
         }
-        throw new IllegalArgumentException("Unsupported v0.6 rocket dimension " + dimensionId);
+        throw new IllegalArgumentException("Unsupported rocket dimension " + dimensionId);
     }
 
     public static RocketDestination fromBody(ResourceLocation bodyId) {
@@ -62,6 +66,6 @@ public enum RocketDestination {
                 return destination;
             }
         }
-        throw new IllegalArgumentException("Unsupported v0.6 rocket body " + bodyId);
+        throw new IllegalArgumentException("Unsupported rocket body " + bodyId);
     }
 }

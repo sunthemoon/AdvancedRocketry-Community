@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Immutable schema-1 authority record for one Earth/Moon transfer. */
+/** Immutable schema-1 authority record for one bounded inter-Level rocket transfer. */
 public final class RocketTransferRecord {
     private final int schemaVersion;
     private final UUID transferId;

@@ -31,6 +31,37 @@ class RocketFlightIntentPacketTest {
     }
 
     @Test
+    void stationIntentRoundTripsOnlyTheBoundedStationUuid() {
+        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
+        RocketFlightIntentPacket original = new RocketFlightIntentPacket(
+                RocketFlightAction.LAUNCH,
+                7,
+                RocketDestination.SPACE_STATION,
+                stationId,
+                REQUEST
+        );
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        original.encode(buffer);
+
+        assertEquals(original, RocketFlightIntentPacket.decode(buffer));
+        assertEquals(0, buffer.readableBytes());
+        assertThrows(IllegalArgumentException.class, () -> new RocketFlightIntentPacket(
+                RocketFlightAction.LAUNCH,
+                7,
+                RocketDestination.SPACE_STATION,
+                null,
+                REQUEST
+        ));
+        assertThrows(IllegalArgumentException.class, () -> new RocketFlightIntentPacket(
+                RocketFlightAction.LAUNCH,
+                7,
+                RocketDestination.EARTH,
+                stationId,
+                REQUEST
+        ));
+    }
+
+    @Test
     void negativeEntityAndUnknownFixedIdsFailClosed() {
         assertThrows(IllegalArgumentException.class, () -> new RocketFlightIntentPacket(
                 RocketFlightAction.LAUNCH,

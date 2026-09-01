@@ -72,6 +72,10 @@ final class RocketFlightMenuData implements ContainerData {
                 data.fuel(),
                 current.profile(),
                 destination.profile(),
+                destination == RocketDestination.SPACE_STATION
+                        ? data.plan().flatMap(plan -> plan.destinationStation())
+                        .orElse(new UUID(0L, 0L))
+                        : null,
                 new UUID(0L, 0L),
                 Math.max(0L, rocket.level().getGameTime())
         );

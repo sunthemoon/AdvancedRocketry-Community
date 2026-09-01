@@ -1,0 +1,13 @@
+[18:04:15] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.7.0-dev initialized
+[18:04:51] [Server thread/INFO] [minecraft/MinecraftServer]: ClientA joined the game
+[18:05:46] [Server thread/INFO] [minecraft/MinecraftServer]: PilotB joined the game
+[18:05:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=5eda287d-17ad-44cc-95b8-125c8db28f22 owner=90b1fed3-beea-3bfe-a43c-2cefbd5729fc cell=0,0 region=-256,-256,255,255 inspected=289 changed=289 chunks=4 detail=generated
+[18:05:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=5d3d6921-8ae1-476c-b17f-000396f2d4d6 owner=49628be1-0c30-321c-9c62-e4fbf00895a6 cell=1,0 region=768,-256,1279,255 inspected=289 changed=289 chunks=4 detail=generated
+[18:05:47] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] ARCE_G4_SHARED_STATE players=2 stations=2 artifact=4c049a4e0c2a74f7
+[18:06:18] [Server thread/INFO] [minecraft/MinecraftServer]: ClientA left the game
+[18:06:18] [Server thread/INFO] [minecraft/MinecraftServer]: PilotB left the game
+[18:06:18] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_DELETE_BACKUP station=5eda287d-17ad-44cc-95b8-125c8db28f22 owner=90b1fed3-beea-3bfe-a43c-2cefbd5729fc members=[] cell=0,0 region=-256,-256,255,255
+[18:06:18] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_DELETED station=5eda287d-17ad-44cc-95b8-125c8db28f22 actor=00000000-0000-0000-0000-000000000007 inspected=289 removed=289 chunks=4
+[18:06:18] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_DELETE_BACKUP station=5d3d6921-8ae1-476c-b17f-000396f2d4d6 owner=49628be1-0c30-321c-9c62-e4fbf00895a6 members=[] cell=1,0 region=768,-256,1279,255
+[18:06:18] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_DELETED station=5d3d6921-8ae1-476c-b17f-000396f2d4d6 actor=00000000-0000-0000-0000-000000000007 inspected=289 removed=289 chunks=4
+[18:06:18] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game

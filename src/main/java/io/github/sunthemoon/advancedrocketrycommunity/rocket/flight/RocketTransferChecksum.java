@@ -83,6 +83,12 @@ final class RocketTransferChecksum {
             writeString(output, plan.destinationBody().toString());
             writeString(output, plan.sourceDimension().toString());
             writeString(output, plan.destinationDimension().toString());
+            if (plan.schemaVersion() >= 2) {
+                output.writeBoolean(plan.destinationStation().isPresent());
+                if (plan.destinationStation().isPresent()) {
+                    writeUuid(output, plan.destinationStation().orElseThrow());
+                }
+            }
             output.writeLong(plan.requiredFuel());
             output.writeLong(plan.createdAtGameTime());
         }

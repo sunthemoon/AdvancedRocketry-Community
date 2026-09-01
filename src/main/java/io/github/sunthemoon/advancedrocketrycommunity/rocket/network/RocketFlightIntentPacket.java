@@ -15,31 +15,46 @@ public record RocketFlightIntentPacket(
         RocketFlightAction action,
         int rocketEntityId,
         RocketDestination destination,
+        UUID destinationStationId,
         UUID requestId
 ) {
     public RocketFlightIntentPacket {
         Objects.requireNonNull(action, "action");
         Objects.requireNonNull(destination, "destination");
         Objects.requireNonNull(requestId, "requestId");
+        if ((destination == RocketDestination.SPACE_STATION) != (destinationStationId != null)) {
+            throw new IllegalArgumentException("Station destination must bind exactly one station UUID");
+        }
         if (rocketEntityId < 0) {
             throw new IllegalArgumentException("Rocket entity id cannot be negative");
         }
+    }
+
+    public RocketFlightIntentPacket(
+            RocketFlightAction action,
+            int rocketEntityId,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        this(action, rocketEntityId, destination, null, requestId);
     }
 
     public void encode(FriendlyByteBuf buffer) {
         buffer.writeByte(action.networkId());
         buffer.writeVarInt(rocketEntityId);
         buffer.writeByte(destination.networkId());
+        if (destination == RocketDestination.SPACE_STATION) {
+            buffer.writeUUID(destinationStationId);
+        }
         buffer.writeUUID(requestId);
     }
 
     public static RocketFlightIntentPacket decode(FriendlyByteBuf buffer) {
-        return new RocketFlightIntentPacket(
-                RocketFlightAction.fromNetworkId(buffer.readUnsignedByte()),
-                buffer.readVarInt(),
-                RocketDestination.fromNetworkId(buffer.readUnsignedByte()),
-                buffer.readUUID()
-        );
+        RocketFlightAction action = RocketFlightAction.fromNetworkId(buffer.readUnsignedByte());
+        int entityId = buffer.readVarInt();
+        RocketDestination destination = RocketDestination.fromNetworkId(buffer.readUnsignedByte());
+        UUID stationId = destination == RocketDestination.SPACE_STATION ? buffer.readUUID() : null;
+        return new RocketFlightIntentPacket(action, entityId, destination, stationId, buffer.readUUID());
     }
 
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
@@ -51,6 +66,7 @@ public record RocketFlightIntentPacket(
                     rocketEntityId,
                     action,
                     destination,
+                    destinationStationId,
                     requestId
             ));
         }

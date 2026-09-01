@@ -32,6 +32,8 @@ public final class RocketFlightLimits {
     public static final int TRANSIT_TICKS = 20;
     public static final int DESCENT_TICKS = 80;
     public static final int FLIGHT_ALTITUDE_BLOCKS = 48;
+    /** Refreshed only while a transfer is live; expires automatically after landing/recovery. */
+    public static final int FLIGHT_TICKET_TIMEOUT_TICKS = 400;
 
     private RocketFlightLimits() {
     }

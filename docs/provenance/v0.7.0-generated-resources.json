@@ -1,0 +1,44 @@
+{
+  "allowed_file_types": [
+    ".json"
+  ],
+  "expected_resource_paths": [
+    "assets/advancedrocketrycommunity/models/item/station_deployment_kit.json",
+    "assets/advancedrocketrycommunity_v070/lang/en_us.json",
+    "assets/advancedrocketrycommunity_v070/lang/zh_cn.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/station_deployment_kit.json",
+    "data/advancedrocketrycommunity/recipes/station_deployment_kit.json"
+  ],
+  "generated_root": "src/generated/v0.7/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.7.0",
+  "targets": [
+    {
+      "bytes": 104,
+      "path": "src/generated/v0.7/resources/assets/advancedrocketrycommunity/models/item/station_deployment_kit.json",
+      "sha256": "1b7f6d70fa47a52f9345d21d63220e75f8bf02f0f68d5ec51efff3e5256beff0"
+    },
+    {
+      "bytes": 1538,
+      "path": "src/generated/v0.7/resources/assets/advancedrocketrycommunity_v070/lang/en_us.json",
+      "sha256": "f4eac1f2ed7978fe9c8378f8cf7a59e52c819995bd37183fd316d0af094c7f9f"
+    },
+    {
+      "bytes": 1472,
+      "path": "src/generated/v0.7/resources/assets/advancedrocketrycommunity_v070/lang/zh_cn.json",
+      "sha256": "395b78678e94b4f1810af0c01beef9380b0dd5f0f83bac9993361b1d563836b6"
+    },
+    {
+      "bytes": 727,
+      "path": "src/generated/v0.7/resources/data/advancedrocketrycommunity/advancements/recipes/misc/station_deployment_kit.json",
+      "sha256": "6015f45423fa4944ac08de34a2381f21a5a557dcf1690c34ea3c3f995a428e35"
+    },
+    {
+      "bytes": 576,
+      "path": "src/generated/v0.7/resources/data/advancedrocketrycommunity/recipes/station_deployment_kit.json",
+      "sha256": "740556ca87c324dec2bf0054079366f2a24c3c4ea6a232dc28600b5bfec97ee5"
+    }
+  ]
+}

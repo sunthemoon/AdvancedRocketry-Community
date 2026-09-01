@@ -88,6 +88,10 @@ public final class RocketCommands {
                                             .executes(context -> launchFlight(context, false))
                                             .then(Commands.argument("checkpoint", StringArgumentType.word())
                                                     .executes(context -> launchFlight(context, true))))))
+                    .then(Commands.literal("launch-station")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .then(Commands.argument("station", UuidArgument.uuid())
+                                            .executes(this::launchStationFlight))))
                     .then(Commands.literal("report")
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
                                     .executes(this::reportFlight)))
@@ -284,6 +288,45 @@ public final class RocketCommands {
                 () -> Component.literal("Release-test launch " + requestId
                         + " required_fuel=" + result.requiredFuel()
                         + " checkpoint=" + (armed == null ? "none" : armed)),
+                false
+        );
+        return 1;
+    }
+
+    private int launchStationFlight(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        RocketEntity rocket = releaseTestRocket(context);
+        UUID stationId = UuidArgument.getUuid(context, "station");
+        UUID requestId = UUID.randomUUID();
+        long fuelBefore = rocket.flightData().orElseThrow().fuel().amount();
+        RocketFlightRequestResult result = rockets.requestAdminStationFlight(
+                rocket,
+                stationId,
+                requestId
+        );
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_STATION_LAUNCH request={} entity={} logical={} source={} "
+                        + "station={} code={} required_fuel={} fuel_before={}",
+                requestId,
+                rocket.getUUID(),
+                rocket.assemblyTransactionId().orElse(null),
+                rocket.level().dimension().location(),
+                stationId,
+                result.code(),
+                result.requiredFuel(),
+                fuelBefore
+        );
+        if (!result.success()) {
+            source.sendFailure(Component.literal(
+                    "Release-test station launch failed: " + result.code()
+            ));
+            return 0;
+        }
+        source.sendSuccess(
+                () -> Component.literal("Release-test station launch " + requestId
+                        + " station=" + stationId
+                        + " required_fuel=" + result.requiredFuel()),
                 false
         );
         return 1;

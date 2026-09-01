@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class RocketFlightNetwork {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
     private static SimpleChannel channel;
 
     public RocketFlightNetwork() {
@@ -35,6 +35,15 @@ public final class RocketFlightNetwork {
             int rocketEntityId,
             RocketDestination destination
     ) {
+        sendIntent(action, rocketEntityId, destination, null);
+    }
+
+    public static void sendIntent(
+            RocketFlightAction action,
+            int rocketEntityId,
+            RocketDestination destination,
+            UUID destinationStationId
+    ) {
         SimpleChannel current = channel;
         if (current == null) {
             throw new IllegalStateException("Rocket flight channel is not initialized");
@@ -43,6 +52,7 @@ public final class RocketFlightNetwork {
                 action,
                 rocketEntityId,
                 destination,
+                destinationStationId,
                 UUID.randomUUID()
         ));
     }

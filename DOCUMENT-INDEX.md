@@ -79,6 +79,9 @@
 | `docs/releases/v0.6.0/` | 地月往返、跨维度恢复、40 航段、8 状态重启、双客户端与确定性产物证据 |
 | `docs/releases/v0.6.0/GATE-STATUS.md` | v0.6.0 Required Gate、所有者批准、PR/CI 与验收例外绑定 |
 | `docs/releases/v0.6.0/INSTALLATION.md` | v0.6.0 开发预览安装、固定地月路线与存档边界 |
+| `docs/releases/v0.7.0/` | 空间站分配、权限、旅行、重启、双客户端和确定性产物证据 |
+| `docs/releases/v0.7.0/GATE-STATUS.md` | v0.7.0 Required Gate、所有者批准、PR/CI 与合并后复现状态 |
+| `docs/releases/v0.7.0/INSTALLATION.md` | v0.7.0 开发预览安装、共享 Space Level 与存档边界 |
 
 ## 实施记录
 
@@ -93,6 +96,7 @@
 | `docs/work/v0.4.0-implementation-log.md` | 真空、宇航服、氧气 Vent、预算化密闭扫描与验收进度 |
 | `docs/work/v0.5.0-implementation-log.md` | 火箭快照、事务、实体、渲染与验收记录 |
 | `docs/work/v0.6.0-implementation-log.md` | 燃料、飞行、跨维度恢复、乘客与验收任务树 |
+| `docs/work/v0.7.0-implementation-log.md` | 站点模型、分配、权限、旅行、恢复与验收任务树 |
 
 ## 分版本执行文件
 
@@ -139,7 +143,7 @@ Codex 报告格式
 
 ## 决策记录
 
-`docs/decisions/` 内提供八份 ADR：
+`docs/decisions/` 内提供九份 ADR：
 
 - 项目身份与 namespace；
 - 固定 Moon/Space 维度；
@@ -149,8 +153,12 @@ Codex 报告格式
 - v0.0.2 bootstrap 范围内的 G4 适用性判断；
 - v0.6.0 固定落点、跨维度权威切换和崩服恢复。
 - v0.6.0 双客户端日志与所有者可视化验收例外。
+- v0.7.0 共享 Space Level 的固定网格 region、站点所有权与安全落点。
+- v0.7.0 双客户端日志、所有者证明与无截图/录像的可视化验收例外。
 
-ADR-000、ADR-001、ADR-002、ADR-004、ADR-005、ADR-006 和 ADR-007 已由
+ADR-000、ADR-001、ADR-002、ADR-004、ADR-005、ADR-006、ADR-007、ADR-008 和 ADR-009 已由
 维护者接受；ADR-003 仍保留 `PROPOSED` 状态。ADR-006 记录 v0.6.0 固定
 落点、跨维度权威切换、乘客和四种崩服恢复策略；ADR-007 仅接受本版
-无截图/录像的双客户端日志证据，并要求后续版本重新取证。
+无截图/录像的双客户端日志证据，并要求后续版本重新取证；ADR-008
+固定 v0.7.0 的站点网格、创建事务、集中式权限和坐标无关火箭意图；ADR-009
+仅接受 v0.7.0 的无媒体双客户端与所有者证明，并要求后续版本重新取证。

@@ -1,0 +1,35 @@
+{
+  "artifact_sha256": "4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068",
+  "artifact_version": "1.20.1-0.7.0-dev",
+  "baseline_session_id": "v002-8b099f94df6c8f0fd4df83ec",
+  "completed_at": "2026-09-01T09:30:07.207632+00:00",
+  "critical_or_high_findings": 0,
+  "java": "17.0.8",
+  "neighbor_deletion_isolated": true,
+  "ordinary_flight_legs": 4,
+  "pairwise_non_overlapping": true,
+  "port": 25587,
+  "processes": [
+    {
+      "completed_at": "2026-09-01T09:29:50.567703+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260901T092820425474Z-v070-stations-and-flight-full.txt",
+      "full_log_sha256": "d3593307a6eb5ad5fc52617bcfe0a2da6cd9963144aff342fe5b357e05822de3",
+      "name": "v070-stations-and-flight",
+      "started_at": "2026-09-01T09:28:32.533403+00:00"
+    },
+    {
+      "completed_at": "2026-09-01T09:30:07.206981+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260901T092820425474Z-v070-station-restart-full.txt",
+      "full_log_sha256": "a48ddc8375d21036a7ec235e1cd83340039d8e72a58607d2d95b810e41cc1918",
+      "name": "v070-station-restart",
+      "started_at": "2026-09-01T09:30:03.309481+00:00"
+    }
+  ],
+  "restart_persistence_verified": true,
+  "same_world_verified": true,
+  "schema_version": 1,
+  "station_count": 10,
+  "station_flight_legs": 2
+}

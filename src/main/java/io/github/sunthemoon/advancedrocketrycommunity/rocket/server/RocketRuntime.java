@@ -72,12 +72,30 @@ public final class RocketRuntime {
             RocketDestination destination,
             UUID requestId
     ) {
+        requestFlightIntent(player, rocketEntityId, action, destination, null, requestId);
+    }
+
+    public static void requestFlightIntent(
+            ServerPlayer player,
+            int rocketEntityId,
+            RocketFlightAction action,
+            RocketDestination destination,
+            UUID destinationStationId,
+            UUID requestId
+    ) {
         RocketOperationService current = service;
         if (current == null) {
             unavailable(player);
             return;
         }
-        current.requestFlightIntent(player, rocketEntityId, action, destination, requestId);
+        current.requestFlightIntent(
+                player,
+                rocketEntityId,
+                action,
+                destination,
+                destinationStationId,
+                requestId
+        );
     }
 
     /** Server-only operator/test boundary; no client data can invoke this method. */
@@ -91,6 +109,19 @@ public final class RocketRuntime {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
         }
         return current.requestAdminFlight(rocket, destination, requestId);
+    }
+
+    /** Server-only test/operator path; coordinates are still resolved from StationState. */
+    public static RocketFlightRequestResult requestAdminStationFlight(
+            RocketEntity rocket,
+            UUID stationId,
+            UUID requestId
+    ) {
+        RocketOperationService current = service;
+        if (current == null) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+        }
+        return current.requestAdminStationFlight(rocket, stationId, requestId);
     }
 
     private static void unavailable(ServerPlayer player) {

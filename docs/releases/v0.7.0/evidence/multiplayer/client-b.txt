@@ -1,0 +1,6 @@
+[019��2026 18:05:41.038] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: PilotB
+[019��2026 18:05:42.329] [Worker-Main-7/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.7.0-dev initialized
+[019��2026 18:05:44.295] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 25587
+[019��2026 18:05:46.755] [Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[019��2026 18:05:47.557] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Server] ARCE_G4_SHARED_STATE players=2 stations=2 artifact=4c049a4e0c2a74f7
+[019��2026 18:06:18.500] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

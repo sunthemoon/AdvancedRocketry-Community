@@ -223,9 +223,10 @@ public final class RocketManager implements RocketOperationService {
             int rocketEntityId,
             RocketFlightAction action,
             RocketDestination destination,
+            UUID destinationStationId,
             UUID requestId
     ) {
-        flights.request(player, rocketEntityId, action, destination, requestId);
+        flights.request(player, rocketEntityId, action, destination, destinationStationId, requestId);
     }
 
     @Override
@@ -235,6 +236,15 @@ public final class RocketManager implements RocketOperationService {
             UUID requestId
     ) {
         return flights.requestAdminFlight(rocket, destination, requestId);
+    }
+
+    @Override
+    public RocketFlightRequestResult requestAdminStationFlight(
+            RocketEntity rocket,
+            UUID stationId,
+            UUID requestId
+    ) {
+        return flights.requestAdminStationFlight(rocket, stationId, requestId);
     }
 
     public void onServerTick(TickEvent.ServerTickEvent event) {

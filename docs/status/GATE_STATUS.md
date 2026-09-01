@@ -2,31 +2,40 @@
 
 ```yaml
 version: v0.7.0
-status: PLANNED
-build: ""
-branch: ""
-prerequisite_version: v0.6.0
-prerequisite_status: PASSED
-prerequisite_merge_commit: "4c43ff6297324049eed758d210b9a5f99ed70876"
+status: READY_FOR_AUDIT
+tested_implementation_commit: "e1c2db8ca3e67ae7f92fbbbbd5b6c23a25f7412f"
+base_commit: "83bb6748444845aaad9d16f66da8c70f86b737be"
+merge_commit: ""
+branch: "codex/v0.7.0-space-station"
+build: "1.20.1-0.7.0-dev"
+upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
+provenance_review: APPROVED
+pull_request: ""
+forge_ci: ""
+governance_ci: ""
+pull_request_checks: PENDING
+accepted_exception: "docs/decisions/ADR-009-V070-VISUAL-EVIDENCE-ATTESTATION.md"
 gates:
-  G0: NOT_STARTED
-  G1: NOT_STARTED
-  G2: NOT_STARTED
-  G3: NOT_STARTED
-  G4: NOT_STARTED
-  G5: NOT_STARTED
-  G6: NOT_STARTED
-  G7: NOT_STARTED
-  G8: NOT_STARTED
-  G9: NOT_STARTED
-overall: PLANNED
+  G0: PASS
+  G1: PASS
+  G2: PASS
+  G3: PASS
+  G4: PASS
+  G5: PASS
+  G6: PASS
+  G7: PASS
+  G8: PASS
+  G9: PASS
+overall: READY_FOR_AUDIT
 remaining_items:
-  - approve the station region and ownership ADR
-  - create an isolated v0.7.0 implementation branch
-human_approved_by: ""
-human_approved_at: ""
+  - merge the reviewed pull request after required checks pass
+  - reproduce the exact candidate artifact from the merge commit
+human_approved_by: "sunthemoon"
+human_approved_at: "2026-09-01"
 ```
 
-v0.6.0 is complete and immutable at
-[`../releases/v0.6.0/GATE-STATUS.md`](../releases/v0.6.0/GATE-STATUS.md). This
-file only opens the next planning boundary; it does not claim any v0.7 Gate.
+Repository owner `sunthemoon` approved G0, G8, and G9 on 2026-09-01. G8 is
+bound to the two-client logs, packaged station run, authority matrix, and
+ADR-009; no screenshot or video is claimed. The release remains
+`READY_FOR_AUDIT`, not `PASSED`, until PR checks, merge identity, and exact
+post-merge JAR reproduction are recorded.

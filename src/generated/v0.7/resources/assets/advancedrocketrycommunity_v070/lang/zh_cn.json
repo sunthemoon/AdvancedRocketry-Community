@@ -1,0 +1,17 @@
+{
+  "body.advancedrocketrycommunity.space_station": "空间站",
+  "item.advancedrocketrycommunity.station_deployment_kit": "空间站部署组件",
+  "screen.advancedrocketrycommunity.rocket.no_stations": "没有可访问的空间站",
+  "screen.advancedrocketrycommunity.rocket.station_choice": "空间站：%s（%s/%s）",
+  "station.advancedrocketrycommunity.access.denied": "用户无权修改该空间站区域",
+  "station.advancedrocketrycommunity.creation.details": "已部署 %s（%s），可在火箭控制台选择",
+  "station.advancedrocketrycommunity.creation.invalid_source": "请从地球或月球部署空间站",
+  "station.advancedrocketrycommunity.creation.owner_limit_reached": "用户已达到空间站拥有数量上限",
+  "station.advancedrocketrycommunity.creation.persistence_failed": "持久化失败，空间站部署已回滚",
+  "station.advancedrocketrycommunity.creation.platform_blocked": "分配的空间站平台区域已被占用",
+  "station.advancedrocketrycommunity.creation.region_unavailable": "当前没有可用的空间站区域",
+  "station.advancedrocketrycommunity.creation.registry_blocked": "空间站注册表包含不支持或无效的数据",
+  "station.advancedrocketrycommunity.creation.service_unavailable": "空间站服务不可用",
+  "station.advancedrocketrycommunity.creation.space_unavailable": "固定 Space Level 不可用",
+  "station.advancedrocketrycommunity.creation.success": "空间站部署完成"
+}

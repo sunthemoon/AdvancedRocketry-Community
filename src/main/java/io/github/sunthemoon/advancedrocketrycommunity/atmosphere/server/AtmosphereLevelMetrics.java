@@ -10,6 +10,7 @@ public record AtmosphereLevelMetrics(
         int dirtyPositions,
         int lastTickInspections,
         long totalInspections,
-        long dirtyOverflows
+        long dirtyOverflows,
+        long completedServiceTicks
 ) {
 }

@@ -35,7 +35,7 @@ public final class AtmosphereCommands {
         BlockPos position = player.blockPosition();
         BreathabilityState state = atmosphere.breathabilityAt(level, position);
         AtmosphereLevelMetrics metrics = atmosphere.metrics(level.dimension())
-                .orElse(new AtmosphereLevelMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0L, 0L));
+                .orElse(new AtmosphereLevelMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0L));
         source.sendSuccess(() -> Component.literal(
                 "Atmosphere=" + state
                         + " vents=" + metrics.trackedVents()

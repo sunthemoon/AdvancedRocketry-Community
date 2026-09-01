@@ -1,0 +1,11 @@
+artifact_sha256=4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068
+stations_created=10
+pairwise_non_overlapping=true
+restart_persistence=true
+earth_station_round_trip=true
+moon_station_round_trip=true
+exact_station_landings=2
+neighbor_deletion_isolated=true
+material_conserved=true
+container_inventory_conserved=true
+critical_or_high_findings=0
