@@ -54,10 +54,11 @@ final class RocketTransferService {
         }
         RocketTransferRecord previous = journal.findByLogicalRocket(countdown.logicalRocketId()).orElse(null);
         if (journal.find(plan.requestId()).isPresent()
-                || (previous != null && !RocketTransferEntities.isLandedAuthority(rocket, previous))) {
+                || (previous != null
+                && !RocketTransferEntities.isReplaceableLandedAuthority(rocket, previous))) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.REQUEST_REPLAYED);
         }
-        if (journal.entries().size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
+        if (previous == null && journal.entries().size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_LIMIT_REACHED);
         }
         ServerLevel destinationLevel = RocketTransferEntities.level(server, plan.destinationDimension());

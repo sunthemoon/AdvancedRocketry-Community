@@ -57,7 +57,13 @@ final class RocketTransferRecoveryService {
                 .filter(candidate -> !settledTransfers.contains(candidate.transferId()))
                 .findFirst()
                 .orElse(null);
-        return record == null ? Result.notFound(null) : recover(server, journal, record);
+        if (record == null) {
+            return Result.notFound(null);
+        }
+        if (!RocketTransferEntities.recoveryEntityChunksLoaded(server, record)) {
+            return retryLater(record);
+        }
+        return recover(server, journal, record);
     }
 
     Result recoverById(MinecraftServer server, UUID transferId) {
@@ -68,7 +74,13 @@ final class RocketTransferRecoveryService {
             return Result.notFound(transferId);
         }
         RocketTransferRecord record = journal.find(transferId).orElse(null);
-        return record == null ? Result.notFound(transferId) : recover(server, journal, record);
+        if (record == null) {
+            return Result.notFound(transferId);
+        }
+        if (!RocketTransferEntities.recoveryEntityChunksLoaded(server, record)) {
+            return retryLater(record);
+        }
+        return recover(server, journal, record);
     }
 
     void onPlayerLoggedIn(ServerPlayer player, RocketTransferSavedData journal) {
@@ -237,6 +249,17 @@ final class RocketTransferRecoveryService {
                 action,
                 sources.size(),
                 destinations.size()
+        );
+    }
+
+    private static Result retryLater(RocketTransferRecord record) {
+        return new Result(
+                Status.RETRY_LATER,
+                record.transferId(),
+                record.phase(),
+                null,
+                0,
+                0
         );
     }
 

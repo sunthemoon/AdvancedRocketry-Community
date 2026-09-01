@@ -95,6 +95,20 @@ final class RocketTransferEntities {
         return matches.isEmpty() ? null : matches.get(0);
     }
 
+    static boolean recoveryEntityChunksLoaded(MinecraftServer server, RocketTransferRecord record) {
+        boolean sourceLoaded = entityChunkLoaded(
+                server,
+                record.sourceSnapshot(),
+                record.transferId()
+        );
+        boolean destinationLoaded = entityChunkLoaded(
+                server,
+                record.destinationSnapshot(),
+                record.transferId()
+        );
+        return sourceLoaded && destinationLoaded;
+    }
+
     static List<RocketEntity> findMatches(
             MinecraftServer server,
             RocketTransferRecord record,
@@ -152,6 +166,19 @@ final class RocketTransferEntities {
     }
 
     static boolean isLandedAuthority(RocketEntity rocket, RocketTransferRecord record) {
+        return isCommittedAuthority(rocket, record)
+                && authorityState(rocket) == RocketFlightState.LANDED;
+    }
+
+    static boolean isReplaceableLandedAuthority(RocketEntity rocket, RocketTransferRecord record) {
+        if (!isCommittedAuthority(rocket, record)) {
+            return false;
+        }
+        RocketFlightState state = authorityState(rocket);
+        return state == RocketFlightState.LANDED || state == RocketFlightState.FUELED;
+    }
+
+    private static boolean isCommittedAuthority(RocketEntity rocket, RocketTransferRecord record) {
         return record.phase() == RocketTransferPhase.COMMITTED
                 && record.destinationEntityId().filter(rocket.getUUID()::equals).isPresent()
                 && rocket.operational()
@@ -160,9 +187,12 @@ final class RocketTransferEntities {
                         .equals(record.destinationSnapshot().snapshotId()))
                         .filter(snapshot -> snapshot.contentHash()
                                 .equals(record.destinationSnapshot().contentHash()))
-                        .isPresent()
-                && rocket.flightData().map(RocketFlightData::state)
-                        .orElse(RocketFlightState.FAILED_RECOVERABLE) == RocketFlightState.LANDED;
+                        .isPresent();
+    }
+
+    private static RocketFlightState authorityState(RocketEntity rocket) {
+        return rocket.flightData().map(RocketFlightData::state)
+                .orElse(RocketFlightState.FAILED_RECOVERABLE);
     }
 
     static RocketEntity keepOne(List<RocketEntity> matches) {
@@ -266,6 +296,20 @@ final class RocketTransferEntities {
                 transferId
         );
         loadOrigin(level, snapshot);
+    }
+
+    private static boolean entityChunkLoaded(
+            MinecraftServer server,
+            RocketStructureSnapshot snapshot,
+            UUID transferId
+    ) {
+        ServerLevel level = level(server, snapshot.sourceDimension());
+        if (level == null) {
+            return false;
+        }
+        keepLoaded(level, snapshot, transferId);
+        RocketPosition origin = snapshot.sourceOrigin();
+        return level.areEntitiesLoaded(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4));
     }
 
     static ServerLevel level(MinecraftServer server, ResourceLocation dimension) {

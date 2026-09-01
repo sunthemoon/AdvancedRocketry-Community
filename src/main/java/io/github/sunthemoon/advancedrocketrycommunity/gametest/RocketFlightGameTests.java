@@ -546,6 +546,16 @@ public final class RocketFlightGameTests {
             helper.assertTrue(findLogicalRocket(earth, logical) == null,
                     "Earth source survived committed transfer");
 
+            var landedFuel = landedMoon.flightData().orElseThrow().fuel();
+            landedMoon.updateFlightData(landedMoon.flightData().orElseThrow().withFuel(
+                    landedFuel,
+                    moon.getGameTime()
+            ));
+            helper.assertTrue(
+                    landedMoon.flightData().orElseThrow().state() == RocketFlightState.FUELED,
+                    "Moon rocket did not accept post-landing fuel state"
+            );
+
             UUID returnId = UUID.randomUUID();
             RocketFlightRequestResult returning = RocketRuntime.requestAdminFlight(
                     landedMoon,
