@@ -25,6 +25,8 @@
 | Two simultaneous clients/shared authority marker | PASS |
 | Atmosphere fixed-tick performance run | PASS |
 | Critical/High station findings | 0 |
+| Pull-request checks | PASS, 4/4 |
+| Merge-commit clean reproduction | PASS, JAR and 636-entry manifest byte-identical |
 
 The full Python discovery completed in 2,028.46 seconds. The strict repository
 validator reported 39 passed checks, 0 warnings, and 0 failures. Both results

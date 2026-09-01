@@ -30,6 +30,7 @@ cross-server stations.
 | Owner G0/G8/G9 attestation | [`evidence/manual/owner-attestation.json`](evidence/manual/owner-attestation.json) |
 | Performance and fixed limits | [`PERFORMANCE.md`](PERFORMANCE.md) |
 | Exact checksum inventory | [`checksums.txt`](checksums.txt) |
+| Exact post-merge reproduction | [`evidence/artifact/post-merge-reproduction.json`](evidence/artifact/post-merge-reproduction.json) |
 
 Machine-local full logs contain installation paths and are intentionally not
 committed. Filtered extracts preserve artifact identity, station allocation,
@@ -51,6 +52,7 @@ claimed; CI separately audits and executes its Linux-built candidate.
 ## Gate decision
 
 G0-G9 have technical evidence and owner approval. ADR-009 scopes the missing
-screenshot/video record to v0.7.0 only. The version remains
-`READY_FOR_AUDIT` until its required PR checks pass, it merges, and the merge
-commit reproduces the exact candidate JAR.
+screenshot/video record to v0.7.0 only. PR #11 passed all four checks and
+merged as `b75e301f6cd77cfc1c1ade0e9b16c485f736c93b`; a forced cache-disabled
+clean build from that exact commit reproduced the accepted JAR and 636-entry
+content manifest byte-for-byte. The version is `PASSED`.

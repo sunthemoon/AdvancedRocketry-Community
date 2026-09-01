@@ -1,0 +1,46 @@
+{
+  "build": "1.20.1-0.7.0-dev",
+  "build_command": ".\\gradlew.bat clean build --no-daemon --stacktrace --no-build-cache --rerun-tasks",
+  "build_result": "PASS",
+  "content_manifest": {
+    "byte_equal_to_candidate": true,
+    "candidate_sha256": "a1f395969cf105627d3e6c8bbe811d23d36b4331153b140852efed0e9e5172fd",
+    "entry_count": 636,
+    "reproduced_sha256": "a1f395969cf105627d3e6c8bbe811d23d36b4331153b140852efed0e9e5172fd"
+  },
+  "environment": {
+    "java": "Microsoft OpenJDK 17.0.8+7-LTS",
+    "os": "Microsoft Windows 11 Pro 10.0.26200 amd64"
+  },
+  "main_jar": {
+    "byte_equal_to_candidate": true,
+    "bytes": 1009631,
+    "candidate_sha256": "4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068",
+    "reproduced_sha256": "4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068"
+  },
+  "merge_commit": "b75e301f6cd77cfc1c1ade0e9b16c485f736c93b",
+  "pull_request": "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/11",
+  "pull_request_checks": {
+    "checks": [
+      "Forge 47.4.10 baseline",
+      "Forge 47.4.23 compatibility (advisory)",
+      "v0.7.0 packaged station gate",
+      "validate-repository-docs"
+    ],
+    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933608",
+    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933587",
+    "result": "4/4_PASS"
+  },
+  "reproduced_at": "2026-09-01",
+  "reviewed_head_commit": "d4caac833ba20c1f017631fb18dafd43e50a6f7d",
+  "schema_version": 1,
+  "tested_implementation_commit": "e1c2db8ca3e67ae7f92fbbbbd5b6c23a25f7412f",
+  "unit_tests": {
+    "errors": 0,
+    "failures": 0,
+    "passed": 220,
+    "skipped": 0,
+    "total": 220
+  },
+  "version": "v0.7.0"
+}

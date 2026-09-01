@@ -3504,6 +3504,20 @@ def validate_v070_gate_status_text(
             errors.append(
                 "v0.7.0 cannot be PASSED without exact post-merge reproduction"
             )
+        bindings = {
+            "reviewed_head_commit": "reviewed_head_commit",
+            "merge_commit": "merge_commit",
+            "pull_request": "pull_request",
+            "pull_request_checks": "pull_request_checks",
+            "forge_ci": "forge_ci",
+            "governance_ci": "governance_ci",
+        }
+        for document_key, evidence_key in bindings.items():
+            if top.get(document_key) != evidence.get(evidence_key):
+                errors.append(
+                    "v0.7.0 PASSED status must bind "
+                    f"{document_key} to post-merge evidence"
+                )
     return errors
 
 

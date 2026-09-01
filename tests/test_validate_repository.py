@@ -222,6 +222,12 @@ def v070_gate_document(
     gates: dict[str, str] | None = None,
     reviewer: str = "",
     reviewed_at: str = "",
+    reviewed_head_commit: str = "",
+    merge_commit: str = "",
+    pull_request: str = "",
+    pull_request_checks: str = "",
+    forge_ci: str = "",
+    governance_ci: str = "",
 ) -> str:
     values = {f"G{index}": "NOT_STARTED" for index in range(10)}
     values["G0"] = "IN_PROGRESS"
@@ -233,6 +239,12 @@ def v070_gate_document(
 ```yaml
 version: v0.7.0
 status: {status}
+reviewed_head_commit: "{reviewed_head_commit}"
+merge_commit: "{merge_commit}"
+pull_request: "{pull_request}"
+pull_request_checks: {pull_request_checks or 'PENDING'}
+forge_ci: "{forge_ci}"
+governance_ci: "{governance_ci}"
 gates:
 {gate_lines}
 overall: {overall}
@@ -1092,7 +1104,7 @@ class V070GateStatusTests(unittest.TestCase):
     def complete_evidence(
         *, human_approved: bool = True, post_merge_ready: bool = False
     ) -> dict[str, object]:
-        return {
+        evidence = {
             "provenance_ready": True,
             "artifact_ready": True,
             "post_merge_ready": post_merge_ready,
@@ -1106,6 +1118,18 @@ class V070GateStatusTests(unittest.TestCase):
             "docs_ready": True,
             "human_approved": human_approved,
         }
+        if post_merge_ready:
+            evidence.update(
+                {
+                    "reviewed_head_commit": "d4caac833ba20c1f017631fb18dafd43e50a6f7d",
+                    "merge_commit": "b75e301f6cd77cfc1c1ade0e9b16c485f736c93b",
+                    "pull_request": "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/11",
+                    "pull_request_checks": "4/4_PASS",
+                    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933608",
+                    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933587",
+                }
+            )
+        return evidence
 
     def test_required_gates_cannot_be_waived(self) -> None:
         errors = validate_v070_gate_status_text(
@@ -1151,6 +1175,12 @@ class V070GateStatusTests(unittest.TestCase):
                     gates={f"G{index}": "PASS" for index in range(10)},
                     reviewer="sunthemoon",
                     reviewed_at="2026-09-01",
+                    reviewed_head_commit="d4caac833ba20c1f017631fb18dafd43e50a6f7d",
+                    merge_commit="b75e301f6cd77cfc1c1ade0e9b16c485f736c93b",
+                    pull_request="https://github.com/sunthemoon/AdvancedRocketry-Community/pull/11",
+                    pull_request_checks="4/4_PASS",
+                    forge_ci="https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933608",
+                    governance_ci="https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933587",
                 ),
                 evidence_details=self.complete_evidence(post_merge_ready=True),
             ),

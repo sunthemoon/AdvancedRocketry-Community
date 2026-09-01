@@ -20,11 +20,12 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest owner-accepted milestone is `v0.6.0`: bounded fuel loading,
-server-authoritative Earth–Moon flight, durable transfer recovery, passengers,
-landing, return, and exact disassembly. It remains an unreleased developer
-preview. PR #10 is merged, its merge commit reproduces the accepted JAR
-byte-for-byte, and the next planned target is `v0.7.0`. See
+The latest owner-accepted milestone is `v0.7.0`: persistent shared-space
+stations, bounded region allocation, ownership and membership, protected
+building, approved-pad rocket travel, restart recovery, and isolated deletion.
+It remains an unreleased developer preview. PR #11 is merged, its merge commit
+reproduces the accepted JAR byte-for-byte, and the next planned target is
+`v0.8.0`. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
 sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
 verified and pending evidence.

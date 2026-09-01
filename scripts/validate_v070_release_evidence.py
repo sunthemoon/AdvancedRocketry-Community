@@ -48,6 +48,17 @@ EXPECTED_ARTIFACT_SHA256 = (
 )
 EXPECTED_ARTIFACT_BYTES = 1_009_631
 EXPECTED_COMMIT = "e1c2db8ca3e67ae7f92fbbbbd5b6c23a25f7412f"
+EXPECTED_REVIEWED_HEAD = "d4caac833ba20c1f017631fb18dafd43e50a6f7d"
+EXPECTED_MERGE_COMMIT = "b75e301f6cd77cfc1c1ade0e9b16c485f736c93b"
+EXPECTED_PULL_REQUEST = (
+    "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/11"
+)
+EXPECTED_FORGE_CI = (
+    "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933608"
+)
+EXPECTED_GOVERNANCE_CI = (
+    "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33506933587"
+)
 EXPECTED_MANIFEST_SHA256 = (
     "a1f395969cf105627d3e6c8bbe811d23d36b4331153b140852efed0e9e5172fd"
 )
@@ -66,7 +77,7 @@ REQUIRED_RELEASE_DOCS = {
     "checksums.txt",
 }
 SHA256 = re.compile(r"[0-9a-f]{64}")
-MACHINE_PATH = re.compile(r"[A-Za-z]:[\\/]|server-work[/\\]run-")
+MACHINE_PATH = re.compile(r"(?<![A-Za-z])[A-Za-z]:[\\/]|server-work[/\\]run-")
 MAX_JSON_BYTES = 2 * 1024 * 1024
 MAX_TEXT_BYTES = 512 * 1024
 MAX_EVIDENCE_BYTES = 8 * 1024 * 1024
@@ -596,30 +607,75 @@ def _validate_checksums(
     return not errors
 
 
-def _validate_post_merge(repository_root: Path, errors: list[str]) -> bool:
+def _validate_post_merge(
+    repository_root: Path, errors: list[str]
+) -> dict[str, Any]:
     relative = EVIDENCE_ROOT / "artifact/post-merge-reproduction.json"
-    path = repository_root / relative
-    if not path.exists():
-        return False
+    before = len(errors)
     try:
         record = _load_json(repository_root, relative)
     except EvidenceError as exc:
         errors.append(str(exc))
-        return False
+        return {}
+    main = record.get("main_jar")
+    manifest = record.get("content_manifest")
+    checks = record.get("pull_request_checks")
+    tests = record.get("unit_tests")
+    environment = record.get("environment")
     if (
         record.get("schema_version") != 1
         or record.get("version") != EXPECTED_VERSION
         or record.get("build") != EXPECTED_BUILD
-        or record.get("candidate_sha256") != EXPECTED_ARTIFACT_SHA256
-        or record.get("reproduced_sha256") != EXPECTED_ARTIFACT_SHA256
-        or record.get("byte_identical") is not True
-        or record.get("entry_count") != 636
-        or SHA256.fullmatch(str(record.get("merge_commit", ""))) is None
-        or not _valid_date(record.get("verified_at"))
+        or record.get("tested_implementation_commit") != EXPECTED_COMMIT
+        or record.get("reviewed_head_commit") != EXPECTED_REVIEWED_HEAD
+        or record.get("merge_commit") != EXPECTED_MERGE_COMMIT
+        or record.get("pull_request") != EXPECTED_PULL_REQUEST
+        or record.get("reproduced_at") != "2026-09-01"
+        or record.get("build_result") != "PASS"
+        or record.get("build_command")
+        != ".\\gradlew.bat clean build --no-daemon --stacktrace --no-build-cache --rerun-tasks"
+        or main
+        != {
+            "byte_equal_to_candidate": True,
+            "bytes": EXPECTED_ARTIFACT_BYTES,
+            "candidate_sha256": EXPECTED_ARTIFACT_SHA256,
+            "reproduced_sha256": EXPECTED_ARTIFACT_SHA256,
+        }
+        or manifest
+        != {
+            "byte_equal_to_candidate": True,
+            "entry_count": 636,
+            "candidate_sha256": EXPECTED_MANIFEST_SHA256,
+            "reproduced_sha256": EXPECTED_MANIFEST_SHA256,
+        }
+        or environment
+        != {
+            "java": "Microsoft OpenJDK 17.0.8+7-LTS",
+            "os": "Microsoft Windows 11 Pro 10.0.26200 amd64",
+        }
+        or tests
+        != {
+            "errors": 0,
+            "failures": 0,
+            "passed": 220,
+            "skipped": 0,
+            "total": 220,
+        }
+        or checks
+        != {
+            "checks": [
+                "Forge 47.4.10 baseline",
+                "Forge 47.4.23 compatibility (advisory)",
+                "v0.7.0 packaged station gate",
+                "validate-repository-docs",
+            ],
+            "forge_ci": EXPECTED_FORGE_CI,
+            "governance_ci": EXPECTED_GOVERNANCE_CI,
+            "result": "4/4_PASS",
+        }
     ):
-        errors.append("v0.7.0 post-merge reproduction is incomplete")
-        return False
-    return True
+        errors.append("v0.7.0 post-merge reproduction is incomplete or inconsistent")
+    return record if len(errors) == before else {}
 
 
 def validate_v070_release_evidence(
@@ -657,7 +713,8 @@ def validate_v070_release_evidence(
     checksums_ready = _validate_checksums(repository_root, artifact_summary, errors)
     checksums_ready = checksums_ready and len(errors) == before
     before = len(errors)
-    post_merge_ready = _validate_post_merge(repository_root, errors) and len(errors) == before
+    post_merge = _validate_post_merge(repository_root, errors)
+    post_merge_ready = bool(post_merge) and len(errors) == before
     if require_approved and not human_approved:
         errors.append("v0.7.0 evidence has not received explicit G0/G8/G9 owner approval")
 
@@ -668,6 +725,22 @@ def validate_v070_release_evidence(
         "provenance_ready": provenance_ready,
         "artifact_ready": artifact_ready,
         "post_merge_ready": post_merge_ready,
+        "merge_commit": post_merge.get("merge_commit") if post_merge_ready else None,
+        "reviewed_head_commit": post_merge.get("reviewed_head_commit")
+        if post_merge_ready
+        else None,
+        "pull_request": post_merge.get("pull_request") if post_merge_ready else None,
+        "pull_request_checks": post_merge.get("pull_request_checks", {}).get("result")
+        if post_merge_ready
+        else None,
+        "forge_ci": post_merge.get("pull_request_checks", {}).get("forge_ci")
+        if post_merge_ready
+        else None,
+        "governance_ci": post_merge.get("pull_request_checks", {}).get(
+            "governance_ci"
+        )
+        if post_merge_ready
+        else None,
         "data_ready": provenance_ready and automated_ready,
         "automated_ready": automated_ready,
         "server_ready": dedicated_ready and station_ready and multiplayer_ready,
@@ -678,7 +751,7 @@ def validate_v070_release_evidence(
         and security.get("client_final_station_decisions") == 0,
         "performance_ready": performance_ready,
         "client_ready": client_ready,
-        "docs_ready": docs_ready and checksums_ready,
+        "docs_ready": docs_ready and checksums_ready and post_merge_ready,
         "checksums_ready": checksums_ready,
         "human_approved": human_approved,
         "human_approved_at": attestation.get("approved_at")

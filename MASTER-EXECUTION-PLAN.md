@@ -5063,7 +5063,7 @@ human_approved_at: ""
 
 ### 2. 前置 Gate
 
-- [ ] v0.7.0 PASSED
+- [x] v0.7.0 PASSED
 - [ ] 卫星/任务 SavedData 设计批准
 - [ ] 基础机器链可支撑配方
 
