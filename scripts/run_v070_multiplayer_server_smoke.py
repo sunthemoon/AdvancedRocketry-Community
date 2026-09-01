@@ -63,6 +63,14 @@ FORBIDDEN_CLIENT_MARKERS = (
     "ClassNotFoundException: net.minecraft.client",
     "Attempted to load class net/minecraft/client",
 )
+SERVER_LOG_MARKERS = (
+    "Advanced Rocketry: Community Edition",
+    "joined the game",
+    "left the game",
+    "ARCE_STATION_",
+    "ARCE_G4_SHARED_STATE",
+    "Saved the game",
+)
 
 
 def offline_uuid(name: str) -> uuid.UUID:
@@ -105,6 +113,14 @@ def _filter_client_log(path: Path, name: str, marker: str) -> tuple[list[str], d
         "clean_shutdown": True,
         "full_log_sha256": digest_file(path),
     }
+
+
+def _filter_server_log(lines: list[str]) -> list[str]:
+    return [
+        line.rstrip()
+        for line in lines
+        if any(value in line for value in SERVER_LOG_MARKERS)
+    ]
 
 
 def _create_client_station(process, name: str, orbit: str) -> dict[str, object]:  # type: ignore[no-untyped-def]
@@ -226,6 +242,7 @@ def main() -> int:
         for station in stations:
             _delete_station(process, str(station["station_id"]))
         harness.stop(process)
+        server_lines = list(process.lines)
         process = None
 
         client_documents: list[dict[str, object]] = []
@@ -234,17 +251,7 @@ def main() -> int:
             filtered, document = _filter_client_log(path, name, marker)
             filtered_clients.append(filtered)
             client_documents.append(document)
-        filtered_server = [
-            line.rstrip() for line in harness.filtered_lines
-            if any(value in line for value in (
-                "Advanced Rocketry: Community Edition",
-                "joined the game",
-                "left the game",
-                "ARCE_STATION_",
-                marker,
-                "Saved the game",
-            ))
-        ]
+        filtered_server = _filter_server_log(server_lines)
         summary = {
             "schema_version": 1,
             "version": "v0.7.0",
