@@ -1,0 +1,196 @@
+{
+  "earth_station_round_trip": true,
+  "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+  "moon_station_round_trip": true,
+  "ordinary_legs": [
+    {
+      "block_count": 5,
+      "destination_dimension": "minecraft:overworld",
+      "destination_entity": "a50b01ab-432e-4777-844b-ffe4cfcc0d80",
+      "direction": "station_to_earth",
+      "exact_debit": true,
+      "fuel_after": 670,
+      "fuel_before": 1000,
+      "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+      "origin": [
+        336,
+        63,
+        0
+      ],
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 330,
+      "sequence": 2,
+      "snapshot_hash": "3112f758448c8eb683b017f598f82ef33a198f7580993c9c8787dc7f176a6fa9",
+      "source_dimension": "advancedrocketrycommunity:space",
+      "source_entity": "ba2a9c3e-4a02-4c7f-bfed-3146578f2cf9",
+      "transfer_id": "2bc1a1c6-c53c-44aa-8ff8-01b4dbe6fe6f",
+      "trip": 1
+    },
+    {
+      "block_count": 5,
+      "destination_dimension": "advancedrocketrycommunity:moon",
+      "destination_entity": "dc2fc440-bf5f-4354-8de5-560fcaf5baea",
+      "direction": "earth_to_moon",
+      "exact_debit": true,
+      "fuel_after": 628,
+      "fuel_before": 1000,
+      "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+      "origin": [
+        8,
+        80,
+        8
+      ],
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 372,
+      "sequence": 3,
+      "snapshot_hash": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+      "source_dimension": "minecraft:overworld",
+      "source_entity": "a50b01ab-432e-4777-844b-ffe4cfcc0d80",
+      "transfer_id": "94a87523-ef9a-44a6-b0ac-294c2ae7f1be",
+      "trip": 1
+    },
+    {
+      "block_count": 5,
+      "destination_dimension": "advancedrocketrycommunity:moon",
+      "destination_entity": "3c3386cb-7d6b-47ae-af58-a768168d2d2a",
+      "direction": "station_to_moon",
+      "exact_debit": true,
+      "fuel_after": 753,
+      "fuel_before": 1000,
+      "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+      "origin": [
+        8,
+        80,
+        8
+      ],
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 247,
+      "sequence": 5,
+      "snapshot_hash": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+      "source_dimension": "advancedrocketrycommunity:space",
+      "source_entity": "2cf46725-b676-4f03-9913-14c3decb2004",
+      "transfer_id": "ff973977-a018-4d3e-9cea-d4b4c37ec61f",
+      "trip": 2
+    },
+    {
+      "block_count": 5,
+      "destination_dimension": "minecraft:overworld",
+      "destination_entity": "cf259663-78e3-49e0-9150-4614adc1b44c",
+      "direction": "moon_to_earth",
+      "exact_debit": true,
+      "fuel_after": 628,
+      "fuel_before": 1000,
+      "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+      "origin": [
+        336,
+        63,
+        0
+      ],
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 372,
+      "sequence": 6,
+      "snapshot_hash": "3112f758448c8eb683b017f598f82ef33a198f7580993c9c8787dc7f176a6fa9",
+      "source_dimension": "advancedrocketrycommunity:moon",
+      "source_entity": "3c3386cb-7d6b-47ae-af58-a768168d2d2a",
+      "transfer_id": "0730149e-94f5-4a52-bba4-a9bc96cd9ee3",
+      "trip": 2
+    }
+  ],
+  "schema_version": 1,
+  "station_legs": [
+    {
+      "destination_dimension": "advancedrocketrycommunity:space",
+      "destination_entity": "ba2a9c3e-4a02-4c7f-bfed-3146578f2cf9",
+      "exact_fuel_debit": true,
+      "fuel_after": 670,
+      "fuel_before": 1000,
+      "landing_inside_region": true,
+      "landing_origin": [
+        0,
+        128,
+        0
+      ],
+      "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 330,
+      "source_dimension": "minecraft:overworld",
+      "source_entity": "7a638421-3725-4d29-8115-9e90439b0330",
+      "station_id": "bb22e0cf-f20d-4e63-8668-81cda7513175",
+      "transfer_id": "3c1742f1-cdcb-4f10-93da-1d192ff314d2"
+    },
+    {
+      "destination_dimension": "advancedrocketrycommunity:space",
+      "destination_entity": "2cf46725-b676-4f03-9913-14c3decb2004",
+      "exact_fuel_debit": true,
+      "fuel_after": 753,
+      "fuel_before": 1000,
+      "landing_inside_region": true,
+      "landing_origin": [
+        1024,
+        128,
+        0
+      ],
+      "logical_rocket_id": "7e18480e-6bc3-43b2-ba70-e6c5e8478a83",
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 247,
+      "source_dimension": "advancedrocketrycommunity:moon",
+      "source_entity": "dc2fc440-bf5f-4354-8de5-560fcaf5baea",
+      "station_id": "d8f42b39-8739-490d-8682-12f7a2ae81b9",
+      "transfer_id": "39bee7a9-cf61-42e7-ab64-26b9fd4ccaed"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# GATE_STATUS
+# GATE_STATUS — v0.7.0 release candidate
 
 ```yaml
 version: v0.7.0
@@ -34,8 +34,11 @@ human_approved_by: "sunthemoon"
 human_approved_at: "2026-09-01"
 ```
 
-Repository owner `sunthemoon` approved G0, G8, and G9 on 2026-09-01. G8 is
-bound to the two-client logs, packaged station run, authority matrix, and
-ADR-009; no screenshot or video is claimed. The release remains
-`READY_FOR_AUDIT`, not `PASSED`, until PR checks, merge identity, and exact
-post-merge JAR reproduction are recorded.
+Repository owner `sunthemoon` approved the zero-copy provenance inventory and
+the G0, G8, and G9 decisions on 2026-09-01. G8 is bound to the real two-client
+log bundle, packaged station run, authority matrix, and ADR-009; no screenshot
+or video is claimed.
+
+All technical and owner-review Gates are complete. The milestone remains
+`READY_FOR_AUDIT`, rather than `PASSED`, until required pull-request checks,
+merge identity, and an exact post-merge JAR reproduction are recorded.

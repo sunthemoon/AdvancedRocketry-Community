@@ -1,0 +1,12 @@
+build=1.20.1-0.7.0-dev
+tested_implementation_commit=e1c2db8ca3e67ae7f92fbbbbd5b6c23a25f7412f
+required_tests=42
+failed_tests=0
+atmosphere_warmup_ticks=90
+atmosphere_active_vents=16
+atmosphere_pending_after_warmup=0
+atmosphere_simulated_ticks=6000
+atmosphere_peak_inspections=112
+atmosphere_measured_final_inspections=0
+elapsed_seconds=15.586
+result=All 42 required tests passed

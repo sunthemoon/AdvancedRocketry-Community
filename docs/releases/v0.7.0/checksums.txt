@@ -1,0 +1,23 @@
+# SHA-256 checksums for the v0.0.2 distributable and committed evidence.
+# The build/libs JAR is intentionally not committed; CI verifies it separately.
+4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068  build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
+72ab07980635c55db656adc2c8f20a1fc15ca50c8738e160c9475a3bf71f8bf0  docs/releases/v0.7.0/evidence/artifact/artifact-summary.json
+a1f395969cf105627d3e6c8bbe811d23d36b4331153b140852efed0e9e5172fd  docs/releases/v0.7.0/evidence/artifact/jar-content-manifest.json
+7f4c522058f90d5091bab4a449b585dfd9f3b3f49464fdbf399c390da8f37d7e  docs/releases/v0.7.0/evidence/automated/authority-matrix.json
+6372c1888f2fa9b18c2b67a5e0eafb0e3e5d85ef45cd00ecbf37c19d83fd5304  docs/releases/v0.7.0/evidence/automated/gametest.txt
+d864463345a1b20acbf0683b0263259e11b9a4e01cbc16ec4e1badac714879e1  docs/releases/v0.7.0/evidence/automated/summary.json
+e746aadf7d63e3c3dca3173327f1927cbadb814c2303f673628aae32451a8a62  docs/releases/v0.7.0/evidence/dedicated-server/first-start.txt
+cd7b21739150a7a49e8bcfda85b9a8445498120c015343f5f4a7dadcc25d4e5e  docs/releases/v0.7.0/evidence/dedicated-server/restart.txt
+14be36817e0cfcc740a608bccf909d7a9069f52db777e2b0d9b6fa173b5567a9  docs/releases/v0.7.0/evidence/dedicated-server/summary.json
+71081f06b8cb13e0abc99b444d71bac650de2400e815f6fe2a0255ac880e100e  docs/releases/v0.7.0/evidence/manual/owner-attestation.json
+c7fac5fa95861314ba0995bab7f22c7569c9df5fdf13b6e16fa51327bbb43bca  docs/releases/v0.7.0/evidence/multiplayer/client-a.txt
+e43264460761fdea2970d44a224772493b4ac2a9b38a44870659f33e2f0bc778  docs/releases/v0.7.0/evidence/multiplayer/client-b.txt
+150cca8ff5341cdc4563144d9e81774d4bd68d9addfeaeac6daeffd616fce87b  docs/releases/v0.7.0/evidence/multiplayer/server.txt
+a5f9577e64a7a75a94d0749244f72bef3cc78d1960ac86be3e908b8fa2bb870f  docs/releases/v0.7.0/evidence/multiplayer/summary.json
+bbf7570c38c59cb37d7ba62a31e54500c931ff893633bf5f7a63478adf3f7930  docs/releases/v0.7.0/evidence/performance/summary.json
+cf4bcd32685db5b9d8521c4831e7bcb958b623762672f9faca039959bb62b404  docs/releases/v0.7.0/evidence/station-server/filtered-lifecycle.log
+3b6851b8b9e39265d2319e1c45710212f472b682c404b9b7b13a7d0e3514ca6e  docs/releases/v0.7.0/evidence/station-server/flight-ledger.json
+2fb5c82895cb3d6dc37ff63539cec42ee2e46e8b5d3129102b7154e0bc4812d8  docs/releases/v0.7.0/evidence/station-server/lifecycle.txt
+f1aa81107c70cec0bd96cace734f531a53909a5735a023f65f58999c48eb39cc  docs/releases/v0.7.0/evidence/station-server/restart-and-deletion.json
+e16222c66090d51e9936759a92998fa440546c3a93c7f5879b6786113b0a2ddf  docs/releases/v0.7.0/evidence/station-server/station-map.json
+d4e1ef75678a34c4503908212ae4405bd7a785101d60dd386496f23ad2aaafb3  docs/releases/v0.7.0/evidence/station-server/summary.json

@@ -1,0 +1,178 @@
+{
+  "grid_spacing": 1024,
+  "pairwise_non_overlapping": true,
+  "region_size": 512,
+  "schema_version": 1,
+  "stations": [
+    {
+      "cell": [
+        0,
+        0
+      ],
+      "chunks_loaded": 4,
+      "orbit": "earth",
+      "owner_id": "00000000-0000-0000-0000-000000000700",
+      "platform_blocks": 289,
+      "region": [
+        -256,
+        -256,
+        255,
+        255
+      ],
+      "station_id": "bb22e0cf-f20d-4e63-8668-81cda7513175"
+    },
+    {
+      "cell": [
+        1,
+        0
+      ],
+      "chunks_loaded": 4,
+      "orbit": "moon",
+      "owner_id": "00000000-0000-0000-0000-000000000701",
+      "platform_blocks": 289,
+      "region": [
+        768,
+        -256,
+        1279,
+        255
+      ],
+      "station_id": "d8f42b39-8739-490d-8682-12f7a2ae81b9"
+    },
+    {
+      "cell": [
+        1,
+        1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "earth",
+      "owner_id": "00000000-0000-0000-0000-000000000702",
+      "platform_blocks": 289,
+      "region": [
+        768,
+        768,
+        1279,
+        1279
+      ],
+      "station_id": "e66e81e1-1e4b-4bb5-ad47-ca97d94d1963"
+    },
+    {
+      "cell": [
+        0,
+        1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "moon",
+      "owner_id": "00000000-0000-0000-0000-000000000703",
+      "platform_blocks": 289,
+      "region": [
+        -256,
+        768,
+        255,
+        1279
+      ],
+      "station_id": "00f695ef-f464-4813-ad72-2592bf93a23a"
+    },
+    {
+      "cell": [
+        -1,
+        1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "earth",
+      "owner_id": "00000000-0000-0000-0000-000000000704",
+      "platform_blocks": 289,
+      "region": [
+        -1280,
+        768,
+        -769,
+        1279
+      ],
+      "station_id": "a9c91cc6-7e48-4c0d-8b35-b75835cbe01b"
+    },
+    {
+      "cell": [
+        -1,
+        0
+      ],
+      "chunks_loaded": 4,
+      "orbit": "moon",
+      "owner_id": "00000000-0000-0000-0000-000000000705",
+      "platform_blocks": 289,
+      "region": [
+        -1280,
+        -256,
+        -769,
+        255
+      ],
+      "station_id": "3c622837-a9c0-4339-a74d-2902b45df789"
+    },
+    {
+      "cell": [
+        -1,
+        -1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "earth",
+      "owner_id": "00000000-0000-0000-0000-000000000706",
+      "platform_blocks": 289,
+      "region": [
+        -1280,
+        -1280,
+        -769,
+        -769
+      ],
+      "station_id": "adb692df-53e4-4cc6-b7db-bb8bc5c66f21"
+    },
+    {
+      "cell": [
+        0,
+        -1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "moon",
+      "owner_id": "00000000-0000-0000-0000-000000000707",
+      "platform_blocks": 289,
+      "region": [
+        -256,
+        -1280,
+        255,
+        -769
+      ],
+      "station_id": "2741efdc-7002-4327-9d10-7c3a9a3c516b"
+    },
+    {
+      "cell": [
+        1,
+        -1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "earth",
+      "owner_id": "00000000-0000-0000-0000-000000000708",
+      "platform_blocks": 289,
+      "region": [
+        768,
+        -1280,
+        1279,
+        -769
+      ],
+      "station_id": "a0eb70ef-d12d-414c-a51e-e32141a07695"
+    },
+    {
+      "cell": [
+        2,
+        -1
+      ],
+      "chunks_loaded": 4,
+      "orbit": "moon",
+      "owner_id": "00000000-0000-0000-0000-000000000709",
+      "platform_blocks": 289,
+      "region": [
+        1792,
+        -1280,
+        2303,
+        -769
+      ],
+      "station_id": "6e904704-fbe9-4158-b450-41d01caf98d4"
+    }
+  ]
+}

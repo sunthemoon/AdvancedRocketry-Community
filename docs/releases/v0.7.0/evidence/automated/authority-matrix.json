@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "action": "visit_and_build",
+      "actor": "owner",
+      "expected": "ALLOW",
+      "result": "PASS"
+    },
+    {
+      "action": "visit_and_build",
+      "actor": "accepted_member",
+      "expected": "ALLOW",
+      "result": "PASS"
+    },
+    {
+      "action": "manage_members_and_delete",
+      "actor": "accepted_member",
+      "expected": "DENY",
+      "result": "PASS"
+    },
+    {
+      "action": "visit_build_select_destination",
+      "actor": "outsider",
+      "expected": "DENY",
+      "result": "PASS"
+    },
+    {
+      "action": "visit",
+      "actor": "invited_not_accepted",
+      "expected": "DENY",
+      "result": "PASS"
+    },
+    {
+      "action": "build_after_removal",
+      "actor": "removed_member",
+      "expected": "DENY_IMMEDIATELY",
+      "result": "PASS"
+    },
+    {
+      "action": "inspect_transfer_delete",
+      "actor": "operator",
+      "expected": "ALLOW_WITH_AUDIT",
+      "result": "PASS"
+    },
+    {
+      "action": "station_destination_with_client_coordinates",
+      "actor": "forged_client_intent",
+      "expected": "REJECT_AND_RECOMPUTE_SERVER_SIDE",
+      "result": "PASS"
+    }
+  ],
+  "critical_or_high_findings": 0,
+  "evidence": [
+    "StationAccessServiceTest",
+    "StationRegistrySavedDataTest",
+    "StationGameTests",
+    "RocketFlightGameTests",
+    "docs/releases/v0.7.0/evidence/station-server/filtered-lifecycle.log"
+  ],
+  "schema_version": 1,
+  "version": "v0.7.0"
+}

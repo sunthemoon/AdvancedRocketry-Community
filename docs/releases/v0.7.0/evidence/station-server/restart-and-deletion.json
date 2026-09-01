@@ -1,0 +1,14 @@
+{
+  "cleanup_count": 9,
+  "deleted_station_id": "e66e81e1-1e4b-4bb5-ad47-ca97d94d1963",
+  "deletion_budget": {
+    "chunks": 4,
+    "inspected": 289,
+    "removed": 289
+  },
+  "neighbor_station_id": "00f695ef-f464-4813-ad72-2592bf93a23a",
+  "neighbor_survived": true,
+  "restart_station_count": 10,
+  "same_ids_owners_cells_regions": true,
+  "schema_version": 1
+}

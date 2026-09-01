@@ -4,12 +4,22 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.7.0 — IN PROGRESS
+## v0.7.0 — READY FOR AUDIT candidate, unreleased developer preview
 
-**Status:** implementation started from the accepted v0.6.0 post-merge
-reproduction. ADR-008 fixes one shared Space Level, persistent 512-block
-station regions on a 1,024-block grid, centralized server permissions, and
-approved-pad-only rocket travel. No v0.7 Gate is yet claimed as passed.
+**Status:** G0-G9 are evidence-bound and owner-approved on 2026-09-01. The
+candidate remains `READY_FOR_AUDIT` until PR checks pass, it merges, and the
+merge commit reproduces the exact accepted JAR.
+
+### Added
+
+- Persistent 512×512 station regions on a 1,024-block square-spiral grid in one
+  shared Space Level, with bounded allocation and schema-versioned SavedData.
+- Transactional station deployment, a 17×17 platform, exact rollback/recovery,
+  ownership, invitations, membership, transfer, inspection, and isolated deletion.
+- Server-authoritative region protection, accessible station destinations,
+  approved-pad arrivals, and 400-tick bounded flight tickets.
+- Packaged station lifecycle and two-client validation bound to the exact
+  1,009,631-byte candidate JAR.
 
 ## v0.6.0 — PASSED candidate, unreleased developer preview
 

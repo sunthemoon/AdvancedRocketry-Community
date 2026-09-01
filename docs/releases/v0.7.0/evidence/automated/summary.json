@@ -1,0 +1,77 @@
+{
+  "artifact_sha256": "4c049a4e0c2a74f78d383af7bc56ad31d746f8b7f8872cbc7258c58981d9c068",
+  "build": "1.20.1-0.7.0-dev",
+  "results": {
+    "clean_builds": {
+      "byte_identical": true,
+      "result": "PASS",
+      "runs": 2
+    },
+    "client_boundary": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "datagen": {
+      "files": 5,
+      "git_diff_clean": true,
+      "result": "PASS"
+    },
+    "gametest": {
+      "evidence": "docs/releases/v0.7.0/evidence/automated/gametest.txt",
+      "failed": 0,
+      "passed": 42,
+      "result": "PASS"
+    },
+    "jar_audit": {
+      "entries": 636,
+      "findings": 0,
+      "result": "PASS"
+    },
+    "junit": {
+      "failed": 0,
+      "passed": 220,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "multiplayer": {
+      "client_linkage_failures": 0,
+      "result": "PASS",
+      "simultaneous_clients": 2
+    },
+    "packaged_station": {
+      "critical_or_high_findings": 0,
+      "ordinary_flight_legs": 4,
+      "result": "PASS",
+      "station_count": 10,
+      "station_flight_legs": 2
+    },
+    "python": {
+      "discovered": 638,
+      "duration_seconds": 2028.46,
+      "failed": 0,
+      "passed": 634,
+      "result": "PASS",
+      "skipped": 4
+    },
+    "repository": {
+      "failed": 0,
+      "passed": 39,
+      "result": "PASS",
+      "warnings": 0
+    }
+  },
+  "schema_version": 1,
+  "security": {
+    "bounded_station_nbt": true,
+    "client_final_station_decisions": 0,
+    "coordinate_free_station_intents": true,
+    "future_schema_fails_closed": true,
+    "member_removal_immediate": true,
+    "permanent_station_tickets": 0,
+    "region_deletion_cross_station_changes": 0,
+    "server_revalidated_station_access": true,
+    "unloaded_destination_forcing": 0
+  },
+  "tested_implementation_commit": "e1c2db8ca3e67ae7f92fbbbbd5b6c23a25f7412f",
+  "version": "v0.7.0"
+}
