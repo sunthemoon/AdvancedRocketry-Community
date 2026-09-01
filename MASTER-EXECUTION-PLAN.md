@@ -4907,7 +4907,7 @@ human_approved_at: "2026-09-01"
 
 ### 2. 前置 Gate
 
-- [ ] v0.6.0 PASSED
+- [x] v0.6.0 PASSED
 - [ ] 共享空间维度策略稳定
 - [ ] station region/ownership ADR 通过
 

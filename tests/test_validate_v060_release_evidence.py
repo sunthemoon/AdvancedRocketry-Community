@@ -15,6 +15,7 @@ class V060ReleaseEvidenceTests(unittest.TestCase):
         for key in (
             "provenance_ready",
             "artifact_ready",
+            "post_merge_ready",
             "data_ready",
             "automated_ready",
             "server_ready",

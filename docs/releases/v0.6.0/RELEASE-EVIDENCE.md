@@ -15,6 +15,7 @@ orbital lasers, space elevators, or stable-save guarantees.
 |---|---|
 | Artifact identity and repeat builds | [`evidence/artifact/artifact-summary.json`](evidence/artifact/artifact-summary.json) |
 | Exact JAR entries | [`evidence/artifact/jar-content-manifest.json`](evidence/artifact/jar-content-manifest.json) |
+| Post-merge exact reproduction | [`evidence/artifact/post-merge-reproduction.json`](evidence/artifact/post-merge-reproduction.json) |
 | Automated and authority summary | [`evidence/automated/summary.json`](evidence/automated/summary.json) |
 | Packaged Forge lifecycle | [`evidence/dedicated-server/summary.json`](evidence/dedicated-server/summary.json) |
 | 20 round trips and restart matrix | [`evidence/flight-server/summary.json`](evidence/flight-server/summary.json) |
@@ -47,5 +48,6 @@ claimed; CI separately audits and executes the Linux-built candidate.
 G0-G9 are `PASS`. Repository owner `sunthemoon` approved provenance, the
 disclosed two-client/manual record, and release acceptance on 2026-09-01.
 ADR-007 scopes the missing screenshot/video exception to v0.6.0 only. PR #10
-must still pass its final three checks, merge, and reproduce this exact JAR
-from the merge commit before the execution goal is closed.
+passed 3/3 checks and merged as
+`4c43ff6297324049eed758d210b9a5f99ed70876`; a cache-disabled forced build from
+that merge reproduced the accepted main JAR and 591-entry manifest exactly.

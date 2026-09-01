@@ -8,9 +8,9 @@ Rocketry maintainers.
 
 **Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-01 after two
 byte-identical clean builds, 20 packaged Earth–Moon round trips, eight restart
-checkpoints, two-client dedicated-server evidence, and G0-G9 review. PR #10,
-merge identity, and post-merge artifact reproduction remain operational steps;
-no tag or public release exists.
+checkpoints, two-client dedicated-server evidence, and G0-G9 review. PR #10
+passed 3/3 checks and merged; its merge commit reproduced the accepted JAR and
+591-entry manifest byte-for-byte. No tag or public release exists.
 
 ### Added
 

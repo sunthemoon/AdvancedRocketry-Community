@@ -48,6 +48,8 @@ EXPECTED_ARTIFACT_SHA256 = (
 )
 EXPECTED_ARTIFACT_BYTES = 917_911
 EXPECTED_COMMIT = "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6"
+EXPECTED_EVIDENCE_COMMIT = "bbf424b43836d865a3f66cca3a580c32701fb46f"
+EXPECTED_MERGE_COMMIT = "4c43ff6297324049eed758d210b9a5f99ed70876"
 EXPECTED_MANIFEST_SHA256 = (
     "8e72c8946246b76aeb1beb453a9a14409806d7c9c47745e81e3185466c1bb529"
 )
@@ -278,6 +280,75 @@ def _validate_automated(
     ):
         errors.append("v0.6.0 automated or authority summary is incomplete")
     return summary
+
+
+def _validate_post_merge(
+    repository_root: Path, artifact_hash: str, errors: list[str]
+) -> bool:
+    try:
+        record = _load_json(
+            repository_root,
+            EVIDENCE_ROOT / "artifact/post-merge-reproduction.json",
+        )
+    except EvidenceError as exc:
+        errors.append(str(exc))
+        return False
+    main = record.get("main_jar")
+    sources = record.get("sources_jar")
+    manifest = record.get("content_manifest")
+    checks = record.get("pull_request_checks")
+    tests = record.get("unit_tests")
+    if (
+        record.get("schema_version") != 1
+        or record.get("version") != EXPECTED_VERSION
+        or record.get("tested_implementation_commit") != EXPECTED_COMMIT
+        or record.get("evidence_commit") != EXPECTED_EVIDENCE_COMMIT
+        or record.get("merge_commit") != EXPECTED_MERGE_COMMIT
+        or record.get("reproduced_at") != "2026-09-01"
+        or record.get("build_result") != "PASS"
+        or "--no-build-cache" not in str(record.get("build_command"))
+        or "--rerun-tasks" not in str(record.get("build_command"))
+        or main
+        != {
+            "byte_equal_to_candidate": True,
+            "bytes": EXPECTED_ARTIFACT_BYTES,
+            "sha256": artifact_hash,
+        }
+        or sources
+        != {
+            "byte_equal_to_candidate": True,
+            "bytes": 451741,
+            "sha256": "090ac53911686dec5f56ede8c0d9d9076e33840bcffedd56ec8619440bde3adc",
+        }
+        or manifest
+        != {
+            "byte_equal_to_candidate": True,
+            "entry_count": 591,
+            "sha256": EXPECTED_MANIFEST_SHA256,
+        }
+        or checks
+        != {
+            "forge_ci": (
+                "https://github.com/sunthemoon/AdvancedRocketry-Community/"
+                "actions/runs/33476308389"
+            ),
+            "governance_ci": (
+                "https://github.com/sunthemoon/AdvancedRocketry-Community/"
+                "actions/runs/33476308388"
+            ),
+            "result": "3/3_PASS",
+        }
+        or tests
+        != {
+            "errors": 0,
+            "failures": 0,
+            "passed": 204,
+            "skipped": 0,
+            "total": 204,
+        }
+    ):
+        errors.append("v0.6.0 post-merge reproduction is incomplete or inconsistent")
+    return not errors
 
 
 def _validate_dedicated_server(
@@ -672,6 +743,9 @@ def validate_v060_release_evidence(
     )
     artifact_ready = len(errors) == before and bool(artifact_hash)
     before = len(errors)
+    post_merge_ready = _validate_post_merge(repository_root, artifact_hash, errors)
+    post_merge_ready = post_merge_ready and len(errors) == before
+    before = len(errors)
     automated = _validate_automated(repository_root, artifact_hash, tested_commit, errors)
     automated_ready = len(errors) == before and bool(automated)
     before = len(errors)
@@ -707,6 +781,7 @@ def validate_v060_release_evidence(
         "tested_implementation_commit": tested_commit,
         "provenance_ready": provenance_ready,
         "artifact_ready": artifact_ready,
+        "post_merge_ready": post_merge_ready,
         "data_ready": provenance_ready and automated_ready,
         "automated_ready": automated_ready,
         "server_ready": dedicated_ready and flight_ready and multiplayer_ready,
@@ -717,7 +792,7 @@ def validate_v060_release_evidence(
         and security.get("client_final_decisions") == 0,
         "performance_ready": performance_ready,
         "client_ready": client_ready,
-        "docs_ready": docs_ready and checksums_ready,
+        "docs_ready": docs_ready and checksums_ready and post_merge_ready,
         "checksums_ready": checksums_ready,
         "human_approved": human_approved,
         "human_approved_at": attestation.get("approved_at")

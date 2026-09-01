@@ -1,0 +1,42 @@
+{
+  "build_command": ".\\gradlew.bat clean build --no-daemon --no-build-cache --rerun-tasks --console=plain",
+  "build_result": "PASS",
+  "content_manifest": {
+    "byte_equal_to_candidate": true,
+    "entry_count": 591,
+    "sha256": "8e72c8946246b76aeb1beb453a9a14409806d7c9c47745e81e3185466c1bb529"
+  },
+  "environment": {
+    "java": "Microsoft OpenJDK 17.0.8+7-LTS",
+    "os": "Windows amd64"
+  },
+  "evidence_commit": "bbf424b43836d865a3f66cca3a580c32701fb46f",
+  "main_jar": {
+    "byte_equal_to_candidate": true,
+    "bytes": 917911,
+    "sha256": "cb8d34e797a57e94a1efb595af8dace6f40072cf0d96715a3d8db73a3518668d"
+  },
+  "merge_commit": "4c43ff6297324049eed758d210b9a5f99ed70876",
+  "pull_request": "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/10",
+  "pull_request_checks": {
+    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33476308389",
+    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33476308388",
+    "result": "3/3_PASS"
+  },
+  "reproduced_at": "2026-09-01",
+  "schema_version": 1,
+  "sources_jar": {
+    "byte_equal_to_candidate": true,
+    "bytes": 451741,
+    "sha256": "090ac53911686dec5f56ede8c0d9d9076e33840bcffedd56ec8619440bde3adc"
+  },
+  "tested_implementation_commit": "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6",
+  "unit_tests": {
+    "errors": 0,
+    "failures": 0,
+    "passed": 204,
+    "skipped": 0,
+    "total": 204
+  },
+  "version": "v0.6.0"
+}
