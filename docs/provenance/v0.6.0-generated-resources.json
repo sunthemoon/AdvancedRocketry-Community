@@ -1,0 +1,80 @@
+{
+  "allowed_file_types": [
+    ".json"
+  ],
+  "expected_resource_paths": [
+    "assets/advancedrocketrycommunity/blockstates/fuel_loader.json",
+    "assets/advancedrocketrycommunity/models/block/fuel_loader.json",
+    "assets/advancedrocketrycommunity/models/item/fuel_loader.json",
+    "assets/advancedrocketrycommunity/models/item/rocket_fuel_cell.json",
+    "assets/advancedrocketrycommunity_v060/lang/en_us.json",
+    "assets/advancedrocketrycommunity_v060/lang/zh_cn.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/fuel_loader.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fuel_cell.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/fuel_loader.json",
+    "data/advancedrocketrycommunity/recipes/fuel_loader.json",
+    "data/advancedrocketrycommunity/recipes/rocket_fuel_cell.json"
+  ],
+  "generated_root": "src/generated/v0.6/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.6.0",
+  "targets": [
+    {
+      "bytes": 100,
+      "path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity/blockstates/fuel_loader.json",
+      "sha256": "8316d12600b09bb3ee3ea0c8f1555793c02a53624b4c89ec700605b46c11bbf9"
+    },
+    {
+      "bytes": 248,
+      "path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity/models/block/fuel_loader.json",
+      "sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3"
+    },
+    {
+      "bytes": 61,
+      "path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity/models/item/fuel_loader.json",
+      "sha256": "4d6a162e8a372983a9bcce04a110377deb97efe2e127fa50a11b85126b28199b"
+    },
+    {
+      "bytes": 44,
+      "path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity/models/item/rocket_fuel_cell.json",
+      "sha256": "3c6f3f9b2d1c30ab7fb3e9ef0db74a219ee7c1d87a1ea419eacd99bce58b3269"
+    },
+    {
+      "bytes": 5058,
+      "path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity_v060/lang/en_us.json",
+      "sha256": "d40b115a9c17a4df37a2146842ff059476d3b856e7db84abf534a808f05ef929"
+    },
+    {
+      "bytes": 4913,
+      "path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity_v060/lang/zh_cn.json",
+      "sha256": "8c00b46bfe4ea4946b7e1c173219cfb17ad688b9b1b01d89c45a9d0b3e10ae10"
+    },
+    {
+      "bytes": 702,
+      "path": "src/generated/v0.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/fuel_loader.json",
+      "sha256": "0c13988da4b45cd2ecc6e063dcef254cc7ca665c9b4de853efc9aba412382221"
+    },
+    {
+      "bytes": 715,
+      "path": "src/generated/v0.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fuel_cell.json",
+      "sha256": "9801dd64aec9e080a60d0cee41ad50aeef407de2d794fb4e5889262138f6ef5d"
+    },
+    {
+      "bytes": 422,
+      "path": "src/generated/v0.6/resources/data/advancedrocketrycommunity/loot_tables/blocks/fuel_loader.json",
+      "sha256": "efb7b8536f250b780ee4e6249133295e77e7ed5f2544c8e40d80a22d66e4bc85"
+    },
+    {
+      "bytes": 534,
+      "path": "src/generated/v0.6/resources/data/advancedrocketrycommunity/recipes/fuel_loader.json",
+      "sha256": "fbccc7185982b81f9ef82ef51e98215a7e16ef8ceaf08871917d24b05aa1301a"
+    },
+    {
+      "bytes": 338,
+      "path": "src/generated/v0.6/resources/data/advancedrocketrycommunity/recipes/rocket_fuel_cell.json",
+      "sha256": "4f63e3a98739643d613a32c5539201aa0a0823be1c5e006f32bc27c53e1bdfa7"
+    }
+  ]
+}

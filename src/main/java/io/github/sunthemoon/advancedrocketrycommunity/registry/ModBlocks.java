@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVent
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -47,6 +48,10 @@ public final class ModBlocks {
     public static final RegistryObject<Block> ROCKET_ASSEMBLER = BLOCKS.register(
             "rocket_assembler",
             () -> new RocketAssemblerBlock(metalProperties())
+    );
+    public static final RegistryObject<Block> FUEL_LOADER = BLOCKS.register(
+            "fuel_loader",
+            () -> new FuelLoaderBlock(metalProperties())
     );
     public static final RegistryObject<Block> ROCKET_MOTOR = metalBlock("rocket_motor");
     public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");

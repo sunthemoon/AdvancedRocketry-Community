@@ -36,7 +36,7 @@ public final class AtmospherePerformanceGameTests {
     private AtmospherePerformanceGameTests() {
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 6_100)
+    @GameTest(template = TEMPLATE, batch = "atmosphere_performance", timeoutTicks = 6_100)
     public static void sixteenVentsRespectBudgetsForFiveMinutes(GameTestHelper helper) {
         ServerLevel moon = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable for the 16-Vent run");
@@ -53,17 +53,31 @@ public final class AtmospherePerformanceGameTests {
         }
         Set<ChunkPos> forcedChunks = forceVentChunks(moon, ventPositions);
         for (BlockPos position : ventPositions) {
-            buildOneCellRoom(moon, position);
+            buildOneCellShell(moon, position);
         }
+        boolean[] placementReady = {false};
+        boolean[] ventsPlaced = {false};
         int[] completedActiveTicks = {0};
         int[] startingOxygen = new int[ventPositions.size()];
         boolean[] measuring = {false};
+        int[] warmupTicks = {0};
         int[] peakInspections = {0};
         long[] startingInspections = {-1L};
         long startedAt = System.nanoTime();
+        helper.runAfterDelay(1, () -> placementReady[0] = true);
 
         helper.onEachTick(() -> {
             try {
+                if (!placementReady[0]) {
+                    return;
+                }
+                if (!ventsPlaced[0]) {
+                    for (BlockPos position : ventPositions) {
+                        placePreparedVent(moon, position);
+                    }
+                    ventsPlaced[0] = true;
+                    return;
+                }
                 List<OxygenVentBlockEntity> vents = loadedVents(moon, ventPositions);
                 for (OxygenVentBlockEntity vent : vents) {
                     refillEnergy(vent);
@@ -78,6 +92,29 @@ public final class AtmospherePerformanceGameTests {
                 );
 
                 if (!measuring[0]) {
+                    warmupTicks[0]++;
+                    if (warmupTicks[0] == 90) {
+                        long activeVents = vents.stream()
+                                .filter(vent -> vent.status() == VentOperatingStatus.ACTIVE)
+                                .count();
+                        AdvancedRocketryCommunity.LOGGER.info(
+                                "ARCE_ATMOSPHERE_PERF_WARMUP ticks={} active_vents={} tracked={} pending={} "
+                                        + "inspections={} dirty={} statuses={}",
+                                warmupTicks[0],
+                                activeVents,
+                                metrics.trackedVents(),
+                                metrics.pendingScanTasks(),
+                                metrics.lastTickInspections(),
+                                metrics.dirtyPositions(),
+                                vents.stream().map(OxygenVentBlockEntity::status).toList()
+                        );
+                        helper.assertTrue(
+                                activeVents == vents.size(),
+                                "16-Vent warmup did not converge within 90 ticks: statuses="
+                                        + vents.stream().map(OxygenVentBlockEntity::status).toList()
+                                        + " metrics=" + metrics
+                        );
+                    }
                     if (vents.stream().anyMatch(vent -> vent.status() != VentOperatingStatus.ACTIVE)) {
                         return;
                     }
@@ -126,13 +163,12 @@ public final class AtmospherePerformanceGameTests {
         });
     }
 
-    private static void buildOneCellRoom(ServerLevel level, BlockPos ventPosition) {
+    private static void buildOneCellShell(ServerLevel level, BlockPos ventPosition) {
         buildShell(
                 level,
                 ventPosition.offset(-1, 0, -1),
                 ventPosition.offset(1, 2, 1)
         );
-        placePreparedVent(level, ventPosition);
     }
 
     private static void buildShell(ServerLevel level, BlockPos minimum, BlockPos maximum) {

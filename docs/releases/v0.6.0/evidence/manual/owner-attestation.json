@@ -1,0 +1,22 @@
+{
+  "acceptance_basis": {
+    "artifact_sha256": "cb8d34e797a57e94a1efb595af8dace6f40072cf0d96715a3d8db73a3518668d",
+    "multiplayer_evidence": "docs/releases/v0.6.0/evidence/multiplayer/summary.json",
+    "release_evidence": "docs/releases/v0.6.0/RELEASE-EVIDENCE.md",
+    "tested_implementation_commit": "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6",
+    "waiver": "docs/decisions/ADR-007-V060-VISUAL-EVIDENCE-ATTESTATION.md"
+  },
+  "approved_at": "2026-09-01",
+  "approved_by": "sunthemoon",
+  "approvals": {
+    "G0_provenance": "PASS",
+    "G8_visible_client_acceptance": "PASS",
+    "G9_release_acceptance": "PASS"
+  },
+  "limitations_accepted": [
+    "The two visible Forge clients were user-development launches from the exact tested implementation commit; the dedicated server used the packaged candidate JAR.",
+    "The committed G4 evidence is filtered two-client/server logging. No screenshot or video is claimed for v0.6.0."
+  ],
+  "schema_version": 1,
+  "version": "v0.6.0"
+}

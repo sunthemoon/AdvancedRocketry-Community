@@ -1,0 +1,13 @@
+# Filtered v0.6.0 final Forge GameTest evidence
+# Full log omitted because it contains machine-local paths.
+[019��2026 12:59:41.966] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_ATMOSPHERE_PERF vents=16 simulated_ticks=6000 active=16 peak_inspections=112 measured_inspections=0 elapsed_seconds=16.382
+[019��2026 12:59:20.061] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight:1' (1 tests)...
+[019��2026 12:59:23.032] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_concurrency:1' (1 tests)...
+[019��2026 12:59:23.380] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_security:1' (1 tests)...
+[019��2026 12:59:42.002] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_recovery:1' (1 tests)...
+[019��2026 12:59:42.134] [Server thread/WARN] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=4a9c31c6-5bea-4e8a-9ea0-71369a3db2f6 phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED
+[019��2026 12:59:42.138] [Server thread/WARN] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=273ca4da-74f6-463f-a042-c8a8ab9eb66b phase=PREPARED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED
+[019��2026 12:59:42.141] [Server thread/WARN] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=f02c74f4-bdda-4fb0-99a5-6d1a39fce698 phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED
+[019��2026 12:59:42.145] [Server thread/WARN] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=4bc358f9-0abf-459a-b07b-05fecc89be77 phase=DESTINATION_SPAWNED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED
+[019��2026 12:59:42.146] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ========= 39 GAME TESTS COMPLETE ======================
+[019��2026 12:59:42.146] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: All 39 required tests passed :)

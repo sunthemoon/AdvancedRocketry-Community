@@ -1,0 +1,65 @@
+{
+  "artifact_sha256": "cb8d34e797a57e94a1efb595af8dace6f40072cf0d96715a3d8db73a3518668d",
+  "build": "1.20.1-0.6.0-dev",
+  "clients": [
+    {
+      "clean_shutdown": true,
+      "connected_to_modded_server": true,
+      "forge": "47.4.10",
+      "kind": "forge_userdev",
+      "minecraft": "1.20.1",
+      "received_shared_marker": true,
+      "source_commit": "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6",
+      "username": "Dev"
+    },
+    {
+      "clean_shutdown": true,
+      "connected_to_modded_server": true,
+      "forge": "47.4.10",
+      "kind": "forge_userdev",
+      "minecraft": "1.20.1",
+      "received_shared_marker": true,
+      "source_commit": "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6",
+      "username": "PilotB"
+    }
+  ],
+  "completed_at": "2026-09-01T12:54:32+08:00",
+  "limitations": [
+    "The two clients are Forge user-development launches from the exact tested implementation commit; the dedicated server alone uses the packaged JAR.",
+    "No screenshot or video is claimed by this machine-generated G4 record. Owner G8/G9 acceptance is recorded separately."
+  ],
+  "logs": [
+    {
+      "file": "server.txt",
+      "sha256": "8643950ac99d214d76e68b4b64cb54347f6bcd5ad54239f642512348adfcc539"
+    },
+    {
+      "file": "client-a.txt",
+      "sha256": "650c009011e285af701f42ac3df55dadd165a7d31fccf6756d52ce7f8e8c293f"
+    },
+    {
+      "file": "client-b.txt",
+      "sha256": "34716d83a73108fd26a9e1a61bcc0276dc36e111f373447d675dfa7debb602d2"
+    }
+  ],
+  "observations": {
+    "catalog_bytes": 469,
+    "catalog_generation": 1,
+    "client_linkage_failures": 0,
+    "same_server_marker_received_by_both": true,
+    "server_player_limit": 2,
+    "server_without_clients_started": true,
+    "simultaneous_players": 2
+  },
+  "schema_version": 1,
+  "server": {
+    "clean_save_and_stop": true,
+    "kind": "packaged_forge_server",
+    "loopback_only": true,
+    "offline_mode": true,
+    "port": 58887,
+    "same_world_from_packaged_flight": true
+  },
+  "tested_implementation_commit": "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6",
+  "version": "v0.6.0"
+}

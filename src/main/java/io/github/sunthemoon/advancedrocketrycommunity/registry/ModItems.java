@@ -47,6 +47,14 @@ public final class ModItems {
             "rocket_assembler",
             ModBlocks.ROCKET_ASSEMBLER
     );
+    public static final RegistryObject<Item> FUEL_LOADER = blockItem(
+            "fuel_loader",
+            ModBlocks.FUEL_LOADER
+    );
+    public static final RegistryObject<Item> ROCKET_FUEL_CELL = ITEMS.register(
+            "rocket_fuel_cell",
+            () -> new Item(new Item.Properties().stacksTo(16))
+    );
     public static final RegistryObject<Item> ROCKET_MOTOR = blockItem(
             "rocket_motor",
             ModBlocks.ROCKET_MOTOR

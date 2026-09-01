@@ -1,0 +1,8 @@
+# Filtered v0.6.0 G4 client A lifecycle
+# Machine-local paths and unrelated runtime warnings are intentionally omitted.
+[019��2026 12:51:28.256] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
+[019��2026 12:51:29.371] [Worker-Main-1/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.6.0-dev initialized
+[019��2026 12:51:31.367] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 58887
+[019��2026 12:51:34.242] [Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[019��2026 12:53:06.249] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Server] ARCE_G4_SHARED_STATE generation=1 players=2 artifact=cb8d34e797a57e94
+[019��2026 12:54:32.839] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

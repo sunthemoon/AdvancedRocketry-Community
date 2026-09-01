@@ -28,6 +28,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.ELECTROLYZER.get(),
                 ElectrolyzerScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.ROCKET_FLIGHT.get(),
+                RocketFlightScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 
