@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockStateAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -296,10 +297,36 @@ public final class RocketGameTests {
                 "Entity reload changed snapshot hash"
         );
         helper.assertTrue(restored.ownerId().orElseThrow().equals(ownerId), "Entity reload changed owner");
+        helper.assertTrue(
+                restored.flightData().orElseThrow().state() == RocketFlightState.ASSEMBLED,
+                "Entity reload changed flight state"
+        );
+        helper.assertTrue(
+                restored.flightData().orElseThrow().logicalRocketId().equals(transactionId),
+                "Entity reload changed logical rocket identity"
+        );
+
+        CompoundTag legacySave = saved.copy();
+        CompoundTag legacyData = legacySave.getCompound("RocketEntityData");
+        legacyData.putInt("schema_version", 1);
+        legacyData.remove("flight_data");
+        RocketEntity migrated = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(migrated != null, "Rocket entity type did not create migration target");
+        migrated.load(legacySave);
+        helper.assertTrue(migrated.operational(), "Schema-1 entity did not migrate operationally");
+        helper.assertTrue(
+                migrated.flightData().orElseThrow().logicalRocketId().equals(transactionId),
+                "Schema-1 migration changed logical rocket identity"
+        );
+        helper.assertTrue(
+                migrated.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData")
+                        .getInt("schema_version") == 2,
+                "Schema-1 entity was not upgraded on save"
+        );
 
         CompoundTag futureSave = saved.copy();
         CompoundTag futureData = futureSave.getCompound("RocketEntityData");
-        futureData.putInt("schema_version", 2);
+        futureData.putInt("schema_version", 3);
         futureData.putString("future_marker", "preserve-exactly");
         RocketEntity future = ModEntities.ROCKET.get().create(helper.getLevel());
         helper.assertTrue(future != null, "Rocket entity type did not create future-schema target");
@@ -312,6 +339,18 @@ public final class RocketGameTests {
         helper.assertTrue(
                 future.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData").equals(futureData),
                 "Future entity payload changed during re-save"
+        );
+
+        CompoundTag mismatchedSave = saved.copy();
+        CompoundTag mismatchedData = mismatchedSave.getCompound("RocketEntityData");
+        mismatchedData.getCompound("flight_data").putUUID("logical_rocket_id", UUID.randomUUID());
+        RocketEntity mismatched = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(mismatched != null, "Rocket entity type did not create mismatch target");
+        mismatched.load(mismatchedSave);
+        helper.assertTrue(!mismatched.operational(), "Mismatched flight identity remained operational");
+        helper.assertTrue(
+                mismatched.preservedBlockedData().orElseThrow().equals(mismatchedData),
+                "Mismatched flight payload was not preserved"
         );
         helper.succeed();
     }

@@ -12,6 +12,7 @@ public final class RocketFlightLimits {
     public static final int MAX_REPLAY_REQUESTS = 4_096;
     public static final int MAX_LANDING_PAD_CANDIDATES = 8;
     public static final int MAX_LANDING_BLOCK_INSPECTIONS = RocketLimits.MAX_BLOCKS;
+    public static final int MAX_FLIGHT_DATA_NBT_BYTES = 65_536;
     public static final long MAX_FUEL_CAPACITY = (long) RocketLimits.MAX_BLOCKS * 1_000L;
     public static final long FUEL_CELL_UNITS = 500L;
     public static final long FUEL_TRANSFER_PER_TICK = 25L;
