@@ -1,21 +1,28 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.command;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
@@ -36,6 +43,10 @@ public final class RocketCommands {
     private static final String ASSEMBLER_ARGUMENT = "assembler";
     private static final String ROCKET_ARGUMENT = "rocket";
     private static final String TRANSFER_ARGUMENT = "transfer";
+    private static final SimpleCommandExceptionType INVALID_RELEASE_TEST_ROCKET =
+            new SimpleCommandExceptionType(Component.literal(
+                    "Release-test target is not an operational rocket in this level"
+            ));
     private static final UUID SERVER_CONSOLE_OWNER =
             UUID.fromString("00000000-0000-0000-0000-000000000005");
 
@@ -67,7 +78,22 @@ public final class RocketCommands {
             root.then(Commands.literal("release-test")
                     .then(Commands.literal("stage-recovery")
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
-                                    .executes(this::stageRecovery))));
+                                    .executes(this::stageRecovery)))
+                    .then(Commands.literal("refuel")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .executes(this::refuelFlight)))
+                    .then(Commands.literal("launch")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .then(Commands.argument("destination", StringArgumentType.word())
+                                            .executes(context -> launchFlight(context, false))
+                                            .then(Commands.argument("checkpoint", StringArgumentType.word())
+                                                    .executes(context -> launchFlight(context, true))))))
+                    .then(Commands.literal("report")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .executes(this::reportFlight)))
+                    .then(Commands.literal("disassemble")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .executes(this::disassembleFlight))));
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
     }
@@ -173,6 +199,150 @@ public final class RocketCommands {
         }
         source.sendFailure(result);
         return 0;
+    }
+
+    private int refuelFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        RocketEntity rocket = releaseTestRocket(context);
+        RocketFlightData before = rocket.flightData().orElseThrow();
+        if (!before.state().acceptsFuel() || before.fuel().capacity() <= 0L) {
+            context.getSource().sendFailure(Component.literal(
+                    "Release-test rocket cannot accept fuel in state " + before.state()
+            ));
+            return 0;
+        }
+        var filled = before.fuel().fill(before.fuel().capacity()).state();
+        rocket.updateFlightData(before.withFuel(filled, rocket.level().getGameTime()));
+        RocketFlightData after = rocket.flightData().orElseThrow();
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_REFUEL entity={} logical={} dimension={} state_before={} "
+                        + "state_after={} amount={} capacity={}",
+                rocket.getUUID(),
+                rocket.assemblyTransactionId().orElse(null),
+                rocket.level().dimension().location(),
+                before.state(),
+                after.state(),
+                after.fuel().amount(),
+                after.fuel().capacity()
+        );
+        context.getSource().sendSuccess(
+                () -> Component.literal("Release-test rocket fuel="
+                        + after.fuel().amount() + "/" + after.fuel().capacity()),
+                false
+        );
+        return 1;
+    }
+
+    private int launchFlight(
+            CommandContext<CommandSourceStack> context,
+            boolean hasCheckpoint
+    ) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        RocketEntity rocket = releaseTestRocket(context);
+        RocketDestination destination;
+        RocketFlightReleaseCheckpoint checkpoint = null;
+        try {
+            destination = RocketDestination.valueOf(
+                    StringArgumentType.getString(context, "destination").toUpperCase(Locale.ROOT)
+            );
+            if (hasCheckpoint) {
+                checkpoint = RocketFlightReleaseCheckpoint.valueOf(
+                        StringArgumentType.getString(context, "checkpoint").toUpperCase(Locale.ROOT)
+                );
+            }
+        } catch (IllegalArgumentException exception) {
+            source.sendFailure(Component.literal("Unknown release-test destination or checkpoint"));
+            return 0;
+        }
+        UUID requestId = UUID.randomUUID();
+        if (checkpoint != null) {
+            rockets.armFlightCheckpointForReleaseTest(requestId, checkpoint);
+        }
+        long fuelBefore = rocket.flightData().orElseThrow().fuel().amount();
+        RocketFlightRequestResult result = rockets.requestAdminFlight(rocket, destination, requestId);
+        if (!result.success() && checkpoint != null) {
+            rockets.cancelFlightCheckpointForReleaseTest(requestId);
+        }
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_LAUNCH request={} entity={} logical={} source={} destination={} "
+                        + "checkpoint={} code={} required_fuel={} fuel_before={}",
+                requestId,
+                rocket.getUUID(),
+                rocket.assemblyTransactionId().orElse(null),
+                rocket.level().dimension().location(),
+                destination.dimensionId(),
+                checkpoint == null ? "none" : checkpoint,
+                result.code(),
+                result.requiredFuel(),
+                fuelBefore
+        );
+        if (!result.success()) {
+            source.sendFailure(Component.literal("Release-test launch failed: " + result.code()));
+            return 0;
+        }
+        RocketFlightReleaseCheckpoint armed = checkpoint;
+        source.sendSuccess(
+                () -> Component.literal("Release-test launch " + requestId
+                        + " required_fuel=" + result.requiredFuel()
+                        + " checkpoint=" + (armed == null ? "none" : armed)),
+                false
+        );
+        return 1;
+    }
+
+    private int reportFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        RocketEntity rocket = releaseTestRocket(context);
+        RocketFlightData flight = rocket.flightData().orElseThrow();
+        var snapshot = rocket.snapshot().orElseThrow();
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_FLIGHT_REPORT entity={} logical={} snapshot={} dimension={} state={} "
+                        + "fuel={} capacity={} passengers={} transfer={} origin={},{},{} blocks={}",
+                rocket.getUUID(),
+                rocket.assemblyTransactionId().orElse(null),
+                snapshot.contentHash(),
+                rocket.level().dimension().location(),
+                flight.state(),
+                flight.fuel().amount(),
+                flight.fuel().capacity(),
+                flight.passengers().assignments().size(),
+                flight.activeTransferId().map(UUID::toString).orElse("none"),
+                snapshot.sourceOrigin().x(),
+                snapshot.sourceOrigin().y(),
+                snapshot.sourceOrigin().z(),
+                snapshot.blocks().size()
+        );
+        context.getSource().sendSuccess(
+                () -> Component.literal("Release-test flight state=" + flight.state()
+                        + " fuel=" + flight.fuel().amount()),
+                false
+        );
+        return 1;
+    }
+
+    private int disassembleFlight(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        RocketEntity rocket = releaseTestRocket(context);
+        RocketValidationCode code = rockets.disassembleForReleaseTest(rocket);
+        if (code != RocketValidationCode.SUCCESS) {
+            context.getSource().sendFailure(Component.literal(
+                    "Release-test disassembly failed: " + code
+            ));
+            return 0;
+        }
+        context.getSource().sendSuccess(
+                () -> Component.literal("Release-test disassembly completed"),
+                false
+        );
+        return 1;
+    }
+
+    private static RocketEntity releaseTestRocket(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        if (!(EntityArgument.getEntity(context, ROCKET_ARGUMENT) instanceof RocketEntity rocket)
+                || !rocket.operational()
+                || rocket.level() != context.getSource().getLevel()) {
+            throw INVALID_RELEASE_TEST_ROCKET.create();
+        }
+        return rocket;
     }
 
     /**

@@ -9,9 +9,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestin
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachine;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketTransactionWorld;
@@ -57,6 +61,8 @@ public final class RocketManager implements RocketOperationService {
     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
     private boolean recoverySuppressedForReleaseTest;
     private boolean flightLifecycleActive;
+    private UUID releaseCheckpointTransferId;
+    private RocketFlightReleaseCheckpoint releaseCheckpoint;
 
     public RocketManager() {
         this(RocketBlockEntityAdapters.defaults());
@@ -241,6 +247,7 @@ public final class RocketManager implements RocketOperationService {
         Objects.requireNonNull(server, "server");
         if (flightLifecycleActive) {
             flights.tick(server);
+            pauseAtArmedReleaseCheckpoint(server);
         }
         if (!recoverySuppressedForReleaseTest) {
             RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server);
@@ -297,18 +304,137 @@ public final class RocketManager implements RocketOperationService {
         ledger.clear();
         flights.clear();
         recoverySuppressedForReleaseTest = false;
+        releaseCheckpointTransferId = null;
+        releaseCheckpoint = null;
     }
 
     /** Prevents the deliberately staged release-test record from recovering before shutdown. */
     public void suppressRecoveryUntilStopForReleaseTest() {
-        if (!Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks")) {
-            throw new IllegalStateException("Rocket release-test hooks are disabled");
-        }
+        requireReleaseTestHooks();
         recoverySuppressedForReleaseTest = true;
+    }
+
+    /** Arms an exact, bounded flight checkpoint for packaged restart evidence. */
+    public void armFlightCheckpointForReleaseTest(
+            UUID transferId,
+            RocketFlightReleaseCheckpoint checkpoint
+    ) {
+        requireReleaseTestHooks();
+        if (!flightLifecycleActive) {
+            throw new IllegalStateException("Rocket flight lifecycle is already paused");
+        }
+        releaseCheckpointTransferId = Objects.requireNonNull(transferId, "transferId");
+        releaseCheckpoint = Objects.requireNonNull(checkpoint, "checkpoint");
+    }
+
+    public void cancelFlightCheckpointForReleaseTest(UUID transferId) {
+        requireReleaseTestHooks();
+        if (Objects.equals(releaseCheckpointTransferId, transferId)) {
+            releaseCheckpointTransferId = null;
+            releaseCheckpoint = null;
+        }
+    }
+
+    /** Uses the production transaction against a landed test rocket without a fake player. */
+    public RocketValidationCode disassembleForReleaseTest(RocketEntity rocket) {
+        requireReleaseTestHooks();
+        Objects.requireNonNull(rocket, "rocket");
+        if (!(rocket.level() instanceof ServerLevel level)
+                || !rocket.isAlive()
+                || !rocket.operational()
+                || !level.hasChunkAt(rocket.blockPosition())
+                || !rocket.snapshot().orElseThrow().sourceDimension().equals(level.dimension().location())
+                || !RocketFlightStateMachine.isLegal(
+                        rocket.flightData().orElseThrow().state(),
+                        RocketFlightEvent.DISASSEMBLE
+                )) {
+            return RocketValidationCode.ENTITY_STATE_INVALID;
+        }
+        RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
+        RocketTransactionSavedData savedData = RocketTransactionSavedData.get(level.getServer());
+        if (!savedData.operational()) {
+            return RocketValidationCode.UNSUPPORTED_SCHEMA;
+        }
+        if (hasPendingRecovery(savedData, snapshot)) {
+            return RocketValidationCode.REGION_BUSY;
+        }
+        UUID owner = rocket.ownerId().orElseThrow();
+        RocketTransactionResult result = new RocketDisassemblyTransaction(
+                new ServerLevelRocketTransactionWorld(level, adapters, owner),
+                locks,
+                ledger,
+                savedData.journalFor(snapshot, owner)
+        ).execute(UUID.randomUUID(), rocket.getUUID(), snapshot);
+        if (result.success()) {
+            flights.releaseLandedReservation(rocket);
+        }
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_DISASSEMBLY entity={} logical={} code={} blocks={} rolled_back={}",
+                rocket.getUUID(),
+                rocket.assemblyTransactionId().orElse(null),
+                result.code(),
+                result.changedBlocks(),
+                result.rolledBackBlocks()
+        );
+        return result.code();
     }
 
     public int pendingScans() {
         return pending.size();
+    }
+
+    private void pauseAtArmedReleaseCheckpoint(MinecraftServer server) {
+        UUID transferId = releaseCheckpointTransferId;
+        RocketFlightReleaseCheckpoint checkpoint = releaseCheckpoint;
+        if (transferId == null || checkpoint == null) {
+            return;
+        }
+        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        RocketTransferRecord record = journal.operational()
+                ? journal.find(transferId).orElse(null)
+                : null;
+        if (record == null) {
+            return;
+        }
+        RocketEntity source = RocketTransferEntities.findSource(server, record);
+        RocketEntity destination = RocketTransferEntities.findDestination(server, record);
+        RocketEntity authority = record.phase().destinationAuthoritative() ? destination : source;
+        RocketFlightState state = authority == null
+                ? null
+                : authority.flightData().map(data -> data.state()).orElse(null);
+        boolean reached = switch (checkpoint) {
+            case COUNTDOWN -> record.phase() == RocketTransferPhase.PREPARED
+                    && state == RocketFlightState.COUNTDOWN;
+            case ASCENT -> record.phase() == RocketTransferPhase.PREPARED
+                    && state == RocketFlightState.ASCENT;
+            case TRANSIT_PREPARED -> record.phase() == RocketTransferPhase.PREPARED
+                    && state == RocketFlightState.TRANSIT;
+            case DESTINATION_SPAWNED -> record.phase() == RocketTransferPhase.DESTINATION_SPAWNED;
+            case DESCENT -> record.phase() == RocketTransferPhase.COMMITTED
+                    && state == RocketFlightState.DESCENT;
+            case LANDED -> record.phase() == RocketTransferPhase.COMMITTED
+                    && state == RocketFlightState.LANDED;
+        };
+        if (!reached) {
+            return;
+        }
+        flightLifecycleActive = false;
+        releaseCheckpointTransferId = null;
+        releaseCheckpoint = null;
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_FLIGHT_PAUSED checkpoint={} transfer={} phase={} state={} entity={}",
+                checkpoint,
+                transferId,
+                record.phase(),
+                state,
+                authority == null ? "none" : authority.getUUID()
+        );
+    }
+
+    private static void requireReleaseTestHooks() {
+        if (!Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks")) {
+            throw new IllegalStateException("Rocket release-test hooks are disabled");
+        }
     }
 
     private boolean tickScan(MinecraftServer server, AssemblerKey key, PendingScan active) {
