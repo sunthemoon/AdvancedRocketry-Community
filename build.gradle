@@ -42,8 +42,19 @@ minecraft {
             property 'forge.enabledGameTestNamespaces', mod_id
 
             if (project.hasProperty('arceEvidenceRun')) {
-                workingDirectory project.file('build/client-evidence/game')
+                def evidenceInstance = project.findProperty('arceEvidenceInstance')?.toString() ?: 'game'
+                if (!(evidenceInstance ==~ /[A-Za-z0-9_-]{1,32}/)) {
+                    throw new GradleException('arceEvidenceInstance must be a bounded directory name')
+                }
+                workingDirectory project.file("build/client-evidence/${evidenceInstance}")
                 args '--width', '960', '--height', '540'
+            }
+            if (project.hasProperty('arceEvidenceUsername')) {
+                def evidenceUsername = project.property('arceEvidenceUsername').toString()
+                if (!(evidenceUsername ==~ /[A-Za-z0-9_]{3,16}/)) {
+                    throw new GradleException('arceEvidenceUsername must be a valid offline username')
+                }
+                args '--username', evidenceUsername
             }
             if (project.hasProperty('arceQuickPlaySingleplayer')) {
                 args '--quickPlaySingleplayer', project.property('arceQuickPlaySingleplayer').toString()
