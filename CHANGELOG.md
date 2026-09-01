@@ -4,12 +4,26 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.5.0 — release candidate, unreleased developer preview
+## v0.6.0 — in progress, unreleased developer preview
 
-**Status:** Local implementation, build, unit/GameTest, packaged-server
-restart/recovery, maximum-structure performance, visible client evidence, and
-owner acceptance are complete. Pull-request checks and post-merge artifact
-reproduction remain; no tag or public release exists.
+**Status:** Architecture and the v0.5 dependency Gate are accepted. Fuel,
+flight, Earth–Moon transfer, passenger recovery, client flow, and release
+evidence are under implementation; no tag or public release exists.
+
+### Planned for this milestone
+
+- A bounded Fuel Loader and server-owned fuel state.
+- A centralized persisted flight state machine and destination plan.
+- Fixed-pad, journaled Earth–Moon transfer with four-case crash recovery.
+- Passenger seat bindings, disconnect/reconnect recovery, and exact landing
+  disassembly.
+- A destination screen plus readable launch, transit, and landing feedback.
+
+## v0.5.0 — PASSED, unreleased developer preview
+
+**Status:** `PASSED` on 2026-09-01 after 3/3 pull-request checks, merge, owner
+acceptance, packaged-server recovery, visible client evidence, and exact
+post-merge JAR reproduction. No tag or public release exists.
 
 ### Added
 

@@ -1824,11 +1824,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.6.0-dev.jar",
                 "--expected-version",
-                "1.20.1-0.5.0-dev",
+                "1.20.1-0.6.0-dev",
                 "--content-manifest",
-                "build/release-evidence/v050-jar-content-manifest.json",
+                "build/release-evidence/v060-jar-content-manifest.json",
             ),
             ("python", "scripts/validate_v010_asset_baseline.py"),
             ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
@@ -1860,9 +1860,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.6.0-dev.jar",
                 "--expected-mod-version",
-                "1.20.1-0.5.0-dev",
+                "1.20.1-0.6.0-dev",
                 "--session-dir",
                 "build/dedicated-server-smoke/session",
                 "--evidence-dir",
@@ -1879,7 +1879,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v020-machine-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.5.0-dev",
+                "1.20.1-0.6.0-dev",
             ),
             (
                 "python",
@@ -1890,7 +1890,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v030-celestial-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.5.0-dev",
+                "1.20.1-0.6.0-dev",
             ),
             (
                 "python",
@@ -1901,7 +1901,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v040-atmosphere-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.5.0-dev",
+                "1.20.1-0.6.0-dev",
             ),
             (
                 "python",
@@ -1912,7 +1912,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v050-rocket-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.5.0-dev",
+                "1.20.1-0.6.0-dev",
             ),
         )
         for command in baseline_commands:

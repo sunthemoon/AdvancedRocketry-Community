@@ -1,39 +1,36 @@
 # GATE_STATUS
 
 ```yaml
-version: v0.5.0
-status: PASSED
-tested_implementation_commit: "eae8d9224c708924930b781d7332eb69b6a4bf8d"
-base_commit: "9c270e29673b97fc78dc73024c58d623b5869c48"
-merge_commit: "90587983b78920ed1f62621c11825dfc11dd901b"
-branch: "main"
-build: "1.20.1-0.5.0-dev"
+version: v0.6.0
+status: IN_PROGRESS
+base_commit: "b349789c9d330da782c8e719f57ff09d8a262e7f"
+branch: "codex/v0.6.0-earth-moon-roundtrip"
+build: "1.20.1-0.6.0-dev"
 upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
 provenance_review: APPROVED
-pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/9"
-forge_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33451413796"
-governance_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33451413748"
-pull_request_checks: 3/3_PASS
+cross_dimension_adr: "docs/decisions/ADR-006-ROCKET-CROSS-DIMENSION-TRANSFER.md"
 gates:
   G0: PASS
-  G1: PASS
-  G2: PASS
-  G3: PASS
-  G4: PASS
-  G5: PASS
-  G6: PASS
-  G7: PASS
-  G8: PASS
-  G9: PASS
-overall: PASSED
-remaining_items: []
-human_approved_by: "sunthemoon"
-human_approved_at: "2026-09-01"
+  G1: NOT_STARTED
+  G2: NOT_STARTED
+  G3: NOT_STARTED
+  G4: NOT_STARTED
+  G5: NOT_STARTED
+  G6: NOT_STARTED
+  G7: NOT_STARTED
+  G8: NOT_STARTED
+  G9: NOT_STARTED
+overall: IN_PROGRESS
+remaining_items:
+  - implement and verify the fuel, flight, transfer, passenger, and landing slices
+  - complete 20 packaged round trips and the restart/recovery matrix
+  - capture visible two-player evidence and bind PR/CI acceptance
+g0_approved_by: "sunthemoon"
+g0_approved_at: "2026-09-01"
 ```
 
-The accepted v0.5.0 record is archived at
-[`../releases/v0.5.0/GATE-STATUS.md`](../releases/v0.5.0/GATE-STATUS.md). PR #9
-passed all three checks and merged as
-`90587983b78920ed1f62621c11825dfc11dd901b`. A cache-disabled clean build from
-that merge reproduced the accepted 703,307-byte JAR and its 497-entry content
-manifest exactly.
+The immutable accepted v0.5.0 record is
+[`../releases/v0.5.0/GATE-STATUS.md`](../releases/v0.5.0/GATE-STATUS.md). v0.6
+adds no imported upstream assets at preparation time, so the repository owner
+has allowed G0 to carry forward. All behavior, persistence, security,
+performance, client, and release Gates remain unresolved until evidence exists.
