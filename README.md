@@ -20,10 +20,11 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest accepted milestone is `v0.5.0`: bounded transactional rocket
-assembly, rendering, persistence, and exact disassembly. `v0.6.0` Earth–Moon
-fuel, flight, transfer, passenger, and recovery work is now in progress; launch
-and travel are not yet accepted for release. See
+The latest owner-accepted milestone is `v0.6.0`: bounded fuel loading,
+server-authoritative Earth–Moon flight, durable transfer recovery, passengers,
+landing, return, and exact disassembly. It remains an unreleased developer
+preview; PR merge and post-merge artifact reproduction are tracked separately
+from the completed G0-G9 decision. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
 sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
 verified and pending evidence.

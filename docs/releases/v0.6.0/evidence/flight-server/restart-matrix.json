@@ -1,0 +1,129 @@
+{
+  "cases": [
+    {
+      "case": "ASSEMBLED",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "f6d75c73-cff9-464c-ba98-acf9395de231",
+      "recovered_dimension": "minecraft:overworld",
+      "recovered_state": "ASSEMBLED",
+      "recovery": {},
+      "staged_phase": "none",
+      "staged_state": "ASSEMBLED"
+    },
+    {
+      "case": "FUELED",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "b3693ffc-cb46-436f-8519-b409197daa0d",
+      "recovered_dimension": "minecraft:overworld",
+      "recovered_state": "FUELED",
+      "recovery": {},
+      "staged_phase": "none",
+      "staged_state": "FUELED"
+    },
+    {
+      "case": "COUNTDOWN",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "86c9057e-c895-464d-bd9b-003280ccc833",
+      "recovered_dimension": "minecraft:overworld",
+      "recovered_state": "FUELED",
+      "recovery": {
+        "action": "KEEP_SOURCE",
+        "destination_count": 0,
+        "phase": "PREPARED",
+        "source_count": 1,
+        "status": "RECOVERED"
+      },
+      "staged_phase": "PREPARED",
+      "staged_state": "COUNTDOWN"
+    },
+    {
+      "case": "ASCENT",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "c07e2064-1c63-44be-b593-c24d0d728cb7",
+      "recovered_dimension": "minecraft:overworld",
+      "recovered_state": "FUELED",
+      "recovery": {
+        "action": "KEEP_SOURCE",
+        "destination_count": 0,
+        "phase": "PREPARED",
+        "source_count": 1,
+        "status": "RECOVERED"
+      },
+      "staged_phase": "PREPARED",
+      "staged_state": "ASCENT"
+    },
+    {
+      "case": "TRANSIT_PREPARED",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "55f7fece-07bd-4944-882c-9fd4a8aa26b3",
+      "recovered_dimension": "minecraft:overworld",
+      "recovered_state": "FUELED",
+      "recovery": {
+        "action": "KEEP_SOURCE",
+        "destination_count": 0,
+        "phase": "PREPARED",
+        "source_count": 1,
+        "status": "RECOVERED"
+      },
+      "staged_phase": "PREPARED",
+      "staged_state": "TRANSIT"
+    },
+    {
+      "case": "DESTINATION_SPAWNED",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "93bca895-a581-47e7-8d5b-bc24589760d1",
+      "recovered_dimension": "advancedrocketrycommunity:moon",
+      "recovered_state": "LANDED",
+      "recovery": {
+        "action": "REMOVE_SOURCE_KEEP_DESTINATION",
+        "destination_count": 1,
+        "phase": "DESTINATION_SPAWNED",
+        "source_count": 1,
+        "status": "RECOVERED"
+      },
+      "staged_phase": "DESTINATION_SPAWNED",
+      "staged_state": "DESCENT"
+    },
+    {
+      "case": "DESCENT",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "bf244bac-b83c-4e03-bc44-2440f4442416",
+      "recovered_dimension": "advancedrocketrycommunity:moon",
+      "recovered_state": "LANDED",
+      "recovery": {
+        "action": "KEEP_DESTINATION",
+        "destination_count": 1,
+        "phase": "COMMITTED",
+        "source_count": 0,
+        "status": "RECOVERED"
+      },
+      "staged_phase": "COMMITTED",
+      "staged_state": "DESCENT"
+    },
+    {
+      "case": "LANDED",
+      "container_inventory_conserved": true,
+      "exact_disassembly": true,
+      "logical_rocket_id": "7f5cfe18-dbae-4d3f-8263-e3a357c08238",
+      "recovered_dimension": "advancedrocketrycommunity:moon",
+      "recovered_state": "LANDED",
+      "recovery": {
+        "action": "KEEP_DESTINATION",
+        "destination_count": 1,
+        "phase": "COMMITTED",
+        "source_count": 0,
+        "status": "RECOVERED"
+      },
+      "staged_phase": "COMMITTED",
+      "staged_state": "LANDED"
+    }
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,27 @@
+# Filtered v0.6.0 G4 packaged-server lifecycle
+# Machine-local paths and unrelated runtime warnings are intentionally omitted.
+[019��2026 12:50:14.273] [modloading-worker-0/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.6.0-dev initialized
+[019��2026 12:50:16.940] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting Minecraft server on 127.0.0.1:58887
+[019��2026 12:50:17.071] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[019��2026 12:51:34.259] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[/127.0.0.1:49409] logged in with entity id 98 at (1.5, 110.0, -9.5)
+[019��2026 12:52:33.344] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: PilotB[/127.0.0.1:49618] logged in with entity id 154 at (-5.5, 105.0, -5.5)
+[019��2026 12:51:34.273] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[019��2026 12:52:33.344] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Sent 469-byte celestial snapshot generation 1 to 1 player(s)
+[019��2026 12:51:34.297] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[019��2026 12:52:33.346] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: PilotB joined the game
+[019��2026 12:52:56.638] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: There are 2 of a max of 2 players online: Dev, PilotB
+[019��2026 12:53:06.240] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Celestial bodies: 3
+[019��2026 12:53:06.240] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: advancedrocketrycommunity:earth -> minecraft:overworld gravity=1.0 atmosphere=advancedrocketrycommunity:earth
+[019��2026 12:53:06.240] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: advancedrocketrycommunity:moon -> advancedrocketrycommunity:moon gravity=0.165 atmosphere=advancedrocketrycommunity:vacuum
+[019��2026 12:53:06.240] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: advancedrocketrycommunity:space -> advancedrocketrycommunity:space gravity=0.0 atmosphere=advancedrocketrycommunity:vacuum
+[019��2026 12:53:06.245] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Not Secure] [Server] ARCE_G4_SHARED_STATE generation=1 players=2 artifact=cb8d34e797a57e94
+[019��2026 12:53:06.246] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving the game (this may take a moment!)
+[019��2026 12:53:06.278] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saved the game
+[019��2026 12:53:32.337] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[019��2026 12:53:32.345] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: PilotB lost connection: Server closed
+[019��2026 12:53:32.346] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: PilotB left the game
+[019��2026 12:53:33.205] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[019��2026 12:53:33.205] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (space): All chunks are saved
+[019��2026 12:53:33.205] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[019��2026 12:53:33.205] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[019��2026 12:53:33.205] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (moon): All chunks are saved

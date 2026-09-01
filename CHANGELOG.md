@@ -4,20 +4,26 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.6.0 — in progress, unreleased developer preview
+## v0.6.0 — PASSED candidate, unreleased developer preview
 
-**Status:** Architecture and the v0.5 dependency Gate are accepted. Fuel,
-flight, Earth–Moon transfer, passenger recovery, client flow, and release
-evidence are under implementation; no tag or public release exists.
+**Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-01 after two
+byte-identical clean builds, 20 packaged Earth–Moon round trips, eight restart
+checkpoints, two-client dedicated-server evidence, and G0-G9 review. PR #10,
+merge identity, and post-merge artifact reproduction remain operational steps;
+no tag or public release exists.
 
-### Planned for this milestone
+### Added
 
-- A bounded Fuel Loader and server-owned fuel state.
-- A centralized persisted flight state machine and destination plan.
-- Fixed-pad, journaled Earth–Moon transfer with four-case crash recovery.
-- Passenger seat bindings, disconnect/reconnect recovery, and exact landing
+- A bounded Fuel Loader, Rocket Fuel Cell, and exactly-once server fuel debit.
+- A persisted flight state machine and server-recomputed destination plan.
+- Fixed-pad, journaled Earth–Moon transfer with four-case crash recovery and
+  one authoritative rocket.
+- Passenger UUID/seat bindings, disconnect/reconnect recovery, and exact landing
   disassembly.
-- A destination screen plus readable launch, transit, and landing feedback.
+- A destination screen plus launch, transit, landing, cancellation, and
+  recovery feedback.
+- Packaged-server acceptance covering 40 production flight legs and exact
+  block, inventory, fuel, passenger, and entity accounting.
 
 ## v0.5.0 — PASSED, unreleased developer preview
 

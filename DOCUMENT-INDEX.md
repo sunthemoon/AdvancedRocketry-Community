@@ -76,6 +76,9 @@
 | `docs/releases/v0.5.0/` | 火箭扫描、事务组装/拆解、恢复、性能、客户端与确定性产物证据 |
 | `docs/releases/v0.5.0/GATE-STATUS.md` | v0.5.0 Required Gate、PR/CI、合并与复现接受快照 |
 | `docs/releases/v0.5.0/INSTALLATION.md` | v0.5.0 开发预览安装、火箭边界与存档说明 |
+| `docs/releases/v0.6.0/` | 地月往返、跨维度恢复、40 航段、8 状态重启、双客户端与确定性产物证据 |
+| `docs/releases/v0.6.0/GATE-STATUS.md` | v0.6.0 Required Gate、所有者批准、PR/CI 与验收例外绑定 |
+| `docs/releases/v0.6.0/INSTALLATION.md` | v0.6.0 开发预览安装、固定地月路线与存档边界 |
 
 ## 实施记录
 
@@ -136,7 +139,7 @@ Codex 报告格式
 
 ## 决策记录
 
-`docs/decisions/` 内提供七份 ADR：
+`docs/decisions/` 内提供八份 ADR：
 
 - 项目身份与 namespace；
 - 固定 Moon/Space 维度；
@@ -145,7 +148,9 @@ Codex 报告格式
 - 私有仓库下的 v0.0.1 G8 证据接受与公开前复查条件；
 - v0.0.2 bootstrap 范围内的 G4 适用性判断；
 - v0.6.0 固定落点、跨维度权威切换和崩服恢复。
+- v0.6.0 双客户端日志与所有者可视化验收例外。
 
-ADR-000、ADR-001、ADR-002、ADR-004、ADR-005 和 ADR-006 已由维护者
-接受；ADR-003 仍保留 `PROPOSED` 状态。ADR-006 记录 v0.6.0 固定落点、
-跨维度权威切换、乘客和四种崩服恢复策略。
+ADR-000、ADR-001、ADR-002、ADR-004、ADR-005、ADR-006 和 ADR-007 已由
+维护者接受；ADR-003 仍保留 `PROPOSED` 状态。ADR-006 记录 v0.6.0 固定
+落点、跨维度权威切换、乘客和四种崩服恢复策略；ADR-007 仅接受本版
+无截图/录像的双客户端日志证据，并要求后续版本重新取证。

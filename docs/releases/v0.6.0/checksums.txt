@@ -1,0 +1,20 @@
+# SHA-256  repository-relative-path
+cb8d34e797a57e94a1efb595af8dace6f40072cf0d96715a3d8db73a3518668d  build/libs/advancedrocketry-community-1.20.1-0.6.0-dev.jar
+869110c075f68c5cafb0c2da2aa72c019eaa52151632b9504171fa3eb4f79ab8  docs/releases/v0.6.0/evidence/artifact/artifact-summary.json
+8e72c8946246b76aeb1beb453a9a14409806d7c9c47745e81e3185466c1bb529  docs/releases/v0.6.0/evidence/artifact/jar-content-manifest.json
+f94d1dd2f3bdcbb491832831cf568448c9a7e2420cd748162a5861a14284da66  docs/releases/v0.6.0/evidence/automated/gametest.txt
+239906bb880ca73d96a21cb92bbd4715207670c50ab0559ed90b62edf9f2301f  docs/releases/v0.6.0/evidence/automated/summary.json
+085f7c4e8ad60c5f509283afa814a0c79df0fed166dbd25f95eddf7d13407709  docs/releases/v0.6.0/evidence/dedicated-server/first-start.txt
+99ce34cb8be784694611dbd1f58f81b080423c8c8421f62eb11189fee0ab9b85  docs/releases/v0.6.0/evidence/dedicated-server/restart.txt
+384e185f445c7ba76f8e8367de99d393e432150324dd14d72240dbf0447a0401  docs/releases/v0.6.0/evidence/dedicated-server/summary.json
+1d2bc32bff149608071fa56d5202cec993b5bb5a0c94fa2871dcd4d0482168bc  docs/releases/v0.6.0/evidence/flight-server/filtered-lifecycle.log
+00630287cd641ecf6bac39a5895362af33faf281b7b9e9da2741487701637b63  docs/releases/v0.6.0/evidence/flight-server/lifecycle.txt
+d665b16a5e88487fbf5c5c3e1358f7c6c658e88b74cc0f31cf6ec5bfa7786dc5  docs/releases/v0.6.0/evidence/flight-server/restart-matrix.json
+3292c33ca950cdf83c802548154e22ba37bd5c8edc641dbae1238c80493902a3  docs/releases/v0.6.0/evidence/flight-server/round-trip-ledger.json
+ee1657a862900a819b160154c57e34564560d53041c6e146709791d519d0b297  docs/releases/v0.6.0/evidence/flight-server/summary.json
+7e3a6e4d0f9a23b8602522be933f168ebb58eb6dd37596d18fb8e246d385f22d  docs/releases/v0.6.0/evidence/manual/owner-attestation.json
+650c009011e285af701f42ac3df55dadd165a7d31fccf6756d52ce7f8e8c293f  docs/releases/v0.6.0/evidence/multiplayer/client-a.txt
+34716d83a73108fd26a9e1a61bcc0276dc36e111f373447d675dfa7debb602d2  docs/releases/v0.6.0/evidence/multiplayer/client-b.txt
+8643950ac99d214d76e68b4b64cb54347f6bcd5ad54239f642512348adfcc539  docs/releases/v0.6.0/evidence/multiplayer/server.txt
+a3a27fe9783803bb5f6b5b9d27fcd6ec10339bb94808dca5374f2695ea72f7d1  docs/releases/v0.6.0/evidence/multiplayer/summary.json
+668d95e32c1c6a00f9a5ff4501dc702362eb5a3ae36eba2421836d726d466b84  docs/releases/v0.6.0/evidence/performance/summary.json

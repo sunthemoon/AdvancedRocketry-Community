@@ -1,0 +1,75 @@
+{
+  "artifact_sha256": "cb8d34e797a57e94a1efb595af8dace6f40072cf0d96715a3d8db73a3518668d",
+  "build": "1.20.1-0.6.0-dev",
+  "results": {
+    "celestial_identity": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "clean_builds": {
+      "byte_identical": true,
+      "result": "PASS",
+      "runs": 2
+    },
+    "client_boundary": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "datagen": {
+      "files": 11,
+      "git_diff_clean": true,
+      "result": "PASS"
+    },
+    "gametest": {
+      "evidence": "docs/releases/v0.6.0/evidence/automated/gametest.txt",
+      "failed": 0,
+      "passed": 39,
+      "result": "PASS"
+    },
+    "jar_audit": {
+      "entries": 591,
+      "findings": 0,
+      "result": "PASS"
+    },
+    "junit": {
+      "failed": 0,
+      "passed": 204,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "packaged_flight": {
+      "flight_legs": 40,
+      "restart_cases": 8,
+      "result": "PASS",
+      "round_trips": 20
+    },
+    "python": {
+      "discovered": 613,
+      "failed": 0,
+      "passed": 609,
+      "result": "PASS",
+      "skipped": 4
+    },
+    "repository": {
+      "failed": 0,
+      "result": "PASS",
+      "warnings": 0
+    }
+  },
+  "schema_version": 1,
+  "security": {
+    "bounded_flight_nbt": true,
+    "bounded_landing_search": true,
+    "bounded_network_intents": true,
+    "client_final_decisions": 0,
+    "exactly_once_fuel_debit": true,
+    "forced_chunk_loads": 0,
+    "loaded_destination_required": true,
+    "permission_and_distance_checked": true,
+    "replay_intents_rejected": true,
+    "server_recomputed_flight_plan": true,
+    "single_authority_recovery": true
+  },
+  "tested_implementation_commit": "6a293f705e939a67b5b617b1dfaa7deef4d6d7b6",
+  "version": "v0.6.0"
+}

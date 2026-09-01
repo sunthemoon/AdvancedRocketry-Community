@@ -73,6 +73,9 @@ jobs:
       - name: Validate v0.5.0 generated-resource inventory
         run: python scripts/manage_v050_generated_manifest.py verify
 
+      - name: Validate v0.6.0 generated-resource inventory
+        run: python scripts/manage_v060_generated_manifest.py verify
+
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
 
@@ -87,6 +90,9 @@ jobs:
 
       - name: Validate v0.5.0 release evidence
         run: python scripts/validate_v050_release_evidence.py --require-approved
+
+      - name: Validate v0.6.0 release evidence
+        run: python scripts/validate_v060_release_evidence.py --require-approved
 
       - name: Generate deterministic resources
         run: ./gradlew runData --no-daemon --stacktrace
@@ -141,6 +147,14 @@ jobs:
           --evidence-dir build/v050-rocket-server-smoke/evidence
           --expected-version 1.20.1-0.6.0-dev
 
+      - name: Run packaged Earth-Moon flight and restart matrix
+        run: >-
+          python scripts/run_v060_flight_server_smoke.py
+          build/dedicated-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v060-flight-server-smoke/evidence
+          --expected-version 1.20.1-0.6.0-dev
+
       - name: Upload baseline JAR and test reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -158,6 +172,7 @@ jobs:
             build/v030-celestial-server-smoke/evidence/
             build/v040-atmosphere-server-smoke/evidence/
             build/v050-rocket-server-smoke/evidence/
+            build/v060-flight-server-smoke/evidence/
 
   latest-compatibility:
     name: Forge 47.4.23 compatibility (advisory)

@@ -1,0 +1,31 @@
+{
+  "atmosphere_soak": {
+    "active_vents": 16,
+    "maximum_level_inspections_per_tick": 1024,
+    "measured_final_inspections": 0,
+    "peak_inspections": 112,
+    "result": "PASS",
+    "simulated_ticks": 6000,
+    "vents": 16
+  },
+  "flight_limits": {
+    "active_transfers": 64,
+    "intent_window_ticks": 20,
+    "landing_block_inspections": 2048,
+    "landing_chunks": 16,
+    "landing_pad_candidates": 8,
+    "passengers": 16,
+    "player_intents_per_window": 8,
+    "transfer_entity_matches": 64
+  },
+  "packaged_flight": {
+    "flight_legs": 40,
+    "restart_cases": 8,
+    "restart_failures": 0,
+    "result": "PASS",
+    "round_trips": 20
+  },
+  "schema_version": 1,
+  "source": "Final GameTest and packaged-server execution on 2026-09-01",
+  "version": "v0.6.0"
+}
