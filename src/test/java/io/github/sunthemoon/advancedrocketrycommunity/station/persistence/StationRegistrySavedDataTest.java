@@ -24,13 +24,15 @@ final class StationRegistrySavedDataTest {
                 stationId, owner, "Persistent", ModIdentity.id("earth"), 42
         );
         StationState state = data.commit(stationId);
-        data.addMember(stationId, member);
+        data.invite(stationId, member);
+        data.acceptInvitation(stationId, member);
 
         StationRegistrySavedData restored = StationRegistrySavedData.load(data.save(new CompoundTag()));
         assertTrue(restored.operational());
         StationState decoded = restored.find(stationId).orElseThrow();
         assertEquals(state.cell(), decoded.cell());
         assertTrue(decoded.members().contains(member));
+        assertTrue(decoded.invitations().isEmpty());
 
         UUID nextId = UUID.randomUUID();
         StationReservation next = restored.reserve(

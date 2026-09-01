@@ -1,0 +1,17 @@
+{
+  "body.advancedrocketrycommunity.space_station": "Space Station",
+  "item.advancedrocketrycommunity.station_deployment_kit": "Station Deployment Kit",
+  "screen.advancedrocketrycommunity.rocket.no_stations": "NO ACCESSIBLE STATIONS",
+  "screen.advancedrocketrycommunity.rocket.station_choice": "STATION  %s  (%s/%s)",
+  "station.advancedrocketrycommunity.access.denied": "You may not modify this station region",
+  "station.advancedrocketrycommunity.creation.details": "Deployed %s (%s); it is now available in the rocket console",
+  "station.advancedrocketrycommunity.creation.invalid_source": "Deploy a station from Earth or Moon",
+  "station.advancedrocketrycommunity.creation.owner_limit_reached": "You already own the maximum number of stations",
+  "station.advancedrocketrycommunity.creation.persistence_failed": "Station deployment was rolled back after a persistence failure",
+  "station.advancedrocketrycommunity.creation.platform_blocked": "The allocated station platform footprint is occupied",
+  "station.advancedrocketrycommunity.creation.region_unavailable": "No station region is currently available",
+  "station.advancedrocketrycommunity.creation.registry_blocked": "Station registry contains unsupported or invalid data",
+  "station.advancedrocketrycommunity.creation.service_unavailable": "Station service is unavailable",
+  "station.advancedrocketrycommunity.creation.space_unavailable": "The fixed Space Level is unavailable",
+  "station.advancedrocketrycommunity.creation.success": "Station deployment completed"
+}

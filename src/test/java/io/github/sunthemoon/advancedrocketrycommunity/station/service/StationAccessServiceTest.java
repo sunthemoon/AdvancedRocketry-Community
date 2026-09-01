@@ -47,5 +47,22 @@ final class StationAccessServiceTest {
         StationState removed = station.withoutMember(member);
         assertFalse(access.allowed(removed, member, false, StationAccessAction.BUILD));
     }
-}
 
+    @Test
+    void invitationHasNoAuthorityUntilAcceptedAndCanBeDeclined() {
+        UUID owner = UUID.randomUUID();
+        UUID invited = UUID.randomUUID();
+        StationState station = StationState.fromReservation(new StationReservation(
+                UUID.randomUUID(), owner, "Invitation", new StationGridCell(0, 0),
+                ModIdentity.id("earth"), 0
+        )).invite(invited);
+        assertFalse(access.allowed(station, invited, false, StationAccessAction.VISIT));
+        assertTrue(station.invitations().contains(invited));
+
+        StationState declined = station.declineInvitation(invited);
+        assertFalse(declined.invitations().contains(invited));
+        StationState accepted = station.invite(invited).acceptInvitation(invited);
+        assertTrue(access.allowed(accepted, invited, false, StationAccessAction.VISIT));
+        assertFalse(accepted.invitations().contains(invited));
+    }
+}

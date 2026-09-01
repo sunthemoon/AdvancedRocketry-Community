@@ -22,14 +22,9 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
 
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
-        generator.addProvider(
-                event.includeClient(),
-                new FlightBlockStateProvider(output, existingFiles)
-        );
-        generator.addProvider(event.includeClient(), new FlightItemModelProvider(output, existingFiles));
-        generator.addProvider(event.includeClient(), new FlightLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new FlightLanguageProvider(output, "zh_cn"));
-        generator.addProvider(event.includeServer(), new FlightRecipeProvider(output));
-        generator.addProvider(event.includeServer(), FlightLootTableProvider.create(output));
+        generator.addProvider(event.includeClient(), new StationItemModelProvider(output, existingFiles));
+        generator.addProvider(event.includeClient(), new StationLanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new StationLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeServer(), new StationRecipeProvider(output));
     }
 }

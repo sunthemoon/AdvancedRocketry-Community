@@ -34,6 +34,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ROCKET_ASSEMBLER.get());
                         output.accept(ModItems.FUEL_LOADER.get());
                         output.accept(ModItems.ROCKET_FUEL_CELL.get());
+                        output.accept(ModItems.STATION_DEPLOYMENT_KIT.get());
                         output.accept(ModItems.ROCKET_MOTOR.get());
                         output.accept(ModItems.ROCKET_FUEL_TANK.get());
                         output.accept(ModItems.ROCKET_SEAT.get());

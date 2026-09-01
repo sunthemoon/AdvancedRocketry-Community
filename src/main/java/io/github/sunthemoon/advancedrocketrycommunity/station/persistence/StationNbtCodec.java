@@ -50,6 +50,13 @@ final class StationNbtCodec {
             members.add(member);
         }
         target.put("members", members);
+        ListTag invitations = new ListTag();
+        for (UUID playerId : state.sortedInvitations()) {
+            CompoundTag invitation = new CompoundTag();
+            invitation.putUUID("id", playerId);
+            invitations.add(invitation);
+        }
+        target.put("invitations", invitations);
         requireRecordBound(target);
         return target;
     }
@@ -81,6 +88,14 @@ final class StationNbtCodec {
         for (Tag raw : memberTags) {
             members.add(requireUuid((CompoundTag) raw, "id"));
         }
+        ListTag invitationTags = requireList(source, "invitations", Tag.TAG_COMPOUND);
+        if (invitationTags.size() > StationLimits.MAX_INVITATIONS) {
+            throw new IllegalArgumentException("Station invitation list exceeds the fixed bound");
+        }
+        ArrayList<UUID> invitations = new ArrayList<>(invitationTags.size());
+        for (Tag raw : invitationTags) {
+            invitations.add(requireUuid((CompoundTag) raw, "id"));
+        }
         return new StationState(
                 schema,
                 requireUuid(source, "station_id"),
@@ -92,7 +107,8 @@ final class StationNbtCodec {
                 requireLocation(source, "orbit_body"),
                 requireNonNegativeLong(source, "created_at_game_time"),
                 profile,
-                members
+                members,
+                invitations
         );
     }
 
@@ -237,4 +253,3 @@ final class StationNbtCodec {
         return list;
     }
 }
-

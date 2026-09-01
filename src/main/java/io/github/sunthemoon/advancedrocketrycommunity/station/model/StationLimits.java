@@ -7,6 +7,7 @@ public final class StationLimits {
     public static final int MAX_STATIONS = 4_096;
     public static final int MAX_RESERVATIONS = 64;
     public static final int MAX_MEMBERS = 32;
+    public static final int MAX_INVITATIONS = 32;
     public static final int MAX_ACCESSIBLE_DESTINATIONS = 32;
     public static final int MAX_OWNED_STATIONS = 1;
     public static final int MAX_NAME_LENGTH = 48;
@@ -23,4 +24,3 @@ public final class StationLimits {
     private StationLimits() {
     }
 }
-

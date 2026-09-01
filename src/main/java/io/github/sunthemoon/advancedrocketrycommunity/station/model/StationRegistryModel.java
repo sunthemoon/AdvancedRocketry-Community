@@ -84,6 +84,18 @@ public final class StationRegistryModel {
         return update(requireStation(stationId).withoutMember(memberId));
     }
 
+    public synchronized StationState invite(UUID stationId, UUID playerId) {
+        return update(requireStation(stationId).invite(playerId));
+    }
+
+    public synchronized StationState acceptInvitation(UUID stationId, UUID playerId) {
+        return update(requireStation(stationId).acceptInvitation(playerId));
+    }
+
+    public synchronized StationState declineInvitation(UUID stationId, UUID playerId) {
+        return update(requireStation(stationId).declineInvitation(playerId));
+    }
+
     public synchronized StationState transferOwnership(UUID stationId, UUID ownerId) {
         return update(requireStation(stationId).transferOwnership(ownerId));
     }

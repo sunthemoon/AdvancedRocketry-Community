@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "C": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "G": {
+      "item": "advancedrocketrycommunity:guidance_computer"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "pattern": [
+    "EGE",
+    "ACA",
+    "III"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:station_deployment_kit"
+  },
+  "show_notification": true
+}

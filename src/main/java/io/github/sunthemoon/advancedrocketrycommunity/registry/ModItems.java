@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.OxygenCanisterItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.content.DevelopmentComponentItem;
+import io.github.sunthemoon.advancedrocketrycommunity.station.content.StationDeploymentKitItem;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
@@ -54,6 +55,10 @@ public final class ModItems {
     public static final RegistryObject<Item> ROCKET_FUEL_CELL = ITEMS.register(
             "rocket_fuel_cell",
             () -> new Item(new Item.Properties().stacksTo(16))
+    );
+    public static final RegistryObject<Item> STATION_DEPLOYMENT_KIT = ITEMS.register(
+            "station_deployment_kit",
+            () -> new StationDeploymentKitItem(new Item.Properties().stacksTo(1))
     );
     public static final RegistryObject<Item> ROCKET_MOTOR = blockItem(
             "rocket_motor",

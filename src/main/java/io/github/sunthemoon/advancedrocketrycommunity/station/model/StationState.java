@@ -22,6 +22,7 @@ public final class StationState {
     private final long createdAtGameTime;
     private final StationEnvironmentProfile environment;
     private final Set<UUID> members;
+    private final Set<UUID> invitations;
 
     public StationState(
             int schemaVersion,
@@ -34,7 +35,8 @@ public final class StationState {
             ResourceLocation orbitBody,
             long createdAtGameTime,
             StationEnvironmentProfile environment,
-            Collection<UUID> members
+            Collection<UUID> members,
+            Collection<UUID> invitations
     ) {
         if (schemaVersion != StationLimits.STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported station state schema");
@@ -73,6 +75,21 @@ public final class StationState {
             throw new IllegalArgumentException("Station member list exceeds the fixed bound");
         }
         this.members = Set.copyOf(checked);
+        Objects.requireNonNull(invitations, "invitations");
+        LinkedHashSet<UUID> checkedInvitations = new LinkedHashSet<>();
+        invitations.stream().sorted(Comparator.naturalOrder()).forEach(invited -> {
+            Objects.requireNonNull(invited, "invited");
+            if (invited.equals(ownerId) || checked.contains(invited)) {
+                throw new IllegalArgumentException("Station invitation already has access");
+            }
+            if (!checkedInvitations.add(invited)) {
+                throw new IllegalArgumentException("Station invitation list contains a duplicate");
+            }
+        });
+        if (checkedInvitations.size() > StationLimits.MAX_INVITATIONS) {
+            throw new IllegalArgumentException("Station invitation list exceeds the fixed bound");
+        }
+        this.invitations = Set.copyOf(checkedInvitations);
     }
 
     public static StationState fromReservation(StationReservation reservation) {
@@ -88,6 +105,7 @@ public final class StationState {
                 reservation.orbitBody(),
                 reservation.createdAtGameTime(),
                 StationEnvironmentProfile.BASIC_SPACE,
+                List.of(),
                 List.of()
         );
     }
@@ -112,7 +130,9 @@ public final class StationState {
         }
         LinkedHashSet<UUID> updated = new LinkedHashSet<>(members);
         updated.add(memberId);
-        return copy(ownerId, updated);
+        LinkedHashSet<UUID> updatedInvitations = new LinkedHashSet<>(invitations);
+        updatedInvitations.remove(memberId);
+        return copy(ownerId, updated, updatedInvitations);
     }
 
     public StationState withoutMember(UUID memberId) {
@@ -122,7 +142,38 @@ public final class StationState {
         }
         LinkedHashSet<UUID> updated = new LinkedHashSet<>(members);
         updated.remove(memberId);
-        return copy(ownerId, updated);
+        return copy(ownerId, updated, invitations);
+    }
+
+    public StationState invite(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (playerId.equals(ownerId) || members.contains(playerId) || invitations.contains(playerId)) {
+            return this;
+        }
+        if (invitations.size() >= StationLimits.MAX_INVITATIONS) {
+            throw new IllegalStateException("Station invitation list is full");
+        }
+        LinkedHashSet<UUID> updated = new LinkedHashSet<>(invitations);
+        updated.add(playerId);
+        return copy(ownerId, members, updated);
+    }
+
+    public StationState acceptInvitation(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (!invitations.contains(playerId)) {
+            throw new IllegalArgumentException("Station invitation is missing");
+        }
+        return withMember(playerId);
+    }
+
+    public StationState declineInvitation(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (!invitations.contains(playerId)) {
+            return this;
+        }
+        LinkedHashSet<UUID> updated = new LinkedHashSet<>(invitations);
+        updated.remove(playerId);
+        return copy(ownerId, members, updated);
     }
 
     public StationState transferOwnership(UUID newOwnerId) {
@@ -132,13 +183,19 @@ public final class StationState {
         }
         LinkedHashSet<UUID> updated = new LinkedHashSet<>(members);
         updated.remove(newOwnerId);
+        LinkedHashSet<UUID> updatedInvitations = new LinkedHashSet<>(invitations);
+        updatedInvitations.remove(newOwnerId);
         if (updated.size() < StationLimits.MAX_MEMBERS) {
             updated.add(ownerId);
         }
-        return copy(newOwnerId, updated);
+        return copy(newOwnerId, updated, updatedInvitations);
     }
 
-    private StationState copy(UUID updatedOwner, Collection<UUID> updatedMembers) {
+    private StationState copy(
+            UUID updatedOwner,
+            Collection<UUID> updatedMembers,
+            Collection<UUID> updatedInvitations
+    ) {
         return new StationState(
                 schemaVersion,
                 stationId,
@@ -150,7 +207,8 @@ public final class StationState {
                 orbitBody,
                 createdAtGameTime,
                 environment,
-                updatedMembers
+                updatedMembers,
+                updatedInvitations
         );
     }
 
@@ -198,8 +256,16 @@ public final class StationState {
         return members;
     }
 
+    public Set<UUID> invitations() {
+        return invitations;
+    }
+
     public List<UUID> sortedMembers() {
         return members.stream().sorted().toList();
+    }
+
+    public List<UUID> sortedInvitations() {
+        return invitations.stream().sorted().toList();
     }
 
     @Override
@@ -220,13 +286,13 @@ public final class StationState {
                 && landingPad.equals(state.landingPad)
                 && orbitBody.equals(state.orbitBody)
                 && environment.equals(state.environment)
-                && members.equals(state.members);
+                && members.equals(state.members)
+                && invitations.equals(state.invitations);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(schemaVersion, stationId, ownerId, name, cell, region,
-                landingPad, orbitBody, createdAtGameTime, environment, members);
+                landingPad, orbitBody, createdAtGameTime, environment, members, invitations);
     }
 }
-

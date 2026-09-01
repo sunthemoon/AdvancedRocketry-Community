@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_guidance_computer": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:guidance_computer"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "advancedrocketrycommunity:station_deployment_kit"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_guidance_computer",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "advancedrocketrycommunity:station_deployment_kit"
+    ]
+  },
+  "sends_telemetry_event": false
+}

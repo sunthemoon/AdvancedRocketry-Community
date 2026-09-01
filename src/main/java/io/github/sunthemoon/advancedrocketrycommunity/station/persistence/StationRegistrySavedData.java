@@ -125,6 +125,27 @@ public final class StationRegistrySavedData extends SavedData {
         return result;
     }
 
+    public StationState invite(UUID stationId, UUID playerId) {
+        requireOperational();
+        StationState result = registry.invite(stationId, playerId);
+        setDirty();
+        return result;
+    }
+
+    public StationState acceptInvitation(UUID stationId, UUID playerId) {
+        requireOperational();
+        StationState result = registry.acceptInvitation(stationId, playerId);
+        setDirty();
+        return result;
+    }
+
+    public StationState declineInvitation(UUID stationId, UUID playerId) {
+        requireOperational();
+        StationState result = registry.declineInvitation(stationId, playerId);
+        setDirty();
+        return result;
+    }
+
     public StationState transferOwnership(UUID stationId, UUID ownerId) {
         requireOperational();
         StationState result = registry.transferOwnership(stationId, ownerId);
@@ -201,4 +222,3 @@ public final class StationRegistrySavedData extends SavedData {
         return list;
     }
 }
-
