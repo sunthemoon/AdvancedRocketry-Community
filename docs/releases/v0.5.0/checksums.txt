@@ -3,6 +3,7 @@ a1220e5066c487e009edad46311f912430b8bd2ef39881e46bb79d96c9afc7eb  build/libs/adv
 45782780eeec54f1710cee4425f96b4d0152d29590559f519130ca9f227f0ba0  build/libs/advancedrocketry-community-1.20.1-0.5.0-dev.jar
 ca93012c70ec0f83069b0b19a052d6c97e0e45005d208d529bc2138eff7015f3  docs/releases/v0.5.0/evidence/artifact/artifact-summary.json
 0184e2c49061da76e91933c020447ad1f4c13e87fc34499843b8dc6952c9d24d  docs/releases/v0.5.0/evidence/artifact/jar-content-manifest.json
+e9a2438b3201cebb3d948cb63859ce201ad44643a2334b5f9b0dedb550163179  docs/releases/v0.5.0/evidence/artifact/post-merge-reproduction.json
 5d2f111db512c61ab9d5b77d2bfc7d2fe71b75fbf5c2a180dcc1ad9c843f75f3  docs/releases/v0.5.0/evidence/automated/summary.json
 68ba75993cab30a439b0f1b5f5dd3565169b5b783a48ad4b039b0939dc41a2bf  docs/releases/v0.5.0/evidence/client/logs/client.txt
 50feacc9ae9fd5309530fb6786bb5d4cfb2d40522f14adf3115f86e6f17e2058  docs/releases/v0.5.0/evidence/client/logs/server.txt

@@ -16,6 +16,7 @@ cross-dimension transfer, orbital physics, stations, or satellites.
 |---|---|
 | Artifact identity and repeat builds | [`evidence/artifact/artifact-summary.json`](evidence/artifact/artifact-summary.json) |
 | Exact JAR entries | [`evidence/artifact/jar-content-manifest.json`](evidence/artifact/jar-content-manifest.json) |
+| Post-merge exact reproduction | [`evidence/artifact/post-merge-reproduction.json`](evidence/artifact/post-merge-reproduction.json) |
 | Automated and authority summary | [`evidence/automated/summary.json`](evidence/automated/summary.json) |
 | Packaged Forge lifecycle | [`evidence/dedicated-server/summary.json`](evidence/dedicated-server/summary.json) |
 | Rocket persistence and recovery | [`evidence/rocket-server/summary.json`](evidence/rocket-server/summary.json) |
@@ -43,7 +44,9 @@ The audited main JAR contains 497 entries.
 
 ## Gate decision
 
-Local technical evidence supports G0–G9. Repository owner `sunthemoon`
-approved provenance, the visible player flow, and the release documentation on
-2026-09-01. The candidate remains `READY_FOR_AUDIT` until pull-request checks
-pass, it is merged, and the same artifact is reproduced from the accepted tree.
+G0–G9 are `PASS`. Repository owner `sunthemoon` approved provenance, the
+visible player flow, and the release documentation on 2026-09-01. PR #9 passed
+all three checks and merged as
+`90587983b78920ed1f62621c11825dfc11dd901b`. A cache-disabled clean build from
+that merge reproduced the accepted JAR and sources JAR hashes plus the exact
+497-entry content manifest. The v0.5.0 milestone is therefore `PASSED`.
