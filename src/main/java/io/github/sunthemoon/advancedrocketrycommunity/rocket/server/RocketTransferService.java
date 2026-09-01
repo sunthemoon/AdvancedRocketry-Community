@@ -20,6 +20,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -69,13 +71,31 @@ final class RocketTransferService {
                 .map(RocketTransferRecord::destinationSnapshot)
                 .map(RocketRegion::fromSnapshot)
                 .toList();
-        RocketLandingPadSelection selected = pads.select(
-                destinationLevel,
-                rocket.snapshot().orElseThrow(),
-                plan.requestId(),
-                reservations,
-                scheduledArrival(countdown)
-        );
+        RocketLandingPadSelection selected;
+        if (plan.destinationStation().isPresent()) {
+            StationState station = StationRegistrySavedData.get(server)
+                    .find(plan.destinationStation().orElseThrow())
+                    .orElse(null);
+            if (station == null) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+            }
+            selected = pads.selectStation(
+                    destinationLevel,
+                    rocket.snapshot().orElseThrow(),
+                    plan.requestId(),
+                    station,
+                    reservations,
+                    scheduledArrival(countdown)
+            );
+        } else {
+            selected = pads.select(
+                    destinationLevel,
+                    rocket.snapshot().orElseThrow(),
+                    plan.requestId(),
+                    reservations,
+                    scheduledArrival(countdown)
+            );
+        }
         if (!selected.success()) {
             auditPrepare(rocket, plan, selected, RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE);
             return RocketFlightRequestResult.failure(

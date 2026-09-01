@@ -9,6 +9,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBounds;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +89,70 @@ public final class RocketLandingPadSelector {
             return RocketLandingPadSelection.success(relocated, candidates, chunksLoaded);
         }
         return RocketLandingPadSelection.failure(candidates, chunksLoaded, "all fixed pads are occupied or unsafe");
+    }
+
+    /** Resolves one committed server-owned station pad; no coordinate comes from the client. */
+    public RocketLandingPadSelection selectStation(
+            ServerLevel target,
+            RocketStructureSnapshot source,
+            UUID transferId,
+            StationState station,
+            List<RocketRegion> reservations,
+            long gameTime
+    ) {
+        Objects.requireNonNull(target, "target");
+        Objects.requireNonNull(source, "source");
+        Objects.requireNonNull(transferId, "transferId");
+        Objects.requireNonNull(station, "station");
+        Objects.requireNonNull(reservations, "reservations");
+        if (!target.dimension().equals(CelestialIds.SPACE_LEVEL)) {
+            return RocketLandingPadSelection.failure(0, 0, "target is not the fixed Space Level");
+        }
+        RocketBounds bounds = source.bounds();
+        long width = (long) bounds.maximum().x() - bounds.minimum().x() + 1L;
+        long depth = (long) bounds.maximum().z() - bounds.minimum().z() + 1L;
+        int platformWidth = StationLimits.PLATFORM_RADIUS * 2 + 1;
+        if (width > platformWidth || depth > platformWidth) {
+            return RocketLandingPadSelection.failure(1, 0, "rocket footprint exceeds station pad");
+        }
+        try {
+            int originX = Math.subtractExact(
+                    station.landingPad().x(),
+                    Math.floorDiv(Math.addExact(bounds.minimum().x(), bounds.maximum().x()), 2)
+            );
+            int originZ = Math.subtractExact(
+                    station.landingPad().z(),
+                    Math.floorDiv(Math.addExact(bounds.minimum().z(), bounds.maximum().z()), 2)
+            );
+            int originY = Math.subtractExact(station.landingPad().y(), bounds.minimum().y());
+            RocketPosition origin = new RocketPosition(originX, originY, originZ);
+            UUID snapshotId = UUID.nameUUIDFromBytes((
+                    transferId + ":" + station.stationId()
+            ).getBytes(StandardCharsets.UTF_8));
+            RocketStructureSnapshot relocated = source.relocated(
+                    snapshotId,
+                    target.dimension().location(),
+                    origin,
+                    gameTime
+            );
+            RocketRegion region = RocketRegion.fromSnapshot(relocated);
+            if (!station.region().contains(region.minimum().x(), region.minimum().z())
+                    || !station.region().contains(region.maximum().x(), region.maximum().z())) {
+                return RocketLandingPadSelection.failure(1, 0, "rocket leaves station region");
+            }
+            Set<ChunkPos> chunks = chunks(region);
+            if (chunks.size() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
+                return RocketLandingPadSelection.failure(1, 0, "station landing exceeds chunk bound");
+            }
+            int loaded = loadChunks(target, chunks);
+            if (reservations.stream().anyMatch(region::overlaps)
+                    || !available(target, relocated, null, false)) {
+                return RocketLandingPadSelection.failure(1, loaded, "station pad is occupied or unsafe");
+            }
+            return RocketLandingPadSelection.success(relocated, 1, loaded);
+        } catch (RuntimeException exception) {
+            return RocketLandingPadSelection.failure(1, 0, "station landing arithmetic failed");
+        }
     }
 
     /** Rechecks the exact reserved destination without accepting any new coordinate. */

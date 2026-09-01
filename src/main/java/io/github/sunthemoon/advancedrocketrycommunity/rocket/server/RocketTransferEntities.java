@@ -33,7 +33,7 @@ final class RocketTransferEntities {
     private static final TicketType<UUID> FLIGHT_TICKET = TicketType.create(
             "arce_rocket_flight",
             Comparator.<UUID>naturalOrder(),
-            400
+            RocketFlightLimits.FLIGHT_TICKET_TIMEOUT_TICKS
     );
     private static final int FLIGHT_TICKET_LEVEL = 2;
 

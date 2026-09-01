@@ -44,6 +44,48 @@ class RocketFlightPlannerTest {
     }
 
     @Test
+    void stationRoutesRequireAndBindOneServerSelectedStationUuid() {
+        RocketStats stats = validStats(1_000L);
+        RocketFuelState fuel = RocketFuelState.empty(1_000L).fill(1_000L).state();
+        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
+
+        RocketFlightPlanResult earthToStation = RocketFlightPlanner.plan(
+                stats,
+                fuel,
+                RocketFlightPlanner.EARTH,
+                RocketFlightPlanner.SPACE_STATION,
+                stationId,
+                REQUEST,
+                50L
+        );
+        RocketFlightPlanResult stationToMoon = RocketFlightPlanner.plan(
+                stats,
+                fuel,
+                RocketFlightPlanner.SPACE_STATION,
+                RocketFlightPlanner.MOON,
+                null,
+                REQUEST,
+                51L
+        );
+
+        assertTrue(earthToStation.success());
+        assertEquals(325L, earthToStation.requiredFuel());
+        assertEquals(stationId, earthToStation.plan().destinationStation().orElseThrow());
+        assertTrue(stationToMoon.success());
+        assertEquals(242L, stationToMoon.requiredFuel());
+        assertTrue(stationToMoon.plan().destinationStation().isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanner.plan(
+                stats,
+                fuel,
+                RocketFlightPlanner.EARTH,
+                RocketFlightPlanner.SPACE_STATION,
+                null,
+                REQUEST,
+                52L
+        ));
+    }
+
+    @Test
     void capacityAndCurrentFuelAreSeparateFailuresWithAReadableQuote() {
         RocketFlightPlanResult capacity = RocketFlightPlanner.plan(
                 validStats(300L),
@@ -151,7 +193,7 @@ class RocketFlightPlannerTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new RocketFlightPlan(
-                        2,
+                        3,
                         valid.requestId(),
                         valid.sourceBody(),
                         valid.destinationBody(),

@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 
-/** Pure server-side Earth/Moon reachability and fuel quotation. */
+/** Pure server-side Earth/Moon/Space-station reachability and fuel quotation. */
 public final class RocketFlightPlanner {
     public static final RocketTravelProfile EARTH = new RocketTravelProfile(
             ModIdentity.id("earth"),
@@ -20,6 +20,12 @@ public final class RocketFlightPlanner {
             165,
             50
     );
+    public static final RocketTravelProfile SPACE_STATION = new RocketTravelProfile(
+            ModIdentity.id("space"),
+            ModIdentity.id("space"),
+            0,
+            25
+    );
 
     private RocketFlightPlanner() {
     }
@@ -29,6 +35,18 @@ public final class RocketFlightPlanner {
             RocketFuelState fuel,
             RocketTravelProfile source,
             RocketTravelProfile destination,
+            UUID requestId,
+            long gameTime
+    ) {
+        return plan(stats, fuel, source, destination, null, requestId, gameTime);
+    }
+
+    public static RocketFlightPlanResult plan(
+            RocketStats stats,
+            RocketFuelState fuel,
+            RocketTravelProfile source,
+            RocketTravelProfile destination,
+            UUID destinationStationId,
             UUID requestId,
             long gameTime
     ) {
@@ -95,6 +113,7 @@ public final class RocketFlightPlanner {
                 destination.bodyId(),
                 source.dimensionId(),
                 destination.dimensionId(),
+                destinationStationId,
                 requiredFuel,
                 gameTime
         );
@@ -109,7 +128,10 @@ public final class RocketFlightPlanner {
         if (MOON.dimensionId().equals(dimensionId)) {
             return MOON;
         }
-        throw new IllegalArgumentException("Dimension is not a v0.6 rocket destination: " + dimensionId);
+        if (SPACE_STATION.dimensionId().equals(dimensionId)) {
+            return SPACE_STATION;
+        }
+        throw new IllegalArgumentException("Dimension is not a rocket destination: " + dimensionId);
     }
 
     public static RocketTravelProfile forBody(net.minecraft.resources.ResourceLocation bodyId) {
@@ -120,12 +142,18 @@ public final class RocketFlightPlanner {
         if (MOON.bodyId().equals(bodyId)) {
             return MOON;
         }
-        throw new IllegalArgumentException("Body is not a v0.6 rocket destination: " + bodyId);
+        if (SPACE_STATION.bodyId().equals(bodyId)) {
+            return SPACE_STATION;
+        }
+        throw new IllegalArgumentException("Body is not a rocket destination: " + bodyId);
     }
 
     private static boolean supported(RocketTravelProfile source, RocketTravelProfile destination) {
-        return (source.equals(EARTH) && destination.equals(MOON))
-                || (source.equals(MOON) && destination.equals(EARTH));
+        return !source.equals(destination)
+                && (source.equals(EARTH) || source.equals(MOON) || source.equals(SPACE_STATION))
+                && (destination.equals(EARTH)
+                || destination.equals(MOON)
+                || destination.equals(SPACE_STATION));
     }
 
     private static ResourceLocation requiredLocation(String namespace, String path) {

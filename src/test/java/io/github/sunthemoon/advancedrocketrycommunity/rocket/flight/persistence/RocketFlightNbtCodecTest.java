@@ -73,7 +73,7 @@ class RocketFlightNbtCodecTest {
     @Test
     void nestedSchemaIdentifierAndListBoundsAreStrict() {
         CompoundTag futurePlan = RocketFlightNbtCodec.encode(destinationData());
-        futurePlan.getCompound("plan").putInt("schema_version", 2);
+        futurePlan.getCompound("plan").putInt("schema_version", 3);
         CompoundTag longIdentifier = RocketFlightNbtCodec.encode(destinationData());
         longIdentifier.putString("current_body", "a:" + "x".repeat(300));
         CompoundTag tooManyDebits = RocketFlightNbtCodec.encode(destinationData());
@@ -109,6 +109,43 @@ class RocketFlightNbtCodecTest {
         assertEquals(RocketFlightDecodeResult.Status.INVALID, result.status());
         assertTrue(result.message().contains("size"));
         assertEquals(oversized, result.preservedPayload().orElseThrow());
+    }
+
+    @Test
+    void schemaTwoStationPlanRoundTripsItsUuidAndSchemaOneRemainsReadable() {
+        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
+        RocketStats stats = new RocketStats(4, 200L, 1_000L, 1_000L, 1, 1, 1, 0);
+        RocketFuelState full = RocketFuelState.empty(1_000L).fill(1_000L).state();
+        RocketFlightPlan stationPlan = RocketFlightPlanner.plan(
+                stats,
+                full,
+                RocketFlightPlanner.EARTH,
+                RocketFlightPlanner.SPACE_STATION,
+                stationId,
+                REQUEST,
+                2L
+        ).plan();
+        RocketFlightData stationData = RocketFlightData.initial(
+                ROCKET,
+                1_000L,
+                2,
+                RocketFlightPlanner.EARTH.bodyId(),
+                RocketFlightPlanner.EARTH.dimensionId(),
+                new RocketPosition(8, 80, 8),
+                0L
+        ).withFuel(full, 1L).withPlan(stationPlan).startCountdown(3L);
+
+        RocketFlightDecodeResult decoded = RocketFlightNbtCodec.decode(
+                RocketFlightNbtCodec.encode(stationData)
+        );
+        assertEquals(RocketFlightDecodeResult.Status.VALID, decoded.status());
+        assertEquals(stationId, decoded.data().orElseThrow().plan().orElseThrow()
+                .destinationStation().orElseThrow());
+
+        CompoundTag legacy = RocketFlightNbtCodec.encode(destinationData());
+        legacy.getCompound("plan").putInt("schema_version", 1);
+        legacy.getCompound("plan").remove("destination_station_id");
+        assertEquals(RocketFlightDecodeResult.Status.VALID, RocketFlightNbtCodec.decode(legacy).status());
     }
 
     private static RocketFlightData destinationData() {

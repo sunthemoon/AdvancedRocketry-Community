@@ -13,6 +13,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +32,7 @@ final class RocketFlightService {
     private final RocketOperationLedger requests = new RocketOperationLedger();
     private final RocketIntentRateLimiter rateLimiter = new RocketIntentRateLimiter();
     private final RocketTransferService transfers = new RocketTransferService();
+    private final StationAccessService stationAccess = new StationAccessService();
 
     void openMenu(ServerPlayer player, RocketEntity requestedRocket) {
         Access access = access(player, requestedRocket.getId());
@@ -34,10 +41,44 @@ final class RocketFlightService {
             return;
         }
         RocketEntity rocket = access.rocket();
+        StationRegistrySavedData stationData = StationRegistrySavedData.get(player.getServer());
+        List<StationDestinationSummary> accessible = stationData.operational()
+                ? stationAccess.accessibleDestinations(
+                        stationData.stations(),
+                        player.getUUID(),
+                        player.hasPermissions(2)
+                ).stream().map(StationDestinationSummary::from).toList()
+                : List.of();
+        UUID currentStationId = stationData.findAt(
+                rocket.blockPosition().getX(),
+                rocket.blockPosition().getZ()
+        ).filter(station -> rocket.level().dimension().location()
+                .equals(RocketDestination.SPACE_STATION.dimensionId()))
+                .map(StationState::stationId)
+                .orElse(null);
+        UUID plannedStationId = rocket.flightData()
+                .flatMap(RocketFlightData::plan)
+                .flatMap(plan -> plan.destinationStation())
+                .orElse(null);
         NetworkHooks.openScreen(
                 player,
                 rocket,
-                buffer -> buffer.writeVarInt(rocket.getId())
+                buffer -> {
+                    buffer.writeVarInt(rocket.getId());
+                    buffer.writeVarInt(accessible.size());
+                    for (StationDestinationSummary station : accessible) {
+                        buffer.writeUUID(station.stationId());
+                        buffer.writeUtf(station.name());
+                    }
+                    buffer.writeBoolean(currentStationId != null);
+                    if (currentStationId != null) {
+                        buffer.writeUUID(currentStationId);
+                    }
+                    buffer.writeBoolean(plannedStationId != null);
+                    if (plannedStationId != null) {
+                        buffer.writeUUID(plannedStationId);
+                    }
+                }
         );
     }
 
@@ -46,6 +87,7 @@ final class RocketFlightService {
             int rocketEntityId,
             RocketFlightAction action,
             RocketDestination destination,
+            UUID destinationStationId,
             UUID requestId
     ) {
         Objects.requireNonNull(player, "player");
@@ -61,14 +103,14 @@ final class RocketFlightService {
                     RocketFlightRequestCode.RATE_LIMITED
             );
             if (rateDecision == RocketIntentRateLimiter.Decision.REJECTED_AUDIT) {
-                report(player, null, action, destination, requestId, result);
+                report(player, null, action, destination, destinationStationId, requestId, result);
             }
             return result;
         }
         Access access = access(player, rocketEntityId);
         if (!access.success()) {
             RocketFlightRequestResult result = RocketFlightRequestResult.failure(access.code());
-            report(player, null, action, destination, requestId, result);
+            report(player, null, action, destination, destinationStationId, requestId, result);
             return result;
         }
         if ((action == RocketFlightAction.LAUNCH || action == RocketFlightAction.CANCEL)
@@ -76,7 +118,7 @@ final class RocketFlightService {
             RocketFlightRequestResult result = RocketFlightRequestResult.failure(
                     RocketFlightRequestCode.UNAUTHORIZED
             );
-            report(player, access.rocket(), action, destination, requestId, result);
+            report(player, access.rocket(), action, destination, destinationStationId, requestId, result);
             return result;
         }
         RocketOperationLedger.BeginResult begin = requests.begin(requestId);
@@ -86,15 +128,22 @@ final class RocketFlightService {
                             ? RocketFlightRequestCode.REQUEST_REPLAYED
                             : RocketFlightRequestCode.REQUEST_LEDGER_FULL
             );
-            report(player, access.rocket(), action, destination, requestId, result);
+            report(player, access.rocket(), action, destination, destinationStationId, requestId, result);
             return result;
         }
 
         RocketFlightRequestResult result;
         try {
             result = switch (action) {
-                case LAUNCH -> launch(access.rocket(), destination, requestId);
-                case CANCEL -> cancel(access.rocket(), destination);
+                case LAUNCH -> launch(
+                        access.rocket(),
+                        destination,
+                        destinationStationId,
+                        player.getUUID(),
+                        player.hasPermissions(2),
+                        requestId
+                );
+                case CANCEL -> cancel(access.rocket(), destination, destinationStationId);
                 case BOARD -> board(player, access.rocket());
                 case LEAVE -> leave(player, access.rocket());
             };
@@ -109,13 +158,16 @@ final class RocketFlightService {
             result = RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
         requests.finish(requestId, result.success());
-        report(player, access.rocket(), action, destination, requestId, result);
+        report(player, access.rocket(), action, destination, destinationStationId, requestId, result);
         return result;
     }
 
     private RocketFlightRequestResult launch(
             RocketEntity rocket,
             RocketDestination destination,
+            UUID destinationStationId,
+            UUID actorId,
+            boolean operator,
             UUID requestId
     ) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
@@ -131,8 +183,41 @@ final class RocketFlightService {
         } catch (IllegalArgumentException exception) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        if (source == destination || source.opposite() != destination
-                || !source.bodyId().equals(flight.currentBody())) {
+        if (source == destination || !source.bodyId().equals(flight.currentBody())) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+        }
+        StationRegistrySavedData stationData = StationRegistrySavedData.get(
+                ((ServerLevel) rocket.level()).getServer()
+        );
+        if (!stationData.operational()) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
+        if (source == RocketDestination.SPACE_STATION) {
+            StationState sourceStation = stationData.findAt(
+                    rocket.blockPosition().getX(),
+                    rocket.blockPosition().getZ()
+            ).orElse(null);
+            if (sourceStation == null) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+            }
+            if (!stationAccess.allowed(
+                    sourceStation, actorId, operator, StationAccessAction.VISIT
+            )) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
+            }
+        }
+        if (destination == RocketDestination.SPACE_STATION) {
+            if (destinationStationId == null) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+            }
+            StationState target = stationData.find(destinationStationId).orElse(null);
+            if (target == null) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+            }
+            if (!stationAccess.allowed(target, actorId, operator, StationAccessAction.VISIT)) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
+            }
+        } else if (destinationStationId != null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
         RocketFlightPlanResult planned = RocketFlightPlanner.plan(
@@ -140,6 +225,7 @@ final class RocketFlightService {
                 flight.fuel(),
                 source.profile(),
                 destination.profile(),
+                destinationStationId,
                 requestId,
                 rocket.level().getGameTime()
         );
@@ -165,19 +251,50 @@ final class RocketFlightService {
         if (!(rocket.level() instanceof ServerLevel) || !rocket.isAlive() || !rocket.operational()) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
         }
-        return launch(rocket, destination, requestId);
+        return launch(
+                rocket,
+                destination,
+                null,
+                rocket.ownerId().orElseThrow(),
+                true,
+                requestId
+        );
+    }
+
+    RocketFlightRequestResult requestAdminStationFlight(
+            RocketEntity rocket,
+            UUID stationId,
+            UUID requestId
+    ) {
+        Objects.requireNonNull(rocket, "rocket");
+        Objects.requireNonNull(stationId, "stationId");
+        Objects.requireNonNull(requestId, "requestId");
+        if (!(rocket.level() instanceof ServerLevel) || !rocket.isAlive() || !rocket.operational()) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+        }
+        return launch(
+                rocket,
+                RocketDestination.SPACE_STATION,
+                stationId,
+                rocket.ownerId().orElseThrow(),
+                true,
+                requestId
+        );
     }
 
     private RocketFlightRequestResult cancel(
             RocketEntity rocket,
-            RocketDestination destination
+            RocketDestination destination,
+            UUID destinationStationId
     ) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
         if (flight.state() != RocketFlightState.COUNTDOWN) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
         if (flight.plan().isEmpty()
-                || !flight.plan().orElseThrow().destinationBody().equals(destination.bodyId())) {
+                || !flight.plan().orElseThrow().destinationBody().equals(destination.bodyId())
+                || !flight.plan().orElseThrow().destinationStation()
+                .equals(Optional.ofNullable(destinationStationId))) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
         return transfers.cancelCountdown(rocket);
@@ -248,17 +365,20 @@ final class RocketFlightService {
             RocketEntity rocket,
             RocketFlightAction action,
             RocketDestination destination,
+            UUID destinationStationId,
             UUID requestId,
             RocketFlightRequestResult result
     ) {
         notify(player, result.code(), result.requiredFuel());
         AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_FLIGHT_INTENT request={} player={} rocket={} action={} destination={} code={} required_fuel={}",
+                "ARCE_FLIGHT_INTENT request={} player={} rocket={} action={} destination={} station={} "
+                        + "code={} required_fuel={}",
                 requestId,
                 player.getUUID(),
                 rocket == null ? "none" : rocket.getUUID(),
                 action,
                 destination.bodyId(),
+                destinationStationId,
                 result.code(),
                 result.requiredFuel()
         );

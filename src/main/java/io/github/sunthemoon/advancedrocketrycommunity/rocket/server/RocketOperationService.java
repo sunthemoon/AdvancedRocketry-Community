@@ -23,12 +23,19 @@ public interface RocketOperationService {
             int rocketEntityId,
             RocketFlightAction action,
             RocketDestination destination,
+            UUID destinationStationId,
             UUID requestId
     );
 
     RocketFlightRequestResult requestAdminFlight(
             RocketEntity rocket,
             RocketDestination destination,
+            UUID requestId
+    );
+
+    RocketFlightRequestResult requestAdminStationFlight(
+            RocketEntity rocket,
+            UUID stationId,
             UUID requestId
     );
 }

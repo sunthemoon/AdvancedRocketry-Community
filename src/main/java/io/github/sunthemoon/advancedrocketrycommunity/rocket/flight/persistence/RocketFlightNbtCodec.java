@@ -137,6 +137,7 @@ public final class RocketFlightNbtCodec {
         target.putString("destination_body", plan.destinationBody().toString());
         target.putString("source_dimension", plan.sourceDimension().toString());
         target.putString("destination_dimension", plan.destinationDimension().toString());
+        plan.destinationStation().ifPresent(id -> target.putUUID("destination_station_id", id));
         target.putLong("required_fuel", plan.requiredFuel());
         target.putLong("created_at_game_time", plan.createdAtGameTime());
         return target;
@@ -150,6 +151,7 @@ public final class RocketFlightNbtCodec {
                 requireLocation(source, "destination_body"),
                 requireLocation(source, "source_dimension"),
                 requireLocation(source, "destination_dimension"),
+                optionalUuid(source, "destination_station_id"),
                 requireNonNegativeLong(source, "required_fuel"),
                 requireNonNegativeLong(source, "created_at_game_time")
         );
