@@ -8,6 +8,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachine;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -39,6 +42,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 
 /** Lifecycle-owned, main-thread authority for v0.5 scan and transaction intents. */
 public final class RocketManager implements RocketOperationService {
@@ -52,6 +56,7 @@ public final class RocketManager implements RocketOperationService {
     private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
     private boolean recoverySuppressedForReleaseTest;
+    private boolean flightLifecycleActive;
 
     public RocketManager() {
         this(RocketBlockEntityAdapters.defaults());
@@ -60,6 +65,11 @@ public final class RocketManager implements RocketOperationService {
     public RocketManager(RocketBlockEntityAdapters adapters) {
         this.adapters = Objects.requireNonNull(adapters, "adapters");
         recovery = new RocketTransactionRecoveryService(adapters);
+    }
+
+    @Override
+    public void onInstalled() {
+        flightLifecycleActive = true;
     }
 
     @Override
@@ -190,6 +200,9 @@ public final class RocketManager implements RocketOperationService {
                 ledger,
                 savedData.journalFor(snapshot, owner)
         ).execute(transactionId, rocket.getUUID(), snapshot);
+        if (result.success()) {
+            flights.releaseLandedReservation(rocket);
+        }
         reportTransaction(level, snapshot, player, result, "disassembly");
     }
 
@@ -209,6 +222,15 @@ public final class RocketManager implements RocketOperationService {
         flights.request(player, rocketEntityId, action, destination, requestId);
     }
 
+    @Override
+    public RocketFlightRequestResult requestAdminFlight(
+            RocketEntity rocket,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        return flights.requestAdminFlight(rocket, destination, requestId);
+    }
+
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             tick(event.getServer());
@@ -217,6 +239,9 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        if (flightLifecycleActive) {
+            flights.tick(server);
+        }
         if (!recoverySuppressedForReleaseTest) {
             RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server);
             if (outcome == RocketTransactionRecoveryService.Outcome.RECOVERED
@@ -239,6 +264,30 @@ public final class RocketManager implements RocketOperationService {
             // One task receives the entire fixed observation budget each server tick.
             break;
         }
+    }
+
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (flightLifecycleActive && event.getEntity() instanceof ServerPlayer player) {
+            flights.onPlayerLoggedIn(player);
+        }
+    }
+
+    public int activeTransferCount(MinecraftServer server) {
+        return flights.activeTransferCount(server);
+    }
+
+    public Optional<RocketTransferInspection> inspectTransfer(
+            MinecraftServer server,
+            UUID transferId
+    ) {
+        return flights.inspectTransfer(server, transferId);
+    }
+
+    public RocketTransferRecoveryReport recoverTransfer(
+            MinecraftServer server,
+            UUID transferId
+    ) {
+        return flights.recoverTransfer(server, transferId);
     }
 
     public void clear() {

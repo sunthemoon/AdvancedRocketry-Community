@@ -10,8 +10,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -21,6 +24,8 @@ import net.minecraftforge.network.NetworkHooks;
 /** Main-thread validation boundary for menus and C2S launch/cancel intents. */
 final class RocketFlightService {
     private final RocketOperationLedger requests = new RocketOperationLedger();
+    private final RocketIntentRateLimiter rateLimiter = new RocketIntentRateLimiter();
+    private final RocketTransferService transfers = new RocketTransferService();
 
     void openMenu(ServerPlayer player, RocketEntity requestedRocket) {
         Access access = access(player, requestedRocket.getId());
@@ -47,10 +52,31 @@ final class RocketFlightService {
         Objects.requireNonNull(action, "action");
         Objects.requireNonNull(destination, "destination");
         Objects.requireNonNull(requestId, "requestId");
+        RocketIntentRateLimiter.Decision rateDecision = rateLimiter.check(
+                player.getUUID(),
+                player.level().getGameTime()
+        );
+        if (rateDecision != RocketIntentRateLimiter.Decision.ALLOWED) {
+            RocketFlightRequestResult result = RocketFlightRequestResult.failure(
+                    RocketFlightRequestCode.RATE_LIMITED
+            );
+            if (rateDecision == RocketIntentRateLimiter.Decision.REJECTED_AUDIT) {
+                report(player, null, action, destination, requestId, result);
+            }
+            return result;
+        }
         Access access = access(player, rocketEntityId);
         if (!access.success()) {
             RocketFlightRequestResult result = RocketFlightRequestResult.failure(access.code());
             report(player, null, action, destination, requestId, result);
+            return result;
+        }
+        if ((action == RocketFlightAction.LAUNCH || action == RocketFlightAction.CANCEL)
+                && !authorized(player, access.rocket())) {
+            RocketFlightRequestResult result = RocketFlightRequestResult.failure(
+                    RocketFlightRequestCode.UNAUTHORIZED
+            );
+            report(player, access.rocket(), action, destination, requestId, result);
             return result;
         }
         RocketOperationLedger.BeginResult begin = requests.begin(requestId);
@@ -66,9 +92,12 @@ final class RocketFlightService {
 
         RocketFlightRequestResult result;
         try {
-            result = action == RocketFlightAction.LAUNCH
-                    ? launch(access.rocket(), destination, requestId)
-                    : cancel(access.rocket(), destination);
+            result = switch (action) {
+                case LAUNCH -> launch(access.rocket(), destination, requestId);
+                case CANCEL -> cancel(access.rocket(), destination);
+                case BOARD -> board(player, access.rocket());
+                case LEAVE -> leave(player, access.rocket());
+            };
         } catch (RuntimeException exception) {
             AdvancedRocketryCommunity.LOGGER.error(
                     "ARCE_FLIGHT_INTENT_EXCEPTION request={} rocket={} action={}",
@@ -90,6 +119,9 @@ final class RocketFlightService {
             UUID requestId
     ) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
+        if (flight.state() == RocketFlightState.LANDED && flight.fuel().amount() > 0L) {
+            flight = flight.withFuel(flight.fuel(), rocket.level().getGameTime());
+        }
         if (flight.state() != RocketFlightState.FUELED) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
@@ -117,10 +149,23 @@ final class RocketFlightService {
                     planned.requiredFuel()
             );
         }
-        rocket.updateFlightData(
-                flight.withPlan(planned.plan()).startCountdown(rocket.level().getGameTime())
-        );
-        return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel());
+        RocketFlightData countdown = flight.withPlan(planned.plan())
+                .startCountdown(rocket.level().getGameTime());
+        return transfers.prepareLaunch(rocket, countdown);
+    }
+
+    RocketFlightRequestResult requestAdminFlight(
+            RocketEntity rocket,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        Objects.requireNonNull(rocket, "rocket");
+        Objects.requireNonNull(destination, "destination");
+        Objects.requireNonNull(requestId, "requestId");
+        if (!(rocket.level() instanceof ServerLevel) || !rocket.isAlive() || !rocket.operational()) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+        }
+        return launch(rocket, destination, requestId);
     }
 
     private RocketFlightRequestResult cancel(
@@ -135,9 +180,41 @@ final class RocketFlightService {
                 || !flight.plan().orElseThrow().destinationBody().equals(destination.bodyId())) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        long requiredFuel = flight.plan().orElseThrow().requiredFuel();
-        rocket.updateFlightData(flight.cancelCountdown(rocket.level().getGameTime()));
-        return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, requiredFuel);
+        return transfers.cancelCountdown(rocket);
+    }
+
+    private RocketFlightRequestResult board(ServerPlayer player, RocketEntity rocket) {
+        RocketFlightData flight = rocket.flightData().orElseThrow();
+        if (!stationary(flight.state())) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+        }
+        if (flight.passengers().assignment(player.getUUID()).isPresent()) {
+            player.startRiding(rocket, true);
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ALREADY_BOARDED);
+        }
+        var assigned = flight.passengers().assign(player.getUUID());
+        if (assigned.isEmpty()) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.NO_SEAT_AVAILABLE);
+        }
+        rocket.updateFlightData(flight.withPassengers(assigned.orElseThrow()));
+        if (!player.startRiding(rocket, true)) {
+            rocket.updateFlightData(flight);
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+        }
+        return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
+    }
+
+    private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
+        RocketFlightData flight = rocket.flightData().orElseThrow();
+        if (!stationary(flight.state())) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+        }
+        if (flight.passengers().assignment(player.getUUID()).isEmpty()) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.NOT_BOARDED);
+        }
+        player.stopRiding();
+        rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(player.getUUID())));
+        return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
     }
 
     private static Access access(ServerPlayer player, int rocketEntityId) {
@@ -152,11 +229,18 @@ final class RocketFlightService {
         if (player.distanceToSqr(rocket) > RocketManager.MAX_INTERACTION_DISTANCE_SQUARED) {
             return Access.failure(RocketFlightRequestCode.OUT_OF_RANGE);
         }
-        UUID owner = rocket.ownerId().orElseThrow();
-        if (!owner.equals(player.getUUID()) && !player.isCreative() && !player.hasPermissions(2)) {
-            return Access.failure(RocketFlightRequestCode.UNAUTHORIZED);
-        }
         return Access.success(rocket);
+    }
+
+    private static boolean authorized(ServerPlayer player, RocketEntity rocket) {
+        UUID owner = rocket.ownerId().orElseThrow();
+        return owner.equals(player.getUUID()) || player.isCreative() || player.hasPermissions(2);
+    }
+
+    private static boolean stationary(RocketFlightState state) {
+        return state == RocketFlightState.ASSEMBLED
+                || state == RocketFlightState.FUELED
+                || state == RocketFlightState.LANDED;
     }
 
     private static void report(
@@ -185,6 +269,9 @@ final class RocketFlightService {
             RocketFlightRequestCode code,
             long requiredFuel
     ) {
+        if (player.connection == null || !player.connection.connection.isConnected()) {
+            return;
+        }
         player.displayClientMessage(
                 Component.translatable(code.translationKey(), requiredFuel),
                 true
@@ -193,6 +280,38 @@ final class RocketFlightService {
 
     void clear() {
         requests.clear();
+        rateLimiter.clear();
+        transfers.clear();
+    }
+
+    void tick(net.minecraft.server.MinecraftServer server) {
+        transfers.tick(server);
+    }
+
+    void onPlayerLoggedIn(ServerPlayer player) {
+        transfers.onPlayerLoggedIn(player);
+    }
+
+    int activeTransferCount(net.minecraft.server.MinecraftServer server) {
+        return transfers.activeCount(server);
+    }
+
+    Optional<RocketTransferInspection> inspectTransfer(
+            net.minecraft.server.MinecraftServer server,
+            UUID transferId
+    ) {
+        return transfers.inspect(server, transferId);
+    }
+
+    RocketTransferRecoveryReport recoverTransfer(
+            net.minecraft.server.MinecraftServer server,
+            UUID transferId
+    ) {
+        return transfers.recover(server, transferId);
+    }
+
+    void releaseLandedReservation(RocketEntity rocket) {
+        transfers.releaseLandedReservation(rocket);
     }
 
     private record Access(RocketEntity rocket, RocketFlightRequestCode code) {

@@ -31,6 +31,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -310,6 +311,37 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public boolean isPushable() {
         return false;
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        return operational()
+                && passenger instanceof Player
+                && flightData.passengers().assignment(passenger.getUUID()).isPresent()
+                && getPassengers().size() < flightData.passengers().seatCapacity();
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, MoveFunction move) {
+        if (!hasPassenger(passenger) || flightData == null) {
+            return;
+        }
+        int seat = flightData.passengers().assignment(passenger.getUUID())
+                .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat::seatIndex)
+                .orElse(0);
+        double angle = seat * (Math.PI * 2.0D / Math.max(1, flightData.passengers().seatCapacity()));
+        double radius = seat == 0 ? 0.0D : 0.35D;
+        move.accept(
+                passenger,
+                getX() + Math.cos(angle) * radius,
+                getY() + 1.15D,
+                getZ() + Math.sin(angle) * radius
+        );
+    }
+
+    @Override
+    public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
+        return position().add(1.5D, 0.0D, 0.0D);
     }
 
     @Override

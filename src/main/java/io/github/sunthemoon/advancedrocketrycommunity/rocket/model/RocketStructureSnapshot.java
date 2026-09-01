@@ -193,4 +193,22 @@ public final class RocketStructureSnapshot {
     public String contentHash() {
         return contentHash;
     }
+
+    /** Creates a location-bound identity for the same immutable block payload. */
+    public RocketStructureSnapshot relocated(
+            UUID relocatedSnapshotId,
+            ResourceLocation destinationDimension,
+            RocketPosition destinationOrigin,
+            long relocatedAtGameTime
+    ) {
+        return create(
+                Objects.requireNonNull(relocatedSnapshotId, "relocatedSnapshotId"),
+                Objects.requireNonNull(destinationDimension, "destinationDimension"),
+                Objects.requireNonNull(destinationOrigin, "destinationOrigin"),
+                blocks,
+                passengerAnchors,
+                stats,
+                relocatedAtGameTime
+        );
+    }
 }

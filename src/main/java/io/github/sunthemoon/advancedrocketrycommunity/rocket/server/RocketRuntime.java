@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -17,7 +19,9 @@ public final class RocketRuntime {
     }
 
     public static void install(RocketOperationService installedService) {
-        service = Objects.requireNonNull(installedService, "installedService");
+        RocketOperationService checked = Objects.requireNonNull(installedService, "installedService");
+        checked.onInstalled();
+        service = checked;
     }
 
     public static void clear() {
@@ -74,6 +78,19 @@ public final class RocketRuntime {
             return;
         }
         current.requestFlightIntent(player, rocketEntityId, action, destination, requestId);
+    }
+
+    /** Server-only operator/test boundary; no client data can invoke this method. */
+    public static RocketFlightRequestResult requestAdminFlight(
+            RocketEntity rocket,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        RocketOperationService current = service;
+        if (current == null) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+        }
+        return current.requestAdminFlight(rocket, destination, requestId);
     }
 
     private static void unavailable(ServerPlayer player) {

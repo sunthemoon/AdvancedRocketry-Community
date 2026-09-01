@@ -2,7 +2,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 public enum RocketFlightAction {
     LAUNCH(0),
-    CANCEL(1);
+    CANCEL(1),
+    BOARD(2),
+    LEAVE(3);
 
     private final int networkId;
 
