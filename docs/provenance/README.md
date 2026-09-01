@@ -17,6 +17,9 @@ Use `docs/templates/SOURCE-PROVENANCE-TEMPLATE.md`.
 - [`v0.4.0-atmosphere.md`](v0.4.0-atmosphere.md) tracks the community-authored
   atmosphere/life-support slice and currently records zero copied source files
   or binary assets.
+- [`v0.7.0-space-station.md`](v0.7.0-space-station.md) records the
+  community-authored Space Station slice, its zero-copy G0 approval, and the
+  exact five-file generated-resource inventory.
 
 Supplemental exact license copies are stored in `docs/licenses/` and mapped in
 [`THIRD-PARTY-NOTICES.md`](../../THIRD-PARTY-NOTICES.md). Adding a copy does not
