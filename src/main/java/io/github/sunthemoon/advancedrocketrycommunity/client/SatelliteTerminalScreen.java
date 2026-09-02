@@ -32,7 +32,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         titleLabelX = 9;
         titleLabelY = 7;
         inventoryLabelX = 31;
-        inventoryLabelY = 121;
+        inventoryLabelY = 123;
     }
 
     @Override
@@ -40,16 +40,16 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         super.init();
         addRenderableWidget(button(10, 83, 18, "<", SatelliteTerminalMenu.BUTTON_PREVIOUS));
         addRenderableWidget(button(196, 83, 18, ">", SatelliteTerminalMenu.BUTTON_NEXT));
-        addRenderableWidget(button(31, 101, 47,
+        addRenderableWidget(button(20, 105, 55,
                 "screen.advancedrocketrycommunity.satellite.assemble",
                 SatelliteTerminalMenu.BUTTON_ASSEMBLE));
-        addRenderableWidget(button(81, 101, 47,
+        addRenderableWidget(button(77, 105, 45,
                 "screen.advancedrocketrycommunity.satellite.launch",
                 SatelliteTerminalMenu.BUTTON_LAUNCH));
-        addRenderableWidget(button(131, 101, 39,
+        addRenderableWidget(button(124, 105, 41,
                 "screen.advancedrocketrycommunity.satellite.claim",
                 SatelliteTerminalMenu.BUTTON_CLAIM));
-        addRenderableWidget(button(173, 101, 41,
+        addRenderableWidget(button(167, 105, 47,
                 "screen.advancedrocketrycommunity.satellite.cancel",
                 SatelliteTerminalMenu.BUTTON_CANCEL));
     }
@@ -143,14 +143,19 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         Component targetName = target == null
                 ? Component.translatable("screen.advancedrocketrycommunity.satellite.no_target")
                 : Component.translatable("body." + target.getNamespace() + "." + target.getPath());
-        graphics.drawCenteredString(font, targetName, imageWidth / 2, 84, TEXT);
+        Component targetDisplay = target == null
+                ? targetName
+                : Component.empty()
+                        .append(targetName)
+                        .append(" / ")
+                        .append(Component.translatable(menu.targetDiscovered()
+                                ? "screen.advancedrocketrycommunity.satellite.discovered"
+                                : "screen.advancedrocketrycommunity.satellite.unknown"));
         graphics.drawCenteredString(
                 font,
-                Component.translatable(menu.targetDiscovered()
-                        ? "screen.advancedrocketrycommunity.satellite.discovered"
-                        : "screen.advancedrocketrycommunity.satellite.unknown"),
-                149,
-                69,
+                targetDisplay,
+                imageWidth / 2,
+                84,
                 menu.targetDiscovered() ? GREEN : GOLD
         );
 
