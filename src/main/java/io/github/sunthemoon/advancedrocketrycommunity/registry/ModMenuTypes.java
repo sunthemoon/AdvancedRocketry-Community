@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,6 +24,10 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<RocketFlightMenu>> ROCKET_FLIGHT = MENUS.register(
             "rocket_flight",
             () -> IForgeMenuType.create(RocketFlightMenu::new)
+    );
+    public static final RegistryObject<MenuType<SatelliteTerminalMenu>> SATELLITE_TERMINAL = MENUS.register(
+            "satellite_terminal",
+            () -> IForgeMenuType.create(SatelliteTerminalMenu::new)
     );
 
     private ModMenuTypes() {

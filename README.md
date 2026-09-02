@@ -20,12 +20,11 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest owner-accepted milestone is `v0.7.0`: persistent shared-space
-stations, bounded region allocation, ownership and membership, protected
-building, approved-pad rocket travel, restart recovery, and isolated deletion.
-It remains an unreleased developer preview. PR #11 is merged, its merge commit
-reproduces the accepted JAR byte-for-byte, and the next planned target is
-`v0.8.0`. See
+The latest `PASSED` milestone is `v0.7.0`. The `v0.8.0` progression and logical
+data-satellite candidate has completed G0-G9 technical evidence and owner
+review and is `READY_FOR_AUDIT`; required pull-request checks, merge identity,
+and exact post-merge artifact reproduction still remain. Both milestones are
+unreleased developer previews. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
 sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
 verified and pending evidence.

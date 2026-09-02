@@ -1,0 +1,141 @@
+{
+  "after_restart": {
+    "active": 2,
+    "cancelled": 0,
+    "chunk_tickets": 0,
+    "claimed": 0,
+    "missions": 2,
+    "pending": 0,
+    "ready": 0,
+    "research": 0,
+    "satellites": 2,
+    "scheduler": "deadline_queue",
+    "unfinished": 2
+  },
+  "artifact_sha256": "0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937",
+  "before_restart": {
+    "active": 2,
+    "cancelled": 0,
+    "chunk_tickets": 0,
+    "claimed": 0,
+    "missions": 2,
+    "pending": 0,
+    "ready": 0,
+    "research": 0,
+    "satellites": 2,
+    "scheduler": "deadline_queue",
+    "unfinished": 2
+  },
+  "build": "1.20.1-0.8.0-dev",
+  "celestial_discoveries_verified": true,
+  "chunk_tickets": 0,
+  "completed": {
+    "active": 0,
+    "cancelled": 0,
+    "chunk_tickets": 0,
+    "claimed": 2,
+    "missions": 2,
+    "pending": 0,
+    "ready": 0,
+    "research": 40,
+    "satellites": 2,
+    "scheduler": "deadline_queue",
+    "unfinished": 0
+  },
+  "completed_at": "2026-09-02T18:06:40.421580+00:00",
+  "exact_once_claim_verified": true,
+  "java": "17.0.8",
+  "owner_count": 2,
+  "port": 59006,
+  "processes": [
+    {
+      "completed_at": "2026-09-02T18:06:01.313277+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260902T180546729672Z-v080-satellite-start-full.txt",
+      "full_log_sha256": "51446e5ce12bee96fa1ed6080dd8db3f0087dc78aeb13ade58e2da598035779e",
+      "name": "v080-satellite-start",
+      "started_at": "2026-09-02T18:05:59.493699+00:00"
+    },
+    {
+      "completed_at": "2026-09-02T18:06:40.420782+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260902T180546729672Z-v080-satellite-restart-full.txt",
+      "full_log_sha256": "81a30a4bc5c23cb1ecec1529217e5785f1df01cc4a0e60953dd70264ce0665d1",
+      "name": "v080-satellite-restart",
+      "started_at": "2026-09-02T18:06:14.045462+00:00"
+    }
+  ],
+  "ready_after_restart": {
+    "active": 0,
+    "cancelled": 0,
+    "chunk_tickets": 0,
+    "claimed": 0,
+    "missions": 2,
+    "pending": 0,
+    "ready": 2,
+    "research": 0,
+    "satellites": 2,
+    "scheduler": "deadline_queue",
+    "unfinished": 2
+  },
+  "restart_persistence_verified": true,
+  "same_world_verified": true,
+  "scheduler": "deadline_queue",
+  "schema_version": 1,
+  "stress": {
+    "created": 100,
+    "creation_elapsed_nanos": 15782700,
+    "ready": {
+      "active": 0,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 2,
+      "missions": 102,
+      "pending": 0,
+      "ready": 100,
+      "research": 40,
+      "satellites": 102,
+      "scheduler": "deadline_queue",
+      "unfinished": 100
+    },
+    "rejected": 0,
+    "requested": 100,
+    "scheduler_passes": [
+      {
+        "completed": 32,
+        "inspected": 32,
+        "remaining": 68
+      },
+      {
+        "completed": 32,
+        "inspected": 32,
+        "remaining": 36
+      },
+      {
+        "completed": 32,
+        "inspected": 32,
+        "remaining": 4
+      },
+      {
+        "completed": 4,
+        "inspected": 4,
+        "remaining": 0
+      }
+    ],
+    "started": {
+      "active": 100,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 2,
+      "missions": 102,
+      "pending": 0,
+      "ready": 0,
+      "research": 40,
+      "satellites": 102,
+      "scheduler": "deadline_queue",
+      "unfinished": 100
+    }
+  },
+  "tested_implementation_commit": "a3b4192d37c524687a0a26bf12d075a8ec6c1e99",
+  "version": "v0.8.0"
+}

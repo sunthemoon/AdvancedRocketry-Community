@@ -1,0 +1,26 @@
+{
+  "artifact_sha256": "0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937",
+  "build": "1.20.1-0.8.0-dev",
+  "captured_at": "2026-09-03T02:16:20+08:00",
+  "files": [
+    {
+      "bytes": 225456,
+      "client": "ClientA",
+      "path": "final-candidate-client-a-multiplayer.png",
+      "sha256": "4e60dd5487c94d6e17056133f3f03b28a5bae37b2c71be43b017911829fca654"
+    },
+    {
+      "bytes": 225319,
+      "client": "PilotB",
+      "path": "final-candidate-client-b-multiplayer.png",
+      "sha256": "78cbc3290899d1478743e63e9db0135936d0872a534ed810650e542bb2514f0b"
+    }
+  ],
+  "observations": [
+    "Both final-candidate Forge clients rendered the packaged-server world.",
+    "ClientB's capture visibly includes the other connected player.",
+    "The v0.8 atmosphere and suit HUD rendered without a missing texture."
+  ],
+  "schema_version": 1,
+  "tested_implementation_commit": "a3b4192d37c524687a0a26bf12d075a8ec6c1e99"
+}

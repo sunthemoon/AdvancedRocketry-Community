@@ -1,0 +1,56 @@
+{
+  "artifact_sha256": "0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937",
+  "authority": {
+    "active": 0,
+    "cancelled": 0,
+    "chunk_tickets": 0,
+    "claimed": 2,
+    "missions": 102,
+    "pending": 0,
+    "ready": 100,
+    "research": 40,
+    "satellites": 102,
+    "scheduler": "deadline_queue",
+    "unfinished": 100
+  },
+  "build": "1.20.1-0.8.0-dev",
+  "clients": [
+    {
+      "clean_shutdown": true,
+      "connected_to_modded_server": true,
+      "full_log_sha256": "2e3bac3a7e1ff3557f6c1a95b77b7925a88493ffd53e076d5c024bfb7e58091a",
+      "kind": "forge_userdev",
+      "received_shared_marker": true,
+      "username": "ClientA"
+    },
+    {
+      "clean_shutdown": true,
+      "connected_to_modded_server": true,
+      "full_log_sha256": "bb3e3d373e9a93299f51eefbaae4bcc4a69e2a8bc639b5add614f97bf450bc67",
+      "kind": "forge_userdev",
+      "received_shared_marker": true,
+      "username": "PilotB"
+    }
+  ],
+  "completed_at": "2026-09-02T18:19:03.065893+00:00",
+  "java": "17.0.8",
+  "limitations": [
+    "Clients are Forge user-development launches from the tested commit; the server uses the byte-identified packaged JAR.",
+    "Terminal interaction authority is covered by Forge GameTest; this run proves simultaneous join, sync, and clean disconnect."
+  ],
+  "observations": {
+    "client_linkage_failures": 0,
+    "same_server_marker_received_by_both": true,
+    "simultaneous_players": 2
+  },
+  "schema_version": 1,
+  "server": {
+    "clean_save_and_stop": true,
+    "kind": "packaged_forge_server",
+    "loopback_only": true,
+    "port": 59006
+  },
+  "shared_marker": "ARCE_V080_G4_SHARED_STATE players=2 satellites=102 missions=102 artifact=0ce6c6bf9eb603f5",
+  "tested_implementation_commit": "a3b4192d37c524687a0a26bf12d075a8ec6c1e99",
+  "version": "v0.8.0"
+}

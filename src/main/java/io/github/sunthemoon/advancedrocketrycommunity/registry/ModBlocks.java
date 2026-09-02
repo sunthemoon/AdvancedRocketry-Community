@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -52,6 +53,15 @@ public final class ModBlocks {
     public static final RegistryObject<Block> FUEL_LOADER = BLOCKS.register(
             "fuel_loader",
             () -> new FuelLoaderBlock(metalProperties())
+    );
+    public static final RegistryObject<Block> SATELLITE_TERMINAL = BLOCKS.register(
+            "satellite_terminal",
+            () -> new SatelliteTerminalBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .lightLevel(state -> state.getValue(SatelliteTerminalBlock.LIT) ? 7 : 0)
+                    .sound(SoundType.METAL))
     );
     public static final RegistryObject<Block> ROCKET_MOTOR = metalBlock("rocket_motor");
     public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");

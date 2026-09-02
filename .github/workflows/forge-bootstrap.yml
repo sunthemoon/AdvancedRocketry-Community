@@ -51,12 +51,12 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
-      - name: Audit v0.7.0 distributable JAR
+      - name: Audit v0.8.0 distributable JAR
         run: >-
           python scripts/validate_build_artifact.py
-          build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-          --expected-version 1.20.1-0.7.0-dev
-          --content-manifest build/release-evidence/v070-jar-content-manifest.json
+          build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+          --expected-version 1.20.1-0.8.0-dev
+          --content-manifest build/release-evidence/v080-jar-content-manifest.json
 
       - name: Validate frozen v0.1.0 resources
         run: python scripts/validate_v010_asset_baseline.py
@@ -79,6 +79,9 @@ jobs:
       - name: Validate v0.7.0 generated-resource inventory
         run: python scripts/manage_v070_generated_manifest.py verify
 
+      - name: Validate v0.8.0 generated-resource inventory
+        run: python scripts/manage_v080_generated_manifest.py verify
+
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
 
@@ -100,6 +103,9 @@ jobs:
       - name: Validate v0.7.0 release evidence
         run: python scripts/validate_v070_release_evidence.py --require-approved
 
+      - name: Validate v0.8.0 release evidence
+        run: python scripts/validate_v080_release_evidence.py --require-approved
+
       - name: Generate deterministic resources
         run: ./gradlew runData --no-daemon --stacktrace
 
@@ -115,8 +121,8 @@ jobs:
       - name: Run packaged dedicated-server smoke test
         run: >-
           python scripts/run_dedicated_server_smoke.py
-          build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-          --expected-mod-version 1.20.1-0.7.0-dev
+          build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+          --expected-mod-version 1.20.1-0.8.0-dev
           --session-dir build/dedicated-server-smoke/session
           --evidence-dir build/dedicated-server-smoke/evidence
           --port 25585
@@ -127,7 +133,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v020-machine-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
+          --expected-version 1.20.1-0.8.0-dev
 
       - name: Run packaged celestial restart and reload smoke test
         run: >-
@@ -135,7 +141,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v030-celestial-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
+          --expected-version 1.20.1-0.8.0-dev
 
       - name: Run packaged atmosphere restart and five-minute smoke test
         run: >-
@@ -143,7 +149,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v040-atmosphere-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
+          --expected-version 1.20.1-0.8.0-dev
 
       - name: Run packaged rocket assembly and recovery smoke test
         run: >-
@@ -151,7 +157,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v050-rocket-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
+          --expected-version 1.20.1-0.8.0-dev
 
       - name: Run packaged Earth-Moon flight and restart matrix
         run: >-
@@ -159,7 +165,7 @@ jobs:
           build/dedicated-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v060-flight-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
+          --expected-version 1.20.1-0.8.0-dev
 
       - name: Upload baseline JAR and test reports
         if: always()
@@ -168,11 +174,11 @@ jobs:
           name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
           if-no-files-found: error
           path: |
-            build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-            build/libs/advancedrocketry-community-1.20.1-0.7.0-dev-sources.jar
+            build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+            build/libs/advancedrocketry-community-1.20.1-0.8.0-dev-sources.jar
             build/reports/tests/test/
             build/test-results/test/
-            build/release-evidence/v070-jar-content-manifest.json
+            build/release-evidence/v080-jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
             build/v020-machine-server-smoke/evidence/
             build/v030-celestial-server-smoke/evidence/
@@ -180,8 +186,8 @@ jobs:
             build/v050-rocket-server-smoke/evidence/
             build/v060-flight-server-smoke/evidence/
 
-  station-acceptance:
-    name: v0.7.0 packaged station gate
+  satellite-acceptance:
+    name: v0.8.0 packaged satellite gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -211,47 +217,57 @@ jobs:
       - name: Enable Gradle wrapper execution
         run: chmod +x ./gradlew
 
-      - name: Build the exact station candidate
+      - name: Build the exact satellite candidate
         run: ./gradlew clean build --no-daemon --stacktrace
 
-      - name: Audit the station candidate
+      - name: Audit the satellite candidate
         run: >-
           python scripts/validate_build_artifact.py
-          build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-          --expected-version 1.20.1-0.7.0-dev
-          --content-manifest build/release-evidence/v070-station-jar-content-manifest.json
+          build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+          --expected-version 1.20.1-0.8.0-dev
+          --content-manifest build/release-evidence/v080-satellite-jar-content-manifest.json
 
       - name: Validate committed candidate evidence
-        run: python scripts/validate_v070_release_evidence.py --require-approved
+        run: python scripts/validate_v080_release_evidence.py --require-approved
 
       - name: Start and restart the packaged baseline
         run: >-
           python scripts/run_dedicated_server_smoke.py
-          build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-          --expected-mod-version 1.20.1-0.7.0-dev
-          --session-dir build/v070-dedicated-server-smoke/session
-          --evidence-dir build/v070-dedicated-server-smoke/evidence
+          build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+          --expected-mod-version 1.20.1-0.8.0-dev
+          --session-dir build/v080-dedicated-server-smoke/session
+          --evidence-dir build/v080-dedicated-server-smoke/evidence
           --port 25595
 
-      - name: Run packaged station allocation and flight smoke test
+      - name: Run packaged station regression
         run: >-
           python scripts/run_v070_station_server_smoke.py
-          build/v070-dedicated-server-smoke/session
-          --baseline-summary build/v070-dedicated-server-smoke/evidence/summary.json
-          --evidence-dir build/v070-station-server-smoke/evidence
-          --expected-version 1.20.1-0.7.0-dev
+          build/v080-dedicated-server-smoke/session
+          --baseline-summary build/v080-dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v080-station-server-smoke/evidence
+          --expected-version 1.20.1-0.8.0-dev
 
-      - name: Upload station gate evidence
+      - name: Run packaged satellite restart and stress smoke test
+        run: >-
+          python scripts/run_v080_satellite_server_smoke.py
+          build/v080-dedicated-server-smoke/session
+          --baseline-summary build/v080-dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v080-satellite-server-smoke/evidence
+          --tested-commit ${REVIEW_COMMIT}
+          --expected-version 1.20.1-0.8.0-dev
+
+      - name: Upload satellite gate evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: v070-station-47.4.10-${{ env.REVIEW_COMMIT }}
+          name: v080-satellite-47.4.10-${{ env.REVIEW_COMMIT }}
           if-no-files-found: error
           path: |
-            build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar
-            build/release-evidence/v070-station-jar-content-manifest.json
-            build/v070-dedicated-server-smoke/evidence/
-            build/v070-station-server-smoke/evidence/
+            build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+            build/release-evidence/v080-satellite-jar-content-manifest.json
+            build/v080-dedicated-server-smoke/evidence/
+            build/v080-station-server-smoke/evidence/
+            build/v080-satellite-server-smoke/evidence/
 
   latest-compatibility:
     name: Forge 47.4.23 compatibility (advisory)

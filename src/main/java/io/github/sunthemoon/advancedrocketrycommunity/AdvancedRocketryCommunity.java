@@ -27,6 +27,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFligh
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.command.StationCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.command.SatelliteCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -44,10 +49,12 @@ public final class AdvancedRocketryCommunity {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     private final CelestialCatalogManager celestialCatalogs = new CelestialCatalogManager();
+    private final SatelliteCatalogManager satelliteCatalogs = new SatelliteCatalogManager();
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
     private final RocketManager rocketManager;
     private final StationManager stationManager;
+    private final SatelliteManager satelliteManager;
 
     public AdvancedRocketryCommunity(FMLJavaModLoadingContext context) {
         IEventBus modBus = context.getModEventBus();
@@ -105,6 +112,15 @@ public final class AdvancedRocketryCommunity {
                 celestialNetwork
         );
         MinecraftForge.EVENT_BUS.addListener(snapshotSynchronizer::onDatapackSync);
+        satelliteManager = new SatelliteManager(
+                satelliteCatalogs,
+                celestialCatalogs,
+                snapshotSynchronizer
+        );
+        SatelliteRuntime.install(satelliteManager);
+        MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(new SatelliteCommands(satelliteManager)::register);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
@@ -117,6 +133,7 @@ public final class AdvancedRocketryCommunity {
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new CelestialDefinitionReloadListener(celestialCatalogs));
+        event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs));
     }
 
     private void onServerStopped(ServerStoppedEvent event) {
@@ -124,7 +141,9 @@ public final class AdvancedRocketryCommunity {
         atmosphereManager.clear();
         rocketManager.clear();
         stationManager.clear();
+        satelliteManager.clear();
         StationRuntime.clear();
+        SatelliteRuntime.clear();
         celestialCatalogs.clear();
     }
 }

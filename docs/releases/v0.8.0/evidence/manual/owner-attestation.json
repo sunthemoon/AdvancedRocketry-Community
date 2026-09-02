@@ -1,0 +1,26 @@
+{
+  "acceptance_basis": {
+    "artifact_sha256": "0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937",
+    "final_candidate_visual_metadata": "docs/releases/v0.8.0/evidence/manual/final-candidate-metadata.json",
+    "multiplayer_evidence": "docs/releases/v0.8.0/evidence/multiplayer/summary.json",
+    "reconnect_evidence": "docs/releases/v0.8.0/evidence/multiplayer-reconnect/summary.json",
+    "release_evidence": "docs/releases/v0.8.0/RELEASE-EVIDENCE.md",
+    "satellite_evidence": "docs/releases/v0.8.0/evidence/satellite-server/summary.json",
+    "tested_implementation_commit": "a3b4192d37c524687a0a26bf12d075a8ec6c1e99",
+    "visual_decision": "docs/decisions/ADR-011-V080-VISUAL-EVIDENCE-SEQUENCE.md"
+  },
+  "approved_at": "2026-09-03",
+  "approved_by": "sunthemoon",
+  "approvals": {
+    "G0_provenance": "PASS",
+    "G8_visible_client_acceptance": "PASS",
+    "G9_release_acceptance": "PASS"
+  },
+  "limitations_accepted": [
+    "The complete Satellite Terminal sequence is an ordered pre-candidate screenshot set rather than continuous video; ADR-011 limits this substitution to v0.8.0.",
+    "The final-candidate visual record uses Forge user-development clients connected to the packaged candidate server.",
+    "The accepted candidate is byte-reproducible on the recorded Windows environment; cross-platform byte equality with Linux CI is not claimed."
+  ],
+  "schema_version": 1,
+  "version": "v0.8.0"
+}

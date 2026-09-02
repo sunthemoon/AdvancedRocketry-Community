@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "action": "assemble_launch_claim_and_discover",
+      "actor": "nearby_terminal_owner",
+      "expected": "ALLOW_SERVER_VALIDATED",
+      "result": "PASS"
+    },
+    {
+      "action": "open_terminal_inventory",
+      "actor": "non_owner",
+      "expected": "DENY",
+      "result": "PASS"
+    },
+    {
+      "action": "claim_other_owner_mission",
+      "actor": "non_owner",
+      "expected": "DENY_WITHOUT_RESEARCH_CHANGE",
+      "result": "PASS"
+    },
+    {
+      "action": "repeat_completed_claim",
+      "actor": "owner_replay",
+      "expected": "ALREADY_CLAIMED_WITHOUT_DUPLICATION",
+      "result": "PASS"
+    },
+    {
+      "action": "mutate_future_terminal_schema",
+      "actor": "energy_or_item_capability",
+      "expected": "DENY_AND_PRESERVE_EXACT_NBT",
+      "result": "PASS"
+    },
+    {
+      "action": "load_future_satellite_registry_schema",
+      "actor": "downgrade_attempt",
+      "expected": "FAIL_CLOSED_AND_PRESERVE_PAYLOAD",
+      "result": "PASS"
+    },
+    {
+      "action": "supply_mission_duration_yield_target_or_coordinates",
+      "actor": "client_intent",
+      "expected": "NOT_ACCEPTED_AS_AUTHORITATIVE_INPUT",
+      "result": "PASS"
+    },
+    {
+      "action": "inspect_recover_or_cancel_arbitrary_mission",
+      "actor": "non_operator",
+      "expected": "DENY",
+      "result": "PASS"
+    },
+    {
+      "action": "inspect_recover_or_cancel_mission",
+      "actor": "permission_level_2_operator",
+      "expected": "ALLOW_WITH_BOUNDED_DIAGNOSTIC",
+      "result": "PASS"
+    },
+    {
+      "action": "run_100_offline_logical_missions",
+      "actor": "deadline_scheduler",
+      "expected": "ZERO_CHUNK_TICKETS_AND_FIXED_PASS_BUDGET",
+      "result": "PASS"
+    }
+  ],
+  "critical_or_high_findings": 0,
+  "evidence": [
+    "SatelliteCatalogDecoderTest",
+    "SatelliteMissionRegistryTest",
+    "SatelliteMissionSavedDataTest",
+    "SatelliteItemDataTest",
+    "SatelliteGameTests",
+    "docs/releases/v0.8.0/evidence/satellite-server/summary.json",
+    "docs/releases/v0.8.0/evidence/performance/summary.json"
+  ],
+  "schema_version": 1,
+  "version": "v0.8.0"
+}

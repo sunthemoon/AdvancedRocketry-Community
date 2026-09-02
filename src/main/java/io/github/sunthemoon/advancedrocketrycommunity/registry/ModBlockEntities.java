@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVent
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -47,6 +48,14 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             FuelLoaderBlockEntity::new,
                             ModBlocks.FUEL_LOADER.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<SatelliteTerminalBlockEntity>> SATELLITE_TERMINAL =
+            BLOCK_ENTITIES.register(
+                    "satellite_terminal",
+                    () -> BlockEntityType.Builder.of(
+                            SatelliteTerminalBlockEntity::new,
+                            ModBlocks.SATELLITE_TERMINAL.get()
                     ).build(null)
             );
 

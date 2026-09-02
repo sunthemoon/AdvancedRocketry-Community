@@ -4,6 +4,26 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v0.8.0 — READY_FOR_AUDIT candidate, unreleased developer preview
+
+**Status:** G0-G9 evidence and owner review completed on 2026-09-03. The
+candidate remains `READY_FOR_AUDIT` pending required pull-request checks,
+merge, and exact post-merge artifact reproduction. No tag or public release
+exists.
+
+### Added
+
+- One bounded logical data satellite with a powered Satellite Terminal,
+  owner-bound assembly and launch, game-time mission scheduling, exactly-once
+  research claims, and persisted celestial discovery.
+- Independent fail-closed satellite, mission, research, and terminal schemas;
+  server-validated terminal intents; bounded operator inspect/recover/cancel
+  commands; and zero permanent satellite chunk tickets.
+- Generated recipes, models, blockstate, loot, tags, localization, and one
+  data-driven satellite definition with an exact 21-file provenance manifest.
+- Packaged restart, two-owner, 100-mission stress, JFR performance, two-client
+  join/disconnect, and post-restart reconnect evidence bound to one JAR.
+
 ## v0.7.0 — PASSED candidate, unreleased developer preview
 
 **Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-01. PR #11

@@ -1,5 +1,5 @@
 // Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, and 2026-08-31; see THIRD-PARTY-NOTICES.md.
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, and 2026-09-01; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
@@ -78,14 +78,15 @@ minecraft {
             workingDirectory project.file('run-data')
             args '--mod', mod_id,
                     '--all',
-                    '--output', file('src/generated/v0.7/resources/'),
+                    '--output', file('src/generated/v0.8/resources/'),
                     '--existing', file('src/main/resources/'),
                     '--existing', file('src/generated/resources/'),
                     '--existing', file('src/generated/v0.2/resources/'),
                     '--existing', file('src/generated/v0.3/resources/'),
                     '--existing', file('src/generated/v0.4/resources/'),
                     '--existing', file('src/generated/v0.5/resources/'),
-                    '--existing', file('src/generated/v0.6/resources/')
+                    '--existing', file('src/generated/v0.6/resources/'),
+                    '--existing', file('src/generated/v0.7/resources/')
         }
     }
 }
@@ -98,7 +99,35 @@ sourceSets.main.resources {
     srcDir 'src/generated/v0.5/resources'
     srcDir 'src/generated/v0.6/resources'
     srcDir 'src/generated/v0.7/resources'
+    srcDir 'src/generated/v0.8/resources'
     exclude '.cache/**'
+}
+
+def v080SupersededV010BlockTags = [
+        'data/minecraft/tags/blocks/mineable/pickaxe.json',
+        'data/minecraft/tags/blocks/needs_iron_tool.json'
+] as Set
+
+tasks.named('processResources') {
+    eachFile { details ->
+        boolean isHistoricalV010Copy = details.file.toPath().startsWith(
+                file('src/generated/resources').toPath()
+        )
+        if (isHistoricalV010Copy && v080SupersededV010BlockTags.contains(details.path)) {
+            details.exclude()
+        }
+    }
+}
+
+tasks.named('sourcesJar') {
+    eachFile { details ->
+        boolean isHistoricalV010Copy = details.file.toPath().startsWith(
+                file('src/generated/resources').toPath()
+        )
+        if (isHistoricalV010Copy && v080SupersededV010BlockTags.contains(details.path)) {
+            details.exclude()
+        }
+    }
 }
 
 repositories {

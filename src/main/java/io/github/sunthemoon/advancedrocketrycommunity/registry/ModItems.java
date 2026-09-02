@@ -5,6 +5,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.OxygenC
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.content.DevelopmentComponentItem;
 import io.github.sunthemoon.advancedrocketrycommunity.station.content.StationDeploymentKitItem;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.DataSatellitePackageItem;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteControlChipItem;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
@@ -96,6 +98,20 @@ public final class ModItems {
     public static final RegistryObject<Item> BASIC_CIRCUIT = component("basic_circuit");
     public static final RegistryObject<Item> ADVANCED_CIRCUIT = component("advanced_circuit");
     public static final RegistryObject<Item> DATA_STORAGE_UNIT = component("data_storage_unit");
+    public static final RegistryObject<Item> SATELLITE_TERMINAL = blockItem(
+            "satellite_terminal",
+            ModBlocks.SATELLITE_TERMINAL
+    );
+    public static final RegistryObject<Item> SATELLITE_CHASSIS = component("satellite_chassis");
+    public static final RegistryObject<Item> SATELLITE_SOLAR_MODULE = component("satellite_solar_module");
+    public static final RegistryObject<Item> SATELLITE_CONTROL_CHIP = ITEMS.register(
+            "satellite_control_chip",
+            () -> new SatelliteControlChipItem(new Item.Properties().stacksTo(1))
+    );
+    public static final RegistryObject<Item> DATA_SATELLITE_PACKAGE = ITEMS.register(
+            "data_satellite_package",
+            () -> new DataSatellitePackageItem(new Item.Properties().stacksTo(1))
+    );
 
     private ModItems() {
     }

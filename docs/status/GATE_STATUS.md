@@ -2,31 +2,40 @@
 
 ```yaml
 version: v0.8.0
-status: PLANNED
-build: ""
-branch: ""
-prerequisite_version: v0.7.0
-prerequisite_status: PASSED
-prerequisite_merge_commit: "b75e301f6cd77cfc1c1ade0e9b16c485f736c93b"
+status: READY_FOR_AUDIT
+tested_implementation_commit: "a3b4192d37c524687a0a26bf12d075a8ec6c1e99"
+build: "1.20.1-0.8.0-dev"
+branch: "codex/v0.8.0-progression-satellites"
+base_commit: "6b33eaf0be1a01b7feceefe785d8fba7e9717b02"
+merge_commit: ""
+upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
+provenance_review: APPROVED
+pull_request: ""
+forge_ci: ""
+governance_ci: ""
+pull_request_checks: PENDING
+accepted_exception: "docs/decisions/ADR-011-V080-VISUAL-EVIDENCE-SEQUENCE.md"
 gates:
-  G0: NOT_STARTED
-  G1: NOT_STARTED
-  G2: NOT_STARTED
-  G3: NOT_STARTED
-  G4: NOT_STARTED
-  G5: NOT_STARTED
-  G6: NOT_STARTED
-  G7: NOT_STARTED
-  G8: NOT_STARTED
-  G9: NOT_STARTED
-overall: PLANNED
+  G0: PASS
+  G1: PASS
+  G2: PASS
+  G3: PASS
+  G4: PASS
+  G5: PASS
+  G6: PASS
+  G7: PASS
+  G8: PASS
+  G9: PASS
+overall: READY_FOR_AUDIT
 remaining_items:
-  - approve the satellite and mission SavedData design
-  - create an isolated v0.8.0 implementation branch
-human_approved_by: ""
-human_approved_at: ""
+  - merge the reviewed pull request after required checks pass
+  - reproduce the exact candidate artifact from the merge commit
+human_approved_by: "sunthemoon"
+human_approved_at: "2026-09-03"
 ```
 
-v0.7.0 is complete and immutable at
-[`../releases/v0.7.0/GATE-STATUS.md`](../releases/v0.7.0/GATE-STATUS.md). This
-file only opens the next planning boundary; it does not claim any v0.8.0 Gate.
+Repository owner `sunthemoon` approved G0, G8, and G9 on 2026-09-03. G8 is
+bound to the ordered terminal screenshots, final-candidate two-client
+screenshots, packaged logs, authority matrix, and ADR-011. The release remains
+`READY_FOR_AUDIT`, not `PASSED`, until PR checks, merge identity, and exact
+post-merge JAR reproduction are recorded.

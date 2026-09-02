@@ -1,0 +1,8 @@
+[02:12:50] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.8.0-dev initialized
+[02:13:50] [Server thread/INFO] [minecraft/MinecraftServer]: ClientA joined the game
+[02:15:31] [Server thread/INFO] [minecraft/MinecraftServer]: PilotB joined the game
+[02:15:32] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_EVIDENCE satellites=102 missions=102 active=0 ready=100 pending=0 claimed=2 cancelled=0 unfinished=100 research=40 chunk_tickets=0 scheduler=deadline_queue
+[02:15:32] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] ARCE_V080_G4_SHARED_STATE players=2 satellites=102 missions=102 artifact=0ce6c6bf9eb603f5
+[02:16:35] [Server thread/INFO] [minecraft/MinecraftServer]: ClientA left the game
+[02:16:35] [Server thread/INFO] [minecraft/MinecraftServer]: PilotB left the game
+[02:16:35] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game

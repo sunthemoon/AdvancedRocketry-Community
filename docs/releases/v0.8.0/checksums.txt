@@ -1,0 +1,36 @@
+# SHA-256 checksums for the v0.0.2 distributable and committed evidence.
+# The build/libs JAR is intentionally not committed; CI verifies it separately.
+0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937  build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
+2ab7674512df989f83bd6888ed865101b3c66a192c147f04977fcd6e3570395f  docs/releases/v0.8.0/evidence/artifact/artifact-summary.json
+47f26d36b218f44098794061696e8064afc3517dd413724b3742f5e7dca931de  docs/releases/v0.8.0/evidence/artifact/jar-content-manifest.json
+fa34f5ffa8f744a96b0555734faeeb9a7d8d27f6fc913157cf316c048ff59b57  docs/releases/v0.8.0/evidence/automated/authority-matrix.json
+5a1ec05094aab0ec68abf07b85cb56c5f994be2192e7a25e4cd2fc59a97e094c  docs/releases/v0.8.0/evidence/automated/gametest.txt
+4cf523a07ed14ab903dbade9395dfc09a908ffa7a2a35f82b7a4e19dd75ea3b5  docs/releases/v0.8.0/evidence/automated/summary.json
+173ce1f2245faefcdac973c1265f1caa18705550c05c741892d2c9ec4cb13485  docs/releases/v0.8.0/evidence/dedicated-server/first-start.txt
+cae86a36faa050ee4a93f61dbf22193298fc90ef399cb1c53eaa9aa7d5b50e4a  docs/releases/v0.8.0/evidence/dedicated-server/restart.txt
+2f4a58eee4fcdb65a148154bc58381a33e6531ad2043a32e0df9e507b8e4d90b  docs/releases/v0.8.0/evidence/dedicated-server/summary.json
+4e60dd5487c94d6e17056133f3f03b28a5bae37b2c71be43b017911829fca654  docs/releases/v0.8.0/evidence/manual/final-candidate-client-a-multiplayer.png
+78cbc3290899d1478743e63e9db0135936d0872a534ed810650e542bb2514f0b  docs/releases/v0.8.0/evidence/manual/final-candidate-client-b-multiplayer.png
+64b2b86921d696552d4e6ea3070ce3b668487e8f8c555e57ff444ec0c0a9f4e2  docs/releases/v0.8.0/evidence/manual/final-candidate-metadata.json
+851d2a2ca3774ab699ceeb84e0a279937473d996836e2be6678987b126810fa2  docs/releases/v0.8.0/evidence/manual/owner-attestation.json
+ef28e276f6e0f25a463d2798e26fc89940adaf30b3d221a3a9689520e79a3c4b  docs/releases/v0.8.0/evidence/manual/pre-candidate/integrated-restart-restored.png
+06123fc63a431cc59882d5c6a830363600df8bdb40fc44701750a510413c238f  docs/releases/v0.8.0/evidence/manual/pre-candidate/metadata.json
+13142352223fa6251820d695314d92f905deb9754a40e940b8e3edfd857966dc  docs/releases/v0.8.0/evidence/manual/pre-candidate/mission-active.png
+fbabceb1c5d2dbfe4714c1aefae24cfa19c6365634d0914da98b61b68aad4e32  docs/releases/v0.8.0/evidence/manual/pre-candidate/restart-claim-complete.png
+42c33531db2b66f312cf876ffc6513589f0f41f87a561124eec58e4cd943f4b3  docs/releases/v0.8.0/evidence/manual/pre-candidate/restart-mission-ready.png
+c78bb6bd9da906e089e696bbd628be6e8add5be93c0bd0cb92a69249ef1e2e85  docs/releases/v0.8.0/evidence/manual/pre-candidate/terminal-assembled.png
+59388e5daa0ae8d03aab2c4bbb75415a6d7f32deac39e201db34c3262b1b6886  docs/releases/v0.8.0/evidence/manual/pre-candidate/terminal-components.png
+5f61431f086337e8531c34209451b8a7f07fd850f21ee5459d5b5cf1dedc690b  docs/releases/v0.8.0/evidence/manual/pre-candidate/terminal-world.png
+18cd1428f6df834f6c1dc36a1786d4ceee3f7c56a41a1f24477255ef563a0dec  docs/releases/v0.8.0/evidence/multiplayer-reconnect/client-a.txt
+8891a42b31a458ed54b7ab6e2a800d97df4a633b7bbd94dabfad8da875ef3069  docs/releases/v0.8.0/evidence/multiplayer-reconnect/client-b.txt
+7ea46560b7bab983a89dcaed617c44d551cbe62e230db1d364315a5ef85e7d39  docs/releases/v0.8.0/evidence/multiplayer-reconnect/server.txt
+801f54ffa1a075baf28e9f2e5e701745cfb8f2504a602d2b3b8a94d97ddc72b8  docs/releases/v0.8.0/evidence/multiplayer-reconnect/summary.json
+2a962310ac29a50374474115a9050ac002d7084c5425224c9b24e8ea55b68203  docs/releases/v0.8.0/evidence/multiplayer/client-a.txt
+5888f41d7a509f7c2058b227abcb65d1c9cb8ea012dedb20dc8ab84a5663169d  docs/releases/v0.8.0/evidence/multiplayer/client-b.txt
+cc380b1b60144b53954e127d00da00dacb623d67cb091d1b294858805bd701e7  docs/releases/v0.8.0/evidence/multiplayer/server.txt
+e46bf3b07aa756df5f14fdd5f08defd14c634dbf0e6b29132acf2a54961b5927  docs/releases/v0.8.0/evidence/multiplayer/summary.json
+8a4c939e2055d178adc3662efb78f15bca70744b0aee5412a6a2ab89f0c97351  docs/releases/v0.8.0/evidence/performance/scheduler-jfr.txt
+c4afba8a02bbf1945c8c6717d3dea68bd0b6a5882632be76c56eb217662f2d2d  docs/releases/v0.8.0/evidence/performance/summary.json
+04e0569788517f3a40502571ba334c6bd897d02414847cb34c72aea387447121  docs/releases/v0.8.0/evidence/satellite-server/filtered-lifecycle.log
+7350764e87c0c1d242a03e5219eb01fb699020d18a6e3eb474a6c7d44a9ba0ac  docs/releases/v0.8.0/evidence/satellite-server/mission-ledger.json
+2749cdc96e2fad1656f4778e8d216790cc3e5ac74ccc96feb2a46fc01bf76ead  docs/releases/v0.8.0/evidence/satellite-server/summary.json

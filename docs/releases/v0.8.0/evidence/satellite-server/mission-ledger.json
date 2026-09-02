@@ -1,0 +1,43 @@
+{
+  "missions": [
+    {
+      "deadline": 208,
+      "first_claim": {
+        "code": "SUCCESS",
+        "discovered": true,
+        "research": 20,
+        "status": "CLAIMED"
+      },
+      "mission_id": "1675eeb0-7c5a-3ef1-b34e-c9eebdf98da2",
+      "owner_id": "00000000-0000-0000-0000-000000000801",
+      "replayed_claim": {
+        "code": "ALREADY_CLAIMED",
+        "discovered": true,
+        "research": 20,
+        "status": "CLAIMED"
+      },
+      "satellite_id": "9d9ca501-4120-4630-aacd-56902e782a88",
+      "target": "advancedrocketrycommunity:earth"
+    },
+    {
+      "deadline": 208,
+      "first_claim": {
+        "code": "SUCCESS",
+        "discovered": true,
+        "research": 20,
+        "status": "CLAIMED"
+      },
+      "mission_id": "77f3f46b-9542-3612-9bb7-037042eda70a",
+      "owner_id": "00000000-0000-0000-0000-000000000802",
+      "replayed_claim": {
+        "code": "ALREADY_CLAIMED",
+        "discovered": true,
+        "research": 20,
+        "status": "CLAIMED"
+      },
+      "satellite_id": "77533314-44d1-4f7f-a933-aa03fbffdf06",
+      "target": "advancedrocketrycommunity:moon"
+    }
+  ],
+  "schema_version": 1
+}

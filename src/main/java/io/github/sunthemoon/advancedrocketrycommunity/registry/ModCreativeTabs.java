@@ -43,6 +43,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.BASIC_CIRCUIT.get());
                         output.accept(ModItems.ADVANCED_CIRCUIT.get());
                         output.accept(ModItems.DATA_STORAGE_UNIT.get());
+                        output.accept(ModItems.SATELLITE_TERMINAL.get());
+                        output.accept(ModItems.SATELLITE_CHASSIS.get());
+                        output.accept(ModItems.SATELLITE_SOLAR_MODULE.get());
+                        output.accept(ModItems.SATELLITE_CONTROL_CHIP.get());
+                        output.accept(ModItems.DATA_SATELLITE_PACKAGE.get());
                     })
                     .build()
     );
