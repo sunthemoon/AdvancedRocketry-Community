@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
@@ -31,6 +32,7 @@ public final class SatelliteManager {
     private static final String INITIAL_MISSION_PREFIX = "arce:data-satellite:first:";
     private static final String RELEASE_TEST_HOOK_PROPERTY =
             "advancedrocketrycommunity.releaseTestHooks";
+    private static final int MAX_RELEASE_TEST_BATCH = 100;
 
     private final SatelliteCatalogManager satelliteCatalogs;
     private final CelestialCatalogManager celestialCatalogs;
@@ -190,8 +192,7 @@ public final class SatelliteManager {
         if (!Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             return failure(SatelliteOperationCode.UNAUTHORIZED);
         }
-        SatelliteDefinition definition = definition(io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds.DATA_SATELLITE)
-                .orElse(null);
+        SatelliteDefinition definition = definition(SatelliteIds.DATA_SATELLITE).orElse(null);
         SatelliteOperationResult definitionFailure = validateDefinitionAndTarget(definition, targetBodyId);
         if (definitionFailure != null) {
             return definitionFailure;
@@ -227,6 +228,70 @@ public final class SatelliteManager {
         return mission == null
                 ? failure(SatelliteOperationCode.MISSION_NOT_FOUND)
                 : claimMission(server, missionId, mission.ownerId());
+    }
+
+    /** Bounded packaged-server stress hook using the production registry and scheduler. */
+    public ReleaseTestBatchResult releaseTestBatch(MinecraftServer server, int requested) {
+        if (!Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)
+                || requested < 1 || requested > MAX_RELEASE_TEST_BATCH) {
+            return new ReleaseTestBatchResult(
+                    SatelliteOperationCode.UNAUTHORIZED, requested, 0, requested, 0L
+            );
+        }
+        SatelliteDefinition definition = definition(SatelliteIds.DATA_SATELLITE).orElse(null);
+        if (definition == null || definition.allowedTargets().isEmpty()) {
+            return new ReleaseTestBatchResult(
+                    SatelliteOperationCode.CATALOG_UNAVAILABLE, requested, 0, requested, 0L
+            );
+        }
+        long started = System.nanoTime();
+        int created = 0;
+        try {
+            SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+            long gameTime = server.overworld().getGameTime();
+            for (int index = 0; index < requested; index++) {
+                UUID satelliteId = UUID.randomUUID();
+                UUID ownerId = UUID.nameUUIDFromBytes(
+                        ("arce:v080:stress-owner:" + (index % 2)).getBytes(StandardCharsets.UTF_8)
+                );
+                ResourceLocation target = definition.allowedTargets().get(
+                        index % definition.allowedTargets().size()
+                );
+                SatelliteOperationResult result = data.launch(
+                        satelliteId,
+                        initialMissionId(satelliteId),
+                        ownerId,
+                        definition,
+                        target,
+                        gameTime,
+                        discoveryRequired(server, target)
+                );
+                if (result.changed()) {
+                    created++;
+                }
+            }
+            if (created > 0) {
+                data.flush(server);
+            }
+            return new ReleaseTestBatchResult(
+                    created == requested
+                            ? SatelliteOperationCode.SUCCESS
+                            : SatelliteOperationCode.CAPACITY_REACHED,
+                    requested,
+                    created,
+                    requested - created,
+                    System.nanoTime() - started
+            );
+        } catch (RuntimeException exception) {
+            logOperationFailure("release-test batch", exception);
+            return new ReleaseTestBatchResult(
+                    SatelliteOperationCode.UNSUPPORTED_DATA,
+                    requested,
+                    created,
+                    requested - created,
+                    System.nanoTime() - started
+            );
+        }
     }
 
     public SatelliteOperationResult cancelCurrent(
@@ -467,5 +532,14 @@ public final class SatelliteManager {
 
     private static void logOperationFailure(String operation, RuntimeException exception) {
         AdvancedRocketryCommunity.LOGGER.error("Satellite {} operation failed", operation, exception);
+    }
+
+    public record ReleaseTestBatchResult(
+            SatelliteOperationCode code,
+            int requested,
+            int created,
+            int rejected,
+            long elapsedNanos
+    ) {
     }
 }

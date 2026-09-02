@@ -41,6 +41,13 @@ EVIDENCE_LOG = re.compile(
     r"ready=(\d+) pending=(\d+) claimed=(\d+) cancelled=(\d+) "
     r"unfinished=(\d+) research=(\d+) chunk_tickets=(\d+) scheduler=([^\s]+)"
 )
+BATCH_LOG = re.compile(
+    r"ARCE_RELEASE_TEST_SATELLITE_BATCH requested=(\d+) created=(\d+) rejected=(\d+) "
+    r"code=([A-Z_]+) elapsed_nanos=(\d+) chunk_tickets=(\d+) scheduler=([^\s]+)"
+)
+SCHEDULER_LOG = re.compile(
+    r"ARCE_SATELLITE_SCHEDULER completed=(\d+) inspected=(\d+) remaining=(\d+)"
+)
 
 
 def _report(process) -> dict[str, int | str]:  # type: ignore[no-untyped-def]
@@ -111,12 +118,21 @@ def _claim(process, mission: dict[str, object], expected_code: str) -> dict[str,
     }
 
 
-def _wait_until_ready(process, timeout: float = 45.0) -> dict[str, int | str]:  # type: ignore[no-untyped-def]
+def _wait_until_ready(
+    process,
+    expected_ready: int,
+    expected_claimed: int,
+    timeout: float = 45.0,
+) -> dict[str, int | str]:  # type: ignore[no-untyped-def]
     deadline = time.monotonic() + timeout
     last: dict[str, int | str] | None = None
     while time.monotonic() < deadline:
         last = _report(process)
-        if last["ready"] == len(OWNERS) and last["active"] == 0:
+        if (
+            last["ready"] == expected_ready
+            and last["claimed"] == expected_claimed
+            and last["active"] == 0
+        ):
             return last
         time.sleep(1.0)
     raise SmokeError(f"Restarted satellite missions did not become ready: {last}")
@@ -211,7 +227,7 @@ def main() -> int:
             or after_restart["active"] + after_restart["ready"] != len(OWNERS)
         ):
             raise SmokeError(f"Restart did not preserve satellite authority: {after_restart}")
-        ready = _wait_until_ready(process)
+        ready = _wait_until_ready(process, len(OWNERS), 0)
         for mission in missions:
             mission["first_claim"] = _claim(process, mission, "SUCCESS")
             mission["replayed_claim"] = _claim(process, mission, "ALREADY_CLAIMED")
@@ -225,6 +241,43 @@ def main() -> int:
             or completed["chunk_tickets"] != 0
         ):
             raise SmokeError(f"Final satellite evidence is inconsistent: {completed}")
+        batch_start = len(process.lines)
+        process.command("arce satellite release-test batch 100")
+        batch_index = process.wait_for(BATCH_LOG, 30.0, start_at=batch_start)
+        batch_match = BATCH_LOG.search(process.lines[batch_index])
+        if batch_match is None:
+            raise SmokeError("Could not parse satellite stress batch receipt")
+        requested, created, rejected, code, elapsed, tickets, scheduler = batch_match.groups()
+        if (
+            (int(requested), int(created), int(rejected)) != (100, 100, 0)
+            or code != "SUCCESS"
+            or int(tickets) != 0
+            or scheduler != "deadline_queue"
+        ):
+            raise SmokeError("Satellite stress batch exceeded a fixed authority bound")
+        stress_started = _report(process)
+        if (
+            stress_started["active"] != 100
+            or stress_started["claimed"] != len(OWNERS)
+            or stress_started["unfinished"] != 100
+        ):
+            raise SmokeError(f"Satellite stress batch did not remain bounded: {stress_started}")
+        stress_ready = _wait_until_ready(process, 100, len(OWNERS))
+        scheduler_passes = []
+        for line in process.lines[batch_index:]:
+            match = SCHEDULER_LOG.search(line)
+            if match is not None:
+                scheduler_passes.append({
+                    "completed": int(match.group(1)),
+                    "inspected": int(match.group(2)),
+                    "remaining": int(match.group(3)),
+                })
+        if (
+            sum(item["completed"] for item in scheduler_passes) != 100
+            or any(item["completed"] > 32 or item["inspected"] > 64 for item in scheduler_passes)
+            or scheduler_passes[-1]["remaining"] != 0
+        ):
+            raise SmokeError(f"Satellite scheduler passes exceeded budget: {scheduler_passes}")
         harness.stop(process)
         process = None
 
@@ -248,6 +301,15 @@ def main() -> int:
             "after_restart": after_restart,
             "ready_after_restart": ready,
             "completed": completed,
+            "stress": {
+                "requested": int(requested),
+                "created": int(created),
+                "rejected": int(rejected),
+                "creation_elapsed_nanos": int(elapsed),
+                "started": stress_started,
+                "ready": stress_ready,
+                "scheduler_passes": scheduler_passes,
+            },
             "processes": harness.process_documents,
         }
         evidence = args.evidence_dir.resolve()
@@ -256,6 +318,7 @@ def main() -> int:
         print("[PASS] Same-world restart preserved both active missions and deadlines")
         print("[PASS] Deadline queue completed missions with zero chunk tickets")
         print("[PASS] Discovery and repeated claims remained exact-once")
+        print("[PASS] 100 packaged missions drained within 32/64 completion/inspection budgets")
         print(f"[PASS] Artifact SHA-256: {artifact_sha256}")
         print(f"[PASS] Evidence: {evidence}")
         return 0

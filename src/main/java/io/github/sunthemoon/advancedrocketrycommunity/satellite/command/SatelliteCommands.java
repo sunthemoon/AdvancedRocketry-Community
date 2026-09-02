@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
@@ -65,7 +66,10 @@ public final class SatelliteCommands {
                                             .executes(this::releaseTestLaunch))))
                     .then(Commands.literal("claim")
                             .then(Commands.argument("mission_id", UuidArgument.uuid())
-                                    .executes(this::releaseTestClaim))));
+                                    .executes(this::releaseTestClaim)))
+                    .then(Commands.literal("batch")
+                            .then(Commands.argument("count", IntegerArgumentType.integer(1, 100))
+                                    .executes(this::releaseTestBatch))));
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
     }
@@ -242,6 +246,29 @@ public final class SatelliteCommands {
                 "Release-test satellite claim: " + result.code()
         ), true);
         return 1;
+    }
+
+    private int releaseTestBatch(CommandContext<CommandSourceStack> context) {
+        int requested = IntegerArgumentType.getInteger(context, "count");
+        SatelliteManager.ReleaseTestBatchResult result = satellites.releaseTestBatch(
+                context.getSource().getServer(), requested
+        );
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_SATELLITE_BATCH requested={} created={} rejected={} "
+                        + "code={} elapsed_nanos={} chunk_tickets=0 scheduler=deadline_queue",
+                result.requested(), result.created(), result.rejected(), result.code(),
+                result.elapsedNanos()
+        );
+        if (result.code() != io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode.SUCCESS) {
+            context.getSource().sendFailure(Component.literal(
+                    "Release-test satellite batch rejected: " + result.code()
+            ));
+            return 0;
+        }
+        context.getSource().sendSuccess(() -> Component.literal(
+                "Release-test satellite batch created: " + result.created()
+        ), true);
+        return result.created();
     }
 
     private static long count(
