@@ -1,0 +1,12 @@
+{
+  "allowed_targets": [
+    "advancedrocketrycommunity:earth",
+    "advancedrocketrycommunity:moon",
+    "advancedrocketrycommunity:space"
+  ],
+  "discovery_cost": 100,
+  "id": "advancedrocketrycommunity:data_satellite",
+  "mission_duration_ticks": 200,
+  "research_yield": 120,
+  "schema_version": 1
+}
