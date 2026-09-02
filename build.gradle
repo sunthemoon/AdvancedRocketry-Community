@@ -103,6 +103,33 @@ sourceSets.main.resources {
     exclude '.cache/**'
 }
 
+def v080SupersededV010BlockTags = [
+        'data/minecraft/tags/blocks/mineable/pickaxe.json',
+        'data/minecraft/tags/blocks/needs_iron_tool.json'
+] as Set
+
+tasks.named('processResources') {
+    eachFile { details ->
+        boolean isHistoricalV010Copy = details.file.toPath().startsWith(
+                file('src/generated/resources').toPath()
+        )
+        if (isHistoricalV010Copy && v080SupersededV010BlockTags.contains(details.path)) {
+            details.exclude()
+        }
+    }
+}
+
+tasks.named('sourcesJar') {
+    eachFile { details ->
+        boolean isHistoricalV010Copy = details.file.toPath().startsWith(
+                file('src/generated/resources').toPath()
+        )
+        if (isHistoricalV010Copy && v080SupersededV010BlockTags.contains(details.path)) {
+            details.exclude()
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }

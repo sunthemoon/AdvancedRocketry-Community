@@ -1,0 +1,99 @@
+{
+  "artifact_sha256": "0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937",
+  "budgets": {
+    "chunk_generation_duration_nanos": 0.0,
+    "maximum_completions_per_pass": 32,
+    "maximum_queue_inspections_per_pass": 64,
+    "observed_maximum_completions_per_pass": 32,
+    "observed_maximum_queue_inspections_per_pass": 32,
+    "permanent_chunk_tickets": 0
+  },
+  "build": "1.20.1-0.8.0-dev",
+  "environment": {
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13600K",
+    "cpu_cores": 14,
+    "cpu_logical_processors": 20,
+    "forge": "47.4.10",
+    "java": "Microsoft OpenJDK 17.0.8+7-LTS",
+    "jvm_heap": "-Xms512M -Xmx1024M",
+    "minecraft": "1.20.1",
+    "os": "Microsoft Windows 11 Pro 10.0.26200 amd64",
+    "physical_memory_mib": 32079
+  },
+  "heap": {
+    "allocation_rate_bytes_per_second": 83062198.85714285,
+    "gc_count": 7,
+    "gc_overhead_percent": 0.024218492,
+    "gc_total_duration_ms": 368
+  },
+  "limitations": [
+    "JFR sampling adds profiler overhead.",
+    "The workload-window calculation excludes the one sample timestamped before the batch command.",
+    "This headless run measures logical mission scheduling and does not include client render cost."
+  ],
+  "recording": {
+    "duration_ms": 15195,
+    "ended_epoch_ms": 1788373817717,
+    "jfr_filename": "server-2026-09-03-023002.jfr",
+    "jfr_sha256": "874f9af0e7b1911b8c055a48b1df4c89f7d9ac69f32d9fbebb3561bc4f6d4588",
+    "minecraft_report_filename": "jfr-report-server-2026-09-03-023002.json",
+    "minecraft_report_sha256": "bcdb473563aceb3ef85bc60dcd53f92d7b595f5efe353962e1a074f20c15f92f",
+    "raw_files": "machine-local only because the JFR/report contain absolute machine paths",
+    "started_epoch_ms": 1788373802522
+  },
+  "result": "PASS",
+  "schema_version": 1,
+  "server_tick_full_recording": {
+    "maximum_ms": 281.776288,
+    "mean_ms": 26.195580071428573,
+    "minimum_ms": 1.823737,
+    "note": "Includes the first pre-workload JFR warmup sample.",
+    "p90_ms": 30.248520399999997,
+    "p99_ms": 250.04205040000002,
+    "samples": 14
+  },
+  "server_tick_workload_window": {
+    "maximum_ms": 37.666768000000005,
+    "mean_ms": 6.535525615384615,
+    "minimum_ms": 1.823737,
+    "p95_ms": 22.830272799999968,
+    "percentile_method": "linear interpolation over one-second Minecraft ServerTickTime averages",
+    "samples": 13,
+    "window_start": "2026-09-03T02:30:04+08:00"
+  },
+  "source": "Minecraft JFR summary plus packaged satellite authority receipts on 2026-09-03",
+  "tested_implementation_commit": "a3b4192d37c524687a0a26bf12d075a8ec6c1e99",
+  "version": "v0.8.0",
+  "workload": {
+    "batch_creation_elapsed_nanos": 53882800,
+    "final_ready_missions": 100,
+    "logical_missions": 100,
+    "logical_satellites": 100,
+    "mission_observation_seconds": 13,
+    "players_online": 0,
+    "scheduler": "deadline_queue",
+    "scheduler_interval_ticks": 20,
+    "scheduler_passes": [
+      {
+        "completed": 32,
+        "inspected": 32,
+        "remaining": 68
+      },
+      {
+        "completed": 32,
+        "inspected": 32,
+        "remaining": 36
+      },
+      {
+        "completed": 32,
+        "inspected": 32,
+        "remaining": 4
+      },
+      {
+        "completed": 4,
+        "inspected": 4,
+        "remaining": 0
+      }
+    ]
+  }
+}

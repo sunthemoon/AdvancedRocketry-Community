@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "evidence_status": "pre_candidate_visual_check",
+  "captured_at": "2026-09-02T00:34:16+08:00/2026-09-02T00:54:19+08:00",
+  "build": "1.20.1-0.8.0-dev",
+  "source_state": "pre-commit working tree; superseded by final candidate verification",
+  "observations": [
+    "terminal block rendered",
+    "components visible",
+    "assembly consumed 1000 FE and produced bound chip/package",
+    "mission active countdown visible",
+    "integrated-server restart restored catalog and research",
+    "restart preserved mission until READY",
+    "claim increased research exactly once and retained discovery"
+  ],
+  "excluded": [
+    "2026-09-02_00.47.00.png: captured the runtime bridge lifecycle defect before its fix"
+  ],
+  "files": [
+    "restart-mission-ready.png",
+    "terminal-components.png",
+    "terminal-assembled.png",
+    "mission-active.png",
+    "restart-claim-complete.png",
+    "integrated-restart-restored.png",
+    "terminal-world.png"
+  ]
+}

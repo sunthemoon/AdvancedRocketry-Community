@@ -1,0 +1,6 @@
+[039��2026 02:13:44.295] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: ClientA
+[039��2026 02:13:45.934] [Worker-Main-12/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.8.0-dev initialized
+[039��2026 02:13:48.513] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 59006
+[039��2026 02:13:50.930] [Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[039��2026 02:15:32.023] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] [Server] ARCE_V080_G4_SHARED_STATE players=2 satellites=102 missions=102 artifact=0ce6c6bf9eb603f5
+[039��2026 02:16:35.749] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

@@ -1,0 +1,9 @@
+# Full GameTest log SHA-256: 8dd85532bbd9df7256bcc8cf774e67873b7873558163772871f499fd2526ec88
+# Filtered markers from the final local v0.8.0 candidate run.
+[0392026 02:26:09.144] [modloading-worker-0/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.8.0-dev initialized
+[0392026 02:26:11.177] [main/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Accepted satellite catalog generation 1 with 1 definitions
+[0392026 02:26:21.684] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: 44 tests are now running!
+[0392026 02:26:30.594] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_ATMOSPHERE_PERF_WARMUP ticks=90 active_vents=16 tracked=17 pending=0 inspections=0 dirty=0 statuses=[ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE]
+[0392026 02:26:47.323] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_ATMOSPHERE_PERF vents=16 simulated_ticks=6000 active=16 peak_inspections=112 measured_inspections=0 elapsed_seconds=17.164
+[0392026 02:26:49.036] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_SATELLITE_SCHEDULER completed=1 inspected=1 remaining=0
+[0392026 02:26:49.656] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: All 44 required tests passed :)

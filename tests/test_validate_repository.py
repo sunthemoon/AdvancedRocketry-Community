@@ -38,6 +38,7 @@ from scripts.validate_repository import (
     validate_v050_gate_status_text,
     validate_v060_gate_status_text,
     validate_v070_gate_status_text,
+    validate_v080_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
@@ -252,6 +253,35 @@ human_approved_by: "{reviewer}"
 human_approved_at: "{reviewed_at}"
 ```
 """
+
+
+def v080_gate_document(
+    *,
+    status: str = "IN_PROGRESS",
+    overall: str = "IN_PROGRESS",
+    gates: dict[str, str] | None = None,
+    reviewer: str = "",
+    reviewed_at: str = "",
+    reviewed_head_commit: str = "",
+    merge_commit: str = "",
+    pull_request: str = "",
+    pull_request_checks: str = "",
+    forge_ci: str = "",
+    governance_ci: str = "",
+) -> str:
+    return v070_gate_document(
+        status=status,
+        overall=overall,
+        gates=gates,
+        reviewer=reviewer,
+        reviewed_at=reviewed_at,
+        reviewed_head_commit=reviewed_head_commit,
+        merge_commit=merge_commit,
+        pull_request=pull_request,
+        pull_request_checks=pull_request_checks,
+        forge_ci=forge_ci,
+        governance_ci=governance_ci,
+    ).replace("version: v0.7.0", "version: v0.8.0", 1)
 
 
 class RepositoryCliTests(unittest.TestCase):
@@ -1187,6 +1217,90 @@ class V070GateStatusTests(unittest.TestCase):
         )
 
 
+class V080GateStatusTests(unittest.TestCase):
+    @staticmethod
+    def complete_evidence(
+        *, human_approved: bool = True, post_merge_ready: bool = False
+    ) -> dict[str, object]:
+        evidence = {
+            "provenance_ready": True,
+            "artifact_ready": True,
+            "post_merge_ready": post_merge_ready,
+            "data_ready": True,
+            "automated_ready": True,
+            "server_ready": True,
+            "persistence_ready": True,
+            "authority_ready": True,
+            "performance_ready": True,
+            "client_ready": True,
+            "docs_ready": True,
+            "human_approved": human_approved,
+        }
+        if post_merge_ready:
+            evidence.update(
+                {
+                    "reviewed_head_commit": "1" * 40,
+                    "merge_commit": "2" * 40,
+                    "pull_request": "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/12",
+                    "pull_request_checks": "4/4_PASS",
+                    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/1",
+                    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/2",
+                }
+            )
+        return evidence
+
+    def test_ready_for_audit_accepts_complete_premerge_evidence(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v080_gate_status_text(
+                v080_gate_document(
+                    status="READY_FOR_AUDIT",
+                    overall="READY_FOR_AUDIT",
+                    gates={f"G{index}": "PASS" for index in range(10)},
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-09-03",
+                ),
+                evidence_details=self.complete_evidence(),
+            ),
+        )
+
+    def test_passed_status_requires_post_merge_reproduction(self) -> None:
+        errors = validate_v080_gate_status_text(
+            v080_gate_document(
+                status="PASSED",
+                overall="PASSED",
+                gates={f"G{index}": "PASS" for index in range(10)},
+                reviewer="sunthemoon",
+                reviewed_at="2026-09-03",
+            ),
+            evidence_details=self.complete_evidence(),
+        )
+
+        self.assertTrue(any("post-merge reproduction" in error for error in errors))
+
+    def test_passed_status_accepts_bound_post_merge_evidence(self) -> None:
+        evidence = self.complete_evidence(post_merge_ready=True)
+        self.assertEqual(
+            [],
+            validate_v080_gate_status_text(
+                v080_gate_document(
+                    status="PASSED",
+                    overall="PASSED",
+                    gates={f"G{index}": "PASS" for index in range(10)},
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-09-03",
+                    reviewed_head_commit=str(evidence["reviewed_head_commit"]),
+                    merge_commit=str(evidence["merge_commit"]),
+                    pull_request=str(evidence["pull_request"]),
+                    pull_request_checks=str(evidence["pull_request_checks"]),
+                    forge_ci=str(evidence["forge_ci"]),
+                    governance_ci=str(evidence["governance_ci"]),
+                ),
+                evidence_details=evidence,
+            ),
+        )
+
+
 class V002ResourceInventoryTests(unittest.TestCase):
     def test_all_current_text_and_binary_resources_are_allowlisted(self) -> None:
         paths = [
@@ -2025,14 +2139,14 @@ class WorkflowStructureTests(unittest.TestCase):
                 "latest exact immutable review-commit and Forge 47.4.23 job environment",
             ),
             (
-                "station-acceptance",
+                "satellite-acceptance",
                 "",
-                "station-acceptance exact immutable review-commit job environment",
+                "satellite-acceptance exact immutable review-commit job environment",
             ),
             (
-                "station-acceptance",
+                "satellite-acceptance",
                 "      REVIEW_COMMIT: ${{ github.sha }}\n",
-                "station-acceptance exact immutable review-commit job environment",
+                "satellite-acceptance exact immutable review-commit job environment",
             ),
         )
         for job_id, replacement, expected in cases:
@@ -2067,14 +2181,14 @@ class WorkflowStructureTests(unittest.TestCase):
                 "latest exact head-bound checkout action contract",
             ),
             (
-                "station-acceptance",
+                "satellite-acceptance",
                 "",
-                "station-acceptance exact head-bound checkout contract",
+                "satellite-acceptance exact head-bound checkout contract",
             ),
             (
-                "station-acceptance",
+                "satellite-acceptance",
                 "          ref: ${{ github.sha }}\n",
-                "station-acceptance exact head-bound checkout contract",
+                "satellite-acceptance exact head-bound checkout contract",
             ),
         )
         for job_id, replacement, expected in cases:
@@ -2094,10 +2208,10 @@ class WorkflowStructureTests(unittest.TestCase):
                 "baseline exact head-bound artifact upload identity",
             ),
             (
-                "station-acceptance",
-                "          name: v070-station-47.4.10-${{ env.REVIEW_COMMIT }}\n",
-                "          name: v070-station-47.4.10-${{ github.sha }}\n",
-                "station-acceptance exact head-bound artifact upload",
+                "satellite-acceptance",
+                "          name: v080-satellite-47.4.10-${{ env.REVIEW_COMMIT }}\n",
+                "          name: v080-satellite-47.4.10-${{ github.sha }}\n",
+                "satellite-acceptance exact head-bound artifact upload",
             ),
         )
         for job_id, original, changed, expected in cases:
@@ -2112,13 +2226,13 @@ class WorkflowStructureTests(unittest.TestCase):
                     self.assertIn(expected, errors)
 
         tampered = self.mutate_forge_job(
-            "station-acceptance",
+            "satellite-acceptance",
             "    timeout-minutes: 20\n",
             "    timeout-minutes: 45\n",
         )
 
         self.assertIn(
-            "station-acceptance exact 20-minute job timeout",
+            "satellite-acceptance exact 20-minute job timeout",
             validate_forge_workflow_text(tampered),
         )
 
@@ -2398,9 +2512,9 @@ class WorkflowStructureTests(unittest.TestCase):
                 "enabled blocking baseline job",
             ),
             (
-                "station-acceptance",
-                "    name: v0.7.0 packaged station gate",
-                "enabled blocking station-acceptance job",
+                "satellite-acceptance",
+                "    name: v0.8.0 packaged satellite gate",
+                "enabled blocking satellite-acceptance job",
             ),
         )
         for job_id, marker, expected in cases:

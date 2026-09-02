@@ -47,12 +47,14 @@ if __package__:
     from .validate_v050_release_evidence import validate_v050_release_evidence
     from .validate_v060_release_evidence import validate_v060_release_evidence
     from .validate_v070_release_evidence import validate_v070_release_evidence
+    from .validate_v080_release_evidence import validate_v080_release_evidence
     from .manage_v020_generated_manifest import verify as verify_v020_generated_manifest
     from .manage_v030_generated_manifest import verify as verify_v030_generated_manifest
     from .manage_v040_generated_manifest import verify as verify_v040_generated_manifest
     from .manage_v050_generated_manifest import verify as verify_v050_generated_manifest
     from .manage_v060_generated_manifest import verify as verify_v060_generated_manifest
     from .manage_v070_generated_manifest import verify as verify_v070_generated_manifest
+    from .manage_v080_generated_manifest import verify as verify_v080_generated_manifest
 else:
     # Isolated script execution omits this directory from sys.path. Add only
     # the already-selected repository scripts directory after stdlib imports.
@@ -84,12 +86,14 @@ else:
     from validate_v050_release_evidence import validate_v050_release_evidence
     from validate_v060_release_evidence import validate_v060_release_evidence
     from validate_v070_release_evidence import validate_v070_release_evidence
+    from validate_v080_release_evidence import validate_v080_release_evidence
     from manage_v020_generated_manifest import verify as verify_v020_generated_manifest
     from manage_v030_generated_manifest import verify as verify_v030_generated_manifest
     from manage_v040_generated_manifest import verify as verify_v040_generated_manifest
     from manage_v050_generated_manifest import verify as verify_v050_generated_manifest
     from manage_v060_generated_manifest import verify as verify_v060_generated_manifest
     from manage_v070_generated_manifest import verify as verify_v070_generated_manifest
+    from manage_v080_generated_manifest import verify as verify_v080_generated_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -143,6 +147,8 @@ REQUIRED_PATHS = (
     "scripts/run_v060_flight_server_smoke.py",
     "scripts/run_v070_station_server_smoke.py",
     "scripts/run_v070_multiplayer_server_smoke.py",
+    "scripts/run_v080_satellite_server_smoke.py",
+    "scripts/run_v080_multiplayer_server_smoke.py",
     "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
     "scripts/validate_release_checksums.py",
@@ -155,6 +161,7 @@ REQUIRED_PATHS = (
     "scripts/manage_v050_generated_manifest.py",
     "scripts/manage_v060_generated_manifest.py",
     "scripts/manage_v070_generated_manifest.py",
+    "scripts/manage_v080_generated_manifest.py",
     "scripts/validate_v010_asset_baseline.py",
     "scripts/validate_v020_release_evidence.py",
     "scripts/validate_v030_release_evidence.py",
@@ -162,6 +169,7 @@ REQUIRED_PATHS = (
     "scripts/validate_v050_release_evidence.py",
     "scripts/validate_v060_release_evidence.py",
     "scripts/validate_v070_release_evidence.py",
+    "scripts/validate_v080_release_evidence.py",
     "tools/audit/audit_upstream.py",
     "tools/import/import_v010_assets.py",
     "tools/import/v010-content-plan.json",
@@ -190,17 +198,20 @@ REQUIRED_PATHS = (
     "tests/test_validate_v050_release_evidence.py",
     "tests/test_validate_v060_release_evidence.py",
     "tests/test_validate_v070_release_evidence.py",
+    "tests/test_validate_v080_release_evidence.py",
     "tests/test_manage_v030_generated_manifest.py",
     "tests/test_manage_v040_generated_manifest.py",
     "tests/test_manage_v050_generated_manifest.py",
     "tests/test_manage_v060_generated_manifest.py",
     "tests/test_manage_v070_generated_manifest.py",
+    "tests/test_manage_v080_generated_manifest.py",
     "tests/test_run_v030_celestial_server_smoke.py",
     "tests/test_run_v040_atmosphere_server_smoke.py",
     "tests/test_run_v050_rocket_server_smoke.py",
     "tests/test_run_v060_flight_server_smoke.py",
     "tests/test_run_v070_station_server_smoke.py",
     "tests/test_run_v070_multiplayer_server_smoke.py",
+    "tests/test_run_v080_multiplayer_server_smoke.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
@@ -219,6 +230,8 @@ REQUIRED_PATHS = (
     "docs/provenance/v0.6.0-earth-moon-roundtrip.md",
     "docs/provenance/v0.7.0-generated-resources.json",
     "docs/provenance/v0.7.0-space-station.md",
+    "docs/provenance/v0.8.0-generated-resources.json",
+    "docs/provenance/v0.8.0-progression-satellites.md",
     "docs/status/CURRENT_VERSION.md",
     "docs/status/GATE_STATUS.md",
     "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
@@ -231,6 +244,8 @@ REQUIRED_PATHS = (
     "docs/decisions/ADR-007-V060-VISUAL-EVIDENCE-ATTESTATION.md",
     "docs/decisions/ADR-008-SHARED-SPACE-STATION-REGIONS.md",
     "docs/decisions/ADR-009-V070-VISUAL-EVIDENCE-ATTESTATION.md",
+    "docs/decisions/ADR-010-BOUNDED-SATELLITE-MISSIONS.md",
+    "docs/decisions/ADR-011-V080-VISUAL-EVIDENCE-SEQUENCE.md",
     "docs/work/v0.0.1-implementation-log.md",
     "docs/work/v0.0.2-implementation-log.md",
     "docs/work/v0.0.2-test-machine-handoff.md",
@@ -1797,6 +1812,12 @@ def validate_repository_workflow_text(text: str) -> list[str]:
             "scripts/validate_v070_release_evidence.py",
             "--require-approved",
         ),
+        ("python", "scripts/manage_v080_generated_manifest.py", "verify"),
+        (
+            "python",
+            "scripts/validate_v080_release_evidence.py",
+            "--require-approved",
+        ),
         (
             "python",
             "scripts/validate_repository.py",
@@ -1821,7 +1842,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
 
     jobs = parse_workflow_jobs(text)
     baseline = jobs.get("baseline")
-    station = jobs.get("station-acceptance")
+    satellite = jobs.get("satellite-acceptance")
     latest = jobs.get("latest-compatibility")
     if baseline is None or not baseline.blocking:
         errors.append("enabled blocking baseline job")
@@ -1866,11 +1887,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
                 "--content-manifest",
-                "build/release-evidence/v070-jar-content-manifest.json",
+                "build/release-evidence/v080-jar-content-manifest.json",
             ),
             ("python", "scripts/validate_v010_asset_baseline.py"),
             ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
@@ -1879,6 +1900,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             ("python", "scripts/manage_v050_generated_manifest.py", "verify"),
             ("python", "scripts/manage_v060_generated_manifest.py", "verify"),
             ("python", "scripts/manage_v070_generated_manifest.py", "verify"),
+            ("python", "scripts/manage_v080_generated_manifest.py", "verify"),
             ("python", "scripts/check_client_imports.py"),
             ("python", "scripts/check_celestial_identity.py"),
             ("python", "scripts/validate_v030_release_evidence.py"),
@@ -1902,6 +1924,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "scripts/validate_v070_release_evidence.py",
                 "--require-approved",
             ),
+            (
+                "python",
+                "scripts/validate_v080_release_evidence.py",
+                "--require-approved",
+            ),
             ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
             ("git", "diff", "--exit-code"),
             ("python", "scripts/check_clean_worktree.py"),
@@ -1914,9 +1941,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
                 "--expected-mod-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
                 "--session-dir",
                 "build/dedicated-server-smoke/session",
                 "--evidence-dir",
@@ -1933,7 +1960,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v020-machine-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
             ),
             (
                 "python",
@@ -1944,7 +1971,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v030-celestial-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
             ),
             (
                 "python",
@@ -1955,7 +1982,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v040-atmosphere-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
             ),
             (
                 "python",
@@ -1966,7 +1993,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v050-rocket-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
             ),
             (
                 "python",
@@ -1977,26 +2004,26 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v060-flight-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
             ),
         )
         for command in baseline_commands:
             if not _job_has_command(baseline, command):
                 errors.append("baseline enabled run command " + " ".join(command))
 
-    if station is None or not station.blocking:
-        errors.append("enabled blocking station-acceptance job")
+    if satellite is None or not satellite.blocking:
+        errors.append("enabled blocking satellite-acceptance job")
     else:
-        if station.env != {
+        if satellite.env != {
             "REVIEW_COMMIT": "${{ github.event.pull_request.head.sha || github.sha }}"
         }:
             errors.append(
-                "station-acceptance exact immutable review-commit job environment"
+                "satellite-acceptance exact immutable review-commit job environment"
             )
-        if station.fields.get("timeout-minutes") != "20":
-            errors.append("station-acceptance exact 20-minute job timeout")
+        if satellite.fields.get("timeout-minutes") != "20":
+            errors.append("satellite-acceptance exact 20-minute job timeout")
         if not _job_has_exact_action_contract(
-            station,
+            satellite,
             "actions/checkout@v7",
             {
                 "fetch-depth": "0",
@@ -2004,78 +2031,91 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "ref": "${{ env.REVIEW_COMMIT }}",
             },
         ):
-            errors.append("station-acceptance exact head-bound checkout contract")
+            errors.append("satellite-acceptance exact head-bound checkout contract")
         if not _job_has_exact_action_contract(
-            station,
+            satellite,
             "actions/setup-python@v7",
             {"python-version": "3.12"},
         ):
-            errors.append("station-acceptance exact Python action contract")
+            errors.append("satellite-acceptance exact Python action contract")
         for action in (
             "actions/setup-java@v6",
             "gradle/actions/setup-gradle@v6",
         ):
-            if not _job_has_action(station, action):
-                errors.append(f"station-acceptance enabled action {action}")
+            if not _job_has_action(satellite, action):
+                errors.append(f"satellite-acceptance enabled action {action}")
         upload_steps = [
             step
-            for step in _required_steps(station)
+            for step in _required_steps(satellite)
             if step.fields.get("uses", "").startswith("actions/upload-artifact@")
         ]
         if (
             len(upload_steps) != 1
             or upload_steps[0].fields.get("uses") != "actions/upload-artifact@v7"
             or upload_steps[0].fields.get("with.name")
-            != "v070-station-47.4.10-${{ env.REVIEW_COMMIT }}"
+            != "v080-satellite-47.4.10-${{ env.REVIEW_COMMIT }}"
             or upload_steps[0].fields.get("with.if-no-files-found") != "error"
         ):
-            errors.append("station-acceptance exact head-bound artifact upload")
-        station_commands = (
+            errors.append("satellite-acceptance exact head-bound artifact upload")
+        satellite_commands = (
             ("chmod", "+x", "./gradlew"),
             ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace"),
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
                 "--content-manifest",
-                "build/release-evidence/v070-station-jar-content-manifest.json",
+                "build/release-evidence/v080-satellite-jar-content-manifest.json",
             ),
             (
                 "python",
-                "scripts/validate_v070_release_evidence.py",
+                "scripts/validate_v080_release_evidence.py",
                 "--require-approved",
             ),
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.7.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
                 "--expected-mod-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
                 "--session-dir",
-                "build/v070-dedicated-server-smoke/session",
+                "build/v080-dedicated-server-smoke/session",
                 "--evidence-dir",
-                "build/v070-dedicated-server-smoke/evidence",
+                "build/v080-dedicated-server-smoke/evidence",
                 "--port",
                 "25595",
             ),
             (
                 "python",
                 "scripts/run_v070_station_server_smoke.py",
-                "build/v070-dedicated-server-smoke/session",
+                "build/v080-dedicated-server-smoke/session",
                 "--baseline-summary",
-                "build/v070-dedicated-server-smoke/evidence/summary.json",
+                "build/v080-dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
-                "build/v070-station-server-smoke/evidence",
+                "build/v080-station-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.7.0-dev",
+                "1.20.1-0.8.0-dev",
+            ),
+            (
+                "python",
+                "scripts/run_v080_satellite_server_smoke.py",
+                "build/v080-dedicated-server-smoke/session",
+                "--baseline-summary",
+                "build/v080-dedicated-server-smoke/evidence/summary.json",
+                "--evidence-dir",
+                "build/v080-satellite-server-smoke/evidence",
+                "--tested-commit",
+                "${REVIEW_COMMIT}",
+                "--expected-version",
+                "1.20.1-0.8.0-dev",
             ),
         )
-        for command in station_commands:
-            if not _job_has_command(station, command):
+        for command in satellite_commands:
+            if not _job_has_command(satellite, command):
                 errors.append(
-                    "station-acceptance enabled run command " + " ".join(command)
+                    "satellite-acceptance enabled run command " + " ".join(command)
                 )
 
     if latest is None or not latest.enabled:
@@ -2740,6 +2780,19 @@ def check_v070_generated_resources(results: Results) -> None:
     else:
         results.passed(
             "v0.7.0 DataGen resources match the exact station inventory"
+        )
+
+
+def check_v080_generated_resources(results: Results) -> None:
+    errors = verify_v080_generated_manifest(
+        ROOT,
+        ROOT / "docs/provenance/v0.8.0-generated-resources.json",
+    )
+    if errors:
+        results.fail("v0.8.0 generated-resource errors: " + "; ".join(errors))
+    else:
+        results.passed(
+            "v0.8.0 DataGen resources match the exact satellite inventory"
         )
 
 
@@ -3562,6 +3615,163 @@ def check_v070_gate_status(results: Results) -> None:
             )
 
 
+def validate_v080_gate_status_text(
+    text: str,
+    *,
+    evidence_details: dict[str, object] | None = None,
+) -> list[str]:
+    """Reject v0.8.0 Gate claims that exceed bound satellite evidence."""
+
+    errors, top, gates = _parse_gate_status_document(
+        text,
+        expected_version="v0.8.0",
+    )
+    if errors:
+        return errors
+    evidence = evidence_details or {}
+    reviewer = top.get("human_approved_by", "").strip()
+    reviewed_at = top.get("human_approved_at", "").strip()
+    document_approval = bool(
+        reviewer in AUTHORIZED_RELEASE_REVIEWERS
+        and _valid_gate_approval_timestamp(reviewed_at)
+    )
+    human_approved = bool(
+        document_approval and evidence.get("human_approved") is True
+    )
+    if (reviewer or reviewed_at) and not human_approved:
+        errors.append(
+            "v0.8.0 human approval must match an authorized bound evidence review"
+        )
+
+    required = tuple(f"G{index}" for index in range(10))
+    waived = [gate for gate in required if gates.get(gate) == "NOT_APPLICABLE"]
+    if waived:
+        errors.append(
+            "v0.8.0 Required Gates cannot be NOT_APPLICABLE: "
+            + ", ".join(waived)
+        )
+
+    evidence_keys = {
+        "G0": "provenance_ready",
+        "G1": "artifact_ready",
+        "G2": "data_ready",
+        "G3": "automated_ready",
+        "G4": "server_ready",
+        "G5": "persistence_ready",
+        "G6": "authority_ready",
+        "G7": "performance_ready",
+        "G8": "client_ready",
+        "G9": "docs_ready",
+    }
+    for gate, key in evidence_keys.items():
+        if gates.get(gate) == "PASS" and evidence.get(key) is not True:
+            errors.append(
+                f"{gate} cannot be PASS without bound v0.8.0 {key} evidence"
+            )
+    for gate in ("G0", "G8", "G9"):
+        if gates.get(gate) == "READY_FOR_HUMAN_REVIEW":
+            key = evidence_keys[gate]
+            if evidence.get(key) is not True:
+                errors.append(
+                    f"{gate} cannot be ready for human review without bound {key} evidence"
+                )
+        if gates.get(gate) == "PASS" and not human_approved:
+            errors.append(f"{gate} cannot be PASS without explicit owner approval")
+
+    status_passed = top.get("status") == "PASSED"
+    overall_passed = top.get("overall") in {"PASS", "PASSED"}
+    if status_passed != overall_passed:
+        errors.append("v0.8.0 status PASSED and overall PASS/PASSED must agree")
+    status_ready = top.get("status") == "READY_FOR_AUDIT"
+    overall_ready = top.get("overall") == "READY_FOR_AUDIT"
+    if status_ready != overall_ready:
+        errors.append(
+            "v0.8.0 status and overall READY_FOR_AUDIT values must agree"
+        )
+    if status_ready:
+        missing = [
+            key for key in evidence_keys.values() if evidence.get(key) is not True
+        ]
+        if missing:
+            errors.append(
+                "v0.8.0 cannot be READY_FOR_AUDIT without all technical evidence: "
+                + ", ".join(missing)
+            )
+    if status_passed or overall_passed:
+        unresolved = [gate for gate in required if gates.get(gate) != "PASS"]
+        if unresolved:
+            errors.append(
+                "v0.8.0 cannot be PASSED while Required Gates are unresolved: "
+                + ", ".join(unresolved)
+            )
+        if not human_approved or any(
+            evidence.get(key) is not True for key in evidence_keys.values()
+        ):
+            errors.append(
+                "v0.8.0 cannot be PASSED without all bound evidence and human approval"
+            )
+        if evidence.get("post_merge_ready") is not True:
+            errors.append(
+                "v0.8.0 cannot be PASSED without exact post-merge reproduction"
+            )
+        bindings = {
+            "reviewed_head_commit": "reviewed_head_commit",
+            "merge_commit": "merge_commit",
+            "pull_request": "pull_request",
+            "pull_request_checks": "pull_request_checks",
+            "forge_ci": "forge_ci",
+            "governance_ci": "governance_ci",
+        }
+        for document_key, evidence_key in bindings.items():
+            if top.get(document_key) != evidence.get(evidence_key):
+                errors.append(
+                    "v0.8.0 PASSED status must bind "
+                    f"{document_key} to post-merge evidence"
+                )
+    return errors
+
+
+def check_v080_gate_status(results: Results) -> None:
+    current_version = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
+    historical = ROOT / "docs/releases/v0.8.0/GATE-STATUS.md"
+    is_current = "current_version: v0.8.0" in current_version
+    if not is_current and not historical.exists():
+        return
+
+    release_errors, evidence_details = validate_v080_release_evidence(
+        repository_root=ROOT
+    )
+    if release_errors:
+        results.fail(
+            "v0.8.0 release evidence errors: " + "; ".join(release_errors)
+        )
+        evidence_details = {}
+    else:
+        results.passed(
+            "v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid"
+        )
+
+    documents = [historical]
+    current_status = ROOT / "docs/status/GATE_STATUS.md"
+    if is_current:
+        documents.append(current_status)
+    for document in documents:
+        text = read_text(document, results)
+        errors = validate_v080_gate_status_text(
+            text,
+            evidence_details=evidence_details,
+        )
+        if errors:
+            results.fail(
+                f"v0.8.0 Gate status contradictions in {document.relative_to(ROOT)}: "
+                + "; ".join(errors)
+            )
+        else:
+            results.passed(
+                f"v0.8.0 Gate status is evidence-bound in {document.relative_to(ROOT)}"
+            )
+
+
 def check_package_checksums(package_root: Path, results: Results) -> None:
     package_root = package_root.absolute()
     sums_path = package_root / "PACKAGE-SHA256SUMS.txt"
@@ -3698,12 +3908,14 @@ def main() -> int:
     check_v050_generated_resources(results)
     check_v060_generated_resources(results)
     check_v070_generated_resources(results)
+    check_v080_generated_resources(results)
     check_v020_gate_status(results)
     check_v030_gate_status(results)
     check_v040_gate_status(results)
     check_v050_gate_status(results)
     check_v060_gate_status(results)
     check_v070_gate_status(results)
+    check_v080_gate_status(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
     results.print_report()

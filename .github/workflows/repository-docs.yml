@@ -77,5 +77,10 @@ jobs:
           python scripts/manage_v070_generated_manifest.py verify
           python scripts/validate_v070_release_evidence.py --require-approved
 
+      - name: Verify v0.8.0 authored DataGen and release evidence
+        run: |
+          python scripts/manage_v080_generated_manifest.py verify
+          python scripts/validate_v080_release_evidence.py --require-approved
+
       - name: Enforce governance baseline
         run: python scripts/validate_repository.py --require-approved-identity

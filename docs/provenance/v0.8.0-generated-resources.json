@@ -1,0 +1,140 @@
+{
+  "allowed_file_types": [
+    ".json"
+  ],
+  "expected_resource_paths": [
+    "assets/advancedrocketrycommunity/blockstates/satellite_terminal.json",
+    "assets/advancedrocketrycommunity/models/block/satellite_terminal.json",
+    "assets/advancedrocketrycommunity/models/item/data_satellite_package.json",
+    "assets/advancedrocketrycommunity/models/item/satellite_chassis.json",
+    "assets/advancedrocketrycommunity/models/item/satellite_control_chip.json",
+    "assets/advancedrocketrycommunity/models/item/satellite_solar_module.json",
+    "assets/advancedrocketrycommunity/models/item/satellite_terminal.json",
+    "assets/advancedrocketrycommunity_v080/lang/en_us.json",
+    "assets/advancedrocketrycommunity_v080/lang/zh_cn.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/satellite_chassis.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/satellite_control_chip.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/satellite_solar_module.json",
+    "data/advancedrocketrycommunity/advancements/recipes/misc/satellite_terminal.json",
+    "data/advancedrocketrycommunity/loot_tables/blocks/satellite_terminal.json",
+    "data/advancedrocketrycommunity/recipes/satellite_chassis.json",
+    "data/advancedrocketrycommunity/recipes/satellite_control_chip.json",
+    "data/advancedrocketrycommunity/recipes/satellite_solar_module.json",
+    "data/advancedrocketrycommunity/recipes/satellite_terminal.json",
+    "data/advancedrocketrycommunity/satellite_definitions/data_satellite.json",
+    "data/minecraft/tags/blocks/mineable/pickaxe.json",
+    "data/minecraft/tags/blocks/needs_iron_tool.json"
+  ],
+  "generated_root": "src/generated/v0.8/resources",
+  "generator": "io.github.sunthemoon.advancedrocketrycommunity.datagen.BootstrapDataGenerators",
+  "schema_version": 1,
+  "status": "COMMUNITY_AUTHORED_DATAGEN",
+  "target_version": "v0.8.0",
+  "targets": [
+    {
+      "bytes": 107,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/blockstates/satellite_terminal.json",
+      "sha256": "9a324be2d6ab7ec3191dcb11b6002d663db3b8e5f822ad563e4dff60a65e55da"
+    },
+    {
+      "bytes": 257,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/block/satellite_terminal.json",
+      "sha256": "8ddab3c8cc88a07baf13729c7773c4db863d85822652f610e6b79290c1267974"
+    },
+    {
+      "bytes": 44,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/item/data_satellite_package.json",
+      "sha256": "ac3af0de88fcbb660465e1c0a5a9d0d735f5d8bea0ee50804a943a980fd992be"
+    },
+    {
+      "bytes": 41,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/item/satellite_chassis.json",
+      "sha256": "5d5fba1231018fe406c1ff02c915cedf3ac2b45a312037cace86907724111c24"
+    },
+    {
+      "bytes": 43,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/item/satellite_control_chip.json",
+      "sha256": "c07d8a4df0809b0b3ad82fe37f7adbe48b569215369512df44d3c0b242bf9eae"
+    },
+    {
+      "bytes": 50,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/item/satellite_solar_module.json",
+      "sha256": "db3f0b4e94b2cc19b05d781ae0ef5c087c646ad65331e6be8490b4fc4e9e9838"
+    },
+    {
+      "bytes": 68,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/item/satellite_terminal.json",
+      "sha256": "8c2cdb6f3efa10bace94d1d476d1e1c78503e82850f2d95602186c988f99205d"
+    },
+    {
+      "bytes": 4542,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity_v080/lang/en_us.json",
+      "sha256": "56add66b6a27119de2f9116bc1a51e2ff3fa70b5ee8712cd9d1f497e5d004f25"
+    },
+    {
+      "bytes": 4362,
+      "path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity_v080/lang/zh_cn.json",
+      "sha256": "c6dd4d68b16fbb90f743ba7ba9284159870a347a120c084a59b9cd1780653d9e"
+    },
+    {
+      "bytes": 708,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_chassis.json",
+      "sha256": "9673e90e405310b45da5a32c91b5e7eba5545a03c1871648d2dc5921790ce2e7"
+    },
+    {
+      "bytes": 724,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_control_chip.json",
+      "sha256": "db0dfde9d2f922653f503c11cfb8601892f48793b4d564537f85b1959a7593f2"
+    },
+    {
+      "bytes": 711,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_solar_module.json",
+      "sha256": "bf03348e45bd8a65c8ce99c638fea959a242ee65fa590a0ae6eb6d476854fb11"
+    },
+    {
+      "bytes": 716,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_terminal.json",
+      "sha256": "e5aea3f0e6c76fecd4741afa29a338d62fb0e49bbbe529ed19eac9506a4b684b"
+    },
+    {
+      "bytes": 436,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/satellite_terminal.json",
+      "sha256": "7fe118b782b82908cb1c699f82ccce4d69ec3065ec24aba3b9885a11873285f5"
+    },
+    {
+      "bytes": 415,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/recipes/satellite_chassis.json",
+      "sha256": "bdf13dc608ba1175690a8933e970e1da2df98c6517b5811ea6f1d5dff0271a02"
+    },
+    {
+      "bytes": 422,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/recipes/satellite_control_chip.json",
+      "sha256": "21cb4accf5ef4592a7686ebaad6383fb73302dbdb26fbdf8ca57cdb187a45492"
+    },
+    {
+      "bytes": 460,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/recipes/satellite_solar_module.json",
+      "sha256": "88f4c350294fb19b5dd7f9aa376f7bc1e9d26a9a5511b8bc546f4692b2e8a28e"
+    },
+    {
+      "bytes": 630,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/recipes/satellite_terminal.json",
+      "sha256": "4b47e32477e44e37d38d44d7601b281960787dc97ff5a0b89e57d24a239e609e"
+    },
+    {
+      "bytes": 303,
+      "path": "src/generated/v0.8/resources/data/advancedrocketrycommunity/satellite_definitions/data_satellite.json",
+      "sha256": "37667cd4c92e43e7e306ca09af47e8db4568cd7ff9fafa1f6fed9ea7aa99ccb6"
+    },
+    {
+      "bytes": 120,
+      "path": "src/generated/v0.8/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "13dbe5cd92a2c434e4cdfb497db3ce90207ad1ff16118df5adb55074d230be1a"
+    },
+    {
+      "bytes": 120,
+      "path": "src/generated/v0.8/resources/data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "13dbe5cd92a2c434e4cdfb497db3ce90207ad1ff16118df5adb55074d230be1a"
+    }
+  ]
+}
