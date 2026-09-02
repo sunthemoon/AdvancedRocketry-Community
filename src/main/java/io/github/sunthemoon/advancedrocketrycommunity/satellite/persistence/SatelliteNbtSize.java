@@ -6,11 +6,11 @@ import java.io.IOException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 
-final class SatelliteNbtSize {
+public final class SatelliteNbtSize {
     private SatelliteNbtSize() {
     }
 
-    static int uncompressedBytes(CompoundTag tag) {
+    public static int uncompressedBytes(CompoundTag tag) {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             try (DataOutputStream output = new DataOutputStream(bytes)) {

@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import net.minecraftforge.event.OnDatapackSyncEvent;
+import net.minecraft.server.MinecraftServer;
 
 /** Sends one bounded display snapshot on join and successful data-pack sync. */
 public final class CelestialSnapshotSynchronizer {
@@ -43,5 +44,19 @@ public final class CelestialSnapshotSynchronizer {
                 packet.catalogGeneration(),
                 event.getPlayers().size()
         );
+    }
+
+    /** Re-sends the bounded snapshot after server-side discovery changes. */
+    public void sendAll(MinecraftServer server) {
+        CelestialCatalog catalog = catalogs.current().orElse(null);
+        if (catalog == null) {
+            return;
+        }
+        DataResult<CelestialSnapshotPacket> encoded = CelestialSnapshotPacket.fromCatalog(
+                catalog,
+                catalogs.status().generation()
+        );
+        encoded.result().ifPresent(packet -> server.getPlayerList().getPlayers()
+                .forEach(player -> network.send(player, packet)));
     }
 }
