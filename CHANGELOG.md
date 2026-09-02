@@ -4,12 +4,12 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.8.0 — READY_FOR_AUDIT candidate, unreleased developer preview
+## v0.8.0 — PASSED candidate, unreleased developer preview
 
-**Status:** G0-G9 evidence and owner review completed on 2026-09-03. The
-candidate remains `READY_FOR_AUDIT` pending required pull-request checks,
-merge, and exact post-merge artifact reproduction. No tag or public release
-exists.
+**Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-03. PR #12
+passed 4/4 checks and merged as `8e39b1ef440306632cf101b5017e0bcb1f12eef5`;
+that merge reproduced the accepted 1,166,061-byte JAR and 723-entry content
+manifest byte-for-byte. No tag or public release exists.
 
 ### Added
 

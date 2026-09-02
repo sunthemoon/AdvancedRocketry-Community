@@ -3,6 +3,7 @@
 0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937  build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar
 2ab7674512df989f83bd6888ed865101b3c66a192c147f04977fcd6e3570395f  docs/releases/v0.8.0/evidence/artifact/artifact-summary.json
 47f26d36b218f44098794061696e8064afc3517dd413724b3742f5e7dca931de  docs/releases/v0.8.0/evidence/artifact/jar-content-manifest.json
+d9ac524778a4b9e9c230eab5ce3f231c53ad2df798dfdce6b4d9765baeeac165  docs/releases/v0.8.0/evidence/artifact/post-merge-reproduction.json
 fa34f5ffa8f744a96b0555734faeeb9a7d8d27f6fc913157cf316c048ff59b57  docs/releases/v0.8.0/evidence/automated/authority-matrix.json
 5a1ec05094aab0ec68abf07b85cb56c5f994be2192e7a25e4cd2fc59a97e094c  docs/releases/v0.8.0/evidence/automated/gametest.txt
 4cf523a07ed14ab903dbade9395dfc09a908ffa7a2a35f82b7a4e19dd75ea3b5  docs/releases/v0.8.0/evidence/automated/summary.json

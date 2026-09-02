@@ -26,14 +26,20 @@
 | Server restart and both clients reconnect | PASS |
 | JFR scheduler performance window | PASS |
 | Critical/High authority findings | 0 |
-| Pull-request checks | PENDING |
-| Merge-commit clean reproduction | PENDING |
+| Pull-request checks | PASS, 4/4 |
+| Merge-commit clean reproduction | PASS, JAR and 723-entry manifest byte-identical |
 
 The strict repository validator is run after the candidate bundle and exact
 checksum inventory are complete; its final count is recorded in
 `evidence/automated/summary.json`. The final candidate also passed the
 generic packaged-server lifecycle and a distinct satellite-specific packaged
 run against the same JAR.
+
+Reviewed head `ca80bdb1d3df1adb7f108e8417664b323d8017ee` passed the
+Forge baseline, satellite Gate, Forge compatibility, and governance checks in
+PR #12. The PR merged as `8e39b1ef440306632cf101b5017e0bcb1f12eef5`;
+the forced cache-disabled merge build passed 247/247 JUnit tests and exactly
+reproduced the candidate artifact.
 
 ## Notes
 

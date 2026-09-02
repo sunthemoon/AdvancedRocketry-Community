@@ -20,11 +20,10 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest `PASSED` milestone is `v0.7.0`. The `v0.8.0` progression and logical
-data-satellite candidate has completed G0-G9 technical evidence and owner
-review and is `READY_FOR_AUDIT`; required pull-request checks, merge identity,
-and exact post-merge artifact reproduction still remain. Both milestones are
-unreleased developer previews. See
+The latest `PASSED` milestone is `v0.8.0`. Its progression and logical
+data-satellite candidate completed G0-G9, passed all four PR checks, merged,
+and reproduced the accepted JAR and 723-entry content manifest byte-for-byte
+from the merge commit. It remains an unreleased developer preview. See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
 sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
 verified and pending evidence.

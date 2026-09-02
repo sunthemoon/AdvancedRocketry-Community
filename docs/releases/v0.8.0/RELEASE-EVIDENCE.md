@@ -31,6 +31,7 @@ tree, or a LibVulpes/ARLib recreation.
 | Candidate screenshots and owner decision | [`evidence/manual/owner-attestation.json`](evidence/manual/owner-attestation.json) |
 | DataGen provenance | [`../../provenance/v0.8.0-generated-resources.json`](../../provenance/v0.8.0-generated-resources.json) |
 | Exact checksum inventory | [`checksums.txt`](checksums.txt) |
+| Exact post-merge reproduction | [`evidence/artifact/post-merge-reproduction.json`](evidence/artifact/post-merge-reproduction.json) |
 
 Machine-local complete logs and JFR data contain installation paths and are
 intentionally not committed. Filtered extracts preserve candidate identity,
@@ -39,8 +40,8 @@ reconnect events, and clean stops.
 
 ## Reproducible artifact
 
-Two cache-disabled clean Windows builds and the packaged-server copy are
-exactly 1,166,061 bytes and share SHA-256:
+Two candidate cache-disabled clean Windows builds, the packaged-server copy,
+and the forced post-merge build are exactly 1,166,061 bytes and share SHA-256:
 
 ```text
 0ce6c6bf9eb603f5973f35c19a47b295454a1f8c74ee74a6a99af3c2627a1937
@@ -53,6 +54,8 @@ claimed; CI separately audits and executes its Linux-built candidate.
 
 G0-G9 have technical evidence and owner approval. ADR-011 limits the accepted
 ordered-screenshot substitution to v0.8.0 and preserves the residual visual
-risk. The version remains `READY_FOR_AUDIT` until the pull request passes all
-required checks, merges, and its exact merge commit reproduces the candidate
-JAR and content manifest byte-for-byte. No tag or public release is implied.
+risk. PR #12 passed all four checks and merged as
+`8e39b1ef440306632cf101b5017e0bcb1f12eef5`; a forced cache-disabled clean
+build from that exact commit reproduced the accepted JAR and 723-entry content
+manifest byte-for-byte. The version is `PASSED`; no tag or public release is
+implied.
