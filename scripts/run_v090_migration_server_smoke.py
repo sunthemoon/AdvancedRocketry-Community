@@ -208,18 +208,22 @@ def _copy_server(source: Path, destination: Path) -> None:
         path.unlink()
 
 
-def _find_log(process, pattern: re.Pattern[str]) -> re.Match[str]:  # type: ignore[no-untyped-def]
+def _find_log(
+    process,
+    pattern: re.Pattern[str],
+) -> tuple[re.Match[str], str]:  # type: ignore[no-untyped-def]
     for line in process.lines:
         match = pattern.search(line)
         if match is not None:
-            return match
+            return match, line.rstrip()
     raise SmokeError(f"Missing packaged migration marker: {pattern.pattern}")
 
 
-def _run_report(process) -> None:  # type: ignore[no-untyped-def]
+def _run_report(process) -> str:  # type: ignore[no-untyped-def]
     start = len(process.lines)
     process.command("arce beta data-report")
-    process.wait_for(REPORT_LOG, 30.0, start_at=start)
+    index = process.wait_for(REPORT_LOG, 30.0, start_at=start)
+    return process.lines[index].rstrip()
 
 
 def validate_backup(
@@ -320,8 +324,8 @@ def main() -> int:
         )
 
         process = harness.start("v090-migration")
-        migration_match = _find_log(process, MIGRATED_LOG)
-        _run_report(process)
+        migration_match, migration_line = _find_log(process, MIGRATED_LOG)
+        first_report_line = _run_report(process)
         harness.stop(process)
         process = None
         backup = validate_backup(world, migration_match.group(1), seeded)
@@ -333,8 +337,8 @@ def main() -> int:
             raise SmokeError("At least one schema-1 file was not replaced by schema-2 bytes")
 
         process = harness.start("v090-current-restart")
-        _find_log(process, CURRENT_LOG)
-        _run_report(process)
+        _, current_line = _find_log(process, CURRENT_LOG)
+        second_report_line = _run_report(process)
         harness.stop(process)
         process = None
 
@@ -356,8 +360,10 @@ def main() -> int:
             "operator_report_operational": True,
         }
         filtered = [
-            line for line in harness.filtered_lines
-            if "ARCE-BETA-" in line or "ARCE_BETA_DATA_REPORT" in line
+            migration_line,
+            first_report_line,
+            current_line,
+            second_report_line,
         ]
         _write_evidence(evidence, summary, filtered)
         print(f"[PASS] Migrated {len(seeded)} schema-1 SavedData roots")
