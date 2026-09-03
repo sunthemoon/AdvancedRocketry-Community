@@ -28,11 +28,11 @@ f39f86d599526b8c574749f651a93b0f747c25f9e7b42d8e24a10c9999860412  docs/releases/
 574a733b4aa217598f4ade242784df3f09618ad3833ba38147faa7b6574cd6c1  docs/releases/v0.9.0/evidence/migration/backup-manifest.json
 a1b407098683f3e99eba2e24411a6bf732e05831d200ecd7ca35b0a21f5e2b70  docs/releases/v0.9.0/evidence/migration/filtered-lifecycle.log
 c6f6c2ff01c5d68adb44a7b3ba2f0d65e455143a3e94799a6a84a273b5ba907e  docs/releases/v0.9.0/evidence/migration/summary.json
-a6b33225e2b98e177c1ddd0b75d47b0e1bd1d30691b92414913eb2e22998da6f  docs/releases/v0.9.0/evidence/performance/client-probes.csv
+15db547f7838e0465fa8b0b8f07491dfae330f824e72344525d5cae5b8a8a66c  docs/releases/v0.9.0/evidence/performance/client-probes.csv
 8a92054ec57f43d9e1096e37c03bc105d88282148e532101019d9c245f8fdd67  docs/releases/v0.9.0/evidence/performance/combined-scenario.json
 2d20758207f2b63fbcafce82222e801a59bbbeb5c95eb0d6b325def31df377db  docs/releases/v0.9.0/evidence/performance/filtered-lifecycle.log
 6027d06b41d95c74ec40423d054ef04eb20f90595f885307d6ab0e1955b819f6  docs/releases/v0.9.0/evidence/performance/lifecycle.txt
-3d999536942a7acc306334ec4ffab1e014fad8bfab6e73d977f113cf47b6ecb9  docs/releases/v0.9.0/evidence/performance/metrics.csv
+83ee42548540a4d9ce0de492d5a3b74c76e5323eb7ef3975997ba9458f96888f  docs/releases/v0.9.0/evidence/performance/metrics.csv
 7ffa1e115c02d72a73ae18b17988e6d57d2c89722b3d9124289ced8bdd61a26f  docs/releases/v0.9.0/evidence/performance/summary.json
 680118592e2b924e75b5880d86128554ee9cb592d4ca657f3e4b0e21e024a182  docs/releases/v0.9.0/evidence/recovery/filtered-lifecycle.log
 e8816a8713b0111ec0806514887155c64170b5482fab52a7d46e910482e94c38  docs/releases/v0.9.0/evidence/recovery/recovery-ledger.json
