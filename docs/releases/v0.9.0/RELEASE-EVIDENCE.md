@@ -32,7 +32,7 @@ promise.
 | Owner G0/G8/G9 decision | [`evidence/manual/owner-attestation.json`](evidence/manual/owner-attestation.json) |
 | Public Beta notes | [`RELEASE-NOTES.md`](RELEASE-NOTES.md) |
 | Exact checksum inventory | [`checksums.txt`](checksums.txt) |
-| Post-merge reproduction and pre-release | `evidence/artifact/post-merge-reproduction.json` after publication |
+| Post-merge reproduction and pre-release | [`evidence/artifact/post-merge-reproduction.json`](evidence/artifact/post-merge-reproduction.json) |
 
 Machine-local complete logs are not committed because they contain installation
 paths. Filtered extracts, source log hashes, CSV samples, lifecycle transitions,
@@ -52,8 +52,11 @@ claimed; Forge CI separately audits and executes its Linux-built artifact.
 
 ## Gate decision
 
-G0-G8 have bound technical evidence and repository-owner approval. G9 remains
-in progress until PR #13 passes every required check and merges, the merge
-commit reproduces the exact JAR and content manifest, and GitHub publishes the
-asset as pre-release `v0.9.0-beta.1`. This document does not call the candidate
-stable.
+G0-G9 are `PASS`. Repository owner `sunthemoon` approved G0, G8, and G9. PR
+#13 final head `7841dcc0d30b26a207ee221b0efbd1e25d459ed3` passed all four
+required checks and merged as `a7196ff9b22220c344071a1af69a663036f76aef`;
+all four merge-commit checks also passed. A cache-disabled clean `main` build
+reproduced the accepted JAR and content manifest byte-for-byte. The same
+download-verified JAR is published as GitHub pre-release
+[`v0.9.0-beta.1`](https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1).
+This document does not call the Beta stable.

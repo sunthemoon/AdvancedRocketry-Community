@@ -8,9 +8,10 @@
 
 ## Status
 
-**Beta hardening / staged Forge development. The authoritative build and acceptance
-state is recorded in [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md);
-no stable playable public release is available.**
+**The v0.9.0 Beta 1 pre-release is available for Forge 1.20.1. The authoritative
+build and acceptance state is recorded in
+[`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md). This is not a stable
+v1.0 release.**
 
 Current target:
 
@@ -20,15 +21,16 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest `PASSED` milestone remains `v0.8.0`. The feature-frozen v0.9.0 Beta
-1 candidate is bound to one 1,225,536-byte, 758-entry JAR, packaged migration,
-recovery, Forge/JEI compatibility, and maximum-soak evidence. It remains
-`IN_PROGRESS` until PR #13, merge reproduction, and the correctly marked GitHub
-pre-release are complete. See
+The latest `PASSED` milestone is `v0.9.0`. Its feature-frozen Beta 1 is bound to
+one 1,225,536-byte, 758-entry JAR, packaged migration, recovery, Forge/JEI
+compatibility, and maximum-soak evidence. PR #13 passed 4/4 checks, merged, and
+reproduced the exact JAR and manifest from `main`. Download the correctly marked
+[GitHub pre-release](https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1).
+See
 [`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md),
 [`docs/releases/v0.9.0/RELEASE-EVIDENCE.md`](docs/releases/v0.9.0/RELEASE-EVIDENCE.md),
 and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for the exact
-candidate and pending publication state.
+candidate and acceptance record.
 
 ## What this project is
 

@@ -1,0 +1,67 @@
+{
+  "build": "1.20.1-0.9.0-beta.1",
+  "build_command": ".\\gradlew.bat clean build --no-daemon --stacktrace --no-build-cache --rerun-tasks",
+  "build_result": "PASS",
+  "content_manifest": {
+    "byte_equal_to_candidate": true,
+    "candidate_sha256": "d3b9d951134791c5b3703542cbe9ff107a95e14358dec18ae7de7bbd6b42066b",
+    "entry_count": 758,
+    "reproduced_sha256": "d3b9d951134791c5b3703542cbe9ff107a95e14358dec18ae7de7bbd6b42066b"
+  },
+  "environment": {
+    "java": "Microsoft OpenJDK 17.0.8+7-LTS",
+    "os": "Microsoft Windows 11 Pro 10.0.26200 amd64"
+  },
+  "github_prerelease": {
+    "asset_bytes": 1225536,
+    "asset_name": "advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
+    "asset_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+    "prerelease": true,
+    "tag": "v0.9.0-beta.1",
+    "url": "https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1"
+  },
+  "main_jar": {
+    "byte_equal_to_candidate": true,
+    "bytes": 1225536,
+    "candidate_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+    "reproduced_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad"
+  },
+  "merge_checks": {
+    "checks": [
+      "Forge 47.4.10 baseline",
+      "Forge 47.4.23 compatibility (advisory)",
+      "v0.9.0 packaged core regression gate",
+      "validate-repository-docs"
+    ],
+    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33742876371",
+    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33742876343",
+    "head_commit": "a7196ff9b22220c344071a1af69a663036f76aef",
+    "result": "4/4_PASS"
+  },
+  "merge_commit": "a7196ff9b22220c344071a1af69a663036f76aef",
+  "merge_tree_equals_reviewed_head": true,
+  "pull_request": "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/13",
+  "pull_request_checks": {
+    "checks": [
+      "Forge 47.4.10 baseline",
+      "Forge 47.4.23 compatibility (advisory)",
+      "v0.9.0 packaged core regression gate",
+      "validate-repository-docs"
+    ],
+    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33738824242",
+    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33738824130",
+    "result": "4/4_PASS"
+  },
+  "reproduced_at": "2026-09-03",
+  "reviewed_head_commit": "7841dcc0d30b26a207ee221b0efbd1e25d459ed3",
+  "schema_version": 1,
+  "tested_implementation_commit": "f6cd77cebdb0a851cab76accbf66de565473b545",
+  "unit_tests": {
+    "errors": 0,
+    "failures": 0,
+    "passed": 273,
+    "skipped": 0,
+    "total": 273
+  },
+  "version": "v0.9.0"
+}

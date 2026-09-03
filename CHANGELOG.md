@@ -4,11 +4,14 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.9.0 — IN_PROGRESS Beta 1 candidate
+## v0.9.0 — PASSED Beta 1 pre-release
 
-**Status:** the feature-frozen `1.20.1-0.9.0-beta.1` candidate is undergoing
-final PR, merge-reproduction, and pre-release publication checks. It must not be
-presented as stable until the immutable G0-G9 record is complete.
+**Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-03. PR #13
+passed 4/4 checks and merged as `a7196ff9b22220c344071a1af69a663036f76aef`;
+that merge reproduced the accepted 1,225,536-byte JAR and 758-entry content
+manifest byte-for-byte. The exact artifact is published as
+[v0.9.0-beta.1](https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1),
+a pre-release rather than a stable build.
 
 ### Added
 

@@ -33,9 +33,10 @@ packaged record remains bound to the frozen tested implementation and hash.
 | Maximum combined two-hour soak | PASS |
 | Critical/High findings | 0/0 |
 | Owner G0/G8/G9 acceptance | PASS, with ADR-013 visual boundary |
-| Pull-request checks | PENDING |
-| Merge-commit exact reproduction | PENDING |
-| GitHub pre-release asset verification | PENDING |
+| Pull-request checks | PASS, 4/4 on `7841dcc0` |
+| Merge-commit checks | PASS, 4/4 on `a7196ff9` |
+| Merge-commit exact reproduction | PASS, JAR and 758-entry manifest byte-identical |
+| GitHub pre-release asset verification | PASS, uploaded/downloaded bytes and SHA-256 exact |
 
 The maximum combined run uses a 2,048-block rocket, 16 vents, 10 stations,
 100 missions, four status clients, periodic saves, and a same-world restart.
@@ -47,3 +48,6 @@ That setting is test-only. All four clients joined and disconnected cleanly;
 both JEI-present cells reported exactly one recipe, absent cells remained
 optional, and no cell reported an unknown recipe category or project
 ERROR/FATAL finding.
+
+The immutable merge and publication record is
+[`evidence/artifact/post-merge-reproduction.json`](evidence/artifact/post-merge-reproduction.json).
