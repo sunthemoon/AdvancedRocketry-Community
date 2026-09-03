@@ -55,12 +55,12 @@ Recorded modification dates:
 |---|---|
 | `.gitattributes` | 2026-08-26, 2026-08-27, 2026-08-30 |
 | `.gitignore` | 2026-08-26, 2026-08-30 |
-| `build.gradle` | 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30 |
-| `gradle.properties` | 2026-08-26, 2026-08-30 |
+| `build.gradle` | 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03 |
+| `gradle.properties` | 2026-08-26, 2026-08-30, 2026-09-03 |
 | `settings.gradle` | 2026-08-26, 2026-08-30 |
 | `gradle/wrapper/gradle-wrapper.properties` | 2026-08-26, 2026-08-30 |
 | `src/main/resources/pack.mcmeta` | 2026-08-26, 2026-08-30 |
-| `src/main/resources/META-INF/mods.toml` | 2026-08-26, 2026-08-30 |
+| `src/main/resources/META-INF/mods.toml` | 2026-08-26, 2026-08-30, 2026-09-03 |
 
 Exact license/notice copy:
 
@@ -133,6 +133,39 @@ distributable JARs carry it as
 distribution. The distribution is downloaded from Gradle and is not checked
 into this repository. Its pinned SHA-256 is
 `a4b4158601f8636cdeeab09bd76afb640030bb5b144aafe261a5e8af027dc612`.
+
+## Just Enough Items 1.20.1 optional API/runtime
+
+The v0.9.0 Beta compiles one isolated client adapter against the official JEI
+API. JEI remains optional: neither the API nor the runtime is embedded in the
+ARCE distributable, and the runtime enters a development client only when
+`-ParceIncludeJei=true` is set. The exact compatibility candidate was resolved
+from the official JEI Maven repository on 2026-09-03.
+
+Source and license:
+
+- Project: Just Enough Items
+- Repository/branch: <https://github.com/mezz/JustEnoughItems/tree/1.20.1>
+- Maven repository: <https://maven.blamejared.com/mezz/jei/>
+- Version: `15.56.0.205`
+- License: MIT
+- License URL:
+  <https://raw.githubusercontent.com/mezz/JustEnoughItems/1.20.1/LICENSE.txt>
+- License SHA-256:
+  `108c93a97f3011c196b8226f5019a9c09ade318fe3a802be2f7f5ddb2c3a0d04`
+
+Resolved artifacts:
+
+| Scope | Maven coordinate | SHA-256 |
+|---|---|---|
+| compile-only | `mezz.jei:jei-1.20.1-common-api:15.56.0.205` | `82849064411c036d4067890dad48a58a09c03deb2ce68c2fc72faf4eb130ba83` |
+| compile-only | `mezz.jei:jei-1.20.1-forge-api:15.56.0.205` | `babe855e9293a6513f5783d19c49a45d9542e4f9324888c8026e15d3017b9641` |
+| opt-in development runtime | `mezz.jei:jei-1.20.1-forge:15.56.0.205` | `6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c` |
+
+The integration was written against public API types and does not copy JEI
+source or assets. `mods.toml` declares JEI optional, client-side, and compatible
+from the pinned API build through the remaining 15.x line. The release matrix
+records only the exact build actually tested.
 
 ## Scope boundary
 

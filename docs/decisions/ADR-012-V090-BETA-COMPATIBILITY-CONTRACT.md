@@ -65,6 +65,10 @@ tested JEI build and recipe visibility are recorded in the compatibility
 matrix; other modpack combinations remain unsupported without a minimal
 reproduction.
 
+The Beta candidate pins the official 1.20.1 Forge API/runtime build
+`15.56.0.205`. API artifacts are compile-only; the runtime is opt-in for the
+compatibility client and is never bundled into the ARCE JAR.
+
 ### Release discipline
 
 The release candidate is built as `1.20.1-0.9.0-beta.1`. A tag or public

@@ -1,6 +1,6 @@
 # 12 — Sources / 参考来源
 
-> 资料核对日期：2026-08-26
+> 资料核对日期：2026-09-03
 >
 > 本页用于让开发者和 Codex知道哪些外部事实需要重新核对。版本、许可证和平台规则可能变化，公开发布前应再次检查。
 
@@ -52,6 +52,26 @@ Important operational point:
 
 - a public repository without an explicit license is not automatically open source;
 - MIT requires preservation of the copyright and license notice.
+
+## Just Enough Items 1.20.1
+
+- Official repository/branch: https://github.com/mezz/JustEnoughItems/tree/1.20.1
+- Official Maven metadata:
+  https://maven.blamejared.com/mezz/jei/jei-1.20.1-forge/maven-metadata.xml
+- Developer API repository:
+  https://maven.blamejared.com/mezz/jei/jei-1.20.1-common-api/
+- License:
+  https://raw.githubusercontent.com/mezz/JustEnoughItems/1.20.1/LICENSE.txt
+
+Observed on 2026-09-03:
+
+- the official 1.20.1 branch identifies Minecraft `1.20.1`, Java `17`, and
+  Forge `47.4.23` for its own current build;
+- Maven `latest` and `release` both resolved to `15.56.0.205`;
+- the runtime metadata accepts Forge `[47.0,)` and Minecraft
+  `[1.20.1,1.20.2)`;
+- ARCE pins `15.56.0.205` for the Beta compatibility matrix and keeps the
+  dependency optional and client-side.
 
 ## Minecraft naming and disclaimer
 
