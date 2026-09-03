@@ -1,0 +1,4 @@
+[09:13:03] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1002] Beta world data check complete: managed=5, migrated=5, backup=20260903T011303.377Z-schema1-to2
+[09:13:06] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_BETA_DATA_REPORT root_schema=2 operational=true celestial=true rocket_transactions=true rocket_transfers=true stations=true satellite_missions=true bodies=0 transactions=0 transfers=0 station_records=0 missions=0
+[09:13:18] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1001] Beta world data check complete: managed=5, migrated=0, backup=none
+[09:13:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_BETA_DATA_REPORT root_schema=2 operational=true celestial=true rocket_transactions=true rocket_transfers=true stations=true satellite_missions=true bodies=0 transactions=0 transfers=0 station_records=0 missions=0
