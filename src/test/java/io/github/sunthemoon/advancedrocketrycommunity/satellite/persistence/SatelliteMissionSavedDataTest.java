@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
@@ -129,7 +131,7 @@ final class SatelliteMissionSavedDataTest {
 
     private static CompoundTag emptyRoot() {
         CompoundTag root = new CompoundTag();
-        root.putInt("schema_version", SatelliteLimits.REGISTRY_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, root);
         CompoundTag clock = new CompoundTag();
         clock.putLong("logical_game_time", 0L);
         clock.putLong("last_observed_game_time", 0L);

@@ -39,6 +39,7 @@ from scripts.validate_repository import (
     validate_v060_gate_status_text,
     validate_v070_gate_status_text,
     validate_v080_gate_status_text,
+    validate_v090_gate_status_text,
     validate_forge_workflow_text,
     validate_repository_workflow_text,
 )
@@ -282,6 +283,41 @@ def v080_gate_document(
         forge_ci=forge_ci,
         governance_ci=governance_ci,
     ).replace("version: v0.7.0", "version: v0.8.0", 1)
+
+
+def v090_gate_document(
+    *,
+    status: str = "IN_PROGRESS",
+    overall: str = "IN_PROGRESS",
+    gates: dict[str, str] | None = None,
+    reviewer: str = "",
+    reviewed_at: str = "",
+    reviewed_head_commit: str = "",
+    merge_commit: str = "",
+    pull_request: str = "",
+    pull_request_checks: str = "",
+    forge_ci: str = "",
+    governance_ci: str = "",
+    release_url: str = "",
+) -> str:
+    value = v070_gate_document(
+        status=status,
+        overall=overall,
+        gates=gates,
+        reviewer=reviewer,
+        reviewed_at=reviewed_at,
+        reviewed_head_commit=reviewed_head_commit,
+        merge_commit=merge_commit,
+        pull_request=pull_request,
+        pull_request_checks=pull_request_checks,
+        forge_ci=forge_ci,
+        governance_ci=governance_ci,
+    ).replace("version: v0.7.0", "version: v0.9.0", 1)
+    return value.replace(
+        "gates:\n",
+        f'release_url: "{release_url}"\ngates:\n',
+        1,
+    )
 
 
 class RepositoryCliTests(unittest.TestCase):
@@ -1301,6 +1337,92 @@ class V080GateStatusTests(unittest.TestCase):
         )
 
 
+class V090GateStatusTests(unittest.TestCase):
+    @staticmethod
+    def complete_evidence(
+        *, human_approved: bool = True, post_merge_ready: bool = False
+    ) -> dict[str, object]:
+        evidence: dict[str, object] = {
+            "provenance_ready": True,
+            "artifact_ready": True,
+            "post_merge_ready": post_merge_ready,
+            "data_ready": True,
+            "automated_ready": True,
+            "server_ready": True,
+            "persistence_ready": True,
+            "authority_ready": True,
+            "performance_ready": True,
+            "client_ready": True,
+            "docs_ready": True,
+            "human_approved": human_approved,
+        }
+        if post_merge_ready:
+            evidence.update(
+                {
+                    "reviewed_head_commit": "3" * 40,
+                    "merge_commit": "4" * 40,
+                    "pull_request": "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/13",
+                    "pull_request_checks": "4/4_PASS",
+                    "forge_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/3",
+                    "governance_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/4",
+                    "release_url": "https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1",
+                }
+            )
+        return evidence
+
+    def test_ready_for_audit_accepts_complete_premerge_evidence(self) -> None:
+        self.assertEqual(
+            [],
+            validate_v090_gate_status_text(
+                v090_gate_document(
+                    status="READY_FOR_AUDIT",
+                    overall="READY_FOR_AUDIT",
+                    gates={f"G{index}": "PASS" for index in range(10)},
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-09-03",
+                ),
+                evidence_details=self.complete_evidence(),
+            ),
+        )
+
+    def test_passed_status_requires_merge_and_prerelease_record(self) -> None:
+        errors = validate_v090_gate_status_text(
+            v090_gate_document(
+                status="PASSED",
+                overall="PASSED",
+                gates={f"G{index}": "PASS" for index in range(10)},
+                reviewer="sunthemoon",
+                reviewed_at="2026-09-03",
+            ),
+            evidence_details=self.complete_evidence(),
+        )
+
+        self.assertTrue(any("pre-release verification" in error for error in errors))
+
+    def test_passed_status_accepts_bound_postmerge_release_evidence(self) -> None:
+        evidence = self.complete_evidence(post_merge_ready=True)
+        self.assertEqual(
+            [],
+            validate_v090_gate_status_text(
+                v090_gate_document(
+                    status="PASSED",
+                    overall="PASSED",
+                    gates={f"G{index}": "PASS" for index in range(10)},
+                    reviewer="sunthemoon",
+                    reviewed_at="2026-09-03",
+                    reviewed_head_commit=str(evidence["reviewed_head_commit"]),
+                    merge_commit=str(evidence["merge_commit"]),
+                    pull_request=str(evidence["pull_request"]),
+                    pull_request_checks=str(evidence["pull_request_checks"]),
+                    forge_ci=str(evidence["forge_ci"]),
+                    governance_ci=str(evidence["governance_ci"]),
+                    release_url=str(evidence["release_url"]),
+                ),
+                evidence_details=evidence,
+            ),
+        )
+
+
 class V002ResourceInventoryTests(unittest.TestCase):
     def test_all_current_text_and_binary_resources_are_allowlisted(self) -> None:
         paths = [
@@ -2209,8 +2331,8 @@ class WorkflowStructureTests(unittest.TestCase):
             ),
             (
                 "satellite-acceptance",
-                "          name: v080-satellite-47.4.10-${{ env.REVIEW_COMMIT }}\n",
-                "          name: v080-satellite-47.4.10-${{ github.sha }}\n",
+                "          name: v090-core-47.4.10-${{ env.REVIEW_COMMIT }}\n",
+                "          name: v090-core-47.4.10-${{ github.sha }}\n",
                 "satellite-acceptance exact head-bound artifact upload",
             ),
         )
@@ -2513,7 +2635,7 @@ class WorkflowStructureTests(unittest.TestCase):
             ),
             (
                 "satellite-acceptance",
-                "    name: v0.8.0 packaged satellite gate",
+                "    name: v0.9.0 packaged core regression gate",
                 "enabled blocking satellite-acceptance job",
             ),
         )

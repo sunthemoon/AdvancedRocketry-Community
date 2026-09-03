@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.BoundedCelestialCodecs;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -19,10 +21,9 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 /** Overworld-owned, schema-versioned discovery and first-visit state. */
 public final class CelestialSavedData extends SavedData {
-    public static final int CURRENT_SCHEMA_VERSION = 1;
+    public static final int CURRENT_SCHEMA_VERSION = 2;
     public static final String DATA_NAME = "advancedrocketrycommunity_celestial";
 
-    private static final String SCHEMA_VERSION_TAG = "schema_version";
     private static final String BODIES_TAG = "bodies";
     private static final String ID_TAG = "id";
     private static final String DISCOVERED_AT_TAG = "discovered_at";
@@ -55,21 +56,21 @@ public final class CelestialSavedData extends SavedData {
     }
 
     public static CelestialSavedData load(CompoundTag source) {
-        if (!source.contains(SCHEMA_VERSION_TAG, Tag.TAG_INT)) {
-            throw new IllegalArgumentException("Celestial SavedData is missing schema_version");
+        SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                ManagedSavedDataType.CELESTIAL,
+                source
+        );
+        if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
+            return new CelestialSavedData(
+                    migration.sourceSchema(),
+                    false,
+                    source.copy(),
+                    new LinkedHashMap<>()
+            );
         }
-        int schemaVersion = source.getInt(SCHEMA_VERSION_TAG);
-        if (schemaVersion <= 0) {
-            throw new IllegalArgumentException("Celestial SavedData schema_version must be positive");
-        }
-        if (schemaVersion > CURRENT_SCHEMA_VERSION) {
-            return new CelestialSavedData(schemaVersion, false, source.copy(), new LinkedHashMap<>());
-        }
-        if (!source.contains(BODIES_TAG, Tag.TAG_LIST)) {
-            throw new IllegalArgumentException("Celestial SavedData is missing bodies list");
-        }
+        CompoundTag payload = migration.payload();
 
-        ListTag bodies = (ListTag) source.get(BODIES_TAG);
+        ListTag bodies = (ListTag) payload.get(BODIES_TAG);
         if (!bodies.isEmpty() && bodies.getElementType() != Tag.TAG_COMPOUND) {
             throw new IllegalArgumentException("Celestial SavedData bodies must contain compounds");
         }
@@ -84,7 +85,16 @@ public final class CelestialSavedData extends SavedData {
                 throw new IllegalArgumentException("Duplicate SavedData body id: " + entry.bodyId());
             }
         }
-        return new CelestialSavedData(schemaVersion, true, null, loaded);
+        CelestialSavedData data = new CelestialSavedData(
+                CURRENT_SCHEMA_VERSION,
+                true,
+                null,
+                loaded
+        );
+        if (migration.changed()) {
+            data.setDirty();
+        }
+        return data;
     }
 
     public static CelestialSavedData get(MinecraftServer server) {
@@ -159,7 +169,7 @@ public final class CelestialSavedData extends SavedData {
             return preservedFuturePayload.copy();
         }
 
-        target.putInt(SCHEMA_VERSION_TAG, CURRENT_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.CELESTIAL, target);
         ListTag bodies = new ListTag();
         for (BodyProgress entry : entries()) {
             CompoundTag body = new CompoundTag();

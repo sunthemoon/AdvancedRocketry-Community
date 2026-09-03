@@ -1,0 +1,9 @@
+[039��2026 11:07:28.868] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: JeiP23
+[039��2026 11:07:29.124] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
+[039��2026 11:07:29.992] [Worker-Main-13/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.9.0-beta.1 initialized
+[039��2026 11:07:29.994] [Worker-Main-13/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=present version=15.56.0.205
+[039��2026 11:07:31.894] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 25605
+[039��2026 11:07:34.694] [Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[039��2026 11:07:35.692] [Render thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=registered recipes=0
+[039��2026 11:07:36.215] [Render thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=registered recipes=1
+[039��2026 11:07:36.534] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 2 advancements

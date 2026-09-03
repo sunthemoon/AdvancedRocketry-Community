@@ -3,7 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.station.model;
 /** Fixed v0.7 station budgets. Relaxing these bounds requires new evidence. */
 public final class StationLimits {
     public static final int STATE_SCHEMA_VERSION = 1;
-    public static final int REGISTRY_SCHEMA_VERSION = 1;
+    public static final int REGISTRY_SCHEMA_VERSION = 2;
     public static final int MAX_STATIONS = 4_096;
     public static final int MAX_RESERVATIONS = 64;
     public static final int MAX_MEMBERS = 32;

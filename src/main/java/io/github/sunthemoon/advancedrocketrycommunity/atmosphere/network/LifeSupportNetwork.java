@@ -26,6 +26,10 @@ public final class LifeSupportNetwork {
                 .add();
     }
 
+    public static String protocolVersion() {
+        return PROTOCOL_VERSION;
+    }
+
     public void send(ServerPlayer player, PlayerLifeSupportSnapshot snapshot) {
         channel.send(
                 PacketDistributor.PLAYER.with(() -> player),

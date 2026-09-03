@@ -229,12 +229,14 @@ public final class BootstrapGameTests {
                 """).getAsJsonObject();
         ElectrolyzerRecipe decoded = ModRecipes.ELECTROLYZING_SERIALIZER.get().fromJson(id, json);
         helper.assertTrue(decoded.spec().totalEnergy() == 2_000, "Valid recipe decoded the wrong energy total");
+        helper.assertTrue(decoded.isSpecial(), "Machine recipe leaked into the vanilla recipe book");
 
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             ModRecipes.ELECTROLYZING_SERIALIZER.get().toNetwork(buffer, decoded);
             ElectrolyzerRecipe roundTripped = ModRecipes.ELECTROLYZING_SERIALIZER.get().fromNetwork(id, buffer);
             helper.assertTrue(roundTripped.spec().equals(decoded.spec()), "Network recipe changed bounded values");
+            helper.assertTrue(roundTripped.isSpecial(), "Network recipe leaked into the vanilla recipe book");
             helper.assertTrue(
                     roundTripped.hydrogenResult().is(ModItems.HYDROGEN_CANISTER.get()),
                     "Network recipe changed the hydrogen output"

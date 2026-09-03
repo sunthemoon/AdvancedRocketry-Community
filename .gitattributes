@@ -1,5 +1,5 @@
 # Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-# Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, and 2026-08-30; see THIRD-PARTY-NOTICES.md.
+# Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-30, and 2026-09-03; see THIRD-PARTY-NOTICES.md.
 * text=auto
 
 .gitattributes text eol=lf
@@ -21,6 +21,7 @@ docs/licenses/*.txt text eol=lf -whitespace
 *.mcmeta text eol=lf
 *.toml text eol=lf
 *.xml text eol=lf
+*.snbt text eol=lf
 *.ps1 text eol=lf
 gradlew text eol=lf
 gradlew.bat text eol=crlf

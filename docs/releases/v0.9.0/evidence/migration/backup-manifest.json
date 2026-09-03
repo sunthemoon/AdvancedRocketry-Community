@@ -1,0 +1,33 @@
+{
+  "manifestSchema": 1,
+  "createdAt": "2026-09-03T05:20:20.866414500Z",
+  "sourceSchema": 1,
+  "targetSchema": 2,
+  "files": [
+    {
+      "file": "advancedrocketrycommunity_celestial.dat",
+      "bytes": 75,
+      "sha256": "6794be37a805158bd9bcbb450f9bc905b7bd3ee6b302123b70fce5ede98ce7c0"
+    },
+    {
+      "file": "advancedrocketrycommunity_rocket_transactions.dat",
+      "bytes": 80,
+      "sha256": "b298a50815431808369de0b154279e168e5cf76a786dc5e637fc1a9cc9ab9fe7"
+    },
+    {
+      "file": "advancedrocketrycommunity_rocket_transfers.dat",
+      "bytes": 77,
+      "sha256": "cf6954128b5b5b84accd31d7ebe56a9bd193977d1a8f6fa4592bf86aa380975e"
+    },
+    {
+      "file": "advancedrocketrycommunity_satellite_missions.dat",
+      "bytes": 147,
+      "sha256": "554f4d5ec9042c6bd6929ddfee98b379dd99568619268baeceb23d9cc5132bef"
+    },
+    {
+      "file": "advancedrocketrycommunity_stations.dat",
+      "bytes": 88,
+      "sha256": "c05d2634a3d2a16ad71e49a68c2498bacf65a1bbca86fa8d05ae405adb1a41d9"
+    }
+  ]
+}

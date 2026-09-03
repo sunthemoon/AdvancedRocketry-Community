@@ -1,0 +1,11 @@
+artifact_sha256=fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad
+tested_commit=f6cd77cebdb0a851cab76accbf66de565473b545
+duration_seconds=7200.001
+simulated_clients=4
+maximum_rocket_blocks=2048
+oxygen_vents=16
+stations=10
+missions=100
+same_world_restart=true
+permanent_chunk_tickets=0
+critical_or_high_findings=0

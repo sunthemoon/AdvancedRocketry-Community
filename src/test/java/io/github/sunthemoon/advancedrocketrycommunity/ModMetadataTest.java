@@ -20,7 +20,13 @@ class ModMetadataTest {
             assertTrue(metadata.contains("modId=\"advancedrocketrycommunity\""));
             assertTrue(metadata.contains("displayName=\"Advanced Rocketry: Community Edition\""));
             assertTrue(metadata.contains("license=\"MIT\""));
+            assertTrue(metadata.contains("version=\"1.20.1-0.9.0-beta.1\""));
+            assertTrue(metadata.contains("This v0.9.0 Beta candidate"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
+            assertTrue(metadata.contains("modId=\"jei\""));
+            assertTrue(metadata.contains("mandatory=false"));
+            assertTrue(metadata.contains("versionRange=\"[15.56.0.205,16)\""));
+            assertTrue(metadata.contains("side=\"CLIENT\""));
             assertFalse(metadata.contains("${"), "resource expansion must resolve every placeholder");
         }
     }

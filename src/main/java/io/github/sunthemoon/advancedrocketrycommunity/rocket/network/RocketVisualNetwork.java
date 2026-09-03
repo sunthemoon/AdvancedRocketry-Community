@@ -28,6 +28,10 @@ public final class RocketVisualNetwork {
                 .add();
     }
 
+    public static String protocolVersion() {
+        return PROTOCOL_VERSION;
+    }
+
     public int send(ServerPlayer player, RocketEntity rocket) {
         if (!rocket.operational()) {
             return 0;

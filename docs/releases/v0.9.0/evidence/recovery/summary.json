@@ -1,0 +1,42 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "baseline_summary_sha256": "5f528be0c629b77742fb9b6d22504dcfc28dbdad9021bd3c26073fc41f1ae9ba",
+  "build": "1.20.1-0.9.0-beta.1",
+  "checkpoint": "DESTINATION_SPAWNED",
+  "completed_at": "2026-09-03T03:03:04.624496+00:00",
+  "critical_or_high_findings": 0,
+  "durable_save_before_kill": true,
+  "forced_exit_code": 1,
+  "graceful_stop_command_sent_before_kill": false,
+  "java": "17.0.8",
+  "material_and_inventory_conserved": true,
+  "migration_backup_file_count": 5,
+  "migration_summary_sha256": "e63d61924ded34aaab75b37ed2fc503ee186861865704ddc3c37924c68312908",
+  "processes": [
+    {
+      "completed_at": "2026-09-03T03:02:46.958083+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260903T030224142977Z-v090-forced-stop-stage-full.txt",
+      "full_log_sha256": "489e11346bedd95a45e01105c30524f8d2bcc58cce12811c4dc79d8cbc10f41a",
+      "graceful_stop_command_sent": false,
+      "name": "v090-forced-stop-stage",
+      "started_at": "2026-09-03T03:02:37.311792+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-03T03:03:04.623018+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T030224142977Z-v090-forced-stop-recover-full.txt",
+      "full_log_sha256": "d12f4e90312553e192d159d0350c2bcafa24377160a1b8a4a59530753ded09c1",
+      "name": "v090-forced-stop-recover",
+      "started_at": "2026-09-03T03:02:59.282829+00:00"
+    }
+  ],
+  "recovery_status": "RECOVERED",
+  "same_world_restart": true,
+  "schema_after_restart": 2,
+  "schema_version": 1,
+  "single_authority": true,
+  "tested_commit": "f6cd77cebdb0a851cab76accbf66de565473b545",
+  "version": "v0.9.0"
+}

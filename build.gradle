@@ -1,5 +1,5 @@
 // Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, and 2026-09-01; see THIRD-PARTY-NOTICES.md.
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, and 2026-09-03; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
@@ -132,10 +132,28 @@ tasks.named('sourcesJar') {
 
 repositories {
     mavenCentral()
+    maven {
+        name = 'JaredsMaven'
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'mezz.jei'
+        }
+    }
+}
+
+def includeJeiRuntime = (findProperty('arceIncludeJei') ?: 'false').toString()
+if (includeJeiRuntime != 'true' && includeJeiRuntime != 'false') {
+    throw new GradleException('arceIncludeJei must be exactly true or false')
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    if (includeJeiRuntime == 'true') {
+        runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    }
 
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -190,7 +208,8 @@ def resourceProperties = [
         mod_version            : project.version,
         mod_authors            : mod_authors,
         mod_credits            : mod_credits,
-        mod_description        : mod_description
+        mod_description        : mod_description,
+        jei_version_range      : jei_version_range
 ]
 
 tasks.named('processResources', ProcessResources).configure {

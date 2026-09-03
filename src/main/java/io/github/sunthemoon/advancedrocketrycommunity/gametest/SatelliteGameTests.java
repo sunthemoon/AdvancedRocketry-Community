@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
@@ -119,7 +120,7 @@ public final class SatelliteGameTests {
     public static void terminalFutureSchemaIsPreservedAndBlocked(GameTestHelper helper) {
         SatelliteTerminalBlockEntity terminal = placeTerminal(helper, BlockPos.ZERO);
         CompoundTag future = new CompoundTag();
-        future.putInt("schema_version", 2);
+        future.putInt("schema_version", SatelliteLimits.REGISTRY_SCHEMA_VERSION + 1);
         future.putString("future_payload", "preserve-exactly");
         CompoundTag parent = new CompoundTag();
         parent.put("SatelliteTerminal", future.copy());

@@ -27,6 +27,10 @@ public final class CelestialNetwork {
                 .add();
     }
 
+    public static String protocolVersion() {
+        return PROTOCOL_VERSION;
+    }
+
     public void send(ServerPlayer player, CelestialSnapshotPacket packet) {
         channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }

@@ -12,8 +12,8 @@ body:
   - type: input
     id: arce_version
     attributes:
-      label: ARCE version and commit/build hash
-      placeholder: "1.20.1-0.6.0-alpha.1 / abc123"
+      label: ARCE version, commit, and JAR SHA-256
+      placeholder: "1.20.1-0.9.0-beta.1 / abc123 / 64 lowercase hex characters"
     validations:
       required: true
   - type: input
@@ -91,7 +91,7 @@ body:
     attributes:
       label: Confirmation
       options:
-        - label: I tested the latest applicable build
+        - label: I tested the exact JAR SHA-256 reported above
           required: true
         - label: I searched existing issues
           required: true

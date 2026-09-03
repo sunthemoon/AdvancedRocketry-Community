@@ -1,0 +1,26 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "build": "1.20.1-0.9.0-beta.1",
+  "completed_at": "2026-09-03T07:39:06.062857+00:00",
+  "flight": {
+    "restart_cases": 8,
+    "round_trips": 20,
+    "summary_sha256": "122802ddd2aff12273760a64b72f8c784843e76c8e3697abb7207e0a9fdb0f72"
+  },
+  "machine": {
+    "atomic_completion_verified": true,
+    "summary_sha256": "a9e9e096363bdcf4e73e69498f6dcde6e1066301cbf5185f4d8cc9e286063a78"
+  },
+  "result": "PASS",
+  "schema_version": 1,
+  "server_lineage": {
+    "baseline_session_id": "v002-27e3d10560cb52b4f00cf8b0",
+    "baseline_summary_sha256": "5f528be0c629b77742fb9b6d22504dcfc28dbdad9021bd3c26073fc41f1ae9ba",
+    "migration_summary_sha256": "c6f6c2ff01c5d68adb44a7b3ba2f0d65e455143a3e94799a6a84a273b5ba907e",
+    "same_migrated_world_through_soak_and_continuation": true,
+    "soak_summary_sha256": "7ffa1e115c02d72a73ae18b17988e6d57d2c89722b3d9124289ced8bdd61a26f",
+    "world_identity_marker_sha256": "7d262fe7086de63fcafb8fc0345ba530f4810ea68a4639d7ac0ed0bf58b5e0c1"
+  },
+  "tested_implementation_commit": "f6cd77cebdb0a851cab76accbf66de565473b545",
+  "version": "v0.9.0"
+}

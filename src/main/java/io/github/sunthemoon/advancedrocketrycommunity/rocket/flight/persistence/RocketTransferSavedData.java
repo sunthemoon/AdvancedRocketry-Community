@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDecodeResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
@@ -23,9 +25,10 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
-/** Overworld-owned, strict schema-1 Earth/Moon transfer journal. */
+/** Overworld-owned, strict versioned Earth/Moon transfer journal. */
 public final class RocketTransferSavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_rocket_transfers";
+    public static final int ROOT_SCHEMA_VERSION = 2;
 
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
@@ -48,17 +51,24 @@ public final class RocketTransferSavedData extends SavedData {
                     > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
                 throw new IllegalArgumentException("Transfer journal exceeds the fixed NBT limit");
             }
-            if (!source.contains("schema_version", Tag.TAG_INT)
-                    || source.getInt("schema_version") != RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION) {
-                throw new IllegalArgumentException("Transfer journal schema is missing or unsupported");
+            SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                    ManagedSavedDataType.ROCKET_TRANSFERS,
+                    source
+            );
+            if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
+                throw new IllegalArgumentException("Transfer journal uses a future root schema");
             }
-            ListTag transfers = requireList(source, "transfers", Tag.TAG_COMPOUND);
+            CompoundTag payload = migration.payload();
+            ListTag transfers = requireList(payload, "transfers", Tag.TAG_COMPOUND);
             if (transfers.size() > RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
                 throw new IllegalArgumentException("Transfer journal exceeds the active-record bound");
             }
             for (Tag raw : transfers) {
                 RocketTransferRecord record = decodeRecord((CompoundTag) raw);
                 data.insertValidated(record);
+            }
+            if (migration.changed()) {
+                data.setDirty();
             }
         } catch (RuntimeException exception) {
             data.entries.clear();
@@ -169,7 +179,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        target.putInt("schema_version", RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
         ListTag transfers = new ListTag();
         entries().forEach(record -> transfers.add(encodeRecord(record)));
         target.put("transfers", transfers);

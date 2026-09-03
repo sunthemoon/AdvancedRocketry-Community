@@ -69,7 +69,6 @@ def check_celestial_identity(repository_root: Path = ROOT) -> list[str]:
         ),
         "persistence/CelestialSavedData.java": (
             "ResourceLocation",
-            '"schema_version"',
             "CURRENT_SCHEMA_VERSION",
         ),
         "network/CelestialSnapshot.java": (
@@ -88,6 +87,21 @@ def check_celestial_identity(repository_root: Path = ROOT) -> list[str]:
         for marker in markers:
             if marker not in text:
                 errors.append(f"required identity marker {marker!r} missing: {relative}")
+
+    saved_data = texts.get("persistence/CelestialSavedData.java", "")
+    local_schema_marker = '"schema_version"' in saved_data
+    centralized_schema_marker = all(
+        marker in saved_data
+        for marker in (
+            "SavedDataSchemaMigrator",
+            "ManagedSavedDataType.CELESTIAL",
+        )
+    )
+    if saved_data and not (local_schema_marker or centralized_schema_marker):
+        errors.append(
+            "required schema identity is neither local nor delegated to the "
+            "managed celestial migrator: persistence/CelestialSavedData.java"
+        )
 
     legacy_numeric_files = {
         relative

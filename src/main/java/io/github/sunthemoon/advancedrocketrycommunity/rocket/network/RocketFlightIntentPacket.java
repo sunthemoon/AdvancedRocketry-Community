@@ -18,6 +18,12 @@ public record RocketFlightIntentPacket(
         UUID destinationStationId,
         UUID requestId
 ) {
+    static final int MAX_ENCODED_BYTES = Byte.BYTES
+            + 5
+            + Byte.BYTES
+            + (Long.BYTES * 2)
+            + (Long.BYTES * 2);
+
     public RocketFlightIntentPacket {
         Objects.requireNonNull(action, "action");
         Objects.requireNonNull(destination, "destination");
@@ -49,12 +55,39 @@ public record RocketFlightIntentPacket(
         buffer.writeUUID(requestId);
     }
 
+    public static int maximumEncodedBytes() {
+        return MAX_ENCODED_BYTES;
+    }
+
     public static RocketFlightIntentPacket decode(FriendlyByteBuf buffer) {
+        int frameBytes = buffer.readableBytes();
+        if (frameBytes <= 0 || frameBytes > MAX_ENCODED_BYTES) {
+            throw new IllegalArgumentException(
+                    "Rocket flight intent frame length is outside the bounded protocol: " + frameBytes
+            );
+        }
         RocketFlightAction action = RocketFlightAction.fromNetworkId(buffer.readUnsignedByte());
+        int entityStart = buffer.readerIndex();
         int entityId = buffer.readVarInt();
+        int entityBytes = buffer.readerIndex() - entityStart;
+        if (entityBytes != FriendlyByteBuf.getVarIntSize(entityId)) {
+            throw new IllegalArgumentException("Rocket entity id uses a non-canonical VarInt encoding");
+        }
         RocketDestination destination = RocketDestination.fromNetworkId(buffer.readUnsignedByte());
         UUID stationId = destination == RocketDestination.SPACE_STATION ? buffer.readUUID() : null;
-        return new RocketFlightIntentPacket(action, entityId, destination, stationId, buffer.readUUID());
+        RocketFlightIntentPacket packet = new RocketFlightIntentPacket(
+                action,
+                entityId,
+                destination,
+                stationId,
+                buffer.readUUID()
+        );
+        if (buffer.isReadable()) {
+            throw new IllegalArgumentException(
+                    "Rocket flight intent frame contains " + buffer.readableBytes() + " trailing bytes"
+            );
+        }
+        return packet;
     }
 
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {

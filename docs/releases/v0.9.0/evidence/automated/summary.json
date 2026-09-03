@@ -1,0 +1,103 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "build": "1.20.1-0.9.0-beta.1",
+  "environment": {
+    "forge_baseline": "47.4.10",
+    "forge_latest_advisory": "47.4.23",
+    "java": "Microsoft OpenJDK 17.0.8+7-LTS",
+    "minecraft": "1.20.1",
+    "platform": "Microsoft Windows 11 Pro 10.0.26200 amd64"
+  },
+  "results": {
+    "clean_builds": {
+      "byte_identical": true,
+      "result": "PASS",
+      "runs": 2
+    },
+    "client_boundary": {
+      "findings": 0,
+      "result": "PASS"
+    },
+    "compatibility": {
+      "passed": 4,
+      "required": 4,
+      "result": "PASS"
+    },
+    "continuation": {
+      "machine_restart": true,
+      "restart_cases": 8,
+      "result": "PASS",
+      "round_trips": 20
+    },
+    "datagen": {
+      "git_diff_clean": true,
+      "result": "PASS"
+    },
+    "forced_stop": {
+      "result": "PASS",
+      "single_authority": true
+    },
+    "gametest": {
+      "evidence": "docs/releases/v0.9.0/evidence/automated/gametest.txt",
+      "failed": 0,
+      "passed": 44,
+      "result": "PASS"
+    },
+    "jar_audit": {
+      "entries": 758,
+      "findings": 0,
+      "result": "PASS"
+    },
+    "junit": {
+      "failed": 0,
+      "passed": 273,
+      "result": "PASS",
+      "skipped": 0
+    },
+    "migration": {
+      "restart_current": true,
+      "result": "PASS",
+      "roots": 5
+    },
+    "packaged_server": {
+      "cycles": 2,
+      "result": "PASS"
+    },
+    "python": {
+      "failed": 0,
+      "passed": 677,
+      "result": "PASS",
+      "skipped": 4,
+      "total": 681
+    },
+    "repository": {
+      "failed": 0,
+      "passed": 46,
+      "result": "PASS",
+      "warnings": 0
+    },
+    "resource_audit": {
+      "errors": 0,
+      "result": "PASS"
+    },
+    "soak": {
+      "clients": 4,
+      "minimum_seconds": 7200,
+      "result": "PASS"
+    }
+  },
+  "schema_version": 1,
+  "sources": {
+    "candidate_commands": [
+      ".\\gradlew.bat clean build runData runGameTestServer --no-daemon --stacktrace",
+      ".\\gradlew.bat clean build --no-daemon --stacktrace",
+      "python scripts/validate_build_artifact.py build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
+      "python scripts/check_client_imports.py",
+      "python scripts/validate_v090_resources.py",
+      "python scripts/validate_repository.py --require-approved-identity"
+    ],
+    "python_ci": "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33711104109"
+  },
+  "tested_implementation_commit": "f6cd77cebdb0a851cab76accbf66de565473b545",
+  "version": "v0.9.0"
+}

@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModel;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
@@ -39,12 +41,16 @@ public final class StationRegistrySavedData extends SavedData {
             if (StationNbtSize.uncompressedBytes(source) > StationLimits.MAX_REGISTRY_NBT_BYTES) {
                 throw new IllegalArgumentException("Station registry exceeds the fixed NBT bound");
             }
-            int schema = requireInt(source, "schema_version");
-            if (schema != StationLimits.REGISTRY_SCHEMA_VERSION) {
-                throw new IllegalArgumentException("Unsupported station registry schema " + schema);
+            SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                    ManagedSavedDataType.STATIONS,
+                    source
+            );
+            if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
+                throw new IllegalArgumentException("Station registry uses a future root schema");
             }
-            ListTag stations = requireList(source, "stations");
-            ListTag reservations = requireList(source, "reservations");
+            CompoundTag payload = migration.payload();
+            ListTag stations = requireList(payload, "stations");
+            ListTag reservations = requireList(payload, "reservations");
             if (stations.size() > StationLimits.MAX_STATIONS
                     || reservations.size() > StationLimits.MAX_RESERVATIONS) {
                 throw new IllegalArgumentException("Station registry lists exceed fixed bounds");
@@ -54,6 +60,9 @@ public final class StationRegistrySavedData extends SavedData {
             }
             for (Tag raw : reservations) {
                 data.registry.restoreReservation(StationNbtCodec.decodeReservation((CompoundTag) raw));
+            }
+            if (migration.changed()) {
+                data.setDirty();
             }
         } catch (RuntimeException exception) {
             data.preservedBlockedData = preserved;
@@ -185,7 +194,7 @@ public final class StationRegistrySavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        target.putInt("schema_version", StationLimits.REGISTRY_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.STATIONS, target);
         ListTag stations = new ListTag();
         registry.stations().forEach(state -> stations.add(StationNbtCodec.encodeState(state)));
         target.put("stations", stations);
@@ -204,13 +213,6 @@ public final class StationRegistrySavedData extends SavedData {
         if (!operational()) {
             throw new IllegalStateException("Station registry is blocked by invalid or future data");
         }
-    }
-
-    private static int requireInt(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_INT)) {
-            throw new IllegalArgumentException("Missing station registry integer " + key);
-        }
-        return source.getInt(key);
     }
 
     private static ListTag requireList(CompoundTag source, String key) {

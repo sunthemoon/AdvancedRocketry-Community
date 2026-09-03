@@ -1,0 +1,80 @@
+{
+  "exact_maximum_counts": true,
+  "mission_batch": {
+    "created": 100,
+    "creation_elapsed_nanos": 9478200,
+    "initial": {
+      "active": 100,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 0,
+      "missions": 100,
+      "pending": 0,
+      "ready": 0,
+      "research": 0,
+      "satellites": 100,
+      "scheduler": "deadline_queue",
+      "unfinished": 100
+    },
+    "rejected": 0,
+    "requested": 100,
+    "scheduler": "deadline_queue"
+  },
+  "operator_report": {
+    "atmosphere_tick": 1024,
+    "atmosphere_volume": 4096,
+    "bodies": 0,
+    "build": "1.20.1-0.9.0-beta.1",
+    "flight_frame_max": 39,
+    "forge": "47.4.10",
+    "jei": "absent",
+    "missions": 100,
+    "operational": true,
+    "players_max": 2,
+    "players_online": 0,
+    "protocols": {
+      "celestial": 1,
+      "flight": 2,
+      "life": 1,
+      "visual": 1
+    },
+    "root_schema": 2,
+    "roots": "11111",
+    "stations": 10,
+    "ticket_policy": "transient_transfer_only",
+    "transactions": 0,
+    "transfers": 0
+  },
+  "rocket": {
+    "blocks": 2048,
+    "capacity": 128000,
+    "dimension": "minecraft:overworld",
+    "entity": "11e0ec87-3ba5-46a6-82c5-5ad7ac4694d4",
+    "fuel": 0,
+    "logical": "72a1c61e-4c9f-4ab1-8550-ffd1d7c9d5e5",
+    "origin": [
+      640,
+      100,
+      640
+    ],
+    "passengers": 0,
+    "snapshot": "7891a7767f2c15e1f37f0167c7856289a58d0f4e3eb5eb92195dd957a5fa4714",
+    "state": "ASSEMBLED",
+    "transfer": "none"
+  },
+  "rocket_blocks": 2048,
+  "station_count": 10,
+  "station_ids": [
+    "6b271ba4-887b-4254-9747-a1ad706053e4",
+    "5873b69b-bc79-43eb-b382-1d122df7a2d2",
+    "14b532d8-2dfb-46eb-8552-f6d880edceb6",
+    "b10027d2-4df5-41e6-9c20-baa00b2706c6",
+    "934e1ff2-d0b8-47ee-a32d-c1d23d8a6c98",
+    "5b37e602-c04b-4a93-9c27-ef506a3f3c5a",
+    "29f2772a-6825-4401-ab00-d2503551ce30",
+    "30c34c81-bef9-4fff-ab3f-1e3a1721bc1a",
+    "46ca6409-464e-4666-8cd5-708f18bc776e",
+    "ceee0025-9192-4356-a6cc-ca6f9c515019"
+  ],
+  "vent_count": 16
+}

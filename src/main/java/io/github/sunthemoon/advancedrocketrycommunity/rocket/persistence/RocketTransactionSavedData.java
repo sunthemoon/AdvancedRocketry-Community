@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
@@ -23,10 +25,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
-/** Overworld-attached schema-1 journal for same- and cross-level rocket recovery. */
+/** Overworld-attached versioned journal for same- and cross-level rocket recovery. */
 public final class RocketTransactionSavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_rocket_transactions";
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
 
     private final Map<UUID, RocketPersistedTransaction> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
@@ -41,23 +43,22 @@ public final class RocketTransactionSavedData extends SavedData {
 
     public static RocketTransactionSavedData load(CompoundTag source) {
         RocketTransactionSavedData data = new RocketTransactionSavedData();
-        if (!source.contains("schema_version", Tag.TAG_INT)) {
-            data.preservedBlockedData = source.copy();
-            return data;
-        }
-        int schema = source.getInt("schema_version");
-        if (schema != SCHEMA_VERSION || !source.contains("transactions", Tag.TAG_LIST)) {
-            data.preservedBlockedData = source.copy();
-            return data;
-        }
-        Tag rawTransactions = source.get("transactions");
-        if (!(rawTransactions instanceof ListTag transactions)
-                || (!transactions.isEmpty() && transactions.getElementType() != Tag.TAG_COMPOUND)
-                || transactions.size() > RocketLimits.MAX_ACTIVE_TRANSACTIONS) {
-            data.preservedBlockedData = source.copy();
-            return data;
-        }
         try {
+            SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                    ManagedSavedDataType.ROCKET_TRANSACTIONS,
+                    source
+            );
+            if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
+                data.preservedBlockedData = source.copy();
+                return data;
+            }
+            CompoundTag payload = migration.payload();
+            Tag rawTransactions = payload.get("transactions");
+            if (!(rawTransactions instanceof ListTag transactions)
+                    || (!transactions.isEmpty() && transactions.getElementType() != Tag.TAG_COMPOUND)
+                    || transactions.size() > RocketLimits.MAX_ACTIVE_TRANSACTIONS) {
+                throw new IllegalArgumentException("Rocket transaction list is invalid or oversized");
+            }
             for (Tag raw : transactions) {
                 if (!(raw instanceof CompoundTag entryTag)) {
                     throw new IllegalArgumentException("Transaction entry has the wrong type");
@@ -66,6 +67,9 @@ public final class RocketTransactionSavedData extends SavedData {
                 if (data.entries.put(entry.record().transactionId(), entry) != null) {
                     throw new IllegalArgumentException("Duplicate rocket transaction ID");
                 }
+            }
+            if (migration.changed()) {
+                data.setDirty();
             }
         } catch (RuntimeException exception) {
             data.entries.clear();
@@ -107,7 +111,7 @@ public final class RocketTransactionSavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        target.putInt("schema_version", SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSACTIONS, target);
         ListTag transactions = new ListTag();
         entries().forEach(entry -> transactions.add(encodeEntry(entry)));
         target.put("transactions", transactions);

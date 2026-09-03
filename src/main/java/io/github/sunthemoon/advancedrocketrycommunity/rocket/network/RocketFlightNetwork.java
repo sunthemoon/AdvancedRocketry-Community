@@ -30,6 +30,10 @@ public final class RocketFlightNetwork {
         channel = created;
     }
 
+    public static String protocolVersion() {
+        return PROTOCOL_VERSION;
+    }
+
     public static void sendIntent(
             RocketFlightAction action,
             int rocketEntityId,

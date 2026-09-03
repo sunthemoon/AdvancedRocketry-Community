@@ -1,0 +1,78 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "backup": {
+    "directory": "20260903T052020.866Z-schema1-to2",
+    "file_count": 5,
+    "manifest_sha256": "574a733b4aa217598f4ade242784df3f09618ad3833ba38147faa7b6574cd6c1"
+  },
+  "completed_at": "2026-09-03T05:20:39.532193+00:00",
+  "cycles": [
+    {
+      "completed_at": "2026-09-03T05:20:25.065050+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T052010192845Z-v090-migration-full.txt",
+      "full_log_sha256": "2aa26854663de78786819e177809a3f3468af92d211746f5119c31f7699775e2",
+      "name": "v090-migration",
+      "started_at": "2026-09-03T05:20:23.235631+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T05:20:39.530893+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T052010192845Z-v090-current-restart-full.txt",
+      "full_log_sha256": "3cea6781603a05ffa73b84fd3362871e82dcada0b3b159bc242042979b84efb1",
+      "name": "v090-current-restart",
+      "started_at": "2026-09-03T05:20:37.694686+00:00"
+    }
+  ],
+  "diagnostics": [
+    "ARCE-BETA-1002",
+    "ARCE-BETA-1001"
+  ],
+  "fixture_manifest_sha256": "10292d1b05b3bbf09537c64533a427666387f7db2b314a0fc83a746adec7f763",
+  "java_version": "17.0.8",
+  "migrated_sha256": {
+    "advancedrocketrycommunity_celestial.dat": "2409f71fc3aab66cf2d67d402c527cd5ec71fd5fac965dd1bc18406ee4d4c3ef",
+    "advancedrocketrycommunity_rocket_transactions.dat": "3ce430a78b510d1e0c68886a378ad7c7388b0db2ccf4e5f90b95eaa12564d398",
+    "advancedrocketrycommunity_rocket_transfers.dat": "97f188a7fce9f5733eeff709dde45ee813b33256965674fa3ded41d2d19fd612",
+    "advancedrocketrycommunity_satellite_missions.dat": "4fa9a94a64d344dce69d7e7844f8a49638161657380cbdd2dc77777e9b685ae1",
+    "advancedrocketrycommunity_stations.dat": "b56bd143874f595b0fe3136602309ba401e945f484f03d7bb73b7b6c3c13569c"
+  },
+  "mod_version": "1.20.1-0.9.0-beta.1",
+  "operator_report_operational": true,
+  "restart_current": true,
+  "schema_version": 1,
+  "seeded_files": {
+    "advancedrocketrycommunity_celestial.dat": {
+      "fixture": "v030-celestial-v1.snbt",
+      "fixture_sha256": "3c9dd1e276b5c8cb557842c7d7e40d91fae694d54e0d49af14df55182bf03d32",
+      "source_bytes": 75,
+      "source_sha256": "6794be37a805158bd9bcbb450f9bc905b7bd3ee6b302123b70fce5ede98ce7c0"
+    },
+    "advancedrocketrycommunity_rocket_transactions.dat": {
+      "fixture": "v050-rocket-transactions-v1.snbt",
+      "fixture_sha256": "20042ab47e48f2f0da3beec1c57a18477f529431c749f9430460ba0e22d30102",
+      "source_bytes": 80,
+      "source_sha256": "b298a50815431808369de0b154279e168e5cf76a786dc5e637fc1a9cc9ab9fe7"
+    },
+    "advancedrocketrycommunity_rocket_transfers.dat": {
+      "fixture": "v060-rocket-transfers-v1.snbt",
+      "fixture_sha256": "129877ec5b436ab08d942479c098c5a672049083a3aa836cec694e4fea33784a",
+      "source_bytes": 77,
+      "source_sha256": "cf6954128b5b5b84accd31d7ebe56a9bd193977d1a8f6fa4592bf86aa380975e"
+    },
+    "advancedrocketrycommunity_satellite_missions.dat": {
+      "fixture": "v080-satellite-missions-v1.snbt",
+      "fixture_sha256": "3bb33223368fc508a88718f1a421716ba8a32b4a34d18e61fb423cb391b252f7",
+      "source_bytes": 147,
+      "source_sha256": "554f4d5ec9042c6bd6929ddfee98b379dd99568619268baeceb23d9cc5132bef"
+    },
+    "advancedrocketrycommunity_stations.dat": {
+      "fixture": "v070-stations-v1.snbt",
+      "fixture_sha256": "8cae32cd21b4cb48686df5fab408b389af1f8470675e91fd572a50e6dcbbd3fb",
+      "source_bytes": 88,
+      "source_sha256": "c05d2634a3d2a16ad71e49a68c2498bacf65a1bbca86fa8d05ae405adb1a41d9"
+    }
+  },
+  "started_at": "2026-09-03T05:20:23.235631+00:00",
+  "tested_commit": "f6cd77cebdb0a851cab76accbf66de565473b545"
+}
