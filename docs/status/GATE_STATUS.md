@@ -29,7 +29,7 @@ gates:
   G9: NOT_STARTED
 overall: IN_PROGRESS
 remaining_items:
-  - implement and verify migration, diagnostics, compatibility, security, and stress slices
+  - implement and verify diagnostics, compatibility, security, and stress slices
   - complete two-hour soak, manual review, release evidence, PR, and merge reproduction
 human_approved_by: ""
 human_approved_at: ""

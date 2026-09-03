@@ -1,8 +1,9 @@
 # ADR-012 — v0.9.0 Beta compatibility and feature-freeze contract
 
-- Status: `PROPOSED`
+- Status: `ACCEPTED`
 - Date: 2026-09-03
 - Decision owner: repository owner
+- Accepted: 2026-09-03
 - Applies to: `v0.9.0`
 
 ## Context
