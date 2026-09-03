@@ -1,0 +1,85 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "build": "1.20.1-0.9.0-beta.1",
+  "cases": [
+    {
+      "case": "malformed_and_noncanonical_flight_intent_frames",
+      "expected": "REJECT_BEFORE_HANDLER_WITH_39_BYTE_MAXIMUM",
+      "evidence": "RocketFlightIntentPacketTest",
+      "result": "PASS"
+    },
+    {
+      "case": "flight_intent_authority_distance_state_and_loaded_chunk",
+      "expected": "SERVER_REVALIDATES_ALL_INPUT_AND_NEVER_FORCE_LOADS",
+      "evidence": "RocketFlightGameTests and RocketFlightNetworkTest",
+      "result": "PASS"
+    },
+    {
+      "case": "flight_intent_replay_and_rate_limit",
+      "expected": "BOUNDED_OR_IDEMPOTENT_WITHOUT_DUPLICATION",
+      "evidence": "RocketFlightNetworkTest and RocketFlightGameTests",
+      "result": "PASS"
+    },
+    {
+      "case": "station_and_satellite_non_owner_access",
+      "expected": "DENY_WITHOUT_STATE_CHANGE",
+      "evidence": "StationAccessServiceTest and SatelliteGameTests",
+      "result": "PASS"
+    },
+    {
+      "case": "duplicate_satellite_claim",
+      "expected": "EXACTLY_ONCE_RESEARCH_AND_DISCOVERY",
+      "evidence": "SatelliteMissionRegistryTest and SatelliteGameTests",
+      "result": "PASS"
+    },
+    {
+      "case": "future_malformed_and_oversized_managed_saved_data",
+      "expected": "FAIL_CLOSED_WITHOUT_BACKUP_OR_REPLACEMENT",
+      "evidence": "WorldDataMigrationServiceTest",
+      "result": "PASS"
+    },
+    {
+      "case": "partial_multi_root_migration_commit",
+      "expected": "RESTORE_EVERY_BYTE_EXACT_ORIGINAL",
+      "evidence": "WorldDataMigrationServiceTest",
+      "result": "PASS"
+    },
+    {
+      "case": "forced_stop_after_destination_spawn",
+      "expected": "ONE_AUTHORITY_AND_EXACT_MATERIAL_INVENTORY_FUEL",
+      "evidence": "docs/releases/v0.9.0/evidence/recovery/summary.json",
+      "result": "PASS"
+    },
+    {
+      "case": "maximum_rocket_room_station_and_mission_limits",
+      "expected": "HARD_LIMITS_WITHOUT_UNBOUNDED_WORLD_SCAN",
+      "evidence": "JUnit, GameTest, and v0.9.0 combined scenario",
+      "result": "PASS"
+    },
+    {
+      "case": "satellite_and_transfer_chunk_tickets",
+      "expected": "ZERO_PERMANENT_TICKETS",
+      "evidence": "packaged server diagnostics and soak probes",
+      "result": "PASS"
+    },
+    {
+      "case": "optional_jei_and_common_server_side_boundary",
+      "expected": "NO_OPTIONAL_CLASS_OR_CLIENT_CLASS_LINKAGE_ON_SERVER",
+      "evidence": "client import scan and compatibility matrix",
+      "result": "PASS"
+    },
+    {
+      "case": "artifact_credentials_license_and_provenance",
+      "expected": "NO_CREDENTIALS_AND_ONLY_RECORDED_LICENSED_CONTENT",
+      "evidence": "JAR audit, provenance inventory, LICENSE, and NOTICE",
+      "result": "PASS"
+    }
+  ],
+  "critical_findings": 0,
+  "high_findings": 0,
+  "open_findings": [],
+  "result": "PASS",
+  "schema_version": 1,
+  "tested_implementation_commit": "f6cd77cebdb0a851cab76accbf66de565473b545",
+  "version": "v0.9.0"
+}

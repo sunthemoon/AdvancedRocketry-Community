@@ -84,8 +84,12 @@
 | `docs/releases/v0.7.0/INSTALLATION.md` | v0.7.0 开发预览安装、共享 Space Level 与存档边界 |
 | `docs/releases/v0.8.0/` | 研究、逻辑数据卫星、重启、双客户端、压力与验收证据 |
 | `docs/releases/v0.8.0/GATE-STATUS.md` | v0.8.0 Required Gate、PR/CI、合并与精确复现记录 |
-| `docs/releases/v0.9.0/evidence/migration/` | Beta schema-1 备份、迁移、同世界重启与诊断 checkpoint |
+| `docs/releases/v0.9.0/` | Beta 产物、迁移、恢复、兼容、两小时 soak、安全、人工与发布证据 |
+| `docs/releases/v0.9.0/GATE-STATUS.md` | v0.9.0 Required Gate、所有者批准、PR/CI、合并复现与预发布状态 |
+| `docs/releases/v0.9.0/INSTALLATION.md` | Beta 运行时、匹配 JAR、v0.8 存档升级和备份步骤 |
+| `docs/releases/v0.9.0/RELEASE-NOTES.md` | 面向玩家和服主的 Beta 1 变更、安装与限制 |
 | `docs/BETA-SUPPORT-POLICY.md` | v0.9.x 支持运行时、存档升级、可选模组和问题报告边界 |
+| `docs/provenance/v0.9.0-beta-hardening.md` | Beta 零复制来源审查、可选 JEI 依赖与分发边界 |
 
 ## 实施记录
 
@@ -165,6 +169,7 @@ Codex 报告格式
 - v0.8.0 有界卫星任务、持久化、权限和调度模型。
 - v0.8.0 有序截图与最终双客户端证据的范围化验收决定。
 - v0.9.0 Beta 功能冻结、存档升级、可选兼容和发布契约。
+- v0.9.0 复用未变化核心视觉证据的范围、风险、所有者接受与 v1.0 回收条件。
 
 ADR-000、ADR-001、ADR-002、ADR-004、ADR-005、ADR-006、ADR-007、ADR-008 和 ADR-009 已由
 维护者接受；ADR-003 仍保留 `PROPOSED` 状态。ADR-006 记录 v0.6.0 固定
@@ -173,4 +178,5 @@ ADR-000、ADR-001、ADR-002、ADR-004、ADR-005、ADR-006、ADR-007、ADR-008 �
 固定 v0.7.0 的站点网格、创建事务、集中式权限和坐标无关火箭意图；ADR-009
 仅接受 v0.7.0 的无媒体双客户端与所有者证明，并要求后续版本重新取证。
 ADR-010 与 ADR-011 固定 v0.8.0 卫星与视觉证据边界；ADR-012 已由仓库
-所有者接受，固定 v0.9.0 Beta 的功能冻结、存档升级和兼容边界。
+所有者接受，固定 v0.9.0 Beta 的功能冻结、存档升级和兼容边界；ADR-013
+仅允许 v0.9.0 引用真实且未变化的核心视觉基线，并要求 v1.0 重新取证。

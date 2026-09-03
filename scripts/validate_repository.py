@@ -48,6 +48,7 @@ if __package__:
     from .validate_v060_release_evidence import validate_v060_release_evidence
     from .validate_v070_release_evidence import validate_v070_release_evidence
     from .validate_v080_release_evidence import validate_v080_release_evidence
+    from .validate_v090_release_evidence import validate_v090_release_evidence
     from .manage_v020_generated_manifest import verify as verify_v020_generated_manifest
     from .manage_v030_generated_manifest import verify as verify_v030_generated_manifest
     from .manage_v040_generated_manifest import verify as verify_v040_generated_manifest
@@ -89,6 +90,7 @@ else:
     from validate_v060_release_evidence import validate_v060_release_evidence
     from validate_v070_release_evidence import validate_v070_release_evidence
     from validate_v080_release_evidence import validate_v080_release_evidence
+    from validate_v090_release_evidence import validate_v090_release_evidence
     from manage_v020_generated_manifest import verify as verify_v020_generated_manifest
     from manage_v030_generated_manifest import verify as verify_v030_generated_manifest
     from manage_v040_generated_manifest import verify as verify_v040_generated_manifest
@@ -180,6 +182,7 @@ REQUIRED_PATHS = (
     "scripts/validate_v060_release_evidence.py",
     "scripts/validate_v070_release_evidence.py",
     "scripts/validate_v080_release_evidence.py",
+    "scripts/validate_v090_release_evidence.py",
     "tools/audit/audit_upstream.py",
     "tools/import/import_v010_assets.py",
     "tools/import/v010-content-plan.json",
@@ -210,6 +213,7 @@ REQUIRED_PATHS = (
     "tests/test_validate_v060_release_evidence.py",
     "tests/test_validate_v070_release_evidence.py",
     "tests/test_validate_v080_release_evidence.py",
+    "tests/test_validate_v090_release_evidence.py",
     "tests/test_manage_v030_generated_manifest.py",
     "tests/test_manage_v040_generated_manifest.py",
     "tests/test_manage_v050_generated_manifest.py",
@@ -249,6 +253,7 @@ REQUIRED_PATHS = (
     "docs/provenance/v0.7.0-space-station.md",
     "docs/provenance/v0.8.0-generated-resources.json",
     "docs/provenance/v0.8.0-progression-satellites.md",
+    "docs/provenance/v0.9.0-beta-hardening.md",
     "docs/status/CURRENT_VERSION.md",
     "docs/status/GATE_STATUS.md",
     "docs/releases/v0.0.1/RELEASE-EVIDENCE.md",
@@ -1245,6 +1250,10 @@ def check_issue_templates(results: Results) -> None:
         missing = [key for key in required if key not in text]
         if missing:
             failures.append(f"{path.name}: missing {', '.join(missing)}")
+        if path.name in {"bug_report.yml", "compatibility_report.yml"} and (
+            "JAR SHA-256" not in text
+        ):
+            failures.append(f"{path.name}: missing exact JAR SHA-256 request")
     if failures:
         results.fail("Issue template structure errors: " + "; ".join(failures))
     else:
@@ -1831,9 +1840,15 @@ def validate_repository_workflow_text(text: str) -> list[str]:
         ),
         ("python", "scripts/manage_v080_generated_manifest.py", "verify"),
         ("python", "scripts/validate_v090_migration_fixtures.py", "verify"),
+        ("python", "scripts/validate_v090_resources.py"),
         (
             "python",
             "scripts/validate_v080_release_evidence.py",
+            "--require-approved",
+        ),
+        (
+            "python",
+            "scripts/validate_v090_release_evidence.py",
             "--require-approved",
         ),
         (
@@ -1949,6 +1964,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "scripts/validate_v080_release_evidence.py",
                 "--require-approved",
             ),
+            (
+                "python",
+                "scripts/validate_v090_release_evidence.py",
+                "--require-approved",
+            ),
             ("./gradlew", "runData", "--no-daemon", "--stacktrace"),
             ("git", "diff", "--exit-code"),
             ("python", "scripts/check_clean_worktree.py"),
@@ -2006,7 +2026,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_v020_machine_server_smoke.py",
-                "build/dedicated-server-smoke/session",
+                "build/v090-migration-server-smoke/session",
                 "--baseline-summary",
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
@@ -2017,7 +2037,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_v030_celestial_server_smoke.py",
-                "build/dedicated-server-smoke/session",
+                "build/v090-migration-server-smoke/session",
                 "--baseline-summary",
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
@@ -2028,7 +2048,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_v040_atmosphere_server_smoke.py",
-                "build/dedicated-server-smoke/session",
+                "build/v090-migration-server-smoke/session",
                 "--baseline-summary",
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
@@ -2039,7 +2059,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_v050_rocket_server_smoke.py",
-                "build/dedicated-server-smoke/session",
+                "build/v090-migration-server-smoke/session",
                 "--baseline-summary",
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
@@ -2050,7 +2070,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_v060_flight_server_smoke.py",
-                "build/dedicated-server-smoke/session",
+                "build/v090-migration-server-smoke/session",
                 "--baseline-summary",
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
@@ -2123,7 +2143,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             ),
             (
                 "python",
-                "scripts/validate_v080_release_evidence.py",
+                "scripts/validate_v090_release_evidence.py",
                 "--require-approved",
             ),
             (
@@ -3852,6 +3872,159 @@ def check_v080_gate_status(results: Results) -> None:
             )
 
 
+def validate_v090_gate_status_text(
+    text: str,
+    *,
+    evidence_details: dict[str, object] | None = None,
+) -> list[str]:
+    """Reject v0.9.0 Gate claims that exceed bound Beta evidence."""
+
+    errors, top, gates = _parse_gate_status_document(
+        text,
+        expected_version="v0.9.0",
+    )
+    if errors:
+        return errors
+    evidence = evidence_details or {}
+    reviewer = top.get("human_approved_by", "").strip()
+    reviewed_at = top.get("human_approved_at", "").strip()
+    document_approval = bool(
+        reviewer in AUTHORIZED_RELEASE_REVIEWERS
+        and _valid_gate_approval_timestamp(reviewed_at)
+    )
+    human_approved = bool(document_approval and evidence.get("human_approved") is True)
+    if (reviewer or reviewed_at) and not human_approved:
+        errors.append(
+            "v0.9.0 human approval must match an authorized bound evidence review"
+        )
+
+    required = tuple(f"G{index}" for index in range(10))
+    waived = [gate for gate in required if gates.get(gate) == "NOT_APPLICABLE"]
+    if waived:
+        errors.append(
+            "v0.9.0 Required Gates cannot be NOT_APPLICABLE: " + ", ".join(waived)
+        )
+
+    evidence_keys = {
+        "G0": "provenance_ready",
+        "G1": "artifact_ready",
+        "G2": "data_ready",
+        "G3": "automated_ready",
+        "G4": "server_ready",
+        "G5": "persistence_ready",
+        "G6": "authority_ready",
+        "G7": "performance_ready",
+        "G8": "client_ready",
+        "G9": "docs_ready",
+    }
+    for gate, key in evidence_keys.items():
+        if gates.get(gate) == "PASS" and evidence.get(key) is not True:
+            errors.append(
+                f"{gate} cannot be PASS without bound v0.9.0 {key} evidence"
+            )
+    for gate in ("G0", "G8", "G9"):
+        if gates.get(gate) == "READY_FOR_HUMAN_REVIEW":
+            key = evidence_keys[gate]
+            if evidence.get(key) is not True:
+                errors.append(
+                    f"{gate} cannot be ready for human review without bound {key} evidence"
+                )
+        if gates.get(gate) == "PASS" and not human_approved:
+            errors.append(f"{gate} cannot be PASS without explicit owner approval")
+
+    status_passed = top.get("status") == "PASSED"
+    overall_passed = top.get("overall") in {"PASS", "PASSED"}
+    if status_passed != overall_passed:
+        errors.append("v0.9.0 status PASSED and overall PASS/PASSED must agree")
+    status_ready = top.get("status") == "READY_FOR_AUDIT"
+    overall_ready = top.get("overall") == "READY_FOR_AUDIT"
+    if status_ready != overall_ready:
+        errors.append("v0.9.0 status and overall READY_FOR_AUDIT values must agree")
+    if status_ready:
+        missing = [
+            key for key in evidence_keys.values() if evidence.get(key) is not True
+        ]
+        if missing:
+            errors.append(
+                "v0.9.0 cannot be READY_FOR_AUDIT without all technical evidence: "
+                + ", ".join(missing)
+            )
+    if status_passed or overall_passed:
+        unresolved = [gate for gate in required if gates.get(gate) != "PASS"]
+        if unresolved:
+            errors.append(
+                "v0.9.0 cannot be PASSED while Required Gates are unresolved: "
+                + ", ".join(unresolved)
+            )
+        if not human_approved or any(
+            evidence.get(key) is not True for key in evidence_keys.values()
+        ):
+            errors.append(
+                "v0.9.0 cannot be PASSED without all bound evidence and owner approval"
+            )
+        if evidence.get("post_merge_ready") is not True:
+            errors.append(
+                "v0.9.0 cannot be PASSED without merge reproduction and pre-release verification"
+            )
+        bindings = {
+            "reviewed_head_commit": "reviewed_head_commit",
+            "merge_commit": "merge_commit",
+            "pull_request": "pull_request",
+            "pull_request_checks": "pull_request_checks",
+            "forge_ci": "forge_ci",
+            "governance_ci": "governance_ci",
+            "release_url": "release_url",
+        }
+        for document_key, evidence_key in bindings.items():
+            if top.get(document_key) != evidence.get(evidence_key):
+                errors.append(
+                    "v0.9.0 PASSED status must bind "
+                    f"{document_key} to post-merge evidence"
+                )
+    return errors
+
+
+def check_v090_gate_status(results: Results) -> None:
+    current_version = read_text(ROOT / "docs/status/CURRENT_VERSION.md", results)
+    historical = ROOT / "docs/releases/v0.9.0/GATE-STATUS.md"
+    is_current = "current_version: v0.9.0" in current_version
+    if not is_current and not historical.exists():
+        return
+
+    release_errors, evidence_details = validate_v090_release_evidence(
+        repository_root=ROOT
+    )
+    if release_errors:
+        results.fail(
+            "v0.9.0 release evidence errors: " + "; ".join(release_errors)
+        )
+        evidence_details = {}
+    else:
+        results.passed(
+            "v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid"
+        )
+
+    documents = [historical]
+    current_status = ROOT / "docs/status/GATE_STATUS.md"
+    if is_current:
+        documents.append(current_status)
+    for document in documents:
+        text = read_text(document, results)
+        errors = validate_v090_gate_status_text(
+            text,
+            evidence_details=evidence_details,
+        )
+        if errors:
+            results.fail(
+                f"v0.9.0 Gate status contradictions in {document.relative_to(ROOT)}: "
+                + "; ".join(errors)
+            )
+        else:
+            results.passed(
+                f"v0.9.0 Gate status is evidence-bound in {document.relative_to(ROOT)}"
+            )
+
+
 def check_package_checksums(package_root: Path, results: Results) -> None:
     package_root = package_root.absolute()
     sums_path = package_root / "PACKAGE-SHA256SUMS.txt"
@@ -3998,6 +4171,7 @@ def main() -> int:
     check_v060_gate_status(results)
     check_v070_gate_status(results)
     check_v080_gate_status(results)
+    check_v090_gate_status(results)
     if args.package_root:
         check_package_checksums(args.package_root, results)
     results.print_report()

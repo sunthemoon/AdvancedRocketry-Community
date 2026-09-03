@@ -4,17 +4,49 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
-## v0.9.0 — IN_PROGRESS Beta hardening
+## v0.9.0 — IN_PROGRESS Beta 1 candidate
 
-**Status:** feature-frozen Beta candidate work began on 2026-09-03. Save
-migration, combined-load soak, security, Forge/JEI compatibility, accessibility,
-and release evidence remain in progress. No tag or public release exists.
+**Status:** the feature-frozen `1.20.1-0.9.0-beta.1` candidate is undergoing
+final PR, merge-reproduction, and pre-release publication checks. It must not be
+presented as stable until the immutable G0-G9 record is complete.
+
+### Added
+
+- Transactional schema-1-to-2 migration for five managed SavedData roots with
+  byte-exact backup manifests, staged validation, atomic replacement, rollback,
+  idempotent restart, and stable recovery diagnostics.
+- A bounded path-free operator report, stable `ARCE-BETA-*` diagnostic IDs,
+  strict localization/resource/accessibility auditing, and exact-hash Beta bug
+  and compatibility report fields.
+- Isolated optional JEI `15.56.0.205` Electrolyzer recipe presentation, with
+  Forge 47.4.10/47.4.23 and JEI present/absent matrix evidence.
+- Packaged maximum-combination soak and process-kill recovery harnesses covering
+  a 2,048-block rocket, 16 vents, 10 stations, 100 missions, four simulated
+  status clients, periodic saves, memory/tick budgets, and restart authority.
 
 ### Changed
 
 - Fixed the candidate identity at `1.20.1-0.9.0-beta.1` and documented the
   supported runtime, one-way v0.8 world-upgrade floor, feature freeze, and
   optional compatibility boundary.
+- Tightened flight-intent decoding to reject oversized, truncated, trailing,
+  and noncanonical frames before server handling.
+- Kept machine recipes out of the vanilla recipe book while preserving their
+  optional JEI display.
+
+### Verified
+
+- Two byte-identical Java 17 clean builds, 273 JUnit tests, 44 Forge GameTests,
+  deterministic DataGen, a 758-entry JAR audit, common/client side scanning,
+  packaged migration/restart, forced-stop exact recovery, and four client
+  compatibility cells are bound to one SHA-256 candidate.
+- A strengthened 7,200.001-second combined run kept all 16 vents active at
+  every 30-second sample, held 20 TPS, passed fixed tick/RSS/old-generation
+  budgets, and retained the maximum scenario across restart. The same migrated
+  world then passed the Electrolyzer restart plus 20 Earth–Moon round trips and
+  all 8 flight restart checkpoints.
+- The security review reports zero known Critical or High findings. The owner
+  accepted G0/G8/G9 with the explicit v0.9-only visual boundary in ADR-013.
 
 ## v0.8.0 — PASSED candidate, unreleased developer preview
 

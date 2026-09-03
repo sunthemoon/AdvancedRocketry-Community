@@ -1,0 +1,33 @@
+{
+  "after_restart": {
+    "completed_at": "2026-09-03T07:23:29.469163+00:00",
+    "completed_snapshot": "[15:23:28] [Server thread/INFO] [minecraft/MinecraftServer]: 0, 100, 0 has the following block data: {schema_version: 1, progress: 0, fluid: {FluidName: \"minecraft:empty\", Amount: 0}, inventory: {Size: 4, Items: [{Slot: 2, id: \"advancedrocketrycommunity:hydrogen_canister\", Count: 1b}, {Slot: 3, id: \"advancedrocketrycommunity:oxygen_canister\", Count: 1b}]}, energy: 0}",
+    "exit_code": 0,
+    "full_log_file": "v020-machine-after-restart-full.txt",
+    "full_log_sha256": "f72b380d5454b7e580dd735aff34118f012d0a96cc3273cb5a7ec8ac9beeba44",
+    "name": "v020-machine-after-restart",
+    "paused_snapshot": "[15:23:23] [Server thread/INFO] [minecraft/MinecraftServer]: 0, 100, 0 has the following block data: {schema_version: 1, active_recipe: \"advancedrocketrycommunity:electrolyzer_water\", progress: 40, fluid: {FluidName: \"minecraft:water\", Amount: 1000}, inventory: {Size: 4, Items: [{Slot: 0, id: \"advancedrocketrycommunity:empty_canister\", Count: 2b}]}, energy: 1200}",
+    "started_at": "2026-09-03T07:23:10.333810+00:00"
+  },
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "artifact_version": "1.20.1-0.9.0-beta.1",
+  "atomic_completion_verified": true,
+  "baseline_session_id": "v002-27e3d10560cb52b4f00cf8b0",
+  "before_restart": {
+    "completed_at": "2026-09-03T07:23:10.333205+00:00",
+    "completed_snapshot": null,
+    "exit_code": 0,
+    "full_log_file": "v020-machine-before-restart-full.txt",
+    "full_log_sha256": "226b001cb9bd732a5b5981f26b7ea059dfce7f09bee127e9f20af3ae1c1eaf74",
+    "name": "v020-machine-before-restart",
+    "paused_snapshot": "[15:23:08] [Server thread/INFO] [minecraft/MinecraftServer]: 0, 100, 0 has the following block data: {schema_version: 1, active_recipe: \"advancedrocketrycommunity:electrolyzer_water\", progress: 40, fluid: {FluidName: \"minecraft:water\", Amount: 1000}, inventory: {Size: 4, Items: [{Slot: 0, id: \"advancedrocketrycommunity:empty_canister\", Count: 2b}]}, energy: 1200}",
+    "started_at": "2026-09-03T07:22:55.801603+00:00"
+  },
+  "completed_at": "2026-09-03T07:23:29.469767+00:00",
+  "coordinates": "0 100 0",
+  "java": "17.0.8",
+  "paused_state_preserved": true,
+  "port": 25605,
+  "same_world_verified": true,
+  "schema_version": 1
+}

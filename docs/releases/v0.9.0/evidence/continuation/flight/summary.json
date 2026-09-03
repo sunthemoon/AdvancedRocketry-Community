@@ -1,0 +1,166 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "artifact_version": "1.20.1-0.9.0-beta.1",
+  "baseline_session_id": "v002-27e3d10560cb52b4f00cf8b0",
+  "completed_at": "2026-09-03T07:36:54.732545+00:00",
+  "critical_or_high_findings": 0,
+  "java": "17.0.8",
+  "port": 25605,
+  "processes": [
+    {
+      "completed_at": "2026-09-03T07:32:09.422058+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-round-trips-full.txt",
+      "full_log_sha256": "c993233a4fdf6ec005f9e030cc47b626e55e01b2469db8d4fe95aab63b2248f5",
+      "name": "v060-round-trips",
+      "started_at": "2026-09-03T07:24:01.098396+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:32:24.237836+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-assembled-stage-full.txt",
+      "full_log_sha256": "00a01411698ad0da83b1e58bfddbfb86df11e27acb73177d4e42dcda7f2db1a7",
+      "name": "v060-restart-assembled-stage",
+      "started_at": "2026-09-03T07:32:21.951463+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:32:39.495401+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-assembled-recover-full.txt",
+      "full_log_sha256": "36a81b671f6e77b53dbbced5e067e69a44296d1b443598998985441a521d0a52",
+      "name": "v060-restart-assembled-recover",
+      "started_at": "2026-09-03T07:32:37.055141+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:32:54.936905+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-fueled-stage-full.txt",
+      "full_log_sha256": "b196889671244748c5f1c4bc054ee318648d536a03dceb0290fd47b083a4eae3",
+      "name": "v060-restart-fueled-stage",
+      "started_at": "2026-09-03T07:32:52.416377+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:33:09.927344+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-fueled-recover-full.txt",
+      "full_log_sha256": "538f6f93423cda4148b4f76922c082b2e4b07dd4e94b4a4a79d0265ba6a31bac",
+      "name": "v060-restart-fueled-recover",
+      "started_at": "2026-09-03T07:33:07.533761+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:33:25.477059+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-countdown-stage-full.txt",
+      "full_log_sha256": "d7414729d6492f81e1d7539b0ca2e09fe457ff7674a6115234f3015b4537b8c4",
+      "name": "v060-restart-countdown-stage",
+      "started_at": "2026-09-03T07:33:22.703335+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:33:41.537822+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-countdown-recover-full.txt",
+      "full_log_sha256": "b3477cccb9567c3583e4e2a6f8b58fd9c495d750d28bd59a37d189199e11d371",
+      "name": "v060-restart-countdown-recover",
+      "started_at": "2026-09-03T07:33:38.850618+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:33:59.355904+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-ascent-stage-full.txt",
+      "full_log_sha256": "4720a9bf5c4e05f5b50fb4fd881f7028f7a9135843cb3a1d58c446158bfc5515",
+      "name": "v060-restart-ascent-stage",
+      "started_at": "2026-09-03T07:33:54.491213+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:34:14.917012+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-ascent-recover-full.txt",
+      "full_log_sha256": "35c563dec1b897f370994f164efbee8f85bb0d4180f60bb29e01077c493379dc",
+      "name": "v060-restart-ascent-recover",
+      "started_at": "2026-09-03T07:34:12.275951+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:34:36.463817+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-transit_prepared-stage-full.txt",
+      "full_log_sha256": "958456544ebe5f7aea4f8850212f54d61314d515d6dc55b20713603d41ee51b4",
+      "name": "v060-restart-transit_prepared-stage",
+      "started_at": "2026-09-03T07:34:27.441384+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:34:51.962674+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-transit_prepared-recover-full.txt",
+      "full_log_sha256": "623405d6db65405382bb768a5bc9361b5c695250c2d81b086a36c24341a34f87",
+      "name": "v060-restart-transit_prepared-recover",
+      "started_at": "2026-09-03T07:34:49.347699+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:35:14.748264+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-destination_spawned-stage-full.txt",
+      "full_log_sha256": "e972d046b779536eedc3fe3acb1fd12ecbb0e77f64a202dd7dc1b3d424b64ea4",
+      "name": "v060-restart-destination_spawned-stage",
+      "started_at": "2026-09-03T07:35:04.766099+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:35:32.570629+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-destination_spawned-recover-full.txt",
+      "full_log_sha256": "6d3963b14c16fee37b746a92110ba866ff3bbf3a840b42e4ba289a4c031c5406",
+      "name": "v060-restart-destination_spawned-recover",
+      "started_at": "2026-09-03T07:35:27.371077+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:35:55.387327+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-descent-stage-full.txt",
+      "full_log_sha256": "a2d19d27573f838ef75214df9598a811c1df7af7ba3d13fb23f97b070f4c97a9",
+      "name": "v060-restart-descent-stage",
+      "started_at": "2026-09-03T07:35:45.347197+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:36:13.056428+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-descent-recover-full.txt",
+      "full_log_sha256": "6eca138fd55cf9e68e4bb52139bba9e8e6ae0313afb3f45885b92c1b1dc71a20",
+      "name": "v060-restart-descent-recover",
+      "started_at": "2026-09-03T07:36:08.137162+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:36:39.514301+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-landed-stage-full.txt",
+      "full_log_sha256": "b4053804f6abf99e4bda74e87fb187d2594afa14aa34840ce0bc046beeb37767",
+      "name": "v060-restart-landed-stage",
+      "started_at": "2026-09-03T07:36:25.620737+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:36:54.731863+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T072348357435Z-v060-restart-landed-recover-full.txt",
+      "full_log_sha256": "9de0e067fbc5df7ef09bbe371e1e364a43967c4e3000966e72501bac61d25d72",
+      "name": "v060-restart-landed-recover",
+      "started_at": "2026-09-03T07:36:52.235127+00:00"
+    }
+  ],
+  "restart_matrix_cases": 8,
+  "restart_matrix_passed": 8,
+  "round_trips": {
+    "container_inventory_conserved": true,
+    "exact_fuel_debits": true,
+    "final_entity": "22ba437e-ca8e-4a85-bf56-292c405e4f1e",
+    "final_origin": [
+      16,
+      74,
+      16
+    ],
+    "legs": 40,
+    "logical_rocket_id": "19a1975c-e1ad-4f04-8151-07c136a43506",
+    "material_conserved_after_disassembly": true,
+    "round_trips": 20
+  },
+  "same_world_verified": true,
+  "schema_version": 1,
+  "single_authority_after_each_leg": true
+}

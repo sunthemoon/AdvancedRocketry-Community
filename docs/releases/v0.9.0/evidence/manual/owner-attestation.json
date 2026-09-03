@@ -1,0 +1,43 @@
+{
+  "acceptance_basis": {
+    "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+    "compatibility_evidence": "docs/releases/v0.9.0/evidence/compatibility/summary.json",
+    "dedicated_server_evidence": "docs/releases/v0.9.0/evidence/dedicated-server/summary.json",
+    "release_evidence": "docs/releases/v0.9.0/RELEASE-EVIDENCE.md",
+    "resource_evidence": "docs/releases/v0.9.0/evidence/resources/summary.json",
+    "tested_implementation_commit": "f6cd77cebdb0a851cab76accbf66de565473b545",
+    "visual_decision": "docs/decisions/ADR-013-V090-VISUAL-EVIDENCE-INHERITANCE.md"
+  },
+  "approved_at": "2026-09-03",
+  "approved_by": "sunthemoon",
+  "approvals": {
+    "G0_provenance": "PASS",
+    "G8_visible_client_acceptance": "PASS",
+    "G9_release_acceptance": "PASS"
+  },
+  "confirmation_source": "Repository owner direct confirmation in the authorized Codex session on 2026-09-03.",
+  "limitations_accepted": [
+    "No new v0.9.0 screenshot is claimed; unchanged core visuals use the immutable genuine v0.8.0 evidence under ADR-013.",
+    "A fresh exact-candidate multi-scale visual capture remains required for v1.0.0.",
+    "The Windows candidate is byte-reproducible in the recorded environment; byte equality with Linux CI is not claimed."
+  ],
+  "schema_version": 1,
+  "version": "v0.9.0",
+  "visual_baseline": {
+    "core_asset_or_screen_changes": 0,
+    "new_optional_surface": "JEI Electrolyzer category verified by both JEI-present compatibility cells with recipes=1",
+    "source_version": "v0.8.0",
+    "screenshots": [
+      {
+        "bytes": 225456,
+        "path": "docs/releases/v0.8.0/evidence/manual/final-candidate-client-a-multiplayer.png",
+        "sha256": "4e60dd5487c94d6e17056133f3f03b28a5bae37b2c71be43b017911829fca654"
+      },
+      {
+        "bytes": 225319,
+        "path": "docs/releases/v0.8.0/evidence/manual/final-candidate-client-b-multiplayer.png",
+        "sha256": "78cbc3290899d1478743e63e9db0135936d0872a534ed810650e542bb2514f0b"
+      }
+    ]
+  }
+}

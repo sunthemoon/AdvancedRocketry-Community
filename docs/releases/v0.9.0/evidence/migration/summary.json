@@ -1,27 +1,27 @@
 {
-  "artifact_sha256": "468c254d3c7c96cac2c98628aa000916ae84cbbaf834ff43c69d26174415bfe3",
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
   "backup": {
-    "directory": "20260903T011303.377Z-schema1-to2",
+    "directory": "20260903T052020.866Z-schema1-to2",
     "file_count": 5,
-    "manifest_sha256": "97182fdd997ec2cdd0b72c85f4166090a1f69dc8f8be2f50b2817416d1da6836"
+    "manifest_sha256": "574a733b4aa217598f4ade242784df3f09618ad3833ba38147faa7b6574cd6c1"
   },
-  "completed_at": "2026-09-03T01:13:22.252311+00:00",
+  "completed_at": "2026-09-03T05:20:39.532193+00:00",
   "cycles": [
     {
-      "completed_at": "2026-09-03T01:13:07.746988+00:00",
+      "completed_at": "2026-09-03T05:20:25.065050+00:00",
       "exit_code": 0,
-      "full_log_file": "20260903T011252871485Z-v090-migration-full.txt",
-      "full_log_sha256": "507fc4bb42a9bfb4a59f0da9f10a91afbf8654e85250f984edb7a21d8b5bd52b",
+      "full_log_file": "20260903T052010192845Z-v090-migration-full.txt",
+      "full_log_sha256": "2aa26854663de78786819e177809a3f3468af92d211746f5119c31f7699775e2",
       "name": "v090-migration",
-      "started_at": "2026-09-03T01:13:05.861212+00:00"
+      "started_at": "2026-09-03T05:20:23.235631+00:00"
     },
     {
-      "completed_at": "2026-09-03T01:13:22.251153+00:00",
+      "completed_at": "2026-09-03T05:20:39.530893+00:00",
       "exit_code": 0,
-      "full_log_file": "20260903T011252871485Z-v090-current-restart-full.txt",
-      "full_log_sha256": "c64f524e58238a91e6121c63b2ccd9d71b6d7df003eeb90916f977fccc3654a2",
+      "full_log_file": "20260903T052010192845Z-v090-current-restart-full.txt",
+      "full_log_sha256": "3cea6781603a05ffa73b84fd3362871e82dcada0b3b159bc242042979b84efb1",
       "name": "v090-current-restart",
-      "started_at": "2026-09-03T01:13:20.578813+00:00"
+      "started_at": "2026-09-03T05:20:37.694686+00:00"
     }
   ],
   "diagnostics": [
@@ -34,7 +34,7 @@
     "advancedrocketrycommunity_celestial.dat": "2409f71fc3aab66cf2d67d402c527cd5ec71fd5fac965dd1bc18406ee4d4c3ef",
     "advancedrocketrycommunity_rocket_transactions.dat": "3ce430a78b510d1e0c68886a378ad7c7388b0db2ccf4e5f90b95eaa12564d398",
     "advancedrocketrycommunity_rocket_transfers.dat": "97f188a7fce9f5733eeff709dde45ee813b33256965674fa3ded41d2d19fd612",
-    "advancedrocketrycommunity_satellite_missions.dat": "d964d645a2aeb640b4773c7dd650e79dfeddd4e4d81afa401c602585e6a46fb2",
+    "advancedrocketrycommunity_satellite_missions.dat": "4fa9a94a64d344dce69d7e7844f8a49638161657380cbdd2dc77777e9b685ae1",
     "advancedrocketrycommunity_stations.dat": "b56bd143874f595b0fe3136602309ba401e945f484f03d7bb73b7b6c3c13569c"
   },
   "mod_version": "1.20.1-0.9.0-beta.1",
@@ -73,6 +73,6 @@
       "source_sha256": "c05d2634a3d2a16ad71e49a68c2498bacf65a1bbca86fa8d05ae405adb1a41d9"
     }
   },
-  "started_at": "2026-09-03T01:13:05.861212+00:00",
-  "tested_commit": "b5483a77a01419f0edf284b79b99e9e325535664"
+  "started_at": "2026-09-03T05:20:23.235631+00:00",
+  "tested_commit": "f6cd77cebdb0a851cab76accbf66de565473b545"
 }

@@ -1,0 +1,7 @@
+[039��2026 11:06:01.298] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: NoJei10
+[039��2026 11:06:01.602] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
+[039��2026 11:06:02.505] [Worker-Main-7/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.9.0-beta.1 initialized
+[039��2026 11:06:02.507] [Worker-Main-7/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=absent version=absent
+[039��2026 11:06:04.464] [Render thread/INFO] [net.minecraft.client.gui.screens.ConnectScreen/]: Connecting to 127.0.0.1, 25605
+[039��2026 11:06:07.443] [Netty Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[039��2026 11:06:08.266] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 2 advancements

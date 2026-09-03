@@ -1,0 +1,20 @@
+{
+  "block_count": 5,
+  "checkpoint": "DESTINATION_SPAWNED",
+  "container_inventory_conserved": true,
+  "exact_disassembly": true,
+  "fuel_after_exact_debit": 628,
+  "logical_rocket_id": "987a4ad1-4f62-40c8-9078-765191082f2d",
+  "recovery": {
+    "action": "REMOVE_SOURCE_KEEP_DESTINATION",
+    "destination_count_before": 1,
+    "phase": "DESTINATION_SPAWNED",
+    "source_count_before": 1,
+    "status": "RECOVERED",
+    "transfer_id": "e1e3740e-02a3-4f2e-913d-07815b5d9322"
+  },
+  "schema_version": 1,
+  "single_authority_after_restart": true,
+  "snapshot_sha256": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+  "transfer_id": "e1e3740e-02a3-4f2e-913d-07815b5d9322"
+}

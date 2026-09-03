@@ -1,0 +1,9 @@
+artifact_sha256=fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad
+round_trips=20
+flight_legs=40
+exact_fuel_debits=40
+restart_cases=8
+restart_failures=0
+material_conserved=true
+container_inventory_conserved=true
+single_authority_after_each_leg=true

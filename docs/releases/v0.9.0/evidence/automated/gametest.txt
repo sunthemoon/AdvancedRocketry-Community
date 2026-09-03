@@ -1,0 +1,9 @@
+command=.\gradlew.bat runGameTestServer --no-daemon --stacktrace
+java=Microsoft OpenJDK 17.0.8+7-LTS
+forge=47.4.10
+source_log_sha256=4d1f2fd79ed213b0dcaedda8809e369a833672b049bd74687aef42fe021b32c7
+observed=44 tests are now running!
+observed========= 44 GAME TESTS COMPLETE ======================
+observed=All 44 required tests passed :)
+gradle_result=BUILD SUCCESSFUL in 52s
+result=PASS

@@ -1,0 +1,282 @@
+{
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "artifact_version": "1.20.1-0.9.0-beta.1",
+  "baseline_summary_sha256": "5f528be0c629b77742fb9b6d22504dcfc28dbdad9021bd3c26073fc41f1ae9ba",
+  "blocking_log_findings": 0,
+  "combined": {
+    "exact_maximum_counts": true,
+    "mission_batch": {
+      "created": 100,
+      "creation_elapsed_nanos": 9478200,
+      "initial": {
+        "active": 100,
+        "cancelled": 0,
+        "chunk_tickets": 0,
+        "claimed": 0,
+        "missions": 100,
+        "pending": 0,
+        "ready": 0,
+        "research": 0,
+        "satellites": 100,
+        "scheduler": "deadline_queue",
+        "unfinished": 100
+      },
+      "rejected": 0,
+      "requested": 100,
+      "scheduler": "deadline_queue"
+    },
+    "operator_report": {
+      "atmosphere_tick": 1024,
+      "atmosphere_volume": 4096,
+      "bodies": 0,
+      "build": "1.20.1-0.9.0-beta.1",
+      "flight_frame_max": 39,
+      "forge": "47.4.10",
+      "jei": "absent",
+      "missions": 100,
+      "operational": true,
+      "players_max": 2,
+      "players_online": 0,
+      "protocols": {
+        "celestial": 1,
+        "flight": 2,
+        "life": 1,
+        "visual": 1
+      },
+      "root_schema": 2,
+      "roots": "11111",
+      "stations": 10,
+      "ticket_policy": "transient_transfer_only",
+      "transactions": 0,
+      "transfers": 0
+    },
+    "rocket": {
+      "blocks": 2048,
+      "capacity": 128000,
+      "dimension": "minecraft:overworld",
+      "entity": "11e0ec87-3ba5-46a6-82c5-5ad7ac4694d4",
+      "fuel": 0,
+      "logical": "72a1c61e-4c9f-4ab1-8550-ffd1d7c9d5e5",
+      "origin": [
+        640,
+        100,
+        640
+      ],
+      "passengers": 0,
+      "snapshot": "7891a7767f2c15e1f37f0167c7856289a58d0f4e3eb5eb92195dd957a5fa4714",
+      "state": "ASSEMBLED",
+      "transfer": "none"
+    },
+    "rocket_blocks": 2048,
+    "station_count": 10,
+    "station_ids": [
+      "6b271ba4-887b-4254-9747-a1ad706053e4",
+      "5873b69b-bc79-43eb-b382-1d122df7a2d2",
+      "14b532d8-2dfb-46eb-8552-f6d880edceb6",
+      "b10027d2-4df5-41e6-9c20-baa00b2706c6",
+      "934e1ff2-d0b8-47ee-a32d-c1d23d8a6c98",
+      "5b37e602-c04b-4a93-9c27-ef506a3f3c5a",
+      "29f2772a-6825-4401-ab00-d2503551ce30",
+      "30c34c81-bef9-4fff-ab3f-1e3a1721bc1a",
+      "46ca6409-464e-4666-8cd5-708f18bc776e",
+      "ceee0025-9192-4356-a6cc-ca6f9c515019"
+    ],
+    "vent_count": 16
+  },
+  "completed_at": "2026-09-03T07:22:23.842650+00:00",
+  "critical_or_high_findings": 0,
+  "java": "17.0.8",
+  "logical_processors": 20,
+  "migration_backup": {
+    "directory": "20260903T052020.866Z-schema1-to2",
+    "file_count": 5,
+    "manifest_sha256": "574a733b4aa217598f4ade242784df3f09618ad3833ba38147faa7b6574cd6c1"
+  },
+  "migration_summary_sha256": "c6f6c2ff01c5d68adb44a7b3ba2f0d65e455143a3e94799a6a84a273b5ba907e",
+  "passed": true,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processes": [
+    {
+      "completed_at": "2026-09-03T07:22:08.284534+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T052047841831Z-v090-combined-soak-full.txt",
+      "full_log_sha256": "bc54d058b546056a710dc22063edd2d1ea981b6f8f3496b5ba652101ad22bca5",
+      "name": "v090-combined-soak",
+      "started_at": "2026-09-03T05:21:00.688632+00:00"
+    },
+    {
+      "completed_at": "2026-09-03T07:22:23.813778+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260903T052047841831Z-v090-combined-restart-full.txt",
+      "full_log_sha256": "c552df1fba523677eacc42e7bd13f3b5baa8d7e5635907b4d1c0974b2a8e8e36",
+      "name": "v090-combined-restart",
+      "started_at": "2026-09-03T07:22:21.040936+00:00"
+    }
+  ],
+  "restart": {
+    "mission_report": {
+      "active": 0,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 0,
+      "missions": 100,
+      "pending": 0,
+      "ready": 100,
+      "research": 0,
+      "satellites": 100,
+      "scheduler": "deadline_queue",
+      "unfinished": 100
+    },
+    "operator_report": {
+      "atmosphere_tick": 1024,
+      "atmosphere_volume": 4096,
+      "bodies": 0,
+      "build": "1.20.1-0.9.0-beta.1",
+      "flight_frame_max": 39,
+      "forge": "47.4.10",
+      "jei": "absent",
+      "missions": 100,
+      "operational": true,
+      "players_max": 2,
+      "players_online": 0,
+      "protocols": {
+        "celestial": 1,
+        "flight": 2,
+        "life": 1,
+        "visual": 1
+      },
+      "root_schema": 2,
+      "roots": "11111",
+      "stations": 10,
+      "ticket_policy": "transient_transfer_only",
+      "transactions": 0,
+      "transfers": 0
+    },
+    "rocket_report": {
+      "blocks": 2048,
+      "capacity": 128000,
+      "dimension": "minecraft:overworld",
+      "entity": "11e0ec87-3ba5-46a6-82c5-5ad7ac4694d4",
+      "fuel": 0,
+      "logical": "72a1c61e-4c9f-4ab1-8550-ffd1d7c9d5e5",
+      "origin": [
+        640,
+        100,
+        640
+      ],
+      "passengers": 0,
+      "snapshot": "7891a7767f2c15e1f37f0167c7856289a58d0f4e3eb5eb92195dd957a5fa4714",
+      "state": "ASSEMBLED",
+      "transfer": "none"
+    },
+    "same_authority": true,
+    "station_count": 10,
+    "vent_count": 16
+  },
+  "schema_version": 1,
+  "soak": {
+    "budgets_passed": true,
+    "client_count": 4,
+    "client_probe_count": 1920,
+    "client_probe_failures": 0,
+    "completed_at": "2026-09-03T07:22:06.810224+00:00",
+    "cpu_percent_normalized": {
+      "average": 0.118,
+      "logical_processors": 20,
+      "maximum": 0.317,
+      "p95": 0.18
+    },
+    "duration_seconds": 7200.001,
+    "final_satellite": {
+      "active": 0,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 0,
+      "missions": 100,
+      "pending": 0,
+      "ready": 100,
+      "research": 0,
+      "satellites": 100,
+      "scheduler": "deadline_queue",
+      "unfinished": 100
+    },
+    "gc_after": {
+      "CCS": 94.1,
+      "CGC": 134.0,
+      "CGCT": 0.254,
+      "E": 32.79,
+      "FGC": 0.0,
+      "FGCT": 0.0,
+      "GCT": 1.097,
+      "M": 98.24,
+      "O": 80.33,
+      "S0": 0.0,
+      "S1": 44.58,
+      "YGC": 222.0,
+      "YGCT": 0.843
+    },
+    "gc_before": {
+      "CCS": 95.15,
+      "CGC": 24.0,
+      "CGCT": 0.045,
+      "E": 24.79,
+      "FGC": 0.0,
+      "FGCT": 0.0,
+      "GCT": 0.404,
+      "M": 98.54,
+      "O": 76.41,
+      "S0": 0.0,
+      "S1": 98.35,
+      "YGC": 54.0,
+      "YGCT": 0.359
+    },
+    "maximum_ticket_count": 0,
+    "metric_sample_count": 240,
+    "minimum_duration_seconds": 7200.0,
+    "old_generation": {
+      "growth_analysis": {
+        "early_window_median": 80.18,
+        "growth": 0.145,
+        "late_window_median": 80.325,
+        "maximum_allowed_growth": 20.0,
+        "sample_count": 240,
+        "sustained_growth": false,
+        "unit": "old_generation_percent"
+      },
+      "maximum_percent": 81.48,
+      "minimum_percent": 31.28
+    },
+    "operator_reports": 11,
+    "periodic_saves": 23,
+    "rss": {
+      "growth_analysis": {
+        "early_window_median": 1647835136.0,
+        "growth": 376832.0,
+        "late_window_median": 1648211968.0,
+        "maximum_allowed_growth": 268435456.0,
+        "sample_count": 240,
+        "sustained_growth": false,
+        "unit": "bytes"
+      },
+      "maximum_bytes": 1669476352,
+      "minimum_bytes": 1520971776
+    },
+    "simulation": "four_concurrent_minecraft_status_clients",
+    "started_at": "2026-09-03T05:22:06.582279+00:00",
+    "tick_ms": {
+      "average": 1.335,
+      "limit": 50.0,
+      "maximum": 1.821,
+      "p95": 1.518
+    },
+    "ticket_samples": 12,
+    "tps": {
+      "average": 20.0,
+      "minimum": 20.0
+    },
+    "vent_active_checks": 241,
+    "vent_activity_failures": 0,
+    "vent_refills": 121
+  },
+  "tested_commit": "f6cd77cebdb0a851cab76accbf66de565473b545"
+}

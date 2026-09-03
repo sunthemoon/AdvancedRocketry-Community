@@ -1,0 +1,18 @@
+{
+  "asset_references_checked": 67,
+  "en_us_keys": 231,
+  "errors": 0,
+  "json_files": 64,
+  "language_files": 14,
+  "missing_or_case_mismatched_assets": 0,
+  "parity": true,
+  "referenced_translation_keys": 116,
+  "resource_bytes": 129819,
+  "resource_files": 220,
+  "resource_roots": 9,
+  "result": "PASS",
+  "schema_version": 1,
+  "textual_status_surfaces": 4,
+  "version": "v0.9.0",
+  "zh_cn_keys": 231
+}

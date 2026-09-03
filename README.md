@@ -20,13 +20,15 @@ Current target:
 - Java `17`
 - License `MIT`
 
-The latest `PASSED` milestone is `v0.8.0`. Its progression and logical
-data-satellite candidate completed G0-G9, passed all four PR checks, merged,
-and reproduced the accepted JAR and 723-entry content manifest byte-for-byte
-from the merge commit. It remains an unreleased developer preview. See
-[`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md) for the implementation
-sequence and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for
-verified and pending evidence.
+The latest `PASSED` milestone remains `v0.8.0`. The feature-frozen v0.9.0 Beta
+1 candidate is bound to one 1,225,536-byte, 758-entry JAR, packaged migration,
+recovery, Forge/JEI compatibility, and maximum-soak evidence. It remains
+`IN_PROGRESS` until PR #13, merge reproduction, and the correctly marked GitHub
+pre-release are complete. See
+[`docs/04-VERSION-ROADMAP.md`](docs/04-VERSION-ROADMAP.md),
+[`docs/releases/v0.9.0/RELEASE-EVIDENCE.md`](docs/releases/v0.9.0/RELEASE-EVIDENCE.md),
+and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for the exact
+candidate and pending publication state.
 
 ## What this project is
 

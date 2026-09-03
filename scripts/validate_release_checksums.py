@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate v0.0.2 release evidence checksums and distributable metadata."""
+"""Validate release evidence checksums and distributable metadata."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ SHA256 = re.compile(r"[0-9a-f]{64}")
 CHECKSUM_LINE = re.compile(r"^([0-9a-f]{64})[ \t]+(.+)$")
 HASH_CHUNK_SIZE = 1024 * 1024
 CHECKSUM_HEADER = (
-    "# SHA-256 checksums for the v0.0.2 distributable and committed evidence.\n"
+    "# SHA-256 checksums for the distributable and committed evidence.\n"
     "# The build/libs JAR is intentionally not committed; CI verifies it separately.\n"
 )
 
