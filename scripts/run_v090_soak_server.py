@@ -36,7 +36,6 @@ if __package__:
         _jstat_gc,
         _rss_bytes,
         _sample_tps,
-        _set_all_energy,
         _vent_conditions,
         _wait_for_marker,
         percentile,
@@ -74,7 +73,6 @@ else:
         _jstat_gc,
         _rss_bytes,
         _sample_tps,
-        _set_all_energy,
         _vent_conditions,
         _wait_for_marker,
         percentile,
@@ -111,6 +109,8 @@ MISSION_COUNT = 100
 MAX_MEAN_TICK_MS = 50.0
 MAX_RSS_GROWTH_BYTES = 256 * 1024 * 1024
 MAX_OLD_GEN_GROWTH_PERCENT = 20.0
+VENT_OXYGEN_UNITS = 4_000
+VENT_ENERGY_UNITS = 40_000
 MAX_X = 640
 MAX_Y = 100
 MAX_Z = 640
@@ -140,6 +140,18 @@ def validate_duration(duration_seconds: float) -> None:
 
 def _position(value: tuple[int, int, int]) -> str:
     return " ".join(str(part) for part in value)
+
+
+def _refill_all_vents(process) -> None:  # type: ignore[no-untyped-def]
+    """Keep every maximum-scenario vent under active load during the soak."""
+    for position in VENT_POSITIONS:
+        process.command(
+            "execute in advancedrocketrycommunity:moon run data merge block "
+            f"{_position(position)} "
+            "{arce_oxygen_vent:{"
+            f"oxygen_units:{VENT_OXYGEN_UNITS},energy:{VENT_ENERGY_UNITS}"
+            "}}"
+        )
 
 
 def _load_migration_summary(
@@ -443,6 +455,7 @@ def summarize_soak(
     refill_count: int,
     report_count: int,
     ticket_samples: list[int],
+    vent_active_checks: int,
 ) -> dict[str, object]:
     if duration_seconds < MINIMUM_DURATION_SECONDS:
         raise SmokeError("Soak ended before 7,200 real seconds")
@@ -453,6 +466,9 @@ def summarize_soak(
         raise SmokeError("Four-client simulation did not cover the complete soak window")
     if any(value != 0 for value in ticket_samples) or not ticket_samples:
         raise SmokeError("Satellite or transfer ticket count was non-zero or unobserved")
+    minimum_vent_checks = int(duration_seconds // METRIC_INTERVAL_SECONDS)
+    if vent_active_checks < minimum_vent_checks:
+        raise SmokeError("Sixteen active vents were not verified across the complete soak window")
     rss_growth = _growth_summary(
         [float(value) for value in rss],
         absolute_limit=float(MAX_RSS_GROWTH_BYTES),
@@ -512,6 +528,8 @@ def summarize_soak(
         },
         "periodic_saves": save_count,
         "vent_refills": refill_count,
+        "vent_active_checks": vent_active_checks,
+        "vent_activity_failures": 0,
         "operator_reports": report_count,
         "ticket_samples": len(ticket_samples),
         "maximum_ticket_count": max(ticket_samples),
@@ -563,6 +581,7 @@ def _run_soak(
     client_probe_count = 0
     save_count = 0
     refill_count = 0
+    vent_active_checks = 0
     report_count = 0
     metric_index = 0
     started = time.monotonic()
@@ -579,6 +598,8 @@ def _run_soak(
     last_cpu_at = started
     gc_before = _jstat_gc(java, process.process.pid)
     try:
+        _refill_all_vents(process)
+        refill_count += 1
         while True:
             now = time.monotonic()
             if process.process.poll() is not None:
@@ -596,6 +617,9 @@ def _run_soak(
                 next_client = _advance_due(next_client, CLIENT_INTERVAL_SECONDS, time.monotonic())
             now = time.monotonic()
             if now >= next_metric:
+                marker = f"V090_SOAK_VENTS_ACTIVE_{metric_index}"
+                _wait_for_marker(process, _vent_conditions(True, marker), marker)
+                vent_active_checks += 1
                 tick_ms, tps = _sample_tps(process, metric_index)
                 rss = _rss_bytes(process.process.pid)
                 cpu = process_cpu_seconds(process.process.pid)
@@ -628,7 +652,7 @@ def _run_soak(
                 next_metric = _advance_due(next_metric, METRIC_INTERVAL_SECONDS, time.monotonic())
             now = time.monotonic()
             if now >= next_refill:
-                _set_all_energy(process, 40_000)
+                _refill_all_vents(process)
                 refill_count += 1
                 next_refill = _advance_due(next_refill, REFILL_INTERVAL_SECONDS, time.monotonic())
             now = time.monotonic()
@@ -679,6 +703,14 @@ def _run_soak(
             if remaining > 0:
                 time.sleep(min(remaining, 1.0))
         elapsed = time.monotonic() - started
+        _refill_all_vents(process)
+        refill_count += 1
+        _wait_for_marker(
+            process,
+            _vent_conditions(True, "V090_ALL_VENTS_FINAL_ACTIVE"),
+            "V090_ALL_VENTS_FINAL_ACTIVE",
+        )
+        vent_active_checks += 1
         final_satellite = satellite_report(process)
         ticket_samples.append(int(final_satellite["chunk_tickets"]))
         gc_after = _jstat_gc(java, process.process.pid)
@@ -694,6 +726,7 @@ def _run_soak(
             refill_count=refill_count,
             report_count=report_count,
             ticket_samples=ticket_samples,
+            vent_active_checks=vent_active_checks,
         )
         result.update({
             "started_at": wall_started,

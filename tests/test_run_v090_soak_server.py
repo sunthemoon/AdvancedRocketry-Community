@@ -14,13 +14,17 @@ from scripts.run_v090_soak_server import (
     EXPECTED_VERSION,
     MAX_RSS_GROWTH_BYTES,
     MINIMUM_DURATION_SECONDS,
+    VENT_ENERGY_UNITS,
+    VENT_OXYGEN_UNITS,
     _growth_summary,
     _load_migration_summary,
     _operator_report,
+    _refill_all_vents,
     probe_clients,
     summarize_soak,
     validate_duration,
 )
+from scripts.run_v040_atmosphere_server_smoke import VENT_POSITIONS
 
 
 class FakeProcess:
@@ -37,6 +41,14 @@ class FakeProcess:
             if marker.search(line):
                 return index
         raise AssertionError("marker was not emitted")
+
+
+class CommandCapture:
+    def __init__(self) -> None:
+        self.commands: list[str] = []
+
+    def command(self, value: str) -> None:
+        self.commands.append(value)
 
 
 class V090SoakServerTests(unittest.TestCase):
@@ -95,6 +107,7 @@ class V090SoakServerTests(unittest.TestCase):
             refill_count=119,
             report_count=11,
             ticket_samples=[0] * 12,
+            vent_active_checks=240,
         )
 
         self.assertTrue(result["budgets_passed"])
@@ -114,7 +127,35 @@ class V090SoakServerTests(unittest.TestCase):
                 refill_count=119,
                 report_count=11,
                 ticket_samples=[0] * 12,
+                vent_active_checks=240,
             )
+
+        with self.assertRaisesRegex(SmokeError, "Sixteen active vents"):
+            summarize_soak(
+                duration_seconds=MINIMUM_DURATION_SECONDS,
+                ticks=[10.0] * 8,
+                tps=[20.0] * 8,
+                rss=[400_000_000] * 8,
+                old_gen=[20.0] * 8,
+                cpu_percent=[2.0] * 8,
+                client_probe_count=CLIENT_COUNT * int(MINIMUM_DURATION_SECONDS // 15.0),
+                save_count=23,
+                refill_count=119,
+                report_count=11,
+                ticket_samples=[0] * 12,
+                vent_active_checks=239,
+            )
+
+    def test_refill_keeps_every_vent_supplied_with_oxygen_and_energy(self) -> None:
+        process = CommandCapture()
+
+        _refill_all_vents(process)
+
+        self.assertEqual(len(VENT_POSITIONS), len(process.commands))
+        self.assertTrue(all(
+            f"oxygen_units:{VENT_OXYGEN_UNITS},energy:{VENT_ENERGY_UNITS}" in command
+            for command in process.commands
+        ))
 
     def test_operator_report_requires_exact_maximum_counts(self) -> None:
         line = (
