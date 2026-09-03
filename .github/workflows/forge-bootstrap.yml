@@ -85,6 +85,9 @@ jobs:
       - name: Validate v0.9.0 migration fixtures
         run: python scripts/validate_v090_migration_fixtures.py verify
 
+      - name: Audit v0.9.0 localization and resources
+        run: python scripts/validate_v090_resources.py
+
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
 
@@ -137,6 +140,17 @@ jobs:
           --session-dir build/v090-migration-server-smoke/session
           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
           --evidence-dir build/v090-migration-server-smoke/evidence
+          --tested-commit ${REVIEW_COMMIT}
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Kill and recover one durable Beta flight checkpoint
+        run: >-
+          python scripts/run_v090_forced_stop_recovery.py
+          build/v090-migration-server-smoke/session
+          --session-dir build/v090-forced-stop/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --migration-summary build/v090-migration-server-smoke/evidence/summary.json
+          --evidence-dir build/v090-forced-stop/evidence
           --tested-commit ${REVIEW_COMMIT}
           --expected-version 1.20.1-0.9.0-beta.1
 
@@ -194,6 +208,7 @@ jobs:
             build/release-evidence/v090-jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
             build/v090-migration-server-smoke/evidence/
+            build/v090-forced-stop/evidence/
             build/v020-machine-server-smoke/evidence/
             build/v030-celestial-server-smoke/evidence/
             build/v040-atmosphere-server-smoke/evidence/
@@ -313,3 +328,6 @@ jobs:
 
       - name: Compile and test against latest Forge lane
         run: ./gradlew clean build --no-daemon --stacktrace
+
+      - name: Run GameTests against latest Forge lane
+        run: ./gradlew runGameTestServer --no-daemon --stacktrace

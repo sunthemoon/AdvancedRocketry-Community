@@ -56,6 +56,7 @@ if __package__:
     from .manage_v070_generated_manifest import verify as verify_v070_generated_manifest
     from .manage_v080_generated_manifest import verify as verify_v080_generated_manifest
     from .validate_v090_migration_fixtures import verify as verify_v090_migration_fixtures
+    from .validate_v090_resources import audit_resources as audit_v090_resources
 else:
     # Isolated script execution omits this directory from sys.path. Add only
     # the already-selected repository scripts directory after stdlib imports.
@@ -96,6 +97,7 @@ else:
     from manage_v070_generated_manifest import verify as verify_v070_generated_manifest
     from manage_v080_generated_manifest import verify as verify_v080_generated_manifest
     from validate_v090_migration_fixtures import verify as verify_v090_migration_fixtures
+    from validate_v090_resources import audit_resources as audit_v090_resources
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -152,6 +154,7 @@ REQUIRED_PATHS = (
     "scripts/run_v080_satellite_server_smoke.py",
     "scripts/run_v080_multiplayer_server_smoke.py",
     "scripts/run_v090_migration_server_smoke.py",
+    "scripts/run_v090_forced_stop_recovery.py",
     "scripts/run_v090_soak_server.py",
     "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
@@ -167,6 +170,7 @@ REQUIRED_PATHS = (
     "scripts/manage_v070_generated_manifest.py",
     "scripts/manage_v080_generated_manifest.py",
     "scripts/validate_v090_migration_fixtures.py",
+    "scripts/validate_v090_resources.py",
     "scripts/validate_v010_asset_baseline.py",
     "scripts/validate_v020_release_evidence.py",
     "scripts/validate_v030_release_evidence.py",
@@ -220,7 +224,9 @@ REQUIRED_PATHS = (
     "tests/test_run_v070_multiplayer_server_smoke.py",
     "tests/test_run_v080_multiplayer_server_smoke.py",
     "tests/test_run_v090_migration_server_smoke.py",
+    "tests/test_run_v090_forced_stop_recovery.py",
     "tests/test_run_v090_soak_server.py",
+    "tests/test_validate_v090_resources.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
@@ -1912,6 +1918,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             ("python", "scripts/manage_v070_generated_manifest.py", "verify"),
             ("python", "scripts/manage_v080_generated_manifest.py", "verify"),
             ("python", "scripts/validate_v090_migration_fixtures.py", "verify"),
+            ("python", "scripts/validate_v090_resources.py"),
             ("python", "scripts/check_client_imports.py"),
             ("python", "scripts/check_celestial_identity.py"),
             ("python", "scripts/validate_v030_release_evidence.py"),
@@ -1972,6 +1979,23 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "build/dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
                 "build/v090-migration-server-smoke/evidence",
+                "--tested-commit",
+                "${REVIEW_COMMIT}",
+                "--expected-version",
+                "1.20.1-0.9.0-beta.1",
+            ),
+            (
+                "python",
+                "scripts/run_v090_forced_stop_recovery.py",
+                "build/v090-migration-server-smoke/session",
+                "--session-dir",
+                "build/v090-forced-stop/session",
+                "--baseline-summary",
+                "build/dedicated-server-smoke/evidence/summary.json",
+                "--migration-summary",
+                "build/v090-migration-server-smoke/evidence/summary.json",
+                "--evidence-dir",
+                "build/v090-forced-stop/evidence",
                 "--tested-commit",
                 "${REVIEW_COMMIT}",
                 "--expected-version",
@@ -2180,6 +2204,12 @@ def validate_forge_workflow_text(text: str) -> list[str]:
         for command in (
             ("chmod", "+x", "./gradlew"),
             ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace"),
+            (
+                "./gradlew",
+                "runGameTestServer",
+                "--no-daemon",
+                "--stacktrace",
+            ),
         ):
             if not _job_has_command(
                 latest, command, require_blocking_job=False
@@ -2831,6 +2861,17 @@ def check_v090_migration_fixtures(results: Results) -> None:
         results.fail("v0.9.0 migration fixture errors: " + "; ".join(errors))
     else:
         results.passed("v0.9.0 migration fixtures match the exact hash inventory")
+
+
+def check_v090_resources(results: Results) -> None:
+    summary, errors = audit_v090_resources(ROOT)
+    if errors:
+        results.fail("v0.9.0 resource audit errors: " + "; ".join(errors))
+    else:
+        results.passed(
+            "v0.9.0 resource and localization audit covers "
+            f"{summary['resource_files']} files and {summary['en_us_keys']} bilingual keys"
+        )
 
 
 def validate_v020_gate_status_text(
@@ -3947,6 +3988,7 @@ def main() -> int:
     check_v070_generated_resources(results)
     check_v080_generated_resources(results)
     check_v090_migration_fixtures(results)
+    check_v090_resources(results)
     check_v020_gate_status(results)
     check_v030_gate_status(results)
     check_v040_gate_status(results)
