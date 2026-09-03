@@ -6,7 +6,7 @@ public final class SatelliteLimits {
     public static final int SATELLITE_SCHEMA_VERSION = 1;
     public static final int MISSION_SCHEMA_VERSION = 1;
     public static final int RESEARCH_ACCOUNT_SCHEMA_VERSION = 1;
-    public static final int REGISTRY_SCHEMA_VERSION = 1;
+    public static final int REGISTRY_SCHEMA_VERSION = 2;
 
     public static final int MAX_DEFINITIONS = 16;
     public static final int MAX_TARGETS_PER_DEFINITION = 16;

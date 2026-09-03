@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import org.junit.jupiter.api.Test;
@@ -91,7 +93,7 @@ class CelestialSavedDataTest {
         assertThrows(IllegalArgumentException.class, () -> CelestialSavedData.load(badTime));
 
         CompoundTag wrongListType = new CompoundTag();
-        wrongListType.putInt("schema_version", CelestialSavedData.CURRENT_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.CELESTIAL, wrongListType);
         ListTag strings = new ListTag();
         strings.add(net.minecraft.nbt.StringTag.valueOf("not a compound"));
         wrongListType.put("bodies", strings);
@@ -104,7 +106,7 @@ class CelestialSavedDataTest {
         assertThrows(IllegalArgumentException.class, () -> CelestialSavedData.load(missingSchema));
 
         CompoundTag oversized = new CompoundTag();
-        oversized.putInt("schema_version", CelestialSavedData.CURRENT_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.CELESTIAL, oversized);
         ListTag bodies = new ListTag();
         for (int index = 0; index <= 128; index++) {
             CompoundTag entry = new CompoundTag();
@@ -119,7 +121,7 @@ class CelestialSavedDataTest {
 
     private static CompoundTag validSingleEntry() {
         CompoundTag source = new CompoundTag();
-        source.putInt("schema_version", CelestialSavedData.CURRENT_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.CELESTIAL, source);
         ListTag bodies = new ListTag();
         CompoundTag body = new CompoundTag();
         body.putString("id", ModIdentity.id("moon").toString());

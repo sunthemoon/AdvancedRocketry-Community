@@ -82,6 +82,9 @@ jobs:
       - name: Validate v0.8.0 generated-resource inventory
         run: python scripts/manage_v080_generated_manifest.py verify
 
+      - name: Validate v0.9.0 migration fixtures
+        run: python scripts/validate_v090_migration_fixtures.py verify
+
       - name: Enforce client-side package boundary
         run: python scripts/check_client_imports.py
 
@@ -126,6 +129,16 @@ jobs:
           --session-dir build/dedicated-server-smoke/session
           --evidence-dir build/dedicated-server-smoke/evidence
           --port 25585
+
+      - name: Run packaged Alpha-to-Beta migration and restart smoke test
+        run: >-
+          python scripts/run_v090_migration_server_smoke.py
+          build/dedicated-server-smoke/session
+          --session-dir build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v090-migration-server-smoke/evidence
+          --tested-commit ${REVIEW_COMMIT}
+          --expected-version 1.20.1-0.9.0-beta.1
 
       - name: Run packaged Electrolyzer restart smoke test
         run: >-
@@ -180,6 +193,7 @@ jobs:
             build/test-results/test/
             build/release-evidence/v090-jar-content-manifest.json
             build/dedicated-server-smoke/evidence/
+            build/v090-migration-server-smoke/evidence/
             build/v020-machine-server-smoke/evidence/
             build/v030-celestial-server-smoke/evidence/
             build/v040-atmosphere-server-smoke/evidence/

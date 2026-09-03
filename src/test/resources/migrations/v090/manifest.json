@@ -1,0 +1,46 @@
+{
+  "fixture_format": "arce-v090-saved-data-fixtures-v1",
+  "fixtures": [
+    {
+      "data_name": "advancedrocketrycommunity_celestial",
+      "introduced_in": "v0.3.0",
+      "path": "src/test/resources/migrations/v090/v030-celestial-v1.snbt",
+      "schema_version": 1,
+      "sha256": "3c9dd1e276b5c8cb557842c7d7e40d91fae694d54e0d49af14df55182bf03d32",
+      "size": 29
+    },
+    {
+      "data_name": "advancedrocketrycommunity_rocket_transactions",
+      "introduced_in": "v0.5.0",
+      "path": "src/test/resources/migrations/v090/v050-rocket-transactions-v1.snbt",
+      "schema_version": 1,
+      "sha256": "20042ab47e48f2f0da3beec1c57a18477f529431c749f9430460ba0e22d30102",
+      "size": 35
+    },
+    {
+      "data_name": "advancedrocketrycommunity_rocket_transfers",
+      "introduced_in": "v0.6.0",
+      "path": "src/test/resources/migrations/v090/v060-rocket-transfers-v1.snbt",
+      "schema_version": 1,
+      "sha256": "129877ec5b436ab08d942479c098c5a672049083a3aa836cec694e4fea33784a",
+      "size": 32
+    },
+    {
+      "data_name": "advancedrocketrycommunity_stations",
+      "introduced_in": "v0.7.0",
+      "path": "src/test/resources/migrations/v090/v070-stations-v1.snbt",
+      "schema_version": 1,
+      "sha256": "8cae32cd21b4cb48686df5fab408b389af1f8470675e91fd572a50e6dcbbd3fb",
+      "size": 47
+    },
+    {
+      "data_name": "advancedrocketrycommunity_satellite_missions",
+      "introduced_in": "v0.8.0",
+      "path": "src/test/resources/migrations/v090/v080-satellite-missions-v1.snbt",
+      "schema_version": 1,
+      "sha256": "3bb33223368fc508a88718f1a421716ba8a32b4a34d18e61fb423cb391b252f7",
+      "size": 128
+    }
+  ],
+  "target_root_schema": 2
+}

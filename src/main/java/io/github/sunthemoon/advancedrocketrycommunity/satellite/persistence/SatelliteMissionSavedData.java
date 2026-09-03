@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
@@ -50,18 +52,22 @@ public final class SatelliteMissionSavedData extends SavedData {
             if (SatelliteNbtSize.uncompressedBytes(source) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
                 throw new IllegalArgumentException("Satellite registry exceeds its fixed NBT bound");
             }
-            int schema = requireInt(source, "schema_version");
-            if (schema != SatelliteLimits.REGISTRY_SCHEMA_VERSION) {
-                throw new IllegalArgumentException("Unsupported satellite registry schema " + schema);
+            SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                    ManagedSavedDataType.SATELLITE_MISSIONS,
+                    source
+            );
+            if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
+                throw new IllegalArgumentException("Satellite registry uses a future root schema");
             }
-            CompoundTag clock = requireCompound(source, "clock");
+            CompoundTag payload = migration.payload();
+            CompoundTag clock = requireCompound(payload, "clock");
             SatelliteMissionRegistry restored = SatelliteMissionRegistry.restore(
                     requireNonNegativeLong(clock, "logical_game_time"),
                     requireNonNegativeLong(clock, "last_observed_game_time")
             );
-            ListTag satellites = requireList(source, "satellites");
-            ListTag missions = requireList(source, "missions");
-            ListTag accounts = requireList(source, "research_accounts");
+            ListTag satellites = requireList(payload, "satellites");
+            ListTag missions = requireList(payload, "missions");
+            ListTag accounts = requireList(payload, "research_accounts");
             if (satellites.size() > SatelliteLimits.MAX_SATELLITES
                     || missions.size() > SatelliteLimits.MAX_MISSIONS
                     || accounts.size() > SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
@@ -78,6 +84,9 @@ public final class SatelliteMissionSavedData extends SavedData {
             }
             restored.finishRestore();
             data = new SatelliteMissionSavedData(restored);
+            if (migration.changed()) {
+                data.setDirty();
+            }
         } catch (RuntimeException exception) {
             data.preservedBlockedData = preserved;
         }
@@ -229,7 +238,7 @@ public final class SatelliteMissionSavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        target.putInt("schema_version", SatelliteLimits.REGISTRY_SCHEMA_VERSION);
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
         CompoundTag clock = new CompoundTag();
         clock.putLong("logical_game_time", registry.logicalGameTime());
         clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
@@ -253,13 +262,6 @@ public final class SatelliteMissionSavedData extends SavedData {
         if (!operational()) {
             throw new IllegalStateException("Satellite registry is blocked by invalid or future data");
         }
-    }
-
-    private static int requireInt(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_INT)) {
-            throw new IllegalArgumentException("Missing satellite registry integer " + key);
-        }
-        return source.getInt(key);
     }
 
     private static long requireNonNegativeLong(CompoundTag source, String key) {

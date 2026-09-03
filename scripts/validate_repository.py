@@ -55,6 +55,7 @@ if __package__:
     from .manage_v060_generated_manifest import verify as verify_v060_generated_manifest
     from .manage_v070_generated_manifest import verify as verify_v070_generated_manifest
     from .manage_v080_generated_manifest import verify as verify_v080_generated_manifest
+    from .validate_v090_migration_fixtures import verify as verify_v090_migration_fixtures
 else:
     # Isolated script execution omits this directory from sys.path. Add only
     # the already-selected repository scripts directory after stdlib imports.
@@ -94,6 +95,7 @@ else:
     from manage_v060_generated_manifest import verify as verify_v060_generated_manifest
     from manage_v070_generated_manifest import verify as verify_v070_generated_manifest
     from manage_v080_generated_manifest import verify as verify_v080_generated_manifest
+    from validate_v090_migration_fixtures import verify as verify_v090_migration_fixtures
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -149,6 +151,7 @@ REQUIRED_PATHS = (
     "scripts/run_v070_multiplayer_server_smoke.py",
     "scripts/run_v080_satellite_server_smoke.py",
     "scripts/run_v080_multiplayer_server_smoke.py",
+    "scripts/run_v090_migration_server_smoke.py",
     "scripts/validate_bootstrap_provenance.py",
     "scripts/validate_build_artifact.py",
     "scripts/validate_release_checksums.py",
@@ -162,6 +165,7 @@ REQUIRED_PATHS = (
     "scripts/manage_v060_generated_manifest.py",
     "scripts/manage_v070_generated_manifest.py",
     "scripts/manage_v080_generated_manifest.py",
+    "scripts/validate_v090_migration_fixtures.py",
     "scripts/validate_v010_asset_baseline.py",
     "scripts/validate_v020_release_evidence.py",
     "scripts/validate_v030_release_evidence.py",
@@ -205,6 +209,8 @@ REQUIRED_PATHS = (
     "tests/test_manage_v060_generated_manifest.py",
     "tests/test_manage_v070_generated_manifest.py",
     "tests/test_manage_v080_generated_manifest.py",
+    "tests/test_validate_v090_migration_fixtures.py",
+    "src/test/resources/migrations/v090/manifest.json",
     "tests/test_run_v030_celestial_server_smoke.py",
     "tests/test_run_v040_atmosphere_server_smoke.py",
     "tests/test_run_v050_rocket_server_smoke.py",
@@ -212,6 +218,7 @@ REQUIRED_PATHS = (
     "tests/test_run_v070_station_server_smoke.py",
     "tests/test_run_v070_multiplayer_server_smoke.py",
     "tests/test_run_v080_multiplayer_server_smoke.py",
+    "tests/test_run_v090_migration_server_smoke.py",
     "tests/test_validate_repository.py",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
     "src/main/resources/META-INF/mods.toml",
@@ -1813,6 +1820,7 @@ def validate_repository_workflow_text(text: str) -> list[str]:
             "--require-approved",
         ),
         ("python", "scripts/manage_v080_generated_manifest.py", "verify"),
+        ("python", "scripts/validate_v090_migration_fixtures.py", "verify"),
         (
             "python",
             "scripts/validate_v080_release_evidence.py",
@@ -1901,6 +1909,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             ("python", "scripts/manage_v060_generated_manifest.py", "verify"),
             ("python", "scripts/manage_v070_generated_manifest.py", "verify"),
             ("python", "scripts/manage_v080_generated_manifest.py", "verify"),
+            ("python", "scripts/validate_v090_migration_fixtures.py", "verify"),
             ("python", "scripts/check_client_imports.py"),
             ("python", "scripts/check_celestial_identity.py"),
             ("python", "scripts/validate_v030_release_evidence.py"),
@@ -1950,6 +1959,21 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "build/dedicated-server-smoke/evidence",
                 "--port",
                 "25585",
+            ),
+            (
+                "python",
+                "scripts/run_v090_migration_server_smoke.py",
+                "build/dedicated-server-smoke/session",
+                "--session-dir",
+                "build/v090-migration-server-smoke/session",
+                "--baseline-summary",
+                "build/dedicated-server-smoke/evidence/summary.json",
+                "--evidence-dir",
+                "build/v090-migration-server-smoke/evidence",
+                "--tested-commit",
+                "${REVIEW_COMMIT}",
+                "--expected-version",
+                "1.20.1-0.9.0-beta.1",
             ),
             (
                 "python",
@@ -2794,6 +2818,17 @@ def check_v080_generated_resources(results: Results) -> None:
         results.passed(
             "v0.8.0 DataGen resources match the exact satellite inventory"
         )
+
+
+def check_v090_migration_fixtures(results: Results) -> None:
+    errors = verify_v090_migration_fixtures(
+        ROOT,
+        ROOT / "src/test/resources/migrations/v090/manifest.json",
+    )
+    if errors:
+        results.fail("v0.9.0 migration fixture errors: " + "; ".join(errors))
+    else:
+        results.passed("v0.9.0 migration fixtures match the exact hash inventory")
 
 
 def validate_v020_gate_status_text(
@@ -3909,6 +3944,7 @@ def main() -> int:
     check_v060_generated_resources(results)
     check_v070_generated_resources(results)
     check_v080_generated_resources(results)
+    check_v090_migration_fixtures(results)
     check_v020_gate_status(results)
     check_v030_gate_status(results)
     check_v040_gate_status(results)

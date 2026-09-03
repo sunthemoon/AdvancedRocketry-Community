@@ -82,5 +82,8 @@ jobs:
           python scripts/manage_v080_generated_manifest.py verify
           python scripts/validate_v080_release_evidence.py --require-approved
 
+      - name: Verify v0.9.0 migration fixtures
+        run: python scripts/validate_v090_migration_fixtures.py verify
+
       - name: Enforce governance baseline
         run: python scripts/validate_repository.py --require-approved-identity

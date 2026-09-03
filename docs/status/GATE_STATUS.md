@@ -29,7 +29,6 @@ gates:
   G9: NOT_STARTED
 overall: IN_PROGRESS
 remaining_items:
-  - approve the feature freeze and Beta support contract
   - implement and verify migration, diagnostics, compatibility, security, and stress slices
   - complete two-hour soak, manual review, release evidence, PR, and merge reproduction
 human_approved_by: ""

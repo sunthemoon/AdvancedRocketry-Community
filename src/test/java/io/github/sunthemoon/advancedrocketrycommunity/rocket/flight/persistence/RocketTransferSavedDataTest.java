@@ -62,7 +62,7 @@ class RocketTransferSavedDataTest {
         RocketTransferSavedData valid = new RocketTransferSavedData();
         valid.put(record());
         CompoundTag future = valid.save(new CompoundTag());
-        future.putInt("schema_version", RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION + 1);
+        future.putInt("schema_version", RocketTransferSavedData.ROOT_SCHEMA_VERSION + 1);
         future.putString("future_marker", "preserve-exactly");
 
         RocketTransferSavedData futureData = RocketTransferSavedData.load(future);
