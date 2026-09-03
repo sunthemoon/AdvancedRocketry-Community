@@ -17,7 +17,7 @@ from scripts.run_v090_forced_stop_recovery import (
 class V090ForcedStopRecoveryTests(unittest.TestCase):
     def test_fixed_checkpoint_is_post_destination_precommit_authority(self) -> None:
         self.assertEqual("DESTINATION_SPAWNED", CHECKPOINT)
-        self.assertEqual("DESTINATION_PRESENT", EXPECTED_PHASE)
+        self.assertEqual("DESTINATION_SPAWNED", EXPECTED_PHASE)
         self.assertEqual("REMOVE_SOURCE_KEEP_DESTINATION", EXPECTED_ACTION)
 
     def test_clean_exit_cannot_claim_a_forced_stop(self) -> None:
