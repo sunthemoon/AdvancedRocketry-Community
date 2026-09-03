@@ -4,6 +4,18 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v0.9.0 — IN_PROGRESS Beta hardening
+
+**Status:** feature-frozen Beta candidate work began on 2026-09-03. Save
+migration, combined-load soak, security, Forge/JEI compatibility, accessibility,
+and release evidence remain in progress. No tag or public release exists.
+
+### Changed
+
+- Fixed the candidate identity at `1.20.1-0.9.0-beta.1` and documented the
+  supported runtime, one-way v0.8 world-upgrade floor, feature freeze, and
+  optional compatibility boundary.
+
 ## v0.8.0 — PASSED candidate, unreleased developer preview
 
 **Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-03. PR #12

@@ -1887,11 +1887,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
                 "--content-manifest",
-                "build/release-evidence/v080-jar-content-manifest.json",
+                "build/release-evidence/v090-jar-content-manifest.json",
             ),
             ("python", "scripts/validate_v010_asset_baseline.py"),
             ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
@@ -1941,9 +1941,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
                 "--expected-mod-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
                 "--session-dir",
                 "build/dedicated-server-smoke/session",
                 "--evidence-dir",
@@ -1960,7 +1960,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v020-machine-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
             (
                 "python",
@@ -1971,7 +1971,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v030-celestial-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
             (
                 "python",
@@ -1982,7 +1982,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v040-atmosphere-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
             (
                 "python",
@@ -1993,7 +1993,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v050-rocket-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
             (
                 "python",
@@ -2004,7 +2004,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
                 "--evidence-dir",
                 "build/v060-flight-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
         )
         for command in baseline_commands:
@@ -2053,7 +2053,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             len(upload_steps) != 1
             or upload_steps[0].fields.get("uses") != "actions/upload-artifact@v7"
             or upload_steps[0].fields.get("with.name")
-            != "v080-satellite-47.4.10-${{ env.REVIEW_COMMIT }}"
+            != "v090-core-47.4.10-${{ env.REVIEW_COMMIT }}"
             or upload_steps[0].fields.get("with.if-no-files-found") != "error"
         ):
             errors.append("satellite-acceptance exact head-bound artifact upload")
@@ -2063,11 +2063,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/validate_build_artifact.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
                 "--content-manifest",
-                "build/release-evidence/v080-satellite-jar-content-manifest.json",
+                "build/release-evidence/v090-core-jar-content-manifest.json",
             ),
             (
                 "python",
@@ -2077,39 +2077,39 @@ def validate_forge_workflow_text(text: str) -> list[str]:
             (
                 "python",
                 "scripts/run_dedicated_server_smoke.py",
-                "build/libs/advancedrocketry-community-1.20.1-0.8.0-dev.jar",
+                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
                 "--expected-mod-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
                 "--session-dir",
-                "build/v080-dedicated-server-smoke/session",
+                "build/v090-dedicated-server-smoke/session",
                 "--evidence-dir",
-                "build/v080-dedicated-server-smoke/evidence",
+                "build/v090-dedicated-server-smoke/evidence",
                 "--port",
                 "25595",
             ),
             (
                 "python",
                 "scripts/run_v070_station_server_smoke.py",
-                "build/v080-dedicated-server-smoke/session",
+                "build/v090-dedicated-server-smoke/session",
                 "--baseline-summary",
-                "build/v080-dedicated-server-smoke/evidence/summary.json",
+                "build/v090-dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
-                "build/v080-station-server-smoke/evidence",
+                "build/v090-station-server-smoke/evidence",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
             (
                 "python",
                 "scripts/run_v080_satellite_server_smoke.py",
-                "build/v080-dedicated-server-smoke/session",
+                "build/v090-dedicated-server-smoke/session",
                 "--baseline-summary",
-                "build/v080-dedicated-server-smoke/evidence/summary.json",
+                "build/v090-dedicated-server-smoke/evidence/summary.json",
                 "--evidence-dir",
-                "build/v080-satellite-server-smoke/evidence",
+                "build/v090-satellite-server-smoke/evidence",
                 "--tested-commit",
                 "${REVIEW_COMMIT}",
                 "--expected-version",
-                "1.20.1-0.8.0-dev",
+                "1.20.1-0.9.0-beta.1",
             ),
         )
         for command in satellite_commands:

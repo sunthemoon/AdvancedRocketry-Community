@@ -8,7 +8,7 @@
 
 ## Status
 
-**Pre-alpha / staged Forge development. The authoritative build and acceptance
+**Beta hardening / staged Forge development. The authoritative build and acceptance
 state is recorded in [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md);
 no stable playable public release is available.**
 
@@ -90,7 +90,7 @@ A feature is not complete until its required automated, dedicated-server, persis
 
 ## Support policy
 
-During pre-alpha:
+Before a public Beta is published:
 
 - test worlds may be reset;
 - APIs may change;
@@ -98,6 +98,9 @@ During pre-alpha:
 - unsupported mod combinations are not investigated unless a minimal reproduction is provided.
 
 Security-sensitive duplication, arbitrary chunk loading, packet abuse, or save corruption reports should follow [`SECURITY.md`](SECURITY.md).
+
+The v0.9.x runtime, save-upgrade, optional-mod, server-scale, and report scope
+is defined in [`docs/BETA-SUPPORT-POLICY.md`](docs/BETA-SUPPORT-POLICY.md).
 
 ## License
 
