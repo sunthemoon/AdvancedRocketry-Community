@@ -123,6 +123,11 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
         return ModRecipes.ELECTROLYZING_TYPE.get();
     }
 
+    @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
     public Ingredient ingredient() {
         return ingredient;
     }
