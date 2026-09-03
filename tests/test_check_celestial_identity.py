@@ -37,6 +37,26 @@ class CelestialIdentityScanTests(unittest.TestCase):
     def test_namespaced_identity_baseline_passes(self) -> None:
         self.assertEqual([], check_celestial_identity(self.root))
 
+    def test_managed_migrator_may_own_the_schema_marker(self) -> None:
+        self._write(
+            "persistence/CelestialSavedData.java",
+            "class CelestialSavedData { ResourceLocation id; "
+            "int CURRENT_SCHEMA_VERSION; SavedDataSchemaMigrator migrator; "
+            "Object type = ManagedSavedDataType.CELESTIAL; }",
+        )
+
+        self.assertEqual([], check_celestial_identity(self.root))
+
+    def test_missing_local_and_managed_schema_identity_is_rejected(self) -> None:
+        self._write(
+            "persistence/CelestialSavedData.java",
+            "class CelestialSavedData { ResourceLocation id; int CURRENT_SCHEMA_VERSION; }",
+        )
+
+        errors = check_celestial_identity(self.root)
+
+        self.assertTrue(any("required schema identity" in error for error in errors), errors)
+
     def test_runtime_numeric_dimension_identity_is_rejected(self) -> None:
         self._write("service/BadRuntime.java", "class BadRuntime { int dimensionId; }")
 
