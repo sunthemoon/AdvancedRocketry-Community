@@ -56,10 +56,12 @@ CURRENT_LOG = re.compile(
     r"managed=5, migrated=0, backup=none"
 )
 REPORT_LOG = re.compile(
-    r"ARCE_BETA_DATA_REPORT root_schema=2 operational=true celestial=true "
-    r"rocket_transactions=true rocket_transfers=true stations=true "
-    r"satellite_missions=true bodies=0 transactions=0 transfers=0 "
-    r"station_records=0 missions=0"
+    r"ARCE-BETA-1101 build=[^\s]+ forge=[^\s]+ jei=[^\s]+ "
+    r"root_schema=2 operational=true roots=11111 bodies=0 transactions=0 "
+    r"transfers=0 stations=0 missions=0 players=0/\d+ "
+    r"atmosphere_volume=\d+ atmosphere_tick=\d+ "
+    r"protocols=life:\d+,celestial:\d+,flight:\d+,visual:\d+ "
+    r"flight_frame_max=\d+ ticket_policy=transient_transfer_only"
 )
 FIXTURES = {
     "advancedrocketrycommunity_celestial.dat": (
@@ -221,7 +223,7 @@ def _find_log(
 
 def _run_report(process) -> str:  # type: ignore[no-untyped-def]
     start = len(process.lines)
-    process.command("arce beta data-report")
+    process.command("arce beta report")
     index = process.wait_for(REPORT_LOG, 30.0, start_at=start)
     return process.lines[index].rstrip()
 
