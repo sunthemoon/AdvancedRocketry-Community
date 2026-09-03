@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.compat.jei;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.client.ElectrolyzerScreen;
+import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnosticId;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
@@ -42,7 +43,8 @@ public final class ArceJeiPlugin implements IModPlugin {
                 : level.getRecipeManager().getAllRecipesFor(ModRecipes.ELECTROLYZING_TYPE.get());
         registration.addRecipes(ElectrolyzerJeiCategory.TYPE, recipes);
         AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE-BETA-1100 optional_compat=jei recipes={}",
+                "{} optional_compat=jei status=registered recipes={}",
+                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
                 recipes.size()
         );
     }

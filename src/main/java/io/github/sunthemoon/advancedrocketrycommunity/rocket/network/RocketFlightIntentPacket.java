@@ -55,6 +55,10 @@ public record RocketFlightIntentPacket(
         buffer.writeUUID(requestId);
     }
 
+    public static int maximumEncodedBytes() {
+        return MAX_ENCODED_BYTES;
+    }
+
     public static RocketFlightIntentPacket decode(FriendlyByteBuf buffer) {
         int frameBytes = buffer.readableBytes();
         if (frameBytes <= 0 || frameBytes > MAX_ENCODED_BYTES) {

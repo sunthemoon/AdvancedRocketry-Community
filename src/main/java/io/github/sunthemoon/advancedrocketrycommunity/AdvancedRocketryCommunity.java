@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnosticId;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaDataCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.command.AtmosphereCommands;
@@ -133,6 +134,16 @@ public final class AdvancedRocketryCommunity {
                 .map(container -> container.getModInfo().getVersion().toString())
                 .orElse("unknown");
         LOGGER.info("{} {} initialized", ModIdentity.DISPLAY_NAME, version);
+        String jeiVersion = ModList.get()
+                .getModContainerById("jei")
+                .map(container -> container.getModInfo().getVersion().toString())
+                .orElse("absent");
+        LOGGER.info(
+                "{} optional_compat=jei status={} version={}",
+                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
+                "absent".equals(jeiVersion) ? "absent" : "present",
+                jeiVersion
+        );
     }
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
