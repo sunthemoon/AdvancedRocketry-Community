@@ -119,6 +119,11 @@ Machine Kernel  Public API
 `v2.0.0` 不允许存在 `MISSING` 或 `UNKNOWN`，也不得漏掉现有未审计行。
 `DEFERRED/REJECTED` 必须有公开批准 ADR 和玩家影响说明。
 
+[ADR-018](decisions/ADR-018-PARITY-FIRST-FULL-ACCEPTANCE-SCHEDULING.md) 将完整的
+长时负载、远程专服、真实 GPU、双客户端及全机械/全维度集成验收排到原有
+机械和维度实现或明确处置之后。各实现切片仍必须运行定向测试、构建以及其
+新增行为对应的守恒、迁移、安全和恢复检查；该排期不产生任何 Gate PASS。
+
 ## 6. 存档兼容路线
 
 ```text
