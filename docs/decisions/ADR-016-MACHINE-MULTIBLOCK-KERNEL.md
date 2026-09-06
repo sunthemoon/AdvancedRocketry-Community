@@ -7,7 +7,7 @@ requested_decider: sunthemoon
 owner: sunthemoon
 target_version: v1.2.0
 depends_on:
-  - v1.1.0 PASSED
+  - v1.1.0 PASSED or accepted ADR-017 development-order exception
 supersedes: ""
 ```
 
@@ -27,9 +27,9 @@ the old hierarchy is outside the license/architecture boundary and would reintro
 implicit structure, port and lifecycle behavior.
 
 The v1.2.0 prerequisite is not currently satisfied. This ADR is therefore a contract
-proposal only. Acceptance must not be inferred from the existence of this file and
-would not by itself approve production work while the version prerequisite remains
-open.
+proposal only. Acceptance must not be inferred from the existence of this file. While
+the version prerequisite remains open, production work would also require the separate
+development-order decision proposed by ADR-017.
 
 ## Decision
 
@@ -230,8 +230,7 @@ Avoids dirty-event wiring but violates the idle and world-traversal budgets. Rej
 - [x] Current Electrolyzer schema, IDs, side policy and tests inventoried.
 - [x] Newly authored process, journal, pattern, binding and port samples parse and satisfy
   their documented structural invariants.
-- [ ] `v1.1.0` is marked `PASSED` by the maintainer, or a separate explicit sequencing
-  exception is accepted.
+- [ ] `v1.1.0` is marked `PASSED` by the maintainer, or ADR-017 is explicitly accepted.
 - [ ] Maintainer confirms representative machines, candidate IDs and numeric limits.
 - [ ] Independent review confirms no v1.3 public API or LibVulpes implementation leaked
   into the contract.
