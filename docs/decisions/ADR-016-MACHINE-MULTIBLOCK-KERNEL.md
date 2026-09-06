@@ -1,9 +1,10 @@
 # ADR-016 — Process machine and multiblock kernel
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-09-06
-requested_decider: sunthemoon
+deciders: [sunthemoon]
+accepted_at: 2026-09-06
 owner: sunthemoon
 target_version: v1.2.0
 depends_on:
@@ -26,14 +27,15 @@ definitions range from zero to five Item inputs and zero to two Fluid inputs. Co
 the old hierarchy is outside the license/architecture boundary and would reintroduce
 implicit structure, port and lifecycle behavior.
 
-The v1.2.0 prerequisite is not currently satisfied. This ADR is therefore a contract
-proposal only. Acceptance must not be inferred from the existence of this file. While
-the version prerequisite remains open, production work would also require the separate
-development-order decision proposed by ADR-017.
+The v1.1.0 release prerequisite is not currently satisfied. The maintainer accepted
+ADR-017 as a development-order exception on 2026-09-06, so scoped v1.2.0 production
+work may proceed while all inherited release Gates remain open. ADR-017 does not permit
+a v1.2.0 candidate or release before those Gates are completed or separately
+dispositioned.
 
 ## Decision
 
-If accepted after the prerequisite is satisfied, v1.2.0 will use a small internal
+v1.2.0 will use a small internal
 kernel with four independent contracts: process, port, multiblock pattern and
 controller/part lifecycle. Minecraft BlockEntities remain adapters rather than domain
 base classes. These contracts remain internal until the separate v1.3.0 public API
@@ -41,10 +43,10 @@ review.
 
 ### Stable identities and schemas
 
-The following runtime identities become stable only when this ADR is accepted and the
-corresponding implementation is merged:
+The following runtime identities are frozen by this ADR and become persistent runtime
+identities when the corresponding implementation is merged:
 
-| Purpose | Candidate identity/schema |
+| Purpose | Stable identity/schema |
 |---|---|
 | Existing Electrolyzer block, BE and menu | `advancedrocketrycommunity:electrolyzer` unchanged |
 | Existing Electrolyzer recipe type/serializer | `advancedrocketrycommunity:electrolyzing` unchanged |
@@ -224,14 +226,14 @@ Avoids dirty-event wiring but violates the idle and world-traversal budgets. Rej
 - Pattern JSON and diagnostics require additional DataGen/client presentation work.
 - Existing Electrolyzer code must temporarily retain a compatibility decoder and adapter.
 
-## Validation required before acceptance
+## Acceptance validation
 
 - [x] Fixed-commit upstream machine and recipe audit with SHA-256 verification.
 - [x] Current Electrolyzer schema, IDs, side policy and tests inventoried.
 - [x] Newly authored process, journal, pattern, binding and port samples parse and satisfy
   their documented structural invariants.
-- [ ] `v1.1.0` is marked `PASSED` by the maintainer, or ADR-017 is explicitly accepted.
-- [ ] Maintainer confirms representative machines, candidate IDs and numeric limits.
+- [x] ADR-017 is explicitly accepted as the development-order exception.
+- [x] Maintainer confirms representative machines, stable IDs and numeric limits.
 - [ ] Independent review confirms no v1.3 public API or LibVulpes implementation leaked
   into the contract.
 
