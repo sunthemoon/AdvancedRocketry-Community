@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://advancedrocketrycommunity.example/schema/v1.1/travel-target.schema.json",
+  "title": "ARCE v1.1 TravelTarget contract draft",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "type", "body_id"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "type": {"const": "advancedrocketrycommunity:body_surface"},
+        "body_id": {"$ref": "#/$defs/resource_location"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "type", "body_id"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "type": {"const": "advancedrocketrycommunity:orbit"},
+        "body_id": {"$ref": "#/$defs/resource_location"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "type", "instance_id"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "type": {"const": "advancedrocketrycommunity:station"},
+        "instance_id": {"$ref": "#/$defs/uuid"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "type", "instance_id"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "type": {"const": "advancedrocketrycommunity:mission"},
+        "instance_id": {"$ref": "#/$defs/uuid"}
+      }
+    }
+  ],
+  "$defs": {
+    "resource_location": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9_.-]+:[a-z0-9/._-]+$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  }
+}

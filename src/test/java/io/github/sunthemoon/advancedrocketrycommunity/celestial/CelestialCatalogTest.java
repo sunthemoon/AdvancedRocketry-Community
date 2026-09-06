@@ -86,4 +86,26 @@ class CelestialCatalogTest {
 
         assertTrue(CelestialCatalog.create(definitions).error().isPresent());
     }
+
+    @Test
+    void sharedLevelRequiresPositionAwareResolution() {
+        CelestialBodyDefinition earth = CelestialDefinitionCodecTest.earthDefinition();
+        CelestialBodyDefinition space = CelestialDefinitionCodecTest.spaceDefinition();
+        CelestialBodyDefinition orbitalInstance = new CelestialBodyDefinition(
+                ModIdentity.id("orbital_instance"),
+                Optional.of(earth.id()),
+                CelestialIds.SPACE_LEVEL,
+                0.0D,
+                space.atmosphere(),
+                space.orbit(),
+                space.visualProfile()
+        );
+        CelestialCatalog catalog = CelestialCatalog.create(List.of(earth, space, orbitalInstance))
+                .getOrThrow(false, message -> {
+                    throw new AssertionError(message);
+                });
+
+        assertEquals(2, catalog.candidatesForLevel(CelestialIds.SPACE_LEVEL).size());
+        assertTrue(catalog.forLevel(CelestialIds.SPACE_LEVEL).isEmpty());
+    }
 }

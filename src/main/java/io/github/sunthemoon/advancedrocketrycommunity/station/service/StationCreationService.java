@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Predicate;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -17,9 +18,14 @@ import net.minecraft.server.level.ServerLevel;
 /** Reserve-generate-commit station creation transaction with exact rollback. */
 public final class StationCreationService {
     private final StationPlatformGenerator platforms;
+    private final Predicate<ResourceLocation> bodyExists;
 
-    public StationCreationService(StationPlatformGenerator platforms) {
+    public StationCreationService(
+            StationPlatformGenerator platforms,
+            Predicate<ResourceLocation> bodyExists
+    ) {
         this.platforms = Objects.requireNonNull(platforms, "platforms");
+        this.bodyExists = Objects.requireNonNull(bodyExists, "bodyExists");
     }
 
     public StationCreationResult create(
@@ -35,6 +41,9 @@ public final class StationCreationService {
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
         if (!data.operational()) {
             return StationCreationResult.failure(StationCreationCode.REGISTRY_BLOCKED);
+        }
+        if (!bodyExists.test(orbitBody)) {
+            return StationCreationResult.failure(StationCreationCode.UNKNOWN_ORBIT_BODY);
         }
         if (enforceOwnerLimit && data.ownedBy(ownerId) >= StationLimits.MAX_OWNED_STATIONS) {
             return StationCreationResult.failure(StationCreationCode.OWNER_LIMIT_REACHED);

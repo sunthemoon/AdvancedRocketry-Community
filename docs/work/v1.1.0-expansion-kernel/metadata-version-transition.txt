@@ -1,0 +1,12 @@
+2026-09-06 initial 1.1.0-dev clean build
+command: gradlew clean build --no-daemon
+result: FAILED; 414 tests completed, 1 failed
+failure: ModMetadataTest.processedMetadataContainsApprovedIdentity still required 1.0.0-dev text
+
+correction:
+- kept the exact metadata assertions
+- changed the expected version and development description to 1.1.0-dev
+
+rerun:
+command: gradlew clean build --no-daemon
+result: PASS; see clean-build.txt

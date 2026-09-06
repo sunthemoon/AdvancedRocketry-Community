@@ -36,6 +36,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -330,6 +331,40 @@ public final class RocketGameTests {
                 migrated.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData")
                         .getInt("schema_version") == 2,
                 "Schema-1 entity was not upgraded on save"
+        );
+
+        CompoundTag legacyFlightSave = saved.copy();
+        CompoundTag legacyFlight = legacyFlightSave.getCompound("RocketEntityData")
+                .getCompound("flight_data");
+        legacyFlight.putInt("schema_version", 1);
+        legacyFlight.remove("current_target");
+        RocketEntity migratedFlight = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(migratedFlight != null, "Rocket entity type did not create flight migration target");
+        migratedFlight.load(legacyFlightSave);
+        helper.assertTrue(migratedFlight.operational(), "Schema-1 flight data did not migrate operationally");
+        helper.assertTrue(
+                migratedFlight.flightData().orElseThrow().schemaVersion()
+                        == RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION,
+                "Schema-1 flight data did not upgrade to the current schema"
+        );
+        helper.assertTrue(
+                migratedFlight.flightData().orElseThrow().currentTarget()
+                        .filter(target -> target.equals(new TravelTarget.BodySurface(
+                                io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID
+                        )))
+                        .isPresent(),
+                "Schema-1 Earth flight data resolved the wrong target"
+        );
+        CompoundTag migratedFlightSave = migratedFlight.saveWithoutId(new CompoundTag());
+        RocketEntity secondFlightLoad = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(secondFlightLoad != null, "Rocket entity type did not create second migration target");
+        secondFlightLoad.load(migratedFlightSave.copy());
+        helper.assertTrue(secondFlightLoad.operational(), "Migrated flight data failed its second load");
+        helper.assertTrue(
+                secondFlightLoad.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData")
+                        .getCompound("flight_data")
+                        .equals(migratedFlightSave.getCompound("RocketEntityData").getCompound("flight_data")),
+                "Migrated flight data changed on its second save"
         );
 
         CompoundTag futureSave = saved.copy();

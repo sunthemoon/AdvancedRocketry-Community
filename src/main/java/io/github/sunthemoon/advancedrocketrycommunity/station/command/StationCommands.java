@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationResult;
@@ -15,6 +14,7 @@ import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -52,7 +52,7 @@ public final class StationCommands {
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("create")
                         .then(Commands.argument("owner", UuidArgument.uuid())
-                                .then(Commands.argument("orbit", StringArgumentType.word())
+                                .then(Commands.argument("orbit", ResourceLocationArgument.id())
                                         .then(Commands.argument("name", StringArgumentType.greedyString())
                                                 .executes(this::create)))))
                 .then(Commands.literal("inspect")
@@ -129,15 +129,7 @@ public final class StationCommands {
 
     private int create(CommandContext<CommandSourceStack> context) {
         UUID owner = UuidArgument.getUuid(context, "owner");
-        ResourceLocation orbit = switch (StringArgumentType.getString(context, "orbit")) {
-            case "earth" -> CelestialIds.EARTH_ID;
-            case "moon" -> CelestialIds.MOON_ID;
-            default -> null;
-        };
-        if (orbit == null) {
-            context.getSource().sendFailure(Component.literal("Orbit must be earth or moon"));
-            return 0;
-        }
+        ResourceLocation orbit = ResourceLocationArgument.getId(context, "orbit");
         StationCreationResult result = stations.createForOperator(
                 context.getSource().getServer(),
                 owner,

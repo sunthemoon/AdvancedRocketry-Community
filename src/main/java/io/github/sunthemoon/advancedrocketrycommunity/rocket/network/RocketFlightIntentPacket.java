@@ -1,8 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.network;
 
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.network.TravelTargetWireCodec;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -14,44 +15,27 @@ import net.minecraftforge.network.NetworkEvent;
 public record RocketFlightIntentPacket(
         RocketFlightAction action,
         int rocketEntityId,
-        RocketDestination destination,
-        UUID destinationStationId,
+        TravelTarget target,
         UUID requestId
 ) {
     static final int MAX_ENCODED_BYTES = Byte.BYTES
             + 5
-            + Byte.BYTES
-            + (Long.BYTES * 2)
+            + TravelTargetWireCodec.MAX_ENCODED_BYTES
             + (Long.BYTES * 2);
 
     public RocketFlightIntentPacket {
         Objects.requireNonNull(action, "action");
-        Objects.requireNonNull(destination, "destination");
+        Objects.requireNonNull(target, "target");
         Objects.requireNonNull(requestId, "requestId");
-        if ((destination == RocketDestination.SPACE_STATION) != (destinationStationId != null)) {
-            throw new IllegalArgumentException("Station destination must bind exactly one station UUID");
-        }
         if (rocketEntityId < 0) {
             throw new IllegalArgumentException("Rocket entity id cannot be negative");
         }
     }
 
-    public RocketFlightIntentPacket(
-            RocketFlightAction action,
-            int rocketEntityId,
-            RocketDestination destination,
-            UUID requestId
-    ) {
-        this(action, rocketEntityId, destination, null, requestId);
-    }
-
     public void encode(FriendlyByteBuf buffer) {
         buffer.writeByte(action.networkId());
         buffer.writeVarInt(rocketEntityId);
-        buffer.writeByte(destination.networkId());
-        if (destination == RocketDestination.SPACE_STATION) {
-            buffer.writeUUID(destinationStationId);
-        }
+        TravelTargetWireCodec.encode(buffer, target);
         buffer.writeUUID(requestId);
     }
 
@@ -73,13 +57,10 @@ public record RocketFlightIntentPacket(
         if (entityBytes != FriendlyByteBuf.getVarIntSize(entityId)) {
             throw new IllegalArgumentException("Rocket entity id uses a non-canonical VarInt encoding");
         }
-        RocketDestination destination = RocketDestination.fromNetworkId(buffer.readUnsignedByte());
-        UUID stationId = destination == RocketDestination.SPACE_STATION ? buffer.readUUID() : null;
         RocketFlightIntentPacket packet = new RocketFlightIntentPacket(
                 action,
                 entityId,
-                destination,
-                stationId,
+                TravelTargetWireCodec.decode(buffer),
                 buffer.readUUID()
         );
         if (buffer.isReadable()) {
@@ -98,8 +79,7 @@ public record RocketFlightIntentPacket(
                     sender,
                     rocketEntityId,
                     action,
-                    destination,
-                    destinationStationId,
+                    target,
                     requestId
             ));
         }

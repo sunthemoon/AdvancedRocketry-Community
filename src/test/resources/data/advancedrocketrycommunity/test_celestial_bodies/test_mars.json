@@ -1,0 +1,18 @@
+{
+  "id": "advancedrocketrycommunity:test_mars",
+  "parent": "advancedrocketrycommunity:earth",
+  "level": "advancedrocketrycommunity:space",
+  "gravity_multiplier": 0.38,
+  "atmosphere": {
+    "pressure": 0.006,
+    "breathable": false,
+    "temperature_kelvin": 210.0,
+    "profile": "advancedrocketrycommunity:thin_carbon_dioxide"
+  },
+  "orbit": {
+    "distance": 225000000,
+    "period_ticks": 59355000,
+    "inclination_degrees": 1.85
+  },
+  "visual_profile": "advancedrocketrycommunity:test_mars"
+}

@@ -47,7 +47,7 @@ class RocketFlightPlannerTest {
     void stationRoutesRequireAndBindOneServerSelectedStationUuid() {
         RocketStats stats = validStats(1_000L);
         RocketFuelState fuel = RocketFuelState.empty(1_000L).fill(1_000L).state();
-        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
+        UUID stationId = UUID.fromString("123e4567-e89b-42d3-a456-426614174700");
 
         RocketFlightPlanResult earthToStation = RocketFlightPlanner.plan(
                 stats,
@@ -193,7 +193,7 @@ class RocketFlightPlannerTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new RocketFlightPlan(
-                        3,
+                        RocketFlightPlan.SCHEMA_VERSION + 1,
                         valid.requestId(),
                         valid.sourceBody(),
                         valid.destinationBody(),

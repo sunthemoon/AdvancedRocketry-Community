@@ -1,11 +1,12 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.TravelFuelFormula;
 
 /** Fixed v0.6 safety and timing limits. Relaxing a limit requires evidence and an ADR. */
 public final class RocketFlightLimits {
-    public static final int FLIGHT_DATA_SCHEMA_VERSION = 1;
-    public static final int TRANSFER_JOURNAL_SCHEMA_VERSION = 1;
+    public static final int FLIGHT_DATA_SCHEMA_VERSION = 2;
+    public static final int TRANSFER_JOURNAL_SCHEMA_VERSION = 2;
     public static final int MAX_PASSENGERS = 16;
     public static final int MAX_COMMITTED_FUEL_DEBITS = 64;
     public static final int MAX_ACTIVE_TRANSFERS = 64;
@@ -25,7 +26,7 @@ public final class RocketFlightLimits {
     public static final long MAX_FUEL_CAPACITY = (long) RocketLimits.MAX_BLOCKS * 1_000L;
     public static final long FUEL_CELL_UNITS = 500L;
     public static final long FUEL_TRANSFER_PER_TICK = 25L;
-    public static final long BASE_TRAVEL_FUEL = 100L;
+    public static final long BASE_TRAVEL_FUEL = TravelFuelFormula.BASE_TRAVEL_FUEL;
     public static final long MAX_TRAVEL_FUEL = MAX_FUEL_CAPACITY;
     public static final int COUNTDOWN_TICKS = 60;
     public static final int ASCENT_TICKS = 80;

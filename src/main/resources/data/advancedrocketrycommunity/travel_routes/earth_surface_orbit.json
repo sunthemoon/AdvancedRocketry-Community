@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "advancedrocketrycommunity:earth_surface_orbit",
+  "from": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:earth"
+  },
+  "to": {
+    "type": "advancedrocketrycommunity:orbit",
+    "body_id": "advancedrocketrycommunity:earth"
+  },
+  "distance_units": 25,
+  "bidirectional": true
+}

@@ -11,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassen
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.persistence.TravelTargetNbtCodec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +22,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
-/** Strict, bounded schema-1 codec for entity flight data. */
+/** Strict, bounded codec with readable schema-1 shadows and schema-2 targets. */
 public final class RocketFlightNbtCodec {
     private static final String SCHEMA = "schema_version";
     private static final String LOGICAL_ROCKET_ID = "logical_rocket_id";
@@ -51,6 +53,12 @@ public final class RocketFlightNbtCodec {
         target.putIntArray(CURRENT_ORIGIN, position(data.currentOrigin()));
         target.putLong(STATE_STARTED, data.stateStartedGameTime());
         data.activeTransferId().ifPresent(id -> target.putUUID(ACTIVE_TRANSFER_ID, id));
+        data.currentTarget().ifPresent(targetValue -> target.put(
+                "current_target",
+                TravelTargetNbtCodec.encode(targetValue).getOrThrow(false, message -> {
+                    throw new IllegalArgumentException(message);
+                })
+        ));
         if (RocketNbtSize.uncompressedBytes(target) > RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES) {
             throw new IllegalArgumentException("Encoded rocket flight data exceeds the fixed NBT limit");
         }
@@ -68,7 +76,7 @@ public final class RocketFlightNbtCodec {
             if (schema > RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION) {
                 return RocketFlightDecodeResult.future(preserved, schema);
             }
-            if (schema != RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION) {
+            if (schema < 1) {
                 return RocketFlightDecodeResult.invalid(preserved, "Unsupported old rocket flight schema " + schema);
             }
             UUID logicalRocketId = requireUuid(source, LOGICAL_ROCKET_ID);
@@ -83,6 +91,12 @@ public final class RocketFlightNbtCodec {
             RocketPosition currentOrigin = requirePosition(source, CURRENT_ORIGIN);
             long stateStarted = requireNonNegativeLong(source, STATE_STARTED);
             UUID activeTransferId = optionalUuid(source, ACTIVE_TRANSFER_ID);
+            TravelTarget currentTarget = schema >= 2
+                    ? TravelTargetNbtCodec.decode(requireCompound(source, "current_target"))
+                            .getOrThrow(false, message -> {
+                                throw new IllegalArgumentException(message);
+                            })
+                    : null;
             return RocketFlightDecodeResult.valid(RocketFlightData.restore(
                     schema,
                     logicalRocketId,
@@ -94,7 +108,8 @@ public final class RocketFlightNbtCodec {
                     currentDimension,
                     currentOrigin,
                     stateStarted,
-                    activeTransferId
+                    activeTransferId,
+                    currentTarget
             ));
         } catch (RuntimeException exception) {
             return RocketFlightDecodeResult.invalid(preserved, safeMessage(exception));
@@ -140,18 +155,48 @@ public final class RocketFlightNbtCodec {
         plan.destinationStation().ifPresent(id -> target.putUUID("destination_station_id", id));
         target.putLong("required_fuel", plan.requiredFuel());
         target.putLong("created_at_game_time", plan.createdAtGameTime());
+        if (plan.schemaVersion() >= 3) {
+            target.put("destination_target", TravelTargetNbtCodec.encode(plan.destinationTarget())
+                    .getOrThrow(false, message -> {
+                        throw new IllegalArgumentException(message);
+                    }));
+        }
         return target;
     }
 
     private static RocketFlightPlan decodePlan(CompoundTag source) {
+        int schema = requireInt(source, SCHEMA);
+        ResourceLocation destinationBody = requireLocation(source, "destination_body");
+        ResourceLocation destinationDimension = requireLocation(source, "destination_dimension");
+        UUID stationId = optionalUuid(source, "destination_station_id");
+        TravelTarget target = schema >= 3
+                ? TravelTargetNbtCodec.decode(requireCompound(source, "destination_target"))
+                        .getOrThrow(false, message -> {
+                            throw new IllegalArgumentException(message);
+                        })
+                : null;
+        if (schema >= 3) {
+            return new RocketFlightPlan(
+                    schema,
+                    requireUuid(source, "request_id"),
+                    requireLocation(source, "source_body"),
+                    destinationBody,
+                    requireLocation(source, "source_dimension"),
+                    destinationDimension,
+                    stationId,
+                    requireNonNegativeLong(source, "required_fuel"),
+                    requireNonNegativeLong(source, "created_at_game_time"),
+                    target
+            );
+        }
         return new RocketFlightPlan(
-                requireInt(source, SCHEMA),
+                schema,
                 requireUuid(source, "request_id"),
                 requireLocation(source, "source_body"),
-                requireLocation(source, "destination_body"),
+                destinationBody,
                 requireLocation(source, "source_dimension"),
-                requireLocation(source, "destination_dimension"),
-                optionalUuid(source, "destination_station_id"),
+                destinationDimension,
+                stationId,
                 requireNonNegativeLong(source, "required_fuel"),
                 requireNonNegativeLong(source, "created_at_game_time")
         );

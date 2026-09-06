@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class RocketFlightQuotesTest {
     private static final RocketStats STATS = new RocketStats(5, 210, 1000, 1000, 1, 1, 1, 1);
+    private static final UUID PREVIEW = UUID.fromString("123e4567-e89b-42d3-a456-426614174742");
+    private static final UUID REQUEST = UUID.fromString("123e4567-e89b-42d3-a456-426614174743");
 
     @Test
     void selectedStationDoesNotReuseTheDefaultMoonQuote() {
@@ -51,8 +53,8 @@ class RocketFlightQuotesTest {
             var quotes = quotes(1000, source, RocketFlightState.FUELED);
             for (var target : RocketDestination.values()) {
                 var result = RocketFlightPlanner.plan(STATS, fuel(1000), source.profile(), target.profile(),
-                        target == RocketDestination.SPACE_STATION ? new UUID(1, 2) : null,
-                        new UUID(3, 4), 42);
+                        target == RocketDestination.SPACE_STATION ? PREVIEW : null,
+                        REQUEST, 42);
                 assertEquals(result.requiredFuel(), quotes.forDestination(target).requiredFuel());
                 assertEquals(result.success(), quotes.forDestination(target).canLaunch());
             }
@@ -72,8 +74,11 @@ class RocketFlightQuotesTest {
         assertEquals(RocketFlightQuotes.empty(), quotes(1000, null, RocketFlightState.FUELED));
         assertEquals(new RocketFlightQuotes.Quote(0, false), RocketFlightQuotes.empty().forDestination(null));
         var invalid = new RocketStats(5, 210, 1000, 1000, 0, 1, 1, 1);
-        assertEquals(RocketFlightQuotes.empty(), RocketFlightQuotes.compute(invalid, fuel(1000),
-                RocketDestination.EARTH, RocketFlightState.FUELED));
+        var invalidQuotes = RocketFlightQuotes.compute(invalid, fuel(1000),
+                RocketDestination.EARTH, RocketFlightState.FUELED);
+        assertFalse(invalidQuotes.earth().canLaunch());
+        assertFalse(invalidQuotes.moon().canLaunch());
+        assertFalse(invalidQuotes.station().canLaunch());
     }
 
     @Test

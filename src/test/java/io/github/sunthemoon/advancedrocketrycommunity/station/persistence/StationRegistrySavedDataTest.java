@@ -83,4 +83,24 @@ final class StationRegistrySavedDataTest {
         assertTrue(blocked.stations().isEmpty());
         assertEquals(encoded, blocked.save(new CompoundTag()));
     }
+
+    @Test
+    void persistedUnknownOrbitBodiesRemainRecoverableButFailCatalogValidation() {
+        StationRegistrySavedData data = new StationRegistrySavedData();
+        UUID validStation = UUID.randomUUID();
+        UUID invalidStation = UUID.randomUUID();
+        UUID invalidReservation = UUID.randomUUID();
+        data.reserve(validStation, UUID.randomUUID(), "Earth", ModIdentity.id("earth"), 0L);
+        data.commit(validStation);
+        data.reserve(invalidStation, UUID.randomUUID(), "Unknown", ModIdentity.id("deleted"), 0L);
+        data.commit(invalidStation);
+        data.reserve(invalidReservation, UUID.randomUUID(), "Pending", ModIdentity.id("missing"), 0L);
+
+        var validation = StationRegistrySavedData.load(data.save(new CompoundTag()))
+                .validateOrbitBodies(ModIdentity.id("earth")::equals);
+        assertTrue(validation.registryOperational());
+        assertFalse(validation.valid());
+        assertEquals(java.util.List.of(invalidStation), validation.invalidStationIds());
+        assertEquals(java.util.List.of(invalidReservation), validation.invalidReservationIds());
+    }
 }

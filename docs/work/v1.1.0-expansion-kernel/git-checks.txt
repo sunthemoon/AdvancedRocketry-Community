@@ -1,0 +1,5 @@
+git diff --check: exit 0
+changed-file trailing whitespace scan: exit 0
+production_changed_files=7
+runtime_integration_changed_files=0
+git diff --exit-code -- src/generated: exit 0

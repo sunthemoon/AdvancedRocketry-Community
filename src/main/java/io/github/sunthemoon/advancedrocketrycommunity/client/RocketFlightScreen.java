@@ -4,9 +4,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestin
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -27,10 +30,12 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private Button earthButton;
     private Button moonButton;
     private Button stationButton;
+    private Button otherBodyButton;
     private Button launchButton;
     private Button cancelButton;
     private Button boardButton;
     private Button leaveButton;
+    private int otherBodyIndex;
 
     public RocketFlightScreen(RocketFlightMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -54,10 +59,14 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
                 body(RocketDestination.MOON),
                 button -> selection.select(RocketDestination.MOON)
         ).bounds(leftPos + 132, topPos + RocketFlightScreenLayout.DESTINATION_BUTTON_Y, 94, 20).build());
+        otherBodyButton = addRenderableWidget(Button.builder(
+                otherBodyLabel(),
+                button -> selectNextOtherBody()
+        ).bounds(leftPos + 22, topPos + 114, 98, 20).build());
         stationButton = addRenderableWidget(Button.builder(
                 stationLabel(),
                 button -> selectNextStation()
-        ).bounds(leftPos + 22, topPos + 114, 204, 20).build());
+        ).bounds(leftPos + 128, topPos + 114, 98, 20).build());
         launchButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.launch"),
                 button -> send(RocketFlightAction.LAUNCH)
@@ -79,12 +88,11 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
 
     private void send(RocketFlightAction action) {
         var target = selection.target(action, menu.activePlan());
-        if (target.destination() != null && menu.rocketEntityId() >= 0) {
+        if (target.target() != null && menu.rocketEntityId() >= 0) {
             RocketFlightNetwork.sendIntent(
                     action,
                     menu.rocketEntityId(),
-                    target.destination(),
-                    target.stationId()
+                    target.target()
             );
         }
     }
@@ -92,6 +100,19 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private void selectNextStation() {
         selection.selectNextStation();
         stationButton.setMessage(stationLabel());
+    }
+
+    private void selectNextOtherBody() {
+        List<TravelTarget.BodySurface> bodies = otherBodies();
+        if (bodies.isEmpty()) {
+            return;
+        }
+        if (selection.selectedTarget() instanceof TravelTarget.BodySurface selected) {
+            int selectedIndex = bodies.indexOf(selected);
+            otherBodyIndex = selectedIndex < 0 ? 0 : (selectedIndex + 1) % bodies.size();
+        }
+        selection.select(bodies.get(otherBodyIndex));
+        otherBodyButton.setMessage(otherBodyLabel());
     }
 
     @Override
@@ -105,25 +126,31 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         if (earthButton == null) {
             return;
         }
-        RocketDestination current = menu.currentDestination();
-        RocketDestination selected = selection.selected();
+        TravelTarget currentTarget = menu.currentTarget();
+        boolean hasOtherBodies = !otherBodies().isEmpty();
         boolean stationary = menu.state() == RocketFlightState.ASSEMBLED
                 || menu.state() == RocketFlightState.FUELED
                 || menu.state() == RocketFlightState.LANDED;
-        earthButton.active = stationary && current != RocketDestination.EARTH;
-        moonButton.active = stationary && current != RocketDestination.MOON;
-        stationButton.active = stationary && current != RocketDestination.SPACE_STATION
+        earthButton.active = stationary && !new TravelTarget.BodySurface(CelestialIds.EARTH_ID).equals(currentTarget);
+        moonButton.active = stationary && !new TravelTarget.BodySurface(CelestialIds.MOON_ID).equals(currentTarget);
+        otherBodyButton.visible = hasOtherBodies;
+        otherBodyButton.active = stationary && hasOtherBodies;
+        stationButton.active = stationary && !(currentTarget instanceof TravelTarget.Station)
                 && !menu.accessibleStations().isEmpty();
         earthButton.setMessage(choiceLabel(RocketDestination.EARTH));
         moonButton.setMessage(choiceLabel(RocketDestination.MOON));
         stationButton.setMessage(stationLabel());
+        otherBodyButton.setMessage(otherBodyLabel());
         boolean countdown = menu.state() == RocketFlightState.COUNTDOWN;
         launchButton.visible = !countdown;
-        boolean quotedLaunch = menu.quotes().forDestination(selected).canLaunch();
+        boolean quotedLaunch = menu.quotes().forTarget(
+                selection.target(RocketFlightAction.LAUNCH, menu.activePlan()).target()
+        ).canLaunch();
         launchButton.active = stationary && quotedLaunch
-                && selected != null
-                && selected != current
-                && (selected != RocketDestination.SPACE_STATION || selection.stationId() != null);
+                && selection.selectedTarget() != null
+                && !java.util.Objects.equals(selection.selectedTarget(), currentTarget)
+                && (!(selection.selectedTarget() instanceof TravelTarget.Station)
+                || selection.stationId() != null);
         cancelButton.visible = countdown;
         cancelButton.active = countdown && menu.activePlan().destination() != null;
         boardButton.visible = stationary;
@@ -133,9 +160,12 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     }
 
     private Component choiceLabel(RocketDestination destination) {
-        return Component.literal(displayedDestination() == destination ? "[ " : "  ")
+        TravelTarget target = destination == RocketDestination.EARTH
+                ? new TravelTarget.BodySurface(CelestialIds.EARTH_ID)
+                : new TravelTarget.BodySurface(CelestialIds.MOON_ID);
+        return Component.literal(java.util.Objects.equals(displayedTarget(), target) ? "[ " : "  ")
                 .append(body(destination))
-                .append(displayedDestination() == destination ? " ]" : "  ");
+                .append(java.util.Objects.equals(displayedTarget(), target) ? " ]" : "  ");
     }
 
     private Component stationLabel() {
@@ -161,6 +191,29 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         return displayedDestination() == RocketDestination.SPACE_STATION
                 ? Component.literal("[ ").append(label).append(" ]")
                 : label;
+    }
+
+    private Component otherBodyLabel() {
+        List<TravelTarget.BodySurface> bodies = otherBodies();
+        if (bodies.isEmpty()) {
+            return Component.empty();
+        }
+        otherBodyIndex = Math.min(otherBodyIndex, bodies.size() - 1);
+        TravelTarget.BodySurface target = bodies.get(otherBodyIndex);
+        Component label = targetLabel(target);
+        return java.util.Objects.equals(displayedTarget(), target)
+                ? Component.literal("[ ").append(label).append(" ]")
+                : label;
+    }
+
+    private List<TravelTarget.BodySurface> otherBodies() {
+        return menu.quotes().entries().stream()
+                .map(RocketFlightQuotes.TargetQuote::target)
+                .filter(TravelTarget.BodySurface.class::isInstance)
+                .map(TravelTarget.BodySurface.class::cast)
+                .filter(target -> !target.bodyId().equals(CelestialIds.EARTH_ID)
+                        && !target.bodyId().equals(CelestialIds.MOON_ID))
+                .toList();
     }
 
     @Override
@@ -198,11 +251,11 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE7F0F2, false);
-        RocketDestination current = menu.currentDestination();
-        RocketDestination selected = displayedDestination();
+        TravelTarget current = menu.currentTarget();
+        TravelTarget selected = displayedTarget();
         Component route = Component.translatable("screen.advancedrocketrycommunity.rocket.route",
-                current == null ? Component.literal("?") : body(current),
-                selected == null ? Component.literal("?") : body(selected));
+                current == null ? Component.literal("?") : targetLabel(current),
+                selected == null ? Component.literal("?") : targetLabel(selected));
         graphics.drawString(font, route, 22, 33, 0xFFD6E2E5, false);
         graphics.drawString(
                 font,
@@ -263,14 +316,36 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         return selection.displayedDestination(menu.state(), menu.activePlan());
     }
 
+    private TravelTarget displayedTarget() {
+        return selection.displayedTarget(menu.state(), menu.activePlan());
+    }
+
+    private Component targetLabel(TravelTarget target) {
+        if (target instanceof TravelTarget.BodySurface surface) {
+            return Component.translatable("body." + surface.bodyId().getNamespace() + "."
+                    + surface.bodyId().getPath().replace('/', '.'));
+        }
+        if (target instanceof TravelTarget.Station station) {
+            return menu.accessibleStations().stream()
+                    .filter(summary -> summary.stationId().equals(station.instanceId()))
+                    .map(summary -> (Component) Component.literal(summary.name()))
+                    .findFirst()
+                    .orElseGet(() -> Component.literal(station.instanceId().toString()));
+        }
+        return Component.literal(target.typeId().toString());
+    }
+
     private void initializeSelection() {
         if (menu.hasPlanSnapshot()) {
-            selection.initialize(menu.plannedDestination(), menu.currentDestination(), menu.activePlan().stationId());
+            selection.initialize(menu.activePlan().target(), menu.currentTarget());
         }
     }
 
     private int displayedRequiredFuel() {
-        return menu.quotes().forDestination(displayedDestination()).requiredFuel();
+        var target = menu.state() == RocketFlightState.COUNTDOWN
+                ? menu.activePlan().target()
+                : selection.target(RocketFlightAction.LAUNCH, menu.activePlan()).target();
+        return menu.quotes().forTarget(target).requiredFuel();
     }
 
     private static String stateKey(RocketFlightState state) {

@@ -1,0 +1,12 @@
+baseline=a4ae20190e9f9a36b2a3cbabf1ea44b6746bc7d6
+production_changed_files=7
+scope=travel/model/**, travel/persistence/**, TravelTargetCodecTest, v1.1.0-dev metadata identity
+runtime_integration_changed_files=0
+
+gradle.properties
+src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/model/TravelTarget.java
+src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/model/TravelTargetCodec.java
+src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/persistence/TravelTargetNbtCodec.java
+src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/persistence/TravelTargetNbtSize.java
+src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java
+src/test/java/io/github/sunthemoon/advancedrocketrycommunity/travel/TravelTargetCodecTest.java

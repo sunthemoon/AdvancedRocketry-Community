@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "advancedrocketrycommunity:test_earth_mars",
+  "from": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:earth"
+  },
+  "to": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:test_mars"
+  },
+  "distance_units": 225,
+  "bidirectional": true
+}

@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,8 +39,8 @@ final class RocketTransferChecksum {
                 writeUuid(output, sourceEntityId);
                 writeSnapshot(output, sourceSnapshot);
                 writeSnapshot(output, destinationSnapshot);
-                writeFlight(output, sourceFlightData);
-                writeFlight(output, destinationFlightData);
+                writeFlight(output, sourceFlightData, schemaVersion);
+                writeFlight(output, destinationFlightData, schemaVersion);
                 output.writeLong(requiredFuel);
                 output.writeLong(createdAtGameTime);
             }
@@ -64,7 +65,11 @@ final class RocketTransferChecksum {
         output.writeLong(snapshot.createdAtGameTime());
     }
 
-    private static void writeFlight(DataOutputStream output, RocketFlightData data) throws IOException {
+    private static void writeFlight(
+            DataOutputStream output,
+            RocketFlightData data,
+            int transferSchemaVersion
+    ) throws IOException {
         output.writeInt(data.schemaVersion());
         writeUuid(output, data.logicalRocketId());
         writeString(output, data.state().name());
@@ -89,6 +94,9 @@ final class RocketTransferChecksum {
                     writeUuid(output, plan.destinationStation().orElseThrow());
                 }
             }
+            if (transferSchemaVersion >= 2) {
+                writeTarget(output, plan.destinationTarget());
+            }
             output.writeLong(plan.requiredFuel());
             output.writeLong(plan.createdAtGameTime());
         }
@@ -105,6 +113,25 @@ final class RocketTransferChecksum {
         output.writeBoolean(data.activeTransferId().isPresent());
         if (data.activeTransferId().isPresent()) {
             writeUuid(output, data.activeTransferId().orElseThrow());
+        }
+        if (transferSchemaVersion >= 2) {
+            writeTarget(output, data.currentTarget().orElseThrow());
+        }
+    }
+
+    private static void writeTarget(DataOutputStream output, TravelTarget target) throws IOException {
+        output.writeInt(target.schemaVersion());
+        writeString(output, target.typeId().toString());
+        if (target instanceof TravelTarget.BodySurface surface) {
+            writeString(output, surface.bodyId().toString());
+        } else if (target instanceof TravelTarget.Orbit orbit) {
+            writeString(output, orbit.bodyId().toString());
+        } else if (target instanceof TravelTarget.Station station) {
+            writeUuid(output, station.instanceId());
+        } else if (target instanceof TravelTarget.Mission mission) {
+            writeUuid(output, mission.instanceId());
+        } else {
+            throw new IllegalArgumentException("Unsupported travel target implementation");
         }
     }
 

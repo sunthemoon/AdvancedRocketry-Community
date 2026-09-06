@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://advancedrocketrycommunity.example/schema/v1.1/route-definition.schema.json",
+  "title": "ARCE v1.1 RouteDefinition contract draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "from", "to", "distance_units", "bidirectional"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"$ref": "#/$defs/resource_location"},
+    "from": {"$ref": "#/$defs/anchor"},
+    "to": {"$ref": "#/$defs/anchor"},
+    "distance_units": {"type": "integer", "minimum": 0, "maximum": 1000000},
+    "bidirectional": {"type": "boolean"}
+  },
+  "$defs": {
+    "resource_location": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9_.-]+:[a-z0-9/._-]+$"
+    },
+    "anchor": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "body_id"],
+          "properties": {
+            "type": {"const": "advancedrocketrycommunity:body_surface"},
+            "body_id": {"$ref": "#/$defs/resource_location"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "body_id"],
+          "properties": {
+            "type": {"const": "advancedrocketrycommunity:orbit"},
+            "body_id": {"$ref": "#/$defs/resource_location"}
+          }
+        }
+      ]
+    }
+  }
+}

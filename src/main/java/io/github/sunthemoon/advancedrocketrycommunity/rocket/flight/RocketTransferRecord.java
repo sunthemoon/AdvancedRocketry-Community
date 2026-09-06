@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Immutable schema-1 authority record for one bounded inter-Level rocket transfer. */
+/** Immutable, versioned authority record for one bounded inter-Level rocket transfer. */
 public final class RocketTransferRecord {
     private final int schemaVersion;
     private final UUID transferId;
@@ -38,7 +38,7 @@ public final class RocketTransferRecord {
             long createdAtGameTime,
             String checksum
     ) {
-        if (schemaVersion != RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION) {
+        if (schemaVersion < 1 || schemaVersion > RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported rocket transfer record schema");
         }
         this.schemaVersion = schemaVersion;
@@ -52,6 +52,10 @@ public final class RocketTransferRecord {
         this.destinationSnapshot = Objects.requireNonNull(destinationSnapshot, "destinationSnapshot");
         this.sourceFlightData = Objects.requireNonNull(sourceFlightData, "sourceFlightData");
         this.destinationFlightData = Objects.requireNonNull(destinationFlightData, "destinationFlightData");
+        if (sourceFlightData.schemaVersion() != schemaVersion
+                || destinationFlightData.schemaVersion() != schemaVersion) {
+            throw new IllegalArgumentException("Transfer and flight data schemas must agree");
+        }
         if (requiredFuel <= 0L || requiredFuel > RocketFlightLimits.MAX_TRAVEL_FUEL) {
             throw new IllegalArgumentException("Transfer fuel is outside the fixed limit");
         }
@@ -178,6 +182,51 @@ public final class RocketTransferRecord {
             throw new IllegalStateException("Only destination-authoritative recovery may rebind an entity");
         }
         return copy(phase, Objects.requireNonNull(entityId, "entityId"));
+    }
+
+    /** Upgrades a completed legacy authority record after recovery has selected its authoritative side. */
+    public RocketTransferRecord migrateTargets(
+            io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget sourceTarget,
+            io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget destinationTarget
+    ) {
+        if (schemaVersion != 1) {
+            throw new IllegalStateException("Only schema-1 transfer records require target migration");
+        }
+        if (phase != RocketTransferPhase.COMMITTED) {
+            throw new IllegalStateException("Active legacy authority must finish before target migration");
+        }
+        RocketFlightData migratedSource = sourceFlightData.withMigratedCurrentTarget(sourceTarget);
+        RocketFlightData migratedDestination = destinationFlightData.withMigratedCurrentTarget(destinationTarget);
+        int migratedSchema = RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION;
+        String migratedChecksum = RocketTransferChecksum.compute(
+                migratedSchema,
+                transferId,
+                logicalRocketId,
+                ownerId,
+                sourceEntityId,
+                sourceSnapshot,
+                destinationSnapshot,
+                migratedSource,
+                migratedDestination,
+                requiredFuel,
+                createdAtGameTime
+        );
+        return new RocketTransferRecord(
+                migratedSchema,
+                transferId,
+                phase,
+                logicalRocketId,
+                ownerId,
+                sourceEntityId,
+                destinationEntityId,
+                sourceSnapshot,
+                destinationSnapshot,
+                migratedSource,
+                migratedDestination,
+                requiredFuel,
+                createdAtGameTime,
+                migratedChecksum
+        );
     }
 
     private RocketTransferRecord copy(RocketTransferPhase updatedPhase, UUID updatedDestinationEntityId) {

@@ -2,12 +2,13 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 
-/** Immutable schema-1 entity flight state; world mutation remains a server service. */
+/** Immutable versioned entity flight state; world mutation remains a server service. */
 public final class RocketFlightData {
     private final int schemaVersion;
     private final UUID logicalRocketId;
@@ -20,6 +21,7 @@ public final class RocketFlightData {
     private final RocketPosition currentOrigin;
     private final long stateStartedGameTime;
     private final UUID activeTransferId;
+    private final TravelTarget currentTarget;
 
     private RocketFlightData(
             int schemaVersion,
@@ -32,9 +34,10 @@ public final class RocketFlightData {
             ResourceLocation currentDimension,
             RocketPosition currentOrigin,
             long stateStartedGameTime,
-            UUID activeTransferId
+            UUID activeTransferId,
+            TravelTarget currentTarget
     ) {
-        if (schemaVersion != RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION) {
+        if (schemaVersion < 1 || schemaVersion > RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported rocket flight data schema");
         }
         this.schemaVersion = schemaVersion;
@@ -51,6 +54,11 @@ public final class RocketFlightData {
         }
         this.stateStartedGameTime = stateStartedGameTime;
         this.activeTransferId = activeTransferId;
+        if ((schemaVersion == 1) != (currentTarget == null)) {
+            throw new IllegalArgumentException("Flight schema and current target shape disagree");
+        }
+        this.currentTarget = currentTarget;
+        validateCurrentTarget();
         validateStateShape();
     }
 
@@ -63,6 +71,20 @@ public final class RocketFlightData {
             RocketPosition origin,
             long gameTime
     ) {
+        return initial(logicalRocketId, fuelCapacity, declaredSeats, body, dimension,
+                origin, gameTime, new TravelTarget.BodySurface(body));
+    }
+
+    public static RocketFlightData initial(
+            UUID logicalRocketId,
+            long fuelCapacity,
+            int declaredSeats,
+            ResourceLocation body,
+            ResourceLocation dimension,
+            RocketPosition origin,
+            long gameTime,
+            TravelTarget currentTarget
+    ) {
         return restore(
                 RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION,
                 logicalRocketId,
@@ -74,7 +96,8 @@ public final class RocketFlightData {
                 dimension,
                 origin,
                 gameTime,
-                null
+                null,
+                currentTarget
         );
     }
 
@@ -91,6 +114,28 @@ public final class RocketFlightData {
             long stateStartedGameTime,
             UUID activeTransferId
     ) {
+        TravelTarget target = schemaVersion == 1
+                ? null
+                : new TravelTarget.BodySurface(currentBody);
+        return restore(schemaVersion, logicalRocketId, state, fuel, plan, passengers,
+                currentBody, currentDimension, currentOrigin, stateStartedGameTime,
+                activeTransferId, target);
+    }
+
+    public static RocketFlightData restore(
+            int schemaVersion,
+            UUID logicalRocketId,
+            RocketFlightState state,
+            RocketFuelState fuel,
+            RocketFlightPlan plan,
+            RocketPassengerManifest passengers,
+            ResourceLocation currentBody,
+            ResourceLocation currentDimension,
+            RocketPosition currentOrigin,
+            long stateStartedGameTime,
+            UUID activeTransferId,
+            TravelTarget currentTarget
+    ) {
         return new RocketFlightData(
                 schemaVersion,
                 logicalRocketId,
@@ -102,7 +147,8 @@ public final class RocketFlightData {
                 currentDimension,
                 currentOrigin,
                 stateStartedGameTime,
-                activeTransferId
+                activeTransferId,
+                currentTarget
         );
     }
 
@@ -150,6 +196,33 @@ public final class RocketFlightData {
         return Optional.ofNullable(activeTransferId);
     }
 
+    public Optional<TravelTarget> currentTarget() {
+        return Optional.ofNullable(currentTarget);
+    }
+
+    public RocketFlightData withMigratedCurrentTarget(TravelTarget target) {
+        if (schemaVersion != 1) {
+            if (Objects.equals(currentTarget, target)) {
+                return this;
+            }
+            throw new IllegalStateException("Only schema-1 flight data requires target migration");
+        }
+        return restore(
+                RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION,
+                logicalRocketId,
+                state,
+                fuel,
+                plan,
+                passengers,
+                currentBody,
+                currentDimension,
+                currentOrigin,
+                stateStartedGameTime,
+                activeTransferId,
+                Objects.requireNonNull(target, "target")
+        );
+    }
+
     public RocketFlightData withFuel(RocketFuelState updatedFuel, long gameTime) {
         Objects.requireNonNull(updatedFuel, "updatedFuel");
         if (updatedFuel.capacity() != fuel.capacity()) {
@@ -179,8 +252,7 @@ public final class RocketFlightData {
         if (state != RocketFlightState.FUELED) {
             throw new IllegalStateException("Only a fueled rocket may accept a flight plan");
         }
-        if (!updatedPlan.sourceBody().equals(currentBody)
-                || !updatedPlan.sourceDimension().equals(currentDimension)) {
+        if (!planSourceMatches(updatedPlan)) {
             throw new IllegalArgumentException("Flight plan source does not match the rocket location");
         }
         return copy(state, fuel, updatedPlan, passengers, currentBody, currentDimension,
@@ -235,7 +307,9 @@ public final class RocketFlightData {
         RocketFlightTransition transition = requireTransition(
                 RocketFlightEvent.DESTINATION_AUTHORITY_ACQUIRED
         );
-        return copy(
+        return restore(
+                RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION,
+                logicalRocketId,
                 transition.next(),
                 debitedFuel,
                 plan,
@@ -244,7 +318,8 @@ public final class RocketFlightData {
                 dimension,
                 Objects.requireNonNull(origin, "origin"),
                 requireGameTime(gameTime),
-                activeTransferId
+                activeTransferId,
+                plan.destinationTarget()
         );
     }
 
@@ -324,8 +399,25 @@ public final class RocketFlightData {
                 updatedDimension,
                 updatedOrigin,
                 updatedStartedAt,
-                updatedTransferId
+                updatedTransferId,
+                currentTarget
         );
+    }
+
+    private void validateCurrentTarget() {
+        if (currentTarget instanceof TravelTarget.BodySurface surface
+                && !surface.bodyId().equals(currentBody)) {
+            throw new IllegalArgumentException("Current surface target does not match current body");
+        }
+        if (currentTarget instanceof TravelTarget.Orbit orbit
+                && !orbit.bodyId().equals(currentBody)) {
+            throw new IllegalArgumentException("Current orbit target does not match current body");
+        }
+        if (currentTarget instanceof TravelTarget.Station
+                && !currentDimension.equals(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds
+                        .SPACE_LEVEL.location())) {
+            throw new IllegalArgumentException("Current station target is outside the shared Space Level");
+        }
     }
 
     private void validateStateShape() {
@@ -357,8 +449,7 @@ public final class RocketFlightData {
             throw new IllegalArgumentException("Non-transfer state cannot retain a transaction id");
         }
         if (plan != null) {
-            boolean atSource = plan.sourceBody().equals(currentBody)
-                    && plan.sourceDimension().equals(currentDimension);
+            boolean atSource = planSourceMatches(plan);
             boolean atDestination = plan.destinationBody().equals(currentBody)
                     && plan.destinationDimension().equals(currentDimension);
             if (!atSource && !atDestination) {
@@ -373,6 +464,22 @@ public final class RocketFlightData {
                 throw new IllegalArgumentException("Descent flight state must be at the destination");
             }
         }
+    }
+
+    private boolean planSourceMatches(RocketFlightPlan candidate) {
+        if (!candidate.sourceDimension().equals(currentDimension)) {
+            return false;
+        }
+        if (schemaVersion == 1 || currentTarget == null) {
+            return candidate.sourceBody().equals(currentBody);
+        }
+        if (currentTarget instanceof TravelTarget.BodySurface surface) {
+            return candidate.sourceBody().equals(surface.bodyId());
+        }
+        if (currentTarget instanceof TravelTarget.Orbit orbit) {
+            return candidate.sourceBody().equals(orbit.bodyId());
+        }
+        return currentTarget instanceof TravelTarget.Station;
     }
 
     private static ResourceLocation requireIdentifier(ResourceLocation value, String name) {
@@ -403,7 +510,8 @@ public final class RocketFlightData {
                 && currentDimension.equals(other.currentDimension)
                 && currentOrigin.equals(other.currentOrigin)
                 && stateStartedGameTime == other.stateStartedGameTime
-                && Objects.equals(activeTransferId, other.activeTransferId);
+                && Objects.equals(activeTransferId, other.activeTransferId)
+                && Objects.equals(currentTarget, other.currentTarget);
     }
 
     @Override
@@ -419,7 +527,8 @@ public final class RocketFlightData {
                 currentDimension,
                 currentOrigin,
                 stateStartedGameTime,
-                activeTransferId
+                activeTransferId,
+                currentTarget
         );
     }
 }

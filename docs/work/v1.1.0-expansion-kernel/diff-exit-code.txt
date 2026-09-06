@@ -1,0 +1,2 @@
+git diff --exit-code -- src/generated: exit 0
+git diff --exit-code: exit 1 (expected while reviewed slice is uncommitted)

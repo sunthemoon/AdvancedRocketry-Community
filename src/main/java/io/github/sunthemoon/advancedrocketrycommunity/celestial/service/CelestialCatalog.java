@@ -20,13 +20,17 @@ public final class CelestialCatalog {
     public static final int MAX_BODIES = 128;
 
     private final Map<ResourceLocation, CelestialBodyDefinition> definitions;
-    private final Map<ResourceKey<Level>, CelestialBodyDefinition> definitionsByLevel;
+    private final Map<ResourceKey<Level>, List<CelestialBodyDefinition>> definitionsByLevel;
 
     private CelestialCatalog(Map<ResourceLocation, CelestialBodyDefinition> definitions) {
         this.definitions = Collections.unmodifiableMap(new LinkedHashMap<>(definitions));
-        Map<ResourceKey<Level>, CelestialBodyDefinition> byLevel = new LinkedHashMap<>();
-        definitions.values().forEach(definition -> byLevel.putIfAbsent(definition.levelKey(), definition));
-        this.definitionsByLevel = Collections.unmodifiableMap(byLevel);
+        Map<ResourceKey<Level>, List<CelestialBodyDefinition>> byLevel = new LinkedHashMap<>();
+        definitions.values().forEach(definition -> byLevel
+                .computeIfAbsent(definition.levelKey(), ignored -> new ArrayList<>())
+                .add(definition));
+        Map<ResourceKey<Level>, List<CelestialBodyDefinition>> immutableByLevel = new LinkedHashMap<>();
+        byLevel.forEach((level, candidates) -> immutableByLevel.put(level, List.copyOf(candidates)));
+        this.definitionsByLevel = Collections.unmodifiableMap(immutableByLevel);
     }
 
     public static DataResult<CelestialCatalog> create(Collection<CelestialBodyDefinition> values) {
@@ -93,7 +97,12 @@ public final class CelestialCatalog {
     }
 
     public Optional<CelestialBodyDefinition> forLevel(ResourceKey<Level> levelKey) {
-        return Optional.ofNullable(definitionsByLevel.get(levelKey));
+        List<CelestialBodyDefinition> candidates = definitionsByLevel.getOrDefault(levelKey, List.of());
+        return candidates.size() == 1 ? Optional.of(candidates.get(0)) : Optional.empty();
+    }
+
+    public List<CelestialBodyDefinition> candidatesForLevel(ResourceKey<Level> levelKey) {
+        return definitionsByLevel.getOrDefault(levelKey, List.of());
     }
 
     private static String findCycle(Map<ResourceLocation, CelestialBodyDefinition> definitions) {

@@ -4,62 +4,45 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.netty.buffer.Unpooled;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 class RocketFlightIntentPacketTest {
     private static final UUID REQUEST = UUID.fromString("00000000-0000-0000-0000-000000000661");
+    private static final UUID INSTANCE = UUID.fromString("123e4567-e89b-42d3-a456-426614174700");
 
-    @Test
-    void boundedIntentRoundTripsWithoutCoordinatesOrClientStats() {
-        RocketFlightIntentPacket original = new RocketFlightIntentPacket(
-                RocketFlightAction.LAUNCH,
-                42,
-                RocketDestination.MOON,
-                REQUEST
-        );
-        withBuffer(buffer -> {
-            original.encode(buffer);
-            RocketFlightIntentPacket decoded = RocketFlightIntentPacket.decode(buffer);
-
-            assertEquals(original, decoded);
-            assertEquals(0, buffer.readableBytes());
-        });
+    @BeforeAll
+    static void bootstrapMinecraftRegistries() {
+        MinecraftBootstrap.initialize();
     }
 
     @Test
-    void stationIntentRoundTripsOnlyTheBoundedStationUuid() {
-        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
-        RocketFlightIntentPacket original = new RocketFlightIntentPacket(
-                RocketFlightAction.LAUNCH,
-                7,
-                RocketDestination.SPACE_STATION,
-                stationId,
-                REQUEST
+    void everyTargetKindRoundTripsWithoutCoordinatesOrClientRouteCost() {
+        List<TravelTarget> targets = List.of(
+                new TravelTarget.BodySurface(CelestialIds.MOON_ID),
+                new TravelTarget.Orbit(CelestialIds.EARTH_ID),
+                new TravelTarget.Station(INSTANCE),
+                new TravelTarget.Mission(INSTANCE)
         );
-        withBuffer(buffer -> {
-            original.encode(buffer);
-            assertEquals(original, RocketFlightIntentPacket.decode(buffer));
-            assertEquals(0, buffer.readableBytes());
-        });
-        assertThrows(IllegalArgumentException.class, () -> new RocketFlightIntentPacket(
-                RocketFlightAction.LAUNCH,
-                7,
-                RocketDestination.SPACE_STATION,
-                null,
-                REQUEST
-        ));
-        assertThrows(IllegalArgumentException.class, () -> new RocketFlightIntentPacket(
-                RocketFlightAction.LAUNCH,
-                7,
-                RocketDestination.EARTH,
-                stationId,
-                REQUEST
-        ));
+        for (TravelTarget target : targets) {
+            RocketFlightIntentPacket original = new RocketFlightIntentPacket(
+                    RocketFlightAction.LAUNCH, 42, target, REQUEST
+            );
+            withBuffer(buffer -> {
+                original.encode(buffer);
+                assertEquals(original, RocketFlightIntentPacket.decode(buffer));
+                assertEquals(0, buffer.readableBytes());
+            });
+        }
     }
 
     @Test
@@ -67,38 +50,36 @@ class RocketFlightIntentPacketTest {
         assertThrows(IllegalArgumentException.class, () -> new RocketFlightIntentPacket(
                 RocketFlightAction.LAUNCH,
                 -1,
-                RocketDestination.MOON,
+                new TravelTarget.BodySurface(CelestialIds.MOON_ID),
                 REQUEST
         ));
 
         withBuffer(invalidAction -> {
             invalidAction.writeByte(255);
             invalidAction.writeVarInt(1);
-            invalidAction.writeByte(RocketDestination.MOON.networkId());
+            writeSurfaceTarget(invalidAction, CelestialIds.MOON_ID);
             invalidAction.writeUUID(REQUEST);
             assertThrows(IllegalArgumentException.class, () -> RocketFlightIntentPacket.decode(invalidAction));
         });
 
-        withBuffer(invalidDestination -> {
-            invalidDestination.writeByte(RocketFlightAction.LAUNCH.networkId());
-            invalidDestination.writeVarInt(1);
-            invalidDestination.writeByte(255);
-            invalidDestination.writeUUID(REQUEST);
-            assertThrows(
-                    IllegalArgumentException.class,
-                    () -> RocketFlightIntentPacket.decode(invalidDestination)
-            );
+        withBuffer(invalidTarget -> {
+            invalidTarget.writeByte(RocketFlightAction.LAUNCH.networkId());
+            invalidTarget.writeVarInt(1);
+            invalidTarget.writeByte(TravelTarget.SCHEMA_VERSION);
+            invalidTarget.writeByte(255);
+            invalidTarget.writeUUID(REQUEST);
+            assertThrows(IllegalArgumentException.class, () -> RocketFlightIntentPacket.decode(invalidTarget));
         });
     }
 
     @Test
-    void exactMaximumStationFrameRoundTrips() {
-        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
+    void exactMaximumBodyFrameRoundTrips() {
+        ResourceLocation longest = ResourceLocation.tryBuild("a", "a".repeat(126));
+        assertEquals(TravelTarget.MAX_RESOURCE_LOCATION_CHARS, longest.toString().length());
         RocketFlightIntentPacket original = new RocketFlightIntentPacket(
                 RocketFlightAction.LAUNCH,
                 Integer.MAX_VALUE,
-                RocketDestination.SPACE_STATION,
-                stationId,
+                new TravelTarget.BodySurface(longest),
                 REQUEST
         );
 
@@ -114,11 +95,9 @@ class RocketFlightIntentPacketTest {
         byte[] canonical = encode(new RocketFlightIntentPacket(
                 RocketFlightAction.LAUNCH,
                 Integer.MAX_VALUE,
-                RocketDestination.SPACE_STATION,
-                UUID.fromString("00000000-0000-0000-0000-000000000700"),
+                new TravelTarget.Station(INSTANCE),
                 REQUEST
         ));
-        assertEquals(RocketFlightIntentPacket.MAX_ENCODED_BYTES, canonical.length);
 
         for (int length = 0; length < canonical.length; length++) {
             int truncatedLength = length;
@@ -138,7 +117,7 @@ class RocketFlightIntentPacketTest {
         byte[] canonical = encode(new RocketFlightIntentPacket(
                 RocketFlightAction.LAUNCH,
                 42,
-                RocketDestination.MOON,
+                new TravelTarget.BodySurface(CelestialIds.MOON_ID),
                 REQUEST
         ));
 
@@ -159,7 +138,6 @@ class RocketFlightIntentPacketTest {
                     () -> RocketFlightIntentPacket.decode(oversized)
             );
             assertTrue(error.getMessage().contains("outside the bounded protocol"));
-            assertEquals(RocketFlightIntentPacket.MAX_ENCODED_BYTES + 1, oversized.readerIndex(0).readableBytes());
         });
     }
 
@@ -169,7 +147,7 @@ class RocketFlightIntentPacketTest {
             overlongZero.writeByte(RocketFlightAction.LAUNCH.networkId());
             overlongZero.writeByte(0x80);
             overlongZero.writeByte(0x00);
-            overlongZero.writeByte(RocketDestination.MOON.networkId());
+            writeSurfaceTarget(overlongZero, CelestialIds.MOON_ID);
             overlongZero.writeUUID(REQUEST);
             IllegalArgumentException error = assertThrows(
                     IllegalArgumentException.class,
@@ -183,29 +161,48 @@ class RocketFlightIntentPacketTest {
             for (int index = 0; index < 6; index++) {
                 overflow.writeByte(0x80);
             }
-            overflow.writeByte(RocketDestination.MOON.networkId());
+            writeSurfaceTarget(overflow, CelestialIds.MOON_ID);
             overflow.writeUUID(REQUEST);
             assertThrows(RuntimeException.class, () -> RocketFlightIntentPacket.decode(overflow));
         });
     }
 
     @Test
-    void negativeEntityAndMissingStationPayloadFailClosedOnTheWire() {
+    void invalidSchemaNegativeEntityAndMissingTargetPayloadFailClosed() {
+        withBuffer(invalidSchema -> {
+            invalidSchema.writeByte(RocketFlightAction.LAUNCH.networkId());
+            invalidSchema.writeVarInt(1);
+            invalidSchema.writeByte(TravelTarget.SCHEMA_VERSION + 1);
+            invalidSchema.writeByte(0);
+            invalidSchema.writeUtf(CelestialIds.MOON_ID.toString());
+            invalidSchema.writeUUID(REQUEST);
+            assertThrows(IllegalArgumentException.class,
+                    () -> RocketFlightIntentPacket.decode(invalidSchema));
+        });
+
         withBuffer(negativeEntity -> {
             negativeEntity.writeByte(RocketFlightAction.LAUNCH.networkId());
             negativeEntity.writeVarInt(-1);
-            negativeEntity.writeByte(RocketDestination.MOON.networkId());
+            writeSurfaceTarget(negativeEntity, CelestialIds.MOON_ID);
             negativeEntity.writeUUID(REQUEST);
-            assertThrows(IllegalArgumentException.class, () -> RocketFlightIntentPacket.decode(negativeEntity));
+            assertThrows(IllegalArgumentException.class,
+                    () -> RocketFlightIntentPacket.decode(negativeEntity));
         });
 
         withBuffer(missingStation -> {
             missingStation.writeByte(RocketFlightAction.LAUNCH.networkId());
             missingStation.writeVarInt(1);
-            missingStation.writeByte(RocketDestination.SPACE_STATION.networkId());
-            missingStation.writeUUID(REQUEST);
-            assertThrows(RuntimeException.class, () -> RocketFlightIntentPacket.decode(missingStation));
+            missingStation.writeByte(TravelTarget.SCHEMA_VERSION);
+            missingStation.writeByte(2);
+            assertThrows(RuntimeException.class,
+                    () -> RocketFlightIntentPacket.decode(missingStation));
         });
+    }
+
+    private static void writeSurfaceTarget(FriendlyByteBuf buffer, ResourceLocation bodyId) {
+        buffer.writeByte(TravelTarget.SCHEMA_VERSION);
+        buffer.writeByte(0);
+        buffer.writeUtf(bodyId.toString());
     }
 
     private static byte[] encode(RocketFlightIntentPacket packet) {

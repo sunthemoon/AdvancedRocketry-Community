@@ -35,6 +35,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteDefinitionReloadListener;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -53,6 +55,7 @@ public final class AdvancedRocketryCommunity {
 
     private final CelestialCatalogManager celestialCatalogs = new CelestialCatalogManager();
     private final SatelliteCatalogManager satelliteCatalogs = new SatelliteCatalogManager();
+    private final RouteCatalogManager routeCatalogs = new RouteCatalogManager();
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
     private final RocketManager rocketManager;
@@ -75,13 +78,13 @@ public final class AdvancedRocketryCommunity {
         CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
         atmosphereManager = new AtmosphereManager(environments);
         AtmosphereRuntime.install(atmosphereManager);
-        stationManager = new StationManager();
+        stationManager = new StationManager(celestialCatalogs);
         StationRuntime.install(stationManager);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
-        rocketManager = new RocketManager();
+        rocketManager = new RocketManager(celestialCatalogs, routeCatalogs);
         RocketRuntime.install(rocketManager);
         new RocketFlightNetwork();
         MinecraftForge.EVENT_BUS.addListener(rocketManager::onServerTick);
@@ -149,6 +152,7 @@ public final class AdvancedRocketryCommunity {
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new CelestialDefinitionReloadListener(celestialCatalogs));
+        event.addListener(new RouteDefinitionReloadListener(routeCatalogs, celestialCatalogs));
         event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs));
     }
 
@@ -158,6 +162,7 @@ public final class AdvancedRocketryCommunity {
         rocketManager.clear();
         stationManager.clear();
         satelliteManager.clear();
+        routeCatalogs.clear();
         StationRuntime.clear();
         SatelliteRuntime.clear();
         celestialCatalogs.clear();

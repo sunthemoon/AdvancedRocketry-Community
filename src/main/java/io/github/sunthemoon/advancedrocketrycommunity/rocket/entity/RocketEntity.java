@@ -28,6 +28,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -78,15 +79,24 @@ public final class RocketEntity extends Entity implements MenuProvider {
             UUID ownerId
     ) {
         Objects.requireNonNull(snapshot, "snapshot");
+        if (!(level() instanceof ServerLevel serverLevel)) {
+            throw new IllegalStateException("Only the server may initialize a RocketEntity");
+        }
         ResourceLocation dimension = level().dimension().location();
+        RocketPosition origin = snapshot.sourceOrigin();
+        var currentTarget = RocketRuntime.resolveCurrentTarget(
+                serverLevel,
+                new net.minecraft.core.BlockPos(origin.x(), origin.y(), origin.z())
+        ).orElseThrow(() -> new IllegalStateException("Rocket body context is unresolved"));
         RocketFlightData initialFlightData = RocketFlightData.initial(
                 Objects.requireNonNull(assemblyTransactionId, "assemblyTransactionId"),
                 snapshot.stats().fuelCapacity(),
                 boundedSeats(snapshot),
                 bodyForDimension(dimension),
                 dimension,
-                snapshot.sourceOrigin(),
-                level().getGameTime()
+                origin,
+                level().getGameTime(),
+                currentTarget
         );
         initializeTransferred(snapshot, assemblyTransactionId, ownerId, initialFlightData);
     }
@@ -106,7 +116,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
         this.snapshot = Objects.requireNonNull(snapshot, "snapshot");
         this.assemblyTransactionId = Objects.requireNonNull(assemblyTransactionId, "assemblyTransactionId");
         this.ownerId = Objects.requireNonNull(ownerId, "ownerId");
-        this.flightData = Objects.requireNonNull(flightData, "flightData");
+        this.flightData = normalizeFlightData(Objects.requireNonNull(flightData, "flightData"));
         validateBindings();
         RocketPosition origin = flightData.currentOrigin();
         setPos(origin.x() + 0.5D, origin.y(), origin.z() + 0.5D);
@@ -146,7 +156,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
             throw new IllegalStateException("Only the server may update rocket flight data");
         }
         RocketFlightData previous = flightData;
-        flightData = Objects.requireNonNull(updatedFlightData, "updatedFlightData");
+        flightData = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
         try {
             validateBindings();
         } catch (RuntimeException exception) {
@@ -154,6 +164,19 @@ public final class RocketEntity extends Entity implements MenuProvider {
             throw exception;
         }
         refreshSyncedData();
+    }
+
+    private RocketFlightData normalizeFlightData(RocketFlightData candidate) {
+        if (candidate.schemaVersion() != 1) {
+            return candidate;
+        }
+        if (!(level() instanceof ServerLevel serverLevel)) {
+            throw new IllegalStateException("Legacy flight data requires server context migration");
+        }
+        return RocketRuntime.migrateLegacyFlightData(serverLevel, candidate)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Legacy flight location cannot be resolved safely"
+                ));
     }
 
     public boolean operational() {
@@ -233,6 +256,18 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 return;
             }
             candidateFlightData = decodedFlight.data().orElseThrow();
+            if (candidateFlightData.schemaVersion() == 1) {
+                if (!(level() instanceof ServerLevel serverLevel)) {
+                    preservedBlockedData = data.copy();
+                    return;
+                }
+                candidateFlightData = RocketRuntime.migrateLegacyFlightData(serverLevel, candidateFlightData)
+                        .orElse(null);
+                if (candidateFlightData == null) {
+                    preservedBlockedData = data.copy();
+                    return;
+                }
+            }
         }
         snapshot = candidateSnapshot;
         assemblyTransactionId = candidateTransactionId;

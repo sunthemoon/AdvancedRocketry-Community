@@ -505,6 +505,28 @@ final class RocketTransferService {
         if (!RocketTransferEntities.isReplaceableLandedAuthority(destination, record)) {
             return;
         }
+        if (record.schemaVersion() == 1) {
+            Optional<RocketTransferRecord> migrated = RocketRuntime.migrateCommittedLegacyTransfer(
+                    server,
+                    record
+            );
+            if (migrated.isPresent()) {
+                record = migrated.orElseThrow();
+                journal.migrateCommitted(record);
+                journal.flush(server);
+                AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_TRANSFER_SCHEMA_MIGRATED transfer={} schema={}",
+                        record.transferId(),
+                        record.schemaVersion()
+                );
+            } else {
+                AdvancedRocketryCommunity.LOGGER.warn(
+                        "ARCE_TRANSFER_SCHEMA_MIGRATION_BLOCKED transfer={} phase={}",
+                        record.transferId(),
+                        record.phase()
+                );
+            }
+        }
         boolean allOnline = destination.flightData().orElseThrow().passengers().assignments().stream()
                 .allMatch(seat -> server.getPlayerList().getPlayer(seat.passengerId()) != null);
         if (allOnline) {

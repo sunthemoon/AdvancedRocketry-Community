@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "file": "v100-committed-earth-moon-transfer-v1.snbt",
+      "source_version": "v1.0.0",
+      "record_schema": 1,
+      "phase": "COMMITTED",
+      "expected_source_target": "advancedrocketrycommunity:body_surface/advancedrocketrycommunity:earth",
+      "expected_destination_target": "advancedrocketrycommunity:body_surface/advancedrocketrycommunity:moon"
+    }
+  ]
+}

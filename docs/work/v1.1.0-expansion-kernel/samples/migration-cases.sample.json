@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "a4ae20190e9f9a36b2a3cbabf1ea44b6746bc7d6",
+  "source_evidence": [
+    {
+      "path": "docs/work/v1.0.0-station-duo/verification/attempt-1/summary.json",
+      "sha256": "170b160205975b230c7df97c016010031065aefb59e1eed342b5d48b58654756"
+    },
+    {
+      "path": "docs/work/v1.0.0-station-duo/verification/attempt-1/server-full.txt",
+      "sha256": "e5ef87d913f7f202ca8103bf256bdc9c64773467c92da1f1793c7fe90f96d4d0"
+    },
+    {
+      "path": "docs/work/v1.0.0-native-reconnect/saved-world/projection.json",
+      "sha256": "1340b2e2f85ae16b92594e4f0369dd96eca3a477cb2804c05c7a7f32da49dca4"
+    }
+  ],
+  "stations": [
+    {
+      "source": "v1.0 station-duo plus committed default orbit semantics",
+      "station_id": "82f2d83b-4a65-4ea0-9827-1ed46b6131d2",
+      "level": "advancedrocketrycommunity:space",
+      "orbit_body": "advancedrocketrycommunity:earth",
+      "region": [768, -256, 1279, 255]
+    },
+    {
+      "source": "synthetic v1.1 multi-orbit contract case",
+      "station_id": "123e4567-e89b-42d3-a456-426614174010",
+      "level": "advancedrocketrycommunity:space",
+      "orbit_body": "advancedrocketrycommunity:moon",
+      "region": [1792, -256, 2303, 255]
+    }
+  ],
+  "cases": [
+    {
+      "id": "legacy-enum-earth",
+      "mode": "destination_enum",
+      "legacy": {"destination": "EARTH"},
+      "expected": {
+        "status": "MIGRATED",
+        "target": {
+          "schema_version": 1,
+          "type": "advancedrocketrycommunity:body_surface",
+          "body_id": "advancedrocketrycommunity:earth"
+        }
+      }
+    },
+    {
+      "id": "legacy-enum-moon",
+      "mode": "destination_enum",
+      "legacy": {"destination": "MOON"},
+      "expected": {
+        "status": "MIGRATED",
+        "target": {
+          "schema_version": 1,
+          "type": "advancedrocketrycommunity:body_surface",
+          "body_id": "advancedrocketrycommunity:moon"
+        }
+      }
+    },
+    {
+      "id": "legacy-enum-station",
+      "mode": "destination_enum",
+      "legacy": {
+        "destination": "SPACE_STATION",
+        "destination_station_id": "82f2d83b-4a65-4ea0-9827-1ed46b6131d2"
+      },
+      "expected": {
+        "status": "MIGRATED",
+        "target": {
+          "schema_version": 1,
+          "type": "advancedrocketrycommunity:station",
+          "instance_id": "82f2d83b-4a65-4ea0-9827-1ed46b6131d2"
+        }
+      }
+    },
+    {
+      "id": "space-position-earth-orbit",
+      "mode": "world_location",
+      "legacy": {
+        "current_body": "advancedrocketrycommunity:space",
+        "current_dimension": "advancedrocketrycommunity:space",
+        "position": [1024, 64, 0]
+      },
+      "expected": {
+        "status": "MIGRATED",
+        "context": {
+          "body_id": "advancedrocketrycommunity:earth",
+          "locus": "ORBIT",
+          "instance_id": "82f2d83b-4a65-4ea0-9827-1ed46b6131d2"
+        },
+        "target": {
+          "schema_version": 1,
+          "type": "advancedrocketrycommunity:station",
+          "instance_id": "82f2d83b-4a65-4ea0-9827-1ed46b6131d2"
+        }
+      }
+    },
+    {
+      "id": "space-position-moon-orbit",
+      "mode": "world_location",
+      "legacy": {
+        "current_body": "advancedrocketrycommunity:space",
+        "current_dimension": "advancedrocketrycommunity:space",
+        "position": [2048, 64, 0]
+      },
+      "expected": {
+        "status": "MIGRATED",
+        "context": {
+          "body_id": "advancedrocketrycommunity:moon",
+          "locus": "ORBIT",
+          "instance_id": "123e4567-e89b-42d3-a456-426614174010"
+        },
+        "target": {
+          "schema_version": 1,
+          "type": "advancedrocketrycommunity:station",
+          "instance_id": "123e4567-e89b-42d3-a456-426614174010"
+        }
+      }
+    },
+    {
+      "id": "space-position-gap",
+      "mode": "world_location",
+      "legacy": {
+        "current_body": "advancedrocketrycommunity:space",
+        "current_dimension": "advancedrocketrycommunity:space",
+        "position": [512, 64, 0]
+      },
+      "expected": {
+        "status": "BLOCKED_PRESERVED",
+        "diagnostic": "UNRESOLVED_SHARED_LEVEL",
+        "preserve_legacy": true
+      }
+    },
+    {
+      "id": "unknown-body",
+      "mode": "world_location",
+      "legacy": {
+        "current_body": "example:deleted",
+        "current_dimension": "example:deleted_level",
+        "position": [0, 64, 0]
+      },
+      "expected": {
+        "status": "BLOCKED_PRESERVED",
+        "diagnostic": "UNKNOWN_LEGACY_LOCATION",
+        "preserve_legacy": true
+      }
+    }
+  ]
+}

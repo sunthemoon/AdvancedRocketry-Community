@@ -43,6 +43,7 @@ public final class StationLanguageProvider extends LanguageProvider {
             case OWNER_LIMIT_REACHED -> "You already own the maximum number of stations";
             case SPACE_UNAVAILABLE -> "The fixed Space Level is unavailable";
             case INVALID_SOURCE -> "Deploy a station from Earth or Moon";
+            case UNKNOWN_ORBIT_BODY -> "The selected orbit body is not defined";
             case REGION_UNAVAILABLE -> "No station region is currently available";
             case PLATFORM_BLOCKED -> "The allocated station platform footprint is occupied";
             case PERSISTENCE_FAILED -> "Station deployment was rolled back after a persistence failure";
@@ -57,6 +58,7 @@ public final class StationLanguageProvider extends LanguageProvider {
             case OWNER_LIMIT_REACHED -> "用户已达到空间站拥有数量上限";
             case SPACE_UNAVAILABLE -> "固定 Space Level 不可用";
             case INVALID_SOURCE -> "请从地球或月球部署空间站";
+            case UNKNOWN_ORBIT_BODY -> "选择的轨道天体未定义";
             case REGION_UNAVAILABLE -> "当前没有可用的空间站区域";
             case PLATFORM_BLOCKED -> "分配的空间站平台区域已被占用";
             case PERSISTENCE_FAILED -> "持久化失败，空间站部署已回滚";

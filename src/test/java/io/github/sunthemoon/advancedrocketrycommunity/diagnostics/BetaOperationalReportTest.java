@@ -24,8 +24,8 @@ class BetaOperationalReportTest {
         assertTrue(line.contains("jei=absent"));
         assertTrue(line.contains("operational=true roots=11111"));
         assertTrue(line.contains("stations=10 missions=100"));
-        assertTrue(line.contains("protocols=life:1,celestial:1,flight:2,visual:1"));
-        assertTrue(line.contains("flight_frame_max=39"));
+        assertTrue(line.contains("protocols=life:1,celestial:1,flight:6,visual:1"));
+        assertTrue(line.contains("flight_frame_max=154"));
         assertTrue(line.contains("ticket_policy=transient_transfer_only"));
         assertTrue(line.length() < 1_024);
         assertFalse(line.contains("\\"));
@@ -78,7 +78,7 @@ class BetaOperationalReportTest {
                         AtmosphereLimits.MAX_VOLUME_CELLS,
                         AtmosphereLimits.MAX_LEVEL_INSPECTIONS_PER_TICK
                 ),
-                new BetaOperationalReport.ProtocolSummary("1", "1", "2", "1"),
+                new BetaOperationalReport.ProtocolSummary("1", "1", "6", "1"),
                 4,
                 20
         );

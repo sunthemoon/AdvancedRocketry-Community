@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "advancedrocketrycommunity:earth_moon",
+  "from": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:earth"
+  },
+  "to": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:moon"
+  },
+  "distance_units": 50,
+  "bidirectional": true
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "targets": [
+    {
+      "schema_version": 1,
+      "type": "advancedrocketrycommunity:body_surface",
+      "body_id": "advancedrocketrycommunity:earth"
+    },
+    {
+      "schema_version": 1,
+      "type": "advancedrocketrycommunity:orbit",
+      "body_id": "advancedrocketrycommunity:moon"
+    },
+    {
+      "schema_version": 1,
+      "type": "advancedrocketrycommunity:station",
+      "instance_id": "123e4567-e89b-42d3-a456-426614174000"
+    },
+    {
+      "schema_version": 1,
+      "type": "advancedrocketrycommunity:mission",
+      "instance_id": "123e4567-e89b-42d3-b456-426614174001"
+    }
+  ]
+}

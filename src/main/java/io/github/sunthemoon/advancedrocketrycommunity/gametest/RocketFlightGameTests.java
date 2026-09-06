@@ -91,7 +91,7 @@ public final class RocketFlightGameTests {
         helper.runAfterDelay(40, () -> {
             UUID owner = UUID.randomUUID();
             StationPlatformGenerator platforms = new StationPlatformGenerator();
-            StationState station = new StationCreationService(platforms).create(
+            StationState station = new StationCreationService(platforms, bodyId -> true).create(
                     earth.getServer(),
                     owner,
                     "Flight Test Station",
@@ -345,6 +345,16 @@ public final class RocketFlightGameTests {
             assertUnchangedSecurityState(helper, earth, rocket, fuelBefore, "invalid destination");
 
             UUID launchId = UUID.randomUUID();
+            StationRegistrySavedData quoteStations = StationRegistrySavedData.get(earth.getServer());
+            UUID quoteStationId = UUID.randomUUID();
+            quoteStations.reserve(
+                    quoteStationId,
+                    owner.getUUID(),
+                    "Quote Probe",
+                    CelestialIds.EARTH_ID,
+                    earth.getGameTime()
+            );
+            quoteStations.commit(quoteStationId);
             RocketFlightMenu console = new RocketFlightMenu(7, owner.getInventory(), rocket);
             helper.assertTrue(console.activePlan().destination() == null,
                     "An unplanned console invented an active cancellation target");
@@ -398,6 +408,7 @@ public final class RocketFlightGameTests {
                     rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                     "Countdown cancellation did not restore FUELED"
             );
+            quoteStations.delete(quoteStationId);
             helper.assertTrue(
                     rocket.flightData().orElseThrow().fuel().amount() == fuelBefore,
                     "Hostile or cancelled request consumed fuel"

@@ -3,9 +3,14 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.menu;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.network.TravelTargetWireCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import java.util.ArrayList;
@@ -30,6 +35,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     private final List<StationDestinationSummary> accessibleStations;
     private final UUID currentStationId;
     private final UUID plannedStationId;
+    private final TravelTarget openingCurrentTarget;
     private final Player viewer;
     private RocketFlightPlanSnapshot receivedPlan = RocketFlightPlanSnapshot.empty();
     private RocketFlightQuotes receivedQuotes = RocketFlightQuotes.empty();
@@ -48,12 +54,22 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
                 payload.stations(),
                 payload.currentStationId(),
                 payload.plannedStationId(),
+                payload.currentTarget(),
                 playerInventory.player
         );
     }
 
     public RocketFlightMenu(int containerId, Inventory playerInventory, RocketEntity rocket) {
-        this(containerId, rocket, new RocketFlightMenuData(rocket), List.of(), null, null, playerInventory.player);
+        this(
+                containerId,
+                rocket,
+                new RocketFlightMenuData(rocket),
+                List.of(),
+                null,
+                null,
+                rocket.flightData().flatMap(RocketFlightData::currentTarget).orElse(null),
+                playerInventory.player
+        );
     }
 
     private RocketFlightMenu(
@@ -63,6 +79,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
             List<StationDestinationSummary> accessibleStations,
             UUID currentStationId,
             UUID plannedStationId,
+            TravelTarget openingCurrentTarget,
             Player viewer
     ) {
         super(ModMenuTypes.ROCKET_FLIGHT.get(), containerId);
@@ -73,12 +90,14 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         this.accessibleStations = List.copyOf(accessibleStations);
         this.currentStationId = currentStationId;
         this.plannedStationId = plannedStationId;
+        this.openingCurrentTarget = openingCurrentTarget;
         this.viewer = viewer;
         addDataSlots(data);
     }
 
     private static ClientPayload readPayload(FriendlyByteBuf buffer) {
         int entityId = buffer.readVarInt();
+        TravelTarget currentTarget = TravelTargetWireCodec.decode(buffer);
         int count = buffer.readVarInt();
         if (count < 0 || count > StationLimits.MAX_ACCESSIBLE_DESTINATIONS) {
             throw new IllegalArgumentException("Station destination list exceeds the fixed bound");
@@ -92,7 +111,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         }
         UUID currentStation = buffer.readBoolean() ? buffer.readUUID() : null;
         UUID plannedStation = buffer.readBoolean() ? buffer.readUUID() : null;
-        return new ClientPayload(entityId, List.copyOf(stations), currentStation, plannedStation);
+        return new ClientPayload(entityId, List.copyOf(stations), currentStation, plannedStation, currentTarget);
     }
 
     private static RocketEntity resolveRocket(Inventory inventory, int entityId) {
@@ -132,9 +151,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     public RocketFlightPlanSnapshot activePlan() {
         if (!viewer.level().isClientSide()) {
             return rocket.flightData().flatMap(flight -> flight.plan())
-                    .map(active -> new RocketFlightPlanSnapshot(
-                            RocketDestination.fromBody(active.destinationBody()),
-                            active.destinationStation().orElse(null)))
+                    .map(active -> new RocketFlightPlanSnapshot(active.destinationTarget()))
                     .orElse(RocketFlightPlanSnapshot.empty());
         }
         return receivedPlan;
@@ -181,11 +198,22 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         if (flight == null || snapshot == null) {
             return RocketFlightQuotes.empty();
         }
-        return RocketFlightQuotes.compute(snapshot.stats(), flight.fuel(), currentDestination(), flight.state());
+        return viewer instanceof ServerPlayer player
+                ? RocketRuntime.flightQuotes(player, rocket)
+                : RocketFlightQuotes.empty();
     }
 
     public RocketDestination currentDestination() {
-        return destination(data.get(4));
+        return LegacyTravelTargetAdapter.toLegacy(currentTarget())
+                .map(LegacyTravelTargetAdapter.LegacyDestination::destination)
+                .orElse(null);
+    }
+
+    public TravelTarget currentTarget() {
+        if (!viewer.level().isClientSide() && rocket != null) {
+            return rocket.flightData().flatMap(RocketFlightData::currentTarget).orElse(null);
+        }
+        return openingCurrentTarget;
     }
 
     public RocketDestination plannedDestination() {
@@ -228,7 +256,8 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
             int rocketEntityId,
             List<StationDestinationSummary> stations,
             UUID currentStationId,
-            UUID plannedStationId
+            UUID plannedStationId,
+            TravelTarget currentTarget
     ) {
     }
 }

@@ -10,10 +10,15 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockSt
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 class RocketTransferRecordTest {
@@ -106,6 +111,88 @@ class RocketTransferRecordTest {
         assertNotEquals(fixture.source().contentHash(), fixture.destination().contentHash());
     }
 
+    @Test
+    void legacyCommittedRecordMigratesOnlyAfterAuthoritySettlementAndSecondSaveIsStable() throws Exception {
+        RocketTransferRecord legacy = legacyCommittedRecord();
+        assertEquals(1, legacy.schemaVersion());
+        assertThrows(IllegalStateException.class, () -> legacyRecord(
+                legacy,
+                RocketTransferPhase.PREPARED,
+                null
+        ).migrateTargets(
+                new TravelTarget.BodySurface(RocketFlightPlanner.EARTH.bodyId()),
+                new TravelTarget.BodySurface(RocketFlightPlanner.MOON.bodyId())
+        ));
+
+        String fixture;
+        try (var stream = RocketTransferRecordTest.class.getResourceAsStream(
+                "/migrations/v110/v100-committed-earth-moon-transfer-v1.snbt"
+        )) {
+            if (stream == null) {
+                throw new AssertionError("Missing committed v1.0 transfer fixture");
+            }
+            fixture = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        RocketTransferSavedData loadedLegacy = RocketTransferSavedData.load(TagParser.parseTag(fixture));
+        assertTrue(loadedLegacy.operational());
+        assertEquals(1, loadedLegacy.entries().get(0).schemaVersion());
+        assertEquals(legacy.checksum(), loadedLegacy.entries().get(0).checksum());
+
+        RocketTransferRecord migrated = loadedLegacy.entries().get(0).migrateTargets(
+                new TravelTarget.BodySurface(RocketFlightPlanner.EARTH.bodyId()),
+                new TravelTarget.BodySurface(RocketFlightPlanner.MOON.bodyId())
+        );
+        assertEquals(RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION, migrated.schemaVersion());
+        assertEquals(RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION,
+                migrated.sourceFlightData().schemaVersion());
+        assertNotEquals(legacy.checksum(), migrated.checksum());
+        loadedLegacy.migrateCommitted(migrated);
+
+        CompoundTag firstSave = loadedLegacy.save(new CompoundTag());
+        RocketTransferSavedData secondLoad = RocketTransferSavedData.load(firstSave);
+        CompoundTag secondSave = secondLoad.save(new CompoundTag());
+        assertTrue(secondLoad.operational());
+        assertEquals(migrated.checksum(), secondLoad.entries().get(0).checksum());
+        assertEquals(firstSave, secondSave);
+    }
+
+    @Test
+    void schemaTwoChecksumBindsCurrentAndDestinationTargets() {
+        RocketTransferRecord record = fixture().record();
+        RocketFlightData source = record.destinationFlightData();
+        RocketFlightData tampered = RocketFlightData.restore(
+                source.schemaVersion(),
+                source.logicalRocketId(),
+                source.state(),
+                source.fuel(),
+                source.plan().orElse(null),
+                source.passengers(),
+                source.currentBody(),
+                source.currentDimension(),
+                source.currentOrigin(),
+                source.stateStartedGameTime(),
+                source.activeTransferId().orElse(null),
+                new TravelTarget.Mission(UUID.fromString("123e4567-e89b-42d3-a456-426614174701"))
+        );
+
+        assertThrows(IllegalArgumentException.class, () -> RocketTransferRecord.restore(
+                record.schemaVersion(),
+                record.transferId(),
+                record.phase(),
+                record.logicalRocketId(),
+                record.ownerId(),
+                record.sourceEntityId(),
+                record.destinationEntityId().orElse(null),
+                record.sourceSnapshot(),
+                record.destinationSnapshot(),
+                record.sourceFlightData(),
+                tampered,
+                record.requiredFuel(),
+                record.createdAtGameTime(),
+                record.checksum()
+        ));
+    }
+
     private static Fixture fixture() {
         RocketStructureSnapshot source = sourceSnapshot();
         RocketStructureSnapshot destination = source.relocated(
@@ -163,6 +250,105 @@ class RocketTransferRecordTest {
                 0L
         );
         return new Fixture(source, destination, record);
+    }
+
+    private static RocketTransferRecord legacyCommittedRecord() {
+        RocketTransferRecord current = fixture().record();
+        RocketFlightPlan currentPlan = current.sourceFlightData().plan().orElseThrow();
+        RocketFlightPlan legacyPlan = new RocketFlightPlan(
+                2,
+                currentPlan.requestId(),
+                currentPlan.sourceBody(),
+                currentPlan.destinationBody(),
+                currentPlan.sourceDimension(),
+                currentPlan.destinationDimension(),
+                currentPlan.destinationStation().orElse(null),
+                currentPlan.requiredFuel(),
+                currentPlan.createdAtGameTime()
+        );
+        RocketFlightData source = legacyFlight(current.sourceFlightData(), legacyPlan);
+        RocketFlightData destination = legacyFlight(current.destinationFlightData(), legacyPlan);
+        String checksum = RocketTransferChecksum.compute(
+                1,
+                current.transferId(),
+                current.logicalRocketId(),
+                current.ownerId(),
+                current.sourceEntityId(),
+                current.sourceSnapshot(),
+                current.destinationSnapshot(),
+                source,
+                destination,
+                current.requiredFuel(),
+                current.createdAtGameTime()
+        );
+        return RocketTransferRecord.restore(
+                1,
+                current.transferId(),
+                RocketTransferPhase.COMMITTED,
+                current.logicalRocketId(),
+                current.ownerId(),
+                current.sourceEntityId(),
+                DESTINATION_ENTITY,
+                current.sourceSnapshot(),
+                current.destinationSnapshot(),
+                source,
+                destination,
+                current.requiredFuel(),
+                current.createdAtGameTime(),
+                checksum
+        );
+    }
+
+    private static RocketFlightData legacyFlight(RocketFlightData current, RocketFlightPlan plan) {
+        return RocketFlightData.restore(
+                1,
+                current.logicalRocketId(),
+                current.state(),
+                current.fuel(),
+                plan,
+                current.passengers(),
+                current.currentBody(),
+                current.currentDimension(),
+                current.currentOrigin(),
+                current.stateStartedGameTime(),
+                current.activeTransferId().orElse(null)
+        );
+    }
+
+    private static RocketTransferRecord legacyRecord(
+            RocketTransferRecord template,
+            RocketTransferPhase phase,
+            UUID destinationEntity
+    ) {
+        String checksum = RocketTransferChecksum.compute(
+                template.schemaVersion(),
+                template.transferId(),
+                template.logicalRocketId(),
+                template.ownerId(),
+                template.sourceEntityId(),
+                template.sourceSnapshot(),
+                template.destinationSnapshot(),
+                template.sourceFlightData(),
+                template.destinationFlightData(),
+                template.requiredFuel(),
+                template.createdAtGameTime()
+        );
+        return RocketTransferRecord.restore(
+                template.schemaVersion(),
+                template.transferId(),
+                phase,
+                template.logicalRocketId(),
+                template.ownerId(),
+                template.sourceEntityId(),
+                destinationEntity,
+                template.sourceSnapshot(),
+                template.destinationSnapshot(),
+                template.sourceFlightData(),
+                template.destinationFlightData(),
+                template.requiredFuel(),
+                template.createdAtGameTime(),
+                checksum
+        );
     }
 
     private static RocketStructureSnapshot sourceSnapshot() {

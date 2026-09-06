@@ -73,7 +73,7 @@ class RocketFlightNbtCodecTest {
     @Test
     void nestedSchemaIdentifierAndListBoundsAreStrict() {
         CompoundTag futurePlan = RocketFlightNbtCodec.encode(destinationData());
-        futurePlan.getCompound("plan").putInt("schema_version", 3);
+        futurePlan.getCompound("plan").putInt("schema_version", RocketFlightPlan.SCHEMA_VERSION + 1);
         CompoundTag longIdentifier = RocketFlightNbtCodec.encode(destinationData());
         longIdentifier.putString("current_body", "a:" + "x".repeat(300));
         CompoundTag tooManyDebits = RocketFlightNbtCodec.encode(destinationData());
@@ -113,7 +113,7 @@ class RocketFlightNbtCodecTest {
 
     @Test
     void schemaTwoStationPlanRoundTripsItsUuidAndSchemaOneRemainsReadable() {
-        UUID stationId = UUID.fromString("00000000-0000-0000-0000-000000000700");
+        UUID stationId = UUID.fromString("123e4567-e89b-42d3-a456-426614174700");
         RocketStats stats = new RocketStats(4, 200L, 1_000L, 1_000L, 1, 1, 1, 0);
         RocketFuelState full = RocketFuelState.empty(1_000L).fill(1_000L).state();
         RocketFlightPlan stationPlan = RocketFlightPlanner.plan(

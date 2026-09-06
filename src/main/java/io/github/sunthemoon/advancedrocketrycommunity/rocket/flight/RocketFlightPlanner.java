@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.TravelFuelFormula;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
@@ -62,6 +64,9 @@ public final class RocketFlightPlanner {
         if (!supported(source, destination)) {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.UNSUPPORTED_ROUTE, 0L);
         }
+        if (destination.equals(SPACE_STATION) != (destinationStationId != null)) {
+            throw new IllegalArgumentException("Station destination must bind exactly one station UUID");
+        }
         if (!stats.hasFlightComponents()) {
             return RocketFlightPlanResult.failure(
                     RocketFlightPlanCode.MISSING_FLIGHT_COMPONENTS,
@@ -75,25 +80,18 @@ public final class RocketFlightPlanner {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.FUEL_STATE_MISMATCH, 0L);
         }
 
-        long requiredFuel;
-        try {
-            long massCost = Math.addExact(stats.mass(), 1L) / 2L;
-            long gravitySum = Math.addExact(source.gravityMilli(), destination.gravityMilli());
-            long gravityCost = Math.addExact(gravitySum, 9L) / 10L;
-            long distanceCost = Math.abs(Math.subtractExact(
-                    (long) source.routeDistanceUnits(),
-                    destination.routeDistanceUnits()
-            ));
-            requiredFuel = Math.addExact(
-                    RocketFlightLimits.BASE_TRAVEL_FUEL,
-                    Math.addExact(massCost, Math.addExact(gravityCost, distanceCost))
-            );
-        } catch (ArithmeticException exception) {
+        long distanceCost = Math.abs((long) source.routeDistanceUnits() - destination.routeDistanceUnits());
+        var fuelQuote = TravelFuelFormula.calculate(
+                stats.mass(),
+                source.gravityMilli(),
+                destination.gravityMilli(),
+                distanceCost,
+                RocketFlightLimits.MAX_TRAVEL_FUEL
+        );
+        if (fuelQuote.error().isPresent()) {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.ARITHMETIC_OVERFLOW, 0L);
         }
-        if (requiredFuel <= 0L || requiredFuel > RocketFlightLimits.MAX_TRAVEL_FUEL) {
-            return RocketFlightPlanResult.failure(RocketFlightPlanCode.ARITHMETIC_OVERFLOW, 0L);
-        }
+        long requiredFuel = fuelQuote.result().orElseThrow();
         if (fuel.capacity() < requiredFuel) {
             return RocketFlightPlanResult.failure(
                     RocketFlightPlanCode.INSUFFICIENT_CAPACITY,
@@ -115,7 +113,10 @@ public final class RocketFlightPlanner {
                 destination.dimensionId(),
                 destinationStationId,
                 requiredFuel,
-                gameTime
+                gameTime,
+                destinationStationId == null
+                        ? new TravelTarget.BodySurface(destination.bodyId())
+                        : new TravelTarget.Station(destinationStationId)
         );
         return new RocketFlightPlanResult(RocketFlightPlanCode.SUCCESS, requiredFuel, plan);
     }

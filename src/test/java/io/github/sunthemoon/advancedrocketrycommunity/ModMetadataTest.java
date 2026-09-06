@@ -20,9 +20,9 @@ class ModMetadataTest {
             assertTrue(metadata.contains("modId=\"advancedrocketrycommunity\""));
             assertTrue(metadata.contains("displayName=\"Advanced Rocketry: Community Edition\""));
             assertTrue(metadata.contains("license=\"MIT\""));
-            assertTrue(metadata.contains("version=\"1.20.1-1.0.0-dev\""));
-            assertTrue(metadata.contains("This v1.0.0 development build"));
-            assertTrue(metadata.contains("this is not a stable release"));
+            assertTrue(metadata.contains("version=\"1.20.1-1.1.0-dev\""));
+            assertTrue(metadata.contains("This v1.1.0 development build"));
+            assertTrue(metadata.contains("expansion and release validation are in progress"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));

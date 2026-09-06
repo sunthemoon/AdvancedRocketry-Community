@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -182,6 +183,23 @@ public final class StationRegistrySavedData extends SavedData {
         return operational() ? registry.ownedBy(ownerId) : Long.MAX_VALUE;
     }
 
+    /** Validates persisted orbit references without deleting recoverable station state. */
+    public OrbitBodyValidation validateOrbitBodies(Predicate<ResourceLocation> bodyExists) {
+        Objects.requireNonNull(bodyExists, "bodyExists");
+        if (!operational()) {
+            return new OrbitBodyValidation(false, List.of(), List.of());
+        }
+        List<UUID> invalidStations = registry.stations().stream()
+                .filter(station -> !bodyExists.test(station.orbitBody()))
+                .map(StationState::stationId)
+                .toList();
+        List<UUID> invalidReservations = registry.reservations().stream()
+                .filter(reservation -> !bodyExists.test(reservation.orbitBody()))
+                .map(StationReservation::stationId)
+                .toList();
+        return new OrbitBodyValidation(true, invalidStations, invalidReservations);
+    }
+
     public void flush(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
         if (isDirty()) {
@@ -222,5 +240,20 @@ public final class StationRegistrySavedData extends SavedData {
             throw new IllegalArgumentException("Missing or invalid station registry list " + key);
         }
         return list;
+    }
+
+    public record OrbitBodyValidation(
+            boolean registryOperational,
+            List<UUID> invalidStationIds,
+            List<UUID> invalidReservationIds
+    ) {
+        public OrbitBodyValidation {
+            invalidStationIds = List.copyOf(invalidStationIds);
+            invalidReservationIds = List.copyOf(invalidReservationIds);
+        }
+
+        public boolean valid() {
+            return registryOperational && invalidStationIds.isEmpty() && invalidReservationIds.isEmpty();
+        }
     }
 }

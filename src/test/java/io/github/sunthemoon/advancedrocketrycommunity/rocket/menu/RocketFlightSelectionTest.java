@@ -12,8 +12,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RocketFlightSelectionTest {
-    private static final UUID FIRST = new UUID(1, 1);
-    private static final UUID SECOND = new UUID(2, 2);
+    private static final UUID FIRST = UUID.fromString("123e4567-e89b-42d3-a456-426614174740");
+    private static final UUID SECOND = UUID.fromString("123e4567-e89b-42d3-a456-426614174741");
 
     @Test
     void cancellationUsesTheActiveBodyRatherThanTheEditedChoice() {

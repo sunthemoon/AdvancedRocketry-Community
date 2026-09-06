@@ -1,13 +1,28 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContext;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContextResolver;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.WorldLocation;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifest;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationGridCell;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationRegionBodyContextResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
@@ -40,7 +55,7 @@ public final class StationGameTests {
         ServerLevel space = earth.getServer().getLevel(CelestialIds.SPACE_LEVEL);
         helper.assertTrue(space != null, "Space Level is unavailable");
         StationPlatformGenerator platforms = new StationPlatformGenerator();
-        StationCreationService creation = new StationCreationService(platforms);
+        StationCreationService creation = new StationCreationService(platforms, bodyId -> true);
         StationRegistrySavedData data = StationRegistrySavedData.get(earth.getServer());
         helper.assertTrue(data.operational(), "Station registry is blocked");
 
@@ -87,7 +102,7 @@ public final class StationGameTests {
         );
         helper.assertTrue(space.addFreshEntity(occupyingRocket),
                 "Deletion guard rocket could not be added");
-        StationManager manager = new StationManager();
+        StationManager manager = new StationManager(defaultCatalogs());
         boolean rocketGuarded = false;
         try {
             manager.delete(
@@ -147,7 +162,10 @@ public final class StationGameTests {
         );
         space.setBlock(blocker, Blocks.BEDROCK.defaultBlockState(), Block.UPDATE_ALL);
         int before = data.stations().size();
-        StationCreationResult blocked = new StationCreationService(new StationPlatformGenerator()).create(
+        StationCreationResult blocked = new StationCreationService(
+                new StationPlatformGenerator(),
+                bodyId -> true
+        ).create(
                 earth.getServer(),
                 UUID.randomUUID(),
                 "Blocked",
@@ -189,5 +207,140 @@ public final class StationGameTests {
         helper.assertTrue(permissionReservation.cell().equals(station.cell()),
                 "Permission station geometry changed at commit");
         helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "station_context", timeoutTicks = 120)
+    public static void sharedSpaceLocationsResolveTheirAuthoritativeOrbitBodies(GameTestHelper helper) {
+        ServerLevel earth = helper.getLevel();
+        StationRegistrySavedData data = StationRegistrySavedData.get(earth.getServer());
+        helper.assertTrue(data.operational(), "Station registry is blocked");
+        CelestialCatalogManager catalogs = new CelestialCatalogManager();
+        helper.assertTrue(
+                catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions())),
+                "Celestial catalog could not be prepared"
+        );
+        BodyContextResolver resolver = new BodyContextResolver(
+                catalogs,
+                List.of(new StationRegionBodyContextResolver(data::findAt))
+        );
+
+        int stationCountBeforeRejectedCreation = data.stations().size();
+        StationCreationResult unknownBody = new StationCreationService(
+                new StationPlatformGenerator(),
+                bodyId -> catalogs.current().flatMap(catalog -> catalog.get(bodyId)).isPresent()
+        ).create(
+                earth.getServer(),
+                UUID.randomUUID(),
+                "Unknown Context",
+                ModIdentity.id("missing_body"),
+                false
+        );
+        helper.assertTrue(
+                unknownBody.code() == StationCreationCode.UNKNOWN_ORBIT_BODY,
+                "Undefined orbit body was accepted"
+        );
+        helper.assertTrue(
+                data.stations().size() == stationCountBeforeRejectedCreation,
+                "Rejected orbit body changed station state"
+        );
+
+        UUID earthStationId = UUID.randomUUID();
+        UUID moonStationId = UUID.randomUUID();
+        data.reserve(earthStationId, UUID.randomUUID(), "Earth Context", CelestialIds.EARTH_ID, 0L);
+        data.reserve(moonStationId, UUID.randomUUID(), "Moon Context", CelestialIds.MOON_ID, 0L);
+        StationState earthStation = data.commit(earthStationId);
+        StationState moonStation = data.commit(moonStationId);
+
+        helper.assertTrue(
+                resolver.resolve(worldLocation(earthStation)).filter(BodyContext.stationOrbit(
+                        CelestialIds.EARTH_ID, earthStationId
+                )::equals).isPresent(),
+                "Earth station did not resolve its orbit context"
+        );
+        helper.assertTrue(
+                resolver.resolve(worldLocation(moonStation)).filter(BodyContext.stationOrbit(
+                        CelestialIds.MOON_ID, moonStationId
+                )::equals).isPresent(),
+                "Moon station did not resolve its orbit context"
+        );
+        helper.assertTrue(
+                resolver.resolve(new WorldLocation(
+                        CelestialIds.SPACE_LEVEL,
+                        new BlockPos(Integer.MAX_VALUE, 0, Integer.MAX_VALUE)
+                )).isEmpty(),
+                "Unassigned Space position incorrectly inherited a body context"
+        );
+
+        RocketFlightData legacyStationFlight = legacySpaceFlight(earthStation);
+        helper.assertTrue(
+                RocketRuntime.migrateLegacyFlightData(
+                        earth.getServer().getLevel(CelestialIds.SPACE_LEVEL),
+                        legacyStationFlight
+                ).flatMap(RocketFlightData::currentTarget)
+                        .filter(new TravelTarget.Station(earthStationId)::equals)
+                        .isPresent(),
+                "Runtime migration did not bind the committed station identity"
+        );
+        RocketFlightData legacyGap = RocketFlightData.restore(
+                1,
+                UUID.randomUUID(),
+                RocketFlightState.ASSEMBLED,
+                RocketFuelState.empty(1_000L),
+                null,
+                RocketPassengerManifest.empty(1),
+                CelestialIds.SPACE_ID,
+                CelestialIds.SPACE_LEVEL.location(),
+                new RocketPosition(Integer.MAX_VALUE, 0, Integer.MAX_VALUE),
+                0L,
+                null
+        );
+        helper.assertTrue(
+                RocketRuntime.migrateLegacyFlightData(
+                        earth.getServer().getLevel(CelestialIds.SPACE_LEVEL),
+                        legacyGap
+                ).isEmpty(),
+                "Unassigned Space migration guessed a station or body"
+        );
+
+        data.delete(earthStationId);
+        data.delete(moonStationId);
+        data.flush(earth.getServer());
+        helper.succeed();
+    }
+
+    private static WorldLocation worldLocation(StationState station) {
+        return new WorldLocation(CelestialIds.SPACE_LEVEL, new BlockPos(
+                station.landingPad().x(),
+                station.landingPad().y(),
+                station.landingPad().z()
+        ));
+    }
+
+    private static RocketFlightData legacySpaceFlight(StationState station) {
+        return RocketFlightData.restore(
+                1,
+                UUID.randomUUID(),
+                RocketFlightState.ASSEMBLED,
+                RocketFuelState.empty(1_000L),
+                null,
+                RocketPassengerManifest.empty(1),
+                CelestialIds.SPACE_ID,
+                CelestialIds.SPACE_LEVEL.location(),
+                new RocketPosition(
+                        station.landingPad().x(),
+                        station.landingPad().y(),
+                        station.landingPad().z()
+                ),
+                0L,
+                null
+        );
+    }
+
+    private static CelestialCatalogManager defaultCatalogs() {
+        CelestialCatalogManager catalogs = new CelestialCatalogManager();
+        if (!catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions()))) {
+            throw new IllegalStateException("Default celestial catalog could not be prepared");
+        }
+        return catalogs;
     }
 }

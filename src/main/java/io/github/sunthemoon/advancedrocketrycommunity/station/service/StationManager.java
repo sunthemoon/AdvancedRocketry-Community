@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.station.service;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
@@ -35,9 +36,20 @@ public final class StationManager implements StationOperationService {
     private static final int DENIAL_NOTICE_TICKS = 20;
 
     private final StationPlatformGenerator platforms = new StationPlatformGenerator();
-    private final StationCreationService creation = new StationCreationService(platforms);
+    private final CelestialCatalogManager celestialCatalogs;
+    private final StationCreationService creation;
     private final StationAccessService access = new StationAccessService();
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
+
+    public StationManager(CelestialCatalogManager celestialCatalogs) {
+        this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
+        this.creation = new StationCreationService(
+                platforms,
+                bodyId -> celestialCatalogs.current()
+                        .flatMap(catalog -> catalog.get(bodyId))
+                        .isPresent()
+        );
+    }
 
     @Override
     public StationCreationResult createForPlayer(ServerPlayer player) {
@@ -241,7 +253,19 @@ public final class StationManager implements StationOperationService {
         if (recovered > 0) {
             AdvancedRocketryCommunity.LOGGER.warn(
                     "ARCE_STATION_STARTUP_RECOVERY reservations={}", recovered
+                );
+        }
+        StationRegistrySavedData data = StationRegistrySavedData.get(event.getServer());
+        if (data.operational()) {
+            StationRegistrySavedData.OrbitBodyValidation validation = data.validateOrbitBodies(
+                    body -> celestialCatalogs.current().flatMap(catalog -> catalog.get(body)).isPresent()
             );
+            validation.invalidStationIds().forEach(stationId -> AdvancedRocketryCommunity.LOGGER.error(
+                    "ARCE_STATION_UNKNOWN_ORBIT_BODY station={}", stationId
+            ));
+            validation.invalidReservationIds().forEach(stationId -> AdvancedRocketryCommunity.LOGGER.error(
+                    "ARCE_STATION_RESERVATION_UNKNOWN_ORBIT_BODY station={}", stationId
+            ));
         }
     }
 

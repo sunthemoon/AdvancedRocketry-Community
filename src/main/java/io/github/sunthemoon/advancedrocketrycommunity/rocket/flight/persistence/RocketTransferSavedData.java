@@ -130,6 +130,36 @@ public final class RocketTransferSavedData extends SavedData {
         setDirty();
     }
 
+    /** Replaces a committed schema-1 record with its checksum-rebound schema-2 form. */
+    public void migrateCommitted(RocketTransferRecord migrated) {
+        if (!operational()) {
+            throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");
+        }
+        Objects.requireNonNull(migrated, "migrated");
+        RocketTransferRecord legacy = entries.get(migrated.transferId());
+        if (legacy == null
+                || legacy.schemaVersion() != 1
+                || migrated.schemaVersion() != RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION
+                || legacy.phase() != RocketTransferPhase.COMMITTED
+                || migrated.phase() != legacy.phase()
+                || !legacy.logicalRocketId().equals(migrated.logicalRocketId())
+                || !legacy.ownerId().equals(migrated.ownerId())
+                || !legacy.sourceEntityId().equals(migrated.sourceEntityId())
+                || !legacy.destinationEntityId().equals(migrated.destinationEntityId())
+                || !legacy.sourceSnapshot().equals(migrated.sourceSnapshot())
+                || !legacy.destinationSnapshot().equals(migrated.destinationSnapshot())
+                || legacy.requiredFuel() != migrated.requiredFuel()
+                || legacy.createdAtGameTime() != migrated.createdAtGameTime()) {
+            throw new IllegalArgumentException("Transfer migration changed immutable authority data");
+        }
+        CompoundTag encoded = encodeRecord(migrated);
+        if (RocketNbtSize.uncompressedBytes(encoded) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
+            throw new IllegalArgumentException("Migrated transfer record exceeds the fixed NBT limit");
+        }
+        entries.put(migrated.transferId(), migrated);
+        setDirty();
+    }
+
     public void remove(UUID transferId) {
         if (!operational()) {
             throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");

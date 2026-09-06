@@ -5,11 +5,18 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestin
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.MinecraftServer;
+import java.util.Optional;
 
 /** Narrow lifecycle bridge for blocks/entities; all mutable state belongs to the installed manager. */
 public final class RocketRuntime {
@@ -65,6 +72,54 @@ public final class RocketRuntime {
         current.openFlightMenu(player, rocket);
     }
 
+    public static Optional<TravelTarget> resolveCurrentTarget(ServerLevel level, BlockPos position) {
+        RocketOperationService current = service;
+        return current == null
+                ? Optional.empty()
+                : current.resolveCurrentTarget(level, position);
+    }
+
+    public static Optional<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData>
+            migrateLegacyFlightData(
+                    ServerLevel level,
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData legacy
+            ) {
+        RocketOperationService current = service;
+        return current == null
+                ? Optional.empty()
+                : current.migrateLegacyFlightData(level, legacy);
+    }
+
+    public static Optional<RocketTransferRecord> migrateCommittedLegacyTransfer(
+            MinecraftServer server,
+            RocketTransferRecord legacy
+    ) {
+        RocketOperationService current = service;
+        return current == null
+                ? Optional.empty()
+                : current.migrateCommittedLegacyTransfer(server, legacy);
+    }
+
+    public static RocketFlightQuotes flightQuotes(ServerPlayer player, RocketEntity rocket) {
+        RocketOperationService current = service;
+        return current == null ? RocketFlightQuotes.empty() : current.flightQuotes(player, rocket);
+    }
+
+    public static void requestFlightIntent(
+            ServerPlayer player,
+            int rocketEntityId,
+            RocketFlightAction action,
+            TravelTarget target,
+            UUID requestId
+    ) {
+        RocketOperationService current = service;
+        if (current == null) {
+            unavailable(player);
+            return;
+        }
+        current.requestFlightIntent(player, rocketEntityId, action, target, requestId);
+    }
+
     public static void requestFlightIntent(
             ServerPlayer player,
             int rocketEntityId,
@@ -83,17 +138,11 @@ public final class RocketRuntime {
             UUID destinationStationId,
             UUID requestId
     ) {
-        RocketOperationService current = service;
-        if (current == null) {
-            unavailable(player);
-            return;
-        }
-        current.requestFlightIntent(
+        requestFlightIntent(
                 player,
                 rocketEntityId,
                 action,
-                destination,
-                destinationStationId,
+                LegacyTravelTargetAdapter.fromLegacy(destination, destinationStationId),
                 requestId
         );
     }
@@ -102,6 +151,19 @@ public final class RocketRuntime {
     public static RocketFlightRequestResult requestAdminFlight(
             RocketEntity rocket,
             RocketDestination destination,
+            UUID requestId
+    ) {
+        RocketOperationService current = service;
+        if (current == null) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+        }
+        return current.requestAdminFlight(rocket, destination, requestId);
+    }
+
+    /** Server-only operator/test path for typed targets. */
+    public static RocketFlightRequestResult requestAdminFlight(
+            RocketEntity rocket,
+            TravelTarget destination,
             UUID requestId
     ) {
         RocketOperationService current = service;

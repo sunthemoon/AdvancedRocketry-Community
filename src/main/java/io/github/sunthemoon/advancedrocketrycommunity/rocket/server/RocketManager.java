@@ -1,6 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContext;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContextResolver;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.WorldLocation;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
@@ -10,11 +14,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachine;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -33,6 +39,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
+import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationRegionBodyContextResolver;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyFlightTargetMigrator;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
 import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,6 +54,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -54,10 +67,11 @@ public final class RocketManager implements RocketOperationService {
     public static final double MAX_INTERACTION_DISTANCE_SQUARED = 64.0D;
 
     private final RocketBlockEntityAdapters adapters;
+    private final CelestialCatalogManager celestialCatalogs;
     private final RocketRegionLockManager locks = new RocketRegionLockManager();
     private final RocketOperationLedger ledger = new RocketOperationLedger();
     private final RocketTransactionRecoveryService recovery;
-    private final RocketFlightService flights = new RocketFlightService();
+    private final RocketFlightService flights;
     private final RocketTransactionReleaseProbe transactionReleaseProbe = new RocketTransactionReleaseProbe(
             Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks"),
             System.getProperty(RocketTransactionReleaseProbe.PROPERTY));
@@ -69,11 +83,33 @@ public final class RocketManager implements RocketOperationService {
     private RocketFlightReleaseCheckpoint releaseCheckpoint;
 
     public RocketManager() {
-        this(RocketBlockEntityAdapters.defaults());
+        this(RocketBlockEntityAdapters.defaults(), null, null);
     }
 
     public RocketManager(RocketBlockEntityAdapters adapters) {
+        this(adapters, null, null);
+    }
+
+    public RocketManager(CelestialCatalogManager celestialCatalogs) {
+        this(RocketBlockEntityAdapters.defaults(), Objects.requireNonNull(celestialCatalogs, "celestialCatalogs"), null);
+    }
+
+    public RocketManager(CelestialCatalogManager celestialCatalogs, RouteCatalogManager routeCatalogs) {
+        this(
+                RocketBlockEntityAdapters.defaults(),
+                Objects.requireNonNull(celestialCatalogs, "celestialCatalogs"),
+                Objects.requireNonNull(routeCatalogs, "routeCatalogs")
+        );
+    }
+
+    public RocketManager(
+            RocketBlockEntityAdapters adapters,
+            CelestialCatalogManager celestialCatalogs,
+            RouteCatalogManager routeCatalogs
+    ) {
         this.adapters = Objects.requireNonNull(adapters, "adapters");
+        this.celestialCatalogs = celestialCatalogs;
+        flights = new RocketFlightService(celestialCatalogs, routeCatalogs);
         recovery = new RocketTransactionRecoveryService(adapters);
     }
 
@@ -224,24 +260,153 @@ public final class RocketManager implements RocketOperationService {
     }
 
     @Override
+    public Optional<TravelTarget> resolveCurrentTarget(ServerLevel level, BlockPos position) {
+        if (celestialCatalogs == null) {
+            return Optional.empty();
+        }
+        return contextResolver(level.getServer()).resolve(new WorldLocation(level.dimension(), position))
+                .map(RocketManager::targetForContext);
+    }
+
+    @Override
+    public Optional<RocketFlightData> migrateLegacyFlightData(
+            ServerLevel level,
+            RocketFlightData legacy
+    ) {
+        if (celestialCatalogs == null || legacy.schemaVersion() != 1) {
+            return Optional.empty();
+        }
+        LegacyFlightTargetMigrator migrator = new LegacyFlightTargetMigrator(
+                celestialCatalogs,
+                contextResolver(level.getServer())
+        );
+        return migrator.currentLocation(
+                        legacy.currentBody(),
+                        legacy.currentDimension(),
+                        new WorldLocation(level.dimension(), new BlockPos(
+                                legacy.currentOrigin().x(),
+                                legacy.currentOrigin().y(),
+                                legacy.currentOrigin().z()
+                        ))
+                )
+                .target()
+                .map(legacy::withMigratedCurrentTarget);
+    }
+
+    @Override
+    public Optional<RocketTransferRecord> migrateCommittedLegacyTransfer(
+            MinecraftServer server,
+            RocketTransferRecord legacy
+    ) {
+        Objects.requireNonNull(server, "server");
+        Objects.requireNonNull(legacy, "legacy");
+        if (celestialCatalogs == null
+                || legacy.schemaVersion() != 1
+                || legacy.phase() != RocketTransferPhase.COMMITTED) {
+            return Optional.empty();
+        }
+        LegacyFlightTargetMigrator migrator = new LegacyFlightTargetMigrator(
+                celestialCatalogs,
+                contextResolver(server)
+        );
+        Optional<TravelTarget> sourceTarget = migrateRecordLocation(
+                migrator,
+                legacy.sourceFlightData()
+        );
+        Optional<TravelTarget> destinationTarget = migrateRecordLocation(
+                migrator,
+                legacy.destinationFlightData()
+        );
+        Optional<TravelTarget> plannedTarget = legacy.destinationFlightData().plan()
+                .flatMap(plan -> migrator.destination(
+                        plan.destinationBody(),
+                        plan.destinationDimension(),
+                        plan.destinationStation().orElse(null)
+                ).target());
+        if (sourceTarget.isEmpty()
+                || destinationTarget.isEmpty()
+                || plannedTarget.isEmpty()
+                || !destinationTarget.equals(plannedTarget)) {
+            return Optional.empty();
+        }
+        return Optional.of(legacy.migrateTargets(
+                sourceTarget.orElseThrow(),
+                destinationTarget.orElseThrow()
+        ));
+    }
+
+    @Override
+    public RocketFlightQuotes flightQuotes(ServerPlayer player, RocketEntity rocket) {
+        return flights.quotes(player, rocket);
+    }
+
+    private static Optional<TravelTarget> migrateRecordLocation(
+            LegacyFlightTargetMigrator migrator,
+            RocketFlightData flight
+    ) {
+        ResourceKey<Level> levelKey = ResourceKey.create(
+                Registries.DIMENSION,
+                flight.currentDimension()
+        );
+        RocketPosition origin = flight.currentOrigin();
+        return migrator.currentLocation(
+                flight.currentBody(),
+                flight.currentDimension(),
+                new WorldLocation(levelKey, new BlockPos(origin.x(), origin.y(), origin.z()))
+        ).target();
+    }
+
+    private BodyContextResolver contextResolver(MinecraftServer server) {
+        StationRegistrySavedData stations = StationRegistrySavedData.get(server);
+        return new BodyContextResolver(
+                celestialCatalogs,
+                java.util.List.of(new StationRegionBodyContextResolver((x, z) -> stations.findAt(x, z)
+                        .filter(station -> celestialCatalogs.current()
+                                .flatMap(catalog -> catalog.get(station.orbitBody()))
+                                .isPresent())))
+        );
+    }
+
+    private static TravelTarget targetForContext(BodyContext context) {
+        return switch (context.locus()) {
+            case SURFACE -> new TravelTarget.BodySurface(context.bodyId());
+            case ORBIT -> context.instanceId()
+                    .<TravelTarget>map(TravelTarget.Station::new)
+                    .orElseGet(() -> new TravelTarget.Orbit(context.bodyId()));
+            case MISSION -> new TravelTarget.Mission(context.instanceId().orElseThrow());
+        };
+    }
+
+    @Override
     public void requestFlightIntent(
             ServerPlayer player,
             int rocketEntityId,
             RocketFlightAction action,
-            RocketDestination destination,
-            UUID destinationStationId,
+            TravelTarget target,
             UUID requestId
     ) {
-        flights.request(player, rocketEntityId, action, destination, destinationStationId, requestId);
+        flights.request(player, rocketEntityId, action, target, requestId);
     }
 
     @Override
     public RocketFlightRequestResult requestAdminFlight(
             RocketEntity rocket,
-            RocketDestination destination,
+            TravelTarget destination,
             UUID requestId
     ) {
         return flights.requestAdminFlight(rocket, destination, requestId);
+    }
+
+    public RocketFlightRequestResult requestAdminFlight(
+            RocketEntity rocket,
+            RocketDestination destination,
+            UUID requestId
+    ) {
+        return requestAdminFlight(
+                rocket,
+                LegacyTravelTargetAdapter.fromLegacy(destination, null),
+                requestId
+        );
     }
 
     @Override
