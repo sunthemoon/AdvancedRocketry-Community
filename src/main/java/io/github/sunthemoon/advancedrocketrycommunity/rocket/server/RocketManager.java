@@ -1,86 +1,43 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContext;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContextResolver;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.context.WorldLocation;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightEvent;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachine;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketTransactionWorld;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketAssemblyTransaction;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketDisassemblyTransaction;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegionLockManager;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
-import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationRegionBodyContextResolver;
-import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyFlightTargetMigrator;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
-import java.util.ArrayDeque;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
-/** Lifecycle-owned, main-thread authority for v0.5 scan and transaction intents. */
+/** Lifecycle-owned facade for bounded rocket assembly, flight and recovery services. */
 public final class RocketManager implements RocketOperationService {
-    public static final double MAX_INTERACTION_DISTANCE_SQUARED = 64.0D;
+    public static final double MAX_INTERACTION_DISTANCE_SQUARED =
+            RocketInteraction.MAX_INTERACTION_DISTANCE_SQUARED;
 
-    private final RocketBlockEntityAdapters adapters;
-    private final CelestialCatalogManager celestialCatalogs;
-    private final RocketRegionLockManager locks = new RocketRegionLockManager();
-    private final RocketOperationLedger ledger = new RocketOperationLedger();
+    private final RocketTransactionExecutor transactions;
+    private final RocketAssemblerScanService assemblerScans;
     private final RocketTransactionRecoveryService recovery;
     private final RocketFlightService flights;
-    private final RocketTransactionReleaseProbe transactionReleaseProbe = new RocketTransactionReleaseProbe(
-            Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks"),
-            System.getProperty(RocketTransactionReleaseProbe.PROPERTY));
-    private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
-    private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
-    private boolean recoverySuppressedForReleaseTest;
-    private boolean flightLifecycleActive;
-    private UUID releaseCheckpointTransferId;
-    private RocketFlightReleaseCheckpoint releaseCheckpoint;
+    private final RocketDisassemblyService disassembly;
+    private final RocketTargetContextService targetContexts;
+    private final RocketFlightLifecycleController flightLifecycle = new RocketFlightLifecycleController();
 
     public RocketManager() {
         this(RocketBlockEntityAdapters.defaults(), null, null);
@@ -107,56 +64,23 @@ public final class RocketManager implements RocketOperationService {
             CelestialCatalogManager celestialCatalogs,
             RouteCatalogManager routeCatalogs
     ) {
-        this.adapters = Objects.requireNonNull(adapters, "adapters");
-        this.celestialCatalogs = celestialCatalogs;
+        RocketBlockEntityAdapters requiredAdapters = Objects.requireNonNull(adapters, "adapters");
         flights = new RocketFlightService(celestialCatalogs, routeCatalogs);
-        recovery = new RocketTransactionRecoveryService(adapters);
+        transactions = new RocketTransactionExecutor(requiredAdapters);
+        assemblerScans = new RocketAssemblerScanService(transactions);
+        disassembly = new RocketDisassemblyService(transactions, flights);
+        targetContexts = new RocketTargetContextService(celestialCatalogs);
+        recovery = new RocketTransactionRecoveryService(requiredAdapters);
     }
 
     @Override
     public void onInstalled() {
-        flightLifecycleActive = true;
+        flightLifecycle.onInstalled();
     }
 
     @Override
     public void requestAssembler(ServerPlayer player, BlockPos assemblerPosition, boolean assemble) {
-        Objects.requireNonNull(player, "player");
-        Objects.requireNonNull(assemblerPosition, "assemblerPosition");
-        if (!(player.level() instanceof ServerLevel level)) {
-            return;
-        }
-        BlockPos immutablePosition = assemblerPosition.immutable();
-        RocketValidationCode requestFailure = validateAssemblerRequest(player, level, immutablePosition);
-        if (requestFailure != null) {
-            notify(player, requestFailure, "assembler request rejected");
-            return;
-        }
-        RocketAssemblerBlockEntity assembler = assembler(level, immutablePosition);
-        if (assembler == null) {
-            notify(player, RocketValidationCode.ENTITY_STATE_INVALID, "assembler is unavailable");
-            return;
-        }
-        if (assembler.blockedByFutureData()) {
-            update(assembler, RocketValidationCode.UNSUPPORTED_SCHEMA, null, "assembler data uses a future schema", level);
-            notify(player, RocketValidationCode.UNSUPPORTED_SCHEMA, "assembler data uses a future schema");
-            return;
-        }
-
-        RocketValidationCode queued = enqueueScan(
-                level,
-                immutablePosition,
-                player.getUUID(),
-                player.getUUID(),
-                assemble
-        );
-        if (queued != RocketValidationCode.SCAN_IN_PROGRESS) {
-            notify(player, queued, "assembler scan was not queued");
-            return;
-        }
-        player.displayClientMessage(
-                Component.translatable("message.advancedrocketrycommunity.rocket.scan_started"),
-                true
-        );
+        assemblerScans.requestAssembler(player, assemblerPosition, assemble);
     }
 
     /** Queues an operator-authorized scan without inventing a fake player identity. */
@@ -166,92 +90,12 @@ public final class RocketManager implements RocketOperationService {
             UUID ownerId,
             boolean assemble
     ) {
-        Objects.requireNonNull(level, "level");
-        Objects.requireNonNull(assemblerPosition, "assemblerPosition");
-        Objects.requireNonNull(ownerId, "ownerId");
-        BlockPos immutablePosition = assemblerPosition.immutable();
-        if (!level.hasChunkAt(immutablePosition) || !level.hasChunkAt(immutablePosition.above())) {
-            return RocketValidationCode.UNLOADED_CHUNK;
-        }
-        RocketAssemblerBlockEntity assembler = assembler(level, immutablePosition);
-        if (assembler == null) {
-            return RocketValidationCode.ENTITY_STATE_INVALID;
-        }
-        if (assembler.blockedByFutureData()) {
-            return RocketValidationCode.UNSUPPORTED_SCHEMA;
-        }
-        RocketValidationCode result = enqueueScan(level, immutablePosition, ownerId, null, assemble);
-        if (result == RocketValidationCode.SCAN_IN_PROGRESS) {
-            AdvancedRocketryCommunity.LOGGER.info(
-                    "ARCE_ROCKET_SCAN_QUEUED operation={} dimension={} assembler={} owner={}",
-                    assemble ? "assemble" : "validate",
-                    level.dimension().location(),
-                    immutablePosition.toShortString(),
-                    ownerId
-            );
-        }
-        return result;
+        return assemblerScans.requestAdminAssembler(level, assemblerPosition, ownerId, assemble);
     }
 
     @Override
     public void requestDisassembly(ServerPlayer player, RocketEntity rocket) {
-        Objects.requireNonNull(player, "player");
-        Objects.requireNonNull(rocket, "rocket");
-        if (!(player.level() instanceof ServerLevel level)
-                || rocket.level() != level
-                || !rocket.isAlive()
-                || !level.hasChunkAt(rocket.blockPosition())) {
-            notify(player, RocketValidationCode.ENTITY_STATE_INVALID, "rocket is unavailable");
-            return;
-        }
-        if (!withinRange(player, rocket.getX(), rocket.getY(), rocket.getZ())) {
-            notify(player, RocketValidationCode.OUT_OF_RANGE, "rocket is beyond interaction range");
-            return;
-        }
-        if (!rocket.operational()) {
-            notify(player, RocketValidationCode.UNSUPPORTED_SCHEMA, "rocket data is unavailable or unsupported");
-            return;
-        }
-        UUID owner = rocket.ownerId().orElseThrow();
-        if (!owner.equals(player.getUUID()) && !player.isCreative() && !player.hasPermissions(2)) {
-            notify(player, RocketValidationCode.UNAUTHORIZED, "only the owner or an operator may disassemble this rocket");
-            return;
-        }
-        if (!RocketFlightStateMachine.isLegal(
-                rocket.flightData().orElseThrow().state(),
-                RocketFlightEvent.DISASSEMBLE
-        )) {
-            notify(player, RocketValidationCode.ENTITY_STATE_INVALID, "rocket cannot disassemble during flight");
-            return;
-        }
-        RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
-        if (!snapshot.sourceDimension().equals(level.dimension().location())) {
-            notify(player, RocketValidationCode.ENTITY_STATE_INVALID, "rocket is outside its captured dimension");
-            return;
-        }
-        RocketTransactionSavedData savedData = RocketTransactionSavedData.get(level.getServer());
-        if (!savedData.operational()) {
-            notify(player, RocketValidationCode.UNSUPPORTED_SCHEMA, "transaction journal is blocked by unsupported data");
-            return;
-        }
-        if (hasPendingRecovery(savedData, snapshot)) {
-            notify(player, RocketValidationCode.REGION_BUSY, "an unfinished transaction still owns this region");
-            return;
-        }
-
-        UUID transactionId = UUID.randomUUID();
-        var observed = transactionReleaseProbe.bind(level.getServer(), RocketTransactionType.DISASSEMBLY, snapshot,
-                new ServerLevelRocketTransactionWorld(level, adapters, owner), savedData.journalFor(snapshot, owner));
-        RocketTransactionResult result = new RocketDisassemblyTransaction(
-                observed.world(),
-                locks,
-                ledger,
-                observed.journal()
-        ).execute(transactionId, rocket.getUUID(), snapshot);
-        if (result.success()) {
-            flights.releaseLandedReservation(rocket);
-        }
-        reportTransaction(level, snapshot, player, result, "disassembly");
+        disassembly.requestDisassembly(player, rocket);
     }
 
     @Override
@@ -261,36 +105,12 @@ public final class RocketManager implements RocketOperationService {
 
     @Override
     public Optional<TravelTarget> resolveCurrentTarget(ServerLevel level, BlockPos position) {
-        if (celestialCatalogs == null) {
-            return Optional.empty();
-        }
-        return contextResolver(level.getServer()).resolve(new WorldLocation(level.dimension(), position))
-                .map(RocketManager::targetForContext);
+        return targetContexts.resolveCurrentTarget(level, position);
     }
 
     @Override
-    public Optional<RocketFlightData> migrateLegacyFlightData(
-            ServerLevel level,
-            RocketFlightData legacy
-    ) {
-        if (celestialCatalogs == null || legacy.schemaVersion() != 1) {
-            return Optional.empty();
-        }
-        LegacyFlightTargetMigrator migrator = new LegacyFlightTargetMigrator(
-                celestialCatalogs,
-                contextResolver(level.getServer())
-        );
-        return migrator.currentLocation(
-                        legacy.currentBody(),
-                        legacy.currentDimension(),
-                        new WorldLocation(level.dimension(), new BlockPos(
-                                legacy.currentOrigin().x(),
-                                legacy.currentOrigin().y(),
-                                legacy.currentOrigin().z()
-                        ))
-                )
-                .target()
-                .map(legacy::withMigratedCurrentTarget);
+    public Optional<RocketFlightData> migrateLegacyFlightData(ServerLevel level, RocketFlightData legacy) {
+        return targetContexts.migrateLegacyFlightData(level, legacy);
     }
 
     @Override
@@ -298,83 +118,12 @@ public final class RocketManager implements RocketOperationService {
             MinecraftServer server,
             RocketTransferRecord legacy
     ) {
-        Objects.requireNonNull(server, "server");
-        Objects.requireNonNull(legacy, "legacy");
-        if (celestialCatalogs == null
-                || legacy.schemaVersion() != 1
-                || legacy.phase() != RocketTransferPhase.COMMITTED) {
-            return Optional.empty();
-        }
-        LegacyFlightTargetMigrator migrator = new LegacyFlightTargetMigrator(
-                celestialCatalogs,
-                contextResolver(server)
-        );
-        Optional<TravelTarget> sourceTarget = migrateRecordLocation(
-                migrator,
-                legacy.sourceFlightData()
-        );
-        Optional<TravelTarget> destinationTarget = migrateRecordLocation(
-                migrator,
-                legacy.destinationFlightData()
-        );
-        Optional<TravelTarget> plannedTarget = legacy.destinationFlightData().plan()
-                .flatMap(plan -> migrator.destination(
-                        plan.destinationBody(),
-                        plan.destinationDimension(),
-                        plan.destinationStation().orElse(null)
-                ).target());
-        if (sourceTarget.isEmpty()
-                || destinationTarget.isEmpty()
-                || plannedTarget.isEmpty()
-                || !destinationTarget.equals(plannedTarget)) {
-            return Optional.empty();
-        }
-        return Optional.of(legacy.migrateTargets(
-                sourceTarget.orElseThrow(),
-                destinationTarget.orElseThrow()
-        ));
+        return targetContexts.migrateCommittedLegacyTransfer(server, legacy);
     }
 
     @Override
     public RocketFlightQuotes flightQuotes(ServerPlayer player, RocketEntity rocket) {
         return flights.quotes(player, rocket);
-    }
-
-    private static Optional<TravelTarget> migrateRecordLocation(
-            LegacyFlightTargetMigrator migrator,
-            RocketFlightData flight
-    ) {
-        ResourceKey<Level> levelKey = ResourceKey.create(
-                Registries.DIMENSION,
-                flight.currentDimension()
-        );
-        RocketPosition origin = flight.currentOrigin();
-        return migrator.currentLocation(
-                flight.currentBody(),
-                flight.currentDimension(),
-                new WorldLocation(levelKey, new BlockPos(origin.x(), origin.y(), origin.z()))
-        ).target();
-    }
-
-    private BodyContextResolver contextResolver(MinecraftServer server) {
-        StationRegistrySavedData stations = StationRegistrySavedData.get(server);
-        return new BodyContextResolver(
-                celestialCatalogs,
-                java.util.List.of(new StationRegionBodyContextResolver((x, z) -> stations.findAt(x, z)
-                        .filter(station -> celestialCatalogs.current()
-                                .flatMap(catalog -> catalog.get(station.orbitBody()))
-                                .isPresent())))
-        );
-    }
-
-    private static TravelTarget targetForContext(BodyContext context) {
-        return switch (context.locus()) {
-            case SURFACE -> new TravelTarget.BodySurface(context.bodyId());
-            case ORBIT -> context.instanceId()
-                    .<TravelTarget>map(TravelTarget.Station::new)
-                    .orElseGet(() -> new TravelTarget.Orbit(context.bodyId()));
-            case MISSION -> new TravelTarget.Mission(context.instanceId().orElseThrow());
-        };
     }
 
     @Override
@@ -426,36 +175,22 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        if (flightLifecycleActive) {
+        if (flightLifecycle.active()) {
             flights.tick(server);
-            pauseAtArmedReleaseCheckpoint(server);
+            flightLifecycle.pauseIfReached(server);
         }
-        if (!recoverySuppressedForReleaseTest) {
+        if (!flightLifecycle.recoverySuppressedForReleaseTest()) {
             RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server);
             if (outcome == RocketTransactionRecoveryService.Outcome.RECOVERED
                     || outcome == RocketTransactionRecoveryService.Outcome.CONFLICT) {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_RECOVERY outcome={}", outcome);
             }
         }
-        while (!scanOrder.isEmpty()) {
-            AssemblerKey key = scanOrder.removeFirst();
-            PendingScan active = pending.get(key);
-            if (active == null) {
-                continue;
-            }
-            boolean keep = tickScan(server, key, active);
-            if (keep) {
-                scanOrder.addLast(key);
-            } else {
-                pending.remove(key);
-            }
-            // One task receives the entire fixed observation budget each server tick.
-            break;
-        }
+        assemblerScans.tick(server);
     }
 
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (flightLifecycleActive && event.getEntity() instanceof ServerPlayer player) {
+        if (flightLifecycle.active() && event.getEntity() instanceof ServerPlayer player) {
             flights.onPlayerLoggedIn(player);
         }
     }
@@ -470,36 +205,24 @@ public final class RocketManager implements RocketOperationService {
         return flights.activeTransferCount(server);
     }
 
-    public Optional<RocketTransferInspection> inspectTransfer(
-            MinecraftServer server,
-            UUID transferId
-    ) {
+    public Optional<RocketTransferInspection> inspectTransfer(MinecraftServer server, UUID transferId) {
         return flights.inspectTransfer(server, transferId);
     }
 
-    public RocketTransferRecoveryReport recoverTransfer(
-            MinecraftServer server,
-            UUID transferId
-    ) {
+    public RocketTransferRecoveryReport recoverTransfer(MinecraftServer server, UUID transferId) {
         return flights.recoverTransfer(server, transferId);
     }
 
     public void clear() {
-        pending.clear();
-        scanOrder.clear();
-        locks.clear();
-        ledger.clear();
+        assemblerScans.clear();
+        transactions.clear();
         flights.clear();
-        transactionReleaseProbe.clear();
-        recoverySuppressedForReleaseTest = false;
-        releaseCheckpointTransferId = null;
-        releaseCheckpoint = null;
+        flightLifecycle.clear();
     }
 
     /** Prevents the deliberately staged release-test record from recovering before shutdown. */
     public void suppressRecoveryUntilStopForReleaseTest() {
-        requireReleaseTestHooks();
-        recoverySuppressedForReleaseTest = true;
+        flightLifecycle.suppressRecoveryUntilStopForReleaseTest();
     }
 
     /** Arms an exact, bounded flight checkpoint for packaged restart evidence. */
@@ -507,396 +230,20 @@ public final class RocketManager implements RocketOperationService {
             UUID transferId,
             RocketFlightReleaseCheckpoint checkpoint
     ) {
-        requireReleaseTestHooks();
-        if (!flightLifecycleActive) {
-            throw new IllegalStateException("Rocket flight lifecycle is already paused");
-        }
-        releaseCheckpointTransferId = Objects.requireNonNull(transferId, "transferId");
-        releaseCheckpoint = Objects.requireNonNull(checkpoint, "checkpoint");
+        flightLifecycle.arm(transferId, checkpoint);
     }
 
     public void cancelFlightCheckpointForReleaseTest(UUID transferId) {
-        requireReleaseTestHooks();
-        if (Objects.equals(releaseCheckpointTransferId, transferId)) {
-            releaseCheckpointTransferId = null;
-            releaseCheckpoint = null;
-        }
+        flightLifecycle.cancel(transferId);
     }
 
     /** Uses the production transaction against a landed test rocket without a fake player. */
     public RocketValidationCode disassembleForReleaseTest(RocketEntity rocket) {
-        requireReleaseTestHooks();
-        Objects.requireNonNull(rocket, "rocket");
-        if (!(rocket.level() instanceof ServerLevel level)
-                || !rocket.isAlive()
-                || !rocket.operational()
-                || !level.hasChunkAt(rocket.blockPosition())
-                || !rocket.snapshot().orElseThrow().sourceDimension().equals(level.dimension().location())
-                || !RocketFlightStateMachine.isLegal(
-                        rocket.flightData().orElseThrow().state(),
-                        RocketFlightEvent.DISASSEMBLE
-                )) {
-            return RocketValidationCode.ENTITY_STATE_INVALID;
-        }
-        RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
-        RocketTransactionSavedData savedData = RocketTransactionSavedData.get(level.getServer());
-        if (!savedData.operational()) {
-            return RocketValidationCode.UNSUPPORTED_SCHEMA;
-        }
-        if (hasPendingRecovery(savedData, snapshot)) {
-            return RocketValidationCode.REGION_BUSY;
-        }
-        UUID owner = rocket.ownerId().orElseThrow();
-        var observed = transactionReleaseProbe.bind(level.getServer(), RocketTransactionType.DISASSEMBLY, snapshot,
-                new ServerLevelRocketTransactionWorld(level, adapters, owner), savedData.journalFor(snapshot, owner));
-        RocketTransactionResult result = new RocketDisassemblyTransaction(
-                observed.world(),
-                locks,
-                ledger,
-                observed.journal()
-        ).execute(UUID.randomUUID(), rocket.getUUID(), snapshot);
-        if (result.success()) {
-            flights.releaseLandedReservation(rocket);
-        }
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_RELEASE_TEST_DISASSEMBLY entity={} logical={} code={} blocks={} rolled_back={}",
-                rocket.getUUID(),
-                rocket.assemblyTransactionId().orElse(null),
-                result.code(),
-                result.changedBlocks(),
-                result.rolledBackBlocks()
-        );
-        return result.code();
+        flightLifecycle.requireReleaseTestHooks();
+        return disassembly.disassembleForReleaseTest(rocket);
     }
 
     public int pendingScans() {
-        return pending.size();
-    }
-
-    private void pauseAtArmedReleaseCheckpoint(MinecraftServer server) {
-        UUID transferId = releaseCheckpointTransferId;
-        RocketFlightReleaseCheckpoint checkpoint = releaseCheckpoint;
-        if (transferId == null || checkpoint == null) {
-            return;
-        }
-        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
-        RocketTransferRecord record = journal.operational()
-                ? journal.find(transferId).orElse(null)
-                : null;
-        if (record == null) {
-            return;
-        }
-        RocketEntity source = RocketTransferEntities.findSource(server, record);
-        RocketEntity destination = RocketTransferEntities.findDestination(server, record);
-        RocketEntity authority = record.phase().destinationAuthoritative() ? destination : source;
-        RocketFlightState state = authority == null
-                ? null
-                : authority.flightData().map(data -> data.state()).orElse(null);
-        if (!checkpoint.reached(record.phase(), state)) {
-            return;
-        }
-        flightLifecycleActive = false;
-        releaseCheckpointTransferId = null;
-        releaseCheckpoint = null;
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_RELEASE_TEST_FLIGHT_PAUSED checkpoint={} transfer={} phase={} state={} entity={}",
-                checkpoint,
-                transferId,
-                record.phase(),
-                state,
-                authority == null ? "none" : authority.getUUID()
-        );
-    }
-
-    private static void requireReleaseTestHooks() {
-        if (!Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks")) {
-            throw new IllegalStateException("Rocket release-test hooks are disabled");
-        }
-    }
-
-    private boolean tickScan(MinecraftServer server, AssemblerKey key, PendingScan active) {
-        ServerLevel level = server.getLevel(key.dimension());
-        if (level == null || !level.hasChunkAt(key.position())) {
-            return false;
-        }
-        RocketAssemblerBlockEntity assembler = assembler(level, key.position());
-        if (assembler == null || assembler.blockedByFutureData()) {
-            return false;
-        }
-        ServerPlayer player = null;
-        if (active.playerId().isPresent()) {
-            player = server.getPlayerList().getPlayer(active.playerId().orElseThrow());
-            if (player == null || player.level() != level) {
-                update(assembler, RocketValidationCode.UNAUTHORIZED, null, "requesting player disconnected or changed dimension", level);
-                return false;
-            }
-            if (!withinRange(player, key.position())) {
-                update(assembler, RocketValidationCode.OUT_OF_RANGE, null, "requesting player left interaction range", level);
-                notify(player, RocketValidationCode.OUT_OF_RANGE, "assembler scan cancelled");
-                return false;
-            }
-        }
-
-        RocketScanResult result = active.task().step(RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK);
-        if (result.status() == RocketScanResult.Status.RUNNING) {
-            update(
-                    assembler,
-                    RocketValidationCode.SCAN_IN_PROGRESS,
-                    null,
-                    "blocks=" + result.capturedBlocks()
-                            + ", inspected=" + result.totalInspections()
-                            + ", queued=" + result.queuedPositions(),
-                    level
-            );
-            return true;
-        }
-        if (result.status() == RocketScanResult.Status.FAILED) {
-            RocketValidationIssue issue = result.issues().get(0);
-            String detail = issueDetail(issue);
-            update(assembler, issue.code(), result.stats().orElse(null), detail, level);
-            if (player != null) {
-                notify(player, issue.code(), detail);
-            }
-            logScanResult(level, key.position(), active, issue.code(), detail, null);
-            return false;
-        }
-
-        RocketStructureSnapshot snapshot = result.snapshot().orElseThrow();
-        update(assembler, RocketValidationCode.SUCCESS, snapshot.stats(), "validated " + snapshot.contentHash(), level);
-        if (!active.assemble()) {
-            if (player != null) {
-                notifyStats(player, snapshot, "validated");
-            }
-            logScanResult(level, key.position(), active, RocketValidationCode.SUCCESS, "validated", snapshot);
-            return false;
-        }
-        RocketTransactionSavedData savedData = RocketTransactionSavedData.get(server);
-        if (!savedData.operational()) {
-            update(assembler, RocketValidationCode.UNSUPPORTED_SCHEMA, snapshot.stats(), "transaction journal is blocked", level);
-            if (player != null) {
-                notify(player, RocketValidationCode.UNSUPPORTED_SCHEMA, "transaction journal is blocked by unsupported data");
-            }
-            return false;
-        }
-        if (hasPendingRecovery(savedData, snapshot)) {
-            update(assembler, RocketValidationCode.REGION_BUSY, snapshot.stats(), "unfinished transaction owns the region", level);
-            if (player != null) {
-                notify(player, RocketValidationCode.REGION_BUSY, "an unfinished transaction still owns this region");
-            }
-            return false;
-        }
-
-        UUID transactionId = UUID.randomUUID();
-        var observed = transactionReleaseProbe.bind(server, RocketTransactionType.ASSEMBLY, snapshot,
-                new ServerLevelRocketTransactionWorld(level, adapters, active.ownerId()),
-                savedData.journalFor(snapshot, active.ownerId()));
-        RocketTransactionResult transaction = new RocketAssemblyTransaction(
-                observed.world(),
-                locks,
-                ledger,
-                observed.journal()
-        ).execute(transactionId, snapshot);
-        reportTransaction(level, snapshot, player, transaction, "assembly");
-        return false;
-    }
-
-    private void reportTransaction(
-            ServerLevel level,
-            RocketStructureSnapshot snapshot,
-            ServerPlayer player,
-            RocketTransactionResult result,
-            String operation
-    ) {
-        RocketAssemblerBlockEntity assembler = assembler(
-                level,
-                new BlockPos(
-                        snapshot.sourceOrigin().x(),
-                        snapshot.sourceOrigin().y() - 1,
-                        snapshot.sourceOrigin().z()
-                )
-        );
-        String detail = result.success()
-                ? operation + " committed blocks=" + result.changedBlocks()
-                : issueDetail(result.issue().orElseThrow());
-        if (assembler != null) {
-            update(assembler, result.code(), snapshot.stats(), detail, level);
-        }
-        if (result.success()) {
-            if (player != null) {
-                notifyStats(player, snapshot, operation + " committed");
-            }
-        } else if (player != null) {
-            notify(player, result.code(), detail);
-        }
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_ROCKET_TRANSACTION operation={} code={} blocks={} snapshot={} entity={}",
-                operation,
-                result.code(),
-                result.changedBlocks(),
-                snapshot.contentHash(),
-                result.rocketEntityId().map(UUID::toString).orElse("none")
-        );
-    }
-
-    private RocketValidationCode enqueueScan(
-            ServerLevel level,
-            BlockPos assemblerPosition,
-            UUID ownerId,
-            UUID playerId,
-            boolean assemble
-    ) {
-        AssemblerKey key = new AssemblerKey(level.dimension(), assemblerPosition);
-        if (pending.containsKey(key)) {
-            return RocketValidationCode.REGION_BUSY;
-        }
-        if (pending.size() >= RocketLimits.MAX_ACTIVE_TRANSACTIONS) {
-            return RocketValidationCode.OPERATION_LEDGER_FULL;
-        }
-        RocketStructureScanTask task = new RocketStructureScanTask(
-                new ServerLevelRocketScanWorld(level, adapters),
-                level.dimension().location(),
-                toRocketPosition(assemblerPosition.above()),
-                UUID.randomUUID(),
-                level.getGameTime()
-        );
-        pending.put(key, new PendingScan(task, ownerId, Optional.ofNullable(playerId), assemble));
-        scanOrder.addLast(key);
-        RocketAssemblerBlockEntity assembler = assembler(level, assemblerPosition);
-        if (assembler != null) {
-            update(assembler, RocketValidationCode.SCAN_IN_PROGRESS, null, "queued", level);
-        }
-        return RocketValidationCode.SCAN_IN_PROGRESS;
-    }
-
-    private static void logScanResult(
-            ServerLevel level,
-            BlockPos assemblerPosition,
-            PendingScan active,
-            RocketValidationCode code,
-            String detail,
-            RocketStructureSnapshot snapshot
-    ) {
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_ROCKET_SCAN operation={} code={} dimension={} assembler={} blocks={} snapshot={} detail={}",
-                active.assemble() ? "assemble" : "validate",
-                code,
-                level.dimension().location(),
-                assemblerPosition.toShortString(),
-                snapshot == null ? 0 : snapshot.stats().blockCount(),
-                snapshot == null ? "none" : snapshot.contentHash(),
-                detail
-        );
-    }
-
-    private static RocketValidationCode validateAssemblerRequest(
-            ServerPlayer player,
-            ServerLevel level,
-            BlockPos position
-    ) {
-        if (!withinRange(player, position)) {
-            return RocketValidationCode.OUT_OF_RANGE;
-        }
-        if (!level.hasChunkAt(position) || !level.hasChunkAt(position.above())) {
-            return RocketValidationCode.UNLOADED_CHUNK;
-        }
-        return assembler(level, position) == null
-                ? RocketValidationCode.ENTITY_STATE_INVALID
-                : null;
-    }
-
-    private static RocketAssemblerBlockEntity assembler(ServerLevel level, BlockPos position) {
-        return level.getBlockEntity(position) instanceof RocketAssemblerBlockEntity assembler
-                ? assembler
-                : null;
-    }
-
-    private static boolean withinRange(ServerPlayer player, BlockPos position) {
-        return withinRange(
-                player,
-                position.getX() + 0.5D,
-                position.getY() + 0.5D,
-                position.getZ() + 0.5D
-        );
-    }
-
-    private static boolean withinRange(ServerPlayer player, double x, double y, double z) {
-        return player.distanceToSqr(x, y, z) <= MAX_INTERACTION_DISTANCE_SQUARED;
-    }
-
-    private static void update(
-            RocketAssemblerBlockEntity assembler,
-            RocketValidationCode code,
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats stats,
-            String detail,
-            ServerLevel level
-    ) {
-        assembler.setReport(new RocketAssemblerReport(code, stats, detail, level.getGameTime()));
-    }
-
-    private static void notify(ServerPlayer player, RocketValidationCode code, String detail) {
-        player.displayClientMessage(
-                Component.translatable(code.translationKey())
-                        .append(Component.literal(": " + detail)),
-                true
-        );
-    }
-
-    private static void notifyStats(
-            ServerPlayer player,
-            RocketStructureSnapshot snapshot,
-            String action
-    ) {
-        var stats = snapshot.stats();
-        player.displayClientMessage(
-                Component.literal(
-                        action + ": blocks=" + stats.blockCount()
-                                + ", mass=" + stats.mass()
-                                + ", thrust=" + stats.thrust()
-                                + ", fuel=" + stats.fuelCapacity()
-                                + ", seats=" + stats.seatCount()
-                ),
-                true
-        );
-    }
-
-    private static String issueDetail(RocketValidationIssue issue) {
-        String position = issue.position()
-                .map(value -> " at " + value.x() + "," + value.y() + "," + value.z())
-                .orElse("");
-        String parameters = issue.parameters().isEmpty() ? "" : " " + issue.parameters();
-        return issue.code().name().toLowerCase(java.util.Locale.ROOT) + position + parameters;
-    }
-
-    private static RocketPosition toRocketPosition(BlockPos position) {
-        return new RocketPosition(position.getX(), position.getY(), position.getZ());
-    }
-
-    private static boolean hasPendingRecovery(
-            RocketTransactionSavedData savedData,
-            RocketStructureSnapshot snapshot
-    ) {
-        RocketRegion requested = RocketRegion.fromSnapshot(snapshot);
-        return savedData.entries().stream()
-                .anyMatch(entry -> entry.record().region().overlaps(requested));
-    }
-
-    private record AssemblerKey(ResourceKey<Level> dimension, BlockPos position) {
-        private AssemblerKey {
-            Objects.requireNonNull(dimension, "dimension");
-            position = Objects.requireNonNull(position, "position").immutable();
-        }
-    }
-
-    private record PendingScan(
-            RocketStructureScanTask task,
-            UUID ownerId,
-            Optional<UUID> playerId,
-            boolean assemble
-    ) {
-        private PendingScan {
-            Objects.requireNonNull(task, "task");
-            Objects.requireNonNull(ownerId, "ownerId");
-            Objects.requireNonNull(playerId, "playerId");
-        }
+        return assemblerScans.pendingScans();
     }
 }

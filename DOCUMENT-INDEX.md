@@ -136,6 +136,7 @@ docs/versions/V0.8.0-PROGRESSION-SATELLITES.md
 docs/versions/V0.9.0-BETA-HARDENING.md
 docs/versions/V1.0.0-COMMUNITY-MVP.md
 docs/versions/V1.1.0-EXPANSION-KERNEL.md
+docs/versions/V1.1.1-MAINTENANCE.md
 docs/versions/V1.2.0-MACHINE-MULTIBLOCK-KERNEL.md
 docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md
 docs/versions/V1.4.0-PLANETARY-EXPANSION.md
@@ -207,6 +208,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - v0.9.0 复用未变化核心视觉证据的范围、风险、所有者接受与 v1.0 回收条件。
 - v1.1.0 typed `TravelTarget`、数据路线、位置化 `BodyContext` 与两阶段迁移契约。
 - v1.1.0 从未正式发布的 v1.0 实现提交继续开发的限期风险接受；不豁免发布 Gate。
+- v1.1.1 在不改协议、存档和玩法的前提下拆分火箭管理器与集成测试。
 
 ADR-000、ADR-001、ADR-002、ADR-004、ADR-005、ADR-006、ADR-007、ADR-008 和 ADR-009 已由
 维护者接受；ADR-003 仍保留 `PROPOSED` 状态。ADR-006 记录 v0.6.0 固定

@@ -1,0 +1,22 @@
+manager_public_surface expected=31 actual=31 equal=True
+flight_gametest_contract expected=5 actual=5 equal=True
+  earthMoonRoundTripConservesFuelAndBlockedPadReturnsSource: template = TEMPLATE, batch = "flight", timeoutTicks = 1_000
+  simultaneousRocketsUseDisjointAuthorityAndPads: template = TEMPLATE, batch = "flight_concurrency", timeoutTicks = 500
+  transferRecoveryReconcilesAllEntityPresenceCases: template = TEMPLATE, batch = "flight_recovery", timeoutTicks = 400
+  hostileFlightIntentsCannotChangeAuthority: template = TEMPLATE, batch = "flight_security", timeoutTicks = 200
+  earthStationEarthUsesApprovedPadAndPreservesNeighborSpace: template = TEMPLATE, batch = "station_flight", timeoutTicks = 800
+line_budget RocketManager.java=249 limit_lt=500 pass=True
+line_budget RocketAssemblerScanService.java=405 limit_lt=500 pass=True
+line_budget RocketDisassemblyService.java=172 limit_lt=500 pass=True
+line_budget RocketFlightLifecycleController.java=99 limit_lt=500 pass=True
+line_budget RocketInteraction.java=79 limit_lt=500 pass=True
+line_budget RocketTargetContextService.java=130 limit_lt=500 pass=True
+line_budget RocketTransactionExecutor.java=87 limit_lt=500 pass=True
+line_budget RocketFlightGameTests.java=396 limit_lt=800 pass=True
+line_budget RocketFlightSecurityGameTests.java=204 limit_lt=800 pass=True
+line_budget RocketTransferRecoveryGameTests.java=308 limit_lt=800 pass=True
+line_budget RocketFlightGameTestFixtures.java=187 limit_lt=800 pass=True
+flight_data_schema_2=True
+transfer_record_schema_2=True
+flight_plan_schema_3=True
+rocket_flight_protocol_6=True

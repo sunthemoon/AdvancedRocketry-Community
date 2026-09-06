@@ -1,0 +1,2 @@
+generated_resources=PASS
+git_diff_check=PASS
