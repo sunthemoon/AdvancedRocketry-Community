@@ -4,7 +4,7 @@ Date: 2026-09-06
 
 Branch: `codex/v1.2.0-port-core`
 
-Scope: `V120-PORT-01`, partial `V120-PORT-02`
+Scope: `V120-PORT-01`, `V120-PORT-02`, `V120-PORT-03`
 
 ## Verified behavior
 
@@ -15,20 +15,21 @@ Scope: `V120-PORT-01`, partial `V120-PORT-02`
 - Shared revision state advances on successful external Energy mutation and not on
   simulation or rejected access.
 - Item, Fluid and Energy Forge wrappers compile against Forge 47.4.10.
+- Three initialized Forge GameTests verify Item range/filter/lock/revision, Fluid tank
+  isolation/simulation/revision, and cached `LazyOptional` reuse/invalidation.
 
-## Remaining A1 verification
+## Verification boundary
 
 Ordinary JUnit cannot instantiate `ItemStack` or `FluidStack` without the Minecraft
-registry bootstrap. Item/Fluid range/filter/revision behavior and cached
-`LazyOptional` invalidation therefore remain explicitly unverified until a short Forge
-GameTest runs in an initialized game environment. This is slice-local verification and
-is not part of the full acceptance campaign deferred by ADR-018.
+registry bootstrap, so those checks run as A1 Forge GameTests. Actual machine
+BlockEntity integration, side exposure and revision persistence remain future
+`V120-MCH`/`V120-MIG` work. The complete acceptance campaign remains deferred by
+ADR-018.
 
 ## Commands and results
 
-See [test-summary.txt](test-summary.txt). Failed exploratory JUnit bootstrap attempts
-were corrected by moving registry-dependent acceptance to A1 rather than weakening the
-runtime wrappers.
+See [test-summary.txt](test-summary.txt). Registry-dependent acceptance runs at A1
+rather than weakening the runtime wrappers for ordinary JUnit.
 
 ## Evidence integrity
 

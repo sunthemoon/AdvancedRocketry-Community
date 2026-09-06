@@ -11,3 +11,9 @@ tests=483
 failures=0
 skipped=0
 java=17.0.7
+
+command=./gradlew runGameTestServer --no-daemon
+result=PASS
+required_gametests=55
+failed_gametests=0
+new_port_gametests=3
