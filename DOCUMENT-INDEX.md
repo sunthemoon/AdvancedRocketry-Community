@@ -125,6 +125,7 @@
 | [v1.2.0 测试设计](docs/work/v1.2.0-test-design.md) | 自动、恢复、安全、性能和人工验收矩阵 |
 | [v1.2.0 审计验证](docs/work/v1.2.0-audit/VERIFICATION.md) | 上游哈希、JSON 样例、规划/仓库校验与基线单测证据 |
 | [v1.2.0 process core 验证](docs/work/v1.2.0-process-core/VERIFICATION.md) | 纯 Java 模拟、边界、事务顺序和中断恢复证据 |
+| [v1.2.0 port core 验证](docs/work/v1.2.0-port-core/VERIFICATION.md) | 端口策略、方向、Forge wrapper 与待补 GameTest 边界 |
 
 ## 分版本执行文件
 
