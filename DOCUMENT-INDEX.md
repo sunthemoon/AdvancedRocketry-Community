@@ -119,6 +119,11 @@
 | [v1.0 实施记录](docs/work/v1.0.0-implementation-log.md) | 文档整合、决策、实跑验证和剩余 Gate |
 | [v1plus 整合验证](docs/work/v1.0.0-planning-integration/VERIFICATION.md) | 本地检查结果、原始日志与发布验收边界 |
 | [v1plus 输入来源](docs/provenance/v1.0.0-v1plus-planning.md) | 用户提供规划包的来源、哈希和整合边界 |
+| [v1.2.0 实施记录](docs/work/v1.2.0-implementation-log.md) | 机器与多方块内核任务树、前置 Gate 和验证记录 |
+| [v1.2.0 机器审计](docs/work/v1.2.0-machine-audit.md) | 当前实现、上游机器分类和三台代表机器选择 |
+| [v1.2.0 契约草案](docs/work/v1.2.0-contract-draft.md) | process、port、pattern、controller 与迁移边界草案 |
+| [v1.2.0 测试设计](docs/work/v1.2.0-test-design.md) | 自动、恢复、安全、性能和人工验收矩阵 |
+| [v1.2.0 审计验证](docs/work/v1.2.0-audit/VERIFICATION.md) | 上游哈希、JSON 样例、规划/仓库校验与基线单测证据 |
 
 ## 分版本执行文件
 

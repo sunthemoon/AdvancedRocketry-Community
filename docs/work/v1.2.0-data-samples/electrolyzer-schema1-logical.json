@@ -1,0 +1,18 @@
+{
+  "format": "logical_json_view_of_nbt",
+  "arce_machine": {
+    "schema_version": 1,
+    "inventory": {
+      "Size": 4,
+      "Items": []
+    },
+    "fluid": {},
+    "energy": 2000,
+    "progress": 0
+  },
+  "expected": {
+    "migration_runs": 1,
+    "recipe_execution_during_migration": false,
+    "resources_preserved": true
+  }
+}

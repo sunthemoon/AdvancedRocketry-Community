@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+    "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
+  },
+  "copy_result": {
+    "runtime_source_files": 0,
+    "runtime_recipe_files": 0,
+    "runtime_assets": 0
+  },
+  "machine_sources": [
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileCentrifuge.java",
+      "bytes": 5320,
+      "lines": 131,
+      "sha256": "4ab9c935c000dd0eae78c9fa6f5bb056bd32dbd0dea67bac74f99d229258d75c"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileChemicalReactor.java",
+      "bytes": 8509,
+      "lines": 239,
+      "sha256": "8785e84540609eaf231e2a40135e9c7efdd07e2da879fbe89c56f9aed349d378"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileCrystallizer.java",
+      "bytes": 2839,
+      "lines": 85,
+      "sha256": "4de79e56e7f3e238b597f67b0935defe7d07501cbfaf3935556467944598dbea"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileCuttingMachine.java",
+      "bytes": 2645,
+      "lines": 81,
+      "sha256": "f290dee2f7b85d50db52596beff1b30bd5e2668c3ec005e8b36b3d4a37f7d3f3"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileElectricArcFurnace.java",
+      "bytes": 5332,
+      "lines": 98,
+      "sha256": "c17dd9f870f9e2061573182646453be378c33da490be22d417df53a14ef68d2f"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileElectrolyser.java",
+      "bytes": 1876,
+      "lines": 62,
+      "sha256": "bd9455b651da25337ac0bff6c5b39f3ddef2a9e4537def6d2fac50057e476387"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileLathe.java",
+      "bytes": 1949,
+      "lines": 66,
+      "sha256": "53ca3bf146d0a96ade747a13610f5cfe4e985599f6ae5fb83b44f252de5c8d65"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TilePrecisionAssembler.java",
+      "bytes": 5034,
+      "lines": 137,
+      "sha256": "febca494028054f870024566da977b54a87f642c42512f86d050759196635650"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TilePrecisionLaserEtcher.java",
+      "bytes": 3961,
+      "lines": 119,
+      "sha256": "14d787275cf529259b432adc59a2c6c059cab8a421a331f637835964ffc88813"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/machine/TileRollingMachine.java",
+      "bytes": 2481,
+      "lines": 70,
+      "sha256": "66be27b25e1255be1cc3379ed52952db16d72120a593ab2f31dd073fb68e5d78"
+    }
+  ],
+  "recipe_groups": [
+    {
+      "type": "advancedrocketry:chemicalreactor",
+      "count": 3,
+      "item_inputs": {
+        "minimum": 0,
+        "maximum": 1
+      },
+      "fluid_inputs": {
+        "minimum": 0,
+        "maximum": 2
+      },
+      "item_outputs": {
+        "minimum": 0,
+        "maximum": 2
+      },
+      "fluid_outputs": {
+        "minimum": 0,
+        "maximum": 1
+      },
+      "time": {
+        "minimum": 40,
+        "maximum": 100
+      },
+      "energy": {
+        "minimum": 1,
+        "maximum": 20
+      }
+    },
+    {
+      "type": "advancedrocketry:cuttingmachine",
+      "count": 4,
+      "item_inputs": {
+        "minimum": 1,
+        "maximum": 1
+      },
+      "fluid_inputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "item_outputs": {
+        "minimum": 3,
+        "maximum": 3
+      },
+      "fluid_outputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "time": {
+        "minimum": 80,
+        "maximum": 300
+      },
+      "energy": {
+        "minimum": 10,
+        "maximum": 100
+      }
+    },
+    {
+      "type": "advancedrocketry:electricarcfurnace",
+      "count": 4,
+      "item_inputs": {
+        "minimum": 1,
+        "maximum": 2
+      },
+      "fluid_inputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "item_outputs": {
+        "minimum": 2,
+        "maximum": 3
+      },
+      "fluid_outputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "time": {
+        "minimum": 3000,
+        "maximum": 12000
+      },
+      "energy": {
+        "minimum": 1,
+        "maximum": 20
+      }
+    },
+    {
+      "type": "advancedrocketry:electrolyser",
+      "count": 1,
+      "item_inputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "fluid_inputs": {
+        "minimum": 1,
+        "maximum": 1
+      },
+      "item_outputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "fluid_outputs": {
+        "minimum": 2,
+        "maximum": 2
+      },
+      "time": {
+        "minimum": 100,
+        "maximum": 100
+      },
+      "energy": {
+        "minimum": 20,
+        "maximum": 20
+      }
+    },
+    {
+      "type": "advancedrocketry:precisionassembler",
+      "count": 19,
+      "item_inputs": {
+        "minimum": 2,
+        "maximum": 5
+      },
+      "fluid_inputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "item_outputs": {
+        "minimum": 1,
+        "maximum": 2
+      },
+      "fluid_outputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "time": {
+        "minimum": 100,
+        "maximum": 2000
+      },
+      "energy": {
+        "minimum": 1,
+        "maximum": 250
+      }
+    },
+    {
+      "type": "advancedrocketry:precisionlaseretcher",
+      "count": 2,
+      "item_inputs": {
+        "minimum": 4,
+        "maximum": 4
+      },
+      "fluid_inputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "item_outputs": {
+        "minimum": 3,
+        "maximum": 3
+      },
+      "fluid_outputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "time": {
+        "minimum": 1200,
+        "maximum": 1200
+      },
+      "energy": {
+        "minimum": 400,
+        "maximum": 600
+      }
+    },
+    {
+      "type": "advancedrocketry:rollingmachine",
+      "count": 4,
+      "item_inputs": {
+        "minimum": 1,
+        "maximum": 1
+      },
+      "fluid_inputs": {
+        "minimum": 1,
+        "maximum": 1
+      },
+      "item_outputs": {
+        "minimum": 2,
+        "maximum": 2
+      },
+      "fluid_outputs": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "time": {
+        "minimum": 100,
+        "maximum": 400
+      },
+      "energy": {
+        "minimum": 1,
+        "maximum": 8
+      }
+    }
+  ],
+  "verification": {
+    "machine_source_count": 10,
+    "recipe_count": 37,
+    "all_downloaded_hashes_match_manifest": true,
+    "all_downloaded_recipes_parse": true
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "advancedrocketrycommunity:test/mixed_io",
+  "duration_ticks": 200,
+  "energy_per_tick": 20,
+  "item_inputs": [
+    {
+      "ingredient": {
+        "item": "minecraft:iron_ingot"
+      },
+      "count": 2
+    }
+  ],
+  "fluid_inputs": [
+    {
+      "fluid": "minecraft:water",
+      "amount": 250
+    }
+  ],
+  "item_outputs": [
+    {
+      "item": "minecraft:iron_nugget",
+      "count": 3
+    }
+  ],
+  "fluid_outputs": []
+}

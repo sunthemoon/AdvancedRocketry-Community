@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "examples": [
+    {
+      "result": "MISMATCH",
+      "reason": "expected_block_tag",
+      "local_position": {"x": 0, "y": 1, "z": 0},
+      "world_position": {"x": 120, "y": 65, "z": -40},
+      "expected": "#advancedrocketrycommunity:machine_casings",
+      "actual": "minecraft:cobblestone"
+    },
+    {
+      "result": "WAITING_UNLOADED",
+      "reason": "chunk_not_loaded",
+      "local_position": {"x": 2, "y": 0, "z": 1},
+      "world_position": {"x": 128, "y": 64, "z": -32},
+      "actual": null,
+      "forced_chunk_load": false
+    }
+  ]
+}

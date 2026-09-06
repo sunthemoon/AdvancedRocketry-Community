@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "advancedrocketrycommunity:test/duration_over_limit",
+  "duration_ticks": 72001,
+  "energy_per_tick": 1,
+  "item_inputs": [
+    {
+      "ingredient": {
+        "item": "minecraft:cobblestone"
+      },
+      "count": 1
+    }
+  ],
+  "fluid_inputs": [],
+  "item_outputs": [
+    {
+      "item": "minecraft:stone"
+    }
+  ],
+  "fluid_outputs": [],
+  "expected_error": "duration_ticks_out_of_range"
+}
