@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "machine_id": "advancedrocketrycommunity:test/rolling_machine",
+  "controller_facing": "north",
+  "ports": [
+    {
+      "channel": "item_input",
+      "kind": "ITEM",
+      "mode": "INPUT",
+      "local_sides": ["TOP"],
+      "range": {"first": 0, "count": 1}
+    },
+    {
+      "channel": "fluid_input",
+      "kind": "FLUID",
+      "mode": "INPUT",
+      "local_sides": ["LEFT"],
+      "range": {"first": 0, "count": 1}
+    },
+    {
+      "channel": "energy_input",
+      "kind": "ENERGY",
+      "mode": "INPUT",
+      "local_sides": ["BACK"],
+      "range": {"first": 0, "count": 1}
+    },
+    {
+      "channel": "item_output",
+      "kind": "ITEM",
+      "mode": "OUTPUT",
+      "local_sides": ["BOTTOM"],
+      "range": {"first": 1, "count": 2}
+    }
+  ]
+}

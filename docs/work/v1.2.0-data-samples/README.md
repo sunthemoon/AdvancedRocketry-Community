@@ -11,6 +11,9 @@ not discover them.
 | `pattern-valid-rotatable.json` | controller-local pattern with exact/tag/air/port cells |
 | `electrolyzer-schema1-logical.json` | logical JSON view of the accepted NBT schema 1 shape |
 | `formation-diagnostics.json` | mismatch and unloaded result examples |
+| `process-journal-applying.json` | recoverable before/after transaction snapshot |
+| `controller-binding-waiting.json` | position, dimension, generation and unloaded state |
+| `port-policy.json` | controller-local side and capability access matrix |
 
 The field names remain draft input to the Framework ADR. These files do not freeze a
 codec and must not be copied into `src/main/resources` without contract approval.

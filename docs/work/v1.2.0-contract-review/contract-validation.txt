@@ -1,0 +1,4 @@
+sample_json=8 pattern_cells=12 port_channels=4
+journal_binding_port_invariants=PASS
+adr_required_contract_tokens=PASS
+runtime_paths=0

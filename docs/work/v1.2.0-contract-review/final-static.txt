@@ -1,0 +1,2 @@
+task_paths=10 runtime_paths=0 external_untracked=1 credential_hits=0
+git_diff_check_exit_code=0

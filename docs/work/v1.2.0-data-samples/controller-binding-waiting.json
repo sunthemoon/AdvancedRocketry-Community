@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "level": "minecraft:overworld",
+  "controller": {"x": 127, "y": 64, "z": -32},
+  "machine_instance_id": "3e50a36e-31c1-447d-b9f1-5763aca32061",
+  "generation": 3,
+  "part": {"x": 128, "y": 64, "z": -32},
+  "state": "WAITING_UNLOADED",
+  "forced_chunk_load": false
+}

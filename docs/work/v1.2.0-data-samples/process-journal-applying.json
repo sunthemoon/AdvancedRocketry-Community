@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "transaction_id": "5d4c1704-f26c-4f55-8ff0-95918b046cf5",
+  "machine_instance_id": "3e50a36e-31c1-447d-b9f1-5763aca32061",
+  "recipe_id": "advancedrocketrycommunity:test/mixed_io",
+  "phase": "APPLYING",
+  "port_revision": 42,
+  "before": {
+    "items": [
+      {"channel": "input", "slot": 0, "item": "minecraft:iron_ingot", "count": 2},
+      {"channel": "output", "slot": 0, "item": "minecraft:air", "count": 0}
+    ],
+    "fluids": [
+      {"channel": "input", "tank": 0, "fluid": "minecraft:water", "amount": 250}
+    ]
+  },
+  "after": {
+    "items": [
+      {"channel": "input", "slot": 0, "item": "minecraft:air", "count": 0},
+      {"channel": "output", "slot": 0, "item": "minecraft:iron_nugget", "count": 3}
+    ],
+    "fluids": [
+      {"channel": "input", "tank": 0, "fluid": "minecraft:empty", "amount": 0}
+    ]
+  },
+  "expected_recovery": "APPLY_AFTER_IF_ACTUAL_MATCHES_BEFORE"
+}
