@@ -1,0 +1,13 @@
+command=./gradlew test --tests io.github.sunthemoon.advancedrocketrycommunity.machine.process.* --no-daemon
+result=PASS
+process_test_files=3
+process_tests=24
+process_failures=0
+
+command=./gradlew clean build --no-daemon
+result=PASS
+test_files=92
+tests=477
+failures=0
+skipped=0
+java=17.0.7

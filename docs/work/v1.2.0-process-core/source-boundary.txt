@@ -1,0 +1,10 @@
+scope=src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/process
+minecraft_import_matches=0
+forge_import_matches=0
+mutable_static_collection_matches=0
+largest_production_class=ProcessTransactionExecutor.java
+largest_production_class_lines=147
+git_diff_check=PASS
+repository_validator=PASS
+repository_validator_checks=45
+markdown_links_checked=822
