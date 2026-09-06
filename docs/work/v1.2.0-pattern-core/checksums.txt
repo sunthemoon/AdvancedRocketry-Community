@@ -1,0 +1,1 @@
+eb50821c7dfac935a771eeb07175db7f7f4bae9c1459c592f623bfefac5738be  docs/work/v1.2.0-pattern-core/test-summary.txt
