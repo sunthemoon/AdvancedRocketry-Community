@@ -1,0 +1,16 @@
+{
+  "baseline-junit": {
+    "suites": 70,
+    "tests": 362,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "latest-junit": {
+    "suites": 70,
+    "tests": 362,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

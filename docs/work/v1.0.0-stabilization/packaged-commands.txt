@@ -1,0 +1,22 @@
+Working directory: D:\GitHub\AdvancedRocketry-Community
+Python: D:\python\pyenv\pyenv-win\versions\3.13.15\python.exe
+JAVA_HOME: C:\Program Files\Java\jdk-17.0.7
+TEMP and TMP: C:\Users\Administrator\AppData\Local\Temp
+PYTHONUTF8: 1
+
+python scripts/run_dedicated_server_smoke.py build/libs/advancedrocketry-community-1.20.1-1.0.0-dev.jar --expected-mod-version 1.20.1-1.0.0-dev --session-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-server --evidence-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-evidence --port 25610
+Exit: 0. First start and same-world restart; no player join claimed.
+
+python -u scripts/run_v100_flight_forced_stop.py C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-server --session-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\flight-matrix-server --baseline-summary C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-evidence\summary.json --evidence-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\flight-matrix-evidence --base-commit 34b2e99b48a33f4ba8905b6a69a38efee1649d3f
+Exit: 1. Initial harness double-counted an already cross-dimension selector.
+
+python -u scripts/run_v100_flight_forced_stop.py C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-server --session-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\flight-matrix-server-r2 --baseline-summary C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-evidence\summary.json --evidence-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\flight-matrix-evidence-r2 --base-commit 34b2e99b48a33f4ba8905b6a69a38efee1649d3f
+Exit: 0. Ten checkpoints, 20 owned Java processes.
+Harness archive: executed-harness-r2.py.txt; SHA-256 is in flight-matrix/summary.json.
+
+python -u scripts/run_v100_flight_forced_stop.py C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-server --session-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\flight-guard-server --baseline-summary C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-evidence\summary.json --evidence-dir C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\flight-guard-evidence --base-commit 34b2e99b48a33f4ba8905b6a69a38efee1649d3f --case SOURCE_REMOVED
+Exit: 0. Final live-process pre-kill guard; one case, not a complete matrix.
+
+Before each copy, the absolute session target was verified as a child of the
+explicit temporary task directory. Only copied logs in those owned sessions
+were removed by the existing server-copy helper; source worlds were preserved.

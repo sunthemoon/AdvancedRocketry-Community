@@ -1,0 +1,16 @@
+test_changed_receipt_cannot_claim_recovery (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_changed_receipt_cannot_claim_recovery) ... ok
+test_evidence_copies_full_logs_with_matching_hashes (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_evidence_copies_full_logs_with_matching_hashes) ... ok
+test_exact_receipts_are_accepted (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_exact_receipts_are_accepted) ... ok
+test_forced_stop_kills_owned_process_without_graceful_command (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_forced_stop_kills_owned_process_without_graceful_command) ... ok
+test_matrix_includes_every_durable_transfer_phase (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_matrix_includes_every_durable_transfer_phase) ... ok
+test_only_exact_recovery_warning_is_allowed (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_only_exact_recovery_warning_is_allowed) ... ok
+test_player_manifest_cannot_be_mislabeled_as_tested (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_player_manifest_cannot_be_mislabeled_as_tested) ... ok
+test_report_mutations_cannot_claim_preservation (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_report_mutations_cannot_claim_preservation) ... ok
+test_reports_preserve_identity_and_exact_fuel (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_reports_preserve_identity_and_exact_fuel) ... ok
+test_session_must_stay_on_loopback_at_the_verified_port (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_session_must_stay_on_loopback_at_the_verified_port) ... ok
+test_startup_failure_aborts_the_owned_process (test_run_v100_flight_forced_stop.FlightForcedStopTests.test_startup_failure_aborts_the_owned_process) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.077s
+
+OK

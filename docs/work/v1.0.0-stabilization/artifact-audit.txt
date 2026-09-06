@@ -1,0 +1,4 @@
+usage: validate_build_artifact.py [-h] [--expected-version EXPECTED_VERSION]
+                                  [--content-manifest PATH]
+                                  artifact
+validate_build_artifact.py: error: unrecognized arguments: --write-manifest C:\Users\ADMINI~1\AppData\Local\Temp\arce-v100-stabilization\artifact-manifest.json

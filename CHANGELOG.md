@@ -4,6 +4,49 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.0.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.0.0-dev`.
+No stable artifact or release approval exists yet.
+
+- Freeze the accepted Beta gameplay; preserve schema 2, its existing format
+  epoch, stable IDs and network authority boundaries.
+- Add populated five-root persistence regression coverage for lossless loads,
+  migration backups, partial-commit rollback, malformed/future data rejection,
+  ownership and mission/research replay protection.
+- Defer interrupted assembly/disassembly recovery until the origin's persisted
+  entities have loaded, preventing restored blocks from coexisting with a
+  late-loading rocket. Existing save formats and chunk-ticket policy are unchanged.
+- Cancel a countdown using its server-synchronized destination rather than the
+  console's editable choice. Preserve station selection across window resizing
+  and lock route editing during flight.
+- Show the server's fuel quote for the selected Earth, Moon or station route,
+  including its route-specific fuel sufficiency, instead of reusing the default
+  route. The flight channel requires protocol 5 on both sides; save formats and
+  server permission checks are unchanged.
+- Plan `1.0.x` as a compatible maintenance line, with feature expansion in v1.1+.
+- Keep occupied rockets in world storage rather than transferring their save
+  ownership into the last passenger's file on logout. Normal resumption of an
+  unchanged landed rocket is informational; actual recovery repairs still warn.
+- Defer passenger recovery until entity storage is ready, using bounded
+  lifecycle-owned retries and rechecking the selected entity's current seats.
+- Cancel pending passenger recovery immediately on logout so a quick new login
+  receives its own wait window without removing the saved passenger seat.
+- Preserve post-landing boarding/leaving choices on reconnect and release the
+  completed transfer reservation when a refueled rocket is disassembled.
+- Reconcile matching legacy player-embedded rocket copies on login, preferring
+  the journal-bound entity and preserving fuel added after landing instead of
+  selecting an older copy by UUID order.
+- Record successful requested countdown cancellation as informational rather
+  than a transfer-failure warning. Destination/creation/spawn failures still
+  warn with the same diagnostic fields; strict log audits are unchanged.
+- Keep flight-console fuel text clear of its panel border and show selection
+  markers for the active countdown destination, preserving the editable choice
+  when the countdown is cancelled.
+- Keep mounted client players aligned with the moving rocket during ascent and
+  descent using bounded synchronized seat assignments, including reconnects.
+  This does not expose authoritative flight state or change saved seat identities.
+
 ## v0.9.0 — PASSED Beta 1 pre-release
 
 **Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-03. PR #13

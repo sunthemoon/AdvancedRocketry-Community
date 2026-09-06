@@ -1,0 +1,832 @@
+Compiled from "RocketTransferRecoveryService.java"
+final class io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService {
+  private final java.util.Set<java.util.UUID> liveTransfers;
+
+  private final java.util.Set<java.util.UUID> settledTransfers;
+
+  private final io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueue reconnects;
+
+  io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService(java.util.Set<java.util.UUID>, java.util.Set<java.util.UUID>);
+    Code:
+       0: aload_0
+       1: invokespecial #35                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: new           #16                 // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue
+       8: dup
+       9: invokespecial #36                 // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue."<init>":()V
+      12: putfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+      15: aload_0
+      16: aload_1
+      17: ldc           #39                 // String liveTransfers
+      19: invokestatic  #45                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      22: checkcast     #47                 // class java/util/Set
+      25: putfield      #49                 // Field liveTransfers:Ljava/util/Set;
+      28: aload_0
+      29: aload_2
+      30: ldc           #50                 // String settledTransfers
+      32: invokestatic  #45                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      35: checkcast     #47                 // class java/util/Set
+      38: putfield      #52                 // Field settledTransfers:Ljava/util/Set;
+      41: return
+
+  io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Result recoverNext(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData);
+    Code:
+       0: aload_2
+       1: invokevirtual #62                 // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.entries:()Ljava/util/List;
+       4: invokeinterface #68,  1           // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+       9: aload_0
+      10: invokedynamic #87,  0             // InvokeDynamic #0:test:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService;)Ljava/util/function/Predicate;
+      15: invokeinterface #93,  2           // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+      20: aload_0
+      21: invokedynamic #98,  0             // InvokeDynamic #1:test:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService;)Ljava/util/function/Predicate;
+      26: invokeinterface #93,  2           // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+      31: invokeinterface #102,  1          // InterfaceMethod java/util/stream/Stream.findFirst:()Ljava/util/Optional;
+      36: aconst_null
+      37: invokevirtual #108                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      40: checkcast     #110                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord
+      43: astore_3
+      44: aload_3
+      45: ifnonnull     53
+      48: aconst_null
+      49: invokestatic  #114                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result.notFound:(Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      52: areturn
+      53: aload_1
+      54: aload_3
+      55: invokestatic  #120                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.recoveryEntityChunksLoaded:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+      58: ifne          66
+      61: aload_3
+      62: invokestatic  #124                // Method retryLater:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      65: areturn
+      66: aload_0
+      67: aload_1
+      68: aload_2
+      69: aload_3
+      70: invokevirtual #128                // Method recover:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      73: areturn
+
+  io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Result recoverById(net.minecraft.server.MinecraftServer, java.util.UUID);
+    Code:
+       0: aload_1
+       1: ldc           #137                // String server
+       3: invokestatic  #45                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+       6: pop
+       7: aload_2
+       8: ldc           #139                // String transferId
+      10: invokestatic  #45                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+      13: pop
+      14: aload_1
+      15: invokestatic  #143                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.get:(Lnet/minecraft/server/MinecraftServer;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;
+      18: astore_3
+      19: aload_3
+      20: invokevirtual #147                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.operational:()Z
+      23: ifne          31
+      26: aload_2
+      27: invokestatic  #114                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result.notFound:(Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      30: areturn
+      31: aload_3
+      32: aload_2
+      33: invokevirtual #151                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.find:(Ljava/util/UUID;)Ljava/util/Optional;
+      36: aconst_null
+      37: invokevirtual #108                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      40: checkcast     #110                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord
+      43: astore        4
+      45: aload         4
+      47: ifnonnull     55
+      50: aload_2
+      51: invokestatic  #114                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result.notFound:(Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      54: areturn
+      55: aload_1
+      56: aload         4
+      58: invokestatic  #120                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.recoveryEntityChunksLoaded:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+      61: ifne          70
+      64: aload         4
+      66: invokestatic  #124                // Method retryLater:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      69: areturn
+      70: aload_0
+      71: aload_1
+      72: aload_3
+      73: aload         4
+      75: invokevirtual #128                // Method recover:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+      78: areturn
+
+  void onPlayerLoggedIn(net.minecraft.server.level.ServerPlayer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokevirtual #158                // Method tryReconnect:(Lnet/minecraft/server/level/ServerPlayer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;)Z
+       6: ifeq          23
+       9: aload_0
+      10: getfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+      13: aload_1
+      14: invokevirtual #164                // Method net/minecraft/server/level/ServerPlayer.m_20148_:()Ljava/util/UUID;
+      17: invokevirtual #168                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue.complete:(Ljava/util/UUID;)V
+      20: goto          61
+      23: aload_0
+      24: getfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+      27: aload_1
+      28: invokevirtual #164                // Method net/minecraft/server/level/ServerPlayer.m_20148_:()Ljava/util/UUID;
+      31: aload_1
+      32: invokevirtual #172                // Method net/minecraft/server/level/ServerPlayer.m_20194_:()Lnet/minecraft/server/MinecraftServer;
+      35: invokevirtual #178                // Method net/minecraft/server/MinecraftServer.m_129783_:()Lnet/minecraft/server/level/ServerLevel;
+      38: invokevirtual #184                // Method net/minecraft/server/level/ServerLevel.m_46467_:()J
+      41: invokevirtual #188                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue.offer:(Ljava/util/UUID;J)Z
+      44: ifne          61
+      47: getstatic     #194                // Field io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.LOGGER:Lorg/slf4j/Logger;
+      50: ldc           #196                // String ARCE_PASSENGER_RECONNECT_QUEUE_FULL player={}
+      52: aload_1
+      53: invokevirtual #164                // Method net/minecraft/server/level/ServerPlayer.m_20148_:()Ljava/util/UUID;
+      56: invokeinterface #202,  3          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;Ljava/lang/Object;)V
+      61: return
+
+  void tickReconnects(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData);
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+       4: aload_1
+       5: invokevirtual #178                // Method net/minecraft/server/MinecraftServer.m_129783_:()Lnet/minecraft/server/level/ServerLevel;
+       8: invokevirtual #184                // Method net/minecraft/server/level/ServerLevel.m_46467_:()J
+      11: invokevirtual #210                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue.next:(J)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue$Batch;
+      14: astore_3
+      15: aload_3
+      16: invokevirtual #213                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue$Batch.expired:()Ljava/util/List;
+      19: invokeinterface #217,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      24: astore        4
+      26: aload         4
+      28: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      33: ifeq          63
+      36: aload         4
+      38: invokeinterface #225,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      43: checkcast     #227                // class java/util/UUID
+      46: astore        5
+      48: getstatic     #194                // Field io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.LOGGER:Lorg/slf4j/Logger;
+      51: ldc           #229                // String ARCE_PASSENGER_RECONNECT_EXPIRED player={}
+      53: aload         5
+      55: invokeinterface #202,  3          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;Ljava/lang/Object;)V
+      60: goto          26
+      63: aload_3
+      64: invokevirtual #232                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue$Batch.pending:()Ljava/util/List;
+      67: invokeinterface #217,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      72: astore        4
+      74: aload         4
+      76: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      81: ifeq          134
+      84: aload         4
+      86: invokeinterface #225,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      91: checkcast     #227                // class java/util/UUID
+      94: astore        5
+      96: aload_1
+      97: invokevirtual #236                // Method net/minecraft/server/MinecraftServer.m_6846_:()Lnet/minecraft/server/players/PlayerList;
+     100: aload         5
+     102: invokevirtual #242                // Method net/minecraft/server/players/PlayerList.m_11259_:(Ljava/util/UUID;)Lnet/minecraft/server/level/ServerPlayer;
+     105: astore        6
+     107: aload         6
+     109: ifnull        122
+     112: aload_0
+     113: aload         6
+     115: aload_2
+     116: invokevirtual #158                // Method tryReconnect:(Lnet/minecraft/server/level/ServerPlayer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;)Z
+     119: ifeq          131
+     122: aload_0
+     123: getfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+     126: aload         5
+     128: invokevirtual #168                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue.complete:(Ljava/util/UUID;)V
+     131: goto          74
+     134: return
+
+  void onPlayerLoggedOut(java.util.UUID);
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+       4: aload_1
+       5: invokevirtual #168                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue.complete:(Ljava/util/UUID;)V
+       8: return
+
+  void clear();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field reconnects:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue;
+       4: invokevirtual #249                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerReconnectQueue.clear:()V
+       7: return
+
+  private boolean tryReconnect(net.minecraft.server.level.ServerPlayer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData);
+    Code:
+       0: aload_1
+       1: invokevirtual #172                // Method net/minecraft/server/level/ServerPlayer.m_20194_:()Lnet/minecraft/server/MinecraftServer;
+       4: astore_3
+       5: aload_3
+       6: ifnull        21
+       9: aload_2
+      10: invokevirtual #62                 // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.entries:()Ljava/util/List;
+      13: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      18: ifeq          23
+      21: iconst_1
+      22: ireturn
+      23: aload_1
+      24: invokevirtual #255                // Method net/minecraft/server/level/ServerPlayer.m_284548_:()Lnet/minecraft/server/level/ServerLevel;
+      27: aload_1
+      28: invokevirtual #259                // Method net/minecraft/server/level/ServerPlayer.m_146902_:()Lnet/minecraft/world/level/ChunkPos;
+      31: invokevirtual #264                // Method net/minecraft/world/level/ChunkPos.m_45588_:()J
+      34: invokevirtual #268                // Method net/minecraft/server/level/ServerLevel.m_143319_:(J)Z
+      37: ifne          42
+      40: iconst_0
+      41: ireturn
+      42: aload_2
+      43: invokevirtual #62                 // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.entries:()Ljava/util/List;
+      46: invokeinterface #217,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      51: astore        4
+      53: aload         4
+      55: invokeinterface #222,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      60: ifeq          478
+      63: aload         4
+      65: invokeinterface #225,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      70: checkcast     #110                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord
+      73: astore        5
+      75: aload_3
+      76: aload         5
+      78: invokestatic  #272                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.loadedSettledAuthority:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+      81: astore        6
+      83: aload         6
+      85: ifnonnull     99
+      88: aload_1
+      89: aload         5
+      91: invokestatic  #276                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.nearbyArrivalStillLoading:(Lnet/minecraft/server/level/ServerPlayer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+      94: ifeq          99
+      97: iconst_0
+      98: ireturn
+      99: aload         6
+     101: ifnonnull     115
+     104: aload         5
+     106: invokevirtual #282                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceFlightData:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData;
+     109: invokevirtual #288                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData.passengers:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest;
+     112: goto          129
+     115: aload         6
+     117: invokevirtual #291                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.flightData:()Ljava/util/Optional;
+     120: invokevirtual #294                // Method java/util/Optional.orElseThrow:()Ljava/lang/Object;
+     123: checkcast     #284                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData
+     126: invokevirtual #288                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData.passengers:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest;
+     129: astore        7
+     131: aload         7
+     133: aload_1
+     134: invokevirtual #164                // Method net/minecraft/server/level/ServerPlayer.m_20148_:()Ljava/util/UUID;
+     137: invokevirtual #299                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest.assignment:(Ljava/util/UUID;)Ljava/util/Optional;
+     140: invokevirtual #300                // Method java/util/Optional.isEmpty:()Z
+     143: ifeq          149
+     146: goto          53
+     149: aload_3
+     150: aload         5
+     152: invokestatic  #303                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.authorityEntityChunkLoaded:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+     155: ifne          160
+     158: iconst_0
+     159: ireturn
+     160: aload_3
+     161: aload         5
+     163: aload         5
+     165: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     168: invokevirtual #312                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase.destinationAuthoritative:()Z
+     171: invokestatic  #316                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.findMatches:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Z)Ljava/util/List;
+     174: astore        8
+     176: aload         8
+     178: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     183: ifeq          199
+     186: aload_0
+     187: aload_3
+     188: aload         5
+     190: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     193: invokevirtual #320                // Method recoverById:(Lnet/minecraft/server/MinecraftServer;Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+     196: pop
+     197: iconst_0
+     198: ireturn
+     199: aload         5
+     201: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     204: getstatic     #324                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase.COMMITTED:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     207: if_acmpne     261
+     210: aload         5
+     212: invokevirtual #327                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.destinationEntityId:()Ljava/util/Optional;
+     215: aload         8
+     217: iconst_0
+     218: invokeinterface #330,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     223: checkcast     #278                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity
+     226: invokevirtual #331                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.m_20148_:()Ljava/util/UUID;
+     229: dup
+     230: invokestatic  #333                // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+     233: pop
+     234: invokedynamic #342,  0            // InvokeDynamic #2:test:(Ljava/util/UUID;)Ljava/util/function/Predicate;
+     239: invokevirtual #345                // Method java/util/Optional.filter:(Ljava/util/function/Predicate;)Ljava/util/Optional;
+     242: invokevirtual #300                // Method java/util/Optional.isEmpty:()Z
+     245: ifeq          261
+     248: aload_0
+     249: aload_3
+     250: aload         5
+     252: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     255: invokevirtual #320                // Method recoverById:(Lnet/minecraft/server/MinecraftServer;Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+     258: pop
+     259: iconst_0
+     260: ireturn
+     261: aload         8
+     263: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     268: ifeq          275
+     271: aconst_null
+     272: goto          280
+     275: aload         8
+     277: invokestatic  #349                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.keepOne:(Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+     280: astore        9
+     282: aload         9
+     284: ifnull        478
+     287: aload         8
+     289: invokeinterface #353,  1          // InterfaceMethod java/util/List.size:()I
+     294: iconst_1
+     295: if_icmple     390
+     298: aload_3
+     299: aload         5
+     301: aload         9
+     303: aload         5
+     305: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     308: invokevirtual #312                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase.destinationAuthoritative:()Z
+     311: ifeq          325
+     314: aload         5
+     316: invokevirtual #357                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.destinationSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     319: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     322: goto          333
+     325: aload         5
+     327: invokevirtual #366                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     330: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     333: invokestatic  #372                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.remountOnlinePassengers:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;)V
+     336: getstatic     #194                // Field io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.LOGGER:Lorg/slf4j/Logger;
+     339: ldc_w         #374                // String ARCE_TRANSFER_LOGIN_RECONCILED transfer={} logical={} authority={} removed={}
+     342: iconst_4
+     343: anewarray     #4                  // class java/lang/Object
+     346: dup
+     347: iconst_0
+     348: aload         5
+     350: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     353: aastore
+     354: dup
+     355: iconst_1
+     356: aload         5
+     358: invokevirtual #377                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.logicalRocketId:()Ljava/util/UUID;
+     361: aastore
+     362: dup
+     363: iconst_2
+     364: aload         9
+     366: invokevirtual #331                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.m_20148_:()Ljava/util/UUID;
+     369: aastore
+     370: dup
+     371: iconst_3
+     372: aload         8
+     374: invokeinterface #353,  1          // InterfaceMethod java/util/List.size:()I
+     379: iconst_1
+     380: isub
+     381: invokestatic  #383                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     384: aastore
+     385: invokeinterface #386,  3          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;[Ljava/lang/Object;)V
+     390: aload         9
+     392: aload         5
+     394: invokestatic  #390                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.isReplaceableLandedAuthority:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+     397: ifeq          429
+     400: aload         9
+     402: invokevirtual #291                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.flightData:()Ljava/util/Optional;
+     405: invokevirtual #294                // Method java/util/Optional.orElseThrow:()Ljava/lang/Object;
+     408: checkcast     #284                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData
+     411: invokevirtual #288                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData.passengers:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest;
+     414: aload_1
+     415: invokevirtual #164                // Method net/minecraft/server/level/ServerPlayer.m_20148_:()Ljava/util/UUID;
+     418: invokevirtual #299                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest.assignment:(Ljava/util/UUID;)Ljava/util/Optional;
+     421: invokevirtual #300                // Method java/util/Optional.isEmpty:()Z
+     424: ifeq          429
+     427: iconst_1
+     428: ireturn
+     429: aload_1
+     430: aload         9
+     432: aload         5
+     434: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     437: invokevirtual #312                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase.destinationAuthoritative:()Z
+     440: ifeq          454
+     443: aload         5
+     445: invokevirtual #357                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.destinationSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     448: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     451: goto          462
+     454: aload         5
+     456: invokevirtual #366                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     459: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     462: invokestatic  #394                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.movePassenger:(Lnet/minecraft/server/level/ServerPlayer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;)V
+     465: aload_0
+     466: aload_3
+     467: aload_2
+     468: aload         5
+     470: aload         9
+     472: invokevirtual #398                // Method finishSourceSettlementIfComplete:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;)V
+     475: goto          478
+     478: iconst_1
+     479: ireturn
+
+  private io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Result recover(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord);
+    Code:
+       0: aload_1
+       1: aload_3
+       2: iconst_0
+       3: invokestatic  #316                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.findMatches:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Z)Ljava/util/List;
+       6: astore        4
+       8: aload_1
+       9: aload_3
+      10: iconst_1
+      11: invokestatic  #316                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.findMatches:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Z)Ljava/util/List;
+      14: astore        5
+      16: aload_3
+      17: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+      20: new           #407                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPresence
+      23: dup
+      24: aload         4
+      26: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      31: ifne          38
+      34: iconst_1
+      35: goto          39
+      38: iconst_0
+      39: aload         5
+      41: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      46: ifne          53
+      49: iconst_1
+      50: goto          54
+      53: iconst_0
+      54: invokespecial #410                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPresence."<init>":(ZZ)V
+      57: invokestatic  #416                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryDecision.decide:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPresence;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;
+      60: astore        6
+      62: getstatic     #420                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$1.$SwitchMap$io$github$sunthemoon$advancedrocketrycommunity$rocket$flight$RocketTransferRecoveryAction:[I
+      65: aload         6
+      67: invokevirtual #425                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction.ordinal:()I
+      70: iaload
+      71: tableswitch   { // 1 to 6
+                     1: 108
+                     2: 108
+                     3: 212
+                     4: 264
+                     5: 264
+                     6: 264
+               default: 454
+          }
+     108: aload         5
+     110: invokestatic  #429                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.discardAll:(Ljava/util/List;)V
+     113: aload         4
+     115: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     120: ifeq          131
+     123: aload_1
+     124: aload_3
+     125: invokestatic  #432                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.rebuildSource:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+     128: goto          136
+     131: aload         4
+     133: invokestatic  #349                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.keepOne:(Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+     136: astore        8
+     138: aload         8
+     140: ifnonnull     157
+     143: getstatic     #436                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.RETRY_LATER:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+     146: aload_3
+     147: aload         6
+     149: aload         4
+     151: aload         5
+     153: invokestatic  #440                // Method result:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;Ljava/util/List;Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+     156: areturn
+     157: aload         8
+     159: aload_3
+     160: aload         8
+     162: invokevirtual #444                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.m_9236_:()Lnet/minecraft/world/level/Level;
+     165: invokevirtual #447                // Method net/minecraft/world/level/Level.m_46467_:()J
+     168: invokestatic  #451                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.stationarySource:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;J)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData;
+     171: invokevirtual #455                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.updateFlightData:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData;)V
+     174: aload         8
+     176: aload_3
+     177: invokevirtual #366                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     180: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     183: invokestatic  #459                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.positionAtOrigin:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;)V
+     186: aload_1
+     187: aload_3
+     188: aload         8
+     190: aload_3
+     191: invokevirtual #366                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     194: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     197: invokestatic  #372                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.remountOnlinePassengers:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;)V
+     200: aload_0
+     201: aload_1
+     202: aload_2
+     203: aload_3
+     204: invokevirtual #463                // Method settleRecoveredSource:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+     207: astore        7
+     209: goto          469
+     212: aload_1
+     213: aload_3
+     214: invokestatic  #432                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.rebuildSource:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+     217: astore        8
+     219: aload         8
+     221: ifnonnull     238
+     224: getstatic     #436                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.RETRY_LATER:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+     227: aload_3
+     228: aload         6
+     230: aload         4
+     232: aload         5
+     234: invokestatic  #440                // Method result:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;Ljava/util/List;Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+     237: areturn
+     238: aload_1
+     239: aload_3
+     240: aload         8
+     242: aload_3
+     243: invokevirtual #366                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     246: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     249: invokestatic  #372                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.remountOnlinePassengers:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;)V
+     252: aload_0
+     253: aload_1
+     254: aload_2
+     255: aload_3
+     256: invokevirtual #463                // Method settleRecoveredSource:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+     259: astore        7
+     261: goto          469
+     264: aload         4
+     266: invokestatic  #429                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.discardAll:(Ljava/util/List;)V
+     269: aload         5
+     271: invokeinterface #252,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     276: ifeq          287
+     279: aload_1
+     280: aload_3
+     281: invokestatic  #466                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.rebuildDestination:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+     284: goto          292
+     287: aload         5
+     289: invokestatic  #349                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.keepOne:(Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;
+     292: astore        8
+     294: aload         8
+     296: ifnonnull     313
+     299: getstatic     #436                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.RETRY_LATER:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+     302: aload_3
+     303: aload         6
+     305: aload         4
+     307: aload         5
+     309: invokestatic  #440                // Method result:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;Ljava/util/List;Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+     312: areturn
+     313: aload_3
+     314: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     317: getstatic     #469                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase.PREPARED:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+     320: if_acmpne     335
+     323: aload_3
+     324: aload         8
+     326: invokevirtual #331                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.m_20148_:()Ljava/util/UUID;
+     329: invokevirtual #473                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.destinationSpawned:(Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;
+     332: goto          344
+     335: aload_3
+     336: aload         8
+     338: invokevirtual #331                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.m_20148_:()Ljava/util/UUID;
+     341: invokevirtual #476                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.rebindDestination:(Ljava/util/UUID;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;
+     344: astore        9
+     346: aload_2
+     347: aload         9
+     349: invokevirtual #480                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.put:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)V
+     352: aload_2
+     353: aload_1
+     354: invokevirtual #484                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.flush:(Lnet/minecraft/server/MinecraftServer;)V
+     357: aload_1
+     358: aload         9
+     360: aload         8
+     362: aload         9
+     364: invokevirtual #357                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.destinationSnapshot:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot;
+     367: invokevirtual #363                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketStructureSnapshot.sourceOrigin:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;
+     370: invokestatic  #372                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.remountOnlinePassengers:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketPosition;)V
+     373: aload         8
+     375: aload         9
+     377: invokestatic  #390                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.isReplaceableLandedAuthority:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+     380: ifeq          416
+     383: aload_0
+     384: getfield      #52                 // Field settledTransfers:Ljava/util/Set;
+     387: aload         9
+     389: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     392: invokeinterface #487,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     397: pop
+     398: aload_0
+     399: getfield      #49                 // Field liveTransfers:Ljava/util/Set;
+     402: aload         9
+     404: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     407: invokeinterface #490,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+     412: pop
+     413: goto          446
+     416: aload_0
+     417: getfield      #49                 // Field liveTransfers:Ljava/util/Set;
+     420: aload         9
+     422: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     425: invokeinterface #487,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     430: pop
+     431: aload_0
+     432: getfield      #52                 // Field settledTransfers:Ljava/util/Set;
+     435: aload         9
+     437: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     440: invokeinterface #490,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+     445: pop
+     446: getstatic     #493                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.RECOVERED:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+     449: astore        7
+     451: goto          469
+     454: new           #495                // class java/lang/IllegalStateException
+     457: dup
+     458: aload         6
+     460: invokedynamic #507,  0            // InvokeDynamic #3:makeConcatWithConstants:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;)Ljava/lang/String;
+     465: invokespecial #510                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     468: athrow
+     469: aload         7
+     471: aload_3
+     472: aload         6
+     474: aload         4
+     476: aload         5
+     478: invokestatic  #440                // Method result:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;Ljava/util/List;Ljava/util/List;)Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result;
+     481: astore        8
+     483: aload         8
+     485: getstatic     #194                // Field io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.LOGGER:Lorg/slf4j/Logger;
+     488: aload         5
+     490: invokeinterface #353,  1          // InterfaceMethod java/util/List.size:()I
+     495: iconst_1
+     496: if_icmpne     521
+     499: aload         5
+     501: iconst_0
+     502: invokeinterface #330,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     507: checkcast     #278                // class io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity
+     510: aload_3
+     511: invokestatic  #390                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferEntities.isReplaceableLandedAuthority:(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+     514: ifeq          521
+     517: iconst_1
+     518: goto          522
+     521: iconst_0
+     522: invokevirtual #514                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result.log:(Lorg/slf4j/Logger;Z)V
+     525: aload         8
+     527: areturn
+
+  private io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Status settleRecoveredSource(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord);
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field liveTransfers:Ljava/util/Set;
+       4: aload_3
+       5: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+       8: invokeinterface #490,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+      13: pop
+      14: aload_1
+      15: aload_3
+      16: invokestatic  #526                // Method allPassengersOnline:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+      19: ifeq          53
+      22: aload_2
+      23: aload_3
+      24: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      27: invokevirtual #528                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.remove:(Ljava/util/UUID;)V
+      30: aload_2
+      31: aload_1
+      32: invokevirtual #484                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.flush:(Lnet/minecraft/server/MinecraftServer;)V
+      35: aload_0
+      36: getfield      #52                 // Field settledTransfers:Ljava/util/Set;
+      39: aload_3
+      40: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      43: invokeinterface #490,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+      48: pop
+      49: getstatic     #493                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.RECOVERED:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+      52: areturn
+      53: aload_0
+      54: getfield      #52                 // Field settledTransfers:Ljava/util/Set;
+      57: aload_3
+      58: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      61: invokeinterface #487,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      66: pop
+      67: getstatic     #531                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.WAITING_FOR_PASSENGERS:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+      70: areturn
+
+  private void finishSourceSettlementIfComplete(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord, io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity);
+    Code:
+       0: aload_3
+       1: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+       4: invokevirtual #312                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase.destinationAuthoritative:()Z
+       7: ifne          43
+      10: aload         4
+      12: invokevirtual #291                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.flightData:()Ljava/util/Optional;
+      15: invokedynamic #543,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+      20: invokevirtual #547                // Method java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+      23: getstatic     #553                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightState.FAILED_RECOVERABLE:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightState;
+      26: invokevirtual #108                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      29: getstatic     #556                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightState.LANDED:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightState;
+      32: if_acmpeq     43
+      35: aload_1
+      36: aload_3
+      37: invokestatic  #526                // Method allPassengersOnline:(Lnet/minecraft/server/MinecraftServer;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord;)Z
+      40: ifne          44
+      43: return
+      44: aload_2
+      45: aload_3
+      46: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      49: invokevirtual #528                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.remove:(Ljava/util/UUID;)V
+      52: aload_2
+      53: aload_1
+      54: invokevirtual #484                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.flush:(Lnet/minecraft/server/MinecraftServer;)V
+      57: aload_0
+      58: getfield      #49                 // Field liveTransfers:Ljava/util/Set;
+      61: aload_3
+      62: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      65: invokeinterface #490,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+      70: pop
+      71: aload_0
+      72: getfield      #52                 // Field settledTransfers:Ljava/util/Set;
+      75: aload_3
+      76: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      79: invokeinterface #490,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+      84: pop
+      85: getstatic     #194                // Field io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.LOGGER:Lorg/slf4j/Logger;
+      88: ldc_w         #558                // String ARCE_TRANSFER_SOURCE_SETTLEMENT_RELEASED transfer={} logical={} entity={}
+      91: iconst_3
+      92: anewarray     #4                  // class java/lang/Object
+      95: dup
+      96: iconst_0
+      97: aload_3
+      98: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+     101: aastore
+     102: dup
+     103: iconst_1
+     104: aload_3
+     105: invokevirtual #377                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.logicalRocketId:()Ljava/util/UUID;
+     108: aastore
+     109: dup
+     110: iconst_2
+     111: aload         4
+     113: invokevirtual #331                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.m_20148_:()Ljava/util/UUID;
+     116: aastore
+     117: invokeinterface #561,  3          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;[Ljava/lang/Object;)V
+     122: return
+
+  private static boolean allPassengersOnline(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord);
+    Code:
+       0: aload_1
+       1: invokevirtual #282                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.sourceFlightData:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData;
+       4: invokevirtual #288                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData.passengers:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest;
+       7: invokevirtual #564                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerManifest.assignments:()Ljava/util/List;
+      10: invokeinterface #68,  1           // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+      15: aload_0
+      16: invokedynamic #574,  0            // InvokeDynamic #5:test:(Lnet/minecraft/server/MinecraftServer;)Ljava/util/function/Predicate;
+      21: invokeinterface #578,  2          // InterfaceMethod java/util/stream/Stream.allMatch:(Ljava/util/function/Predicate;)Z
+      26: ireturn
+
+  private static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Result result(io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Status, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction, java.util.List<io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity>, java.util.List<io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity>);
+    Code:
+       0: new           #9                  // class io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result
+       3: dup
+       4: aload_0
+       5: aload_1
+       6: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+       9: aload_1
+      10: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+      13: aload_2
+      14: aload_3
+      15: invokeinterface #353,  1          // InterfaceMethod java/util/List.size:()I
+      20: aload         4
+      22: invokeinterface #353,  1          // InterfaceMethod java/util/List.size:()I
+      27: invokespecial #582                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result."<init>":(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;Ljava/util/UUID;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;II)V
+      30: areturn
+
+  private static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryService$Result retryLater(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord);
+    Code:
+       0: new           #9                  // class io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result
+       3: dup
+       4: getstatic     #436                // Field io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status.RETRY_LATER:Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;
+       7: aload_0
+       8: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+      11: aload_0
+      12: invokevirtual #307                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.phase:()Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;
+      15: aconst_null
+      16: iconst_0
+      17: iconst_0
+      18: invokespecial #582                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Result."<init>":(Lio/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService$Status;Ljava/util/UUID;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferPhase;Lio/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction;II)V
+      21: areturn
+
+  private static boolean lambda$allPassengersOnline$2(net.minecraft.server.MinecraftServer, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat);
+    Code:
+       0: aload_0
+       1: invokevirtual #236                // Method net/minecraft/server/MinecraftServer.m_6846_:()Lnet/minecraft/server/players/PlayerList;
+       4: aload_1
+       5: invokevirtual #587                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketPassengerSeat.passengerId:()Ljava/util/UUID;
+       8: invokevirtual #242                // Method net/minecraft/server/players/PlayerList.m_11259_:(Ljava/util/UUID;)Lnet/minecraft/server/level/ServerPlayer;
+      11: ifnull        18
+      14: iconst_1
+      15: goto          19
+      18: iconst_0
+      19: ireturn
+
+  private boolean lambda$recoverNext$1(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord);
+    Code:
+       0: aload_0
+       1: getfield      #52                 // Field settledTransfers:Ljava/util/Set;
+       4: aload_1
+       5: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+       8: invokeinterface #592,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      13: ifne          20
+      16: iconst_1
+      17: goto          21
+      20: iconst_0
+      21: ireturn
+
+  private boolean lambda$recoverNext$0(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord);
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field liveTransfers:Ljava/util/Set;
+       4: aload_1
+       5: invokevirtual #318                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecord.transferId:()Ljava/util/UUID;
+       8: invokeinterface #592,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      13: ifne          20
+      16: iconst_1
+      17: goto          21
+      20: iconst_0
+      21: ireturn
+}

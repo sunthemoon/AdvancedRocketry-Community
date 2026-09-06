@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueue;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPresence;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import org.slf4j.Logger;
 
 /** Reconciles the bounded four-case transfer matrix and reconnects recorded passengers. */
 final class RocketTransferRecoveryService {
@@ -41,10 +43,23 @@ final class RocketTransferRecoveryService {
         static Result notFound(UUID transferId) {
             return new Result(Status.NOT_FOUND, transferId, null, null, 0, 0);
         }
+
+        void log(Logger logger, boolean destinationSettled) {
+            String message = "ARCE_TRANSFER_RECOVERY transfer={} phase={} source_count={} destination_count={} action={} status={}";
+            Object[] arguments = {transferId, phase, sourceCount, destinationCount, action, status};
+            if (destinationSettled && status == Status.RECOVERED && phase == RocketTransferPhase.COMMITTED
+                    && action == RocketTransferRecoveryAction.KEEP_DESTINATION
+                    && sourceCount == 0 && destinationCount == 1) {
+                logger.info(message, arguments);
+            } else {
+                logger.warn(message, arguments);
+            }
+        }
     }
 
     private final Set<UUID> liveTransfers;
     private final Set<UUID> settledTransfers;
+    private final RocketPassengerReconnectQueue reconnects = new RocketPassengerReconnectQueue();
 
     RocketTransferRecoveryService(Set<UUID> liveTransfers, Set<UUID> settledTransfers) {
         this.liveTransfers = Objects.requireNonNull(liveTransfers, "liveTransfers");
@@ -84,16 +99,85 @@ final class RocketTransferRecoveryService {
     }
 
     void onPlayerLoggedIn(ServerPlayer player, RocketTransferSavedData journal) {
+        if (tryReconnect(player, journal)) {
+            reconnects.complete(player.getUUID());
+        } else if (!reconnects.offer(player.getUUID(), player.getServer().overworld().getGameTime())) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_PASSENGER_RECONNECT_QUEUE_FULL player={}", player.getUUID());
+        }
+    }
+
+    void tickReconnects(MinecraftServer server, RocketTransferSavedData journal) {
+        var batch = reconnects.next(server.overworld().getGameTime());
+        for (UUID playerId : batch.expired()) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_PASSENGER_RECONNECT_EXPIRED player={}", playerId);
+        }
+        for (UUID playerId : batch.pending()) {
+            ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+            if (player == null || tryReconnect(player, journal)) {
+                reconnects.complete(playerId);
+            }
+        }
+    }
+
+    void onPlayerLoggedOut(UUID playerId) {
+        // Cancel the session's transient work, not its durable passenger assignment.
+        reconnects.complete(playerId);
+    }
+
+    void clear() {
+        reconnects.clear();
+    }
+
+    private boolean tryReconnect(ServerPlayer player, RocketTransferSavedData journal) {
         MinecraftServer server = player.getServer();
-        if (server == null) {
-            return;
+        if (server == null || journal.entries().isEmpty()) {
+            return true;
+        }
+        if (!player.serverLevel().areEntitiesLoaded(player.chunkPosition().toLong())) {
+            return false;
         }
         for (RocketTransferRecord record : journal.entries()) {
-            if (record.sourceFlightData().passengers().assignment(player.getUUID()).isEmpty()) {
+            RocketEntity settled = RocketTransferEntities.loadedSettledAuthority(server, record);
+            if (settled == null && RocketTransferEntities.nearbyArrivalStillLoading(player, record)) {
+                // A newly boarded passenger may be in the adjacent, already loaded chunk.
+                // Wait for the nearby entity's current manifest without activating that chunk.
+                return false;
+            }
+            var passengers = settled == null ? record.sourceFlightData().passengers()
+                    : settled.flightData().orElseThrow().passengers();
+            if (passengers.assignment(player.getUUID()).isEmpty()) {
                 continue;
             }
-            RocketEntity authority = RocketTransferEntities.authorityEntity(server, record);
+            if (!RocketTransferEntities.authorityEntityChunkLoaded(server, record)) {
+                return false;
+            }
+            List<RocketEntity> candidates = RocketTransferEntities.findMatches(
+                    server, record, record.phase().destinationAuthoritative());
+            if (candidates.isEmpty()) {
+                recoverById(server, record.transferId());
+                return false;
+            }
+            if (record.phase() == RocketTransferPhase.COMMITTED
+                    && record.destinationEntityId().filter(candidates.get(0).getUUID()::equals).isEmpty()) {
+                // Rebind through durable recovery, never adopt an unconfirmed login copy.
+                recoverById(server, record.transferId());
+                return false;
+            }
+            RocketEntity authority = candidates.isEmpty() ? null : RocketTransferEntities.keepOne(candidates);
             if (authority != null) {
+                if (candidates.size() > 1) {
+                    RocketTransferEntities.remountOnlinePassengers(server, record, authority,
+                            record.phase().destinationAuthoritative()
+                                    ? record.destinationSnapshot().sourceOrigin()
+                                    : record.sourceSnapshot().sourceOrigin());
+                    AdvancedRocketryCommunity.LOGGER.warn(
+                            "ARCE_TRANSFER_LOGIN_RECONCILED transfer={} logical={} authority={} removed={}",
+                            record.transferId(), record.logicalRocketId(), authority.getUUID(), candidates.size() - 1);
+                }
+                if (RocketTransferEntities.isReplaceableLandedAuthority(authority, record)
+                        && authority.flightData().orElseThrow().passengers().assignment(player.getUUID()).isEmpty()) {
+                    return true;
+                }
                 RocketTransferEntities.movePassenger(
                         player,
                         authority,
@@ -105,6 +189,7 @@ final class RocketTransferRecoveryService {
             }
             break;
         }
+        return true;
     }
 
     private Result recover(
@@ -173,8 +258,7 @@ final class RocketTransferRecoveryService {
                         destination,
                         resumed.destinationSnapshot().sourceOrigin()
                 );
-                if (destination.flightData().map(RocketFlightData::state)
-                        .orElse(RocketFlightState.FAILED_RECOVERABLE) == RocketFlightState.LANDED) {
+                if (RocketTransferEntities.isReplaceableLandedAuthority(destination, resumed)) {
                     settledTransfers.add(resumed.transferId());
                     liveTransfers.remove(resumed.transferId());
                 } else {
@@ -186,7 +270,9 @@ final class RocketTransferRecoveryService {
             default -> throw new IllegalStateException("Unhandled transfer recovery action " + action);
         }
         Result result = result(status, record, action, sources, destinations);
-        audit(result);
+        result.log(AdvancedRocketryCommunity.LOGGER,
+                destinations.size() == 1
+                        && RocketTransferEntities.isReplaceableLandedAuthority(destinations.get(0), record));
         return result;
     }
 
@@ -263,15 +349,4 @@ final class RocketTransferRecoveryService {
         );
     }
 
-    private static void audit(Result result) {
-        AdvancedRocketryCommunity.LOGGER.warn(
-                "ARCE_TRANSFER_RECOVERY transfer={} phase={} source_count={} destination_count={} action={} status={}",
-                result.transferId(),
-                result.phase(),
-                result.sourceCount(),
-                result.destinationCount(),
-                result.action(),
-                result.status()
-        );
-    }
 }

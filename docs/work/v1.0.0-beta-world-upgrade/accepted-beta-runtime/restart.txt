@@ -1,0 +1,31 @@
+cycle=restart
+cycle_id=v002-7cc06ad50cc4fd623d546186-restart
+started_at=2026-09-05T10:30:55.756507+00:00
+completed_at=2026-09-05T10:31:30.510222+00:00
+exit_code=0
+full_log_file=restart-full.txt
+full_log_sha256=e95c8bc823ebc87ff03cc5b209b486842ffc6249575a21f390c20123dcbd8b31
+player_join_observed=false
+player_leave_observed=false
+status_version=1.20.1
+status_protocol=763
+mod_marker=1.20.1-0.9.0-beta.1
+error_count=0
+warning_count=7
+fatal_count=0
+project_error_count=0
+project_warning_count=0
+project_fatal_count=0
+client_linkage_failure_count=0
+
+[18:31:09] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-0.9.0-beta.1 initialized
+[18:31:17] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[18:31:17] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25612
+[18:31:18] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[18:31:24] [Server thread/INFO] [minecraft/DedicatedServer]: Done (6.459s)! For help, type "help"
+[18:31:25] [Server thread/INFO] [minecraft/MinecraftServer]: There are 0 of a max of 2 players online:
+[18:31:25] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[18:31:27] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[18:31:27] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[18:31:27] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[18:31:27] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds

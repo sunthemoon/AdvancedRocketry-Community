@@ -1,0 +1,12 @@
+{
+  "scope": "completed packaged compatibility and targeted CLI checks",
+  "bootstrap_extended_suite": "PASS",
+  "bootstrap_extended_suite_cases": 95,
+  "bootstrap_extended_suite_seconds": 2664.700,
+  "bootstrap_extended_suite_exit_code": 0,
+  "bootstrap_extended_suite_log": "checks/bootstrap-full-tests.txt",
+  "completed_targeted_python_cases": 226,
+  "final_matrix_clean_processes": 16,
+  "unresolved_handshake_attempt": 6,
+  "version_gate_status": "IN_PROGRESS"
+}

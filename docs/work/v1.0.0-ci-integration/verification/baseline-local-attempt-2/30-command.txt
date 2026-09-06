@@ -1,0 +1,3 @@
+[PASS] Migrated 5 schema-1 SavedData roots
+[PASS] Byte-exact backup: 20260905T154725.017Z-schema1-to2
+[PASS] Packaged restart reported schema 2 current and operational

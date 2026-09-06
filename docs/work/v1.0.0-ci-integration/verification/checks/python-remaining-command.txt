@@ -1,0 +1,3 @@
+[WARN] Forge installer attempt 1 timed out; retrying with validated downloads retained
+[FAIL] Source and disposable session directories must not overlap
+Remaining partition: ran=569, failures=0, errors=0, skips=4

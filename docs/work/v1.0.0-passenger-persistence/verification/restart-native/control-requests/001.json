@@ -1,0 +1,1 @@
+{"id": 1, "op": "server", "command": "execute as V100Visual1 on vehicle if entity @s[nbt={UUID:[I;51828862,774393285,-1494178476,1973096490]}] run say RESTART_OWNER_MOUNTED", "wait": "RESTART_OWNER_MOUNTED"}

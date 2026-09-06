@@ -1,0 +1,5 @@
+[PASS] forge-47.4.10-jei-present: native connection/JEI receipts; client exit=0
+[PASS] forge-47.4.10-jei-absent: native connection/JEI receipts; client exit=0
+[PASS] forge-47.4.23-jei-present: native connection/JEI receipts; client exit=0
+[PASS] forge-47.4.23-jei-absent: native connection/JEI receipts; client exit=0
+[PASS] Four packaged clients and both pinned dedicated-server lanes

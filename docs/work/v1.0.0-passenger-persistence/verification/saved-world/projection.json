@@ -1,0 +1,177 @@
+{
+  "files": [
+    {
+      "file": "playerdata/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.dat",
+      "bytes": 815,
+      "sha256": "78b052a6fee6cec178c22f5e30a8e383151c68756d789d4f8a730cfd7b0848a1"
+    },
+    {
+      "file": "playerdata/6482f9f6-ff26-3046-b7ba-86db04b972f8.dat",
+      "bytes": 834,
+      "sha256": "b51da0257a2002f726019c5a7e57c1568cc47cfcc30de6b249a75ebe3952bd23"
+    },
+    {
+      "file": "entities/r.-1.-1.mca",
+      "bytes": 61440,
+      "sha256": "52de8cd4769ba62fe4da259eacd3a907c62016837cba161510c24c247e0dca07"
+    },
+    {
+      "file": "entities/r.-1.0.mca",
+      "bytes": 57344,
+      "sha256": "5a45266773a206f38c45fb5374ddeb25ccbfd58600c1fee7aea2986b255446a6"
+    },
+    {
+      "file": "entities/r.0.-1.mca",
+      "bytes": 45056,
+      "sha256": "e63b118b4c3dd71aa1d976925089771bcbcd5a214441b15774b305c087ed58cb"
+    },
+    {
+      "file": "entities/r.0.0.mca",
+      "bytes": 106496,
+      "sha256": "37106945eb825cb02f6b6b07d9d0710b65a3a9f4747a3bc623f25e1ddebeaa19"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca",
+      "bytes": 16384,
+      "sha256": "31c1f0cae3e15951d000e2298be94a77344a3f949d4d7129043f0daf34fca881"
+    }
+  ],
+  "players": [
+    {
+      "player": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+      "dimension": "advancedrocketrycommunity:moon",
+      "pos": [
+        8.5,
+        81.15,
+        8.5
+      ],
+      "root_vehicle": null
+    },
+    {
+      "player": "6482f9f6-ff26-3046-b7ba-86db04b972f8",
+      "dimension": "advancedrocketrycommunity:moon",
+      "pos": [
+        8.5,
+        81.15,
+        8.5
+      ],
+      "root_vehicle": null
+    }
+  ],
+  "rockets": [
+    {
+      "entity": "0316d87e-2e28-4dc5-a6f0-a554759b102a",
+      "logical": "15d78efc-025a-4e27-9ddc-22451f4f0782",
+      "snapshot": "eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196",
+      "state": "LANDED",
+      "fuel": 618,
+      "passengers": {
+        "assignments": [
+          {
+            "seat_index": 0,
+            "passenger_id": [
+              1656469963,
+              -1292224086,
+              -1704246517,
+              1911900479
+            ]
+          },
+          {
+            "seat_index": 1,
+            "passenger_id": [
+              1686305270,
+              -14274490,
+              -1212512549,
+              79262456
+            ]
+          }
+        ],
+        "seat_capacity": 2
+      },
+      "dimension": "advancedrocketrycommunity:moon",
+      "blocks": [
+        {
+          "palette": 1,
+          "position": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 2,
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "palette": 0,
+          "position": [
+            0,
+            2,
+            0
+          ]
+        },
+        {
+          "block_entity": {
+            "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+            "data": {
+              "Items": [
+                {
+                  "Slot": 0,
+                  "id": "minecraft:diamond",
+                  "Count": 17
+                }
+              ]
+            }
+          },
+          "palette": 4,
+          "position": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            1,
+            1,
+            0
+          ]
+        }
+      ],
+      "pos": [
+        8.5,
+        80.0,
+        8.5
+      ]
+    }
+  ],
+  "world_owned_only": true
+}

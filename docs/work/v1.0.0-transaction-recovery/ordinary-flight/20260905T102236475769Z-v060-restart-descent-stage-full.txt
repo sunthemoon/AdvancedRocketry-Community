@@ -1,0 +1,98 @@
+2026-09-05 18:36:56,050 main WARN Advanced terminal features are not available in this environment
+[18:36:56] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[18:36:56] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.7 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+[18:36:56] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[18:36:56] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/Administrator/AppData/Local/Temp/arce-v100-transactions/ordinary-server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[18:36:56] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\ordinary-server\libraries\net\minecraftforge\fmlcore\1.20.1-47.4.10\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file
+[18:36:56] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\ordinary-server\libraries\net\minecraftforge\javafmllanguage\1.20.1-47.4.10\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[18:36:56] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\ordinary-server\libraries\net\minecraftforge\lowcodelanguage\1.20.1-47.4.10\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[18:36:56] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\ordinary-server\libraries\net\minecraftforge\mclanguage\1.20.1-47.4.10\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[18:36:56] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[18:36:57] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[18:37:03] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
+[18:37:03] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.10 Initialized
+[18:37:04] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.0.0-dev initialized
+[18:37:04] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=absent version=absent
+[18:37:04] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[18:37:05] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[18:37:05] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: UP_TO_DATE Current: 47.4.10 Target: null
+[18:37:05] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v100-transactions/ordinary-server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
+[18:37:05] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v100-transactions/ordinary-server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
+[18:37:07] [main/INFO] [minecraft/RecipeManager]: Loaded 8 recipes
+[18:37:07] [main/INFO] [minecraft/AdvancementList]: Loaded 1295 advancements
+[18:37:07] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted celestial catalog generation 1 with 3 bodies
+[18:37:07] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted satellite catalog generation 1 with 1 definitions
+[18:37:07] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[18:37:07] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[18:37:07] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[18:37:07] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[18:37:07] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25611
+[18:37:07] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using default channel type
+[18:37:08] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1001] Beta world data check complete: managed=3, migrated=0, backup=none
+[18:37:08] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[18:37:09] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[18:37:11] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:37:11] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:37:11] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:37:11] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:37:11] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:37:11] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 45%
+[18:37:11] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 2784 ms
+[18:37:11] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.745s)! For help, type "help"
+[18:37:11] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: No chunks were marked for force loading
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: No entity was found
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: No entity was found
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Successfully filled 1 block(s)
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 384, 100, 384
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 383, 101, 384
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 384, 101, 384
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 384, 102, 384
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 384, 103, 384
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 385, 101, 384
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Modified block data of 385, 101, 384
+[18:37:12] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_SCAN_QUEUED operation=assemble dimension=minecraft:overworld assembler=384, 100, 384 owner=00000000-0000-0000-0000-000000000005
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Queued bounded rocket assembly at 384, 100, 384
+[18:37:12] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_TRANSACTION operation=assembly code=SUCCESS blocks=5 snapshot=95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322 entity=16b732e3-08ef-4573-9776-8d11e7f523f0
+[18:37:12] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=16b732e3-08ef-4573-9776-8d11e7f523f0 operational=true snapshot=95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322 flight_state=ASSEMBLED fuel=0
+[18:37:12] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=16b732e3-08ef-4573-9776-8d11e7f523f0 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 snapshot=95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322 dimension=minecraft:overworld state=ASSEMBLED fuel=0 capacity=1000 passengers=0 transfer=none origin=384,101,384 blocks=5
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test flight state=ASSEMBLED fuel=0
+[18:37:12] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_REFUEL entity=16b732e3-08ef-4573-9776-8d11e7f523f0 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 dimension=minecraft:overworld state_before=ASSEMBLED state_after=FUELED amount=1000 capacity=1000
+[18:37:12] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test rocket fuel=1000/1000
+[18:37:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[18:37:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_LAUNCH request=530a796b-7069-4922-9f3c-61b801b29616 entity=16b732e3-08ef-4573-9776-8d11e7f523f0 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 source=minecraft:overworld destination=advancedrocketrycommunity:moon checkpoint=DESCENT code=SUCCESS required_fuel=372 fuel_before=1000
+[18:37:13] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test launch 530a796b-7069-4922-9f3c-61b801b29616 required_fuel=372 checkpoint=DESCENT
+[18:37:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 phase=PREPARED event=countdown_complete entity=16b732e3-08ef-4573-9776-8d11e7f523f0 fuel_before=1000 fuel_after=628 required=372
+[18:37:19] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 phase=PREPARED event=ascent_complete entity=16b732e3-08ef-4573-9776-8d11e7f523f0 fuel_before=1000 fuel_after=628 required=372
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 phase=DESTINATION_SPAWNED event=destination_spawned entity=1411e746-87dd-46eb-865f-311aabbca89e fuel_before=1000 fuel_after=628 required=372
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=1411e746-87dd-46eb-865f-311aabbca89e operational=true snapshot=a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9 flight_state=DESCENT fuel=628
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=1411e746-87dd-46eb-865f-311aabbca89e fuel_before=1000 fuel_after=628 required=372
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=16b732e3-08ef-4573-9776-8d11e7f523f0 reason=DISCARDED operational=true
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 phase=SOURCE_REMOVED event=source_removed entity=1411e746-87dd-46eb-865f-311aabbca89e fuel_before=1000 fuel_after=628 required=372
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=530a796b-7069-4922-9f3c-61b801b29616 logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 phase=COMMITTED event=committed entity=1411e746-87dd-46eb-865f-311aabbca89e fuel_before=1000 fuel_after=628 required=372
+[18:37:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_PAUSED checkpoint=DESCENT transfer=530a796b-7069-4922-9f3c-61b801b29616 phase=COMMITTED state=DESCENT entity=1411e746-87dd-46eb-865f-311aabbca89e
+[18:37:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=1411e746-87dd-46eb-865f-311aabbca89e logical=6d06b1b5-3118-4417-b023-5e21992ef3c5 snapshot=a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9 dimension=advancedrocketrycommunity:moon state=DESCENT fuel=628 capacity=1000 passengers=0 transfer=530a796b-7069-4922-9f3c-61b801b29616 origin=8,80,8 blocks=5
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test flight state=DESCENT fuel=628
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (moon): All chunks are saved
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping the server
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[18:37:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:moon
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:space
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (moon): All chunks are saved
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+[18:37:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved

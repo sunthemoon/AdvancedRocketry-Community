@@ -1,0 +1,3 @@
+[PASS] v0.1.0 asset baseline: 10 imported, 27 generated, 37 total resources
+[PASS] JSON/reference validation: 14 local references checked; no missing or case-colliding project resources
+[INFO] Provenance human review: APPROVED

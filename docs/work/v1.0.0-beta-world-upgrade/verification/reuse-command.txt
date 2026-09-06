@@ -1,0 +1,3 @@
+[PASS] upgrade-first-open: complete resources/identity/state comparison
+[PASS] upgrade-restart-1: complete resources/identity/state comparison
+[PASS] upgrade-restart-2: complete resources/identity/state comparison

@@ -1,0 +1,1 @@
+{"op":"server","command":"execute in minecraft:overworld if entity @e[type=advancedrocketrycommunity:rocket]","id":36,"wait":"Test passed, count:"}

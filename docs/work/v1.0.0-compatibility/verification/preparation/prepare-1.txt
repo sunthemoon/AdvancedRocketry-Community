@@ -1,0 +1,5 @@
+[PASS] Official Forge 47.4.10 client installer
+[PASS] Official Forge 47.4.10 server installer
+[PASS] Official Forge 47.4.23 client installer
+[PASS] Official Forge 47.4.23 server installer
+[PASS] Isolated packaged runtimes prepared; no account profile read

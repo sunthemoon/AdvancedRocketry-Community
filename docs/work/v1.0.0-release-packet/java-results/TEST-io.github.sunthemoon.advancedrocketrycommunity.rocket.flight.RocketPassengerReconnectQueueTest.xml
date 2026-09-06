@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-06T02:40:01" hostname="DESKTOP-8J2KSNF" time="0.004">
+  <properties/>
+  <testcase name="completionAndLifecycleClearRemoveRetries()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.0"/>
+  <testcase name="timeRollbackExpiresRatherThanExtendingWait()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.0"/>
+  <testcase name="rejectsInvalidInputAndReturnsImmutableBatches()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.0"/>
+  <testcase name="completedSessionDoesNotDonateItsDeadlineToTheNextSession()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.0"/>
+  <testcase name="rejectsOverflowWithoutEvictingExistingEntries()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.0"/>
+  <testcase name="rotatesUnderThePerTickBudgetWithoutLosingWaitingPlayers()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.001"/>
+  <testcase name="repeatedOfferDoesNotExtendExpiry()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

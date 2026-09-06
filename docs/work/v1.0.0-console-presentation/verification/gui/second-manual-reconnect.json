@@ -1,0 +1,45 @@
+{
+  "pid": 18664,
+  "address": "127.0.0.1:62851",
+  "screenshots": [
+    {
+      "file": "00d-second-timeout.png",
+      "bytes": 57213,
+      "sha256": "c59d999be0fcd27fed67b3e45445d48b795a23184400ca25d3c6415e9e40db94",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "file": "00e-second-server-list.png",
+      "bytes": 67945,
+      "sha256": "dc16567e3ddbc179a9f9a6fed30707277e839b5ced80531d8458ee4141e69b51",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "file": "00f-second-direct.png",
+      "bytes": 62687,
+      "sha256": "e8423d50c52905f5eac1b3ea86a0eb7f025d6e7a51a18b3a7a4e2dc4e8b3af41",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "operations": [
+    "timeout screenshot",
+    "Back to Server List",
+    "Direct Connection",
+    "WM_CHAR address entry",
+    "Join Server"
+  ],
+  "process_restarted": false,
+  "timeouts_changed": false
+}

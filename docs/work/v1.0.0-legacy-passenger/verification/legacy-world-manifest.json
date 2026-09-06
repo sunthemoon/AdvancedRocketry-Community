@@ -1,0 +1,297 @@
+{
+  "files": [
+    {
+      "file": "advancements/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.json",
+      "bytes": 449,
+      "sha256": "169b302d39edcb86abe872e732d43c5542ff2f74d33a4525f1aff496453c22ff"
+    },
+    {
+      "file": "advancements/6482f9f6-ff26-3046-b7ba-86db04b972f8.json",
+      "bytes": 389,
+      "sha256": "38f992b73bdc15ba6eb0836c9047c589ce08c6b73792bce5b49e13c2d21560ab"
+    },
+    {
+      "file": "data/advancedrocketrycommunity_celestial.dat",
+      "bytes": 183,
+      "sha256": "2965abb6af63bd1141562fbde0f0adeb252cc87f2ccd07e630397a25b3573317"
+    },
+    {
+      "file": "data/advancedrocketrycommunity_rocket_transactions.dat",
+      "bytes": 108,
+      "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+    },
+    {
+      "file": "data/advancedrocketrycommunity_rocket_transfers.dat",
+      "bytes": 1391,
+      "sha256": "0e668c7473ca9b89bd63061e569c98546e6b1076158d74022e92070366ece878"
+    },
+    {
+      "file": "data/advancedrocketrycommunity_satellite_missions.dat",
+      "bytes": 170,
+      "sha256": "b69dea1cd10b42db0f1ed8004c571bb552314f95801f469872eeb45e6a050535"
+    },
+    {
+      "file": "data/capabilities.dat",
+      "bytes": 48,
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "file": "data/chunks.dat",
+      "bytes": 69,
+      "sha256": "2d9446b8f16a0b4021f8c115bf85c05976026bb31e4b46fa6fd5995b04c0803d"
+    },
+    {
+      "file": "data/raids.dat",
+      "bytes": 90,
+      "sha256": "6a580a94ce4f9f4079029f116006fa811b7dd27c57855a0ac0b843ddaa8a62e8"
+    },
+    {
+      "file": "data/random_sequences.dat",
+      "bytes": 281,
+      "sha256": "f10139f84b01872ca5b59a188df1ef4ba810ca5ca11270dbe1436be54bb7c40a"
+    },
+    {
+      "file": "DIM-1/data/capabilities.dat",
+      "bytes": 48,
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "file": "DIM-1/data/raids.dat",
+      "bytes": 90,
+      "sha256": "724b796f634ccbe2108d3039eaf7b905c6375be098ca05c42755b477c90fc2db"
+    },
+    {
+      "file": "DIM1/data/capabilities.dat",
+      "bytes": 48,
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "file": "DIM1/data/raids_end.dat",
+      "bytes": 90,
+      "sha256": "724b796f634ccbe2108d3039eaf7b905c6375be098ca05c42755b477c90fc2db"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/data/capabilities.dat",
+      "bytes": 48,
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/data/chunks.dat",
+      "bytes": 63,
+      "sha256": "ef62e21715774ff271782c412135e3107e7d2c664cabc89c912861af3b3e9911"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/data/raids.dat",
+      "bytes": 90,
+      "sha256": "724b796f634ccbe2108d3039eaf7b905c6375be098ca05c42755b477c90fc2db"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/poi/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/poi/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/poi/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/poi/r.0.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.-1.-1.mca",
+      "bytes": 930319,
+      "sha256": "22aede9413b500b78d8c5e4f4fd378b99caa2f36d0a8fd754b52c729071bb364"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.-1.0.mca",
+      "bytes": 991759,
+      "sha256": "fe234f9ff8e28dbac1014782bd75127b376c6208fcfcf93d0c8c76ced1050fc3"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.0.-1.mca",
+      "bytes": 991761,
+      "sha256": "50991fae8a83b2cd285dca7705a15a07cbf51af898aa7c315964b8e8180f273e"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca",
+      "bytes": 1057307,
+      "sha256": "341bc1e954cecac6dd7241b0461a3d054b7ac2f0f9f0429bd2ab124ec0454624"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/space/data/capabilities.dat",
+      "bytes": 48,
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/space/data/raids.dat",
+      "bytes": 90,
+      "sha256": "724b796f634ccbe2108d3039eaf7b905c6375be098ca05c42755b477c90fc2db"
+    },
+    {
+      "file": "entities/r.0.-1.mca",
+      "bytes": 147456,
+      "sha256": "a3ec8b85d59e19315ee07bcf8dfba4abab538f93078c07611058fff4bc7e0614"
+    },
+    {
+      "file": "entities/r.0.0.mca",
+      "bytes": 20480,
+      "sha256": "9e7315fb283badd829f407d89839811c74a6e8a4d1235ca2e1c57a9cc18e93d5"
+    },
+    {
+      "file": "level.dat",
+      "bytes": 37637,
+      "sha256": "4a3bdbcbbd3eba7f83897a1fcfe421adb7e01c2f155ea8f1a844cc5c01a7bfb0"
+    },
+    {
+      "file": "level.dat_old",
+      "bytes": 37638,
+      "sha256": "c0c9278914fc1e0d0798d7b1dacf061e36c455986e016ee5bb069fcbc362185e"
+    },
+    {
+      "file": "playerdata/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.dat",
+      "bytes": 1745,
+      "sha256": "3e8ef81d7c189de2883cb1021e79bac45f82749c5814ebb1966be4b6a628b835"
+    },
+    {
+      "file": "playerdata/6482f9f6-ff26-3046-b7ba-86db04b972f8.dat",
+      "bytes": 829,
+      "sha256": "666dfb9273e257eebcdca71952eef7124d2b299f16043b60226e175765e43dd6"
+    },
+    {
+      "file": "playerdata/6482f9f6-ff26-3046-b7ba-86db04b972f8.dat_old",
+      "bytes": 806,
+      "sha256": "848283419d9b576c9f30ecda95b819895fd14c0f362b76961a667400463ad043"
+    },
+    {
+      "file": "poi/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.0.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.0.1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "poi/r.1.1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "region/r.-1.-1.mca",
+      "bytes": 991232,
+      "sha256": "17b3997380017f3ffc7a5ecf21bed92a9ceda0f7c2e9c4c990a6abf933d7457e"
+    },
+    {
+      "file": "region/r.-1.0.mca",
+      "bytes": 499712,
+      "sha256": "c53babb13952ca1c7670edbe16b35d2b135fe100fc96ce46316bf09526f58a1c"
+    },
+    {
+      "file": "region/r.0.-1.mca",
+      "bytes": 6571766,
+      "sha256": "39351372c0f0e2dfb08cac5c9a0e1b0cbf3801f4cf7a2208188a0c347a36ce78"
+    },
+    {
+      "file": "region/r.0.0.mca",
+      "bytes": 5472649,
+      "sha256": "1f27c3ec983f67139dc3a3c162f3b6992e6a78de11424555d7cad0b62e09cd39"
+    },
+    {
+      "file": "region/r.0.1.mca",
+      "bytes": 761856,
+      "sha256": "67fe770cdc5e553de2a989ab568eddf9460802175a24311f8fdd521d83bf0d51"
+    },
+    {
+      "file": "region/r.1.-1.mca",
+      "bytes": 622592,
+      "sha256": "0a81f7689e959af79ea8a4326503005cd1c8bb8f6f18159b82208cff3c65c0fb"
+    },
+    {
+      "file": "region/r.1.0.mca",
+      "bytes": 958464,
+      "sha256": "024c3a079bfc7ff45b1e60397d633fdef3583d34270fbd651e9dfa9cb2174e71"
+    },
+    {
+      "file": "region/r.1.1.mca",
+      "bytes": 270336,
+      "sha256": "b62d05559fa978552b0fbebff34a6dd7e7071603e457287fec11554fd20c6f56"
+    },
+    {
+      "file": "serverconfig/forge-server.toml",
+      "bytes": 1787,
+      "sha256": "e2c32c27453033ef3910d5b6a24ae1a8c1fd224c2ac0a97388d5aa27a6a00ad1"
+    },
+    {
+      "file": "session.lock",
+      "bytes": 3,
+      "sha256": "51643361c79ecaef25a8de802de24f570ba25d9c2df1d22d94fade11b4f466cc"
+    },
+    {
+      "file": "stats/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.json",
+      "bytes": 204,
+      "sha256": "db8dcac3dbc5b74d96055245751f0e792793c74a41df8fe57d8366186535b526"
+    },
+    {
+      "file": "stats/6482f9f6-ff26-3046-b7ba-86db04b972f8.json",
+      "bytes": 204,
+      "sha256": "e1e18356c0b00fb03b0fa409f9e598eb581e4d83fa5127402da92d76e1ef93dd"
+    }
+  ],
+  "zip_sha256": "515fdafe471f542157b51c947037b8fbc31979669b3be27de5b46a01ced99197",
+  "zip_bytes": 7981371,
+  "artifact_before": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0"
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-05T16:57:17" hostname="DESKTOP-8J2KSNF" time="0.007">
+  <properties/>
+  <testcase name="valuesAboveEveryHardLimitAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest" time="0.003"/>
+  <testcase name="allInclusiveBoundariesAreAccepted()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest" time="0.001"/>
+  <testcase name="fixedRecipeHasDocumentedValues()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest" time="0.0"/>
+  <testcase name="totalEnergyCannotExceedMachineBuffer()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest" time="0.002"/>
+  <testcase name="invalidSchemaAndEveryZeroValueAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

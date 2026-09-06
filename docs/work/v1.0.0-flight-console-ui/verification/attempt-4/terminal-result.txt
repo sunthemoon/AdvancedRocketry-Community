@@ -1,0 +1,9 @@
+Tool-result transcription, not native process output or a successful summary.
+Unified exec session 6686, explicit stop request 33, terminal exit code 1.
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp\arce-console-ui-session.py", line 185, in <module>
+    matrix.stop_server(dedicated)
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\run_v100_compatibility_matrix.py", line 191, in stop_server
+    raise server.SmokeError(f"Packaged server stop/audit failed: exit={code}; {findings[:1]}")
+scripts.run_dedicated_server_smoke.SmokeError: Packaged server stop/audit failed: exit=0; ['[01:42:51] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=4331d903-3951-4f49-992d-c818f5648000 logical=b27a8028-bea2-4529-8bd5-a7fb21d71184 reason=countdown_cancelled fuel=1000']

@@ -1,0 +1,3 @@
+[PASS] forge-47.4.10-jei-present: native connection/JEI receipts; client exit=0
+[PASS] forge-47.4.10-jei-absent: native connection/JEI receipts; client exit=0
+[FAIL] Timed out waiting for server marker '^(?:\\[[^\\]\\r\\n]+\\]\\s*)+[^\\r\\n]*?:\\s+Connected\\ to\\ a\\ modded\\ server\\.\\s*$'

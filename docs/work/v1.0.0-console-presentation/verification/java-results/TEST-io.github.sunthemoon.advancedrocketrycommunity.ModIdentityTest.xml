@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T19:27:06" hostname="DESKTOP-8J2KSNF" time="0.168">
+  <properties/>
+  <testcase name="displayNameMatchesApprovedIdentity()" classname="io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest" time="0.015"/>
+  <testcase name="modIdMatchesForgeRequirements()" classname="io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest" time="0.001"/>
+  <testcase name="projectResourceIdsAreBoundToTheApprovedNamespace()" classname="io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest" time="0.151"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,38 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T21:23:22.257129+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon if entity @e[type=advancedrocketrycommunity:rocket]",
+        "id": 1,
+        "op": "server",
+        "wait": "Test passed, count:"
+      },
+      "result": {
+        "receipt": "[05:23:22] [Server thread/INFO] [minecraft/MinecraftServer]: Test passed, count: 1"
+      }
+    }
+  ],
+  "artifact_sha256": "7ba1c6c771d945bf25f101cdc8101afb26f51afd7cfdc5834a07545e0a5c99c4",
+  "authentication_tested": false,
+  "client_pid": 26332,
+  "entity": "3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 59259,
+  "processes": [],
+  "screenshots": [],
+  "second_client_pid": 17912,
+  "second_username": "V100Visual2",
+  "second_window": 786756,
+  "server_pid": 18764,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:21:39.618508+00:00",
+  "startup_recovery_findings": [
+    "[05:21:57] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED"
+  ],
+  "stations": [],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 5311474
+}

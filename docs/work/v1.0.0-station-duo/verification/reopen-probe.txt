@@ -1,0 +1,78 @@
+[
+  {
+    "at": "2026-09-05T19:08:27.092574+00:00",
+    "action": "owner Escape closes menu",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:08:27.578831+00:00",
+    "action": "closed owner screenshot",
+    "result": {
+      "file": "16-owner-closed-menu.png",
+      "bytes": 60988,
+      "sha256": "17244b9303cf8f6f716fc42cd731985f1f92af2c78049374c781d46a2dbcf6df",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:08:27.740013+00:00",
+    "action": "operator launch-button click",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:08:28.101092+00:00",
+    "action": "owner right-click reopens rocket",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:08:28.886292+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "17-owner-reopened-countdown.png",
+      "bytes": 64633,
+      "sha256": "37ac48555a8b23b884edc7a088859bc6c4c1bc6dd33302a1da85f2b8057e0a46",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:08:29.047057+00:00",
+    "action": "owner cancel-button click",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:08:29.730658+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "18-owner-after-reopen-cancel.png",
+      "bytes": 73140,
+      "sha256": "ba43b02492ff9f54f24393049198c09b5697c2ddf0f248f61d10884b95a21b56",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:08:30.032367+00:00",
+    "action": "operator screenshot",
+    "result": {
+      "file": "19-operator-after-reopen-cancel.png",
+      "bytes": 68923,
+      "sha256": "ded1a2d53f033ec1b457e4167c6a60391cfa91ef8ba54239169fba020b91aa0a",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  }
+]

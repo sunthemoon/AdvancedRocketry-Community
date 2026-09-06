@@ -1,0 +1,897 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+> Task :test UP-TO-DATE
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createSrgToMcp
+> Task :downloadMCMeta UP-TO-DATE
+> Task :downloadAssets UP-TO-DATE
+> Task :extractNatives
+> Task :makeSrcDirs
+> Task :prepareRuns
+> Task :prepareRunData
+> Task :prepareRunDataCompile UP-TO-DATE
+
+> Task :runData
+2026-09-06 06:00:57,797 main WARN Advanced terminal features are not available in this environment
+[06:00:57] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgedatauserdev, --assetIndex, 5, --assetsDir, C:\Users\Administrator\.gradle\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --mod, advancedrocketrycommunity, --all, --output, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.8\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\main\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.2\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.3\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.4\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.5\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.6\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.7\resources]
+[06:00:57] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.7 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+[06:00:58] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgedatauserdev
+[06:00:58] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/Administrator/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23128!/ Service=ModLauncher Env=CLIENT
+[06:00:58] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.4.10\ccc533c7dd67e0983217197d7549c8b49e7ab453\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[06:00:58] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.4.10\e9a2879fe3612ea34b9728ec2633304a1e67d480\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[06:00:58] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.4.10\ec5cefbbc65c67302b8fac317010faab85fa14b9\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[06:00:58] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.4.10\94dae566be650566ea9115a1414ab76bfcf5a804\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file
+[06:00:58] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[06:00:59] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgedatauserdev' with arguments [--gameDir, ., --assetsDir, C:\Users\Administrator\.gradle\caches\forge_gradle\assets, --assetIndex, 5, --mod, advancedrocketrycommunity, --all, --output, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.8\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\main\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.2\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.3\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.4\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.5\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.6\resources, --existing, D:\GitHub\AdvancedRocketry-Community\src\generated\v0.7\resources]
+[06:01:00] [main/INFO] [ne.mi.da.lo.DatagenModLoader/]: Initializing Data Gatherer for mods [advancedrocketrycommunity]
+[06:01:04] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
+[06:01:04] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.10 Initialized
+[06:01:05] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.10_mapped_official_1.20.1/forge-1.20.1-47.4.10_mapped_official_1.20.1.jar%23191!/assets/.mcassetsroot' uses unexpected schema
+[06:01:05] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.10_mapped_official_1.20.1/forge-1.20.1-47.4.10_mapped_official_1.20.1.jar%23191!/data/.mcassetsroot' uses unexpected schema
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Block States: advancedrocketrycommunity
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Block States: advancedrocketrycommunity finished after 133 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Item Models: advancedrocketrycommunity
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Item Models: advancedrocketrycommunity finished after 2 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Languages: en_us
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Languages: en_us finished after 4 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Languages: zh_cn
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Languages: zh_cn finished after 1 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Recipes
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Recipes finished after 23 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Loot Tables
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Loot Tables finished after 26 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: Tags for minecraft:block mod id advancedrocketrycommunity
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Tags for minecraft:block mod id advancedrocketrycommunity finished after 13 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: Starting provider: ARCE v0.8 satellite definitions
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: ARCE v0.8 satellite definitions finished after 6 ms
+[06:01:05] [main/INFO] [minecraft/DataGenerator]: All providers took: 215 ms
+[06:01:05] [main/INFO] [minecraft/HashCache]: Caching: total files: 21, old count: 21, new count: 22, removed stale: 0, written: 0
+
+> Task :prepareRunGameTestServer
+> Task :prepareRunGameTestServerCompile UP-TO-DATE
+
+> Task :runGameTestServer
+2026-09-06 06:01:07,822 main WARN Advanced terminal features are not available in this environment
+[06:01:07] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgegametestserveruserdev, --gameDir, ., --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]
+[06:01:07] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.7 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+[06:01:08] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file D:\GitHub\AdvancedRocketry-Community\build\gametest\config\fml.toml is not correct. Correcting
+[06:01:08] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[06:01:08] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[06:01:08] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[06:01:08] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[06:01:08] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgegametestserveruserdev
+[06:01:08] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/Administrator/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23128!/ Service=ModLauncher Env=SERVER
+[06:01:08] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.4.10\ccc533c7dd67e0983217197d7549c8b49e7ab453\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[06:01:08] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.4.10\e9a2879fe3612ea34b9728ec2633304a1e67d480\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[06:01:08] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.4.10\ec5cefbbc65c67302b8fac317010faab85fa14b9\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[06:01:08] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.4.10\94dae566be650566ea9115a1414ab76bfcf5a804\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file
+[06:01:08] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[06:01:09] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgegametestserveruserdev' with arguments [--gameDir, .]
+[06:01:15] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
+[06:01:15] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.10 Initialized
+[06:01:15] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file D:\GitHub\AdvancedRocketry-Community\build\gametest\config\advancedrocketrycommunity-common.toml is not correct. Correcting
+[06:01:15] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. 
+[06:01:15] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. 
+[06:01:15] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. 
+[06:01:15] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.0.0-dev initialized
+[06:01:15] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=absent version=absent
+[06:01:15] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[06:01:16] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: UP_TO_DATE Current: 47.4.10 Target: null
+[06:01:16] [main/ERROR] [minecraft/Settings]: Failed to load properties from file: server.properties
+java.nio.file.NoSuchFileException: server.properties
+	at sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85) ~[?:?] {}
+	at sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[?:?] {}
+	at sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[?:?] {}
+	at sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236) ~[?:?] {}
+	at java.nio.file.Files.newByteChannel(Files.java:380) ~[?:?] {}
+	at java.nio.file.Files.newByteChannel(Files.java:432) ~[?:?] {}
+	at java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:422) ~[?:?] {}
+	at java.nio.file.Files.newInputStream(Files.java:160) ~[?:?] {}
+	at net.minecraft.server.dedicated.Settings.loadFromFile(Settings.java:36) ~[forge-1.20.1-47.4.10_mapped_official_1.20.1.jar:?] {re:classloading}
+	at net.minecraft.server.dedicated.DedicatedServerProperties.fromFile(DedicatedServerProperties.java:137) ~[forge-1.20.1-47.4.10_mapped_official_1.20.1.jar:?] {re:classloading}
+	at net.minecraft.server.dedicated.DedicatedServerSettings.<init>(DedicatedServerSettings.java:12) ~[forge-1.20.1-47.4.10_mapped_official_1.20.1.jar:?] {re:classloading}
+	at net.minecraft.server.Main.main(Main.java:126) ~[forge-1.20.1-47.4.10_mapped_official_1.20.1.jar:?] {re:classloading}
+	at net.minecraftforge.gametest.GameTestMain.main(GameTestMain.java:16) ~[forge-1.20.1-47.4.10_mapped_official_1.20.1.jar:?] {re:classloading}
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+	at java.lang.reflect.Method.invoke(Method.java:568) ~[?:?] {}
+	at net.minecraftforge.fml.loading.targets.ForgeGametestUserdevLaunchHandler.devService(ForgeGametestUserdevLaunchHandler.java:16) ~[fmlloader-1.20.1-47.4.10.jar:?] {}
+	at net.minecraftforge.fml.loading.targets.CommonDevLaunchHandler.lambda$makeService$7(CommonDevLaunchHandler.java:135) ~[fmlloader-1.20.1-47.4.10.jar:?] {}
+	at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+[06:01:16] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[06:01:16] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.10_mapped_official_1.20.1/forge-1.20.1-47.4.10_mapped_official_1.20.1.jar%23191!/assets/.mcassetsroot' uses unexpected schema
+[06:01:16] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.10_mapped_official_1.20.1/forge-1.20.1-47.4.10_mapped_official_1.20.1.jar%23191!/data/.mcassetsroot' uses unexpected schema
+[06:01:18] [main/INFO] [minecraft/RecipeManager]: Loaded 8 recipes
+[06:01:18] [main/INFO] [minecraft/AdvancementList]: Loaded 1295 advancements
+[06:01:18] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted celestial catalog generation 1 with 3 bodies
+[06:01:18] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted satellite catalog generation 1 with 1 definitions
+[06:01:18] [main/INFO] [ne.mi.ga.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [advancedrocketrycommunity]
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file .\world\serverconfig\forge-server.toml is not correct. Correcting
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
+[06:01:18] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[06:01:18] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1000] Beta world data check complete: managed=0, migrated=0, backup=none
+[06:01:21] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[06:01:22] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[06:01:22] [Worker-Main-8/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[06:01:22] [Worker-Main-4/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[06:01:23] [Worker-Main-4/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 1%
+[06:01:23] [Worker-Main-9/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 2%
+[06:01:24] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 5%
+[06:01:24] [Worker-Main-7/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 9%
+[06:01:25] [Worker-Main-9/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 12%
+[06:01:25] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 16%
+[06:01:26] [Worker-Main-8/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 20%
+[06:01:26] [Worker-Main-2/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 23%
+[06:01:27] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 28%
+[06:01:27] [Worker-Main-7/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 32%
+[06:01:28] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 37%
+[06:01:28] [Worker-Main-7/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 42%
+[06:01:29] [Worker-Main-9/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 46%
+[06:01:29] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 50%
+[06:01:30] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 55%
+[06:01:30] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 60%
+[06:01:31] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 67%
+[06:01:31] [Worker-Main-7/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 70%
+[06:01:32] [Worker-Main-11/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 76%
+[06:01:32] [Worker-Main-4/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 81%
+[06:01:33] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 85%
+[06:01:33] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 91%
+[06:01:34] [Worker-Main-3/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 96%
+[06:01:34] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 12749 ms
+[06:01:34] [Server thread/INFO] [minecraft/GameTestServer]: Started game test server
+[06:01:34] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[06:01:34] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'flight:1' (1 tests)...
+[06:01:34] [Server thread/INFO] [minecraft/GameTestServer]: 50 tests are now running!
+[06:01:35] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:36] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:36] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=c20ce6b1-15a5-4c29-bf3d-4989560c64c4 operational=true snapshot=72aba2c6e02d7eeff01d60e01cd16f472875f31f20786e45d6e5818f6b6c3310 flight_state=COUNTDOWN fuel=1000
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=PREPARED event=countdown_complete entity=c20ce6b1-15a5-4c29-bf3d-4989560c64c4 fuel_before=1000 fuel_after=633 required=367
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:37] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=PREPARED event=ascent_complete entity=c20ce6b1-15a5-4c29-bf3d-4989560c64c4 fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=DESTINATION_SPAWNED event=destination_spawned entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=893e7bd9-80f2-45c5-b46d-631e2f07932d operational=true snapshot=07d3cb858b217296eff3d0757a10ef98a67c0e38b475efdb539296024cef3a3d flight_state=DESCENT fuel=633
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=c20ce6b1-15a5-4c29-bf3d-4989560c64c4 reason=DISCARDED operational=true
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=SOURCE_REMOVED event=source_removed entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=COMMITTED event=committed entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=COMMITTED event=landing_complete entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=93b6294b-b3f0-4192-9e1b-501eb89804e9 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=COMMITTED event=landed_reservation_retained entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=1000 fuel_after=633 required=367
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 source=advancedrocketrycommunity:moon destination=minecraft:overworld code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=PREPARED event=countdown_complete entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=633 fuel_after=266 required=367
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=PREPARED event=ascent_complete entity=893e7bd9-80f2-45c5-b46d-631e2f07932d fuel_before=633 fuel_after=266 required=367
+[06:01:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=DESTINATION_SPAWNED event=destination_spawned entity=25d0174b-b505-4925-a685-a18552a4503d fuel_before=633 fuel_after=266 required=367
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=25d0174b-b505-4925-a685-a18552a4503d operational=true snapshot=03dad047d0c28701a1faf6b7e944469f25ff19da72fc141d407c691e4b4987b7 flight_state=DESCENT fuel=266
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=25d0174b-b505-4925-a685-a18552a4503d fuel_before=633 fuel_after=266 required=367
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=893e7bd9-80f2-45c5-b46d-631e2f07932d reason=DISCARDED operational=true
+[06:01:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=SOURCE_REMOVED event=source_removed entity=25d0174b-b505-4925-a685-a18552a4503d fuel_before=633 fuel_after=266 required=367
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=COMMITTED event=committed entity=25d0174b-b505-4925-a685-a18552a4503d fuel_before=633 fuel_after=266 required=367
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=COMMITTED event=landing_complete entity=25d0174b-b505-4925-a685-a18552a4503d fuel_before=633 fuel_after=266 required=367
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=70b5ffbd-3ba1-41b3-b8bd-2a014138ae66 logical=5043abed-abc6-4944-9490-216b75b582a1 phase=COMMITTED event=landed_reservation_retained entity=25d0174b-b505-4925-a685-a18552a4503d fuel_before=633 fuel_after=266 required=367
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=25d0174b-b505-4925-a685-a18552a4503d reason=DISCARDED operational=true
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=150b4105-2156-4d2c-b53a-f2ddec52b982 logical=b40f36d4-c44d-4a6f-bd01-94c17eea9263 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=df094ecb-2d97-4005-8843-12a05e55b0d0 operational=true snapshot=2334996956825b42e41e6f359b5ff818eb279eda53496cc2b4bdb789923ffa05 flight_state=COUNTDOWN fuel=1000
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=150b4105-2156-4d2c-b53a-f2ddec52b982 logical=b40f36d4-c44d-4a6f-bd01-94c17eea9263 phase=PREPARED event=countdown_complete entity=df094ecb-2d97-4005-8843-12a05e55b0d0 fuel_before=1000 fuel_after=633 required=367
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=150b4105-2156-4d2c-b53a-f2ddec52b982 logical=b40f36d4-c44d-4a6f-bd01-94c17eea9263 phase=PREPARED event=ascent_complete entity=df094ecb-2d97-4005-8843-12a05e55b0d0 fuel_before=1000 fuel_after=633 required=367
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=150b4105-2156-4d2c-b53a-f2ddec52b982 logical=b40f36d4-c44d-4a6f-bd01-94c17eea9263 reason=destination_pad_blocked fuel=1000
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [_                                                 ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=df094ecb-2d97-4005-8843-12a05e55b0d0 reason=DISCARDED operational=true
+[06:01:39] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'flight_concurrency:1' (1 tests)...
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=2 chunks=2 detail=selected
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=ad42231f-9e71-412f-bacb-aaec1cb353fe operational=true snapshot=f00b098fe2528425b57a0d34e9fb1a29cef5cf7d47ee0ef5388a96fcaf3713a3 flight_state=COUNTDOWN fuel=1000
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=05915cd1-e3fa-43ee-8f99-41d5505084ef operational=true snapshot=e8d385f833a4dc107c4cf44a00d450235b5165e4f214b743cf1c37d6c163b09d flight_state=COUNTDOWN fuel=1000
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=PREPARED event=countdown_complete entity=ad42231f-9e71-412f-bacb-aaec1cb353fe fuel_before=1000 fuel_after=633 required=367
+[06:01:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=PREPARED event=countdown_complete entity=05915cd1-e3fa-43ee-8f99-41d5505084ef fuel_before=1000 fuel_after=633 required=367
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:39] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=PREPARED event=ascent_complete entity=ad42231f-9e71-412f-bacb-aaec1cb353fe fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=PREPARED event=ascent_complete entity=05915cd1-e3fa-43ee-8f99-41d5505084ef fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=DESTINATION_SPAWNED event=destination_spawned entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=DESTINATION_SPAWNED event=destination_spawned entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=ad42231f-9e71-412f-bacb-aaec1cb353fe reason=DISCARDED operational=true
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=SOURCE_REMOVED event=source_removed entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=05915cd1-e3fa-43ee-8f99-41d5505084ef reason=DISCARDED operational=true
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=SOURCE_REMOVED event=source_removed entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=COMMITTED event=committed entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=COMMITTED event=committed entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=COMMITTED event=landing_complete entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=6b9d96cb-1f89-4879-af88-31a2ae94b1f5 logical=f83382ea-be3d-4db1-8df3-a9b3604fee9f phase=COMMITTED event=landed_reservation_retained entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=COMMITTED event=landing_complete entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=7dbe2a70-2d31-4a99-91a5-29aedff5506b logical=213037a9-dcf3-42f4-9849-483634af4f0b phase=COMMITTED event=landed_reservation_retained entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 fuel_before=1000 fuel_after=633 required=367
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [+_                                                ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=3b4c45b5-8bda-42c9-9ed5-fd940a995834 reason=DISCARDED operational=true
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=57a608c8-2cf1-4a52-bfdf-cbfae7dd0538 reason=DISCARDED operational=true
+[06:01:40] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'station_flight:1' (1 tests)...
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=00c894ca-b7d5-4de0-a955-343f8eded6a6 owner=14a036bf-c4c8-4f8e-89ae-f3f7d33a1983 cell=0,0 region=-256,-256,255,255 inspected=289 changed=289 chunks=4 detail=generated
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 source=minecraft:overworld destination=advancedrocketrycommunity:space code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=ff1d3ca2-0d5a-4127-a919-abc7def26f6a operational=true snapshot=10a00abeaecfe3b4478188d7e775dceb4b26df9a42e441b9a3e323e7a07f683e flight_state=COUNTDOWN fuel=1000
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=PREPARED event=countdown_complete entity=ff1d3ca2-0d5a-4127-a919-abc7def26f6a fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=PREPARED event=ascent_complete entity=ff1d3ca2-0d5a-4127-a919-abc7def26f6a fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=DESTINATION_SPAWNED event=destination_spawned entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=ff1d3ca2-0d5a-4127-a919-abc7def26f6a reason=DISCARDED operational=true
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=SOURCE_REMOVED event=source_removed entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=COMMITTED event=committed entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=COMMITTED event=landing_complete entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=566381fa-e775-4824-9bd9-f27fe1b43e87 logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=COMMITTED event=landed_reservation_retained entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=1000 fuel_after=675 required=325
+[06:01:40] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 source=advancedrocketrycommunity:space destination=minecraft:overworld code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=PREPARED event=countdown_complete entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=PREPARED event=ascent_complete entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=DESTINATION_SPAWNED event=destination_spawned entity=6bab3c69-c085-4eef-a198-c23062424a4a fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=6bab3c69-c085-4eef-a198-c23062424a4a operational=true snapshot=03dad047d0c28701a1faf6b7e944469f25ff19da72fc141d407c691e4b4987b7 flight_state=DESCENT fuel=350
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=6bab3c69-c085-4eef-a198-c23062424a4a fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=e8afe81b-4eab-4871-ab4e-6cba6dc52d02 reason=DISCARDED operational=true
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=SOURCE_REMOVED event=source_removed entity=6bab3c69-c085-4eef-a198-c23062424a4a fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=COMMITTED event=committed entity=6bab3c69-c085-4eef-a198-c23062424a4a fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=COMMITTED event=landing_complete entity=6bab3c69-c085-4eef-a198-c23062424a4a fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=8655cc17-6be8-4c96-afb3-c5777b84b7ec logical=32c08d5d-0cbd-4c64-b78d-7f33c3d5c0f7 phase=COMMITTED event=landed_reservation_retained entity=6bab3c69-c085-4eef-a198-c23062424a4a fuel_before=675 fuel_after=350 required=325
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [minecraft/GameTestServer]: [++_                                               ]
+[06:01:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=6bab3c69-c085-4eef-a198-c23062424a4a reason=DISCARDED operational=true
+[06:01:43] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'defaultBatch:1' (35 tests)...
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Operator [Minecraft] teleported to fixed celestial destination advancedrocketrycommunity:moon
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Operator [Minecraft] teleported to fixed celestial destination advancedrocketrycommunity:earth
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=1b0ab900-c00e-447f-9528-d22f9a340e6f reason=DISCARDED operational=true
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=fc7d2779-684d-45a9-8945-6399d245c604 reason=DISCARDED operational=true
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=eed3661e-9f85-4b01-98d8-0e019b7575f3 reason=DISCARDED operational=true
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=c879760b-e1b2-42aa-9af3-58455e7e2268 reason=DISCARDED operational=true
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_SCAN_QUEUED operation=assemble dimension=minecraft:overworld assembler=73, -59, 45 owner=6e14ade0-1ed0-4c09-a6f4-6b9bd894b314
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_TRANSACTION operation=assembly code=SUCCESS blocks=4 snapshot=050d52560f0a43e783fa71c16c6e8ae617a31a096d544544fb0166b5691d2d86 entity=7221f23a-349b-4db9-9dc9-f5b230d70464
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=7221f23a-349b-4db9-9dc9-f5b230d70464 reason=DISCARDED operational=true
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_RECOVERY outcome=RECOVERED
+[06:01:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=5b1a8183-9876-4fd0-a9c3-54d01ad4cb20 reason=DISCARDED operational=true
+[06:01:44] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=d8f27d8a-3725-424d-8abc-14ab5c7751f3 reason=DISCARDED operational=true
+[06:01:44] [Server thread/INFO] [minecraft/GameTestServer]: [++++_+++++++++_++++++++++++_++_+++++++            ]
+[06:01:44] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++_++++++++++++_++_+++++++            ]
+[06:01:45] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++_++++++++++++_++_+++++++            ]
+[06:01:45] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++_++++++++++++_++_+++++++            ]
+[06:01:45] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++_++++++++++++_++_+++++++            ]
+[06:01:46] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'passenger_new_board:1' (1 tests)...
+[06:01:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++            ]
+[06:01:46] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:01:46] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=f1a8ff81-010e-4ee7-8f85-939f08ae1505 operational=true snapshot=0aedfcacc3fd6eb17801c590a5794e7c32d13ebdd7589517c1bbcb87e328fa2b flight_state=COUNTDOWN fuel=1000
+[06:01:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:46] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=PREPARED event=countdown_complete entity=f1a8ff81-010e-4ee7-8f85-939f08ae1505 fuel_before=1000 fuel_after=623 required=377
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=PREPARED event=ascent_complete entity=f1a8ff81-010e-4ee7-8f85-939f08ae1505 fuel_before=1000 fuel_after=623 required=377
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=DESTINATION_SPAWNED event=destination_spawned entity=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 fuel_before=1000 fuel_after=623 required=377
+[06:01:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 fuel_before=1000 fuel_after=623 required=377
+[06:01:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=f1a8ff81-010e-4ee7-8f85-939f08ae1505 reason=DISCARDED operational=true
+[06:01:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=SOURCE_REMOVED event=source_removed entity=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 fuel_before=1000 fuel_after=623 required=377
+[06:01:47] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=COMMITTED event=committed entity=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 fuel_before=1000 fuel_after=623 required=377
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:48] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=46c4b3d9-c490-4df1-8d65-e392d006fe47 logical=c2108969-e186-4d8c-8ff5-51169ae89687 phase=COMMITTED event=landing_complete entity=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 fuel_before=1000 fuel_after=623 required=377
+[06:01:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++_           ]
+[06:01:48] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=e3fb509c-30cd-47da-96b1-1b0d79546704 player=4b35d72c-e503-48e5-9047-adc735f6157c rocket=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 action=BOARD destination=advancedrocketrycommunity:earth station=null code=SUCCESS required_fuel=0
+[06:01:48] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=bc6d4cd9-16b9-43c6-9808-9f505b83a0e4 reason=DISCARDED operational=true
+[06:01:48] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'atmosphere_performance:1' (1 tests)...
+[06:01:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ATMOSPHERE_PERF_WARMUP ticks=90 active_vents=16 tracked=16 pending=0 inspections=0 dirty=0 statuses=[ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE, ACTIVE]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:50] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:55] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:56] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:57] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:01:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:00] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:01] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:02] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:03] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:04] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:05] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:06] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:07] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:08] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:09] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:10] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:11] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++_          ]
+[06:02:12] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ATMOSPHERE_PERF vents=16 simulated_ticks=6000 active=16 peak_inspections=112 measured_inspections=0 elapsed_seconds=23.976
+[06:02:12] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'flight_recovery:1' (1 tests)...
+[06:02:12] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++_         ]
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++_         ]
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=15183c07-3a87-4ed6-b921-69631eaacda0 logical=61994c8f-7781-4b9f-af3c-fcba3437c9b5 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:space
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:moon
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (moon): All chunks are saved
+[06:02:13] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[06:02:13] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=15183c07-3a87-4ed6-b921-69631eaacda0 phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=a9393cf3-0a62-4bc3-b068-fd44a484ba98 reason=DISCARDED operational=true
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=77c7d878-bbba-4e4a-83d4-fe373efea377 logical=235a3ef3-2ae2-4f76-a2e5-491fc0dd37f5 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=e8297c91-26a6-404e-bd5b-d572b84a467d reason=DISCARDED operational=true
+[06:02:13] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=77c7d878-bbba-4e4a-83d4-fe373efea377 phase=PREPARED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=b837aa03-b920-41ed-8b00-de731e5a07f6 reason=DISCARDED operational=true
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=43e1b260-769d-43de-a0ab-cf14325cd06e logical=1346eaee-f144-4377-9238-a93a06e82366 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=74814af6-6c94-4546-9d6c-35e554e989a4 reason=DISCARDED operational=true
+[06:02:13] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=43e1b260-769d-43de-a0ab-cf14325cd06e phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=5fb007d5-ad16-4542-ab55-99f5d6195c39 reason=DISCARDED operational=true
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=270b4b6a-bf1c-437d-a8cd-300ed874b86e logical=d986481d-14bf-4de9-a03e-48c65b530748 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=a65fddf9-33ec-4f48-88b9-b10bb9ea3835 reason=DISCARDED operational=true
+[06:02:13] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=270b4b6a-bf1c-437d-a8cd-300ed874b86e phase=DESTINATION_SPAWNED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=3c99a018-df1e-407b-adff-bc8d25ce537a reason=DISCARDED operational=true
+[06:02:13] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'legacy_passenger_recovery:1' (1 tests)...
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=2eeb2930-d989-4ee5-8be6-aec6c0213e76 operational=true snapshot=55c44e96782fbfa8481439a3602732da487d15c5eecad0d325e95fd7155175db flight_state=COUNTDOWN fuel=1000
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=PREPARED event=countdown_complete entity=2eeb2930-d989-4ee5-8be6-aec6c0213e76 fuel_before=1000 fuel_after=623 required=377
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=PREPARED event=ascent_complete entity=2eeb2930-d989-4ee5-8be6-aec6c0213e76 fuel_before=1000 fuel_after=623 required=377
+[06:02:13] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=DESTINATION_SPAWNED event=destination_spawned entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 fuel_before=1000 fuel_after=623 required=377
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 operational=true snapshot=03d09a9966f25cc62b749ee20515cf37b8cf1f2b52c45cf2f095df18b41b7932 flight_state=DESCENT fuel=623
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 fuel_before=1000 fuel_after=623 required=377
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=2eeb2930-d989-4ee5-8be6-aec6c0213e76 reason=DISCARDED operational=true
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=SOURCE_REMOVED event=source_removed entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 fuel_before=1000 fuel_after=623 required=377
+[06:02:13] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=COMMITTED event=committed entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 fuel_before=1000 fuel_after=623 required=377
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 phase=COMMITTED event=landing_complete entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 fuel_before=1000 fuel_after=623 required=377
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++_        ]
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=80000000-0000-0000-0000-000000000000 reason=DISCARDED operational=true
+[06:02:14] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_LOGIN_RECONCILED transfer=15f69fdd-cba2-4025-860f-62014834b718 logical=c94315dc-70ca-49d7-af36-1afc4183a8a7 authority=2a8e21c5-4055-4a51-95cd-0ca0a100b124 removed=1
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=80000000-0000-0000-0000-000000000000 reason=DISCARDED operational=true
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=2a8e21c5-4055-4a51-95cd-0ca0a100b124 reason=DISCARDED operational=true
+[06:02:14] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'passenger_leave:1' (1 tests)...
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=048ef8d9-bdd4-4246-ab2c-41c43c312ba3 operational=true snapshot=70fb5d906a03f545ccb896e64850eb4672b9fc869d5a5f596c77f3b43c1d5815 flight_state=COUNTDOWN fuel=1000
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:14] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=PREPARED event=countdown_complete entity=048ef8d9-bdd4-4246-ab2c-41c43c312ba3 fuel_before=1000 fuel_after=623 required=377
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:14] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=PREPARED event=ascent_complete entity=048ef8d9-bdd4-4246-ab2c-41c43c312ba3 fuel_before=1000 fuel_after=623 required=377
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=DESTINATION_SPAWNED event=destination_spawned entity=9f024cdf-4e76-4d20-877b-a1590fb5031a fuel_before=1000 fuel_after=623 required=377
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=9f024cdf-4e76-4d20-877b-a1590fb5031a fuel_before=1000 fuel_after=623 required=377
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=048ef8d9-bdd4-4246-ab2c-41c43c312ba3 reason=DISCARDED operational=true
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=SOURCE_REMOVED event=source_removed entity=9f024cdf-4e76-4d20-877b-a1590fb5031a fuel_before=1000 fuel_after=623 required=377
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=COMMITTED event=committed entity=9f024cdf-4e76-4d20-877b-a1590fb5031a fuel_before=1000 fuel_after=623 required=377
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=ed13a530-ee33-41d9-b7a5-d0dbc2eb91d8 logical=a39fb810-0796-404e-8259-ef9bd323f477 phase=COMMITTED event=landing_complete entity=9f024cdf-4e76-4d20-877b-a1590fb5031a fuel_before=1000 fuel_after=623 required=377
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++_       ]
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=d8c0aece-ce32-4fd3-8651-8855d3cae5b0 player=59d83eaf-16ab-403f-8971-3097cbe503e0 rocket=9f024cdf-4e76-4d20-877b-a1590fb5031a action=LEAVE destination=advancedrocketrycommunity:earth station=null code=SUCCESS required_fuel=0
+[06:02:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=9f024cdf-4e76-4d20-877b-a1590fb5031a reason=DISCARDED operational=true
+[06:02:15] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'flight_security:1' (1 tests)...
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++_      ]
+[06:02:15] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++_      ]
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=d6ff8fad-514a-4a45-8d5f-365a306adb47 player=637c42c9-f7f6-4d42-b44c-40ded65e760f rocket=455cbb64-c47c-4c76-8e6d-bbfeb53366f7 action=LAUNCH destination=advancedrocketrycommunity:moon station=null code=UNAUTHORIZED required_fuel=0
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=455cbb64-c47c-4c76-8e6d-bbfeb53366f7 reason=DISCARDED operational=true
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=df0f5e1a-fd04-4549-b5d0-2d05f543d95b player=637c42c9-f7f6-4d42-b44c-40ded65e760f rocket=none action=LAUNCH destination=advancedrocketrycommunity:moon station=null code=OUT_OF_RANGE required_fuel=0
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=d7b4fc66-dda4-4990-a41c-e7a17585345f player=637c42c9-f7f6-4d42-b44c-40ded65e760f rocket=b3be1c75-1261-4801-b389-063dc9d07b38 action=LAUNCH destination=advancedrocketrycommunity:earth station=null code=INVALID_DESTINATION required_fuel=0
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=44708f11-a621-4ba2-a234-ec358107facb logical=37053672-72a9-4fc5-a1c1-abcba183e234 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=44708f11-a621-4ba2-a234-ec358107facb player=637c42c9-f7f6-4d42-b44c-40ded65e760f rocket=b3be1c75-1261-4801-b389-063dc9d07b38 action=LAUNCH destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=367
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=44708f11-a621-4ba2-a234-ec358107facb player=637c42c9-f7f6-4d42-b44c-40ded65e760f rocket=b3be1c75-1261-4801-b389-063dc9d07b38 action=LAUNCH destination=advancedrocketrycommunity:moon station=null code=REQUEST_REPLAYED required_fuel=0
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=44708f11-a621-4ba2-a234-ec358107facb logical=37053672-72a9-4fc5-a1c1-abcba183e234 reason=countdown_cancelled fuel=1000
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=92694759-427f-4020-8cb3-93a837c3109c player=637c42c9-f7f6-4d42-b44c-40ded65e760f rocket=b3be1c75-1261-4801-b389-063dc9d07b38 action=CANCEL destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=367
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=b3be1c75-1261-4801-b389-063dc9d07b38 reason=DISCARDED operational=true
+[06:02:16] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'passenger_entity_readiness:1' (1 tests)...
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=c72bda68-2b8b-40ea-81a2-1527246717fa operational=true snapshot=297d911280624fe30df622f3513f752c39ce8b7c504edc1f0b369e4949630acb flight_state=COUNTDOWN fuel=1000
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=PREPARED event=countdown_complete entity=c72bda68-2b8b-40ea-81a2-1527246717fa fuel_before=1000 fuel_after=623 required=377
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=PREPARED event=ascent_complete entity=c72bda68-2b8b-40ea-81a2-1527246717fa fuel_before=1000 fuel_after=623 required=377
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=DESTINATION_SPAWNED event=destination_spawned entity=e1387371-a214-4fb5-bca7-08d50e837769 fuel_before=1000 fuel_after=623 required=377
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=e1387371-a214-4fb5-bca7-08d50e837769 fuel_before=1000 fuel_after=623 required=377
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=c72bda68-2b8b-40ea-81a2-1527246717fa reason=DISCARDED operational=true
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=SOURCE_REMOVED event=source_removed entity=e1387371-a214-4fb5-bca7-08d50e837769 fuel_before=1000 fuel_after=623 required=377
+[06:02:16] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=COMMITTED event=committed entity=e1387371-a214-4fb5-bca7-08d50e837769 fuel_before=1000 fuel_after=623 required=377
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:16] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:17] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=466f946d-fa9b-41b1-8b6f-ad8432c4e48c logical=e50c2710-b6d9-4614-a1cc-b78c81ec0c39 phase=COMMITTED event=landing_complete entity=e1387371-a214-4fb5-bca7-08d50e837769 fuel_before=1000 fuel_after=623 required=377
+[06:02:17] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++_     ]
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=e1387371-a214-4fb5-bca7-08d50e837769 reason=DISCARDED operational=true
+[06:02:17] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'station:1' (2 tests)...
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_rolled_back station=51a124b3-f716-4992-8954-ba6fe70b541f owner=d7faf527-239b-4361-9aa6-867b591f809b cell=0,0 region=-256,-256,255,255 inspected=145 changed=0 chunks=4 detail=platform footprint is occupied
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=550eb982-6d50-4745-8767-ac7e39e0a817 owner=cb9dbbdc-3764-3438-a81a-d41dda0c6c16 cell=0,0 region=-256,-256,255,255 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=4ae23890-64ac-4f56-872a-21d92f19d6f6 owner=b27d80ee-a219-307d-a010-1d187ef68d92 cell=1,0 region=768,-256,1279,255 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=279ffb62-6410-471a-8e18-a09f1c76cff1 owner=d77e65f7-d8b4-39f3-8981-0a337cd314e7 cell=1,1 region=768,768,1279,1279 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=8f0506ac-94af-4a00-a0b1-52d7cdb260ee owner=d1a11722-a1ec-3e78-8b90-b2fd39773080 cell=0,1 region=-256,768,255,1279 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=4a9cf4a8-3949-46af-93ce-6ad745cca322 owner=6dc90e7a-53e9-3e98-a8f8-4eb63a5e145f cell=-1,1 region=-1280,768,-769,1279 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=acefef20-60fd-4a69-bac2-6709056ffec0 owner=82db48f3-0718-3f51-bece-55161234ef50 cell=-1,0 region=-1280,-256,-769,255 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=5305ba65-1888-45e6-a847-735604cb3d9e owner=755144ff-709d-3d68-bf31-56ef00bea077 cell=-1,-1 region=-1280,-1280,-769,-769 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=da7d81c7-8dda-48b8-9344-faa20442ba90 owner=b1d337ad-212b-3cf1-a3f9-d4c38b659d36 cell=0,-1 region=-256,-1280,255,-769 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:17] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=09a4b248-2034-4936-a302-812f7c618a5b owner=c1978a75-5dab-3152-b0ab-b017d2cca223 cell=1,-1 region=768,-1280,1279,-769 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:18] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=13dfa6a8-0e36-4b46-81f2-50463afd6c63 owner=7b5ee234-ce7a-33a6-8815-82aad1ba51f9 cell=2,-1 region=1792,-1280,2303,-769 inspected=289 changed=289 chunks=4 detail=generated
+[06:02:18] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=01c47d4f-096f-42fd-bb48-4baea5e611d8 reason=DISCARDED operational=false
+[06:02:18] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_DELETE_BACKUP station=550eb982-6d50-4745-8767-ac7e39e0a817 owner=cb9dbbdc-3764-3438-a81a-d41dda0c6c16 members=[] cell=0,0 region=-256,-256,255,255
+[06:02:18] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_DELETED station=550eb982-6d50-4745-8767-ac7e39e0a817 actor=cb9dbbdc-3764-3438-a81a-d41dda0c6c16 inspected=289 removed=289 chunks=4
+[06:02:18] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'satellite:1' (2 tests)...
+[06:02:18] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++   ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:19] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_SCHEDULER completed=1 inspected=1 remaining=0
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++_+ ]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestBatchRunner]: Running test batch 'passenger_refueled_disassembly:1' (1 tests)...
+[06:02:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PREPARE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 source=minecraft:overworld destination=advancedrocketrycommunity:moon code=SUCCESS candidates=1 chunks=1 detail=selected
+[06:02:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=603266c7-5113-42b1-b3b9-143c176fc4c5 operational=true snapshot=8947ad34c23bed11c0eb16929afdeb028f47b6ecc02be6ab18668e138b0e73d3 flight_state=COUNTDOWN fuel=1000
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=PREPARED event=countdown_complete entity=603266c7-5113-42b1-b3b9-143c176fc4c5 fuel_before=1000 fuel_after=623 required=377
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:20] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=PREPARED event=ascent_complete entity=603266c7-5113-42b1-b3b9-143c176fc4c5 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=DESTINATION_SPAWNED event=destination_spawned entity=ecf36427-eba7-4524-8113-160dcdf3f046 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=PASSENGERS_TRANSFERRED event=passengers_transferred entity=ecf36427-eba7-4524-8113-160dcdf3f046 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=603266c7-5113-42b1-b3b9-143c176fc4c5 reason=DISCARDED operational=true
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=SOURCE_REMOVED event=source_removed entity=ecf36427-eba7-4524-8113-160dcdf3f046 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=COMMITTED event=committed entity=ecf36427-eba7-4524-8113-160dcdf3f046 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=COMMITTED event=landing_complete entity=ecf36427-eba7-4524-8113-160dcdf3f046 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++++++++++++++++++_]
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=ecf36427-eba7-4524-8113-160dcdf3f046 reason=DISCARDED operational=true
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_PHASE transfer=be936010-0e5d-4696-8038-ccf50392fddb logical=3ebac010-f438-4792-934b-f869fb414104 phase=COMMITTED event=landed_reservation_released entity=ecf36427-eba7-4524-8113-160dcdf3f046 fuel_before=1000 fuel_after=623 required=377
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_TRANSACTION operation=disassembly code=SUCCESS blocks=5 snapshot=03d09a9966f25cc62b749ee20515cf37b8cf1f2b52c45cf2f095df18b41b7932 entity=ecf36427-eba7-4524-8113-160dcdf3f046
+[06:02:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_REMOVED entity=ecf36427-eba7-4524-8113-160dcdf3f046 reason=DISCARDED operational=true
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++++++++++++++++++++]
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: ========= 50 GAME TESTS COMPLETE ======================
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: All 50 required tests passed :)
+[06:02:21] [Server thread/INFO] [minecraft/GameTestServer]: ====================================================
+[06:02:21] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[06:02:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[06:02:21] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[06:02:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:space
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:moon
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (moon): All chunks are saved
+[06:02:23] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[06:02:23] [Server thread/INFO] [minecraft/GameTestServer]: Game test server shutting down
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 41s
+14 actionable tasks: 6 executed, 8 up-to-date

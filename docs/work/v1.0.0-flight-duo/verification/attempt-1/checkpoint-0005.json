@@ -1,0 +1,86 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T18:24:49.110267+00:00",
+      "request": {
+        "id": 1,
+        "op": "focus"
+      },
+      "result": {
+        "focused": false
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:49.623913+00:00",
+      "request": {
+        "height": 720,
+        "id": 2,
+        "op": "resize",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:49.916099+00:00",
+      "request": {
+        "id": 3,
+        "name": "01-owner-world",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 214771,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "01-owner-world.png",
+        "sha256": "4c319d1151617ff5e8f5f898186c03c531ceefd53ed7d954bcfac169891a7879",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:50.077473+00:00",
+      "request": {
+        "id": 4,
+        "op": "click",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    }
+  ],
+  "artifact_sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc",
+  "authentication_tested": false,
+  "client_pid": 26176,
+  "entity": "c5bd330d-d3e5-477f-bcba-32b57398ed81",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 57834,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 214771,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-owner-world.png",
+      "sha256": "4c319d1151617ff5e8f5f898186c03c531ceefd53ed7d954bcfac169891a7879",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 17820,
+  "second_username": "V100Visual2",
+  "second_window": 3148570,
+  "server_pid": 18904,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T18:19:40.729430+00:00",
+  "stations": [
+    "aa009727-3a63-4a30-a979-20e1221e0880",
+    "85f7dae2-0a44-4cab-ac1a-25b0484f8e3d"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 2755374
+}

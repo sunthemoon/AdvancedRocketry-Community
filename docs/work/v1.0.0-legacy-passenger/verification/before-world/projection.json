@@ -1,0 +1,265 @@
+{
+  "files": [
+    {
+      "file": "playerdata/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.dat",
+      "bytes": 824,
+      "sha256": "8753e50956b7fd9784f1145ddd6698ad3314791a443942b3caf7689f7f157088"
+    },
+    {
+      "file": "playerdata/6482f9f6-ff26-3046-b7ba-86db04b972f8.dat",
+      "bytes": 829,
+      "sha256": "2ef542a83f74e6ff6f007714e4a40f62d60dfd679a72746de9695b25e2b85c79"
+    },
+    {
+      "file": "entities/r.0.-1.mca",
+      "bytes": 155648,
+      "sha256": "47fec985e2afa8591e57b81f74c83464794ad7b4cf79036882ab0f63dc0eb63d"
+    },
+    {
+      "file": "entities/r.0.0.mca",
+      "bytes": 20480,
+      "sha256": "f92b7362bacb019e7e72f5d55e6241c2081b845c7639332e5c575a17562327c0"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca",
+      "bytes": 16384,
+      "sha256": "d6125f53483ca2b604bed90971a1545d30936d0d7f2e1ea16a0beeadf61f9150"
+    }
+  ],
+  "players": [
+    {
+      "player": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+      "dimension": "advancedrocketrycommunity:moon",
+      "pos": [
+        8.5,
+        81.15,
+        8.5
+      ],
+      "root_vehicle": null
+    },
+    {
+      "player": "6482f9f6-ff26-3046-b7ba-86db04b972f8",
+      "dimension": "advancedrocketrycommunity:moon",
+      "pos": [
+        8.5,
+        81.15,
+        8.5
+      ],
+      "root_vehicle": null
+    }
+  ],
+  "rockets": [
+    {
+      "entity": "00808f92-994e-46a0-811c-82998883587c",
+      "logical": "0ce64af6-4ee0-4c9b-b019-08c2b512bfe4",
+      "snapshot": "eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196",
+      "state": "LANDED",
+      "fuel": 618,
+      "passengers": {
+        "assignments": [
+          {
+            "seat_index": 0,
+            "passenger_id": [
+              1656469963,
+              -1292224086,
+              -1704246517,
+              1911900479
+            ]
+          },
+          {
+            "seat_index": 1,
+            "passenger_id": [
+              1686305270,
+              -14274490,
+              -1212512549,
+              79262456
+            ]
+          }
+        ],
+        "seat_capacity": 2
+      },
+      "dimension": "advancedrocketrycommunity:moon",
+      "blocks": [
+        {
+          "palette": 1,
+          "position": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 2,
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "palette": 0,
+          "position": [
+            0,
+            2,
+            0
+          ]
+        },
+        {
+          "block_entity": {
+            "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+            "data": {
+              "Items": [
+                {
+                  "Slot": 0,
+                  "id": "minecraft:diamond",
+                  "Count": 17
+                }
+              ]
+            }
+          },
+          "palette": 4,
+          "position": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            1,
+            1,
+            0
+          ]
+        }
+      ],
+      "pos": [
+        8.5,
+        80.0,
+        8.5
+      ]
+    },
+    {
+      "entity": "dc69c542-80f6-47e6-98d8-6bbb7f4eb6e1",
+      "logical": "0ce64af6-4ee0-4c9b-b019-08c2b512bfe4",
+      "snapshot": "eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196",
+      "state": "LANDED",
+      "fuel": 618,
+      "passengers": {
+        "assignments": [
+          {
+            "seat_index": 0,
+            "passenger_id": [
+              1656469963,
+              -1292224086,
+              -1704246517,
+              1911900479
+            ]
+          },
+          {
+            "seat_index": 1,
+            "passenger_id": [
+              1686305270,
+              -14274490,
+              -1212512549,
+              79262456
+            ]
+          }
+        ],
+        "seat_capacity": 2
+      },
+      "dimension": "advancedrocketrycommunity:moon",
+      "blocks": [
+        {
+          "palette": 1,
+          "position": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 2,
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "palette": 0,
+          "position": [
+            0,
+            2,
+            0
+          ]
+        },
+        {
+          "block_entity": {
+            "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+            "data": {
+              "Items": [
+                {
+                  "Slot": 0,
+                  "id": "minecraft:diamond",
+                  "Count": 17
+                }
+              ]
+            }
+          },
+          "palette": 4,
+          "position": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            1,
+            1,
+            0
+          ]
+        }
+      ],
+      "pos": [
+        8.5,
+        80.0,
+        8.5
+      ]
+    }
+  ],
+  "world_owned_only": false
+}

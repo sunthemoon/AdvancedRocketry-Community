@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "version": "v1.0.0",
+  "status": "IN_PROGRESS",
+  "recorded_at": "2026-09-06",
+  "candidate": {
+    "commit": null,
+    "artifact_sha256": null,
+    "tag": null
+  },
+  "development_snapshot": {
+    "artifact_sha256": "569f41ab59d953e3b4fad3c1b00588705b260fc0b73f1deaf829024bc603e381",
+    "artifact_bytes": 1278474,
+    "results": "docs/work/v1.0.0-passenger-logout/build-results.json",
+    "source_inventory": "docs/work/v1.0.0-passenger-logout/source-inventory.json"
+  },
+  "reports": [
+    {
+      "id": "passenger-logout",
+      "path": "docs/work/v1.0.0-passenger-logout/VERIFICATION.md",
+      "report_sha256": "6201e37b790dcfe6bf5a71dace11151a5bf688f9794d27fde2d7079cd4284451",
+      "artifact_sha256": "569f41ab59d953e3b4fad3c1b00588705b260fc0b73f1deaf829024bc603e381",
+      "role": "supporting_development"
+    },
+    {
+      "id": "passenger-readiness",
+      "path": "docs/work/v1.0.0-passenger-readiness/VERIFICATION.md",
+      "report_sha256": "d5e3fee46774c9eda64e19dfde8be4ceba7f29db96530c28d9af64bff869278e",
+      "artifact_sha256": "a3fb6c733ad5a930b34f4eb59b03acf2338875bcf3273004375873cc26a27a23",
+      "role": "supporting_development"
+    },
+    {
+      "id": "passenger-continued-use",
+      "path": "docs/work/v1.0.0-passenger-continued-use/VERIFICATION.md",
+      "report_sha256": "2a51bc1ba45a87cdfd4df0c0815b8f07c45b23c91ecd95a8ac8739c92062ae5e",
+      "artifact_sha256": "b41db06ec7af9aee36d486525d439bae8f3e0c344dbe18fcf6050ab7b5c74d68",
+      "role": "supporting_development"
+    },
+    {
+      "id": "legacy-passenger",
+      "path": "docs/work/v1.0.0-legacy-passenger/VERIFICATION.md",
+      "report_sha256": "4925b9fdc3ba47d2112158830432aeae24bdfd36049b2fa062d2ad6cabe18ece",
+      "artifact_sha256": "7ba1c6c771d945bf25f101cdc8101afb26f51afd7cfdc5834a07545e0a5c99c4",
+      "role": "supporting_development"
+    },
+    {
+      "id": "transaction-recovery",
+      "path": "docs/work/v1.0.0-transaction-recovery/VERIFICATION.md",
+      "report_sha256": "ed62d76f434e7a5751f5c2f03939e287e6d99d5b0e45ded659d9822bf2ecd622",
+      "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+      "role": "supporting_development"
+    },
+    {
+      "id": "beta-world-upgrade",
+      "path": "docs/work/v1.0.0-beta-world-upgrade/VERIFICATION.md",
+      "report_sha256": "8df58913997e245321fad811c745eb25db6a9bbbb34c19ef879f1568cf453269",
+      "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+      "role": "supporting_development"
+    },
+    {
+      "id": "compatibility",
+      "path": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "report_sha256": "2e5574b1c7e7fbb721feb972f3c8269e095d722b82058376d81171baa6b4b817",
+      "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+      "role": "supporting_development"
+    },
+    {
+      "id": "ci-integration",
+      "path": "docs/work/v1.0.0-ci-integration/VERIFICATION.md",
+      "report_sha256": "368b821aec9506807af66f3aa0f9231753aa54c69f9b3604d5a810a6eab92486",
+      "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+      "role": "supporting_development"
+    },
+    {
+      "id": "station-duo",
+      "path": "docs/work/v1.0.0-station-duo/VERIFICATION.md",
+      "report_sha256": "a9e477495ed476e36d8f10cf167499c81c4b1345d8f4ab0fd98193a87d542fcb",
+      "artifact_sha256": "c860542e8971e845121b6fd5c41474407376b465acc301a7cab7975ac0ccf9d0",
+      "role": "supporting_development"
+    },
+    {
+      "id": "console-presentation",
+      "path": "docs/work/v1.0.0-console-presentation/VERIFICATION.md",
+      "report_sha256": "2ffa510b784bc2556ad78444f2b86f4436da2530a6f60c14c45f39be5686b8a0",
+      "artifact_sha256": "46cb577653981a50638ff3d2bc32d0407dc4adaa5d7092fe73e65ae82bcd229c",
+      "role": "supporting_development"
+    },
+    {
+      "id": "native-reconnect",
+      "path": "docs/work/v1.0.0-native-reconnect/VERIFICATION.md",
+      "report_sha256": "6d737e6ee563a72d7bedc74fdf529ef633bcc51b2f197f4ba38d69ab6fe71d05",
+      "artifact_sha256": "569f41ab59d953e3b4fad3c1b00588705b260fc0b73f1deaf829024bc603e381",
+      "role": "supporting_development"
+    }
+  ]
+}

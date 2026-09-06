@@ -1,0 +1,4 @@
+JUnit: 67 suites; {'tests': 304, 'failures': 0, 'errors': 0, 'skipped': 0}
+flight-matrix PASS 10 cases; full log and harness hashes verified
+flight-guard PASS 1 cases; full log and harness hashes verified
+Baseline full logs verified; source inventory: 608 files

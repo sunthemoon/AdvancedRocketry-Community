@@ -30,6 +30,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketO
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegionLockManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
 import java.util.ArrayDeque;
@@ -57,6 +58,9 @@ public final class RocketManager implements RocketOperationService {
     private final RocketOperationLedger ledger = new RocketOperationLedger();
     private final RocketTransactionRecoveryService recovery;
     private final RocketFlightService flights = new RocketFlightService();
+    private final RocketTransactionReleaseProbe transactionReleaseProbe = new RocketTransactionReleaseProbe(
+            Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks"),
+            System.getProperty(RocketTransactionReleaseProbe.PROPERTY));
     private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
     private boolean recoverySuppressedForReleaseTest;
@@ -200,11 +204,13 @@ public final class RocketManager implements RocketOperationService {
         }
 
         UUID transactionId = UUID.randomUUID();
+        var observed = transactionReleaseProbe.bind(level.getServer(), RocketTransactionType.DISASSEMBLY, snapshot,
+                new ServerLevelRocketTransactionWorld(level, adapters, owner), savedData.journalFor(snapshot, owner));
         RocketTransactionResult result = new RocketDisassemblyTransaction(
-                new ServerLevelRocketTransactionWorld(level, adapters, owner),
+                observed.world(),
                 locks,
                 ledger,
-                savedData.journalFor(snapshot, owner)
+                observed.journal()
         ).execute(transactionId, rocket.getUUID(), snapshot);
         if (result.success()) {
             flights.releaseLandedReservation(rocket);
@@ -289,6 +295,12 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            flights.onPlayerLoggedOut(player.getUUID());
+        }
+    }
+
     public int activeTransferCount(MinecraftServer server) {
         return flights.activeTransferCount(server);
     }
@@ -313,6 +325,7 @@ public final class RocketManager implements RocketOperationService {
         locks.clear();
         ledger.clear();
         flights.clear();
+        transactionReleaseProbe.clear();
         recoverySuppressedForReleaseTest = false;
         releaseCheckpointTransferId = null;
         releaseCheckpoint = null;
@@ -369,11 +382,13 @@ public final class RocketManager implements RocketOperationService {
             return RocketValidationCode.REGION_BUSY;
         }
         UUID owner = rocket.ownerId().orElseThrow();
+        var observed = transactionReleaseProbe.bind(level.getServer(), RocketTransactionType.DISASSEMBLY, snapshot,
+                new ServerLevelRocketTransactionWorld(level, adapters, owner), savedData.journalFor(snapshot, owner));
         RocketTransactionResult result = new RocketDisassemblyTransaction(
-                new ServerLevelRocketTransactionWorld(level, adapters, owner),
+                observed.world(),
                 locks,
                 ledger,
-                savedData.journalFor(snapshot, owner)
+                observed.journal()
         ).execute(UUID.randomUUID(), rocket.getUUID(), snapshot);
         if (result.success()) {
             flights.releaseLandedReservation(rocket);
@@ -412,20 +427,7 @@ public final class RocketManager implements RocketOperationService {
         RocketFlightState state = authority == null
                 ? null
                 : authority.flightData().map(data -> data.state()).orElse(null);
-        boolean reached = switch (checkpoint) {
-            case COUNTDOWN -> record.phase() == RocketTransferPhase.PREPARED
-                    && state == RocketFlightState.COUNTDOWN;
-            case ASCENT -> record.phase() == RocketTransferPhase.PREPARED
-                    && state == RocketFlightState.ASCENT;
-            case TRANSIT_PREPARED -> record.phase() == RocketTransferPhase.PREPARED
-                    && state == RocketFlightState.TRANSIT;
-            case DESTINATION_SPAWNED -> record.phase() == RocketTransferPhase.DESTINATION_SPAWNED;
-            case DESCENT -> record.phase() == RocketTransferPhase.COMMITTED
-                    && state == RocketFlightState.DESCENT;
-            case LANDED -> record.phase() == RocketTransferPhase.COMMITTED
-                    && state == RocketFlightState.LANDED;
-        };
-        if (!reached) {
+        if (!checkpoint.reached(record.phase(), state)) {
             return;
         }
         flightLifecycleActive = false;
@@ -520,11 +522,14 @@ public final class RocketManager implements RocketOperationService {
         }
 
         UUID transactionId = UUID.randomUUID();
-        RocketTransactionResult transaction = new RocketAssemblyTransaction(
+        var observed = transactionReleaseProbe.bind(server, RocketTransactionType.ASSEMBLY, snapshot,
                 new ServerLevelRocketTransactionWorld(level, adapters, active.ownerId()),
+                savedData.journalFor(snapshot, active.ownerId()));
+        RocketTransactionResult transaction = new RocketAssemblyTransaction(
+                observed.world(),
                 locks,
                 ledger,
-                savedData.journalFor(snapshot, active.ownerId())
+                observed.journal()
         ).execute(transactionId, snapshot);
         reportTransaction(level, snapshot, player, transaction, "assembly");
         return false;

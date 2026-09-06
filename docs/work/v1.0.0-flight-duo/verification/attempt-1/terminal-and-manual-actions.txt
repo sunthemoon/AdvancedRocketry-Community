@@ -1,0 +1,24 @@
+Tool-result transcription, not a native log.
+Unified exec session 74107: terminal exit code 1 after explicit stop request 42.
+All three native Java processes are recorded as exit 0 by the driver.
+
+FAILED_CLEANUP_AUDIT ["server stop audit: SmokeError(\"Packaged server stop/audit failed: exit=0; ['[02:33:25] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=ba1d6bdd-a439-4b48-bb7a-b12156a0dcec logical=08c24ffa-1ad3-4e15-92fe-70041abd3620 reason=countdown_cancelled fuel=670']\")"]
+
+Outside the controller request queue, before READY_GUI:
+- jcmd.exe 17820 Thread.print: exit 0, retained client-2-thread-dump.txt.
+- The owned-window helper captured second-client-disconnection.png via native F2.
+- Original server/client-2 latest/debug logs were copied before reconnecting.
+- Same client PID 17820 clicked Back to Server List (480,328), then Direct
+  Connection (480,452), entered 127.0.0.1:57834 through character messages,
+  and clicked Join Server (480,370). No process restart or timeout change.
+- Native reconnect-01-server-list.png and reconnect-02-address.png show those
+  intermediate interfaces. The initial terminal Timed out screen is retained.
+
+After READY_GUI, controller checkpoints contain the normal input/fixture requests.
+Two separate timed probes were executed in the same owned session:
+- arce-duo-probe.py: exit 0, but its intended cancellation was not achieved.
+- arce-duo-probe-2.py: exit 0; matching server intents establish the observed
+  Moon launch and non-OP owner cancellation. Exact scripts and receipts retained.
+
+After terminal completion, ops.json was copied to ops-after-test.json. A process
+query found no remaining PID 26176, 17820 or 18904. No new game run was started.

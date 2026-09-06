@@ -1,0 +1,51 @@
+{
+  "artifact_sha256": "5b5d942a1c807a62ec030bc2150f246a7de6d5f78cd2ed3698db3445a53d2096",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "baseline_summary_sha256": "2858f6032251b181b6ff349d7cfe759b2c9a875c4f7574ab957bb2803f4d4698",
+  "build": "1.20.1-1.0.0-dev",
+  "cases": [],
+  "completed_at": "2026-09-05T09:01:03.500710+00:00",
+  "error": "Timed out waiting for server marker 'V100_ASSEMBLED_ONE_LOADED_AUTHORITY'",
+  "harness_sha256": "5a75654a324ba4b7e7010a9f8cee6e87eaaeea06324b863f1d2b4b07beb40428",
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "20260905T085945922143Z-v100-assembled-recover-full.txt",
+      "sha256": "d576cebc5b2d6869ab3ede67353b6ebaf4b3f01efe9e9a8592d9d60903c338f1"
+    },
+    {
+      "file": "20260905T085945922143Z-v100-assembled-stage-full.txt",
+      "sha256": "c314118ed0342bb076b51759db2a87b23f19ba38ff981e257f0701c7725807ba"
+    }
+  ],
+  "online_mode": "true",
+  "processes": [
+    {
+      "completed_at": "2026-09-05T09:00:12.056563+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T085945922143Z-v100-assembled-stage-full.txt",
+      "full_log_sha256": "c314118ed0342bb076b51759db2a87b23f19ba38ff981e257f0701c7725807ba",
+      "graceful_stop_command_sent": false,
+      "name": "v100-assembled-stage",
+      "started_at": "2026-09-05T08:59:46.780249+00:00",
+      "termination": "process_kill"
+    }
+  ],
+  "requested_cases": [
+    "ASSEMBLED",
+    "FUELED",
+    "COUNTDOWN",
+    "ASCENT",
+    "TRANSIT_PREPARED",
+    "DESTINATION_SPAWNED",
+    "PASSENGERS_TRANSFERRED",
+    "SOURCE_REMOVED",
+    "DESCENT",
+    "LANDED"
+  ],
+  "schema_version": 1,
+  "scope": "unmanned flight checkpoints after explicit durable flush; not assembly, disassembly or player crash coverage",
+  "source_state": "development_worktree",
+  "status": "FAIL",
+  "version": "v1.0.0"
+}

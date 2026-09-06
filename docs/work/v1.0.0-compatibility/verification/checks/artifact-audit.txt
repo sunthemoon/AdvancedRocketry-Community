@@ -1,0 +1,5 @@
+[PASS] Artifact: C:\Users\Administrator\AppData\Local\Temp\arce-v100-compatibility\artifacts\advancedrocketry-community-1.20.1-1.0.0-dev.jar
+[PASS] SHA-256: cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8
+[PASS] Entries: 766
+[PASS] Metadata, notices, paths, and credential name/content scan
+[PASS] Content manifest: C:\Users\Administrator\AppData\Local\Temp\arce-v100-compatibility\checks\artifact-manifest.json (766 entries)

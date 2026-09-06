@@ -1,0 +1,7 @@
+[PASS] Forge installer SHA-1: 66bfea9963bfa60d88bab6b2750e74a958392715
+[PASS] Artifact SHA-256: cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8
+[PASS] First start, status query, save, and clean stop on port 25595
+[PASS] Same-world restart, status query, save, and clean stop
+[PASS] Harness session binding: v002-da71d118c618cf9db9f95093
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\build\v090-dedicated-server-smoke\evidence
+[INFO] Full disposable server session: D:\GitHub\AdvancedRocketry-Community\build\v090-dedicated-server-smoke\session

@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.LongPredicate;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 
 /** Idempotent loaded-region recovery for durable v0.5 transaction records. */
 public final class RocketTransactionRecoveryService {
@@ -53,7 +55,8 @@ public final class RocketTransactionRecoveryService {
                     adapters,
                     entry.ownerId()
             );
-            if (!world.isRegionLoaded(entry.record().region())) {
+            if (!readyForRecovery(world.isRegionLoaded(entry.record().region()),
+                    entry.snapshot().sourceOrigin(), level::areEntitiesLoaded)) {
                 sawUnloaded = true;
                 continue;
             }
@@ -62,6 +65,18 @@ public final class RocketTransactionRecoveryService {
                     : Outcome.CONFLICT;
         }
         return sawUnloaded ? Outcome.DEFERRED_UNLOADED : Outcome.NO_WORK;
+    }
+
+    static boolean readyForRecovery(
+            boolean regionLoaded, RocketPosition origin, LongPredicate entityChunksLoaded
+    ) {
+        Objects.requireNonNull(origin, "origin");
+        Objects.requireNonNull(entityChunksLoaded, "entityChunksLoaded");
+        // Block chunks can arrive before their persisted entities. A missing
+        // entity is authoritative only after the origin's entity read finishes.
+        // Assembly/disassembly entities are anchored at this snapshot origin;
+        // this query neither loads a chunk nor creates a recovery ticket.
+        return regionLoaded && entityChunksLoaded.test(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4));
     }
 
     private boolean recoverLoaded(

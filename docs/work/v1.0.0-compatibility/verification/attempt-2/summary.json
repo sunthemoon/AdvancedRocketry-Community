@@ -1,0 +1,42 @@
+{
+  "artifact": {
+    "artifact": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\artifacts\\advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+    "entry_count": 766,
+    "expected_version": "1.20.1-1.0.0-dev",
+    "sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+  },
+  "authentication_tested": false,
+  "build": "1.20.1-1.0.0-dev",
+  "clients": [],
+  "completed_at": "2026-09-05T13:11:20.065688+00:00",
+  "failure": "Unexpected native library entry",
+  "java_version": "17.0.7",
+  "owned_processes": [
+    {
+      "completed_at": "2026-09-05T13:11:20.064275+00:00",
+      "exit_code": 1,
+      "full_log_bytes": 12006,
+      "full_log_file": "server-47.4.10-matrix.txt",
+      "full_log_sha256": "054078bfe77eb5d365b43b8a6886a720bd4b082d9104ee87678f08d2f8690fc2",
+      "pid": 12868,
+      "started_at": "2026-09-05T13:10:50.262920+00:00"
+    }
+  ],
+  "prepared_runtime": {
+    "asset_count": 3598,
+    "forge": [
+      "47.4.10",
+      "47.4.23"
+    ],
+    "jei": "15.56.0.205",
+    "jei_sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c",
+    "schema_version": 1
+  },
+  "schema_version": 1,
+  "servers": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T13:10:49.165081+00:00",
+  "status": "FAIL",
+  "target_version": "v1.0.0",
+  "visual_or_multiplayer_behavior_approved": false
+}

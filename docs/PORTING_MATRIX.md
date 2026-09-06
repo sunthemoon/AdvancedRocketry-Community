@@ -21,18 +21,18 @@
 | 重力 | dimension/entity/event | 全局事件、兼容 | server attribute/effect service | `v0.3.0` | player/entity behavior | PASSED |
 | 真空伤害 | atmosphere/armor/event | 装备同步 | life support service | `v0.4.0` | suit/no-suit tests | PASSED |
 | 氧气设备 | atmosphere/tile | flood fill | budgeted atmosphere service | `v0.4.0` | sealed/open/perf | PASSED |
-| 火箭扫描 | tile assembler/entity | 任意结构、LibVulpes storage | validator + snapshot | `v0.5.0` | limits and diagnostics | IN_PROGRESS |
-| 火箭组装 | entity/tile | 删除/生成非事务 | assembly transaction | `v0.5.0` | rollback/no duplication | IN_PROGRESS |
-| 火箭实体 | EntityRocket | 巨型类、渲染/业务混合 | thin entity + domain state | `v0.5.0` | same-dimension lifecycle | IN_PROGRESS |
-| 火箭燃料 | entity/tile/item | 多系统耦合 | RocketFuelState + loaders | `v0.6.0` | consume exactly once | NOT_AUDITED |
-| 目的地选择 | GUI/network/dimension | 客户端信任 | server-validated plan | `v0.6.0` | forged request rejected | NOT_AUDITED |
-| 跨维度飞行 | EntityRocket/dimension | 玩家卡空中、双实体 | transfer journal | `v0.6.0` | restart matrix/20 trips | NOT_AUDITED |
-| 降落/拆解 | entity/world storage | 方块/库存丢失 | landing + disassembly transaction | `v0.6.0` | exact restoration | NOT_AUDITED |
+| 火箭扫描 | tile assembler/entity | 任意结构、LibVulpes storage | validator + snapshot | `v0.5.0` | limits and diagnostics | PASSED |
+| 火箭组装 | entity/tile | 删除/生成非事务 | assembly transaction | `v0.5.0` | rollback/no duplication | PASSED |
+| 火箭实体 | EntityRocket | 巨型类、渲染/业务混合 | thin entity + domain state | `v0.5.0` | same-dimension lifecycle | PASSED |
+| 火箭燃料 | entity/tile/item | 多系统耦合 | RocketFuelState + loaders | `v0.6.0` | consume exactly once | PASSED |
+| 目的地选择 | GUI/network/dimension | 客户端信任 | server-validated plan | `v0.6.0` | forged request rejected | PASSED |
+| 跨维度飞行 | EntityRocket/dimension | 玩家卡空中、双实体 | transfer journal | `v0.6.0` | restart matrix/20 trips | PASSED |
+| 降落/拆解 | entity/world storage | 方块/库存丢失 | landing + disassembly transaction | `v0.6.0` | exact restoration | PASSED |
 | 空间站 | stations/dimension | 每站维度/ID | shared regions + SavedData | `v0.7.0` | no overlap/ownership | PASSED |
 | 站点重力/光照 | stations/client | 渲染/逻辑耦合 | profile/state separation | `v0.7.x+` | reload + visual | NOT_AUDITED |
-| 研究数据 | unit/item/machine | 旧 GUI/数值 | progression service | `v0.8.0` | deterministic persistence | NOT_AUDITED |
-| 卫星 | satellite/mission | chunk load、计时 | SavedData async mission | `v0.8.0` | no forced chunks | NOT_AUDITED |
-| JEI | integration | API 版本 | optional compat | `v0.2.0+` | absent/present startup | NOT_AUDITED |
+| 研究数据 | unit/item/machine | 旧 GUI/数值 | progression service | `v0.8.0` | deterministic persistence | PASSED |
+| 卫星 | satellite/mission | chunk load、计时 | SavedData async mission | `v0.8.0` | no forced chunks | PASSED |
+| JEI | integration | API 版本 | optional compat | `v0.2.0+` | absent/present startup | PASSED |
 | ASM/coremod | asm | 高风险、时代 API | 不迁移 | never unless ADR | no coremod | REJECTED |
 | 旧世界直开 | backwardCompat/dimension | ID/格式跨度巨大 | 不属于 v1.0 | `v1.x` research | offline conversion only | DEFERRED |
 | 跃迁/多星系 | stations/dimension | 动态天体复杂 | post-MVP | `v1.x` | future plan | DEFERRED |
@@ -40,6 +40,13 @@
 | 黑洞/空间电梯/轨道激光 | 多处 | 高内容/渲染/兼容 | post-MVP | `v1.x+` | future plan | DEFERRED |
 
 ## 使用规则
+
+v1.0 后的目标版本和最终对等分类见
+[后续路线](16-POST-1.0-VERSION-ROADMAP.md)。本表的实施状态不自动等于
+`PASSED_EQUIVALENT` 或 `PASSED_REDESIGNED`；对等审计必须保留证据和批准。
+2026-09-05 的[核心基线审计](work/v1.0.0-core-baseline-audit.md)将十条滞后的
+核心行与已有 v0.5/v0.6/v0.8/v0.9 人工接受记录、实现和测试对应。
+这些历史 `PASSED` 不表示 v1.0 已验收，也不扩展旧视觉豁免或经典内容范围。
 
 - 完成上游审计后，把“主要位置”替换成准确类/资产路径；
 - 每行必须最终指向自动测试和人工用例；

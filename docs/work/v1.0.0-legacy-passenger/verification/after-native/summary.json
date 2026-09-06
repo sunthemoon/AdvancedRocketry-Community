@@ -1,0 +1,55 @@
+{
+  "actions": [],
+  "artifact_sha256": "1bf818f076f8db716d3566ae2be3e5182b8e4512360a8fd2625a3b0a6eaf9df1",
+  "authentication_tested": false,
+  "cleanup_errors": [
+    "server stop audit: SmokeError(\"Packaged server stop/audit failed: exit=0; ['[05:12:20] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED']\")"
+  ],
+  "completed_at": "2026-09-05T21:16:23.519294+00:00",
+  "failure": "SmokeError: Timed out waiting for server marker '^(?:\\\\[[^\\\\]\\\\r\\\\n]+\\\\]\\\\s*)+[^\\\\r\\\\n]*?:\\\\s+Connected\\\\ to\\\\ a\\\\ modded\\\\ server\\\\.\\\\s*$'",
+  "processes": [
+    {
+      "exit_code": 0,
+      "full_log_file": "client-full.txt",
+      "full_log_sha256": "2aee464e1aa6ecb34e13511ac28ea15fdd65a81c0c8098a8bcbe30eef9c41aa7",
+      "kind": "client",
+      "native_logs": [
+        {
+          "bytes": 13768,
+          "file": "client-latest.log",
+          "sha256": "addbdac8a2fa7b62c40ee133631f26054598e5a6e09f2f77f83f2670bd38bee6"
+        },
+        {
+          "bytes": 78818,
+          "file": "client-debug.log",
+          "sha256": "6eca4711714d669275adc0aa8f7c01d49766d4fc88c225a1dcb3eb96bc738323"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "server-full.txt",
+      "full_log_sha256": "c8c48ec554a11a9af3ea6c2089b5370a160f7630dde05f79118d3ff33afa13a1",
+      "kind": "server",
+      "native_logs": [
+        {
+          "bytes": 12650,
+          "file": "server-latest.log",
+          "sha256": "0a9b4ae72fd8789b04706f449cb7beb8b0e190f1b1ad445be544c05232223023"
+        },
+        {
+          "bytes": 82486,
+          "file": "server-debug.log",
+          "sha256": "ce787c15337212c7de9f3a2fcda20887b429e08dcdbc866f2c76c610b46d511f"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:11:58.363494+00:00",
+  "startup_recovery_findings": [
+    "[05:12:20] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED"
+  ],
+  "status": "FAIL"
+}

@@ -1,0 +1,3 @@
+[INFO] Validating accepted v0.0.2 provenance at 9359257b9fe1eccf7e0043dfa7f626cf1ee44be9
+[PASS] Bootstrap provenance mechanical validation: 2 components, 11 imported targets, 2 local assets
+[PASS] Recorded provenance review is mechanically consistent and digest-bound: THIRD_PARTY_APPROVED

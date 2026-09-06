@@ -1,0 +1,13 @@
+# Draft development handoff only; no approved distributable. Paths are repository-relative.
+2b02f142e421b0cb4b97940517ba167b763ea5d453ef27c446a5a8557cc2f026  docs/releases/v1.0.0/evidence-index.json
+bc022fa25b6b33307d12d40d8dc2a9c4ae3925ca8f3d0e6d4a27b8c9d128052f  docs/releases/v1.0.0/GATE-STATUS.md
+f9948d7983daa9148f3265bb1e077da4a3ad937f22c11d971a343ddd22580947  docs/releases/v1.0.0/KNOWN-ISSUES.md
+35e92c58b4fc4a69253fd877aaf1ca4be371b00c7782dac631e7587a0e7ba49d  docs/releases/v1.0.0/MANUAL-TEST.md
+824ee05d3ccb63fb7c3b94786db45825bf8c09ce30221a59b25c2b6e742618a8  docs/releases/v1.0.0/MIGRATION-REPORT.md
+7ede852999bb1e411d7b8cd6591cab71de1075c531f78f7f7df01c55cd1f8298  docs/releases/v1.0.0/MULTIPLAYER-REPORT.md
+9949ba106f4eb0eb7d86c5dcc866313c4fc0912ae8d902032fd63d73f50426d0  docs/releases/v1.0.0/PERFORMANCE.md
+c689afd573b5eaba2fdce230352e9fef74163013061f9414eb0a4e7658ada6ce  docs/releases/v1.0.0/RECOVERY-MATRIX.md
+0edcf00f62ea91aaf73c9ceb1f7ed84af82b3b7e880f4e52cd84f0bedf4b1a2d  docs/releases/v1.0.0/RELEASE-EVIDENCE.md
+f610c5cb01003a2a9cf1b96ba7f114429a88de93025252ca4a486b5dac41afe4  docs/releases/v1.0.0/SECURITY-REVIEW.md
+7afd5e9fba9c3f23dcde5774a91b9387bcb34ff5ab75d167068e78d567f453b2  docs/releases/v1.0.0/TEST-REPORT.md
+59e46dd851e20e66f41c4b38f08b830c40a8c689f3d66c75c4a6c9bf77d86574  docs/releases/v1.0.0/VISUAL-VALIDATION-REPORT.md

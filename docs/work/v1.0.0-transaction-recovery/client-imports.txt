@@ -1,0 +1,1 @@
+[PASS] No net.minecraft.client references outside the client package

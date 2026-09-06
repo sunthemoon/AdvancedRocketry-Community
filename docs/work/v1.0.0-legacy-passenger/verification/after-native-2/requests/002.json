@@ -1,0 +1,1 @@
+{"id":2,"op":"server","wait":"ARCE_RELEASE_TEST_FLIGHT_REPORT","command":"execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run arce rocket release-test report @s"}

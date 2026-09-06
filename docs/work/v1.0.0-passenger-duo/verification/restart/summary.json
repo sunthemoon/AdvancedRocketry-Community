@@ -1,0 +1,19 @@
+{
+  "status": "IN_PROGRESS",
+  "pid": 15680,
+  "artifact_sha256": "e7511d8896b2d700d7834325c390886f6841397c47bf16b445c02e191234dba3",
+  "exit_code": 1,
+  "full_log_sha256": "d4036071444ab14d80089a6a923fa45791dcd3cb763b86dcc04de0078efafd88",
+  "native_logs": [
+    {
+      "file": "server-latest.log",
+      "bytes": 9546,
+      "sha256": "c4c344a46ef604ec9e045ee6ca6c4656f64ef551fba09d41b267fb196b2f1dc2"
+    },
+    {
+      "file": "server-debug.log",
+      "bytes": 73402,
+      "sha256": "2df41473d6f550e5faf470d5fb2939a0366c36e0909daa0066cb6d98d1dc9e5a"
+    }
+  ]
+}

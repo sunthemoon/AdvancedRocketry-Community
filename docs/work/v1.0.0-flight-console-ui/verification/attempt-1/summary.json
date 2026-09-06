@@ -1,0 +1,44 @@
+{
+  "actions": [],
+  "artifact_sha256": "fb8539b600da54da3f4e5453af07e285e7dec1c17ace12f1e52153137be71e04",
+  "authentication_tested": false,
+  "completed_at": "2026-09-05T17:17:42.070462+00:00",
+  "processes": [
+    {
+      "exit_code": 0,
+      "kind": "client",
+      "native_logs": [
+        {
+          "bytes": 17021,
+          "file": "client-latest.log",
+          "sha256": "04b104b5764a54098b7e9d0f85b5eaab817bbe4515b7f86533c243ff974b4d3f"
+        },
+        {
+          "bytes": 96542,
+          "file": "client-debug.log",
+          "sha256": "79ae109950f9a37acb893643d76c53ba34b2f7d1ccdf34b49555c849e774b561"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "kind": "server",
+      "native_logs": [
+        {
+          "bytes": 21668,
+          "file": "server-latest.log",
+          "sha256": "e2b6598079e47b2adb57002fa308d60bcac35a9f0916bfe2dec191f4334cda64"
+        },
+        {
+          "bytes": 108504,
+          "file": "server-debug.log",
+          "sha256": "dcc58ccab671d0e9ddb61ccca777e8910360b88a513ef9c96cac92f20dedad19"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T17:16:26.258327+00:00",
+  "status": "IN_PROGRESS"
+}

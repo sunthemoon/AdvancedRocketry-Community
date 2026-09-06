@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-05T19:27:07" hostname="DESKTOP-8J2KSNF" time="0.015">
+  <properties/>
+  <testcase name="canonicalDefinitionRoundTrips()" classname="io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest" time="0.006"/>
+  <testcase name="breathableVacuumIsRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest" time="0.0"/>
+  <testcase name="invalidGravityIsRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest" time="0.002"/>
+  <testcase name="invalidResourceLocationIsRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest" time="0.004"/>
+  <testcase name="zeroOrbitMustUseBothZeroFields()" classname="io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

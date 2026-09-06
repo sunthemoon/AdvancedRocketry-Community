@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_EVIDENCE_AUDIT", "source_inputs": 732, "screenshots": 16, "checksums": 109, "ui_driver_status": "FAILED_STOP_AUDIT", "release_gate_approval": false}

@@ -1,0 +1,92 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T17:22:35.011072+00:00",
+      "request": {
+        "id": 1,
+        "op": "focus"
+      },
+      "result": {
+        "focused": true
+      }
+    },
+    {
+      "at": "2026-09-05T17:22:35.298576+00:00",
+      "request": {
+        "id": 2,
+        "name": "01-world-before-menu",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 170837,
+        "client_size": [
+          960,
+          540
+        ],
+        "file": "01-world-before-menu.png",
+        "sha256": "1a48895ffa732eaf0bb4c75bb2b5945e202c5a54848de136aaffcf32676acbeb",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T17:22:35.300348+00:00",
+      "request": {
+        "id": 3,
+        "op": "status"
+      },
+      "result": {
+        "client": null,
+        "client_tail": [
+          "[01:22:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [V100Visual1: Queued bounded rocket assembly at 384, 100, 384]\n",
+          "[01:22:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server: Created ConsoleAlpha id=f60a7714-8e95-4e79-94ce-0a277faee8a7 cell=0,0]\n",
+          "[01:22:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [Server: Created ConsoleBeta id=193d0869-5917-4688-84c1-5614c498a2c2 cell=1,0]\n",
+          "[01:22:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Saved screenshot as 2026-09-06_01.22.35.png\n"
+        ],
+        "server": null,
+        "server_tail": [
+          "[01:22:33] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: V100Visual1 moved too quickly! 391.0,-19.0,388.0\n",
+          "[01:22:34] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=f2fba4ec-348c-4b44-a687-64479aa4e7b2 operational=true snapshot=42b80f05279e11debb63897848889c462cf5fb42cd49e0d55fe9652b8419c912 flight_state=ASSEMBLED fuel=0\n",
+          "[01:22:34] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_REFUEL entity=f2fba4ec-348c-4b44-a687-64479aa4e7b2 logical=483db1b2-e503-44a2-9234-7f5352043aa7 dimension=minecraft:overworld state_before=ASSEMBLED state_after=FUELED amount=1000 capacity=1000\n",
+          "[01:22:34] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test rocket fuel=1000/1000\n",
+          "[01:22:34] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=f60a7714-8e95-4e79-94ce-0a277faee8a7 owner=62bbb9cb-b2fa-39aa-9a6b-430b71f5493f cell=0,0 region=-256,-256,255,255 inspected=289 changed=289 chunks=4 detail=generated\n",
+          "[01:22:34] [Server thread/INFO] [minecraft/MinecraftServer]: Created ConsoleAlpha id=f60a7714-8e95-4e79-94ce-0a277faee8a7 cell=0,0\n",
+          "[01:22:35] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_TRANSACTION action=creation_committed station=193d0869-5917-4688-84c1-5614c498a2c2 owner=62bbb9cb-b2fa-39aa-9a6b-430b71f5493f cell=1,0 region=768,-256,1279,255 inspected=289 changed=289 chunks=4 detail=generated\n",
+          "[01:22:35] [Server thread/INFO] [minecraft/MinecraftServer]: Created ConsoleBeta id=193d0869-5917-4688-84c1-5614c498a2c2 cell=1,0\n"
+        ],
+        "size": [
+          960,
+          540
+        ]
+      }
+    }
+  ],
+  "artifact_sha256": "fb8539b600da54da3f4e5453af07e285e7dec1c17ace12f1e52153137be71e04",
+  "authentication_tested": false,
+  "client_pid": 2412,
+  "entity": "f2fba4ec-348c-4b44-a687-64479aa4e7b2",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "port": 54396,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 170837,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "01-world-before-menu.png",
+      "sha256": "1a48895ffa732eaf0bb4c75bb2b5945e202c5a54848de136aaffcf32676acbeb",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "server_pid": 13964,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T17:21:42.747073+00:00",
+  "stations": [
+    "f60a7714-8e95-4e79-94ce-0a277faee8a7",
+    "193d0869-5917-4688-84c1-5614c498a2c2"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 527544
+}

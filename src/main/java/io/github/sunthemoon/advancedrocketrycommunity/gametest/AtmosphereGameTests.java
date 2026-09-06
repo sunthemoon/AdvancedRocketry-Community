@@ -88,19 +88,24 @@ public final class AtmosphereGameTests {
         moon.setBlock(ventPosition.offset(0, 2, 0), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         AtmosphereLevelService service = testService(moon, AtmosphereLimits.MAX_VOLUME_CELLS);
 
-        service.observeVent(vent);
-        service.tick();
+        try {
+            service.observeVent(vent);
+            service.tick();
 
-        BlockPos seed = ventPosition.above();
-        helper.assertTrue(vent.status() == VentOperatingStatus.OPEN,
-                "Open room was not diagnosed as open: status=" + vent.status()
-                        + " seedSky=" + moon.canSeeSky(seed)
-                        + " roof=" + moon.getBlockState(seed.above()));
-        helper.assertTrue(
-                service.breathabilityAt(seed) == BreathabilityState.VACUUM,
-                "Open room was incorrectly breathable"
-        );
-        helper.succeed();
+            BlockPos seed = ventPosition.above();
+            helper.assertTrue(vent.status() == VentOperatingStatus.OPEN,
+                    "Open room was not diagnosed as open: status=" + vent.status()
+                            + " seedSky=" + moon.canSeeSky(seed)
+                            + " roof=" + moon.getBlockState(seed.above()));
+            helper.assertTrue(
+                    service.breathabilityAt(seed) == BreathabilityState.VACUUM,
+                    "Open room was incorrectly breathable"
+            );
+            helper.succeed();
+        } finally {
+            service.clear();
+            moon.removeBlock(ventPosition, false);
+        }
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 60)
@@ -122,33 +127,38 @@ public final class AtmosphereGameTests {
         // that normal world lifecycle boundary instead of reading stale sky
         // exposure in the setup tick.
         helper.runAfterDelay(1, () -> {
-            service.observeVent(vent);
-            service.tick();
-            helper.assertTrue(vent.status() == VentOperatingStatus.ACTIVE,
-                    "Closed door did not seal the room: status=" + vent.status()
-                            + " energy=" + vent.energyStored()
-                            + " oxygen=" + vent.oxygenUnits()
-                            + " door=" + moon.getBlockState(doorPosition)
-                            + " roof=" + moon.getBlockState(ventPosition.above(2))
-                            + " seedSky=" + moon.canSeeSky(ventPosition.above())
-                            + " metrics=" + service.metrics());
+            try {
+                service.observeVent(vent);
+                service.tick();
+                helper.assertTrue(vent.status() == VentOperatingStatus.ACTIVE,
+                        "Closed door did not seal the room: status=" + vent.status()
+                                + " energy=" + vent.energyStored()
+                                + " oxygen=" + vent.oxygenUnits()
+                                + " door=" + moon.getBlockState(doorPosition)
+                                + " roof=" + moon.getBlockState(ventPosition.above(2))
+                                + " seedSky=" + moon.canSeeSky(ventPosition.above())
+                                + " metrics=" + service.metrics());
 
-            setDoor(moon, doorPosition, true);
-            service.markDirty(doorPosition);
-            service.observeVent(vent);
-            service.tick();
-            helper.assertTrue(vent.status() == VentOperatingStatus.OPEN,
-                    "Opening the door did not fail closed: status=" + vent.status()
-                            + " door=" + moon.getBlockState(doorPosition)
-                            + " corridorSky=" + moon.canSeeSky(ventPosition.offset(3, 1, 0)));
+                setDoor(moon, doorPosition, true);
+                service.markDirty(doorPosition);
+                service.observeVent(vent);
+                service.tick();
+                helper.assertTrue(vent.status() == VentOperatingStatus.OPEN,
+                        "Opening the door did not fail closed: status=" + vent.status()
+                                + " door=" + moon.getBlockState(doorPosition)
+                                + " corridorSky=" + moon.canSeeSky(ventPosition.offset(3, 1, 0)));
 
-            setDoor(moon, doorPosition, false);
-            service.markDirty(doorPosition);
-            service.observeVent(vent);
-            service.tick();
-            helper.assertTrue(vent.status() == VentOperatingStatus.ACTIVE,
-                    "Closing the door did not rebuild the sealed room");
-            helper.succeed();
+                setDoor(moon, doorPosition, false);
+                service.markDirty(doorPosition);
+                service.observeVent(vent);
+                service.tick();
+                helper.assertTrue(vent.status() == VentOperatingStatus.ACTIVE,
+                        "Closing the door did not rebuild the sealed room");
+                helper.succeed();
+            } finally {
+                service.clear();
+                moon.removeBlock(ventPosition, false);
+            }
         });
     }
 

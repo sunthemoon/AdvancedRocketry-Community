@@ -1,0 +1,1 @@
+{"id": 5, "op": "server", "command": "execute in advancedrocketrycommunity:moon run data get entity 0316d87e-2e28-4dc5-a6f0-a554759b102a RocketEntityData.snapshot.relative_blocks", "wait": "has the following entity data:"}

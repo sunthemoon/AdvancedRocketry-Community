@@ -1,0 +1,59 @@
+[
+  {
+    "at": "2026-09-05T19:05:48.773651+00:00",
+    "action": "operator launch-button click",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:05:49.408637+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "06-owner-active-station.png",
+      "bytes": 62911,
+      "sha256": "c95e017f15519f34db629e85fa5a1173e299114021bd3a05bf987d530595c314",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:05:49.488793+00:00",
+    "action": "owner Tab",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:05:49.719420+00:00",
+    "action": "owner Enter",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:05:50.410600+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "07-owner-after-cancel.png",
+      "bytes": 72073,
+      "sha256": "01c3a44d532c53950f21ab69aecbcc5183ea8a3f1f6758688eae92748849f7a5",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:05:50.693663+00:00",
+    "action": "operator screenshot",
+    "result": {
+      "file": "08-operator-after-cancel.png",
+      "bytes": 69057,
+      "sha256": "afdab06702dee13d510cf29465ad55a7cda2d028d91c2d64fe9beffdd4e43a49",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  }
+]

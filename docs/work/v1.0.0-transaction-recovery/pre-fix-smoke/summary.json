@@ -1,0 +1,142 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+  "artifact_sha256": "65b10b88521a41191cecf01724e03139549c22e08595615d75ab9341b41dc7af",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "baseline_summary_sha256": "2858f6032251b181b6ff349d7cfe759b2c9a875c4f7574ab957bb2803f4d4698",
+  "build": "1.20.1-1.0.0-dev",
+  "cases": [
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTING:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T09:58:30.553493+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-stage-full.txt",
+        "full_log_sha256": "1ae173613b9cedd838b47d3b8ac66e7e068849a2714b266edab32c891a7abc3c",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracting-2-stage",
+        "pid": 20660,
+        "started_at": "2026-09-05T09:58:09.162031+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTING",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "ece2b423-325d-4ac6-b917-a3e483f59dae",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracting-2-staged.dat",
+      "staged_journal_sha256": "a198fd187f611de901633954aa298a282373f2dd719936e5ff745338969dd83d"
+    }
+  ],
+  "completed_at": "2026-09-05T10:00:34.470424+00:00",
+  "error": "Timed out waiting for server marker 'TXN_assembly\\\\-spawned\\\\-5_AUTHORITY'",
+  "harness_sha256": "4284d8929417a0cc922b0d87ffbea0576a5153f28d1157f99fecad7f8f08a5c2",
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-recover-full.txt",
+      "sha256": "56877320612f70d433b2b9aff378344c337942144a86a8a7a46260b4c2b731e9"
+    },
+    {
+      "file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-second-restart-full.txt",
+      "sha256": "b537c2824e98a5f11c3390caef972f98210703ccaa934b10c4b7786d15423cd9"
+    },
+    {
+      "file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-stage-full.txt",
+      "sha256": "1ae173613b9cedd838b47d3b8ac66e7e068849a2714b266edab32c891a7abc3c"
+    },
+    {
+      "file": "20260905T095808437367Z-v100-txn-assembly-spawned-5-recover-full.txt",
+      "sha256": "9b526b0cb7478e2c2c16492ffd53bdeb1e1efe793575051f23f9836ad5078ea4"
+    },
+    {
+      "file": "20260905T095808437367Z-v100-txn-assembly-spawned-5-stage-full.txt",
+      "sha256": "870e32e771b9ca9f2ba256793fe2030b68f33e28676c95f7575f1561a2bd2ecd"
+    }
+  ],
+  "online_mode": "true",
+  "processes": [
+    {
+      "completed_at": "2026-09-05T09:58:30.553493+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-stage-full.txt",
+      "full_log_sha256": "1ae173613b9cedd838b47d3b8ac66e7e068849a2714b266edab32c891a7abc3c",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracting-2-stage",
+      "started_at": "2026-09-05T09:58:09.162031+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T09:58:53.644592+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-recover-full.txt",
+      "full_log_sha256": "56877320612f70d433b2b9aff378344c337942144a86a8a7a46260b4c2b731e9",
+      "name": "assembly-extracting-2-recover",
+      "started_at": "2026-09-05T09:58:30.585233+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T09:59:18.813868+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T095808437367Z-v100-txn-assembly-extracting-2-second-restart-full.txt",
+      "full_log_sha256": "b537c2824e98a5f11c3390caef972f98210703ccaa934b10c4b7786d15423cd9",
+      "name": "assembly-extracting-2-second-restart",
+      "started_at": "2026-09-05T09:58:53.663351+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T09:59:41.103401+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T095808437367Z-v100-txn-assembly-spawned-5-stage-full.txt",
+      "full_log_sha256": "870e32e771b9ca9f2ba256793fe2030b68f33e28676c95f7575f1561a2bd2ecd",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-spawned-5-stage",
+      "started_at": "2026-09-05T09:59:18.834606+00:00",
+      "termination": "process_kill"
+    }
+  ],
+  "requested_cases": [
+    "ASSEMBLY:EXTRACTING:2",
+    "ASSEMBLY:SPAWNED:5",
+    "DISASSEMBLY:RESTORING:2"
+  ],
+  "schema_version": 1,
+  "scope": "five-block unmanned real transaction stages after durable flush; not power loss during writes, passengers, Beta upgrade or performance",
+  "server_port": 25610,
+  "source_state": "development_worktree",
+  "status": "FAIL",
+  "template_artifact_sha256": "5b5d942a1c807a62ec030bc2150f246a7de6d5f78cd2ed3698db3445a53d2096",
+  "version": "v1.0.0"
+}

@@ -1,0 +1,33 @@
+[PASS] Packaged round trip 1/20
+[PASS] Packaged round trip 2/20
+[PASS] Packaged round trip 3/20
+[PASS] Packaged round trip 4/20
+[PASS] Packaged round trip 5/20
+[PASS] Packaged round trip 6/20
+[PASS] Packaged round trip 7/20
+[PASS] Packaged round trip 8/20
+[PASS] Packaged round trip 9/20
+[PASS] Packaged round trip 10/20
+[PASS] Packaged round trip 11/20
+[PASS] Packaged round trip 12/20
+[PASS] Packaged round trip 13/20
+[PASS] Packaged round trip 14/20
+[PASS] Packaged round trip 15/20
+[PASS] Packaged round trip 16/20
+[PASS] Packaged round trip 17/20
+[PASS] Packaged round trip 18/20
+[PASS] Packaged round trip 19/20
+[PASS] Packaged round trip 20/20
+[PASS] Packaged restart checkpoint ASSEMBLED
+[PASS] Packaged restart checkpoint FUELED
+[PASS] Packaged restart checkpoint COUNTDOWN
+[PASS] Packaged restart checkpoint ASCENT
+[PASS] Packaged restart checkpoint TRANSIT_PREPARED
+[PASS] Packaged restart checkpoint DESTINATION_SPAWNED
+[PASS] Packaged restart checkpoint DESCENT
+[PASS] Packaged restart checkpoint LANDED
+[PASS] 20 packaged Earth/Moon round trips (40 legs)
+[PASS] 8/8 restart checkpoints
+[PASS] Exact fuel, block, inventory, logical identity, and authority checks
+[PASS] Artifact SHA-256: cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\build\v060-flight-server-smoke\evidence

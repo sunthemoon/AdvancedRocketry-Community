@@ -1,0 +1,13 @@
+Captured: 2026-09-05T15:11:22.4355181+08:00
+Branch: docs/v1.0.0-v1plus-planning
+Base HEAD: 34b2e99b48a33f4ba8905b6a69a38efee1649d3f
+$ git diff --check
+exit_code=0
+$ git diff --exit-code
+exit_code=1 (intentional uncommitted documentation changes; diff body omitted)
+$ git diff --exit-code -- docs/status docs/releases src gradle.properties build.gradle
+exit_code=0
+$ git status --short -- docs/status docs/releases src gradle.properties build.gradle
+status_line_count=0
+$ git diff --exit-code -- src/generated
+exit_code=0

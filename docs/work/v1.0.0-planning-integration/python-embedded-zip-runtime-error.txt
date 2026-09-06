@@ -1,0 +1,35 @@
+setUpClass (test_prepare_v002_g0_review_packet.V002G0ReviewPacketTests) ... ERROR
+
+======================================================================
+ERROR: setUpClass (test_prepare_v002_g0_review_packet.V002G0ReviewPacketTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\prepare_v002_g0_review_packet.py", line 1574, in _validate_runtime_dependency_origins
+    origin_path = Path(origin).resolve(strict=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pathlib.py", line 1240, in resolve
+  File "<frozen ntpath>", line 727, in realpath
+FileNotFoundError: [WinError 3] ϵͳ�Ҳ���ָ����·����: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-python-3.12.10-normal\\python312.zip\\argparse.pyc'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_prepare_v002_g0_review_packet.py", line 89, in setUpClass
+    cls.base_manifest = generate_packet(
+                        ^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\prepare_v002_g0_review_packet.py", line 2782, in generate_packet
+    return _generate_packet_resolved(repository_root, commit, output_directory)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\prepare_v002_g0_review_packet.py", line 2756, in _generate_packet_resolved
+    manifest, payloads = _authoritative_expectation(repository_root, commit)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\prepare_v002_g0_review_packet.py", line 2276, in _authoritative_expectation
+    _validate_runtime_dependency_origins(repository_root)
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\prepare_v002_g0_review_packet.py", line 1576, in _validate_runtime_dependency_origins
+    raise PacketError(
+scripts.prepare_v002_g0_review_packet.PacketError: cannot resolve runtime dependency argparse: [WinError 3] ϵͳ�Ҳ���ָ����·����: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-python-3.12.10-normal\\python312.zip\\argparse.pyc'
+
+----------------------------------------------------------------------
+Ran 0 tests in 4.063s
+
+FAILED (errors=1)

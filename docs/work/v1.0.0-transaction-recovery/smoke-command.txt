@@ -1,0 +1,2 @@
+[PASS] Transaction checkpoint ASSEMBLY:EXTRACTING:2: kill and two restarts
+[FAIL] Timed out waiting for server marker 'TXN_assembly\\-spawned\\-5_AUTHORITY'

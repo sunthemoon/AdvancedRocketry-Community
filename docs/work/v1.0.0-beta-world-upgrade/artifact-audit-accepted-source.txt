@@ -1,0 +1,5 @@
+[PASS] Artifact: C:\Users\Administrator\AppData\Local\Temp\arce-v100-upgrade\accepted-beta\advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+[PASS] SHA-256: fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad
+[PASS] Entries: 758
+[PASS] Metadata, notices, paths, and credential name/content scan
+[PASS] Content manifest: docs\work\v1.0.0-beta-world-upgrade\accepted-beta-artifact.json (758 entries)

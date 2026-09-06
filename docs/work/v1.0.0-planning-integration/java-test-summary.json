@@ -1,0 +1,596 @@
+{
+  "schema_version": 1,
+  "source": "build/test-results/test/TEST-*.xml",
+  "suites": 65,
+  "tests": 273.0,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 0.0,
+  "results": [
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest.xml",
+      "sha256": "8416c850a3545d7b5dd4404817b1a0204a16b2c2f097aa732896495eba0684ac"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransferTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransferTest.xml",
+      "sha256": "7227e97e532d9f67a86faa75e21b0178b38f16f383eb979f913c3f7a5381845b"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngineTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngineTest.xml",
+      "sha256": "4afb2cdb717527a4653dab473dfef4fae519702ec74af0f5352791b12d26501e"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupplyEngineTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupplyEngineTest.xml",
+      "sha256": "a868907a6307a627eeaa51f1c26867517e7f043afd52666160248e5ab3e9b805"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest.xml",
+      "sha256": "3421901a08dc1c1c1455d58e00ffdb2dcbd4e65915d2dcb1db043f3a96bb8260"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIdentityTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIdentityTest.xml",
+      "sha256": "10bc686539757857a8a0edce8e926b67e5edc82dfd1afad58d321a242512b6f7"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest.xml",
+      "sha256": "bf1c168d50ec52c498f51d560137130371a92c6ec6a23f6836fcc2fde227e727"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePositionTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePositionTest.xml",
+      "sha256": "665d8aa1cfa139588641094c667fbcd719782c47df78f47d279feddedc4dfcdf"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest.xml",
+      "sha256": "093c0fa75a622c1605fbbdb285f575f81d7cb19f47eca4bc5477ca6032ff10fa"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest.xml",
+      "sha256": "18d39167f60e9ae835a8ba1a89a73ef56956c42e306aa5a0064c5940be4db936"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentPersistenceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentPersistenceTest.xml",
+      "sha256": "9f2f4ea8c0c673e8fb6ddf94a2b1cac4b93d2fa44191b6f5701f7485d7a439e1"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogDecoderTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogDecoderTest.xml",
+      "sha256": "25d2a096ae6a062b5c28e6ac0e55de8d56b8acbcbbe0d3652a778838cbb42fda"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogTest.xml",
+      "sha256": "1526ecfa366f0e88fca4990ad760c00c31648317e0e014afb30bc52fa5684bd6"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest.xml",
+      "sha256": "3d4d85c02b68bad99861487096c48141706c451ee6f92a0cdfebc23f559a447d"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSavedDataTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSavedDataTest.xml",
+      "sha256": "33f965ae011336ced21417219db03667e9b85a649e5a56fc073f2a78162fe8f2"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSnapshotTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSnapshotTest.xml",
+      "sha256": "104a5fddc334a03ac502e9fe539e00e4dac4cfc5ed88cbc94080963ff8afa29f"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.legacy.LegacyCelestialImporterTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.legacy.LegacyCelestialImporterTest.xml",
+      "sha256": "679aae72c8c0de77ea489bb05d66cb8b926cc9c172bfa0b27e0a99d8b87ced69"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityControllerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityControllerTest.xml",
+      "sha256": "e78fd989e49cbc2ae445ea74d3009f96ea7cb9d54d993a4251fa306e5b3cc45d"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfigTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfigTest.xml",
+      "sha256": "a39371bc3eae10cb7b19c8b3e4b7257dcddf6e3cdb34f45aa8b335026b067fca"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaOperationalReportTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaOperationalReportTest.xml",
+      "sha256": "21bcf42d05b44dfe1ab7c2645e12e841096f63b506ef9f573f903cadef738995"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMaterialLedgerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMaterialLedgerTest.xml",
+      "sha256": "c3915523a492cdd069ee350b67b1cc6a0327cc926003c8b372ef392c502b9fb5"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerProcessEngineTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerProcessEngineTest.xml",
+      "sha256": "50a605f5cc35f7b7b5dedf3112720723ddbde8de779e71c427db350265ebf238"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeContractTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeContractTest.xml",
+      "sha256": "0bca1e54be3fa493ea54600402543b70997e9839b304ecbee69584012e3473bf"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest.xml",
+      "sha256": "1c482b357d00798a4db6af6477af4f6c2852036d3d32f92ff2c8979ef78cb219"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest.xml",
+      "sha256": "6595022f51336bd3641810daf5d4476166a47f1a0c9b5efccc1434909ceb3965"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.ModMetadataTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.ModMetadataTest.xml",
+      "sha256": "ee1b64f2b41b960b31eb4f7ddb5eda5d263c5b2d03965c860ec760e8da26c4f6"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataLoaderMigrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataLoaderMigrationTest.xml",
+      "sha256": "1b27395d936c447ac4c84d3a632847dd623241040d503d71376b36a58a629f26"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigratorTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigratorTest.xml",
+      "sha256": "8e9749523948838aa05e83a7b4ba37b0cd4b9b94a48a940ae55b9b6dda1d19dd"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest.xml",
+      "sha256": "7aa46950d006fccf67cf1cd7c623e30611cf560966701aee9baad21b801a6092"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccountTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccountTest.xml",
+      "sha256": "8da3c094b25f0e235cac7d96f3d71aebd139ea856751dfa0870051134a5efc43"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodecTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodecTest.xml",
+      "sha256": "ebef380bf92a21c13684d42f67cb8733e7fd8eed0bca55d7d78fa12a40326773"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest.xml",
+      "sha256": "dc6106fc0776a41ad1c3ad71a173a2f0d685fed4ede025832bf7d1507cc4ca09"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDataTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDataTest.xml",
+      "sha256": "a30320c9cabf8bcef8c5d85f6c3b860fa6b3781baa802e7b6d095a34b5ddff28"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimitsTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimitsTest.xml",
+      "sha256": "85baf96fde0d0c2b07e9f17f1b5aa1e5232add74aa111935a77b0a28a58d9ba4"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlannerTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlannerTest.xml",
+      "sha256": "3472cb90200709105c01ae5e9475e6ec56b3cfde22c846b312821dbabecc5315"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest.xml",
+      "sha256": "02e6059caa28a903bcc5644ef2ecbbd4b9f3566082312144e171466a58779b90"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelStateTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelStateTest.xml",
+      "sha256": "763c8222cf1637c50bd533bf98fc2ae900e56c0160a4140bf3df1ec7b4f4de18"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifestTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifestTest.xml",
+      "sha256": "c44797ea3a48a2afeb1ce4c3ff318cdc59ba97853d2f80bc4388f6786a7f5fa1"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecordTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecordTest.xml",
+      "sha256": "822a9b60523ecb714f4aac69735b0103d6ea78f1feb8740486df2753098d1805"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryDecisionTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryDecisionTest.xml",
+      "sha256": "82d1c9189ac44f70e107d61b602ec6830b5cd5764bf8a47f999ffc968786a940"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderPersistenceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderPersistenceTest.xml",
+      "sha256": "b89227cc8a64f145275962fc4f3a45d1793ef088c0fcd6df3f4d9800079a07d0"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest.xml",
+      "sha256": "00a2fe7cfd45f32aa570cf90051926b2c6c33b84ea4a752e537c3f789cdf4ab3"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest.xml",
+      "sha256": "4f2e1d255535dc3b56368bf60c025cb9ee8a69e7446c79810444b7982359adf5"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightIntentPacketTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightIntentPacketTest.xml",
+      "sha256": "5b1aa42082b686b4e9927f03144efb475e006e25c07f6503d7235fea37911d3b"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest.xml",
+      "sha256": "b7d05ef8e18d82e1f7a5048711a98132d7e60f12e2b0eefbe71942f77fdaf66d"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSnapshotCodecTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSnapshotCodecTest.xml",
+      "sha256": "31c5d29d73fb733f12c8737d33a9ee3d695026a8be471ffef615b9d5dd83fed4"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest.xml",
+      "sha256": "17355db31640bdbfc75c33270e8c5b502185bae8c2e8a0fedb30585dfc07ca46"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedDataTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedDataTest.xml",
+      "sha256": "c4db71e017b912fbf9bcc7f3b2be679b7447ea21611542fcddec6c91a6670a1e"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest.xml",
+      "sha256": "7722630eb2df8d616c1ae151e9ae4d521d0509e4980bb0a52722a5d9ba3fabf9"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest.xml",
+      "sha256": "8544c526005f43ba63aab6473039f28a811265f55935d6d048ff43567e0933c7"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStatsCalculatorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStatsCalculatorTest.xml",
+      "sha256": "145e2fc80e7d9fb59a04f71c4ceee7c8e30e768e0dbc4c9aea33b7ff2ffdaf9d"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRecoveryDecisionTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRecoveryDecisionTest.xml",
+      "sha256": "f58bb55821231b95f0f87c1af6df299518f248a0f1535bf936dbf100348126ef"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest.xml",
+      "sha256": "dc73892198cddc2d68751fd4fe2f58550d275babe63fa41b57f4e50a748e0a02"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketStatsValidatorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketStatsValidatorTest.xml",
+      "sha256": "d829d048771f43c6b3eeeae830d259cc0ed3499e994d80ca88194a7291d40df7"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest.xml",
+      "sha256": "b947ea9acc0ecc01a8b1f6109e8493b59d8e76b5fde3d181bc498627d3078039"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionDeadlineSchedulerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionDeadlineSchedulerTest.xml",
+      "sha256": "5aebaeead8023d5db10dbd980a3d5b92c468bc574c34876430a10cb5fedf4e65"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStateTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStateTest.xml",
+      "sha256": "b6085b21a7a89158544339ad5fc417b58d1bd36159392eb50aae422177575b10"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MonotonicMissionClockTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MonotonicMissionClockTest.xml",
+      "sha256": "ad858f43b929ed3749e095ca45b82911050d8ff3c5be39c3ee7feba121a245e2"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest.xml",
+      "sha256": "9851a3efd7cfabb4f31769edcaea6a49a06f8315a1068fdffd0c52698f54bfd7"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStateTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStateTest.xml",
+      "sha256": "008ed920be2c49736617e32f466d1a9fbd8892821b52c538d0ce7100db206cb2"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedDataTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedDataTest.xml",
+      "sha256": "1143ee3a09a651f691c0d52a757908f6f1b88f43c322243836cd600ee9f76605"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteCatalogDecoderTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteCatalogDecoderTest.xml",
+      "sha256": "076d81e2957a9340b9e3f820f12a3701ba297c5d031a413bc22276b87e85a2e8"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModelTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModelTest.xml",
+      "sha256": "4e174e7eb2ed6b5904e504fb646a85d0095237cc36549347ba6e8507db15bf3e"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedDataTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedDataTest.xml",
+      "sha256": "c97339b8ada2ba63381279aca8ea2cdd62b767ee1526456fce84d200b77ec2b7"
+    },
+    {
+      "suite": "io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest.xml",
+      "sha256": "7ae7351031ce6410c93a54a9428d60b0eb0cf18871523b8af0201b8de6f70dd2"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T21:42:37.994968+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon run arce rocket release-test report 3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a",
+        "id": 1,
+        "op": "server",
+        "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT"
+      },
+      "result": {
+        "receipt": "[05:42:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a logical=0ce64af6-4ee0-4c9b-b019-08c2b512bfe4 snapshot=eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196 dimension=advancedrocketrycommunity:moon state=LANDED fuel=618 capacity=1000 passengers=2 transfer=none origin=8,80,8 blocks=6"
+      }
+    }
+  ],
+  "artifact_sha256": "b41db06ec7af9aee36d486525d439bae8f3e0c344dbe18fcf6050ab7b5c74d68",
+  "authentication_tested": false,
+  "client_pid": 25960,
+  "entity": "3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 53263,
+  "processes": [],
+  "screenshots": [],
+  "second_client_pid": 26696,
+  "second_username": "V100Visual2",
+  "second_window": 917778,
+  "server_pid": 20500,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:41:17.223051+00:00",
+  "startup_recovery_findings": [],
+  "stations": [],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 655500
+}

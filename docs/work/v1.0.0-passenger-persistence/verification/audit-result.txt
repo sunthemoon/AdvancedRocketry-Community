@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_PERSISTENCE_EVIDENCE", "source_inputs": 742, "java_tests": 397, "game_tests": 45, "screenshots": {"native": 20, "restart-native": 2}, "checksums": 264, "artifact_sha256": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0", "legacy_embedded_vehicle_or_release_approval": false}

@@ -1,0 +1,42 @@
+[
+  {
+    "file": "probe-01.png",
+    "bytes": 129938,
+    "sha256": "e4f0dda0cf405afbf70709a8546c7efbbd8a14c609c8363b2b6ecb9d255ed8ef",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      960,
+      540
+    ]
+  },
+  {
+    "file": "probe-02.png",
+    "bytes": 192186,
+    "sha256": "76fea0d3f73ae4232a93a3e6fd84d52bf44c63e5c5c2067387b57ea3dcba526f",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "probe-03.png",
+    "bytes": 185182,
+    "sha256": "b7931b1cfbb2a04a960d80301f2c20ad8837d6d1484a4467f839a03a8270afd0",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "probe-04.png",
+    "bytes": 182225,
+    "sha256": "936faf779e1c9a380b9446b22f1c2c29dabe90776f90356069f2b1c7217c4ee5",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  }
+]

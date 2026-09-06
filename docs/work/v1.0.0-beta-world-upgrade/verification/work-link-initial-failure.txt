@@ -1,0 +1,3 @@
+Initial inline work-link audit exited 1 before writing its own output:
+AssertionError: ['docs\\work\\v1.0.0-beta-world-upgrade\\VERIFICATION.md: verification/work-links.json']
+The output file was then initialized as IN_PROGRESS and the same link existence checks were rerun.

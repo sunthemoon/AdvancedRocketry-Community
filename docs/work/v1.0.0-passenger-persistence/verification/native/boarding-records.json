@@ -1,0 +1,70 @@
+[
+  {
+    "file": "01-owner-open.png",
+    "bytes": 294247,
+    "sha256": "bcef4c36027e796e7de7c151bda4a6cbc63cc9fe58e4f3ecca6423b30d877da8",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "01-passenger-open.png",
+    "bytes": 67292,
+    "sha256": "a729e9ed21c1dd2db6f377e90c4d3b6374e6a0428a2fc73babadd98d1b0df5db",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "action": "owner BOARD pointer",
+    "receipt": "ARCE_FLIGHT_INTENT request=15e64768-7c87-42df-8511-8dbed44be985 player=62bbb9cb-b2fa-39aa-9a6b-430b71f5493f rocket=895687d0-0e34-4375-8b6f-e98b687f1ec3 action=BOARD destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=0"
+  },
+  {
+    "file": "02-owner-boarded.png",
+    "bytes": 312125,
+    "sha256": "148e3ad02b29760419b56a0ebfa3737b111bce5cc7e58998626f9e31ab7b913a",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "action": "passenger BOARD pointer",
+    "receipt": "ARCE_FLIGHT_INTENT request=a215e51c-a9d2-4f0d-a070-29190145202c player=6482f9f6-ff26-3046-b7ba-86db04b972f8 rocket=895687d0-0e34-4375-8b6f-e98b687f1ec3 action=BOARD destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=0"
+  },
+  {
+    "file": "02-passenger-boarded.png",
+    "bytes": 67203,
+    "sha256": "bf70a8b7cce40e3a60eb3b5f81df990ca76c8cec4799a326f2d90ecdc17591b7",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "03-owner-two-manifested.png",
+    "bytes": 76440,
+    "sha256": "ae5ef45be97cbbe25a4215ff9a1fa77078c18b4271a22d6da482d6cfc6471064",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "03-passenger-two-manifested.png",
+    "bytes": 68343,
+    "sha256": "924bdb18851bda28e2c00f9628f48f617e5b977167620ceb5c419c3070cc7662",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  }
+]

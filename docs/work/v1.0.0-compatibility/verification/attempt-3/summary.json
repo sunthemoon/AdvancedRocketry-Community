@@ -1,0 +1,51 @@
+{
+  "artifact": {
+    "artifact": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\artifacts\\advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+    "entry_count": 766,
+    "expected_version": "1.20.1-1.0.0-dev",
+    "sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+  },
+  "authentication_tested": false,
+  "build": "1.20.1-1.0.0-dev",
+  "clients": [],
+  "completed_at": "2026-09-05T13:14:03.332205+00:00",
+  "failure": "Server exited with code 1 before '^(?:\\\\[[^\\\\]\\\\r\\\\n]+\\\\]\\\\s*)+[^\\\\r\\\\n]*?:\\\\s+Connected\\\\ to\\\\ a\\\\ modded\\\\ server\\\\.\\\\s*$'\n[21:14:00] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: NVIDIA GeForce RTX 3070 Laptop GPU/PCIe/SSE2 GL version 4.6.0 NVIDIA 566.36, NVIDIA Corporation\n[21:14:00] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\runtime-1\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file\n[21:14:00] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\runtime-1\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file\n[21:14:00] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\runtime-1\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file\n[21:14:00] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\runtime-1\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file\n[21:14:00] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!\nException in thread \"main\" java.lang.module.ResolutionException: Module minecraft contains package net.minecraft.client, module _1._20._1 exports package net.minecraft.client to minecraft\n\tat java.base/java.lang.module.Resolver.resolveFail(Resolver.java:901)\n\tat java.base/java.lang.module.Resolver.failTwoSuppliers(Resolver.java:807)\n\tat java.base/java.lang.module.Resolver.checkExportSuppliers(Resolver.java:736)\n\tat java.base/java.lang.module.Resolver.finish(Resolver.java:380)\n\tat java.base/java.lang.module.Configuration.<init>(Configuration.java:140)\n\tat java.base/java.lang.module.Configuration.resolveAndBind(Configuration.java:494)\n\tat MC-BOOTSTRAP/cpw.mods.modlauncher@10.0.9/cpw.mods.modlauncher.ModuleLayerHandler.buildLayer(ModuleLayerHandler.java:75)\n\tat MC-BOOTSTRAP/cpw.mods.modlauncher@10.0.9/cpw.mods.modlauncher.TransformationServicesHandler.buildTransformingClassLoader(TransformationServicesHandler.java:60)\n\tat MC-BOOTSTRAP/cpw.mods.modlauncher@10.0.9/cpw.mods.modlauncher.Launcher.run(Launcher.java:106)\n\tat MC-BOOTSTRAP/cpw.mods.modlauncher@10.0.9/cpw.mods.modlauncher.Launcher.main(Launcher.java:78)\n\tat MC-BOOTSTRAP/cpw.mods.modlauncher@10.0.9/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26)\n\tat MC-BOOTSTRAP/cpw.mods.modlauncher@10.0.9/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23)\n\tat cpw.mods.bootstraplauncher@1.1.2/cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141)",
+  "java_version": "17.0.7",
+  "owned_processes": [
+    {
+      "completed_at": "2026-09-05T13:14:03.232731+00:00",
+      "exit_code": 1,
+      "full_log_bytes": 5622,
+      "full_log_file": "forge-47.4.10-jei-present.txt",
+      "full_log_sha256": "0062fd2e368270f66e4c76486e8aef057857be7405cc16192ffd51a25b0fd726",
+      "pid": 21584,
+      "started_at": "2026-09-05T13:13:56.372557+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T13:14:03.330957+00:00",
+      "exit_code": 1,
+      "full_log_bytes": 11806,
+      "full_log_file": "server-47.4.10-matrix.txt",
+      "full_log_sha256": "6549ba778c21d4b9dcb0453549d1bb2c7062cba827849081cb5b92fcca1c7d66",
+      "pid": 5076,
+      "started_at": "2026-09-05T13:13:27.317553+00:00"
+    }
+  ],
+  "prepared_runtime": {
+    "asset_count": 3598,
+    "forge": [
+      "47.4.10",
+      "47.4.23"
+    ],
+    "jei": "15.56.0.205",
+    "jei_sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c",
+    "schema_version": 1
+  },
+  "schema_version": 1,
+  "servers": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T13:13:26.437377+00:00",
+  "status": "FAIL",
+  "target_version": "v1.0.0",
+  "visual_or_multiplayer_behavior_approved": false
+}

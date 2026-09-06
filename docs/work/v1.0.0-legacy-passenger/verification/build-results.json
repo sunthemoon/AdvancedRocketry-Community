@@ -1,0 +1,40 @@
+{
+  "java": {
+    "tests": 399,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 78
+  },
+  "git": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "src/generated"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "artifact_sha256": "7ba1c6c771d945bf25f101cdc8101afb26f51afd7cfdc5834a07545e0a5c99c4",
+  "artifact_bytes": 1265940,
+  "source_files": 744
+}

@@ -1,0 +1,30 @@
+test_help_is_safe_without_tools_or_host_setup (test_v1plus_linux_helpers.LinuxHelperTests.test_help_is_safe_without_tools_or_host_setup) ... ok
+test_host_audit_propagates_failed_checks_without_running_wrapper (test_v1plus_linux_helpers.LinuxHelperTests.test_host_audit_propagates_failed_checks_without_running_wrapper) ... ok
+test_tmux_attaches_exact_existing_session (test_v1plus_linux_helpers.LinuxHelperTests.test_tmux_attaches_exact_existing_session) ... ok
+test_tmux_creates_layout_in_selected_root (test_v1plus_linux_helpers.LinuxHelperTests.test_tmux_creates_layout_in_selected_root) ... ok
+test_tmux_rejects_missing_directories_before_creation (test_v1plus_linux_helpers.LinuxHelperTests.test_tmux_rejects_missing_directories_before_creation) ... ok
+test_tmux_rejects_root (test_v1plus_linux_helpers.LinuxHelperTests.test_tmux_rejects_root) ... ok
+test_tmux_rejects_session_metacharacters (test_v1plus_linux_helpers.LinuxHelperTests.test_tmux_rejects_session_metacharacters) ... ok
+test_visual_child_exit_is_failure_and_private_auth_is_removed (test_v1plus_linux_helpers.LinuxHelperTests.test_visual_child_exit_is_failure_and_private_auth_is_removed) ... ok
+test_visual_rejects_out_of_range_configuration (test_v1plus_linux_helpers.LinuxHelperTests.test_visual_rejects_out_of_range_configuration) ... ok
+test_visual_rejects_root_before_starting_processes (test_v1plus_linux_helpers.LinuxHelperTests.test_visual_rejects_root_before_starting_processes) ... ok
+test_visual_requires_vnc_password (test_v1plus_linux_helpers.LinuxHelperTests.test_visual_requires_vnc_password) ... ok
+test_visual_startup_failure_does_not_claim_ready (test_v1plus_linux_helpers.LinuxHelperTests.test_visual_startup_failure_does_not_claim_ready) ... ok
+test_broken_link (test_v1plus_planning.PlanningValidationTests.test_broken_link) ... ok
+test_duplicate_gate (test_v1plus_planning.PlanningValidationTests.test_duplicate_gate) ... ok
+test_duplicate_status_field (test_v1plus_planning.PlanningValidationTests.test_duplicate_status_field) ... ok
+test_empty_gates (test_v1plus_planning.PlanningValidationTests.test_empty_gates) ... ok
+test_missing_required_command (test_v1plus_planning.PlanningValidationTests.test_missing_required_command) ... ok
+test_missing_version (test_v1plus_planning.PlanningValidationTests.test_missing_version) ... ok
+test_original_package_extra_file (test_v1plus_planning.PlanningValidationTests.test_original_package_extra_file) ... ok
+test_original_package_size_and_hash_mismatches (test_v1plus_planning.PlanningValidationTests.test_original_package_size_and_hash_mismatches) ... ok
+test_phase_is_not_version_status (test_v1plus_planning.PlanningValidationTests.test_phase_is_not_version_status) ... ok
+test_repository_plans_without_original_package (test_v1plus_planning.PlanningValidationTests.test_repository_plans_without_original_package) ... ok
+test_source_path_escape (test_v1plus_planning.PlanningValidationTests.test_source_path_escape) ... ok
+test_unapproved_pass_is_rejected (test_v1plus_planning.PlanningValidationTests.test_unapproved_pass_is_rejected) ... ok
+test_unclosed_fence (test_v1plus_planning.PlanningValidationTests.test_unclosed_fence) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 22.188s
+
+OK

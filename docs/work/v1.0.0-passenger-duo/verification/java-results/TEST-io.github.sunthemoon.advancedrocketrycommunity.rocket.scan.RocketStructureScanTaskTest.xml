@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-05T20:22:59" hostname="DESKTOP-8J2KSNF" time="0.075">
+  <properties/>
+  <testcase name="inconsistentMetricsAndObservationExceptionsFailClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.004"/>
+  <testcase name="blockAndPaletteLimitsStopOnTheFirstExcessBlock()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.015"/>
+  <testcase name="worldCoordinateOverflowFailsBeforeAWrappedNeighborCanBeObserved()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.0"/>
+  <testcase name="sparseConnectedShapeCannotHideAnOversizedBoundingVolume()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.002"/>
+  <testcase name="emptyAndNonMovableSeedsHaveDifferentReadableFailures()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.0"/>
+  <testcase name="eachStepHonorsItsExactPositiveInspectionBudget()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.003"/>
+  <testcase name="connectedLegalRocketProducesCanonicalServerSnapshot()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.001"/>
+  <testcase name="maximumStructureCompletesWithinFixedTickBudget()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.017"/>
+  <testcase name="unloadedForbiddenAndUnsupportedNeighborsFailAtExactPosition()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.0"/>
+  <testcase name="missingComponentsReturnEveryIndependentDiagnostic()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.001"/>
+  <testcase name="terminalResultIsIdempotentAndDoesNotObserveAgain()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.001"/>
+  <testcase name="blockEntityCountAndTotalSnapshotBytesAreEnforcedDuringValidation()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest" time="0.028"/>
+  <system-out><![CDATA[ARCE_ROCKET_SCAN_PERF blocks=2048 ticks=41 inspections=10242 elapsed_nanos=16191800
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

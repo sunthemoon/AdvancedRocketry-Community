@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-05T10:05:48" hostname="DESKTOP-8J2KSNF" time="1.674">
+  <properties/>
+  <testcase name="[1] CELESTIAL" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.109"/>
+  <testcase name="[2] ROCKET_TRANSACTIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.047"/>
+  <testcase name="[3] ROCKET_TRANSFERS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.047"/>
+  <testcase name="[4] STATIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.05"/>
+  <testcase name="[5] SATELLITE_MISSIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.048"/>
+  <testcase name="[1] CELESTIAL" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.046"/>
+  <testcase name="[2] ROCKET_TRANSACTIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.043"/>
+  <testcase name="[3] ROCKET_TRANSFERS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.042"/>
+  <testcase name="[4] STATIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.047"/>
+  <testcase name="[5] SATELLITE_MISSIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.046"/>
+  <testcase name="populatedCurrentStateSurvivesRepeatedPreflightWithoutDiskWrites()" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.072"/>
+  <testcase name="populatedLegacyMigrationChangesOnlyRootMetadataAndKeepsExactBackups()" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.175"/>
+  <testcase name="[1] CELESTIAL" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.186"/>
+  <testcase name="[2] ROCKET_TRANSACTIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.167"/>
+  <testcase name="[3] ROCKET_TRANSFERS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.164"/>
+  <testcase name="[4] STATIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.169"/>
+  <testcase name="[5] SATELLITE_MISSIONS" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.179"/>
+  <testcase name="pendingResearchAndActiveMissionKeepTheirBalanceAndDeadline()" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest" time="0.023"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

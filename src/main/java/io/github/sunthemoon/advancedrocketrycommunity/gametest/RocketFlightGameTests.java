@@ -13,6 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
@@ -343,6 +345,14 @@ public final class RocketFlightGameTests {
             assertUnchangedSecurityState(helper, earth, rocket, fuelBefore, "invalid destination");
 
             UUID launchId = UUID.randomUUID();
+            RocketFlightMenu console = new RocketFlightMenu(7, owner.getInventory(), rocket);
+            helper.assertTrue(console.activePlan().destination() == null,
+                    "An unplanned console invented an active cancellation target");
+            var quotesBefore = console.quotes();
+            helper.assertTrue(quotesBefore.moon().canLaunch() && quotesBefore.station().canLaunch(),
+                    "Fueled console did not expose both existing route quotes");
+            helper.assertTrue(quotesBefore.moon().requiredFuel() - quotesBefore.station().requiredFuel() == 42,
+                    "Station preview reused the default Moon fuel quote");
             RocketRuntime.requestFlightIntent(
                     owner,
                     rocket.getId(),
@@ -354,6 +364,11 @@ public final class RocketFlightGameTests {
                     rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Valid owner launch did not start countdown"
             );
+            helper.assertTrue(rocket.flightData().orElseThrow().plan().orElseThrow().requiredFuel()
+                            == quotesBefore.moon().requiredFuel(),
+                    "Menu preview did not match the server launch plan");
+            helper.assertTrue(!console.quotes().moon().canLaunch() && !console.quotes().station().canLaunch(),
+                    "Countdown console still offered a launchable quote");
             RocketRuntime.requestFlightIntent(
                     owner,
                     rocket.getId(),
@@ -365,11 +380,18 @@ public final class RocketFlightGameTests {
                     RocketTransferSavedData.get(earth.getServer()).entries().size() == 1,
                     "Replayed launch created another transfer"
             );
+            RocketFlightSelection selection = new RocketFlightSelection(java.util.List.of());
+            selection.initialize(RocketDestination.MOON, RocketDestination.EARTH, null);
+            selection.select(RocketDestination.EARTH);
+            var cancellation = selection.target(RocketFlightAction.CANCEL, console.activePlan());
+            helper.assertTrue(cancellation.destination() == RocketDestination.MOON,
+                    "A console opened before launch did not observe the server's cancellation target");
             RocketRuntime.requestFlightIntent(
                     owner,
                     rocket.getId(),
                     RocketFlightAction.CANCEL,
-                    RocketDestination.MOON,
+                    cancellation.destination(),
+                    cancellation.stationId(),
                     UUID.randomUUID()
             );
             helper.assertTrue(

@@ -1,0 +1,54 @@
+[
+  {
+    "at": "2026-09-05T19:33:36.312032+00:00",
+    "action": "operator launch-button click",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:33:36.946023+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "04-owner-active-moon.png",
+      "bytes": 74505,
+      "sha256": "f0d659a28c4d26ccb4b3b01b66eb65526c9f18a57782ac0d78cbd2bc81ada226",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:33:37.106456+00:00",
+    "action": "owner cancel-button click",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T19:33:37.790386+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "05-owner-after-cancel.png",
+      "bytes": 83393,
+      "sha256": "1fdea07d078f8b015049a2ab1ea3e92e249e76f04ca0d458e1c0608015a44337",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T19:33:38.073397+00:00",
+    "action": "operator screenshot",
+    "result": {
+      "file": "06-operator-after-cancel.png",
+      "bytes": 80880,
+      "sha256": "89130636b9d265259415a13060bd084464b367265082f2d50fb11298c28d1588",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  }
+]

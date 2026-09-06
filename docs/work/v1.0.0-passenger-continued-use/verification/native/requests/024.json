@@ -1,0 +1,1 @@
+{"command":"execute in advancedrocketrycommunity:moon run setblock 6 80 8 advancedrocketrycommunity:fuel_loader{arce_fuel_loader:{schema_version:1,item_state:1,buffered_units:0L,owner_id:[I;1656469963,-1292224086,-1704246517,1911900479]}}","wait":"Changed","op":"server","id":24}

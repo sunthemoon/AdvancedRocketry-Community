@@ -4,6 +4,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +30,11 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     private final List<StationDestinationSummary> accessibleStations;
     private final UUID currentStationId;
     private final UUID plannedStationId;
+    private final Player viewer;
+    private RocketFlightPlanSnapshot receivedPlan = RocketFlightPlanSnapshot.empty();
+    private RocketFlightQuotes receivedQuotes = RocketFlightQuotes.empty();
+    private RocketFlightPlanPacket lastSentSnapshot;
+    private boolean planReceived;
 
     public RocketFlightMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(containerId, playerInventory, readPayload(buffer));
@@ -39,12 +47,13 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
                 new SimpleContainerData(RocketFlightMenuData.COUNT),
                 payload.stations(),
                 payload.currentStationId(),
-                payload.plannedStationId()
+                payload.plannedStationId(),
+                playerInventory.player
         );
     }
 
     public RocketFlightMenu(int containerId, Inventory playerInventory, RocketEntity rocket) {
-        this(containerId, rocket, new RocketFlightMenuData(rocket), List.of(), null, null);
+        this(containerId, rocket, new RocketFlightMenuData(rocket), List.of(), null, null, playerInventory.player);
     }
 
     private RocketFlightMenu(
@@ -53,7 +62,8 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
             ContainerData data,
             List<StationDestinationSummary> accessibleStations,
             UUID currentStationId,
-            UUID plannedStationId
+            UUID plannedStationId,
+            Player viewer
     ) {
         super(ModMenuTypes.ROCKET_FLIGHT.get(), containerId);
         checkContainerDataCount(data, RocketFlightMenuData.COUNT);
@@ -63,6 +73,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         this.accessibleStations = List.copyOf(accessibleStations);
         this.currentStationId = currentStationId;
         this.plannedStationId = plannedStationId;
+        this.viewer = viewer;
         addDataSlots(data);
     }
 
@@ -106,6 +117,41 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         return rocketEntityId;
     }
 
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+        if (viewer instanceof ServerPlayer player && player.containerMenu == this && stillValid(player)) {
+            var snapshot = new RocketFlightPlanPacket(containerId, rocketEntityId, activePlan(), quotes());
+            if (!snapshot.equals(lastSentSnapshot)) {
+                RocketFlightNetwork.sendPlan(player, snapshot);
+                lastSentSnapshot = snapshot;
+            }
+        }
+    }
+
+    public RocketFlightPlanSnapshot activePlan() {
+        if (!viewer.level().isClientSide()) {
+            return rocket.flightData().flatMap(flight -> flight.plan())
+                    .map(active -> new RocketFlightPlanSnapshot(
+                            RocketDestination.fromBody(active.destinationBody()),
+                            active.destinationStation().orElse(null)))
+                    .orElse(RocketFlightPlanSnapshot.empty());
+        }
+        return receivedPlan;
+    }
+
+    public boolean hasPlanSnapshot() {
+        return planReceived;
+    }
+
+    public void acceptPlanSnapshot(RocketFlightPlanSnapshot plan, RocketFlightQuotes quotes) {
+        if (viewer.level().isClientSide()) {
+            receivedPlan = java.util.Objects.requireNonNull(plan, "plan");
+            receivedQuotes = java.util.Objects.requireNonNull(quotes, "quotes");
+            planReceived = true;
+        }
+    }
+
     public RocketFlightState state() {
         try {
             return RocketFlightState.fromNetworkId(data.get(0));
@@ -124,6 +170,18 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
 
     public int requiredFuel() {
         return data.get(3);
+    }
+
+    public RocketFlightQuotes quotes() {
+        if (viewer.level().isClientSide()) {
+            return receivedQuotes;
+        }
+        var flight = rocket.flightData().orElse(null);
+        var snapshot = rocket.snapshot().orElse(null);
+        if (flight == null || snapshot == null) {
+            return RocketFlightQuotes.empty();
+        }
+        return RocketFlightQuotes.compute(snapshot.stats(), flight.fuel(), currentDestination(), flight.state());
     }
 
     public RocketDestination currentDestination() {

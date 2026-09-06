@@ -1,0 +1,336 @@
+name: Forge bootstrap
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forge-bootstrap-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    name: Forge 47.4.10 baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable Gradle wrapper execution
+        run: chmod +x ./gradlew
+
+      - name: Build and run unit tests
+        run: ./gradlew clean build --no-daemon --stacktrace
+
+      - name: Validate bootstrap provenance allowlist
+        run: python scripts/validate_bootstrap_provenance.py
+
+      - name: Audit v0.9.0 Beta distributable JAR
+        run: >-
+          python scripts/validate_build_artifact.py
+          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+          --expected-version 1.20.1-0.9.0-beta.1
+          --content-manifest build/release-evidence/v090-jar-content-manifest.json
+
+      - name: Validate frozen v0.1.0 resources
+        run: python scripts/validate_v010_asset_baseline.py
+
+      - name: Validate v0.2.0 generated-resource inventory
+        run: python scripts/manage_v020_generated_manifest.py verify
+
+      - name: Validate v0.3.0 generated-resource inventory
+        run: python scripts/manage_v030_generated_manifest.py verify
+
+      - name: Validate v0.4.0 generated-resource inventory
+        run: python scripts/manage_v040_generated_manifest.py verify
+
+      - name: Validate v0.5.0 generated-resource inventory
+        run: python scripts/manage_v050_generated_manifest.py verify
+
+      - name: Validate v0.6.0 generated-resource inventory
+        run: python scripts/manage_v060_generated_manifest.py verify
+
+      - name: Validate v0.7.0 generated-resource inventory
+        run: python scripts/manage_v070_generated_manifest.py verify
+
+      - name: Validate v0.8.0 generated-resource inventory
+        run: python scripts/manage_v080_generated_manifest.py verify
+
+      - name: Validate v0.9.0 migration fixtures
+        run: python scripts/validate_v090_migration_fixtures.py verify
+
+      - name: Audit v0.9.0 localization and resources
+        run: python scripts/validate_v090_resources.py
+
+      - name: Enforce client-side package boundary
+        run: python scripts/check_client_imports.py
+
+      - name: Enforce namespaced celestial identity boundary
+        run: python scripts/check_celestial_identity.py
+
+      - name: Validate v0.3.0 release evidence
+        run: python scripts/validate_v030_release_evidence.py
+
+      - name: Validate v0.4.0 release evidence
+        run: python scripts/validate_v040_release_evidence.py --require-approved
+
+      - name: Validate v0.5.0 release evidence
+        run: python scripts/validate_v050_release_evidence.py --require-approved
+
+      - name: Validate v0.6.0 release evidence
+        run: python scripts/validate_v060_release_evidence.py --require-approved
+
+      - name: Validate v0.7.0 release evidence
+        run: python scripts/validate_v070_release_evidence.py --require-approved
+
+      - name: Validate v0.8.0 release evidence
+        run: python scripts/validate_v080_release_evidence.py --require-approved
+
+      - name: Validate v0.9.0 release evidence
+        run: python scripts/validate_v090_release_evidence.py --require-approved
+
+      - name: Generate deterministic resources
+        run: ./gradlew runData --no-daemon --stacktrace
+
+      - name: Require a clean DataGen worktree
+        run: git diff --exit-code
+
+      - name: Reject untracked DataGen outputs
+        run: python scripts/check_clean_worktree.py
+
+      - name: Run Forge GameTests
+        run: ./gradlew runGameTestServer --no-daemon --stacktrace
+
+      - name: Run packaged dedicated-server smoke test
+        run: >-
+          python scripts/run_dedicated_server_smoke.py
+          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+          --expected-mod-version 1.20.1-0.9.0-beta.1
+          --session-dir build/dedicated-server-smoke/session
+          --evidence-dir build/dedicated-server-smoke/evidence
+          --port 25585
+
+      - name: Run packaged Alpha-to-Beta migration and restart smoke test
+        run: >-
+          python scripts/run_v090_migration_server_smoke.py
+          build/dedicated-server-smoke/session
+          --session-dir build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v090-migration-server-smoke/evidence
+          --tested-commit ${REVIEW_COMMIT}
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Kill and recover one durable Beta flight checkpoint
+        run: >-
+          python scripts/run_v090_forced_stop_recovery.py
+          build/v090-migration-server-smoke/session
+          --session-dir build/v090-forced-stop/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --migration-summary build/v090-migration-server-smoke/evidence/summary.json
+          --evidence-dir build/v090-forced-stop/evidence
+          --tested-commit ${REVIEW_COMMIT}
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Run packaged Electrolyzer restart smoke test
+        run: >-
+          python scripts/run_v020_machine_server_smoke.py
+          build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v020-machine-server-smoke/evidence
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Run packaged celestial restart and reload smoke test
+        run: >-
+          python scripts/run_v030_celestial_server_smoke.py
+          build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v030-celestial-server-smoke/evidence
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Run packaged atmosphere restart and five-minute smoke test
+        run: >-
+          python scripts/run_v040_atmosphere_server_smoke.py
+          build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v040-atmosphere-server-smoke/evidence
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Run packaged rocket assembly and recovery smoke test
+        run: >-
+          python scripts/run_v050_rocket_server_smoke.py
+          build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v050-rocket-server-smoke/evidence
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Run packaged Earth-Moon flight and restart matrix
+        run: >-
+          python scripts/run_v060_flight_server_smoke.py
+          build/v090-migration-server-smoke/session
+          --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v060-flight-server-smoke/evidence
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Upload baseline JAR and test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
+          if-no-files-found: error
+          path: |
+            build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+            build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1-sources.jar
+            build/reports/tests/test/
+            build/test-results/test/
+            build/release-evidence/v090-jar-content-manifest.json
+            build/dedicated-server-smoke/evidence/
+            build/v090-migration-server-smoke/evidence/
+            build/v090-forced-stop/evidence/
+            build/v020-machine-server-smoke/evidence/
+            build/v030-celestial-server-smoke/evidence/
+            build/v040-atmosphere-server-smoke/evidence/
+            build/v050-rocket-server-smoke/evidence/
+            build/v060-flight-server-smoke/evidence/
+
+  satellite-acceptance:
+    name: v0.9.0 packaged core regression gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable Gradle wrapper execution
+        run: chmod +x ./gradlew
+
+      - name: Build the exact Beta candidate
+        run: ./gradlew clean build --no-daemon --stacktrace
+
+      - name: Audit the Beta candidate
+        run: >-
+          python scripts/validate_build_artifact.py
+          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+          --expected-version 1.20.1-0.9.0-beta.1
+          --content-manifest build/release-evidence/v090-core-jar-content-manifest.json
+
+      - name: Validate committed candidate evidence
+        run: python scripts/validate_v090_release_evidence.py --require-approved
+
+      - name: Start and restart the packaged baseline
+        run: >-
+          python scripts/run_dedicated_server_smoke.py
+          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+          --expected-mod-version 1.20.1-0.9.0-beta.1
+          --session-dir build/v090-dedicated-server-smoke/session
+          --evidence-dir build/v090-dedicated-server-smoke/evidence
+          --port 25595
+
+      - name: Run packaged station regression
+        run: >-
+          python scripts/run_v070_station_server_smoke.py
+          build/v090-dedicated-server-smoke/session
+          --baseline-summary build/v090-dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v090-station-server-smoke/evidence
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Run packaged satellite restart and stress smoke test
+        run: >-
+          python scripts/run_v080_satellite_server_smoke.py
+          build/v090-dedicated-server-smoke/session
+          --baseline-summary build/v090-dedicated-server-smoke/evidence/summary.json
+          --evidence-dir build/v090-satellite-server-smoke/evidence
+          --tested-commit ${REVIEW_COMMIT}
+          --expected-version 1.20.1-0.9.0-beta.1
+
+      - name: Upload Beta core regression evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: v090-core-47.4.10-${{ env.REVIEW_COMMIT }}
+          if-no-files-found: error
+          path: |
+            build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+            build/release-evidence/v090-core-jar-content-manifest.json
+            build/v090-dedicated-server-smoke/evidence/
+            build/v090-station-server-smoke/evidence/
+            build/v090-satellite-server-smoke/evidence/
+
+  latest-compatibility:
+    name: Forge 47.4.23 compatibility (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true
+    env:
+      REVIEW_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      ORG_GRADLE_PROJECT_forge_version: "47.4.23"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.REVIEW_COMMIT }}
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable Gradle wrapper execution
+        run: chmod +x ./gradlew
+
+      - name: Compile and test against latest Forge lane
+        run: ./gradlew clean build --no-daemon --stacktrace
+
+      - name: Run GameTests against latest Forge lane
+        run: ./gradlew runGameTestServer --no-daemon --stacktrace

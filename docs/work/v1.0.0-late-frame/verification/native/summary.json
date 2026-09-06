@@ -1,0 +1,10 @@
+{
+  "artifact_sha256": "46cb577653981a50638ff3d2bc32d0407dc4adaa5d7092fe73e65ae82bcd229c",
+  "authentication_tested": false,
+  "checks": [],
+  "cleanup_errors": [],
+  "completed_at": "2026-09-05T19:52:39.550737+00:00",
+  "screenshots": [],
+  "started_at": "2026-09-05T19:52:39.024972+00:00",
+  "status": "FAIL"
+}

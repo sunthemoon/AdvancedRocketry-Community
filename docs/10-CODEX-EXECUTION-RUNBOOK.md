@@ -107,7 +107,8 @@ codex-prompts/04-release-gate.md
 - 一次 Gate 审计；
 - 一次发布准备。
 
-会话结束前必须更新：
+单窗口会话结束前更新版本实施日志；只有集成者更新权威 Gate 状态。
+启用任务包时，实现者更新自己的 PROGRESS/HANDOFF，不共同修改中央状态：
 
 ```text
 docs/work/<version>-implementation-log.md
@@ -132,6 +133,12 @@ git worktree add ../arce-v040 -b codex/v0.4.0-atmosphere
 - 独立测试设计；
 - 原版行为记录；
 - 原创资产草案。
+
+同一版本的独立写入任务必须使用独立 worktree，遵守
+[并行规约](14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md)。
+v1.0 验证使用 `codex-prompts/05-v1.0-release-validation.md`；
+v1.1+ 的任务实施/独立审核分别使用第 06/07 号提示词。
+远程工作先审计环境，软件视觉冒烟不代替真实客户端 Gate。
 
 ## 9. Codex 不得自行做的决定
 

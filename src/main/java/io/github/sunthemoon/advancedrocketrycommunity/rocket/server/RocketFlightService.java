@@ -412,6 +412,10 @@ final class RocketFlightService {
         transfers.onPlayerLoggedIn(player);
     }
 
+    void onPlayerLoggedOut(UUID playerId) {
+        transfers.onPlayerLoggedOut(playerId);
+    }
+
     int activeTransferCount(net.minecraft.server.MinecraftServer server) {
         return transfers.activeCount(server);
     }

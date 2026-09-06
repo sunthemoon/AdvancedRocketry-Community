@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-06T02:40:01" hostname="DESKTOP-8J2KSNF" time="0.058">
+  <properties/>
+  <testcase name="packetManifestAndChunkArraysAreDefensive()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest" time="0.003"/>
+  <testcase name="concurrentReassembliesAreCappedAndExpired()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest" time="0.038"/>
+  <testcase name="outOfOrderChunksCompleteOnlyAfterHashAndSnapshotVerification()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest" time="0.007"/>
+  <testcase name="identicalDuplicateIsIdempotentButConflictingDuplicateDropsAssembly()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest" time="0.003"/>
+  <testcase name="tamperedPayloadFailsWholeHashAndNeverReplacesValidCache()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

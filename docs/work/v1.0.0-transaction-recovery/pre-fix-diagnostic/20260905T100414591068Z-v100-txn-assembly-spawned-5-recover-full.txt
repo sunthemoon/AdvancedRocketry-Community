@@ -1,0 +1,56 @@
+2026-09-05 18:04:38,896 main WARN Advanced terminal features are not available in this environment
+[18:04:39] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[18:04:39] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.7 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+[18:04:39] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[18:04:39] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/Administrator/AppData/Local/Temp/arce-v100-transactions/diagnostic-server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[18:04:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\diagnostic-server\libraries\net\minecraftforge\fmlcore\1.20.1-47.4.10\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file
+[18:04:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\diagnostic-server\libraries\net\minecraftforge\javafmllanguage\1.20.1-47.4.10\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[18:04:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\diagnostic-server\libraries\net\minecraftforge\lowcodelanguage\1.20.1-47.4.10\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[18:04:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\diagnostic-server\libraries\net\minecraftforge\mclanguage\1.20.1-47.4.10\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[18:04:39] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[18:04:40] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[18:04:46] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
+[18:04:46] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.10 Initialized
+[18:04:46] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.0.0-dev initialized
+[18:04:46] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=absent version=absent
+[18:04:46] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[18:04:47] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[18:04:47] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: UP_TO_DATE Current: 47.4.10 Target: null
+[18:04:48] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v100-transactions/diagnostic-server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
+[18:04:48] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v100-transactions/diagnostic-server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
+[18:04:49] [main/INFO] [minecraft/RecipeManager]: Loaded 8 recipes
+[18:04:49] [main/INFO] [minecraft/AdvancementList]: Loaded 1295 advancements
+[18:04:49] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted celestial catalog generation 1 with 3 bodies
+[18:04:49] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted satellite catalog generation 1 with 1 definitions
+[18:04:50] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[18:04:50] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[18:04:50] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[18:04:50] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[18:04:50] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25610
+[18:04:50] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using default channel type
+[18:04:50] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1001] Beta world data check complete: managed=1, migrated=0, backup=none
+[18:04:50] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[18:04:51] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[18:04:53] [Worker-Main-10/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:04:53] [Worker-Main-10/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:04:53] [Worker-Main-10/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:04:53] [Worker-Main-10/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[18:04:53] [Worker-Main-6/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 32%
+[18:04:54] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 2370 ms
+[18:04:54] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.267s)! For help, type "help"
+[18:04:54] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[18:04:55] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_RECOVERY outcome=RECOVERED
+[18:04:55] [Server thread/INFO] [minecraft/MinecraftServer]: No entity was found
+[18:04:56] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=3b8af0fb-913b-470f-afaa-c322fd09ed3e operational=true snapshot=95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322 flight_state=ASSEMBLED fuel=0
+[18:04:56] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=3b8af0fb-913b-470f-afaa-c322fd09ed3e logical=cf007d60-21e6-48f5-a4f0-29c909a04f52 snapshot=95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322 dimension=minecraft:overworld state=ASSEMBLED fuel=0 capacity=1000 passengers=0 transfer=none origin=384,101,384 blocks=5
+[18:04:56] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test flight state=ASSEMBLED fuel=0
+[18:04:56] [Server thread/INFO] [minecraft/MinecraftServer]: Created new objective [arce_v100_txn]
+[18:04:56] [Server thread/INFO] [minecraft/MinecraftServer]: Set [arce_v100_txn] for #rockets to 0
+[18:04:56] [Server thread/INFO] [minecraft/MinecraftServer]: Added 1 to [arce_v100_txn] for #rockets (now 1)
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] TXN_BLOCK_0_OCCUPIED
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] TXN_BLOCK_1_OCCUPIED
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] TXN_BLOCK_2_OCCUPIED
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] TXN_BLOCK_3_OCCUPIED
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] TXN_BLOCK_4_OCCUPIED
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: 385, 101, 384 has the following block data: [{Slot: 0b, id: "minecraft:diamond", Count: 17b}, {Slot: 26b, id: "minecraft:iron_ingot", Count: 64b}]
+[18:05:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] TXN_DIAGNOSTICS_DONE

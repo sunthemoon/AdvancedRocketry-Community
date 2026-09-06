@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "final_attempts": [
+    {
+      "attempt": 7,
+      "clients": 4,
+      "dedicated_processes": 4,
+      "native_logs": 16,
+      "clean_exits": 8,
+      "error_or_fatal": 0
+    },
+    {
+      "attempt": 8,
+      "clients": 4,
+      "dedicated_processes": 4,
+      "native_logs": 16,
+      "clean_exits": 8,
+      "error_or_fatal": 0
+    }
+  ],
+  "unresolved_attempts": [
+    6
+  ],
+  "source_inputs_reverified": 721
+}

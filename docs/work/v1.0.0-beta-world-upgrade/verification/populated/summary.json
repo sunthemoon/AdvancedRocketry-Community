@@ -1,0 +1,901 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "candidate_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "candidate_version": "1.20.1-1.0.0-dev",
+  "completed_at": "2026-09-05T12:17:24.342188+00:00",
+  "fixture_server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-upgrade\\populated-final-work\\beta-fixture-server",
+  "harness_inputs": {
+    "inspect_v100_world_upgrade.py": "33764336b7b77127dfa1749ca22af6a3cbe1e006b92aa88b8ae8bacd07847a05",
+    "run_v100_beta_world_upgrade.py": "83476c6fd4a192f3b1eedf5f526673c4c927bfdf76f15e98a624572c8f8d6b8f",
+    "v100_beta_world_fixture.py": "4429606915a7a3f44bf822e362065a1b79f9ffcf74633a42e6544e22ca85a38b"
+  },
+  "initial_ledger": {
+    "paused": {
+      "completed": 0,
+      "energy": 0,
+      "items": {
+        "0": 2
+      },
+      "processing_ticks": 40,
+      "progress": 40,
+      "water": 1000
+    },
+    "rocket_ids": [
+      "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+      "cad2349f-f840-4d70-a25e-1272a15d960c"
+    ],
+    "running": {
+      "completed": 0,
+      "energy": 19500,
+      "items": {
+        "0": 8
+      },
+      "processing_ticks": 25,
+      "progress": 25,
+      "water": 4000
+    },
+    "vent": {
+      "energy": 29160,
+      "oxygen": 3973,
+      "oxygen_accounted_ticks": 542,
+      "phase": 2,
+      "supply_ticks": 542
+    }
+  },
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "v100-upgrade-beta-capture-full.txt",
+      "sha256": "8c3da5b3c3b185fe70f4ab281763a4a2c79923c6f753a87f3d62e5eab2b50795"
+    },
+    {
+      "file": "v100-upgrade-upgrade-first-open-full.txt",
+      "sha256": "c102ca0c51a49337865872706ae56d22166967d445e0aeef5ab00223be92c52e"
+    },
+    {
+      "file": "v100-upgrade-upgrade-restart-1-full.txt",
+      "sha256": "6ac479a6cc2937ef75077b3444aa852d1e02cc3d4d8f319b2170b3c2aa7cadab"
+    },
+    {
+      "file": "v100-upgrade-upgrade-restart-2-full.txt",
+      "sha256": "0072c726d0b12304e9138f6d53abdc8ca7ad1f895c7571f245d51904714013e1"
+    }
+  ],
+  "mod_version": "1.20.1-0.9.0-beta.1",
+  "online_mode": "true",
+  "original_unchanged": true,
+  "original_world_archive": {
+    "bytes": 8403030,
+    "file": "original-beta-world.zip",
+    "sha256": "9022b2fdf4537168bc33f1db06f96c8d5ce150c221177cd4e0890b037f9bed1c"
+  },
+  "original_world_manifest": [
+    {
+      "bytes": 317,
+      "file": ".v002-smoke-world-identity.json",
+      "sha256": "b8720b8647e062c7402b6a354a486561a033033b327f3b727aa92ab77622f694"
+    },
+    {
+      "bytes": 152,
+      "file": "data/advancedrocketrycommunity_celestial.dat",
+      "sha256": "75d10d2bb199d20b9845f3e0467d5e57fd19e4bfab8ad16177be8cf8301df8bf"
+    },
+    {
+      "bytes": 108,
+      "file": "data/advancedrocketrycommunity_rocket_transactions.dat",
+      "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+    },
+    {
+      "bytes": 1326,
+      "file": "data/advancedrocketrycommunity_rocket_transfers.dat",
+      "sha256": "2bf7af99344b79588aa5d7655260fd964e195a0a8bda42f70df92a887246c743"
+    },
+    {
+      "bytes": 674,
+      "file": "data/advancedrocketrycommunity_satellite_missions.dat",
+      "sha256": "fba8e12536b0ab70e8a399f26b798968b6e5c63ee5780816c68e714be105c24e"
+    },
+    {
+      "bytes": 357,
+      "file": "data/advancedrocketrycommunity_stations.dat",
+      "sha256": "486e5acd2fcb5d768b878d35386f64f207caac2bc95097a0ea031299b7f7d532"
+    },
+    {
+      "bytes": 48,
+      "file": "data/capabilities.dat",
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "bytes": 70,
+      "file": "data/chunks.dat",
+      "sha256": "16b8a4376bbdaaa7f0480191d9173c5368109274877e62067abced6893fdb073"
+    },
+    {
+      "bytes": 2353,
+      "file": "data/command_storage_arce_v100_upgrade.dat",
+      "sha256": "9947e66a29a42639f4f0de9e089c6d7c7d75b0ac946330a228055501f38be055"
+    },
+    {
+      "bytes": 90,
+      "file": "data/raids.dat",
+      "sha256": "94e2c1b4c38f572bf9d15040e86f47c294fd54c5d9b2c6afc6903ddf28a64a05"
+    },
+    {
+      "bytes": 104,
+      "file": "data/random_sequences.dat",
+      "sha256": "e71d95689f3ee61ed1d596354436836adbc1a3de592e38240033cdc26689f42b"
+    },
+    {
+      "bytes": 56158,
+      "file": "datapacks/arce_v100_upgrade/data/arce_v100_upgrade/functions/capture.mcfunction",
+      "sha256": "85f0f834574271ca849ccc3a46e4abbac50eedf05c75439f034dbfc129d30e98"
+    },
+    {
+      "bytes": 692,
+      "file": "datapacks/arce_v100_upgrade/data/arce_v100_upgrade/functions/rocket.mcfunction",
+      "sha256": "6179d5643140d7c5b3baaf96266d211ec73173283832e644417c300d22ad6f44"
+    },
+    {
+      "bytes": 95,
+      "file": "datapacks/arce_v100_upgrade/pack.mcmeta",
+      "sha256": "996e794c74a5c2980dca0235fd0c05150bc3ad421f23b86c16e77f47b8c85253"
+    },
+    {
+      "bytes": 48,
+      "file": "DIM-1/data/capabilities.dat",
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "bytes": 90,
+      "file": "DIM-1/data/raids.dat",
+      "sha256": "7a3c4d6b6be82e35a808d191e086b62b65645c157e032b0102404d904b4ef580"
+    },
+    {
+      "bytes": 48,
+      "file": "DIM1/data/capabilities.dat",
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "bytes": 90,
+      "file": "DIM1/data/raids_end.dat",
+      "sha256": "7a3c4d6b6be82e35a808d191e086b62b65645c157e032b0102404d904b4ef580"
+    },
+    {
+      "bytes": 48,
+      "file": "dimensions/advancedrocketrycommunity/moon/data/capabilities.dat",
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "bytes": 71,
+      "file": "dimensions/advancedrocketrycommunity/moon/data/chunks.dat",
+      "sha256": "9f623771affa588b2435a9a5d696e1205e9a9d4686de87a851e9e168eabce7dc"
+    },
+    {
+      "bytes": 90,
+      "file": "dimensions/advancedrocketrycommunity/moon/data/raids.dat",
+      "sha256": "7a3c4d6b6be82e35a808d191e086b62b65645c157e032b0102404d904b4ef580"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 16384,
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca",
+      "sha256": "c36a88b01eff38a359b5b5dca485d30b68106c863a5b9885a9918f824d33d685"
+    },
+    {
+      "bytes": 700416,
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.-1.-1.mca",
+      "sha256": "2367c0bbcfe830ba1ac6794aff73fc9c3517e42df5146be58cc15b01955dce81"
+    },
+    {
+      "bytes": 917504,
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.-1.0.mca",
+      "sha256": "d07aacd95408936cc99e49d0231178b25ce1c70e309553f743f3a683738f1ac5"
+    },
+    {
+      "bytes": 917504,
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.0.-1.mca",
+      "sha256": "9f5dae2cdc52f7582eb85539909acfa44a4cc2d7676c65789aa9704c8f695c29"
+    },
+    {
+      "bytes": 1335296,
+      "file": "dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca",
+      "sha256": "da55f05a87e243090ba976e3bdeff37765af282ad8498be49d520a93acf2e01f"
+    },
+    {
+      "bytes": 48,
+      "file": "dimensions/advancedrocketrycommunity/space/data/capabilities.dat",
+      "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+    },
+    {
+      "bytes": 70,
+      "file": "dimensions/advancedrocketrycommunity/space/data/chunks.dat",
+      "sha256": "23de6699af5e7469794182186cdb704ee0d8675beedebe079b908d0b47b8e423"
+    },
+    {
+      "bytes": 90,
+      "file": "dimensions/advancedrocketrycommunity/space/data/raids.dat",
+      "sha256": "7a3c4d6b6be82e35a808d191e086b62b65645c157e032b0102404d904b4ef580"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/space/entities/r.-1.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/space/entities/r.-1.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/space/entities/r.0.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "file": "dimensions/advancedrocketrycommunity/space/entities/r.0.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 811008,
+      "file": "dimensions/advancedrocketrycommunity/space/region/r.-1.-1.mca",
+      "sha256": "885e3615125f1d6798f79db813262477362aa418335b1d92c7edc7952c8c9619"
+    },
+    {
+      "bytes": 811008,
+      "file": "dimensions/advancedrocketrycommunity/space/region/r.-1.0.mca",
+      "sha256": "39366bff4f3d8f1b81ffca0d7112d96a23f8c1726bc1154c00cbf97ac4fd251a"
+    },
+    {
+      "bytes": 811008,
+      "file": "dimensions/advancedrocketrycommunity/space/region/r.0.-1.mca",
+      "sha256": "7c7e276449a17da50b47f7da985703c22ecbf7d92f55be9b03e1587352a66815"
+    },
+    {
+      "bytes": 811008,
+      "file": "dimensions/advancedrocketrycommunity/space/region/r.0.0.mca",
+      "sha256": "d48d59e754cc0dcec44ff62144218b10d428d5f80aec0458974c0090c717eaf9"
+    },
+    {
+      "bytes": 16384,
+      "file": "entities/r.-1.-1.mca",
+      "sha256": "5b4a337233295c33dd15c16f400d57885d2f709868d6829ceb11ad7ce95fdc77"
+    },
+    {
+      "bytes": 0,
+      "file": "entities/r.-1.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 45056,
+      "file": "entities/r.0.-1.mca",
+      "sha256": "70770c1388209ffe6c449d56f13f073d58ecc9aca5af7eb16f5ac8f2480be611"
+    },
+    {
+      "bytes": 77824,
+      "file": "entities/r.0.0.mca",
+      "sha256": "cd8e8a575f361c957a5b9b33a0d7765e802b33e949bdc1445ea88c48e78b90f1"
+    },
+    {
+      "bytes": 37655,
+      "file": "level.dat",
+      "sha256": "8df5041779e346e34b9079bcc23308f001ff53dbf663e7f873808ee0bb22fffd"
+    },
+    {
+      "bytes": 37658,
+      "file": "level.dat_old",
+      "sha256": "15a552faeea0719b8c4da60246e8fe36e5d8fedcfdb4bcb810a32438b17e80b2"
+    },
+    {
+      "bytes": 0,
+      "file": "poi/r.-1.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "file": "poi/r.-1.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 20480,
+      "file": "poi/r.0.-1.mca",
+      "sha256": "7b80a49ffbe345810cd8e0ef157e172f57e658d8ad5cd3c1653ceefb16787873"
+    },
+    {
+      "bytes": 20480,
+      "file": "poi/r.0.0.mca",
+      "sha256": "35ab554311bfe5779253ef2ac1f7249e12e4f95a3599a490423f5b67f29fbd83"
+    },
+    {
+      "bytes": 2609152,
+      "file": "region/r.-1.-1.mca",
+      "sha256": "87f01481ea07ff549fd2cc96afdccae9989574e3a5ad97b6fb5830f11662addc"
+    },
+    {
+      "bytes": 2334720,
+      "file": "region/r.-1.0.mca",
+      "sha256": "b71fd334daae3927e8191155bd77f72d25d067e7f65b3f7d8509ca4c3cd0679a"
+    },
+    {
+      "bytes": 3629056,
+      "file": "region/r.0.-1.mca",
+      "sha256": "b96e4c38b522d29be12772102308b8d4e463b51c404e05d70e586345fec74a44"
+    },
+    {
+      "bytes": 4554752,
+      "file": "region/r.0.0.mca",
+      "sha256": "5879aeeeb33acf50bc584c07eccab56362a7420fff22fcf85a81efb00ea8fb0d"
+    },
+    {
+      "bytes": 548864,
+      "file": "region/r.0.1.mca",
+      "sha256": "80910ab587f5b3dc99a326bf87ecda44000e5e36ff173912a2f65b8f578b1905"
+    },
+    {
+      "bytes": 548864,
+      "file": "region/r.1.0.mca",
+      "sha256": "8233f047ddc74349272603ee33418b91f08d2a91a1f7ef01a641c6e85a63a302"
+    },
+    {
+      "bytes": 155648,
+      "file": "region/r.1.1.mca",
+      "sha256": "48e65d9cce7533580fdf71f150e8937108781e7122438b5cf02ab7c9a959c089"
+    },
+    {
+      "bytes": 1787,
+      "file": "serverconfig/forge-server.toml",
+      "sha256": "e2c32c27453033ef3910d5b6a24ae1a8c1fd224c2ac0a97388d5aa27a6a00ad1"
+    },
+    {
+      "bytes": 3,
+      "file": "session.lock",
+      "sha256": "51643361c79ecaef25a8de802de24f570ba25d9c2df1d22d94fade11b4f466cc"
+    }
+  ],
+  "processes": [
+    {
+      "completed_at": "2026-09-05T12:16:00.850278+00:00",
+      "exit_code": 0,
+      "full_log_file": "v100-upgrade-beta-capture-full.txt",
+      "full_log_sha256": "8c3da5b3c3b185fe70f4ab281763a4a2c79923c6f753a87f3d62e5eab2b50795",
+      "name": "beta-capture",
+      "started_at": "2026-09-05T12:15:28.423785+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T12:16:29.545568+00:00",
+      "exit_code": 0,
+      "full_log_file": "v100-upgrade-upgrade-first-open-full.txt",
+      "full_log_sha256": "c102ca0c51a49337865872706ae56d22166967d445e0aeef5ab00223be92c52e",
+      "name": "upgrade-first-open",
+      "started_at": "2026-09-05T12:16:24.248931+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T12:16:55.393622+00:00",
+      "exit_code": 0,
+      "full_log_file": "v100-upgrade-upgrade-restart-1-full.txt",
+      "full_log_sha256": "6ac479a6cc2937ef75077b3444aa852d1e02cc3d4d8f319b2170b3c2aa7cadab",
+      "name": "upgrade-restart-1",
+      "started_at": "2026-09-05T12:16:50.071063+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T12:17:24.139732+00:00",
+      "exit_code": 0,
+      "full_log_file": "v100-upgrade-upgrade-restart-2-full.txt",
+      "full_log_sha256": "0072c726d0b12304e9138f6d53abdc8ca7ad1f895c7571f245d51904714013e1",
+      "name": "upgrade-restart-2",
+      "started_at": "2026-09-05T12:17:16.833792+00:00"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "actual unmodified Beta world, first candidate open and two restarts; unmanned, not V1/V2 or final release",
+  "server_port": 25612,
+  "setup": {
+    "claim": {
+      "code": "SUCCESS",
+      "discovered": true,
+      "research": 20,
+      "status": "CLAIMED"
+    },
+    "flight": {
+      "block_count": 5,
+      "destination_dimension": "advancedrocketrycommunity:moon",
+      "destination_entity": "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+      "direction": "earth_to_moon",
+      "exact_debit": true,
+      "fuel_after": 628,
+      "fuel_before": 1000,
+      "logical_rocket_id": "d0c261b8-926c-4b75-bb72-6208d56e6711",
+      "origin": [
+        8,
+        80,
+        8
+      ],
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 372,
+      "sequence": 1,
+      "snapshot_hash": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+      "source_dimension": "minecraft:overworld",
+      "source_entity": "23180ec4-d30f-4589-9dd1-e2beb34d6184",
+      "transfer_id": "083e7fa5-6958-46f7-84c6-216c23e7f74f",
+      "trip": 1
+    },
+    "missions": [
+      {
+        "deadline": 556,
+        "mission_id": "f7abc9e2-2f11-3947-bffd-faf0dc82aa3c",
+        "owner_id": "00000000-0000-0000-0000-000000001001",
+        "satellite_id": "98ecfd6c-eb85-4680-82ca-d26499d473c4",
+        "target": "advancedrocketrycommunity:earth"
+      },
+      {
+        "deadline": 556,
+        "mission_id": "20d93e8b-0b51-3691-b4b0-e761d48ce457",
+        "owner_id": "00000000-0000-0000-0000-000000001002",
+        "satellite_id": "48a48ca2-d03c-4a79-9d6c-525d318b8122",
+        "target": "advancedrocketrycommunity:moon"
+      },
+      {
+        "deadline": 767,
+        "mission_id": "9fbddb29-37e5-3a25-9798-effd84643a8a",
+        "owner_id": "00000000-0000-0000-0000-000000001001",
+        "satellite_id": "b1b38e72-1c3d-49df-bcfc-f2e3e4e61721",
+        "target": "advancedrocketrycommunity:moon"
+      }
+    ],
+    "rockets": {
+      "earth": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "cad2349f-f840-4d70-a25e-1272a15d960c",
+        "fuel": 1000,
+        "logical": "25c47ddb-1504-412b-ad4d-f0ab62e91696",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "FUELED",
+        "transfer": "none"
+      },
+      "moon": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+        "fuel": 628,
+        "logical": "d0c261b8-926c-4b75-bb72-6208d56e6711",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      }
+    },
+    "satellite_report": {
+      "active": 1,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 1,
+      "missions": 3,
+      "pending": 0,
+      "ready": 1,
+      "research": 20,
+      "satellites": 3,
+      "scheduler": "deadline_queue",
+      "unfinished": 2
+    },
+    "station": {
+      "cell": [
+        0,
+        0
+      ],
+      "owner_id": "00000000-0000-0000-0000-000000001001",
+      "region": [
+        -256,
+        -256,
+        255,
+        255
+      ],
+      "station_id": "1d6c1f30-103c-41fe-b53c-6441fdbf2371"
+    },
+    "station_after": [
+      {
+        "cell": [
+          0,
+          0
+        ],
+        "members": 1,
+        "owner_id": "00000000-0000-0000-0000-000000001002",
+        "region": [
+          -256,
+          -256,
+          255,
+          255
+        ],
+        "station_id": "1d6c1f30-103c-41fe-b53c-6441fdbf2371"
+      }
+    ]
+  },
+  "source_state": "development_worktree",
+  "status": "PASS",
+  "upgrades": [
+    {
+      "ledger": {
+        "additional_processing_ticks": 46,
+        "missions_became_ready": [],
+        "paused_machine": {
+          "completed": 0,
+          "energy": 0,
+          "items": {
+            "0": 2
+          },
+          "processing_ticks": 40,
+          "progress": 40,
+          "water": 1000
+        },
+        "rocket_ids": [
+          "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+          "cad2349f-f840-4d70-a25e-1272a15d960c"
+        ],
+        "running_machine": {
+          "completed": 0,
+          "energy": 18580,
+          "items": {
+            "0": 8
+          },
+          "processing_ticks": 71,
+          "progress": 71,
+          "water": 4000
+        },
+        "vent": {
+          "energy": 29120,
+          "oxygen": 3973,
+          "oxygen_accounted_ticks": 544,
+          "phase": 4,
+          "supply_ticks": 544
+        }
+      },
+      "name": "upgrade-first-open",
+      "observation": {
+        "claimed_mission_replay": {
+          "code": "ALREADY_CLAIMED",
+          "discovered": true,
+          "research": 20,
+          "status": "CLAIMED"
+        },
+        "operator_report": "[20:16:26] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=1 transactions=0 transfers=1 stations=1 missions=3 players=0/2 atmosphere_volume=4096 atmosphere_tick=1024 protocols=life:1,celestial:1,flight:2,visual:1 flight_frame_max=39 ticket_policy=transient_transfer_only",
+        "rockets": {
+          "earth": {
+            "blocks": 5,
+            "capacity": 1000,
+            "dimension": "minecraft:overworld",
+            "entity": "cad2349f-f840-4d70-a25e-1272a15d960c",
+            "fuel": 1000,
+            "logical": "25c47ddb-1504-412b-ad4d-f0ab62e91696",
+            "origin": [
+              384,
+              101,
+              384
+            ],
+            "passengers": 0,
+            "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+            "state": "FUELED",
+            "transfer": "none"
+          },
+          "moon": {
+            "blocks": 5,
+            "capacity": 1000,
+            "dimension": "advancedrocketrycommunity:moon",
+            "entity": "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+            "fuel": 628,
+            "logical": "d0c261b8-926c-4b75-bb72-6208d56e6711",
+            "origin": [
+              8,
+              80,
+              8
+            ],
+            "passengers": 0,
+            "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+            "state": "LANDED",
+            "transfer": "none"
+          }
+        },
+        "satellite_report": {
+          "active": 1,
+          "cancelled": 0,
+          "chunk_tickets": 0,
+          "claimed": 1,
+          "missions": 3,
+          "pending": 0,
+          "ready": 1,
+          "research": 20,
+          "satellites": 3,
+          "scheduler": "deadline_queue",
+          "unfinished": 2
+        },
+        "stations": [
+          {
+            "cell": [
+              0,
+              0
+            ],
+            "members": 1,
+            "owner_id": "00000000-0000-0000-0000-000000001002",
+            "region": [
+              -256,
+              -256,
+              255,
+              255
+            ],
+            "station_id": "1d6c1f30-103c-41fe-b53c-6441fdbf2371"
+          }
+        ]
+      }
+    },
+    {
+      "ledger": {
+        "additional_processing_ticks": 49,
+        "missions_became_ready": [],
+        "paused_machine": {
+          "completed": 0,
+          "energy": 0,
+          "items": {
+            "0": 2
+          },
+          "processing_ticks": 40,
+          "progress": 40,
+          "water": 1000
+        },
+        "rocket_ids": [
+          "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+          "cad2349f-f840-4d70-a25e-1272a15d960c"
+        ],
+        "running_machine": {
+          "completed": 1,
+          "energy": 17600,
+          "items": {
+            "0": 6,
+            "2": 1,
+            "3": 1
+          },
+          "processing_ticks": 120,
+          "progress": 20,
+          "water": 3000
+        },
+        "vent": {
+          "energy": 29080,
+          "oxygen": 3973,
+          "oxygen_accounted_ticks": 546,
+          "phase": 6,
+          "supply_ticks": 546
+        }
+      },
+      "name": "upgrade-restart-1",
+      "observation": {
+        "claimed_mission_replay": {
+          "code": "ALREADY_CLAIMED",
+          "discovered": true,
+          "research": 20,
+          "status": "CLAIMED"
+        },
+        "operator_report": "[20:16:52] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=1 transactions=0 transfers=1 stations=1 missions=3 players=0/2 atmosphere_volume=4096 atmosphere_tick=1024 protocols=life:1,celestial:1,flight:2,visual:1 flight_frame_max=39 ticket_policy=transient_transfer_only",
+        "rockets": {
+          "earth": {
+            "blocks": 5,
+            "capacity": 1000,
+            "dimension": "minecraft:overworld",
+            "entity": "cad2349f-f840-4d70-a25e-1272a15d960c",
+            "fuel": 1000,
+            "logical": "25c47ddb-1504-412b-ad4d-f0ab62e91696",
+            "origin": [
+              384,
+              101,
+              384
+            ],
+            "passengers": 0,
+            "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+            "state": "FUELED",
+            "transfer": "none"
+          },
+          "moon": {
+            "blocks": 5,
+            "capacity": 1000,
+            "dimension": "advancedrocketrycommunity:moon",
+            "entity": "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+            "fuel": 628,
+            "logical": "d0c261b8-926c-4b75-bb72-6208d56e6711",
+            "origin": [
+              8,
+              80,
+              8
+            ],
+            "passengers": 0,
+            "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+            "state": "LANDED",
+            "transfer": "none"
+          }
+        },
+        "satellite_report": {
+          "active": 1,
+          "cancelled": 0,
+          "chunk_tickets": 0,
+          "claimed": 1,
+          "missions": 3,
+          "pending": 0,
+          "ready": 1,
+          "research": 20,
+          "satellites": 3,
+          "scheduler": "deadline_queue",
+          "unfinished": 2
+        },
+        "stations": [
+          {
+            "cell": [
+              0,
+              0
+            ],
+            "members": 1,
+            "owner_id": "00000000-0000-0000-0000-000000001002",
+            "region": [
+              -256,
+              -256,
+              255,
+              255
+            ],
+            "station_id": "1d6c1f30-103c-41fe-b53c-6441fdbf2371"
+          }
+        ]
+      }
+    },
+    {
+      "ledger": {
+        "additional_processing_ticks": 106,
+        "missions_became_ready": [
+          "9fbddb29-37e5-3a25-9798-effd84643a8a"
+        ],
+        "paused_machine": {
+          "completed": 0,
+          "energy": 0,
+          "items": {
+            "0": 2
+          },
+          "processing_ticks": 40,
+          "progress": 40,
+          "water": 1000
+        },
+        "rocket_ids": [
+          "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+          "cad2349f-f840-4d70-a25e-1272a15d960c"
+        ],
+        "running_machine": {
+          "completed": 2,
+          "energy": 15480,
+          "items": {
+            "0": 4,
+            "2": 2,
+            "3": 2
+          },
+          "processing_ticks": 226,
+          "progress": 26,
+          "water": 2000
+        },
+        "vent": {
+          "energy": 27800,
+          "oxygen": 3970,
+          "oxygen_accounted_ticks": 610,
+          "phase": 10,
+          "supply_ticks": 610
+        }
+      },
+      "name": "upgrade-restart-2",
+      "observation": {
+        "claimed_mission_replay": {
+          "code": "ALREADY_CLAIMED",
+          "discovered": true,
+          "research": 20,
+          "status": "CLAIMED"
+        },
+        "operator_report": "[20:17:21] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=1 transactions=0 transfers=1 stations=1 missions=3 players=0/2 atmosphere_volume=4096 atmosphere_tick=1024 protocols=life:1,celestial:1,flight:2,visual:1 flight_frame_max=39 ticket_policy=transient_transfer_only",
+        "rockets": {
+          "earth": {
+            "blocks": 5,
+            "capacity": 1000,
+            "dimension": "minecraft:overworld",
+            "entity": "cad2349f-f840-4d70-a25e-1272a15d960c",
+            "fuel": 1000,
+            "logical": "25c47ddb-1504-412b-ad4d-f0ab62e91696",
+            "origin": [
+              384,
+              101,
+              384
+            ],
+            "passengers": 0,
+            "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+            "state": "FUELED",
+            "transfer": "none"
+          },
+          "moon": {
+            "blocks": 5,
+            "capacity": 1000,
+            "dimension": "advancedrocketrycommunity:moon",
+            "entity": "756ac38c-d6c5-48e9-b01a-1fb9d40ce360",
+            "fuel": 628,
+            "logical": "d0c261b8-926c-4b75-bb72-6208d56e6711",
+            "origin": [
+              8,
+              80,
+              8
+            ],
+            "passengers": 0,
+            "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+            "state": "LANDED",
+            "transfer": "none"
+          }
+        },
+        "satellite_report": {
+          "active": 0,
+          "cancelled": 0,
+          "chunk_tickets": 0,
+          "claimed": 1,
+          "missions": 3,
+          "pending": 0,
+          "ready": 2,
+          "research": 20,
+          "satellites": 3,
+          "scheduler": "deadline_queue",
+          "unfinished": 2
+        },
+        "stations": [
+          {
+            "cell": [
+              0,
+              0
+            ],
+            "members": 1,
+            "owner_id": "00000000-0000-0000-0000-000000001002",
+            "region": [
+              -256,
+              -256,
+              255,
+              255
+            ],
+            "station_id": "1d6c1f30-103c-41fe-b53c-6441fdbf2371"
+          }
+        ]
+      }
+    }
+  ],
+  "version": "v1.0.0"
+}

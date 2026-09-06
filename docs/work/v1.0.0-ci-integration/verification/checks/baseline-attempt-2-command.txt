@@ -1,0 +1,70 @@
+baseline Build and run unit tests
+exit 0 seconds 27.42
+baseline Resolve built artifact identity
+exit 0 seconds 0.081
+baseline Validate bootstrap provenance allowlist
+exit 0 seconds 26.962
+baseline Audit the current distributable JAR
+exit 0 seconds 0.366
+baseline Validate frozen v0.1.0 resources
+exit 0 seconds 0.175
+baseline Validate v0.2.0 generated-resource inventory
+exit 0 seconds 0.091
+baseline Validate v0.3.0 generated-resource inventory
+exit 0 seconds 0.083
+baseline Validate v0.4.0 generated-resource inventory
+exit 0 seconds 0.104
+baseline Validate v0.5.0 generated-resource inventory
+exit 0 seconds 0.106
+baseline Validate v0.6.0 generated-resource inventory
+exit 0 seconds 0.087
+baseline Validate v0.7.0 generated-resource inventory
+exit 0 seconds 0.086
+baseline Validate v0.8.0 generated-resource inventory
+exit 0 seconds 0.095
+baseline Validate v0.9.0 migration fixtures
+exit 0 seconds 0.08
+baseline Audit v0.9.0 localization and resources
+exit 0 seconds 0.242
+baseline Enforce client-side package boundary
+exit 0 seconds 0.174
+baseline Enforce namespaced celestial identity boundary
+exit 0 seconds 0.097
+baseline Validate v0.3.0 release evidence
+exit 0 seconds 0.207
+baseline Validate v0.4.0 release evidence
+exit 0 seconds 0.231
+baseline Validate v0.5.0 release evidence
+exit 0 seconds 0.206
+baseline Validate v0.6.0 release evidence
+exit 0 seconds 0.222
+baseline Validate v0.7.0 release evidence
+exit 0 seconds 0.208
+baseline Validate v0.8.0 release evidence
+exit 0 seconds 0.259
+baseline Validate v0.9.0 release evidence
+exit 0 seconds 0.341
+baseline Generate deterministic resources
+exit 0 seconds 30.508
+baseline Require a clean DataGen worktree
+exit 1 seconds 0.106
+baseline Reject untracked DataGen outputs
+exit 1 seconds 0.171
+baseline Run Forge GameTests
+exit 0 seconds 99.068
+baseline Run packaged dedicated-server smoke test
+exit 0 seconds 359.301
+baseline Run packaged schema-1 migration and restart regression
+exit 0 seconds 40.84
+baseline Kill and recover one durable flight checkpoint
+exit 0 seconds 53.971
+baseline Run packaged Electrolyzer restart smoke test
+exit 0 seconds 44.381
+baseline Run packaged celestial restart and reload smoke test
+exit 0 seconds 44.672
+baseline Run packaged atmosphere restart and five-minute smoke test
+exit 0 seconds 350.418
+baseline Run packaged rocket assembly and recovery smoke test
+exit 0 seconds 64.598
+baseline Run packaged Earth-Moon flight and restart matrix
+exit 0 seconds 859.24

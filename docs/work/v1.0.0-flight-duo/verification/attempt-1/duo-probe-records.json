@@ -1,0 +1,59 @@
+[
+  {
+    "at": "2026-09-05T18:26:31.495182+00:00",
+    "action": "operator launch-button click",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T18:26:32.431643+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "probe-01-owner-active.png",
+      "bytes": 527774,
+      "sha256": "42bf9041c03abbc6f30d940c8369bf064a2ccf050b13f7ad9e8f963eaa757331",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T18:26:32.512131+00:00",
+    "action": "owner Tab",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T18:26:32.742736+00:00",
+    "action": "owner Enter",
+    "result": null
+  },
+  {
+    "at": "2026-09-05T18:26:33.728725+00:00",
+    "action": "owner screenshot",
+    "result": {
+      "file": "probe-02-owner-after.png",
+      "bytes": 541814,
+      "sha256": "1d2e7eddde4b6b44ed111e46ec7eab48fcbb5cf19c31986f32dc073260b9a23f",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  },
+  {
+    "at": "2026-09-05T18:26:34.012448+00:00",
+    "action": "operator screenshot",
+    "result": {
+      "file": "probe-03-operator-after.png",
+      "bytes": 60586,
+      "sha256": "536964c078ac286c3c69ec2c6a78ccae3442d73bd517885183ff193778eeebc5",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        1280,
+        720
+      ]
+    }
+  }
+]

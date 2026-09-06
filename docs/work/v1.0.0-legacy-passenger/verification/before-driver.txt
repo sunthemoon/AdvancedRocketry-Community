@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp\arce-legacy-before-ui-session.py", line 62, in <module>
+    server.write_server_configuration(server_game, port, True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\run_dedicated_server_smoke.py", line 1011, in write_server_configuration
+    with identity_path.open("xb") as stream:
+         ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "D:\python\pyenv\pyenv-win\versions\3.13.15\Lib\pathlib\_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileExistsError: [Errno 17] File exists: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-legacy-before-ui\\server\\server.properties.v002-startup'

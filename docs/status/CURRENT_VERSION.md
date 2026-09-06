@@ -1,29 +1,22 @@
 # CURRENT_VERSION
 
 ```yaml
-current_version: v0.9.0
-status: PASSED
-next_action: Begin v1.0.0 community MVP work from the accepted Beta baseline
-last_updated: 2026-09-03
-prerequisite_version: v0.8.0
+current_version: v1.0.0
+status: IN_PROGRESS
+next_action: Review remaining adjacent-chunk loading and expiry behavior plus candidate acceptance gaps in docs/releases/v1.0.0/RELEASE-EVIDENCE.md; controlled native queue recovery and pending-player logout pass, genuine storage ordering and final v1.0 Gates remain open, no long-load work
+last_updated: 2026-09-06
+prerequisite_version: v0.9.0
 prerequisite_status: PASSED
-prerequisite_merge_commit: 8e39b1ef440306632cf101b5017e0bcb1f12eef5
-work_branch: codex/v0.9.0-beta-hardening
-base_commit: 0d59c01da458e13ed0014e98f91379c6f783e19d
-build: 1.20.1-0.9.0-beta.1
-tested_implementation_commit: f6cd77cebdb0a851cab76accbf66de565473b545
-reviewed_head_commit: 7841dcc0d30b26a207ee221b0efbd1e25d459ed3
-merge_commit: a7196ff9b22220c344071a1af69a663036f76aef
-artifact_sha256: fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad
-release_url: https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1
+prerequisite_merge_commit: a7196ff9b22220c344071a1af69a663036f76aef
+work_branch: codex/v1.0.0-stable-core
+base_commit: 34b2e99b48a33f4ba8905b6a69a38efee1649d3f
+build: 1.20.1-1.0.0-dev
+tested_implementation_commit: ""
+artifact_sha256: ""
 ```
 
-The immutable v0.8.0 acceptance, PR checks, merge identity, and exact
-post-merge JAR reproduction are recorded in
-[`../releases/v0.8.0/GATE-STATUS.md`](../releases/v0.8.0/GATE-STATUS.md).
-The v0.9.0 feature freeze, support contract, and bounded G8 visual decision are
-owner-approved. PR #13 and its merge commit passed all four checks; a clean
-`main` build reproduced the accepted JAR and 758-entry manifest byte-for-byte.
-The same download-verified artifact is available as GitHub pre-release
-`v0.9.0-beta.1`. The next milestone is v1.0.0; this Beta does not claim stable
-release status.
+The accepted Beta identity, approvals and published artifact remain immutable
+in [v0.9.0 GATE-STATUS](../releases/v0.9.0/GATE-STATUS.md). v1.0 stabilizes that
+core without implementing v1.1+ features. Development-tree checks are not a
+frozen release-candidate commit or stable approval. See the
+[implementation log](../work/v1.0.0-implementation-log.md).

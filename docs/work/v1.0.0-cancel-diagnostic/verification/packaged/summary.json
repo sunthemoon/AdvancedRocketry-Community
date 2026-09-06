@@ -1,0 +1,124 @@
+{
+  "actions": [],
+  "artifact_sha256": "c860542e8971e845121b6fd5c41474407376b465acc301a7cab7975ac0ccf9d0",
+  "authentication_tested": false,
+  "cancel_receipt": "[02:56:59] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=98d17632-0d82-4656-852f-9fb8e7a2343f player=62bbb9cb-b2fa-39aa-9a6b-430b71f5493f rocket=3d68a97e-ac36-4e91-92a6-3580f7d8b046 action=CANCEL destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=372",
+  "cleanup_errors": [],
+  "client_pid": 24796,
+  "completed_at": "2026-09-05T18:57:27.215644+00:00",
+  "entity": "3d68a97e-ac36-4e91-92a6-3580f7d8b046",
+  "launch_receipt": "[02:56:59] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FLIGHT_INTENT request=569e6c52-30e4-4ce8-9f67-b1206f15793e player=62bbb9cb-b2fa-39aa-9a6b-430b71f5493f rocket=3d68a97e-ac36-4e91-92a6-3580f7d8b046 action=LAUNCH destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=372",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "port": 63144,
+  "processes": [
+    {
+      "exit_code": 0,
+      "full_log_file": "client-full.txt",
+      "full_log_sha256": "b7fee91846276a2a59297cd95988702d0ec622ecbede1e037c3d3ec621be4f98",
+      "kind": "client",
+      "native_logs": [
+        {
+          "bytes": 18228,
+          "file": "client-latest.log",
+          "sha256": "308c8504ccaea11cfa0e625405a1e203d548114d5c1d24c4b476b410227a442b"
+        },
+        {
+          "bytes": 97845,
+          "file": "client-debug.log",
+          "sha256": "3655ba2dc30a1f9baed1eff3d3c5e96009b1985092610314c16e081c1d77b002"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "server-full.txt",
+      "full_log_sha256": "fdee286ebe6138d568fc24bca0c99cf6e02bf19566bb534a982c591303001759",
+      "kind": "server",
+      "native_logs": [
+        {
+          "bytes": 26725,
+          "file": "server-latest.log",
+          "sha256": "19680f55f6b28e84aff5549f8efbc43cb235e9431f49c22684c8355c2288fd76"
+        },
+        {
+          "bytes": 113374,
+          "file": "server-debug.log",
+          "sha256": "d81f31da26b743033cfc0fba34fe9b4b82167c4cb50f0b5d17e8e511d9e5baa8"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "restart-full.txt",
+      "full_log_sha256": "33c7d41bd19a8398f098faf47678c83a8651a466f9f5d645ffcace5d74b73257",
+      "kind": "restart",
+      "native_logs": [
+        {
+          "bytes": 12472,
+          "file": "restart-latest.log",
+          "sha256": "c77867dfb2f6f21694cd2ff82c4a8e04fec3c94028db5503acb22fdf0e29665d"
+        },
+        {
+          "bytes": 76962,
+          "file": "restart-debug.log",
+          "sha256": "2c0a316384af7fb4727d70248f21a282181260361beedd33cda51df3c8e818d3"
+        }
+      ]
+    }
+  ],
+  "report_after_restart": "[02:57:24] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=3d68a97e-ac36-4e91-92a6-3580f7d8b046 logical=1452d864-28a0-464d-8224-ffdc0cfef1d7 snapshot=42b80f05279e11debb63897848889c462cf5fb42cd49e0d55fe9652b8419c912 dimension=minecraft:overworld state=FUELED fuel=1000 capacity=1000 passengers=0 transfer=none origin=384,101,384 blocks=5",
+  "report_before_restart": "[02:57:00] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=3d68a97e-ac36-4e91-92a6-3580f7d8b046 logical=1452d864-28a0-464d-8224-ffdc0cfef1d7 snapshot=42b80f05279e11debb63897848889c462cf5fb42cd49e0d55fe9652b8419c912 dimension=minecraft:overworld state=FUELED fuel=1000 capacity=1000 passengers=0 transfer=none origin=384,101,384 blocks=5",
+  "return_diagnostic": "[02:56:59] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=569e6c52-30e4-4ce8-9f67-b1206f15793e logical=1452d864-28a0-464d-8224-ffdc0cfef1d7 reason=countdown_cancelled fuel=1000",
+  "screenshots": [
+    {
+      "bytes": 414954,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-world.png",
+      "sha256": "8c4263e461c4d853b3f005266a5a37d5e21763962045ea2a473e6c91abc5d4ea",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 271385,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "02-console.png",
+      "sha256": "6b55e5e09331592f407ff173955250651bc3d50e34cfe628061c91bc9129bacc",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 261786,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "03-countdown.png",
+      "sha256": "d14bab4bbedad217e970b7e1e0f52665f12609bc5f516d332cf895e929066633",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 263158,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "04-cancelled.png",
+      "sha256": "ff3b2da0f9830bb3d8f58144fb0ea66b4aeb996b24f72eaed17b3351eebf515a",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "server_pid": 12376,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T18:55:49.529720+00:00",
+  "stations": [
+    "587876ed-6d26-4808-afa4-b8ac56175671",
+    "a18c132f-c718-4449-b5ef-58311be4821e"
+  ],
+  "status": "PASS",
+  "username": "V100Visual1",
+  "window": 1182498
+}

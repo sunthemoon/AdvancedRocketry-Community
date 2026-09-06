@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp\arce-passenger-fixed-restart.py", line 33, in <module>
+    process.wait_for(re.compile('ARCE_ROCKET_ENTITY_ACTIVE entity=' + re.escape(entity)), 30)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\run_dedicated_server_smoke.py", line 665, in wait_for
+    raise SmokeError(f"Timed out waiting for server marker {marker.pattern!r}")
+scripts.run_dedicated_server_smoke.SmokeError: Timed out waiting for server marker 'ARCE_ROCKET_ENTITY_ACTIVE entity=dc69c542\\-80f6\\-47e6\\-98d8\\-6bbb7f4eb6e1'

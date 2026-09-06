@@ -1,0 +1,1448 @@
+{
+  "celestial": {
+    "bodies": [
+      {
+        "discovered_at": 565,
+        "id": "advancedrocketrycommunity:earth"
+      }
+    ],
+    "format_epoch": "v0.9.0-beta",
+    "schema_version": 2
+  },
+  "observed": {
+    "earth_clear": 1,
+    "flush_success": 1,
+    "game_time": 689,
+    "moon_clear": 1,
+    "no_drops": 1,
+    "paused": {
+      "active_recipe": "advancedrocketrycommunity:electrolyzer_water",
+      "energy": 0,
+      "fluid": {
+        "Amount": 1000,
+        "FluidName": "minecraft:water"
+      },
+      "inventory": {
+        "Items": [
+          {
+            "Count": 2,
+            "Slot": 0,
+            "id": "advancedrocketrycommunity:empty_canister"
+          }
+        ],
+        "Size": 4
+      },
+      "progress": 40,
+      "schema_version": 1
+    },
+    "paused_lit": 0,
+    "platform": {
+      "p0": 1,
+      "p1": 1,
+      "p10": 1,
+      "p100": 1,
+      "p101": 1,
+      "p102": 1,
+      "p103": 1,
+      "p104": 1,
+      "p105": 1,
+      "p106": 1,
+      "p107": 1,
+      "p108": 1,
+      "p109": 1,
+      "p11": 1,
+      "p110": 1,
+      "p111": 1,
+      "p112": 1,
+      "p113": 1,
+      "p114": 1,
+      "p115": 1,
+      "p116": 1,
+      "p117": 1,
+      "p118": 1,
+      "p119": 1,
+      "p12": 1,
+      "p120": 1,
+      "p121": 1,
+      "p122": 1,
+      "p123": 1,
+      "p124": 1,
+      "p125": 1,
+      "p126": 1,
+      "p127": 1,
+      "p128": 1,
+      "p129": 1,
+      "p13": 1,
+      "p130": 1,
+      "p131": 1,
+      "p132": 1,
+      "p133": 1,
+      "p134": 1,
+      "p135": 1,
+      "p136": 1,
+      "p137": 1,
+      "p138": 1,
+      "p139": 1,
+      "p14": 1,
+      "p140": 1,
+      "p141": 1,
+      "p142": 1,
+      "p143": 1,
+      "p144": 1,
+      "p145": 1,
+      "p146": 1,
+      "p147": 1,
+      "p148": 1,
+      "p149": 1,
+      "p15": 1,
+      "p150": 1,
+      "p151": 1,
+      "p152": 1,
+      "p153": 1,
+      "p154": 1,
+      "p155": 1,
+      "p156": 1,
+      "p157": 1,
+      "p158": 1,
+      "p159": 1,
+      "p16": 1,
+      "p160": 1,
+      "p161": 1,
+      "p162": 1,
+      "p163": 1,
+      "p164": 1,
+      "p165": 1,
+      "p166": 1,
+      "p167": 1,
+      "p168": 1,
+      "p169": 1,
+      "p17": 1,
+      "p170": 1,
+      "p171": 1,
+      "p172": 1,
+      "p173": 1,
+      "p174": 1,
+      "p175": 1,
+      "p176": 1,
+      "p177": 1,
+      "p178": 1,
+      "p179": 1,
+      "p18": 1,
+      "p180": 1,
+      "p181": 1,
+      "p182": 1,
+      "p183": 1,
+      "p184": 1,
+      "p185": 1,
+      "p186": 1,
+      "p187": 1,
+      "p188": 1,
+      "p189": 1,
+      "p19": 1,
+      "p190": 1,
+      "p191": 1,
+      "p192": 1,
+      "p193": 1,
+      "p194": 1,
+      "p195": 1,
+      "p196": 1,
+      "p197": 1,
+      "p198": 1,
+      "p199": 1,
+      "p2": 1,
+      "p20": 1,
+      "p200": 1,
+      "p201": 1,
+      "p202": 1,
+      "p203": 1,
+      "p204": 1,
+      "p205": 1,
+      "p206": 1,
+      "p207": 1,
+      "p208": 1,
+      "p209": 1,
+      "p21": 1,
+      "p210": 1,
+      "p211": 1,
+      "p212": 1,
+      "p213": 1,
+      "p214": 1,
+      "p215": 1,
+      "p216": 1,
+      "p217": 1,
+      "p218": 1,
+      "p219": 1,
+      "p22": 1,
+      "p220": 1,
+      "p221": 1,
+      "p222": 1,
+      "p223": 1,
+      "p224": 1,
+      "p225": 1,
+      "p226": 1,
+      "p227": 1,
+      "p228": 1,
+      "p229": 1,
+      "p23": 1,
+      "p230": 1,
+      "p231": 1,
+      "p232": 1,
+      "p233": 1,
+      "p234": 1,
+      "p235": 1,
+      "p236": 1,
+      "p237": 1,
+      "p238": 1,
+      "p239": 1,
+      "p24": 1,
+      "p240": 1,
+      "p241": 1,
+      "p242": 1,
+      "p243": 1,
+      "p244": 1,
+      "p245": 1,
+      "p246": 1,
+      "p247": 1,
+      "p248": 1,
+      "p249": 1,
+      "p25": 1,
+      "p250": 1,
+      "p251": 1,
+      "p252": 1,
+      "p253": 1,
+      "p254": 1,
+      "p255": 1,
+      "p256": 1,
+      "p257": 1,
+      "p258": 1,
+      "p259": 1,
+      "p26": 1,
+      "p260": 1,
+      "p261": 1,
+      "p262": 1,
+      "p263": 1,
+      "p264": 1,
+      "p265": 1,
+      "p266": 1,
+      "p267": 1,
+      "p268": 1,
+      "p269": 1,
+      "p27": 1,
+      "p270": 1,
+      "p271": 1,
+      "p272": 1,
+      "p273": 1,
+      "p274": 1,
+      "p275": 1,
+      "p276": 1,
+      "p277": 1,
+      "p278": 1,
+      "p279": 1,
+      "p28": 1,
+      "p280": 1,
+      "p281": 1,
+      "p282": 1,
+      "p283": 1,
+      "p284": 1,
+      "p285": 1,
+      "p286": 1,
+      "p287": 1,
+      "p288": 1,
+      "p29": 1,
+      "p3": 1,
+      "p30": 1,
+      "p31": 1,
+      "p32": 1,
+      "p33": 1,
+      "p34": 1,
+      "p35": 1,
+      "p36": 1,
+      "p37": 1,
+      "p38": 1,
+      "p39": 1,
+      "p4": 1,
+      "p40": 1,
+      "p41": 1,
+      "p42": 1,
+      "p43": 1,
+      "p44": 1,
+      "p45": 1,
+      "p46": 1,
+      "p47": 1,
+      "p48": 1,
+      "p49": 1,
+      "p5": 1,
+      "p50": 1,
+      "p51": 1,
+      "p52": 1,
+      "p53": 1,
+      "p54": 1,
+      "p55": 1,
+      "p56": 1,
+      "p57": 1,
+      "p58": 1,
+      "p59": 1,
+      "p6": 1,
+      "p60": 1,
+      "p61": 1,
+      "p62": 1,
+      "p63": 1,
+      "p64": 1,
+      "p65": 1,
+      "p66": 1,
+      "p67": 1,
+      "p68": 1,
+      "p69": 1,
+      "p7": 1,
+      "p70": 1,
+      "p71": 1,
+      "p72": 1,
+      "p73": 1,
+      "p74": 1,
+      "p75": 1,
+      "p76": 1,
+      "p77": 1,
+      "p78": 1,
+      "p79": 1,
+      "p8": 1,
+      "p80": 1,
+      "p81": 1,
+      "p82": 1,
+      "p83": 1,
+      "p84": 1,
+      "p85": 1,
+      "p86": 1,
+      "p87": 1,
+      "p88": 1,
+      "p89": 1,
+      "p9": 1,
+      "p90": 1,
+      "p91": 1,
+      "p92": 1,
+      "p93": 1,
+      "p94": 1,
+      "p95": 1,
+      "p96": 1,
+      "p97": 1,
+      "p98": 1,
+      "p99": 1
+    },
+    "rockets": [
+      {
+        "Air": 300,
+        "CanUpdate": 1,
+        "FallDistance": 0.0,
+        "Fire": -1,
+        "Invulnerable": 0,
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "NoGravity": 1,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Pos": [
+          384.5,
+          101.0,
+          384.5
+        ],
+        "RocketEntityData": {
+          "assembly_transaction_id": [
+            633634267,
+            352600363,
+            -1387401045,
+            1659442838
+          ],
+          "flight_data": {
+            "current_body": "advancedrocketrycommunity:earth",
+            "current_dimension": "minecraft:overworld",
+            "current_origin": [
+              384,
+              101,
+              384
+            ],
+            "fuel": {
+              "amount": 1000,
+              "capacity": 1000,
+              "committed_debits": []
+            },
+            "logical_rocket_id": [
+              633634267,
+              352600363,
+              -1387401045,
+              1659442838
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "schema_version": 1,
+            "state": "FUELED",
+            "state_started_game_time": 356
+          },
+          "owner_id": [
+            0,
+            0,
+            0,
+            5
+          ],
+          "schema_version": 2,
+          "snapshot": {
+            "block_palette": [
+              {
+                "id": "advancedrocketrycommunity:guidance_computer",
+                "properties": {}
+              },
+              {
+                "id": "advancedrocketrycommunity:rocket_fuel_tank",
+                "properties": {}
+              },
+              {
+                "id": "advancedrocketrycommunity:rocket_motor",
+                "properties": {}
+              },
+              {
+                "id": "advancedrocketrycommunity:rocket_seat",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:chest",
+                "properties": {
+                  "facing": "north",
+                  "type": "single",
+                  "waterlogged": "false"
+                }
+              }
+            ],
+            "bounding_box": [
+              -1,
+              0,
+              0,
+              1,
+              2,
+              0
+            ],
+            "content_hash": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+            "created_at_game_time": 355,
+            "mass_inputs": {
+              "block_count": 5,
+              "block_entity_count": 1,
+              "engine_count": 1,
+              "fuel_capacity": 1000,
+              "guidance_count": 1,
+              "mass": 210,
+              "seat_count": 1,
+              "thrust": 1000
+            },
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "relative_blocks": [
+              {
+                "palette": 1,
+                "position": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 2,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 3,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  2,
+                  0
+                ]
+              },
+              {
+                "block_entity": {
+                  "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+                  "data": {
+                    "Items": [
+                      {
+                        "Count": 17,
+                        "Slot": 0,
+                        "id": "minecraft:diamond"
+                      },
+                      {
+                        "Count": 64,
+                        "Slot": 26,
+                        "id": "minecraft:iron_ingot"
+                      }
+                    ]
+                  }
+                },
+                "palette": 4,
+                "position": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "schema_version": 1,
+            "snapshot_id": "6d57ed59-49e5-42ad-a004-81a57e15bbe4",
+            "source_dimension": "minecraft:overworld",
+            "source_origin": [
+              384,
+              101,
+              384
+            ]
+          }
+        },
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "UUID": [
+          -892193633,
+          -130003600,
+          -1570893198,
+          -1587702260
+        ],
+        "observed_dimension": "minecraft:overworld",
+        "observed_type": "advancedrocketrycommunity:rocket"
+      },
+      {
+        "Air": 300,
+        "CanUpdate": 1,
+        "FallDistance": 0.0,
+        "Fire": -1,
+        "Invulnerable": 0,
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "NoGravity": 1,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Pos": [
+          8.5,
+          80.0,
+          8.5
+        ],
+        "RocketEntityData": {
+          "assembly_transaction_id": [
+            -792567368,
+            -1838396555,
+            -1150131704,
+            -714184943
+          ],
+          "flight_data": {
+            "current_body": "advancedrocketrycommunity:moon",
+            "current_dimension": "advancedrocketrycommunity:moon",
+            "current_origin": [
+              8,
+              80,
+              8
+            ],
+            "fuel": {
+              "amount": 628,
+              "capacity": 1000,
+              "committed_debits": [
+                {
+                  "transaction_id": [
+                    138313637,
+                    1767393015,
+                    -2067390100,
+                    602404687
+                  ]
+                }
+              ]
+            },
+            "logical_rocket_id": [
+              -792567368,
+              -1838396555,
+              -1150131704,
+              -714184943
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "schema_version": 1,
+            "state": "LANDED",
+            "state_started_game_time": 353
+          },
+          "owner_id": [
+            0,
+            0,
+            0,
+            5
+          ],
+          "schema_version": 2,
+          "snapshot": {
+            "block_palette": [
+              {
+                "id": "advancedrocketrycommunity:guidance_computer",
+                "properties": {}
+              },
+              {
+                "id": "advancedrocketrycommunity:rocket_fuel_tank",
+                "properties": {}
+              },
+              {
+                "id": "advancedrocketrycommunity:rocket_motor",
+                "properties": {}
+              },
+              {
+                "id": "advancedrocketrycommunity:rocket_seat",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:chest",
+                "properties": {
+                  "facing": "north",
+                  "type": "single",
+                  "waterlogged": "false"
+                }
+              }
+            ],
+            "bounding_box": [
+              -1,
+              0,
+              0,
+              1,
+              2,
+              0
+            ],
+            "content_hash": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+            "created_at_game_time": 273,
+            "mass_inputs": {
+              "block_count": 5,
+              "block_entity_count": 1,
+              "engine_count": 1,
+              "fuel_capacity": 1000,
+              "guidance_count": 1,
+              "mass": 210,
+              "seat_count": 1,
+              "thrust": 1000
+            },
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "relative_blocks": [
+              {
+                "palette": 1,
+                "position": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 2,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 3,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  2,
+                  0
+                ]
+              },
+              {
+                "block_entity": {
+                  "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+                  "data": {
+                    "Items": [
+                      {
+                        "Count": 17,
+                        "Slot": 0,
+                        "id": "minecraft:diamond"
+                      },
+                      {
+                        "Count": 64,
+                        "Slot": 26,
+                        "id": "minecraft:iron_ingot"
+                      }
+                    ]
+                  }
+                },
+                "palette": 4,
+                "position": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "schema_version": 1,
+            "snapshot_id": "f2252773-9968-354a-ad6d-829c2c1cd041",
+            "source_dimension": "advancedrocketrycommunity:moon",
+            "source_origin": [
+              8,
+              80,
+              8
+            ]
+          }
+        },
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "UUID": [
+          1969931148,
+          -691713815,
+          -1340465223,
+          -737352864
+        ],
+        "observed_dimension": "advancedrocketrycommunity:moon",
+        "observed_type": "advancedrocketrycommunity:rocket"
+      }
+    ],
+    "room": {
+      "p0": 1,
+      "p1": 1,
+      "p10": 1,
+      "p11": 1,
+      "p12": 1,
+      "p13": 1,
+      "p14": 1,
+      "p15": 1,
+      "p16": 1,
+      "p17": 1,
+      "p18": 1,
+      "p19": 1,
+      "p2": 1,
+      "p20": 1,
+      "p21": 1,
+      "p22": 1,
+      "p23": 1,
+      "p24": 1,
+      "p25": 1,
+      "p3": 1,
+      "p4": 1,
+      "p5": 1,
+      "p6": 1,
+      "p7": 1,
+      "p8": 1,
+      "p9": 1
+    },
+    "running": {
+      "active_recipe": "advancedrocketrycommunity:electrolyzer_water",
+      "energy": 17600,
+      "fluid": {
+        "Amount": 3000,
+        "FluidName": "minecraft:water"
+      },
+      "inventory": {
+        "Items": [
+          {
+            "Count": 6,
+            "Slot": 0,
+            "id": "advancedrocketrycommunity:empty_canister"
+          },
+          {
+            "Count": 1,
+            "Slot": 2,
+            "id": "advancedrocketrycommunity:hydrogen_canister"
+          },
+          {
+            "Count": 1,
+            "Slot": 3,
+            "id": "advancedrocketrycommunity:oxygen_canister"
+          }
+        ],
+        "Size": 4
+      },
+      "progress": 20,
+      "schema_version": 1
+    },
+    "running_lit": 1,
+    "schema": 1,
+    "vent": {
+      "empty_canisters": 0,
+      "energy": 29080,
+      "oxygen_canisters": 0,
+      "oxygen_phase": 6,
+      "oxygen_units": 3973,
+      "schema_version": 1
+    },
+    "vent_lit": 1
+  },
+  "rocket_transactions": {
+    "format_epoch": "v0.9.0-beta",
+    "schema_version": 2,
+    "transactions": []
+  },
+  "rocket_transfers": {
+    "format_epoch": "v0.9.0-beta",
+    "schema_version": 2,
+    "transfers": [
+      {
+        "checksum": "e882794a57f7ad1b6e5cd80cca2042c7df947dc4590a5e43a75b405a9dc29a5b",
+        "created_at_game_time": 113,
+        "destination_entity_id": [
+          1969931148,
+          -691713815,
+          -1340465223,
+          -737352864
+        ],
+        "destination_flight": {
+          "active_transfer_id": [
+            138313637,
+            1767393015,
+            -2067390100,
+            602404687
+          ],
+          "current_body": "advancedrocketrycommunity:moon",
+          "current_dimension": "advancedrocketrycommunity:moon",
+          "current_origin": [
+            8,
+            80,
+            8
+          ],
+          "fuel": {
+            "amount": 628,
+            "capacity": 1000,
+            "committed_debits": [
+              {
+                "transaction_id": [
+                  138313637,
+                  1767393015,
+                  -2067390100,
+                  602404687
+                ]
+              }
+            ]
+          },
+          "logical_rocket_id": [
+            -792567368,
+            -1838396555,
+            -1150131704,
+            -714184943
+          ],
+          "passengers": {
+            "assignments": [],
+            "seat_capacity": 1
+          },
+          "plan": {
+            "created_at_game_time": 113,
+            "destination_body": "advancedrocketrycommunity:moon",
+            "destination_dimension": "advancedrocketrycommunity:moon",
+            "request_id": [
+              138313637,
+              1767393015,
+              -2067390100,
+              602404687
+            ],
+            "required_fuel": 372,
+            "schema_version": 2,
+            "source_body": "advancedrocketrycommunity:earth",
+            "source_dimension": "minecraft:overworld"
+          },
+          "schema_version": 1,
+          "state": "DESCENT",
+          "state_started_game_time": 273
+        },
+        "destination_snapshot": {
+          "block_palette": [
+            {
+              "id": "advancedrocketrycommunity:guidance_computer",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_fuel_tank",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_motor",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_seat",
+              "properties": {}
+            },
+            {
+              "id": "minecraft:chest",
+              "properties": {
+                "facing": "north",
+                "type": "single",
+                "waterlogged": "false"
+              }
+            }
+          ],
+          "bounding_box": [
+            -1,
+            0,
+            0,
+            1,
+            2,
+            0
+          ],
+          "content_hash": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "created_at_game_time": 273,
+          "mass_inputs": {
+            "block_count": 5,
+            "block_entity_count": 1,
+            "engine_count": 1,
+            "fuel_capacity": 1000,
+            "guidance_count": 1,
+            "mass": 210,
+            "seat_count": 1,
+            "thrust": 1000
+          },
+          "passenger_anchors": [
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "relative_blocks": [
+            {
+              "palette": 1,
+              "position": [
+                -1,
+                0,
+                0
+              ]
+            },
+            {
+              "palette": 2,
+              "position": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "palette": 3,
+              "position": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "palette": 0,
+              "position": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "block_entity": {
+                "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+                "data": {
+                  "Items": [
+                    {
+                      "Count": 17,
+                      "Slot": 0,
+                      "id": "minecraft:diamond"
+                    },
+                    {
+                      "Count": 64,
+                      "Slot": 26,
+                      "id": "minecraft:iron_ingot"
+                    }
+                  ]
+                }
+              },
+              "palette": 4,
+              "position": [
+                1,
+                0,
+                0
+              ]
+            }
+          ],
+          "schema_version": 1,
+          "snapshot_id": "f2252773-9968-354a-ad6d-829c2c1cd041",
+          "source_dimension": "advancedrocketrycommunity:moon",
+          "source_origin": [
+            8,
+            80,
+            8
+          ]
+        },
+        "logical_rocket_id": [
+          -792567368,
+          -1838396555,
+          -1150131704,
+          -714184943
+        ],
+        "owner_id": [
+          0,
+          0,
+          0,
+          5
+        ],
+        "phase": "COMMITTED",
+        "required_fuel": 372,
+        "schema_version": 1,
+        "source_entity_id": [
+          588779204,
+          -753973879,
+          -1647189314,
+          -1286774396
+        ],
+        "source_flight": {
+          "active_transfer_id": [
+            138313637,
+            1767393015,
+            -2067390100,
+            602404687
+          ],
+          "current_body": "advancedrocketrycommunity:earth",
+          "current_dimension": "minecraft:overworld",
+          "current_origin": [
+            384,
+            101,
+            384
+          ],
+          "fuel": {
+            "amount": 1000,
+            "capacity": 1000,
+            "committed_debits": []
+          },
+          "logical_rocket_id": [
+            -792567368,
+            -1838396555,
+            -1150131704,
+            -714184943
+          ],
+          "passengers": {
+            "assignments": [],
+            "seat_capacity": 1
+          },
+          "plan": {
+            "created_at_game_time": 113,
+            "destination_body": "advancedrocketrycommunity:moon",
+            "destination_dimension": "advancedrocketrycommunity:moon",
+            "request_id": [
+              138313637,
+              1767393015,
+              -2067390100,
+              602404687
+            ],
+            "required_fuel": 372,
+            "schema_version": 2,
+            "source_body": "advancedrocketrycommunity:earth",
+            "source_dimension": "minecraft:overworld"
+          },
+          "schema_version": 1,
+          "state": "TRANSIT",
+          "state_started_game_time": 253
+        },
+        "source_snapshot": {
+          "block_palette": [
+            {
+              "id": "advancedrocketrycommunity:guidance_computer",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_fuel_tank",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_motor",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_seat",
+              "properties": {}
+            },
+            {
+              "id": "minecraft:chest",
+              "properties": {
+                "facing": "north",
+                "type": "single",
+                "waterlogged": "false"
+              }
+            }
+          ],
+          "bounding_box": [
+            -1,
+            0,
+            0,
+            1,
+            2,
+            0
+          ],
+          "content_hash": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+          "created_at_game_time": 112,
+          "mass_inputs": {
+            "block_count": 5,
+            "block_entity_count": 1,
+            "engine_count": 1,
+            "fuel_capacity": 1000,
+            "guidance_count": 1,
+            "mass": 210,
+            "seat_count": 1,
+            "thrust": 1000
+          },
+          "passenger_anchors": [
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "relative_blocks": [
+            {
+              "palette": 1,
+              "position": [
+                -1,
+                0,
+                0
+              ]
+            },
+            {
+              "palette": 2,
+              "position": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "palette": 3,
+              "position": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "palette": 0,
+              "position": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "block_entity": {
+                "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+                "data": {
+                  "Items": [
+                    {
+                      "Count": 17,
+                      "Slot": 0,
+                      "id": "minecraft:diamond"
+                    },
+                    {
+                      "Count": 64,
+                      "Slot": 26,
+                      "id": "minecraft:iron_ingot"
+                    }
+                  ]
+                }
+              },
+              "palette": 4,
+              "position": [
+                1,
+                0,
+                0
+              ]
+            }
+          ],
+          "schema_version": 1,
+          "snapshot_id": "132b7219-f9aa-4f7f-9218-54c1a33c366d",
+          "source_dimension": "minecraft:overworld",
+          "source_origin": [
+            384,
+            101,
+            384
+          ]
+        },
+        "transfer_id": [
+          138313637,
+          1767393015,
+          -2067390100,
+          602404687
+        ]
+      }
+    ]
+  },
+  "satellite_missions": {
+    "clock": {
+      "last_observed_game_time": 680,
+      "logical_game_time": 680
+    },
+    "format_epoch": "v0.9.0-beta",
+    "missions": [
+      {
+        "completes_at": 767,
+        "definition_id": "advancedrocketrycommunity:data_satellite",
+        "discovery_cost": 100,
+        "discovery_required": 1,
+        "mission_id": [
+          -1614947543,
+          937769509,
+          -1751584771,
+          -2073806198
+        ],
+        "owner_id": [
+          0,
+          0,
+          0,
+          4097
+        ],
+        "research_yield": 120,
+        "satellite_id": [
+          -1313632654,
+          473778655,
+          -1124273437,
+          -454682847
+        ],
+        "schema_version": 1,
+        "started_at": 567,
+        "status": "active",
+        "target_body_id": "advancedrocketrycommunity:moon"
+      },
+      {
+        "completes_at": 556,
+        "definition_id": "advancedrocketrycommunity:data_satellite",
+        "discovery_cost": 100,
+        "discovery_required": 1,
+        "mission_id": [
+          -139736606,
+          789657927,
+          -1073874192,
+          -595416516
+        ],
+        "owner_id": [
+          0,
+          0,
+          0,
+          4097
+        ],
+        "ready_at": 560,
+        "research_yield": 120,
+        "resolved_at": 565,
+        "satellite_id": [
+          -1729299092,
+          -343587200,
+          -2100637084,
+          -1714129980
+        ],
+        "schema_version": 1,
+        "started_at": 356,
+        "status": "claimed",
+        "target_body_id": "advancedrocketrycommunity:earth"
+      },
+      {
+        "completes_at": 556,
+        "definition_id": "advancedrocketrycommunity:data_satellite",
+        "discovery_cost": 100,
+        "discovery_required": 1,
+        "mission_id": [
+          551108235,
+          189871761,
+          -1263474847,
+          -728964009
+        ],
+        "owner_id": [
+          0,
+          0,
+          0,
+          4098
+        ],
+        "ready_at": 560,
+        "research_yield": 120,
+        "satellite_id": [
+          1218743458,
+          -801355143,
+          -1653845411,
+          831226146
+        ],
+        "schema_version": 1,
+        "started_at": 356,
+        "status": "ready",
+        "target_body_id": "advancedrocketrycommunity:moon"
+      }
+    ],
+    "research_accounts": [
+      {
+        "balance": 20,
+        "lifetime_earned": 120,
+        "lifetime_spent": 100,
+        "owner_id": [
+          0,
+          0,
+          0,
+          4097
+        ],
+        "schema_version": 1
+      },
+      {
+        "balance": 0,
+        "lifetime_earned": 0,
+        "lifetime_spent": 0,
+        "owner_id": [
+          0,
+          0,
+          0,
+          4098
+        ],
+        "schema_version": 1
+      }
+    ],
+    "satellites": [
+      {
+        "definition_id": "advancedrocketrycommunity:data_satellite",
+        "launched_at": 356,
+        "owner_id": [
+          0,
+          0,
+          0,
+          4097
+        ],
+        "satellite_id": [
+          -1729299092,
+          -343587200,
+          -2100637084,
+          -1714129980
+        ],
+        "schema_version": 1,
+        "status": "operational"
+      },
+      {
+        "current_mission_id": [
+          -1614947543,
+          937769509,
+          -1751584771,
+          -2073806198
+        ],
+        "definition_id": "advancedrocketrycommunity:data_satellite",
+        "launched_at": 567,
+        "owner_id": [
+          0,
+          0,
+          0,
+          4097
+        ],
+        "satellite_id": [
+          -1313632654,
+          473778655,
+          -1124273437,
+          -454682847
+        ],
+        "schema_version": 1,
+        "status": "operational"
+      },
+      {
+        "current_mission_id": [
+          551108235,
+          189871761,
+          -1263474847,
+          -728964009
+        ],
+        "definition_id": "advancedrocketrycommunity:data_satellite",
+        "launched_at": 356,
+        "owner_id": [
+          0,
+          0,
+          0,
+          4098
+        ],
+        "satellite_id": [
+          1218743458,
+          -801355143,
+          -1653845411,
+          831226146
+        ],
+        "schema_version": 1,
+        "status": "operational"
+      }
+    ],
+    "schema_version": 2
+  },
+  "stations": {
+    "format_epoch": "v0.9.0-beta",
+    "reservations": [],
+    "schema_version": 2,
+    "stations": [
+      {
+        "cell_x": 0,
+        "cell_z": 0,
+        "created_at_game_time": 356,
+        "environment": {
+          "gravity_milli": 0,
+          "solar_angle_milli_degrees": 270000,
+          "vacuum": 1
+        },
+        "invitations": [],
+        "landing_pad": [
+          0,
+          128,
+          0
+        ],
+        "members": [
+          {
+            "id": [
+              0,
+              0,
+              0,
+              4097
+            ]
+          }
+        ],
+        "name": "Beta-Upgrade-Station",
+        "orbit_body": "advancedrocketrycommunity:earth",
+        "owner_id": [
+          0,
+          0,
+          0,
+          4098
+        ],
+        "region": [
+          -256,
+          -256,
+          255,
+          255
+        ],
+        "schema_version": 1,
+        "station_id": [
+          493625136,
+          272384510,
+          -1254333375,
+          -37805199
+        ]
+      }
+    ]
+  }
+}

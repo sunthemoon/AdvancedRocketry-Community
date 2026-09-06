@@ -1,0 +1,1 @@
+{"rockets": 2, "player_vehicles": 0, "world_owned_only": false}

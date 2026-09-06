@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-05T21:38:36" hostname="DESKTOP-8J2KSNF" time="0.001">
+  <properties/>
+  <testcase name="launchIsIdempotentAndConflictingOwnerIsRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest" time="0.0"/>
+  <testcase name="ownerAndOneMissionAuthorityAreEnforced()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest" time="0.0"/>
+  <testcase name="offlineCompletionAndClaimCreditExactlyOnce()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest" time="0.0"/>
+  <testcase name="restoredCrossReferencesMustBeConsistent()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

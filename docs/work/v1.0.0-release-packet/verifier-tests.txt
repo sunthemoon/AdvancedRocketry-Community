@@ -1,0 +1,12 @@
+test_candidate_claim_is_rejected (test_verify.HandoffVerificationTest.test_candidate_claim_is_rejected) ... ok
+test_changed_report_is_rejected (test_verify.HandoffVerificationTest.test_changed_report_is_rejected) ... ok
+test_changed_source_is_rejected (test_verify.HandoffVerificationTest.test_changed_source_is_rejected) ... ok
+test_missing_required_document_cannot_be_hidden_by_new_checksums (test_verify.HandoffVerificationTest.test_missing_required_document_cannot_be_hidden_by_new_checksums) ... ok
+test_uncovered_file_is_rejected (test_verify.HandoffVerificationTest.test_uncovered_file_is_rejected) ... ok
+test_valid_handoff_does_not_approve_release (test_verify.HandoffVerificationTest.test_valid_handoff_does_not_approve_release) ... ok
+test_wrong_artifact_binding_is_rejected (test_verify.HandoffVerificationTest.test_wrong_artifact_binding_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.344s
+
+OK

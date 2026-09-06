@@ -1,0 +1,19 @@
+test_broken_link (test_v1plus_planning.PlanningValidationTests.test_broken_link) ... ok
+test_duplicate_gate (test_v1plus_planning.PlanningValidationTests.test_duplicate_gate) ... ok
+test_duplicate_status_field (test_v1plus_planning.PlanningValidationTests.test_duplicate_status_field) ... ok
+test_empty_gates (test_v1plus_planning.PlanningValidationTests.test_empty_gates) ... ok
+test_in_progress_milestone_remains_valid_without_approval (test_v1plus_planning.PlanningValidationTests.test_in_progress_milestone_remains_valid_without_approval) ... ok
+test_missing_required_command (test_v1plus_planning.PlanningValidationTests.test_missing_required_command) ... ok
+test_missing_version (test_v1plus_planning.PlanningValidationTests.test_missing_version) ... ok
+test_original_package_extra_file (test_v1plus_planning.PlanningValidationTests.test_original_package_extra_file) ... ok
+test_original_package_size_and_hash_mismatches (test_v1plus_planning.PlanningValidationTests.test_original_package_size_and_hash_mismatches) ... ok
+test_phase_is_not_version_status (test_v1plus_planning.PlanningValidationTests.test_phase_is_not_version_status) ... ok
+test_repository_plans_without_original_package (test_v1plus_planning.PlanningValidationTests.test_repository_plans_without_original_package) ... ok
+test_source_path_escape (test_v1plus_planning.PlanningValidationTests.test_source_path_escape) ... ok
+test_unapproved_pass_is_rejected (test_v1plus_planning.PlanningValidationTests.test_unapproved_pass_is_rejected) ... ok
+test_unclosed_fence (test_v1plus_planning.PlanningValidationTests.test_unclosed_fence) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 5.319s
+
+OK

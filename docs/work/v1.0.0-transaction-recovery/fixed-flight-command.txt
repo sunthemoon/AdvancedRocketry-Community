@@ -1,0 +1,10 @@
+[PASS] Forced-stop flight checkpoint ASSEMBLED
+[PASS] Forced-stop flight checkpoint FUELED
+[PASS] Forced-stop flight checkpoint COUNTDOWN
+[PASS] Forced-stop flight checkpoint ASCENT
+[PASS] Forced-stop flight checkpoint TRANSIT_PREPARED
+[PASS] Forced-stop flight checkpoint DESTINATION_SPAWNED
+[PASS] Forced-stop flight checkpoint PASSENGERS_TRANSFERRED
+[PASS] Forced-stop flight checkpoint SOURCE_REMOVED
+[PASS] Forced-stop flight checkpoint DESCENT
+[PASS] Forced-stop flight checkpoint LANDED

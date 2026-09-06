@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T20:22:59" hostname="DESKTOP-8J2KSNF" time="0.001">
+  <properties/>
+  <testcase name="ownerMemberOutsiderAndOperatorUseOnePolicy()" classname="io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest" time="0.0"/>
+  <testcase name="removalTakesEffectAgainstNextCheck()" classname="io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest" time="0.0"/>
+  <testcase name="invitationHasNoAuthorityUntilAcceptedAndCanBeDeclined()" classname="io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

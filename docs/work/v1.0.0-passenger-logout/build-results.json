@@ -1,0 +1,45 @@
+{
+  "java": {
+    "tests": 406,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 79
+  },
+  "gametest_required_pass": true,
+  "commands": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "src/generated"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "artifact_sha256": "569f41ab59d953e3b4fad3c1b00588705b260fc0b73f1deaf829024bc603e381",
+  "artifact_bytes": 1278474,
+  "source_files": 747,
+  "native_clients": "NOT_RUN",
+  "restart": "NOT_RUN",
+  "soak": "DEFERRED_BY_OWNER",
+  "release_gates": "IN_PROGRESS"
+}

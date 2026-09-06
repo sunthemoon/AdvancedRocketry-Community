@@ -1,0 +1,46 @@
+test_canonical_crlf_and_leading_property_whitespace (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_canonical_crlf_and_leading_property_whitespace) ... ok
+test_cli_manifest_and_environment_agree (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_cli_manifest_and_environment_agree) ... ok
+test_cli_rejects_missing_environment_or_overlapping_files (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_cli_rejects_missing_environment_or_overlapping_files) ... ok
+test_exact_names_and_input_digest (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_exact_names_and_input_digest) ... ok
+test_invalid_input_does_not_write_either_output (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_invalid_input_does_not_write_either_output) ... ok
+test_rejects_ambiguous_or_unsafe_properties (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_rejects_ambiguous_or_unsafe_properties) ... ok
+test_rejects_oversized_or_invalid_utf8_input (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_rejects_oversized_or_invalid_utf8_input) ... ok
+test_repository_properties_are_supported (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_repository_properties_are_supported) ... ok
+test_unrelated_values_are_not_exported (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_unrelated_values_are_not_exported) ... ok
+test_version_transition_changes_all_outputs (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_version_transition_changes_all_outputs) ... ok
+test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) ... 
+  test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) (job='baseline') ... FAIL
+  test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) (job='satellite-acceptance') ... FAIL
+  test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) (job='latest-compatibility') ... FAIL
+
+======================================================================
+FAIL: test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) (job='baseline')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 149, in test_all_forge_jobs_resolve_and_audit_the_configured_artifact
+    self.assertEqual(1, runs.count("scripts/ci_artifact_identity.py"))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) (job='satellite-acceptance')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 149, in test_all_forge_jobs_resolve_and_audit_the_configured_artifact
+    self.assertEqual(1, runs.count("scripts/ci_artifact_identity.py"))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) (job='latest-compatibility')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 149, in test_all_forge_jobs_resolve_and_audit_the_configured_artifact
+    self.assertEqual(1, runs.count("scripts/ci_artifact_identity.py"))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.090s
+
+FAILED (failures=3)

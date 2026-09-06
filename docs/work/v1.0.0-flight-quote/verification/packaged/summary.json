@@ -1,0 +1,314 @@
+{
+  "artifact": {
+    "artifact": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+    "entry_count": 773,
+    "expected_version": "1.20.1-1.0.0-dev",
+    "sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc"
+  },
+  "authentication_tested": false,
+  "clients": [
+    {
+      "cell": "forge-47.4.10-jei-absent",
+      "clean_close": "owned_GLFW_WM_CLOSE",
+      "completed_at": "2026-09-05T18:04:42.939815+00:00",
+      "exit_code": 0,
+      "external_error_or_fatal_lines": [],
+      "forge": "47.4.10",
+      "full_log_bytes": 11783,
+      "full_log_file": "forge-47.4.10-jei-absent.txt",
+      "full_log_sha256": "556812e798d6e211229be63b6313cda5bb77830d9529ce6dd0b98e9d56a88f72",
+      "jei": "absent",
+      "jei_synchronized_recipe_count": null,
+      "kind": "packaged_forge_client",
+      "launch_target": "forgeclient",
+      "log_audit": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 24
+      },
+      "mods": [
+        {
+          "file": "advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+          "sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc"
+        }
+      ],
+      "pid": 10860,
+      "renderer_lines": [
+        "[02:04:24] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: NVIDIA GeForce RTX 3070 Laptop GPU/PCIe/SSE2 GL version 4.6.0 NVIDIA 566.36, NVIDIA Corporation"
+      ],
+      "required_receipt_line_numbers": {
+        "ARCE-BETA-1100 optional_compat=jei status=absent version=absent": [
+          54
+        ],
+        "Advanced Rocketry: Community Edition 1.20.1-1.0.0-dev initialized": [
+          53
+        ],
+        "Connected to a modded server.": [
+          75
+        ],
+        "Connecting to 127.0.0.1, 54903": [
+          74
+        ],
+        "Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412": [
+          35
+        ],
+        "Setting user: V100Quote": [
+          33
+        ]
+      },
+      "server_join_leave_observed": true,
+      "started_at": "2026-09-05T18:04:19.581496+00:00",
+      "username": "V100Quote",
+      "window_close": {
+        "closed_handle": 1051422,
+        "observed_owned_windows": [
+          {
+            "class": "GLFW30",
+            "handle": 1051422,
+            "pid": 10860,
+            "title": "Minecraft* Forge 1.20.1",
+            "visible": true
+          },
+          {
+            "class": "NVOpenGLPbuffer",
+            "handle": 2099990,
+            "pid": 10860,
+            "title": "__wglDummyWindowFodder",
+            "visible": false
+          },
+          {
+            "class": "NVOpenGLPbuffer",
+            "handle": 1248448,
+            "pid": 10860,
+            "title": "NVOGLDC invisible",
+            "visible": false
+          },
+          {
+            "class": "GLFW30",
+            "handle": 3017592,
+            "pid": 10860,
+            "title": "GLFW message window",
+            "visible": false
+          },
+          {
+            "class": "MSCTFIME UI",
+            "handle": 4131982,
+            "pid": 10860,
+            "title": "MSCTFIME UI",
+            "visible": false
+          },
+          {
+            "class": "IME",
+            "handle": 4197444,
+            "pid": 10860,
+            "title": "Default IME",
+            "visible": false
+          },
+          {
+            "class": "IME",
+            "handle": 1443968,
+            "pid": 10860,
+            "title": "Default IME",
+            "visible": false
+          },
+          {
+            "class": "IME",
+            "handle": 396486,
+            "pid": 10860,
+            "title": "Default IME",
+            "visible": false
+          }
+        ]
+      }
+    }
+  ],
+  "completed_at": "2026-09-05T18:05:11.073256+00:00",
+  "java_version": "17.0.7",
+  "owned_processes": [
+    {
+      "completed_at": "2026-09-05T18:04:42.941246+00:00",
+      "exit_code": 0,
+      "full_log_bytes": 11783,
+      "full_log_file": "forge-47.4.10-jei-absent.txt",
+      "full_log_sha256": "556812e798d6e211229be63b6313cda5bb77830d9529ce6dd0b98e9d56a88f72",
+      "native_logs": [
+        {
+          "bytes": 14017,
+          "file": "forge-47.4.10-jei-absent-latest.log",
+          "sha256": "024f353c03481adc2e293190998c0e7b4c162b89c7d68eef7adc93397bf61df1"
+        },
+        {
+          "bytes": 94016,
+          "file": "forge-47.4.10-jei-absent-debug.log",
+          "sha256": "2d76b5b498201180c6267bb5dfbc69b6e76b5738de5f628404b7a0098b011358"
+        }
+      ],
+      "pid": 10860,
+      "started_at": "2026-09-05T18:04:19.581496+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T18:04:45.539450+00:00",
+      "exit_code": 0,
+      "full_log_bytes": 16204,
+      "full_log_file": "server-47.4.10-matrix.txt",
+      "full_log_sha256": "96fc4d40603c0ab4d866f5c7cd57a809885fdd3549fa7e5fc349602ff0efdd23",
+      "native_logs": [
+        {
+          "bytes": 20638,
+          "file": "server-47.4.10-matrix-latest.log",
+          "sha256": "d7bed95b11e851174cb0563a69ccec5659ca98c90d515cef4fffb4bdb429d70f"
+        },
+        {
+          "bytes": 107391,
+          "file": "server-47.4.10-matrix-debug.log",
+          "sha256": "0cee8417aa27af3e3a460f18740f25bd4724c12d31930c2fa63523dfd55a157f"
+        }
+      ],
+      "pid": 27064,
+      "started_at": "2026-09-05T18:03:36.872211+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T18:05:11.061865+00:00",
+      "exit_code": 0,
+      "full_log_bytes": 9527,
+      "full_log_file": "server-47.4.10-restart.txt",
+      "full_log_sha256": "2d08333d9a4709780d8374ec289c0221f23021a49b13c8a03f8e165c7c0fcc77",
+      "native_logs": [
+        {
+          "bytes": 11825,
+          "file": "server-47.4.10-restart-latest.log",
+          "sha256": "fe809b394bddf6be3e7cd2ce37e3e3c0851ea85f653b6f4a9afc59c192aa1ce2"
+        },
+        {
+          "bytes": 77118,
+          "file": "server-47.4.10-restart-debug.log",
+          "sha256": "c023c82a92b9ddda8f61f4a1362d16873d621beca65b6be39f003e3b00ec1742"
+        }
+      ],
+      "pid": 21220,
+      "started_at": "2026-09-05T18:04:45.551794+00:00"
+    }
+  ],
+  "scope": "one baseline connection and dedicated restart; not GUI or release acceptance",
+  "servers": [
+    {
+      "completed_at": "2026-09-05T18:04:45.538381+00:00",
+      "cycle": "matrix",
+      "exit_code": 0,
+      "forge": "47.4.10",
+      "full_log_bytes": 16204,
+      "full_log_file": "server-47.4.10-matrix.txt",
+      "full_log_sha256": "96fc4d40603c0ab4d866f5c7cd57a809885fdd3549fa7e5fc349602ff0efdd23",
+      "log_audit": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 25
+      },
+      "mods": [
+        {
+          "file": "advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+          "sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc"
+        }
+      ],
+      "offline_loopback": true,
+      "pid": 27064,
+      "port": 54903,
+      "server_properties_startup_sha256": "d83b6465f8c16d72b59fb87a995641de8fb4878ec257535b7948acf7b9098f73",
+      "started_at": "2026-09-05T18:03:36.872211+00:00",
+      "status": {
+        "description": {
+          "text": "ARCE v0.0.2 dedicated smoke"
+        },
+        "forgeData": {
+          "channels": [],
+          "d": "\u00d6\u0000\u0000\u0806\u3424\u734b\u3656\u2e4c\u1998\u033a\u2e31\u6064\u44b8\u2851\u26e7\u6cae\u5a59\u3a39\u7265\u0c08\u3135\u099a\u2080\u6cae\u5a59\u3a39\u7265\u0c08\u3135\u099a\u5040\u6cc0\u5c9b\u32b3\u0c00\u52e8\u4995\u1afb\u26f7\u2e8e\u5b9a\u01b3\u2e31`\u4c14\u6383\u4696\u206e\u4b8c\u0098\u1908\u48c2\u05d9\u1b73\u4656\u6e4c\u58db\u32b5\u7274\u46f2\u35bd\u2b6b\u16e7\u2e8d\u441e\u1718\u3032\u625c\u44b4\u0171\u02e3\u05a6\u1959\u06bb\u6f72\u56c6\u5195\u32fb\u16c6\u0ced\u5d1a\u1a00\u1300\u52d8\u1599\u1afb\u0757\u6e0e\u1c9b\u2fba\u7473\u68c2\u4dd5\u080b\u2003\u2c62\u5b19\u39b2\u6974\u58c2\u4d7d\u0b73\u3706\u6d0e\u5d1b\u1880\u0d00\u5ee4\u2d8d\u232b\u65f7\u6d2e\u5d5c\u3630\u3101\u0000",
+          "fmlNetworkVersion": 3,
+          "mods": [],
+          "truncated": false
+        },
+        "players": {
+          "max": 2,
+          "online": 0
+        },
+        "version": {
+          "name": "1.20.1",
+          "protocol": 763
+        }
+      }
+    },
+    {
+      "completed_at": "2026-09-05T18:05:11.061076+00:00",
+      "cycle": "restart",
+      "exit_code": 0,
+      "forge": "47.4.10",
+      "full_log_bytes": 9527,
+      "full_log_file": "server-47.4.10-restart.txt",
+      "full_log_sha256": "2d08333d9a4709780d8374ec289c0221f23021a49b13c8a03f8e165c7c0fcc77",
+      "log_audit": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "mods": [
+        {
+          "file": "advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+          "sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc"
+        }
+      ],
+      "offline_loopback": true,
+      "pid": 21220,
+      "port": 54903,
+      "server_properties_startup_sha256": "d83b6465f8c16d72b59fb87a995641de8fb4878ec257535b7948acf7b9098f73",
+      "started_at": "2026-09-05T18:04:45.551794+00:00",
+      "status": {
+        "description": {
+          "text": "ARCE v0.0.2 dedicated smoke"
+        },
+        "forgeData": {
+          "channels": [],
+          "d": "\u00d6\u0000\u0000\u0806\u3424\u734b\u3656\u2e4c\u1998\u033a\u2e31\u6064\u44b8\u2851\u26e7\u6cae\u5a59\u3a39\u7265\u0c08\u3135\u099a\u2080\u6cae\u5a59\u3a39\u7265\u0c08\u3135\u099a\u5040\u6cc0\u5c9b\u32b3\u0c00\u52e8\u4995\u1afb\u26f7\u2e8e\u5b9a\u01b3\u2e31`\u4c14\u6383\u4696\u206e\u4b8c\u0098\u1908\u48c2\u05d9\u1b73\u4656\u6e4c\u58db\u32b5\u7274\u46f2\u35bd\u2b6b\u16e7\u2e8d\u441e\u1718\u3032\u625c\u44b4\u0171\u02e3\u05a6\u1959\u06bb\u6f72\u56c6\u5195\u32fb\u16c6\u0ced\u5d1a\u1a00\u1300\u52d8\u1599\u1afb\u0757\u6e0e\u1c9b\u2fba\u7473\u68c2\u4dd5\u080b\u2003\u2c62\u5b19\u39b2\u6974\u58c2\u4d7d\u0b73\u3706\u6d0e\u5d1b\u1880\u0d00\u5ee4\u2d8d\u232b\u65f7\u6d2e\u5d5c\u3630\u3101\u0000",
+          "fmlNetworkVersion": 3,
+          "mods": [],
+          "truncated": false
+        },
+        "players": {
+          "max": 2,
+          "online": 0
+        },
+        "version": {
+          "name": "1.20.1",
+          "protocol": 763
+        }
+      }
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": "scripts\\run_v100_compatibility_matrix.py",
+      "sha256": "9dae3e7a8dea21d9ce2bc6782277d452773b5c3d70ff8b910fc32f9df156946c"
+    },
+    {
+      "path": "scripts\\v100_compatibility_runtime.py",
+      "sha256": "6a301dbb665237eea46f2b0ceecd0adb6e858fde58830b3383378e1221c2d901"
+    },
+    {
+      "path": "scripts\\run_dedicated_server_smoke.py",
+      "sha256": "6503c3d03594abb92d8d48bfb20c6c6245707dda98963e6f77a78bdd423b2f7d"
+    }
+  ],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T18:03:35.715642+00:00",
+  "status": "PASS"
+}

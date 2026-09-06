@@ -1,0 +1,2 @@
+[PASS] Celestial runtime uses namespaced ResourceLocation/ResourceKey identity; legacy numeric IDs remain report-only
+[PASS] No DOM API reference appears in the celestial implementation

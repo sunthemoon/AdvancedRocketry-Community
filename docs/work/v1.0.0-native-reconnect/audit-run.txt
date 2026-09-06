@@ -1,0 +1,27 @@
+{
+  "status": "PASS_CONTROLLED_NATIVE_QUEUE",
+  "driver_exit": 0,
+  "process_exits": {
+    "client-2": 0,
+    "client": 0,
+    "probe": 0,
+    "server": 0
+  },
+  "readiness_false_counts": {
+    "owner_initial": 4,
+    "passenger_initial": 4,
+    "owner_pending_logout": 4
+  },
+  "moves": {
+    "owner": 2,
+    "passenger": 1
+  },
+  "saved_rocket_projection_equal": true,
+  "original_seed_files_unchanged": 59,
+  "source_files": 747,
+  "screenshots": 9,
+  "retained_server_lag_warnings": 11,
+  "genuine_disk_loading_order": "NOT_TESTED",
+  "expiry": "NOT_TESTED",
+  "performance": "NOT_MEASURED"
+}

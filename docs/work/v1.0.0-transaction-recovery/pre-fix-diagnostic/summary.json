@@ -1,0 +1,45 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+  "artifact_sha256": "65b10b88521a41191cecf01724e03139549c22e08595615d75ab9341b41dc7af",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "baseline_summary_sha256": "2858f6032251b181b6ff349d7cfe759b2c9a875c4f7574ab957bb2803f4d4698",
+  "build": "1.20.1-1.0.0-dev",
+  "cases": [],
+  "completed_at": "2026-09-05T10:05:26.991730+00:00",
+  "error": "Timed out waiting for server marker 'TXN_assembly\\\\-spawned\\\\-5_AUTHORITY'",
+  "harness_sha256": "c2d13ed9250d931b7fca399568811a6841fb72f77da466aa44b99b45828cd6a9",
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "20260905T100414591068Z-v100-txn-assembly-spawned-5-recover-full.txt",
+      "sha256": "d7351adc915baa335936373ef030f90e4a2208587114fc27ac32b62ee8f40050"
+    },
+    {
+      "file": "20260905T100414591068Z-v100-txn-assembly-spawned-5-stage-full.txt",
+      "sha256": "e0fb29f7f9101caeed180bf2ae5e2e5d420dba7956c8eb8a39028d5ad5985669"
+    }
+  ],
+  "online_mode": "true",
+  "processes": [
+    {
+      "completed_at": "2026-09-05T10:04:37.065787+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100414591068Z-v100-txn-assembly-spawned-5-stage-full.txt",
+      "full_log_sha256": "e0fb29f7f9101caeed180bf2ae5e2e5d420dba7956c8eb8a39028d5ad5985669",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-spawned-5-stage",
+      "started_at": "2026-09-05T10:04:15.316547+00:00",
+      "termination": "process_kill"
+    }
+  ],
+  "requested_cases": [
+    "ASSEMBLY:SPAWNED:5"
+  ],
+  "schema_version": 1,
+  "scope": "five-block unmanned real transaction stages after durable flush; not power loss during writes, passengers, Beta upgrade or performance",
+  "server_port": 25610,
+  "source_state": "development_worktree",
+  "status": "FAIL",
+  "template_artifact_sha256": "5b5d942a1c807a62ec030bc2150f246a7de6d5f78cd2ed3698db3445a53d2096",
+  "version": "v1.0.0"
+}

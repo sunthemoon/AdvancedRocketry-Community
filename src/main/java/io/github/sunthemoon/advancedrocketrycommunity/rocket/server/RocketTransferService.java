@@ -190,7 +190,7 @@ final class RocketTransferService {
                 || !record.sourceEntityId().equals(rocket.getUUID())) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
-        failBackToSource(level.getServer(), journal, record, rocket, "countdown_cancelled");
+        failBackToSource(level.getServer(), journal, record, rocket, RocketTransferReturnReason.COUNTDOWN_CANCELLED);
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, plan.requiredFuel());
     }
 
@@ -201,6 +201,7 @@ final class RocketTransferService {
             return;
         }
         recovery.recoverNext(server, journal);
+        recovery.tickReconnects(server, journal);
         List<UUID> active = liveTransfers.stream().sorted().toList();
         for (UUID transferId : active) {
             RocketTransferRecord record = journal.find(transferId).orElse(null);
@@ -233,6 +234,10 @@ final class RocketTransferService {
             return;
         }
         recovery.onPlayerLoggedIn(player, journal);
+    }
+
+    void onPlayerLoggedOut(UUID playerId) {
+        recovery.onPlayerLoggedOut(playerId);
     }
 
     int activeCount(MinecraftServer server) {
@@ -301,7 +306,7 @@ final class RocketTransferService {
         RocketTransferRecord record = journal.findByLogicalRocket(
                 rocket.assemblyTransactionId().orElseThrow()
         ).orElse(null);
-        if (record != null && RocketTransferEntities.isLandedAuthority(rocket, record)) {
+        if (record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record)) {
             journal.remove(record.transferId());
             journal.flush(level.getServer());
             liveTransfers.remove(record.transferId());
@@ -313,6 +318,7 @@ final class RocketTransferService {
     void clear() {
         liveTransfers.clear();
         settledTransfers.clear();
+        recovery.clear();
     }
 
     private void tickLive(
@@ -393,12 +399,12 @@ final class RocketTransferService {
         );
         if (destinationLevel == null
                 || !pads.available(destinationLevel, record.destinationSnapshot(), null, false)) {
-            failBackToSource(server, journal, record, source, "destination_pad_blocked");
+            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED);
             return;
         }
         RocketEntity destination = ModEntities.ROCKET.get().create(destinationLevel);
         if (destination == null) {
-            failBackToSource(server, journal, record, source, "destination_entity_create_failed");
+            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED);
             return;
         }
         destination.initializeTransferred(
@@ -409,7 +415,7 @@ final class RocketTransferService {
         );
         RocketTransferEntities.positionAtAltitude(destination, record.destinationSnapshot().sourceOrigin());
         if (!destinationLevel.addFreshEntity(destination)) {
-            failBackToSource(server, journal, record, source, "destination_entity_spawn_failed");
+            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_SPAWN_FAILED);
             return;
         }
         RocketTransferRecord spawned = record.destinationSpawned(destination.getUUID());
@@ -496,11 +502,10 @@ final class RocketTransferService {
             RocketTransferRecord record,
             RocketEntity destination
     ) {
-        if (destination.flightData().map(RocketFlightData::state).orElse(RocketFlightState.FAILED_RECOVERABLE)
-                != RocketFlightState.LANDED) {
+        if (!RocketTransferEntities.isReplaceableLandedAuthority(destination, record)) {
             return;
         }
-        boolean allOnline = record.destinationFlightData().passengers().assignments().stream()
+        boolean allOnline = destination.flightData().orElseThrow().passengers().assignments().stream()
                 .allMatch(seat -> server.getPlayerList().getPlayer(seat.passengerId()) != null);
         if (allOnline) {
             liveTransfers.remove(record.transferId());
@@ -514,7 +519,7 @@ final class RocketTransferService {
             RocketTransferSavedData journal,
             RocketTransferRecord record,
             RocketEntity source,
-            String reason
+            RocketTransferReturnReason reason
     ) {
         RocketFlightData safe = RocketTransferEntities.stationarySource(
                 record,
@@ -532,11 +537,10 @@ final class RocketTransferService {
         journal.remove(record.transferId());
         journal.flush(server);
         liveTransfers.remove(record.transferId());
-        AdvancedRocketryCommunity.LOGGER.warn(
-                "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer={} logical={} reason={} fuel={}",
+        reason.log(
+                AdvancedRocketryCommunity.LOGGER,
                 record.transferId(),
                 record.logicalRocketId(),
-                reason,
                 safe.fuel().amount()
         );
     }

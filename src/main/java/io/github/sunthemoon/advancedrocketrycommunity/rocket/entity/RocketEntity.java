@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
@@ -14,8 +15,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketS
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
@@ -49,6 +52,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Long> DISPLAYED_FUEL_AMOUNT =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.LONG);
+    private static final EntityDataAccessor<Integer> DISPLAYED_SEAT_CAPACITY =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.INT);
+    private static final List<EntityDataAccessor<Optional<UUID>>> DISPLAYED_SEAT_PASSENGERS =
+            IntStream.range(0, RocketFlightLimits.MAX_PASSENGERS)
+                    .mapToObj(index -> SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.OPTIONAL_UUID))
+                    .toList();
 
     private RocketStructureSnapshot snapshot;
     private UUID assemblyTransactionId;
@@ -165,6 +174,8 @@ public final class RocketEntity extends Entity implements MenuProvider {
     protected void defineSynchedData() {
         entityData.define(DISPLAYED_FLIGHT_STATE, RocketFlightState.ASSEMBLED.name());
         entityData.define(DISPLAYED_FUEL_AMOUNT, 0L);
+        entityData.define(DISPLAYED_SEAT_CAPACITY, 0);
+        DISPLAYED_SEAT_PASSENGERS.forEach(slot -> entityData.define(slot, Optional.empty()));
     }
 
     @Override
@@ -314,6 +325,13 @@ public final class RocketEntity extends Entity implements MenuProvider {
     }
 
     @Override
+    public boolean hasExactlyOnePlayerPassenger() {
+        // Vanilla uses this predicate to move vehicle ownership into player NBT
+        // and unload it on logout. Rockets belong to the world and flight journal.
+        return false;
+    }
+
+    @Override
     protected boolean canAddPassenger(Entity passenger) {
         return operational()
                 && passenger instanceof Player
@@ -323,19 +341,22 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void positionRider(Entity passenger, MoveFunction move) {
-        if (!hasPassenger(passenger) || flightData == null) {
+        if (!hasPassenger(passenger) || (!level().isClientSide && flightData == null)) {
             return;
         }
-        int seat = flightData.passengers().assignment(passenger.getUUID())
-                .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat::seatIndex)
-                .orElse(0);
-        double angle = seat * (Math.PI * 2.0D / Math.max(1, flightData.passengers().seatCapacity()));
-        double radius = seat == 0 ? 0.0D : 0.35D;
+        int seat = 0;
+        for (int index = 0; index < DISPLAYED_SEAT_PASSENGERS.size(); index++) {
+            if (entityData.get(DISPLAYED_SEAT_PASSENGERS.get(index)).filter(passenger.getUUID()::equals).isPresent()) {
+                seat = index;
+                break;
+            }
+        }
+        RocketPassengerPosition offset = RocketPassengerPosition.forSeat(seat, entityData.get(DISPLAYED_SEAT_CAPACITY));
         move.accept(
                 passenger,
-                getX() + Math.cos(angle) * radius,
-                getY() + 1.15D,
-                getZ() + Math.sin(angle) * radius
+                getX() + offset.x(),
+                getY() + offset.y(),
+                getZ() + offset.z()
         );
     }
 
@@ -383,6 +404,16 @@ public final class RocketEntity extends Entity implements MenuProvider {
     }
 
     private void refreshSyncedData() {
+        entityData.set(DISPLAYED_SEAT_CAPACITY, flightData == null ? 0 : flightData.passengers().seatCapacity());
+        List<Optional<UUID>> seats = new java.util.ArrayList<>(
+                java.util.Collections.nCopies(RocketFlightLimits.MAX_PASSENGERS, Optional.empty()));
+        if (flightData != null) {
+            flightData.passengers().assignments().forEach(seat ->
+                    seats.set(seat.seatIndex(), Optional.of(seat.passengerId())));
+        }
+        for (int index = 0; index < DISPLAYED_SEAT_PASSENGERS.size(); index++) {
+            entityData.set(DISPLAYED_SEAT_PASSENGERS.get(index), seats.get(index));
+        }
         if (flightData == null) {
             entityData.set(DISPLAYED_FLIGHT_STATE, RocketFlightState.FAILED_RECOVERABLE.name());
             entityData.set(DISPLAYED_FUEL_AMOUNT, 0L);

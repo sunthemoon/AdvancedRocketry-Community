@@ -1,0 +1,4 @@
+  File "C:\Users\Administrator\AppData\Local\Temp\arce-legacy-before-2-ui-session.py", line 63
+    properties.write_text(re.sub(r'^server-port=.*
+                                 ^
+SyntaxError: unterminated string literal (detected at line 63)

@@ -1,0 +1,146 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T21:23:22.257129+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon if entity @e[type=advancedrocketrycommunity:rocket]",
+        "id": 1,
+        "op": "server",
+        "wait": "Test passed, count:"
+      },
+      "result": {
+        "receipt": "[05:23:22] [Server thread/INFO] [minecraft/MinecraftServer]: Test passed, count: 1"
+      }
+    },
+    {
+      "at": "2026-09-05T21:23:22.551363+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run arce rocket release-test report @s",
+        "id": 2,
+        "op": "server",
+        "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT"
+      },
+      "result": {
+        "receipt": "[05:23:22] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a logical=0ce64af6-4ee0-4c9b-b019-08c2b512bfe4 snapshot=eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196 dimension=advancedrocketrycommunity:moon state=LANDED fuel=618 capacity=1000 passengers=2 transfer=none origin=8,80,8 blocks=6"
+      }
+    },
+    {
+      "at": "2026-09-05T21:23:22.854782+00:00",
+      "request": {
+        "command": "execute as V100Visual1 on vehicle run data get entity @s UUID",
+        "id": 3,
+        "op": "server",
+        "wait": "has the following entity data"
+      },
+      "result": {
+        "receipt": "[05:23:22] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; 988814588, 116343234, -1277312883, 1548464986]"
+      }
+    },
+    {
+      "at": "2026-09-05T21:23:23.302049+00:00",
+      "request": {
+        "command": "execute as V100Visual2 on vehicle run data get entity @s UUID",
+        "id": 4,
+        "op": "server",
+        "wait": "has the following entity data"
+      },
+      "result": {
+        "receipt": "[05:23:23] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; 988814588, 116343234, -1277312883, 1548464986]"
+      }
+    },
+    {
+      "at": "2026-09-05T21:23:23.602636+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run data get entity @s RocketEntityData.snapshot.relative_blocks",
+        "id": 5,
+        "op": "server",
+        "wait": "has the following entity data"
+      },
+      "result": {
+        "receipt": "[05:23:23] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [{palette: 1, position: [I; -1, 0, 0]}, {palette: 2, position: [I; 0, 0, 0]}, {palette: 3, position: [I; 0, 1, 0]}, {palette: 0, position: [I; 0, 2, 0]}, {block_entity: {adapter: \"advancedrocketrycommunity:vanilla_container_v1\", data: {Items: [{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}]}}, palette: 4, position: [I; 1, 0, 0]}, {palette: 3, position: [I; 1, 1, 0]}]"
+      }
+    },
+    {
+      "at": "2026-09-05T21:23:24.051840+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run data get entity @s RocketEntityData.flight_data.passengers",
+        "id": 6,
+        "op": "server",
+        "wait": "has the following entity data"
+      },
+      "result": {
+        "receipt": "[05:23:24] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: {assignments: [{seat_index: 0, passenger_id: [I; 1656469963, -1292224086, -1704246517, 1911900479]}, {seat_index: 1, passenger_id: [I; 1686305270, -14274490, -1212512549, 79262456]}], seat_capacity: 2}"
+      }
+    },
+    {
+      "at": "2026-09-05T21:23:24.405710+00:00",
+      "request": {
+        "id": 7,
+        "key": 114,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T21:23:24.858342+00:00",
+      "request": {
+        "id": 8,
+        "key": 114,
+        "op": "key",
+        "player": "operator"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T21:23:25.363640+00:00",
+      "request": {
+        "id": 9,
+        "name": "owner-migrated-f3",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 104363,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-migrated-f3.png",
+        "sha256": "041090b3956f0e0fc1b576ea5b694c000b7c25c6b51de0285aeb2fd1f563ba90",
+        "source": "native Minecraft F2 screenshot"
+      }
+    }
+  ],
+  "artifact_sha256": "7ba1c6c771d945bf25f101cdc8101afb26f51afd7cfdc5834a07545e0a5c99c4",
+  "authentication_tested": false,
+  "client_pid": 26332,
+  "entity": "3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 59259,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 104363,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-migrated-f3.png",
+      "sha256": "041090b3956f0e0fc1b576ea5b694c000b7c25c6b51de0285aeb2fd1f563ba90",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 17912,
+  "second_username": "V100Visual2",
+  "second_window": 786756,
+  "server_pid": 18764,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:21:39.618508+00:00",
+  "startup_recovery_findings": [
+    "[05:21:57] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED"
+  ],
+  "stations": [],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 5311474
+}

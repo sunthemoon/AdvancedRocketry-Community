@@ -1,0 +1,21 @@
+{
+  "actions": [],
+  "artifact_sha256": "c860542e8971e845121b6fd5c41474407376b465acc301a7cab7975ac0ccf9d0",
+  "authentication_tested": false,
+  "client_pid": 24796,
+  "entity": "3d68a97e-ac36-4e91-92a6-3580f7d8b046",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "port": 63144,
+  "processes": [],
+  "screenshots": [],
+  "server_pid": 12376,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T18:55:49.529720+00:00",
+  "stations": [
+    "587876ed-6d26-4808-afa4-b8ac56175671",
+    "a18c132f-c718-4449-b5ef-58311be4821e"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 1182498
+}

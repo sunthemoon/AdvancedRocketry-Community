@@ -1,0 +1,299 @@
+{
+  "schema_version": 1,
+  "package": "AdvancedRocketry-Community-v1plus-Development-Docs",
+  "source_date": "2026-09-04",
+  "integration_date": "2026-09-05",
+  "source_kind": "user-supplied-planning-material",
+  "package_manifest_verified_entries": 30,
+  "inputs": [
+    {
+      "source_sha256": "cf7907e3cfe7ac342e751c7a37299a145e09d6a0219a82aa90c40f8ef7e576fd",
+      "source_bytes": 5058,
+      "source_path": "00-APPLY-TO-REPOSITORY.md",
+      "targets": [],
+      "disposition": "reference-only-package-metadata"
+    },
+    {
+      "source_sha256": "16c9c3b6107f5cd34a092bf3098f9d5841165f52a58bedc4ce67ca24c400ef14",
+      "source_bytes": 1902,
+      "source_path": "codex-prompts/05-v1.0-release-validation.md",
+      "targets": [
+        "codex-prompts/05-v1.0-release-validation.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "f86356072cdd09cb283e20ebf22828bd0684cacdcbc7b523df83f291df015658",
+      "source_bytes": 1631,
+      "source_path": "codex-prompts/06-implement-post-1.0-version.md",
+      "targets": [
+        "codex-prompts/06-implement-post-1.0-version.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "47692e346cc86430d0c0e7df5e3e9e766248265a3731128f5917cb926ea293e8",
+      "source_bytes": 1643,
+      "source_path": "codex-prompts/07-audit-post-1.0-version.md",
+      "targets": [
+        "codex-prompts/07-audit-post-1.0-version.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "4e7a2c74dbab05572d564be2767ca39e2a89f3a69ce626f5d6cd49203c1f9239",
+      "source_bytes": 1260,
+      "source_path": "codex-prompts/08-remote-linux-environment-audit.md",
+      "targets": [
+        "codex-prompts/08-remote-linux-environment-audit.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "4c0187163122d1d8b7933a2a2677bd69cf3fdc7c507e895489bae1f787216b15",
+      "source_bytes": 51679,
+      "source_path": "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md",
+      "targets": [
+        "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "ed074f6de80930be0c8df517c61bc28bb414d38b54ae2dd1797cad1fade244b1",
+      "source_bytes": 18281,
+      "source_path": "docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md",
+      "targets": [
+        "docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "63d631862c60e472fdf847bd36bd5d4175df7e098b36b03e6def94e5c53e8610",
+      "source_bytes": 6115,
+      "source_path": "docs/16-POST-1.0-VERSION-ROADMAP.md",
+      "targets": [
+        "docs/16-POST-1.0-VERSION-ROADMAP.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "1e779123f0a11917d1b22939c7f6cf5f10e7bd591259b02d938524f95c00ea58",
+      "source_bytes": 6749,
+      "source_path": "docs/17-V1PLUS-QUALITY-BUDGETS.md",
+      "targets": [
+        "docs/17-V1PLUS-QUALITY-BUDGETS.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "9d99efa4086383de2a003b4ee271c146a4cdb3cfdf054b3d2cfe7d772c134236",
+      "source_bytes": 2043,
+      "source_path": "docs/18-V1PLUS-SOURCES.md",
+      "targets": [
+        "docs/18-V1PLUS-SOURCES.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "53c88b479b55a22c2743a867acbfe15dbe29c531bafc9295236f4433ddeff8e0",
+      "source_bytes": 1978,
+      "source_path": "docs/snippets/AGENTS-v1plus-addition.md",
+      "targets": [
+        "AGENTS.md"
+      ],
+      "disposition": "merged-into-canonical-document"
+    },
+    {
+      "source_sha256": "886c29c25d9cbe9d73462f0f8f90915cda301ba4ce740f9581b78eba46e4f048",
+      "source_bytes": 1430,
+      "source_path": "docs/snippets/DOCUMENT-INDEX-v1plus-addition.md",
+      "targets": [
+        "DOCUMENT-INDEX.md"
+      ],
+      "disposition": "merged-into-canonical-document"
+    },
+    {
+      "source_sha256": "f4b69397a6d6856a4ab771c05e9e2b1997cbaac8ba750e676d0e66da8f12dbf6",
+      "source_bytes": 1251,
+      "source_path": "docs/snippets/VERSION-ROADMAP-v1plus-replacement.md",
+      "targets": [
+        "docs/04-VERSION-ROADMAP.md"
+      ],
+      "disposition": "merged-into-canonical-document"
+    },
+    {
+      "source_sha256": "00c8f0738e32182ee4ff4f58c489d77cbd861cdd9a0a6eb731edd2b158708bb9",
+      "source_bytes": 1209,
+      "source_path": "docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md",
+      "targets": [
+        "docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "2adbd2fc5b198f55e2fd44961ffe6bf65f59f2255a3b5be8c892f014d1bb9c1b",
+      "source_bytes": 1209,
+      "source_path": "docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md",
+      "targets": [
+        "docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "a5b66d87a66aa1dc132734dacf36fe6c13e9dc4e2541ae735a2fca65b769f352",
+      "source_bytes": 1693,
+      "source_path": "docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md",
+      "targets": [
+        "docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "e4b539d3987d59edb3418c929bcedeada65cb1ba2d3efbfe3e54aac33d9af06f",
+      "source_bytes": 11262,
+      "source_path": "docs/versions/V1.0.0-COMMUNITY-MVP.md",
+      "targets": [
+        "docs/versions/V1.0.0-COMMUNITY-MVP.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "b8ac9bf94ae87d6befbadec7e570a895abe0b59c5272dd6e2b3767fe430da1d9",
+      "source_bytes": 9058,
+      "source_path": "docs/versions/V1.1.0-EXPANSION-KERNEL.md",
+      "targets": [
+        "docs/versions/V1.1.0-EXPANSION-KERNEL.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "0e740ea0005e159d48ddd7f61831919f95f04fb34c3a1c3033979cfca6edef94",
+      "source_bytes": 7945,
+      "source_path": "docs/versions/V1.2.0-MACHINE-MULTIBLOCK-KERNEL.md",
+      "targets": [
+        "docs/versions/V1.2.0-MACHINE-MULTIBLOCK-KERNEL.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "03a417aac9df9c087bcb88cbf8e46f00f54a317573fc4edc2bf971930b475ce8",
+      "source_bytes": 7873,
+      "source_path": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "targets": [
+        "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "16854317f659b9d7baff37359c3ed861acd85f2370c48442cab8d8b363ebdb25",
+      "source_bytes": 7638,
+      "source_path": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "targets": [
+        "docs/versions/V1.4.0-PLANETARY-EXPANSION.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "77ee9af43af8a00960152d7581aec5da368f11e9644a8e1f688cb58a3ce4b912",
+      "source_bytes": 7511,
+      "source_path": "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md",
+      "targets": [
+        "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "37f85a13983b173235acc9908a8774f3b3f0a6a8d7339675e8e5b5e07cba5586",
+      "source_bytes": 7278,
+      "source_path": "docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md",
+      "targets": [
+        "docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "976b6c140c42781893e6ef2458e9a60f65c52a5ca0ef59ca0197094647f32b26",
+      "source_bytes": 7200,
+      "source_path": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "targets": [
+        "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "3334019fc45f670adbceae00cbf0fdc387cb312da708616accf4ef4b5c2f8780",
+      "source_bytes": 7355,
+      "source_path": "docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md",
+      "targets": [
+        "docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "ca2054dd582848217586a166ae17d5707bf5cd0129ae64c2ee5ce8f3537e7c54",
+      "source_bytes": 7296,
+      "source_path": "docs/versions/V1.9.0-PARITY-BETA-HARDENING.md",
+      "targets": [
+        "docs/versions/V1.9.0-PARITY-BETA-HARDENING.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "cf39377f934229701bf1fa79c245b9e7fd6c895117345adb4b1e4983ab710519",
+      "source_bytes": 7365,
+      "source_path": "docs/versions/V2.0.0-CLASSIC-FEATURE-PARITY.md",
+      "targets": [
+        "docs/versions/V2.0.0-CLASSIC-FEATURE-PARITY.md"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "6556232869d4317401e4b01eb8c6a430a63cf443410208e85ca840c3a3451ad7",
+      "source_bytes": 5078,
+      "source_path": "PACKAGE-MANIFEST.md",
+      "targets": [],
+      "disposition": "reference-only-package-metadata"
+    },
+    {
+      "source_sha256": "9218d5066d94953516b7d11be1371c680c815867fe8e7dd5494f5ba9bf7e8399",
+      "source_bytes": 3182,
+      "source_path": "PACKAGE-VALIDATION.md",
+      "targets": [],
+      "disposition": "reference-only-package-metadata"
+    },
+    {
+      "source_sha256": "bb4d9249499b70cfd2685ef12687994d652c12422e6b2720b817e4bb97aa2afd",
+      "source_bytes": 1942,
+      "source_path": "scripts/check-debian12-dev-host.sh",
+      "targets": [
+        "scripts/check-debian12-dev-host.sh"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "af1c519b1bb4135d79fc4a4e498002d58b428d4b1132c5b15971a3858066682b",
+      "source_bytes": 1522,
+      "source_path": "scripts/start-xvfb-visual-smoke.sh",
+      "targets": [
+        "scripts/start-xvfb-visual-smoke.sh"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "4da29066e5421f66569d0dce3fb84e5fd8f2f375fa605fe3b679332d8d7abf3d",
+      "source_bytes": 778,
+      "source_path": "scripts/tmux-arce-layout.sh",
+      "targets": [
+        "scripts/tmux-arce-layout.sh"
+      ],
+      "disposition": "adapted"
+    },
+    {
+      "source_sha256": "40b29f547a3c085137a3117bc90495d352dc25167bc457aac3e80f1e05919d93",
+      "source_bytes": 3475,
+      "source_path": "SHA256SUMS.txt",
+      "targets": [],
+      "disposition": "reference-only-package-metadata"
+    }
+  ]
+}

@@ -1,0 +1,416 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T18:24:49.110267+00:00",
+      "request": {
+        "id": 1,
+        "op": "focus"
+      },
+      "result": {
+        "focused": false
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:49.623913+00:00",
+      "request": {
+        "height": 720,
+        "id": 2,
+        "op": "resize",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:49.916099+00:00",
+      "request": {
+        "id": 3,
+        "name": "01-owner-world",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 214771,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "01-owner-world.png",
+        "sha256": "4c319d1151617ff5e8f5f898186c03c531ceefd53ed7d954bcfac169891a7879",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:50.077473+00:00",
+      "request": {
+        "id": 4,
+        "op": "click",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:50.663829+00:00",
+      "request": {
+        "id": 5,
+        "name": "02-owner-menu",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 216628,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "02-owner-menu.png",
+        "sha256": "15a022e8e754df6a657c31f5b585a09124600f9c0f3c935d8a16e41916f02438",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:50.664838+00:00",
+      "request": {
+        "id": 6,
+        "op": "focus",
+        "player": "operator"
+      },
+      "result": {
+        "focused": true
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:51.183406+00:00",
+      "request": {
+        "height": 720,
+        "id": 7,
+        "op": "resize",
+        "player": "operator",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:51.475531+00:00",
+      "request": {
+        "id": 8,
+        "name": "03-operator-world",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 52660,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "03-operator-world.png",
+        "sha256": "0cab02a24e55731fb5d08d823197ab439886b9730ed015d8e24b01b069a802a1",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:51.637274+00:00",
+      "request": {
+        "id": 9,
+        "op": "click",
+        "player": "operator",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:51.922246+00:00",
+      "request": {
+        "id": 10,
+        "name": "04-operator-menu",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 70222,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "04-operator-menu.png",
+        "sha256": "2750c364ac472b3867a73e17f767d85a71f89f569672baa7370908b76b7601d5",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:52.083643+00:00",
+      "request": {
+        "id": 11,
+        "op": "click",
+        "player": "operator",
+        "x": 640,
+        "y": 392
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:52.368534+00:00",
+      "request": {
+        "id": 12,
+        "name": "05-operator-station",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 67925,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "05-operator-station.png",
+        "sha256": "417da090d3ff7e4cc3066a19dd7d669da902b3c4922963acaacac2f12de96844",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:52.529907+00:00",
+      "request": {
+        "id": 13,
+        "op": "click",
+        "player": "operator",
+        "x": 640,
+        "y": 392
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:52.815659+00:00",
+      "request": {
+        "id": 14,
+        "name": "06-operator-beta",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 68979,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "06-operator-beta.png",
+        "sha256": "ce8be5b33aac80d3bce656ab8ad62da9e95f8a426ee3f7e8d1ec3ecf5a11afcb",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:25:46.661755+00:00",
+      "request": {
+        "id": 15,
+        "key": 27,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:25:46.663377+00:00",
+      "request": {
+        "command": "tp V100Visual1 384.5 100 380.5 facing 384.5 102 384.5",
+        "id": 16,
+        "op": "server"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:25:46.948423+00:00",
+      "request": {
+        "id": 17,
+        "name": "07-owner-aim",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 382763,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "07-owner-aim.png",
+        "sha256": "7d396c9113e7f78a6e3aa95a9085daa962203f0e3bd1af7afc557e7b66bc9184",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:25:47.109914+00:00",
+      "request": {
+        "id": 18,
+        "op": "click",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:25:47.395005+00:00",
+      "request": {
+        "id": 19,
+        "name": "08-owner-menu",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 129293,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "08-owner-menu.png",
+        "sha256": "afede6590182ede098db09271362b589e655131c5366816c84a6deac93d559f8",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:28:04.679903+00:00",
+      "request": {
+        "command": "data get entity V100Visual1 Pos",
+        "id": 20,
+        "op": "server",
+        "wait": "V100Visual1 has the following entity data"
+      },
+      "result": {
+        "receipt": "[02:28:04] [Server thread/INFO] [minecraft/MinecraftServer]: V100Visual1 has the following entity data: [384.5d, 52.0d, 380.5d]"
+      }
+    },
+    {
+      "at": "2026-09-05T18:28:34.685506+00:00",
+      "error": "Timed out waiting for server marker 'GUI_SOURCE_FLOOR_PRESENT'",
+      "request": "{\"op\":\"server\",\"command\":\"execute if block 384 99 380 minecraft:stone run say GUI_SOURCE_FLOOR_PRESENT\",\"wait\":\"GUI_SOURCE_FLOOR_PRESENT\",\"id\":21}"
+    },
+    {
+      "at": "2026-09-05T18:29:04.694981+00:00",
+      "error": "Timed out waiting for server marker 'ARCE_RELEASE_TEST_FLIGHT_REPORT'",
+      "request": "{\"op\":\"server\",\"command\":\"arce rocket release-test flight-report f2dab608-e17f-4434-9438-a553f8215b14\",\"wait\":\"ARCE_RELEASE_TEST_FLIGHT_REPORT\",\"id\":22}"
+    },
+    {
+      "at": "2026-09-05T18:31:38.114351+00:00",
+      "error": "Timed out waiting for server marker 'ARCE_RELEASE_TEST_FLIGHT_REPORT'",
+      "request": "{\"op\":\"server\",\"command\":\"arce rocket release-test report f2dab608-e17f-4434-9438-a553f8215b14\",\"wait\":\"ARCE_RELEASE_TEST_FLIGHT_REPORT\",\"id\":23}"
+    },
+    {
+      "at": "2026-09-05T18:31:38.123296+00:00",
+      "request": {
+        "command": "execute if block 384 99 380 minecraft:air run say GUI_SOURCE_FLOOR_AIR",
+        "id": 24,
+        "op": "server"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:31:38.124810+00:00",
+      "request": {
+        "command": "execute if block 388 99 384 minecraft:stone run say GUI_OPERATOR_FLOOR_STONE",
+        "id": 25,
+        "op": "server"
+      },
+      "result": {}
+    }
+  ],
+  "artifact_sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc",
+  "authentication_tested": false,
+  "client_pid": 26176,
+  "entity": "c5bd330d-d3e5-477f-bcba-32b57398ed81",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 57834,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 214771,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-owner-world.png",
+      "sha256": "4c319d1151617ff5e8f5f898186c03c531ceefd53ed7d954bcfac169891a7879",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 216628,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "02-owner-menu.png",
+      "sha256": "15a022e8e754df6a657c31f5b585a09124600f9c0f3c935d8a16e41916f02438",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 52660,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "03-operator-world.png",
+      "sha256": "0cab02a24e55731fb5d08d823197ab439886b9730ed015d8e24b01b069a802a1",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 70222,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "04-operator-menu.png",
+      "sha256": "2750c364ac472b3867a73e17f767d85a71f89f569672baa7370908b76b7601d5",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 67925,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "05-operator-station.png",
+      "sha256": "417da090d3ff7e4cc3066a19dd7d669da902b3c4922963acaacac2f12de96844",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 68979,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "06-operator-beta.png",
+      "sha256": "ce8be5b33aac80d3bce656ab8ad62da9e95f8a426ee3f7e8d1ec3ecf5a11afcb",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 382763,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "07-owner-aim.png",
+      "sha256": "7d396c9113e7f78a6e3aa95a9085daa962203f0e3bd1af7afc557e7b66bc9184",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 129293,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "08-owner-menu.png",
+      "sha256": "afede6590182ede098db09271362b589e655131c5366816c84a6deac93d559f8",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 17820,
+  "second_username": "V100Visual2",
+  "second_window": 3148570,
+  "server_pid": 18904,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T18:19:40.729430+00:00",
+  "stations": [
+    "aa009727-3a63-4a30-a979-20e1221e0880",
+    "85f7dae2-0a44-4cab-ac1a-25b0484f8e3d"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 2755374
+}

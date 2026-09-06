@@ -1,0 +1,10 @@
+{
+  "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "clean_processes": 17,
+  "clean_restart_cases": 8,
+  "exact_debits": 40,
+  "flight_legs": 40,
+  "raw_log_hashes": 17,
+  "round_trips": 20,
+  "status": "PASS"
+}

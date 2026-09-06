@@ -1,0 +1,3 @@
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+PASS: all original package file sizes and SHA-256 match
+Scope: planning validation only; no release Gate or human approval asserted.

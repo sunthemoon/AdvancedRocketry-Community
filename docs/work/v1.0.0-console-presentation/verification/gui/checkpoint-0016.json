@@ -1,0 +1,291 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T19:32:46.641325+00:00",
+      "request": {
+        "height": 720,
+        "id": 1,
+        "op": "resize",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:32:46.803430+00:00",
+      "request": {
+        "id": 2,
+        "op": "click",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:32:47.089695+00:00",
+      "request": {
+        "id": 3,
+        "name": "01-owner-moon",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 92023,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "01-owner-moon.png",
+        "sha256": "bfd9ba3c30253e99b917703b555c09c040b4afd1c1914d425f40c41c2d0ba31d",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T19:32:47.252314+00:00",
+      "request": {
+        "id": 4,
+        "op": "click",
+        "x": 640,
+        "y": 392
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:32:47.841396+00:00",
+      "request": {
+        "id": 5,
+        "name": "02-owner-alpha",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 89411,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "02-owner-alpha.png",
+        "sha256": "e599ed8f16050c765cbb5a6ef6a69a5a4faac88ec836e13ab897d25c45d371a7",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T19:32:48.346902+00:00",
+      "request": {
+        "height": 720,
+        "id": 6,
+        "op": "resize",
+        "player": "operator",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:32:48.509090+00:00",
+      "request": {
+        "id": 7,
+        "op": "click",
+        "player": "operator",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:32:48.793948+00:00",
+      "request": {
+        "id": 8,
+        "name": "03-operator-moon",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 153696,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "03-operator-moon.png",
+        "sha256": "0a49209c0c73439e26cc221fa2942768bc92534e4c0786a6c21f836d850dc995",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T19:33:20.504310+00:00",
+      "request": {
+        "id": 9,
+        "name": "03b-operator-settled",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 79508,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "03b-operator-settled.png",
+        "sha256": "fd68542405851b524d6c342e585ddaf5060410f743cebd8119597f8a3b1b2918",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T19:34:31.677257+00:00",
+      "request": {
+        "command": "arce rocket release-test report b78255b4-1f3c-4180-b513-3018f388dc6a",
+        "id": 10,
+        "op": "server",
+        "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="
+      },
+      "result": {
+        "receipt": "[03:34:31] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=b78255b4-1f3c-4180-b513-3018f388dc6a logical=31046efe-4ddd-45c9-8991-5fcf8432f636 snapshot=42b80f05279e11debb63897848889c462cf5fb42cd49e0d55fe9652b8419c912 dimension=minecraft:overworld state=FUELED fuel=1000 capacity=1000 passengers=0 transfer=none origin=384,101,384 blocks=5"
+      }
+    },
+    {
+      "at": "2026-09-05T19:34:31.758898+00:00",
+      "request": {
+        "id": 11,
+        "key": 27,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:34:32.043746+00:00",
+      "request": {
+        "id": 12,
+        "name": "07-world",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 78039,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "07-world.png",
+        "sha256": "dc62b60b66d582f814f255c03264d46296529035b03de527ebe0a140dc1f58b5",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T19:34:32.124829+00:00",
+      "request": {
+        "id": 13,
+        "key": 27,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T19:34:32.417492+00:00",
+      "request": {
+        "id": 14,
+        "name": "08-pause",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 85905,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "08-pause.png",
+        "sha256": "6bab5a2b8c484707db8201dd09370704c8e99d3bd86a0d4224b41bf96b3dbc6c",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T19:34:32.578766+00:00",
+      "request": {
+        "id": 15,
+        "op": "click",
+        "x": 530,
+        "y": 348
+      },
+      "result": {}
+    }
+  ],
+  "artifact_sha256": "46cb577653981a50638ff3d2bc32d0407dc4adaa5d7092fe73e65ae82bcd229c",
+  "authentication_tested": false,
+  "client_pid": 25032,
+  "entity": "b78255b4-1f3c-4180-b513-3018f388dc6a",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 62851,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 92023,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-owner-moon.png",
+      "sha256": "bfd9ba3c30253e99b917703b555c09c040b4afd1c1914d425f40c41c2d0ba31d",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 89411,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "02-owner-alpha.png",
+      "sha256": "e599ed8f16050c765cbb5a6ef6a69a5a4faac88ec836e13ab897d25c45d371a7",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 153696,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "03-operator-moon.png",
+      "sha256": "0a49209c0c73439e26cc221fa2942768bc92534e4c0786a6c21f836d850dc995",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 79508,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "03b-operator-settled.png",
+      "sha256": "fd68542405851b524d6c342e585ddaf5060410f743cebd8119597f8a3b1b2918",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 78039,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "07-world.png",
+      "sha256": "dc62b60b66d582f814f255c03264d46296529035b03de527ebe0a140dc1f58b5",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 85905,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "08-pause.png",
+      "sha256": "6bab5a2b8c484707db8201dd09370704c8e99d3bd86a0d4224b41bf96b3dbc6c",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 18664,
+  "second_username": "V100Visual2",
+  "second_window": 3869460,
+  "server_pid": 13420,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T19:27:39.223661+00:00",
+  "stations": [
+    "320282fa-ae80-45ae-9fb4-c2a299693c6e",
+    "84d190b6-e649-44f5-b61b-3f3ab4bf6d19"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 197410
+}

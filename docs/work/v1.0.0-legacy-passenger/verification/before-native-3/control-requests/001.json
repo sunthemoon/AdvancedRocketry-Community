@@ -1,0 +1,1 @@
+{"id": 1, "op": "server", "command": "execute in advancedrocketrycommunity:moon if entity @e[type=advancedrocketrycommunity:rocket]", "wait": "Test passed, count:"}

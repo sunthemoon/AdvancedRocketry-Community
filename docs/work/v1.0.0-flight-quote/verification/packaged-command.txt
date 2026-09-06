@@ -1,0 +1,2 @@
+[PASS] forge-47.4.10-jei-absent: native connection/JEI receipts; client exit=0
+PASS: packaged client and dedicated first start/restart; no GUI approval

@@ -21,6 +21,11 @@
 6. `docs/05-MASTER-TEST-PLAN.md`
 7. `docs/06-RELEASE-AND-ACCEPTANCE-GATES.md`
 
+v1.0+ 任务额外读取 `docs/16-POST-1.0-VERSION-ROADMAP.md` 和
+`docs/17-V1PLUS-QUALITY-BUDGETS.md`。涉及并行任务时读取
+`docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md`；涉及远程
+Linux 或视觉验证时读取 `docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md`。
+
 若任务涉及上游文件，额外读取：
 
 - `UPSTREAM.md`
@@ -195,3 +200,21 @@ docs/releases/
 ```
 
 Codex 不得自行把版本标记为通过；只能生成证据并建议人工确认。
+
+## 8. v1.0+ 与并行执行
+
+- `v1.0.0` 是功能冻结的 Stable Core MVP；目的地/BodyContext 扩展属于
+  `v1.1.0`，机器/多方块内核属于 `v1.2.0`，不得混入稳定化任务。
+- 后续计划见 `docs/16-POST-1.0-VERSION-ROADMAP.md` 和各版本文档。
+  规划、只读研究和测试设计不等于功能实现；独立 worktree 不豁免第 3.1 节。
+- 同一版本的独立写入任务使用独立 worktree，声明互不重叠的 `write_scope`。
+  公共契约先冻结；中央注册、协议、构建和状态文件由集成者独占。
+- 实现者只更新自身任务记录；独立审核者审查实际 diff 并复跑关键测试。
+  版本 `status` 沿用主路线枚举，契约/集成阶段另记 `phase`。
+- v1.0 起新增公开/持久化 ID 必须稳定命名并有明确迁移策略。
+- Xvfb/LLVMpipe 只算 `V0` 视觉冒烟，不能放行真实 GPU Gate。
+  客户端可见变化需要 `V1` 报告，多人变化需要至少两个真实客户端的 `V2` 证据。
+- 远程 Linux 开发不得以 root 运行 Codex、Gradle 或 Minecraft；不得为不可信
+  公共 PR 安装带长期凭据的高权限常驻 self-hosted runner。
+- tmux 只负责进程连续性；Git、任务记录、日志和 fixtures 才是恢复依据。
+- 以上规则不改写历史 Gate，也不延长已批准 ADR 的到期豁免。

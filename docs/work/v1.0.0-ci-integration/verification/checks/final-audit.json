@@ -1,0 +1,395 @@
+{
+  "source_mode": "development_worktree",
+  "source_inputs_unchanged": 726,
+  "python_disjoint_cases": 812,
+  "python_passed": 808,
+  "python_existing_skips": 4,
+  "python_partitions": [
+    {
+      "log": "bootstrap-full-tests.txt",
+      "sha256": "f686bfbe1127b30977c68573fe99376385b41fde409354745db5fe6f84fbbdd5",
+      "ran": 95,
+      "seconds": 2664.7,
+      "skipped": 0
+    },
+    {
+      "log": "repository-unit-log-upload.txt",
+      "sha256": "122303f629ac5107c4b4d4baeb6d2f6b9570c0b18a4a74c5c79ee99051a01d70",
+      "ran": 148,
+      "seconds": 5.072,
+      "skipped": 0
+    },
+    {
+      "log": "python-remaining.txt",
+      "sha256": "78f9b25154632a9695781a64aaf4f6fcbc2054c834cb62acfc2f725552dbc0e9",
+      "ran": 569,
+      "seconds": 1091.21,
+      "skipped": 4
+    }
+  ],
+  "jobs": [
+    {
+      "job": "baseline",
+      "started_at": "2026-09-05T15:38:03Z",
+      "completed_at": "2026-09-05T16:11:29Z",
+      "commands": 36,
+      "retained_failures": [
+        "Require a clean DataGen worktree",
+        "Reject untracked DataGen outputs"
+      ],
+      "java_suites": 70,
+      "java": {
+        "tests": 362,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "game_tests": 44,
+      "packaged_reports": 8,
+      "upload_inventory_files": 283,
+      "jar_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+    },
+    {
+      "job": "satellite-acceptance",
+      "started_at": "2026-09-05T16:11:29Z",
+      "completed_at": "2026-09-05T16:20:30Z",
+      "commands": 8,
+      "retained_failures": [],
+      "java_suites": 70,
+      "java": {
+        "tests": 362,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "game_tests": 0,
+      "packaged_reports": 3,
+      "upload_inventory_files": 214,
+      "jar_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+    },
+    {
+      "job": "latest-compatibility",
+      "started_at": "2026-09-05T16:20:30Z",
+      "completed_at": "2026-09-05T16:22:16Z",
+      "commands": 5,
+      "retained_failures": [],
+      "java_suites": 70,
+      "java": {
+        "tests": 362,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "game_tests": 44,
+      "packaged_reports": 0,
+      "upload_inventory_files": 186,
+      "jar_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+    }
+  ],
+  "packaged_processes": [
+    {
+      "job": "baseline",
+      "report": "outputs/build/dedicated-server-smoke/evidence/summary.json",
+      "log": "first-start-full.txt",
+      "sha256": "84005326539ef8e8d50dc3dfd0906795284be514e6885285afe4f3adbea65f66",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/dedicated-server-smoke/evidence/summary.json",
+      "log": "restart-full.txt",
+      "sha256": "42d554d21fd768b66d1daad1a32b958ffb6db5ce419bde336389d8648b6dba10",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v020-machine-server-smoke/evidence/summary.json",
+      "log": "v020-machine-after-restart-full.txt",
+      "sha256": "ac53cff21dbf887aebdbeae03198c3733fd99c58fba3767674ab98cba5a08df3",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v020-machine-server-smoke/evidence/summary.json",
+      "log": "v020-machine-before-restart-full.txt",
+      "sha256": "74460712f0fcdc9e187f2e15475d4b884fa9550a9e3a0e7736906c20b332c5fe",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v030-celestial-server-smoke/evidence/summary.json",
+      "log": "v030-celestial-after-restart-full.txt",
+      "sha256": "f386c1b10739021a39a3b88a89cb43ae70d173454c884a4a0da74f1028050f82",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v030-celestial-server-smoke/evidence/summary.json",
+      "log": "v030-celestial-before-restart-full.txt",
+      "sha256": "9ce3dc70201d89e750100342c892015af082c93ca5839d7c923dd9f0eadc975f",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v040-atmosphere-server-smoke/evidence/summary.json",
+      "log": "v040-atmosphere-after-restart-full.txt",
+      "sha256": "be7a9c690291771690cd9d9e9c14f365dc54f0acefd4e2928e373752d87c8ffe",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v040-atmosphere-server-smoke/evidence/summary.json",
+      "log": "v040-atmosphere-before-restart-full.txt",
+      "sha256": "cd9b7dad59b0318cc8bd86d08e336dcf26bd2c2b789cefb3e425aa75193c778c",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v050-rocket-server-smoke/evidence/summary.json",
+      "log": "v050-rocket-assembled-full.txt",
+      "sha256": "407e7fa56d407df6abcfc7c6e2de612d5ba91e00ac4d83634711e0a903587e35",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v050-rocket-server-smoke/evidence/summary.json",
+      "log": "v050-rocket-persisted-full.txt",
+      "sha256": "a0093ac66fc871287ab45522c2c4f8cc40760b28981caa184b6ef40d37d61cb3",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v050-rocket-server-smoke/evidence/summary.json",
+      "log": "v050-rocket-recovered-full.txt",
+      "sha256": "79593a1a7d9d7716444b4a01a10ca54a7c694d2d5fcaa35e860d74e269908767",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-round-trips-full.txt",
+      "sha256": "5fd89de341880c5f8d0a330ef16d84386b0076126f2b6ef4a4191ec50667c2dd",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-assembled-stage-full.txt",
+      "sha256": "47194fafd85c804b2c733c5316f750c5e8a2ccfee489ca5c907bb985bbd076b1",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-assembled-recover-full.txt",
+      "sha256": "87c682557a6f5b2e202fcccb2a0c0dd7fe8c896d15b70a399013ec2605471f00",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-fueled-stage-full.txt",
+      "sha256": "b4e975dccf2c56c72f1e27df259ca7144b61d60713b38df98b989307b198d45f",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-fueled-recover-full.txt",
+      "sha256": "6b3e024b333b890f1dda0c4b159a89cbad2c73ff7720cddc54e2a5fefeb56980",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-countdown-stage-full.txt",
+      "sha256": "d69bb89787971f5868be634eaeaa3736eb99884ef96d21804a3ea1ac1e385270",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-countdown-recover-full.txt",
+      "sha256": "e674ed9c662188c97d8b18bc29af2a5d8b23e88e1aa12531454edb030202f00b",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-ascent-stage-full.txt",
+      "sha256": "0e1dd64bd15d9b3c3842d6ef03c77aa8f23906f63f0216247749fe56bef9e174",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-ascent-recover-full.txt",
+      "sha256": "e3ab1f785e37091569f0ead9edaab67109d1cc79e96587f0a5af224f5b93f8fd",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-transit_prepared-stage-full.txt",
+      "sha256": "8ea7e3b5a37f33c22dbc92baa469a20c6e9f287056251b9e4238dd04b54fcc48",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-transit_prepared-recover-full.txt",
+      "sha256": "d6313e7e8f660c8465461aaa7fa0a633457345859bd3f0c875ec85a6af8d55d8",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-destination_spawned-stage-full.txt",
+      "sha256": "7d6a543431d9b83aafdf0ed727767fce518810548729a35dbcd754b17b643c4f",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-destination_spawned-recover-full.txt",
+      "sha256": "a58accc117d7cdccbc748444720f8f562c27e586afac3ca1cd2a3650f0c1ca8e",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-descent-stage-full.txt",
+      "sha256": "69461c378d2a324ce048332e8494a712db72d06ea1f49b93ab0563842aff7043",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-descent-recover-full.txt",
+      "sha256": "99c0a65db6855507ccec5ea68b8a5f3010d33bd39bb076a275f973390e3a2109",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-landed-stage-full.txt",
+      "sha256": "9fd7a14b5bc74b9dabc29c2284294e51743ac14e315a345d35ac8da3391b1d47",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v060-flight-server-smoke/evidence/summary.json",
+      "log": "20260905T155709947423Z-v060-restart-landed-recover-full.txt",
+      "sha256": "c2ee8ae8c1ddd86237edcb8f0d98906993b63b3c1969d51178fa32ac26024b1f",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v090-forced-stop/evidence/summary.json",
+      "log": "20260905T154751910365Z-v090-forced-stop-stage-full.txt",
+      "sha256": "cbebb6e363cc7b2a6ecc355e1220c5ef7cebdc32d350e1f2b29ceac2b762b3fd",
+      "exit_code": 1,
+      "termination": "process_kill"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v090-forced-stop/evidence/summary.json",
+      "log": "20260905T154751910365Z-v090-forced-stop-recover-full.txt",
+      "sha256": "121904323c4ac0e00ea0b97e9fa0e1b7133844071d236502c82abb77e88f2d06",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v090-migration-server-smoke/evidence/summary.json",
+      "log": "20260905T154711054070Z-v090-migration-full.txt",
+      "sha256": "9882c07455374e1851599875ad51f1e61aa7540646e8c060ae22bc705ddab8c4",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "baseline",
+      "report": "outputs/build/v090-migration-server-smoke/evidence/summary.json",
+      "log": "20260905T154711054070Z-v090-current-restart-full.txt",
+      "sha256": "90bdf5601566855d74f9c4591e82ac32c68ae4149aae3983bf1ca25525f5dffc",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "satellite-acceptance",
+      "report": "outputs/build/v090-dedicated-server-smoke/evidence/summary.json",
+      "log": "first-start-full.txt",
+      "sha256": "3df394b90043842e245aa7d6dc2535f0400aa982b3421b3019927fbdf357d147",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "satellite-acceptance",
+      "report": "outputs/build/v090-dedicated-server-smoke/evidence/summary.json",
+      "log": "restart-full.txt",
+      "sha256": "c079132d0d9ca4268796b804e429f22af8062731ef5ab62a6424704a1538969a",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "satellite-acceptance",
+      "report": "outputs/build/v090-satellite-server-smoke/evidence/summary.json",
+      "log": "20260905T161924543725Z-v080-satellite-start-full.txt",
+      "sha256": "2b3031ef8cf30e83209d974ac2552ecad15bfb25d7954ac76598b69c6c942ec0",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "satellite-acceptance",
+      "report": "outputs/build/v090-satellite-server-smoke/evidence/summary.json",
+      "log": "20260905T161924543725Z-v080-satellite-restart-full.txt",
+      "sha256": "9e89ac52b095a2c230dce4b6ec956925efded442aef178bc9e42a53502b5dbce",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "satellite-acceptance",
+      "report": "outputs/build/v090-station-server-smoke/evidence/summary.json",
+      "log": "20260905T161721915122Z-v070-stations-and-flight-full.txt",
+      "sha256": "7f7b50078b338a1d50087771334d224e1d13a5be1569cc6f88b43c27cd7f35be",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    },
+    {
+      "job": "satellite-acceptance",
+      "report": "outputs/build/v090-station-server-smoke/evidence/summary.json",
+      "log": "20260905T161721915122Z-v070-station-restart-full.txt",
+      "sha256": "7d130b8b19317362ca73bc9fdbfef1bdee42865fd40f8527a9dd2d08907ffb73",
+      "exit_code": 0,
+      "termination": "normal_exit"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T21:04:11.447940+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon if entity @e[type=advancedrocketrycommunity:rocket]",
+        "id": 1,
+        "op": "server",
+        "wait": "Test passed, count:"
+      },
+      "result": {
+        "receipt": "[05:04:11] [Server thread/INFO] [minecraft/MinecraftServer]: Test passed, count: 2"
+      }
+    },
+    {
+      "at": "2026-09-05T21:04:11.489887+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run arce rocket release-test report @s",
+        "id": 2,
+        "op": "server",
+        "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="
+      },
+      "result": {
+        "receipt": "[05:04:11] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=00808f92-994e-46a0-811c-82998883587c logical=0ce64af6-4ee0-4c9b-b019-08c2b512bfe4 snapshot=eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196 dimension=advancedrocketrycommunity:moon state=LANDED fuel=618 capacity=1000 passengers=2 transfer=none origin=8,80,8 blocks=6"
+      }
+    },
+    {
+      "at": "2026-09-05T21:04:11.496153+00:00",
+      "request": {
+        "command": "execute as V100Visual1 on vehicle run data get entity @s UUID",
+        "id": 3,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[05:04:11] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; -597047998, -2131343386, -1730647109, 2135865057]"
+      }
+    },
+    {
+      "at": "2026-09-05T21:04:11.539648+00:00",
+      "request": {
+        "command": "execute as V100Visual2 on vehicle run data get entity @s UUID",
+        "id": 4,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[05:04:11] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; -597047998, -2131343386, -1730647109, 2135865057]"
+      }
+    },
+    {
+      "at": "2026-09-05T21:05:21.190764+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run data get entity @s RocketEntityData.snapshot.relative_blocks",
+        "id": 5,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[05:05:21] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [{palette: 1, position: [I; -1, 0, 0]}, {palette: 2, position: [I; 0, 0, 0]}, {palette: 3, position: [I; 0, 1, 0]}, {palette: 0, position: [I; 0, 2, 0]}, {block_entity: {adapter: \"advancedrocketrycommunity:vanilla_container_v1\", data: {Items: [{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}]}}, palette: 4, position: [I; 1, 0, 0]}, {palette: 3, position: [I; 1, 1, 0]}]"
+      }
+    }
+  ],
+  "artifact_sha256": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0",
+  "authentication_tested": false,
+  "cleanup_errors": [
+    "server stop audit: SmokeError(\"Packaged server stop/audit failed: exit=0; ['[05:01:58] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED']\")"
+  ],
+  "client_pid": 1924,
+  "completed_at": "2026-09-05T21:05:24.785796+00:00",
+  "entity": "00808f92-994e-46a0-811c-82998883587c",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 53780,
+  "processes": [
+    {
+      "exit_code": 0,
+      "full_log_file": "client-2-full.txt",
+      "full_log_sha256": "b936b8a06991cb8dfdd14baa3a5b760ad75d8d1bbd85b82be2b30d8df9978dd9",
+      "kind": "client-2",
+      "native_logs": [
+        {
+          "bytes": 14034,
+          "file": "client-2-latest.log",
+          "sha256": "de89574fafb171c2c48be35744738eb2b40c332e4a04c33063de006994b362ec"
+        },
+        {
+          "bytes": 94313,
+          "file": "client-2-debug.log",
+          "sha256": "1b3b7323e85ff60da7aa1337153041fd6867def7379223c1bef490e01673aaf5"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "client-full.txt",
+      "full_log_sha256": "5c4fc573aeb3b9aa12673621d59f5a71c5bc53b130193c0ebae1e500ef37ef84",
+      "kind": "client",
+      "native_logs": [
+        {
+          "bytes": 14313,
+          "file": "client-latest.log",
+          "sha256": "b3e4b920e4262266b47cd973ae5a9e576178a554ab047da23ea701599ecb2051"
+        },
+        {
+          "bytes": 93947,
+          "file": "client-debug.log",
+          "sha256": "2f7985204bf3a2f694e4694a76fbaa3652e3e0a8ce3d4314fdcfc26e0d212702"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "server-full.txt",
+      "full_log_sha256": "d7bad17a8ff0fe6ab5074a0cea8bf45a5ee3ea956f339c2f0ea7a3b4cf7c35bd",
+      "kind": "server",
+      "native_logs": [
+        {
+          "bytes": 17347,
+          "file": "server-latest.log",
+          "sha256": "9a230bea34a9ed9e3c21e04db0db3e5f1497e815e9f06d68306db440d1d9eafd"
+        },
+        {
+          "bytes": 121549,
+          "file": "server-debug.log",
+          "sha256": "0320052e29f72daa51c8eb66d299cfbedd18b38b3c3407b5b8ddbcfc9bdb3e13"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "second_client_pid": 24152,
+  "second_username": "V100Visual2",
+  "second_window": 328316,
+  "server_pid": 19956,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:01:39.909599+00:00",
+  "startup_recovery_findings": [
+    "[05:01:58] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED"
+  ],
+  "stations": [],
+  "status": "FAIL",
+  "username": "V100Visual1",
+  "window": 3803720
+}

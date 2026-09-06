@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_CONTINUED_USE", "source_files": 745, "java_tests": 399, "gametests": 49, "native_java_exits": [0, 0, 0], "clean_restart": "PASS", "retained_control_errors": [2, 15], "saved_rockets": 1, "fuel": 618, "buffered_fuel": 118}

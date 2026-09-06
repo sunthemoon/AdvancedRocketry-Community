@@ -1,0 +1,3 @@
+PASS: scripts/check-debian12-dev-host.sh
+PASS: scripts/tmux-arce-layout.sh
+PASS: scripts/start-xvfb-visual-smoke.sh

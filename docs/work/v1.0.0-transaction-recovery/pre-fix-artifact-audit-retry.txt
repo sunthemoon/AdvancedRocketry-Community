@@ -1,0 +1,5 @@
+[PASS] Artifact: C:\Users\Administrator\AppData\Local\Temp\arce-v100-transactions\diagnostic-server\mods\advancedrocketry-community-1.20.1-1.0.0-dev.jar
+[PASS] SHA-256: 65b10b88521a41191cecf01724e03139549c22e08595615d75ab9341b41dc7af
+[PASS] Entries: 766
+[PASS] Metadata, notices, paths, and credential name/content scan
+[PASS] Content manifest: docs\work\v1.0.0-transaction-recovery\pre-fix-artifact-manifest.json (766 entries)

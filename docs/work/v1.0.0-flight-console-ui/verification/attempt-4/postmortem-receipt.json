@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-09-05T17:54:16.081172+00:00",
+  "source": "postmortem archive after failed driver audit; not replacement summary",
+  "driver_exit_code": 1,
+  "server_exit_code_from_terminal": 0,
+  "client_exit_code": "not retained by interrupted final summary; native stop receipt present",
+  "owned_pids_absent": [
+    23512,
+    26444
+  ],
+  "archived_logs": [
+    {
+      "file": "server-latest.log",
+      "bytes": 29590,
+      "sha256": "afdefa15ce4c4b56b21bbd5953f4f06b3f60997df9f327a3eeb93074f649afc9"
+    },
+    {
+      "file": "server-debug.log",
+      "bytes": 117316,
+      "sha256": "443049d8bd59683485e392565867236310710aa42566e759c747777d16b4f6f0"
+    }
+  ]
+}

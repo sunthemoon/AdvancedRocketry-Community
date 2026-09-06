@@ -1,0 +1,10 @@
+{
+  "asset_count": 3598,
+  "forge": [
+    "47.4.10",
+    "47.4.23"
+  ],
+  "jei": "15.56.0.205",
+  "jei_sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c",
+  "schema_version": 1
+}

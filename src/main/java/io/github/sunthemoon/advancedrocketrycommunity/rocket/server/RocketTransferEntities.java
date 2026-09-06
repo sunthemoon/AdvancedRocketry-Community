@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferAuthorityOrder;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
@@ -109,6 +110,11 @@ final class RocketTransferEntities {
         return sourceLoaded && destinationLoaded;
     }
 
+    static boolean authorityEntityChunkLoaded(MinecraftServer server, RocketTransferRecord record) {
+        return entityChunkLoaded(server, record.phase().destinationAuthoritative()
+                ? record.destinationSnapshot() : record.sourceSnapshot(), record.transferId());
+    }
+
     static List<RocketEntity> findMatches(
             MinecraftServer server,
             RocketTransferRecord record,
@@ -161,13 +167,26 @@ final class RocketTransferEntities {
                 matches.add(nearby);
             }
         }
-        matches.sort(Comparator.comparing(Entity::getUUID));
+        matches.sort(Comparator.comparing(Entity::getUUID, RocketTransferAuthorityOrder.preferred(expectedId)));
         return List.copyOf(matches);
     }
 
-    static boolean isLandedAuthority(RocketEntity rocket, RocketTransferRecord record) {
-        return isCommittedAuthority(rocket, record)
-                && authorityState(rocket) == RocketFlightState.LANDED;
+    static RocketEntity loadedSettledAuthority(MinecraftServer server, RocketTransferRecord record) {
+        ServerLevel level = level(server, record.destinationSnapshot().sourceDimension());
+        UUID expected = record.destinationEntityId().orElse(null);
+        // Read existing entities only: unrelated passenger login must not activate chunks.
+        return level != null && expected != null && level.getEntity(expected) instanceof RocketEntity rocket
+                && isReplaceableLandedAuthority(rocket, record) ? rocket : null;
+    }
+
+    static boolean nearbyArrivalStillLoading(ServerPlayer player, RocketTransferRecord record) {
+        var snapshot = record.destinationSnapshot();
+        var origin = snapshot.sourceOrigin();
+        return record.phase() == RocketTransferPhase.COMMITTED
+                && player.level().dimension().location().equals(snapshot.sourceDimension())
+                && player.distanceToSqr(origin.x() + 0.5D, origin.y() + 1.0D, origin.z() + 0.5D)
+                        <= RocketManager.MAX_INTERACTION_DISTANCE_SQUARED
+                && !player.serverLevel().areEntitiesLoaded(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4));
     }
 
     static boolean isReplaceableLandedAuthority(RocketEntity rocket, RocketTransferRecord record) {
@@ -182,6 +201,7 @@ final class RocketTransferEntities {
         return record.phase() == RocketTransferPhase.COMMITTED
                 && record.destinationEntityId().filter(rocket.getUUID()::equals).isPresent()
                 && rocket.operational()
+                && rocket.ownerId().filter(record.ownerId()::equals).isPresent()
                 && rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isPresent()
                 && rocket.snapshot().filter(snapshot -> snapshot.snapshotId()
                         .equals(record.destinationSnapshot().snapshotId()))
@@ -218,7 +238,10 @@ final class RocketTransferEntities {
             RocketEntity authority,
             RocketPosition origin
     ) {
-        for (RocketPassengerSeat seat : record.sourceFlightData().passengers().assignments()) {
+        var passengers = isReplaceableLandedAuthority(authority, record)
+                ? authority.flightData().orElseThrow().passengers()
+                : record.sourceFlightData().passengers();
+        for (RocketPassengerSeat seat : passengers.assignments()) {
             ServerPlayer player = server.getPlayerList().getPlayer(seat.passengerId());
             if (player != null) {
                 movePassenger(player, authority, origin);
@@ -328,6 +351,7 @@ final class RocketTransferEntities {
             boolean destination
     ) {
         if (!rocket.operational()
+                || rocket.ownerId().filter(record.ownerId()::equals).isEmpty()
                 || rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isEmpty()
                 || rocket.snapshot().filter(value -> value.snapshotId().equals(snapshot.snapshotId()))
                         .filter(value -> value.contentHash().equals(snapshot.contentHash())).isEmpty()) {
@@ -339,6 +363,7 @@ final class RocketTransferEntities {
         return rocket.flightData().flatMap(RocketFlightData::activeTransferId)
                 .filter(record.transferId()::equals)
                 .isPresent()
+                || isReplaceableLandedAuthority(rocket, record)
                 || rocket.flightData().map(RocketFlightData::state).orElse(RocketFlightState.FAILED_RECOVERABLE)
                 == RocketFlightState.LANDED;
     }

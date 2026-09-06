@@ -1,0 +1,1 @@
+[PASS] v0.2.0 manifest matches 15 DataGen files

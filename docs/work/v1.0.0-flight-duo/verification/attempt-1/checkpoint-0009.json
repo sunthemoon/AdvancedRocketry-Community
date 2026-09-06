@@ -1,0 +1,165 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T18:24:49.110267+00:00",
+      "request": {
+        "id": 1,
+        "op": "focus"
+      },
+      "result": {
+        "focused": false
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:49.623913+00:00",
+      "request": {
+        "height": 720,
+        "id": 2,
+        "op": "resize",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:49.916099+00:00",
+      "request": {
+        "id": 3,
+        "name": "01-owner-world",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 214771,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "01-owner-world.png",
+        "sha256": "4c319d1151617ff5e8f5f898186c03c531ceefd53ed7d954bcfac169891a7879",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:50.077473+00:00",
+      "request": {
+        "id": 4,
+        "op": "click",
+        "right": true,
+        "x": 640,
+        "y": 360
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:50.663829+00:00",
+      "request": {
+        "id": 5,
+        "name": "02-owner-menu",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 216628,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "02-owner-menu.png",
+        "sha256": "15a022e8e754df6a657c31f5b585a09124600f9c0f3c935d8a16e41916f02438",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:50.664838+00:00",
+      "request": {
+        "id": 6,
+        "op": "focus",
+        "player": "operator"
+      },
+      "result": {
+        "focused": true
+      }
+    },
+    {
+      "at": "2026-09-05T18:24:51.183406+00:00",
+      "request": {
+        "height": 720,
+        "id": 7,
+        "op": "resize",
+        "player": "operator",
+        "width": 1280
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T18:24:51.475531+00:00",
+      "request": {
+        "id": 8,
+        "name": "03-operator-world",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 52660,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "03-operator-world.png",
+        "sha256": "0cab02a24e55731fb5d08d823197ab439886b9730ed015d8e24b01b069a802a1",
+        "source": "native Minecraft F2 screenshot"
+      }
+    }
+  ],
+  "artifact_sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc",
+  "authentication_tested": false,
+  "client_pid": 26176,
+  "entity": "c5bd330d-d3e5-477f-bcba-32b57398ed81",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 57834,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 214771,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-owner-world.png",
+      "sha256": "4c319d1151617ff5e8f5f898186c03c531ceefd53ed7d954bcfac169891a7879",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 216628,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "02-owner-menu.png",
+      "sha256": "15a022e8e754df6a657c31f5b585a09124600f9c0f3c935d8a16e41916f02438",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 52660,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "03-operator-world.png",
+      "sha256": "0cab02a24e55731fb5d08d823197ab439886b9730ed015d8e24b01b069a802a1",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 17820,
+  "second_username": "V100Visual2",
+  "second_window": 3148570,
+  "server_pid": 18904,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T18:19:40.729430+00:00",
+  "stations": [
+    "aa009727-3a63-4a30-a979-20e1221e0880",
+    "85f7dae2-0a44-4cab-ac1a-25b0484f8e3d"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 2755374
+}

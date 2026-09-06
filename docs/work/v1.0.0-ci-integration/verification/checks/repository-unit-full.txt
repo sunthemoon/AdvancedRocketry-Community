@@ -1,0 +1,184 @@
+test_changed_wrapper_is_rejected (tests.test_validate_repository.ApprovedBinaryTests.test_changed_wrapper_is_rejected) ... ok
+test_other_jar_path_is_rejected (tests.test_validate_repository.ApprovedBinaryTests.test_other_jar_path_is_rejected) ... ok
+test_pinned_gradle_wrapper_is_allowed (tests.test_validate_repository.ApprovedBinaryTests.test_pinned_gradle_wrapper_is_allowed) ... ok
+test_changed_license_copy_is_rejected (tests.test_validate_repository.ApprovedThirdPartyLicenseTests.test_changed_license_copy_is_rejected) ... ok
+test_pinned_license_copies_are_allowed (tests.test_validate_repository.ApprovedThirdPartyLicenseTests.test_pinned_license_copies_are_allowed) ... ok
+test_unlisted_license_path_is_rejected (tests.test_validate_repository.ApprovedThirdPartyLicenseTests.test_unlisted_license_path_is_rejected) ... ok
+test_bounded_binary_read_rejects_linked_parent_component (tests.test_validate_repository.BoundedRepositoryInputTests.test_bounded_binary_read_rejects_linked_parent_component) ... ok
+test_bounded_binary_read_rejects_oversized_input_before_full_read (tests.test_validate_repository.BoundedRepositoryInputTests.test_bounded_binary_read_rejects_oversized_input_before_full_read) ... ok
+test_repository_inventory_includes_tracked_and_nonignored_untracked_files (tests.test_validate_repository.BoundedRepositoryInputTests.test_repository_inventory_includes_tracked_and_nonignored_untracked_files) ... ERROR
+test_repository_inventory_rejects_output_over_the_byte_limit (tests.test_validate_repository.BoundedRepositoryInputTests.test_repository_inventory_rejects_output_over_the_byte_limit) ... ok
+test_repository_local_git_candidate_is_rejected_before_execution (tests.test_validate_repository.BoundedRepositoryInputTests.test_repository_local_git_candidate_is_rejected_before_execution) ... ok
+test_approved_provenance_allows_bundle_readiness_validation (tests.test_validate_repository.ClientEvidenceProvenanceTests.test_approved_provenance_allows_bundle_readiness_validation) ... ok
+test_broken_reparse_bundle_path_is_rejected_instead_of_treated_as_absent (tests.test_validate_repository.ClientEvidenceProvenanceTests.test_broken_reparse_bundle_path_is_rejected_instead_of_treated_as_absent) ... ok
+test_bundle_is_rejected_until_provenance_is_approved (tests.test_validate_repository.ClientEvidenceProvenanceTests.test_bundle_is_rejected_until_provenance_is_approved) ... ok
+test_canonical_bundle_lstat_error_fails_closed (tests.test_validate_repository.ClientEvidenceProvenanceTests.test_canonical_bundle_lstat_error_fails_closed) ... ok
+test_incomplete_canonical_bundle_is_rejected_defensively (tests.test_validate_repository.ClientEvidenceProvenanceTests.test_incomplete_canonical_bundle_is_rejected_defensively) ... ok
+test_pending_provenance_without_bundle_remains_acceptable (tests.test_validate_repository.ClientEvidenceProvenanceTests.test_pending_provenance_without_bundle_remains_acceptable) ... ok
+test_changed_evidence_content_is_rejected (tests.test_validate_repository.EvidenceAssetTests.test_changed_evidence_content_is_rejected) ... ok
+test_image_outside_release_evidence_directory_is_rejected (tests.test_validate_repository.EvidenceAssetTests.test_image_outside_release_evidence_directory_is_rejected) ... ok
+test_indexed_jpeg_with_matching_hash_is_allowed (tests.test_validate_repository.EvidenceAssetTests.test_indexed_jpeg_with_matching_hash_is_allowed) ... ok
+test_approved_records_still_do_not_compute_gate (tests.test_validate_repository.FinalG0RepositoryCheckTests.test_approved_records_still_do_not_compute_gate) ... ok
+test_invalid_final_g0_record_fails_repository_validation (tests.test_validate_repository.FinalG0RepositoryCheckTests.test_invalid_final_g0_record_fails_repository_validation) ... ok
+test_pending_final_g0_record_is_valid_without_gate_conclusion (tests.test_validate_repository.FinalG0RepositoryCheckTests.test_pending_final_g0_record_is_valid_without_gate_conclusion) ... ok
+test_accepted_record_matching_bundle_is_reported_as_accepted (tests.test_validate_repository.G4ApplicabilityRepositoryCheckTests.test_accepted_record_matching_bundle_is_reported_as_accepted) ... ok
+test_invalid_g4_record_fails_repository_validation (tests.test_validate_repository.G4ApplicabilityRepositoryCheckTests.test_invalid_g4_record_fails_repository_validation) ... ok
+test_valid_proposed_record_is_reported_as_unproven (tests.test_validate_repository.G4ApplicabilityRepositoryCheckTests.test_valid_proposed_record_is_reported_as_unproven) ... ok
+test_current_approved_values_are_parsed (tests.test_validate_repository.IdentityParsingTests.test_current_approved_values_are_parsed) ... ok
+test_current_draft_is_not_confused_with_approved_example (tests.test_validate_repository.IdentityParsingTests.test_current_draft_is_not_confused_with_approved_example) ... ok
+test_ignored_packet_markdown_is_not_authoritative (tests.test_validate_repository.MarkdownLinkInventoryTests.test_ignored_packet_markdown_is_not_authoritative) ... ERROR
+test_markdown_aggregate_bytes_and_lines_are_bounded (tests.test_validate_repository.MarkdownLinkInventoryTests.test_markdown_aggregate_bytes_and_lines_are_bounded) ... FAIL
+test_markdown_link_and_error_counts_are_bounded (tests.test_validate_repository.MarkdownLinkInventoryTests.test_markdown_link_and_error_counts_are_bounded) ... FAIL
+test_pathspec_environment_cannot_disable_markdown_inventory (tests.test_validate_repository.MarkdownLinkInventoryTests.test_pathspec_environment_cannot_disable_markdown_inventory) ... ERROR
+test_tracked_broken_markdown_link_is_reported (tests.test_validate_repository.MarkdownLinkInventoryTests.test_tracked_broken_markdown_link_is_reported) ... ok
+test_uppercase_markdown_extension_is_included (tests.test_validate_repository.MarkdownLinkInventoryTests.test_uppercase_markdown_extension_is_included) ... ok
+test_angle_brackets_and_url_encoding_are_normalized (tests.test_validate_repository.MarkdownTargetTests.test_angle_brackets_and_url_encoding_are_normalized) ... ok
+test_optional_markdown_title_is_removed (tests.test_validate_repository.MarkdownTargetTests.test_optional_markdown_title_is_removed) ... ok
+test_empty_manifest_cannot_pass_as_zero_verified_files (tests.test_validate_repository.PlanningPackageChecksumTests.test_empty_manifest_cannot_pass_as_zero_verified_files) ... ok
+test_package_manifest_and_target_sizes_are_bounded (tests.test_validate_repository.PlanningPackageChecksumTests.test_package_manifest_and_target_sizes_are_bounded) ... ok
+test_package_manifest_rejects_parent_traversal (tests.test_validate_repository.PlanningPackageChecksumTests.test_package_manifest_rejects_parent_traversal) ... ok
+test_package_target_replacement_cannot_bypass_aggregate_limit (tests.test_validate_repository.PlanningPackageChecksumTests.test_package_target_replacement_cannot_bypass_aggregate_limit) ... ok
+test_valid_bounded_package_manifest_passes (tests.test_validate_repository.PlanningPackageChecksumTests.test_valid_bounded_package_manifest_passes) ... ok
+test_help_runs_with_isolated_python (tests.test_validate_repository.RepositoryCliTests.test_help_runs_with_isolated_python) ... ok
+test_pending_results_are_not_reported_as_passes_or_warnings (tests.test_validate_repository.ResultsReportTests.test_pending_results_are_not_reported_as_passes_or_warnings) ... ok
+test_alternate_success_wording_is_rejected (tests.test_validate_repository.V002GateStatusTests.test_alternate_success_wording_is_rejected) ... ok
+test_duplicate_yaml_block_cannot_hide_the_authoritative_status (tests.test_validate_repository.V002GateStatusTests.test_duplicate_yaml_block_cannot_hide_the_authoritative_status) ... ok
+test_fully_bound_passed_status_is_valid (tests.test_validate_repository.V002GateStatusTests.test_fully_bound_passed_status_is_valid) ... ok
+test_g0_pass_requires_both_human_reviews (tests.test_validate_repository.V002GateStatusTests.test_g0_pass_requires_both_human_reviews) ... ok
+test_g4_pass_requires_accepted_adr_and_canonical_bundle (tests.test_validate_repository.V002GateStatusTests.test_g4_pass_requires_accepted_adr_and_canonical_bundle) ... ok
+test_g8_pass_requires_canonical_valid_bundle (tests.test_validate_repository.V002GateStatusTests.test_g8_pass_requires_canonical_valid_bundle) ... ok
+test_g8_ready_for_review_also_requires_canonical_valid_bundle (tests.test_validate_repository.V002GateStatusTests.test_g8_ready_for_review_also_requires_canonical_valid_bundle) ... ok
+test_g9_pass_requires_human_identity_and_timestamp (tests.test_validate_repository.V002GateStatusTests.test_g9_pass_requires_human_identity_and_timestamp) ... ok
+test_gate_status_error_flood_is_rejected_with_bounded_output (tests.test_validate_repository.V002GateStatusTests.test_gate_status_error_flood_is_rejected_with_bounded_output) ... ok
+test_honest_in_progress_status_is_valid (tests.test_validate_repository.V002GateStatusTests.test_honest_in_progress_status_is_valid) ... ok
+test_invalid_calendar_or_clock_values_do_not_satisfy_g9 (tests.test_validate_repository.V002GateStatusTests.test_invalid_calendar_or_clock_values_do_not_satisfy_g9) ... ok
+test_mechanically_ready_bundle_does_not_make_g8_pass (tests.test_validate_repository.V002GateStatusTests.test_mechanically_ready_bundle_does_not_make_g8_pass) ... ok
+test_out_of_scope_gates_cannot_be_reactivated_or_left_unresolved (tests.test_validate_repository.V002GateStatusTests.test_out_of_scope_gates_cannot_be_reactivated_or_left_unresolved) ... ok
+test_passed_version_requires_all_required_gates (tests.test_validate_repository.V002GateStatusTests.test_passed_version_requires_all_required_gates) ... ok
+test_required_gates_cannot_be_waived_while_version_is_in_progress (tests.test_validate_repository.V002GateStatusTests.test_required_gates_cannot_be_waived_while_version_is_in_progress) ... ok
+test_unapproved_machine_identity_cannot_authorize_release_gates (tests.test_validate_repository.V002GateStatusTests.test_unapproved_machine_identity_cannot_authorize_release_gates) ... ok
+test_whitespace_human_identity_does_not_satisfy_g9 (tests.test_validate_repository.V002GateStatusTests.test_whitespace_human_identity_does_not_satisfy_g9) ... ok
+test_all_current_text_and_binary_resources_are_allowlisted (tests.test_validate_repository.V002ResourceInventoryTests.test_all_current_text_and_binary_resources_are_allowlisted) ... ok
+test_excluded_datagen_cache_is_not_a_distributable_resource (tests.test_validate_repository.V002ResourceInventoryTests.test_excluded_datagen_cache_is_not_a_distributable_resource) ... ok
+test_mdk_resource_targets_are_part_of_the_allowlist (tests.test_validate_repository.V002ResourceInventoryTests.test_mdk_resource_targets_are_part_of_the_allowlist) ... ok
+test_unlisted_json_resource_is_rejected_regardless_of_extension (tests.test_validate_repository.V002ResourceInventoryTests.test_unlisted_json_resource_is_rejected_regardless_of_extension) ... ok
+test_g0_pass_requires_approved_provenance (tests.test_validate_repository.V010GateStatusTests.test_g0_pass_requires_approved_provenance) ... ok
+test_honest_in_progress_status_accepts_pending_provenance (tests.test_validate_repository.V010GateStatusTests.test_honest_in_progress_status_accepts_pending_provenance) ... ok
+test_passed_status_requires_all_gates_and_owner_approval (tests.test_validate_repository.V010GateStatusTests.test_passed_status_requires_all_gates_and_owner_approval) ... ok
+test_gate_pass_requires_matching_bound_evidence (tests.test_validate_repository.V020GateStatusTests.test_gate_pass_requires_matching_bound_evidence) ... ok
+test_honest_initial_status_needs_no_uncreated_evidence (tests.test_validate_repository.V020GateStatusTests.test_honest_initial_status_needs_no_uncreated_evidence) ... ok
+test_persistence_security_and_performance_cannot_be_waived (tests.test_validate_repository.V020GateStatusTests.test_persistence_security_and_performance_cannot_be_waived) ... ok
+test_version_pass_accepts_complete_bound_evidence_and_owner_approval (tests.test_validate_repository.V020GateStatusTests.test_version_pass_accepts_complete_bound_evidence_and_owner_approval) ... ok
+test_version_pass_requires_all_evidence_and_owner_approval (tests.test_validate_repository.V020GateStatusTests.test_version_pass_requires_all_evidence_and_owner_approval) ... ok
+test_owner_gates_cannot_pass_on_unbound_document_fields (tests.test_validate_repository.V030GateStatusTests.test_owner_gates_cannot_pass_on_unbound_document_fields) ... ok
+test_passed_status_accepts_complete_bound_owner_approval (tests.test_validate_repository.V030GateStatusTests.test_passed_status_accepts_complete_bound_owner_approval) ... ok
+test_ready_for_audit_requires_all_technical_evidence (tests.test_validate_repository.V030GateStatusTests.test_ready_for_audit_requires_all_technical_evidence) ... ok
+test_required_gates_cannot_be_waived (tests.test_validate_repository.V030GateStatusTests.test_required_gates_cannot_be_waived) ... ok
+test_passed_status_accepts_complete_bound_owner_approval (tests.test_validate_repository.V040GateStatusTests.test_passed_status_accepts_complete_bound_owner_approval) ... ok
+test_ready_for_audit_requires_bound_technical_evidence (tests.test_validate_repository.V040GateStatusTests.test_ready_for_audit_requires_bound_technical_evidence) ... ok
+test_required_gates_cannot_be_waived (tests.test_validate_repository.V040GateStatusTests.test_required_gates_cannot_be_waived) ... ok
+test_passed_status_accepts_complete_bound_owner_approval (tests.test_validate_repository.V050GateStatusTests.test_passed_status_accepts_complete_bound_owner_approval) ... ok
+test_ready_for_audit_requires_bound_owner_review (tests.test_validate_repository.V050GateStatusTests.test_ready_for_audit_requires_bound_owner_review) ... ok
+test_required_gates_cannot_be_waived (tests.test_validate_repository.V050GateStatusTests.test_required_gates_cannot_be_waived) ... ok
+test_pass_requires_bound_owner_review (tests.test_validate_repository.V060GateStatusTests.test_pass_requires_bound_owner_review) ... ok
+test_passed_status_accepts_complete_bound_owner_approval (tests.test_validate_repository.V060GateStatusTests.test_passed_status_accepts_complete_bound_owner_approval) ... ok
+test_required_gates_cannot_be_waived (tests.test_validate_repository.V060GateStatusTests.test_required_gates_cannot_be_waived) ... ok
+test_passed_status_accepts_complete_post_merge_evidence (tests.test_validate_repository.V070GateStatusTests.test_passed_status_accepts_complete_post_merge_evidence) ... ok
+test_passed_status_requires_exact_post_merge_reproduction (tests.test_validate_repository.V070GateStatusTests.test_passed_status_requires_exact_post_merge_reproduction) ... ok
+test_ready_for_audit_accepts_complete_premerge_evidence (tests.test_validate_repository.V070GateStatusTests.test_ready_for_audit_accepts_complete_premerge_evidence) ... ok
+test_required_gates_cannot_be_waived (tests.test_validate_repository.V070GateStatusTests.test_required_gates_cannot_be_waived) ... ok
+test_passed_status_accepts_bound_post_merge_evidence (tests.test_validate_repository.V080GateStatusTests.test_passed_status_accepts_bound_post_merge_evidence) ... ok
+test_passed_status_requires_post_merge_reproduction (tests.test_validate_repository.V080GateStatusTests.test_passed_status_requires_post_merge_reproduction) ... ok
+test_ready_for_audit_accepts_complete_premerge_evidence (tests.test_validate_repository.V080GateStatusTests.test_ready_for_audit_accepts_complete_premerge_evidence) ... ok
+test_passed_status_accepts_bound_postmerge_release_evidence (tests.test_validate_repository.V090GateStatusTests.test_passed_status_accepts_bound_postmerge_release_evidence) ... ok
+test_passed_status_requires_merge_and_prerelease_record (tests.test_validate_repository.V090GateStatusTests.test_passed_status_requires_merge_and_prerelease_record) ... ok
+test_ready_for_audit_accepts_complete_premerge_evidence (tests.test_validate_repository.V090GateStatusTests.test_ready_for_audit_accepts_complete_premerge_evidence) ... ok
+test_command_text_in_step_name_is_not_treated_as_run (tests.test_validate_repository.WorkflowStructureTests.test_command_text_in_step_name_is_not_treated_as_run) ... ok
+test_commented_validator_command_does_not_satisfy_requirement (tests.test_validate_repository.WorkflowStructureTests.test_commented_validator_command_does_not_satisfy_requirement) ... ok
+test_current_workflows_have_required_enabled_steps (tests.test_validate_repository.WorkflowStructureTests.test_current_workflows_have_required_enabled_steps) ... ok
+test_disabled_forge_provenance_step_is_rejected (tests.test_validate_repository.WorkflowStructureTests.test_disabled_forge_provenance_step_is_rejected) ... ok
+test_dynamic_continue_on_error_rejects_required_job (tests.test_validate_repository.WorkflowStructureTests.test_dynamic_continue_on_error_rejects_required_job) ... ok
+test_dynamic_continue_on_error_rejects_required_step (tests.test_validate_repository.WorkflowStructureTests.test_dynamic_continue_on_error_rejects_required_step) ... ok
+test_false_continue_on_error_keeps_required_step_blocking (tests.test_validate_repository.WorkflowStructureTests.test_false_continue_on_error_keeps_required_step_blocking) ... ok
+test_final_g0_review_input_sequence_rejects_an_extra_command (tests.test_validate_repository.WorkflowStructureTests.test_final_g0_review_input_sequence_rejects_an_extra_command) ... ok
+test_final_g0_review_input_sequence_requires_python_isolation (tests.test_validate_repository.WorkflowStructureTests.test_final_g0_review_input_sequence_requires_python_isolation) ... ok
+test_forge_artifact_identity_is_exact_head_bound (tests.test_validate_repository.WorkflowStructureTests.test_forge_artifact_identity_is_exact_head_bound) ... ok
+test_forge_jobs_bind_checkout_to_review_commit (tests.test_validate_repository.WorkflowStructureTests.test_forge_jobs_bind_checkout_to_review_commit) ... ok
+test_forge_jobs_bind_exact_review_commit_environments (tests.test_validate_repository.WorkflowStructureTests.test_forge_jobs_bind_exact_review_commit_environments) ... ok
+test_g0_review_packet_sequence_rejects_an_extra_command (tests.test_validate_repository.WorkflowStructureTests.test_g0_review_packet_sequence_rejects_an_extra_command) ... ok
+test_g0_review_packet_sequence_requires_python_isolation (tests.test_validate_repository.WorkflowStructureTests.test_g0_review_packet_sequence_requires_python_isolation) ... ok
+test_if_false_validator_step_does_not_satisfy_requirement (tests.test_validate_repository.WorkflowStructureTests.test_if_false_validator_step_does_not_satisfy_requirement) ... ok
+test_latest_advisory_job_still_requires_blocking_build_step (tests.test_validate_repository.WorkflowStructureTests.test_latest_advisory_job_still_requires_blocking_build_step) ... ok
+test_pre_colon_whitespace_cannot_hide_job_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_pre_colon_whitespace_cannot_hide_job_continue_on_error) ... ok
+test_pre_colon_whitespace_cannot_hide_step_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_pre_colon_whitespace_cannot_hide_step_continue_on_error) ... ok
+test_quoted_key_cannot_hide_job_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_quoted_key_cannot_hide_job_continue_on_error) ... ok
+test_quoted_key_cannot_hide_step_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_quoted_key_cannot_hide_step_continue_on_error) ... ok
+test_repository_workflow_action_contract_mutations_are_rejected (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_action_contract_mutations_are_rejected) ... ok
+test_repository_workflow_binds_review_inputs_to_head_or_push_commit (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_binds_review_inputs_to_head_or_push_commit) ... ok
+test_repository_workflow_permissions_are_read_only (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_permissions_are_read_only) ... ok
+test_repository_workflow_rejects_additional_upload_inputs (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_rejects_additional_upload_inputs) ... ok
+test_repository_workflow_rejects_an_additional_upload_step (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_rejects_an_additional_upload_step) ... ok
+test_repository_workflow_rejects_missing_checkout_ref (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_rejects_missing_checkout_ref) ... ok
+test_retired_final_g0_review_input_commands_are_rejected (tests.test_validate_repository.WorkflowStructureTests.test_retired_final_g0_review_input_commands_are_rejected) ... ok
+test_retired_g0_review_packet_commands_are_rejected (tests.test_validate_repository.WorkflowStructureTests.test_retired_g0_review_packet_commands_are_rejected) ... ok
+test_truthy_continue_on_error_rejects_baseline_job (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_baseline_job) ... ok
+test_truthy_continue_on_error_rejects_baseline_step (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_baseline_step) ... ok
+test_truthy_continue_on_error_rejects_required_job (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_required_job) ... ok
+test_truthy_continue_on_error_rejects_required_step (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_required_step) ... ok
+test_unsupported_escaped_step_key_is_rejected_conservatively (tests.test_validate_repository.WorkflowStructureTests.test_unsupported_escaped_step_key_is_rejected_conservatively) ... ok
+
+======================================================================
+ERROR: test_repository_inventory_includes_tracked_and_nonignored_untracked_files (tests.test_validate_repository.BoundedRepositoryInputTests.test_repository_inventory_includes_tracked_and_nonignored_untracked_files)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_validate_repository.py", line 552, in test_repository_inventory_includes_tracked_and_nonignored_untracked_files
+    path.relative_to(root).as_posix() for path in repository_files(root)
+    ~~~~~~~~~~~~~~~~^^^^^^
+  File "D:\python\pyenv\pyenv-win\versions\3.13.15\Lib\pathlib\_local.py", line 385, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\tmpzpsfz6d4\\untracked.txt' is not in the subpath of 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpzpsfz6d4'
+
+======================================================================
+ERROR: test_ignored_packet_markdown_is_not_authoritative (tests.test_validate_repository.MarkdownLinkInventoryTests.test_ignored_packet_markdown_is_not_authoritative)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_validate_repository.py", line 437, in test_ignored_packet_markdown_is_not_authoritative
+    relative = [path.relative_to(root).as_posix() for path in inventory]
+                ~~~~~~~~~~~~~~~~^^^^^^
+  File "D:\python\pyenv\pyenv-win\versions\3.13.15\Lib\pathlib\_local.py", line 385, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\tmpg664m9nb\\README.md' is not in the subpath of 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpg664m9nb'
+
+======================================================================
+ERROR: test_pathspec_environment_cannot_disable_markdown_inventory (tests.test_validate_repository.MarkdownLinkInventoryTests.test_pathspec_environment_cannot_disable_markdown_inventory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_validate_repository.py", line 472, in test_pathspec_environment_cannot_disable_markdown_inventory
+    [path.relative_to(root).as_posix() for path in inventory],
+     ~~~~~~~~~~~~~~~~^^^^^^
+  File "D:\python\pyenv\pyenv-win\versions\3.13.15\Lib\pathlib\_local.py", line 385, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\tmpm90zn2q4\\tracked.md' is not in the subpath of 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpm90zn2q4'
+
+======================================================================
+FAIL: test_markdown_aggregate_bytes_and_lines_are_bounded (tests.test_validate_repository.MarkdownLinkInventoryTests.test_markdown_aggregate_bytes_and_lines_are_bounded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_validate_repository.py", line 517, in test_markdown_aggregate_bytes_and_lines_are_bounded
+    self.assertIn("aggregate byte limit", byte_errors[0])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'aggregate byte limit' not found in "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpum51713m\\prose.md: cannot read tracked Markdown file: 'C:\\\\Users\\\\ADMINI~1\\\\AppData\\\\Local\\\\Temp\\\\tmpum51713m\\\\prose.md' is not in the subpath of 'C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Temp\\\\tmpum51713m'"
+
+======================================================================
+FAIL: test_markdown_link_and_error_counts_are_bounded (tests.test_validate_repository.MarkdownLinkInventoryTests.test_markdown_link_and_error_counts_are_bounded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_validate_repository.py", line 498, in test_markdown_link_and_error_counts_are_bounded
+    self.assertEqual(3, checked)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: 3 != 0
+
+----------------------------------------------------------------------
+Ran 128 tests in 3.476s
+
+FAILED (failures=2, errors=3)

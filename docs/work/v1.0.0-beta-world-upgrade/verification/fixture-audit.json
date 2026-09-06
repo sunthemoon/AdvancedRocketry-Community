@@ -1,0 +1,55 @@
+{
+  "bundles": [
+    {
+      "archive_sha256": "9022b2fdf4537168bc33f1db06f96c8d5ce150c221177cd4e0890b037f9bed1c",
+      "clean_processes": 4,
+      "final_running_machine": {
+        "completed": 2,
+        "energy": 15480,
+        "items": {
+          "0": 4,
+          "2": 2,
+          "3": 2
+        },
+        "processing_ticks": 226,
+        "progress": 26,
+        "water": 2000
+      },
+      "mission_transition": [
+        "9fbddb29-37e5-3a25-9798-effd84643a8a"
+      ],
+      "name": "populated",
+      "original_files_verified": 59,
+      "original_unchanged": true,
+      "platform_checks_per_capture": 289,
+      "room_checks_per_capture": 26,
+      "upgrades_compared": 3
+    },
+    {
+      "archive_sha256": "9022b2fdf4537168bc33f1db06f96c8d5ce150c221177cd4e0890b037f9bed1c",
+      "clean_processes": 3,
+      "final_running_machine": {
+        "completed": 2,
+        "energy": 15420,
+        "items": {
+          "0": 4,
+          "2": 2,
+          "3": 2
+        },
+        "processing_ticks": 229,
+        "progress": 29,
+        "water": 2000
+      },
+      "mission_transition": [
+        "9fbddb29-37e5-3a25-9798-effd84643a8a"
+      ],
+      "name": "reuse",
+      "original_files_verified": 59,
+      "original_unchanged": true,
+      "platform_checks_per_capture": 289,
+      "room_checks_per_capture": 26,
+      "upgrades_compared": 3
+    }
+  ],
+  "errors": []
+}

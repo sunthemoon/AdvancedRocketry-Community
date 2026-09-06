@@ -1,0 +1,428 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-06T03:08:52.518056+00:00",
+      "request": {
+        "command": "execute as V100Visual1 on vehicle run data get entity @s UUID",
+        "id": 1,
+        "op": "server",
+        "wait": "following entity data"
+      },
+      "result": {
+        "receipt": "[11:08:52] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; 738451753, -899594472, -1806485002, 1726565733]"
+      }
+    },
+    {
+      "at": "2026-09-06T03:08:52.630418+00:00",
+      "request": {
+        "command": "execute as V100Visual2 on vehicle run data get entity @s UUID",
+        "id": 2,
+        "op": "server",
+        "wait": "following entity data"
+      },
+      "result": {
+        "receipt": "[11:08:52] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; 738451753, -899594472, -1806485002, 1726565733]"
+      }
+    },
+    {
+      "at": "2026-09-06T03:08:52.743043+00:00",
+      "request": {
+        "command": "execute in minecraft:overworld if entity @e[type=advancedrocketrycommunity:rocket]",
+        "id": 3,
+        "op": "server",
+        "wait": "Test passed"
+      },
+      "result": {
+        "receipt": "[11:08:52] [Server thread/INFO] [minecraft/MinecraftServer]: Test passed, count: 1"
+      }
+    },
+    {
+      "at": "2026-09-06T03:08:52.825308+00:00",
+      "request": {
+        "id": 4,
+        "key": 114,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:08:53.126472+00:00",
+      "request": {
+        "id": 5,
+        "name": "owner-after-queued-recovery",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 127287,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-after-queued-recovery.png",
+        "sha256": "fff36778e53a3f9afb2768e65cb644f6df52001266b2b4cf3e4dc95e180e783d",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:08:53.208479+00:00",
+      "request": {
+        "id": 6,
+        "key": 114,
+        "op": "key",
+        "player": "operator"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:08:53.795492+00:00",
+      "request": {
+        "id": 7,
+        "name": "passenger-after-queued-recovery",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 107307,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "passenger-after-queued-recovery.png",
+        "sha256": "f501d5fef593fc69a947c381b1fdf827cb34557d2967d46588f29ead43434150",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:08:53.816054+00:00",
+      "request": {
+        "id": 8,
+        "mode": "hold-owner",
+        "op": "gate"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:08:53.971811+00:00",
+      "request": {
+        "command": "kick V100Visual1 controlled_rejoin_setup",
+        "id": 9,
+        "op": "server",
+        "wait": "left the game"
+      },
+      "result": {
+        "receipt": "[11:08:53] [Server thread/INFO] [minecraft/MinecraftServer]: V100Visual1 left the game"
+      }
+    },
+    {
+      "at": "2026-09-06T03:08:54.559159+00:00",
+      "request": {
+        "id": 10,
+        "name": "owner-disconnected-before-held-rejoin",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 57154,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-disconnected-before-held-rejoin.png",
+        "sha256": "f2add1a73693b815b1e41222256f8b2e3161067b7351ded4baca7cf64cb46f29",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:09:34.336251+00:00",
+      "request": {
+        "id": 11,
+        "op": "click",
+        "x": 640,
+        "y": 418
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:09:34.621930+00:00",
+      "request": {
+        "id": 12,
+        "name": "owner-server-list",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 65551,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-server-list.png",
+        "sha256": "5e12057a203dd3b8280862700b6447a0c03e8d4e167e20674fb9518da991f15b",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:10:03.893352+00:00",
+      "request": {
+        "id": 13,
+        "op": "click",
+        "x": 640,
+        "y": 632
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:10:04.195687+00:00",
+      "request": {
+        "id": 14,
+        "name": "owner-direct-connection",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 62729,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-direct-connection.png",
+        "sha256": "3d8d64066a29c09be958bdbc398d24d1ce8ef8bef29af6ce476a3b60731b63bd",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:10:32.920438+00:00",
+      "request": {
+        "id": 15,
+        "op": "type",
+        "text": "127.0.0.1:58353"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:10:33.090119+00:00",
+      "request": {
+        "id": 16,
+        "op": "click",
+        "x": 640,
+        "y": 415
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:11:02.694091+00:00",
+      "request": {
+        "id": 17,
+        "name": "owner-disconnected-while-pending",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 57225,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-disconnected-while-pending.png",
+        "sha256": "a86dac742c42a3d96dc947a9d02e299ae14355c33fafb5fb6275ad46508b5195",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:11:02.695923+00:00",
+      "request": {
+        "id": 18,
+        "mode": "open",
+        "op": "gate"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:11:02.857895+00:00",
+      "request": {
+        "id": 19,
+        "op": "click",
+        "x": 640,
+        "y": 418
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:11:03.020853+00:00",
+      "request": {
+        "id": 20,
+        "op": "click",
+        "x": 640,
+        "y": 632
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:11:03.305887+00:00",
+      "request": {
+        "id": 21,
+        "name": "owner-final-direct-connection",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 63638,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "owner-final-direct-connection.png",
+        "sha256": "bb94a3e0a30ea1ee7e3db7552dec6bd458ecec0c8545cb12d0aaf78d580a4a3f",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-06T03:11:49.359394+00:00",
+      "request": {
+        "id": 22,
+        "op": "click",
+        "x": 640,
+        "y": 415
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-06T03:12:25.667254+00:00",
+      "request": {
+        "command": "execute as V100Visual1 on vehicle run data get entity @s UUID",
+        "id": 23,
+        "op": "server",
+        "wait": "following entity data"
+      },
+      "result": {
+        "receipt": "[11:12:25] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; 738451753, -899594472, -1806485002, 1726565733]"
+      }
+    },
+    {
+      "at": "2026-09-06T03:12:25.774471+00:00",
+      "request": {
+        "command": "execute as V100Visual2 on vehicle run data get entity @s UUID",
+        "id": 24,
+        "op": "server",
+        "wait": "following entity data"
+      },
+      "result": {
+        "receipt": "[11:12:25] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [I; 738451753, -899594472, -1806485002, 1726565733]"
+      }
+    },
+    {
+      "at": "2026-09-06T03:12:25.783156+00:00",
+      "request": {
+        "id": 25,
+        "op": "focus"
+      },
+      "result": {
+        "focused": false
+      }
+    },
+    {
+      "at": "2026-09-06T03:12:25.864928+00:00",
+      "request": {
+        "id": 26,
+        "key": 114,
+        "op": "key"
+      },
+      "result": {}
+    }
+  ],
+  "artifact_sha256": "569f41ab59d953e3b4fad3c1b00588705b260fc0b73f1deaf829024bc603e381",
+  "authentication_tested": false,
+  "auto_logout": [
+    {
+      "at": "2026-09-06T03:10:35.874885+00:00",
+      "command_sent": true
+    }
+  ],
+  "client_pid": 22016,
+  "controlled_readiness_injection": true,
+  "debug_port": 58354,
+  "entity": "2c03e129-ca61-4718-9453-39f666e94d65",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 58353,
+  "probe_pid": 18220,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 127287,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-after-queued-recovery.png",
+      "sha256": "fff36778e53a3f9afb2768e65cb644f6df52001266b2b4cf3e4dc95e180e783d",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 107307,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "passenger-after-queued-recovery.png",
+      "sha256": "f501d5fef593fc69a947c381b1fdf827cb34557d2967d46588f29ead43434150",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 57154,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-disconnected-before-held-rejoin.png",
+      "sha256": "f2add1a73693b815b1e41222256f8b2e3161067b7351ded4baca7cf64cb46f29",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 65551,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-server-list.png",
+      "sha256": "5e12057a203dd3b8280862700b6447a0c03e8d4e167e20674fb9518da991f15b",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 62729,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-direct-connection.png",
+      "sha256": "3d8d64066a29c09be958bdbc398d24d1ce8ef8bef29af6ce476a3b60731b63bd",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 57225,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-disconnected-while-pending.png",
+      "sha256": "a86dac742c42a3d96dc947a9d02e299ae14355c33fafb5fb6275ad46508b5195",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 63638,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "owner-final-direct-connection.png",
+      "sha256": "bb94a3e0a30ea1ee7e3db7552dec6bd458ecec0c8545cb12d0aaf78d580a4a3f",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 25840,
+  "second_username": "V100Visual2",
+  "second_window": 524334,
+  "server_pid": 1052,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-06T03:06:32.708596+00:00",
+  "startup_recovery_findings": [],
+  "stations": [],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 1379030
+}

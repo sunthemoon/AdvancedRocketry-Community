@@ -1,0 +1,992 @@
+{
+  "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "baseline_summary_sha256": "d9b67576847664060eb8cf1758184b0ae5e62ecb28e2ce0e1546138a8c0238a6",
+  "build": "1.20.1-1.0.0-dev",
+  "cases": [
+    {
+      "case": "ASSEMBLED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:41:59.603152+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-assembled-stage-full.txt",
+        "full_log_sha256": "5dab3ac9235a2db2b08b2fee93d597601cdb5548fb481352cae2564c3cd128f1",
+        "graceful_stop_command_sent": false,
+        "name": "v100-assembled-stage",
+        "pid": 22828,
+        "started_at": "2026-09-05T10:41:39.056137+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "4a81ae78-2b76-45a3-b0fe-8846ee34241c",
+        "fuel": 0,
+        "logical": "2c380f76-5860-42df-9db9-2992b6182443",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery": {},
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "4a81ae78-2b76-45a3-b0fe-8846ee34241c",
+          "fuel": 0,
+          "logical": "2c380f76-5860-42df-9db9-2992b6182443",
+          "origin": [
+            384,
+            101,
+            384
+          ],
+          "passengers": 0,
+          "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+          "state": "ASSEMBLED",
+          "transfer": "none"
+        },
+        "source_entity": "4a81ae78-2b76-45a3-b0fe-8846ee34241c"
+      }
+    },
+    {
+      "case": "FUELED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:42:40.861088+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-fueled-stage-full.txt",
+        "full_log_sha256": "8944fc28c491fa0ca4a56cbc7012194c59f6d7c6ca88b5e1d56897481e517d8f",
+        "graceful_stop_command_sent": false,
+        "name": "v100-fueled-stage",
+        "pid": 27568,
+        "started_at": "2026-09-05T10:42:21.485238+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "246c7a16-61e4-462c-8bb3-235ec082dd75",
+        "fuel": 1000,
+        "logical": "9763d7d7-2bbc-42a2-92d9-ced3162bd15b",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "FUELED",
+        "transfer": "none"
+      },
+      "recovery": {},
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "246c7a16-61e4-462c-8bb3-235ec082dd75",
+          "fuel": 1000,
+          "logical": "9763d7d7-2bbc-42a2-92d9-ced3162bd15b",
+          "origin": [
+            384,
+            101,
+            384
+          ],
+          "passengers": 0,
+          "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+          "state": "FUELED",
+          "transfer": "none"
+        },
+        "source_entity": "246c7a16-61e4-462c-8bb3-235ec082dd75"
+      }
+    },
+    {
+      "case": "COUNTDOWN",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:43:23.027699+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-countdown-stage-full.txt",
+        "full_log_sha256": "e04563dd01b32bf352503e5ab5a6c79081dc60780286a33bc7cfae9f562fc9c9",
+        "graceful_stop_command_sent": false,
+        "name": "v100-countdown-stage",
+        "pid": 232,
+        "started_at": "2026-09-05T10:43:02.655134+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "f108ac7e-60bc-4f18-ba0c-dc8e7f66a28d",
+        "fuel": 1000,
+        "logical": "7a1e822b-fee2-43f1-9fb3-a08cc1642839",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "FUELED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_SOURCE",
+        "destination_count_before": 0,
+        "phase": "PREPARED",
+        "source_count_before": 1,
+        "status": "RECOVERED",
+        "transfer_id": "3d088fcb-9c17-44c0-a8a8-8b9c17be72d8"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "COUNTDOWN",
+        "fuel_before": 1000,
+        "logical_rocket_id": "7a1e822b-fee2-43f1-9fb3-a08cc1642839",
+        "paused_dimension": "minecraft:overworld",
+        "paused_entity": "f108ac7e-60bc-4f18-ba0c-dc8e7f66a28d",
+        "phase": "PREPARED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "f108ac7e-60bc-4f18-ba0c-dc8e7f66a28d",
+          "fuel": 1000,
+          "logical": "7a1e822b-fee2-43f1-9fb3-a08cc1642839",
+          "origin": [
+            384,
+            101,
+            384
+          ],
+          "passengers": 0,
+          "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+          "state": "COUNTDOWN",
+          "transfer": "none"
+        },
+        "required_fuel": 372,
+        "source_entity": "f108ac7e-60bc-4f18-ba0c-dc8e7f66a28d",
+        "state": "COUNTDOWN",
+        "transfer_id": "3d088fcb-9c17-44c0-a8a8-8b9c17be72d8"
+      }
+    },
+    {
+      "case": "ASCENT",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:44:07.620300+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-ascent-stage-full.txt",
+        "full_log_sha256": "14d6e99f3da00b3c46c90ae75523914eb4228bc31d76e7a22a3d079148ff7c3e",
+        "graceful_stop_command_sent": false,
+        "name": "v100-ascent-stage",
+        "pid": 25464,
+        "started_at": "2026-09-05T10:43:45.306330+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "f3d81602-517d-466c-a4cc-16f39eaabf33",
+        "fuel": 1000,
+        "logical": "dc1d1485-1ec1-455f-8c00-0f0653dd4d50",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "FUELED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_SOURCE",
+        "destination_count_before": 0,
+        "phase": "PREPARED",
+        "source_count_before": 1,
+        "status": "RECOVERED",
+        "transfer_id": "0e196e9a-be5f-411b-ba97-85113f26a735"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "ASCENT",
+        "fuel_before": 1000,
+        "logical_rocket_id": "dc1d1485-1ec1-455f-8c00-0f0653dd4d50",
+        "paused_dimension": "minecraft:overworld",
+        "paused_entity": "f3d81602-517d-466c-a4cc-16f39eaabf33",
+        "phase": "PREPARED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "f3d81602-517d-466c-a4cc-16f39eaabf33",
+          "fuel": 1000,
+          "logical": "dc1d1485-1ec1-455f-8c00-0f0653dd4d50",
+          "origin": [
+            384,
+            101,
+            384
+          ],
+          "passengers": 0,
+          "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+          "state": "ASCENT",
+          "transfer": "none"
+        },
+        "required_fuel": 372,
+        "source_entity": "f3d81602-517d-466c-a4cc-16f39eaabf33",
+        "state": "ASCENT",
+        "transfer_id": "0e196e9a-be5f-411b-ba97-85113f26a735"
+      }
+    },
+    {
+      "case": "TRANSIT_PREPARED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:44:56.701562+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-transit_prepared-stage-full.txt",
+        "full_log_sha256": "3bf9988405088a38226d8b4a9e0908fa10d5f949e0fafc84b8dcf8f5d6086f95",
+        "graceful_stop_command_sent": false,
+        "name": "v100-transit_prepared-stage",
+        "pid": 17716,
+        "started_at": "2026-09-05T10:44:30.153750+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "7db6e016-3b2e-44eb-afa6-b90600fe85aa",
+        "fuel": 1000,
+        "logical": "09a21829-efee-4086-8ab0-dfb51fe7d168",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "FUELED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_SOURCE",
+        "destination_count_before": 0,
+        "phase": "PREPARED",
+        "source_count_before": 1,
+        "status": "RECOVERED",
+        "transfer_id": "abe0e80a-04ba-4cc8-964c-a2d555c2bce9"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "TRANSIT_PREPARED",
+        "fuel_before": 1000,
+        "logical_rocket_id": "09a21829-efee-4086-8ab0-dfb51fe7d168",
+        "paused_dimension": "minecraft:overworld",
+        "paused_entity": "7db6e016-3b2e-44eb-afa6-b90600fe85aa",
+        "phase": "PREPARED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "7db6e016-3b2e-44eb-afa6-b90600fe85aa",
+          "fuel": 1000,
+          "logical": "09a21829-efee-4086-8ab0-dfb51fe7d168",
+          "origin": [
+            384,
+            101,
+            384
+          ],
+          "passengers": 0,
+          "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+          "state": "TRANSIT",
+          "transfer": "abe0e80a-04ba-4cc8-964c-a2d555c2bce9"
+        },
+        "required_fuel": 372,
+        "source_entity": "7db6e016-3b2e-44eb-afa6-b90600fe85aa",
+        "state": "TRANSIT",
+        "transfer_id": "abe0e80a-04ba-4cc8-964c-a2d555c2bce9"
+      }
+    },
+    {
+      "case": "DESTINATION_SPAWNED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:45:45.577592+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-destination_spawned-stage-full.txt",
+        "full_log_sha256": "31cd4a9697153252fcf39bf28a73545de2b9dad3c47a3fa04e0f6750958ee41c",
+        "graceful_stop_command_sent": false,
+        "name": "v100-destination_spawned-stage",
+        "pid": 16908,
+        "started_at": "2026-09-05T10:45:18.471566+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "9169dbdd-5f6b-4418-9112-7e663921f62b",
+        "fuel": 628,
+        "logical": "71d60690-a2f4-44fc-80d3-e83809a6b69c",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "REMOVE_SOURCE_KEEP_DESTINATION",
+        "destination_count_before": 1,
+        "phase": "DESTINATION_SPAWNED",
+        "source_count_before": 1,
+        "status": "RECOVERED",
+        "transfer_id": "296fefc1-2316-48c5-ae5e-6ee629c75412"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "DESTINATION_SPAWNED",
+        "fuel_before": 1000,
+        "logical_rocket_id": "71d60690-a2f4-44fc-80d3-e83809a6b69c",
+        "paused_dimension": "advancedrocketrycommunity:moon",
+        "paused_entity": "9169dbdd-5f6b-4418-9112-7e663921f62b",
+        "phase": "DESTINATION_SPAWNED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "9169dbdd-5f6b-4418-9112-7e663921f62b",
+          "fuel": 628,
+          "logical": "71d60690-a2f4-44fc-80d3-e83809a6b69c",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "state": "DESCENT",
+          "transfer": "296fefc1-2316-48c5-ae5e-6ee629c75412"
+        },
+        "required_fuel": 372,
+        "source_entity": "03749ced-ac1a-4338-9218-1cba38d5a07e",
+        "state": "DESCENT",
+        "transfer_id": "296fefc1-2316-48c5-ae5e-6ee629c75412"
+      }
+    },
+    {
+      "case": "PASSENGERS_TRANSFERRED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:46:37.361683+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-passengers_transferred-stage-full.txt",
+        "full_log_sha256": "fecb1abed51e4abe913deb41cf43df62b76e04937180bec0101ebbb9e3e9bb92",
+        "graceful_stop_command_sent": false,
+        "name": "v100-passengers_transferred-stage",
+        "pid": 25220,
+        "started_at": "2026-09-05T10:46:09.799047+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "08dedeb4-b6c4-4752-9c46-70f490f77f4d",
+        "fuel": 628,
+        "logical": "c87b7de3-d194-4013-af88-2f8e75cb4481",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "REMOVE_SOURCE_KEEP_DESTINATION",
+        "destination_count_before": 1,
+        "phase": "PASSENGERS_TRANSFERRED",
+        "source_count_before": 1,
+        "status": "RECOVERED",
+        "transfer_id": "e0aaf2ef-142b-4773-9da9-0c534150b077"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "PASSENGERS_TRANSFERRED",
+        "fuel_before": 1000,
+        "logical_rocket_id": "c87b7de3-d194-4013-af88-2f8e75cb4481",
+        "paused_dimension": "advancedrocketrycommunity:moon",
+        "paused_entity": "08dedeb4-b6c4-4752-9c46-70f490f77f4d",
+        "phase": "PASSENGERS_TRANSFERRED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "08dedeb4-b6c4-4752-9c46-70f490f77f4d",
+          "fuel": 628,
+          "logical": "c87b7de3-d194-4013-af88-2f8e75cb4481",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "state": "DESCENT",
+          "transfer": "e0aaf2ef-142b-4773-9da9-0c534150b077"
+        },
+        "required_fuel": 372,
+        "source_entity": "8dbb3f19-6d19-461d-93dd-898749f6d466",
+        "state": "DESCENT",
+        "transfer_id": "e0aaf2ef-142b-4773-9da9-0c534150b077"
+      }
+    },
+    {
+      "case": "SOURCE_REMOVED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:47:29.161207+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-source_removed-stage-full.txt",
+        "full_log_sha256": "f995d17b7344257aecfe0fd30bb9423ae6ccae4b56377e27b3e87a5dcfb6b7f0",
+        "graceful_stop_command_sent": false,
+        "name": "v100-source_removed-stage",
+        "pid": 27476,
+        "started_at": "2026-09-05T10:47:01.573065+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "edf963c4-3d6b-4171-b202-fa307bb212ef",
+        "fuel": 628,
+        "logical": "e47026f4-3e0d-4c3f-8246-54d704a4c12b",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_DESTINATION",
+        "destination_count_before": 1,
+        "phase": "SOURCE_REMOVED",
+        "source_count_before": 0,
+        "status": "RECOVERED",
+        "transfer_id": "90e5810c-6e08-4e86-8458-939a27cc110f"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "SOURCE_REMOVED",
+        "fuel_before": 1000,
+        "logical_rocket_id": "e47026f4-3e0d-4c3f-8246-54d704a4c12b",
+        "paused_dimension": "advancedrocketrycommunity:moon",
+        "paused_entity": "edf963c4-3d6b-4171-b202-fa307bb212ef",
+        "phase": "SOURCE_REMOVED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "edf963c4-3d6b-4171-b202-fa307bb212ef",
+          "fuel": 628,
+          "logical": "e47026f4-3e0d-4c3f-8246-54d704a4c12b",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "state": "DESCENT",
+          "transfer": "90e5810c-6e08-4e86-8458-939a27cc110f"
+        },
+        "required_fuel": 372,
+        "source_entity": "7c48f071-536d-43f8-b424-8033d19f8c7a",
+        "state": "DESCENT",
+        "transfer_id": "90e5810c-6e08-4e86-8458-939a27cc110f"
+      }
+    },
+    {
+      "case": "DESCENT",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:48:20.905445+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-descent-stage-full.txt",
+        "full_log_sha256": "6f32d0eaa7b8dcfc2754d0dfcf75de312dc8339bbf6d1821e78f5823f15d069c",
+        "graceful_stop_command_sent": false,
+        "name": "v100-descent-stage",
+        "pid": 27280,
+        "started_at": "2026-09-05T10:47:53.389865+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "162e79c2-79a4-4a91-9f6e-2f7a088768a3",
+        "fuel": 628,
+        "logical": "76b5209e-1f3e-415f-8a47-c744666fe241",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_DESTINATION",
+        "destination_count_before": 1,
+        "phase": "COMMITTED",
+        "source_count_before": 0,
+        "status": "RECOVERED",
+        "transfer_id": "1704d4ad-826f-4cc0-b6aa-c535e1d4cfab"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "DESCENT",
+        "fuel_before": 1000,
+        "logical_rocket_id": "76b5209e-1f3e-415f-8a47-c744666fe241",
+        "paused_dimension": "advancedrocketrycommunity:moon",
+        "paused_entity": "162e79c2-79a4-4a91-9f6e-2f7a088768a3",
+        "phase": "COMMITTED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "162e79c2-79a4-4a91-9f6e-2f7a088768a3",
+          "fuel": 628,
+          "logical": "76b5209e-1f3e-415f-8a47-c744666fe241",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "state": "DESCENT",
+          "transfer": "1704d4ad-826f-4cc0-b6aa-c535e1d4cfab"
+        },
+        "required_fuel": 372,
+        "source_entity": "94c53215-466c-440b-afaf-dd841b1c6c39",
+        "state": "DESCENT",
+        "transfer_id": "1704d4ad-826f-4cc0-b6aa-c535e1d4cfab"
+      }
+    },
+    {
+      "case": "LANDED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:49:15.863799+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T104138173231Z-v100-landed-stage-full.txt",
+        "full_log_sha256": "86b37822a4f31b7731195c97d428c905fb1bfd82528b2c0d6fa0877099474cc6",
+        "graceful_stop_command_sent": false,
+        "name": "v100-landed-stage",
+        "pid": 3264,
+        "started_at": "2026-09-05T10:48:44.962399+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "9a990983-b3be-4216-a57a-c1d7fd32d2dd",
+        "fuel": 628,
+        "logical": "d70b34e4-56bf-4097-ac7f-9755bc3bc3ad",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_DESTINATION",
+        "destination_count_before": 1,
+        "phase": "COMMITTED",
+        "source_count_before": 0,
+        "status": "RECOVERED",
+        "transfer_id": "b15c2881-5c01-47b7-bc04-bf498fb9f782"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "LANDED",
+        "fuel_before": 1000,
+        "logical_rocket_id": "d70b34e4-56bf-4097-ac7f-9755bc3bc3ad",
+        "paused_dimension": "advancedrocketrycommunity:moon",
+        "paused_entity": "9a990983-b3be-4216-a57a-c1d7fd32d2dd",
+        "phase": "COMMITTED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "9a990983-b3be-4216-a57a-c1d7fd32d2dd",
+          "fuel": 628,
+          "logical": "d70b34e4-56bf-4097-ac7f-9755bc3bc3ad",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "state": "LANDED",
+          "transfer": "none"
+        },
+        "required_fuel": 372,
+        "source_entity": "45aa80e9-bd5a-4e81-95f5-42be4d7a7ca7",
+        "state": "LANDED",
+        "transfer_id": "b15c2881-5c01-47b7-bc04-bf498fb9f782"
+      }
+    }
+  ],
+  "complete_flight_matrix": true,
+  "completed_at": "2026-09-05T10:49:38.182496+00:00",
+  "harness_sha256": "f9259f666f911546f25653975b1d8ad3c8da33cd7997fb28e7041e62163dbded",
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "20260905T104138173231Z-v100-ascent-recover-full.txt",
+      "sha256": "7b2ecd1e387bedd47e48eef2bc9b24ad8ea7a5af706041d553f4d3387b7792e6"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-ascent-stage-full.txt",
+      "sha256": "14d6e99f3da00b3c46c90ae75523914eb4228bc31d76e7a22a3d079148ff7c3e"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-assembled-recover-full.txt",
+      "sha256": "fe5badc81760186df4eedbf9c2e1a9c108d798d90e3a1ab1ba9889b46ff04944"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-assembled-stage-full.txt",
+      "sha256": "5dab3ac9235a2db2b08b2fee93d597601cdb5548fb481352cae2564c3cd128f1"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-countdown-recover-full.txt",
+      "sha256": "2f149df7ee4674f05259cbada4a344276087d1babf0353735f80b5d3811f1b68"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-countdown-stage-full.txt",
+      "sha256": "e04563dd01b32bf352503e5ab5a6c79081dc60780286a33bc7cfae9f562fc9c9"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-descent-recover-full.txt",
+      "sha256": "a895ef989e4d8c7d0cdfa438c222ef2a31d5d09d3eedf42c767d69152cc06b8e"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-descent-stage-full.txt",
+      "sha256": "6f32d0eaa7b8dcfc2754d0dfcf75de312dc8339bbf6d1821e78f5823f15d069c"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-destination_spawned-recover-full.txt",
+      "sha256": "0b64a02a199e57df10c273d8eae372f862fec7d1dc31a47af4c94692b9007b99"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-destination_spawned-stage-full.txt",
+      "sha256": "31cd4a9697153252fcf39bf28a73545de2b9dad3c47a3fa04e0f6750958ee41c"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-fueled-recover-full.txt",
+      "sha256": "5fd486075feee1a2eeb6f414de022456687b21ee7ebb4bfae66ff7e34347ab34"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-fueled-stage-full.txt",
+      "sha256": "8944fc28c491fa0ca4a56cbc7012194c59f6d7c6ca88b5e1d56897481e517d8f"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-landed-recover-full.txt",
+      "sha256": "7407f5739d8abf995892e11fb2bf3f5039430f289e907c47cf9d296be47e866c"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-landed-stage-full.txt",
+      "sha256": "86b37822a4f31b7731195c97d428c905fb1bfd82528b2c0d6fa0877099474cc6"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-passengers_transferred-recover-full.txt",
+      "sha256": "3a0ece8afece62d53a8e3aa58eb47e6421c2da60cc32b4c9a178d18a11affa0f"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-passengers_transferred-stage-full.txt",
+      "sha256": "fecb1abed51e4abe913deb41cf43df62b76e04937180bec0101ebbb9e3e9bb92"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-source_removed-recover-full.txt",
+      "sha256": "ff160dc394bab33cc00c4ec567e44e821e63316138d01951947bd6058f07d2e7"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-source_removed-stage-full.txt",
+      "sha256": "f995d17b7344257aecfe0fd30bb9423ae6ccae4b56377e27b3e87a5dcfb6b7f0"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-transit_prepared-recover-full.txt",
+      "sha256": "6afc97ca80f947c96d49517e558f2fd04efc05023d7c28bc371e8a29ef864a5b"
+    },
+    {
+      "file": "20260905T104138173231Z-v100-transit_prepared-stage-full.txt",
+      "sha256": "3bf9988405088a38226d8b4a9e0908fa10d5f949e0fafc84b8dcf8f5d6086f95"
+    }
+  ],
+  "online_mode": "true",
+  "processes": [
+    {
+      "completed_at": "2026-09-05T10:41:59.603152+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-assembled-stage-full.txt",
+      "full_log_sha256": "5dab3ac9235a2db2b08b2fee93d597601cdb5548fb481352cae2564c3cd128f1",
+      "graceful_stop_command_sent": false,
+      "name": "v100-assembled-stage",
+      "started_at": "2026-09-05T10:41:39.056137+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:42:21.469921+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-assembled-recover-full.txt",
+      "full_log_sha256": "fe5badc81760186df4eedbf9c2e1a9c108d798d90e3a1ab1ba9889b46ff04944",
+      "name": "v100-assembled-recover",
+      "started_at": "2026-09-05T10:41:59.619926+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:42:40.861088+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-fueled-stage-full.txt",
+      "full_log_sha256": "8944fc28c491fa0ca4a56cbc7012194c59f6d7c6ca88b5e1d56897481e517d8f",
+      "graceful_stop_command_sent": false,
+      "name": "v100-fueled-stage",
+      "started_at": "2026-09-05T10:42:21.485238+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:43:02.636963+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-fueled-recover-full.txt",
+      "full_log_sha256": "5fd486075feee1a2eeb6f414de022456687b21ee7ebb4bfae66ff7e34347ab34",
+      "name": "v100-fueled-recover",
+      "started_at": "2026-09-05T10:42:40.875391+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:43:23.027699+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-countdown-stage-full.txt",
+      "full_log_sha256": "e04563dd01b32bf352503e5ab5a6c79081dc60780286a33bc7cfae9f562fc9c9",
+      "graceful_stop_command_sent": false,
+      "name": "v100-countdown-stage",
+      "started_at": "2026-09-05T10:43:02.655134+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:43:45.290223+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-countdown-recover-full.txt",
+      "full_log_sha256": "2f149df7ee4674f05259cbada4a344276087d1babf0353735f80b5d3811f1b68",
+      "name": "v100-countdown-recover",
+      "started_at": "2026-09-05T10:43:23.052020+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:44:07.620300+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-ascent-stage-full.txt",
+      "full_log_sha256": "14d6e99f3da00b3c46c90ae75523914eb4228bc31d76e7a22a3d079148ff7c3e",
+      "graceful_stop_command_sent": false,
+      "name": "v100-ascent-stage",
+      "started_at": "2026-09-05T10:43:45.306330+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:44:30.136643+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-ascent-recover-full.txt",
+      "full_log_sha256": "7b2ecd1e387bedd47e48eef2bc9b24ad8ea7a5af706041d553f4d3387b7792e6",
+      "name": "v100-ascent-recover",
+      "started_at": "2026-09-05T10:44:07.644162+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:44:56.701562+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-transit_prepared-stage-full.txt",
+      "full_log_sha256": "3bf9988405088a38226d8b4a9e0908fa10d5f949e0fafc84b8dcf8f5d6086f95",
+      "graceful_stop_command_sent": false,
+      "name": "v100-transit_prepared-stage",
+      "started_at": "2026-09-05T10:44:30.153750+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:45:18.457218+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-transit_prepared-recover-full.txt",
+      "full_log_sha256": "6afc97ca80f947c96d49517e558f2fd04efc05023d7c28bc371e8a29ef864a5b",
+      "name": "v100-transit_prepared-recover",
+      "started_at": "2026-09-05T10:44:56.715991+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:45:45.577592+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-destination_spawned-stage-full.txt",
+      "full_log_sha256": "31cd4a9697153252fcf39bf28a73545de2b9dad3c47a3fa04e0f6750958ee41c",
+      "graceful_stop_command_sent": false,
+      "name": "v100-destination_spawned-stage",
+      "started_at": "2026-09-05T10:45:18.471566+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:46:09.785420+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-destination_spawned-recover-full.txt",
+      "full_log_sha256": "0b64a02a199e57df10c273d8eae372f862fec7d1dc31a47af4c94692b9007b99",
+      "name": "v100-destination_spawned-recover",
+      "started_at": "2026-09-05T10:45:45.591334+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:46:37.361683+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-passengers_transferred-stage-full.txt",
+      "full_log_sha256": "fecb1abed51e4abe913deb41cf43df62b76e04937180bec0101ebbb9e3e9bb92",
+      "graceful_stop_command_sent": false,
+      "name": "v100-passengers_transferred-stage",
+      "started_at": "2026-09-05T10:46:09.799047+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:47:01.559286+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-passengers_transferred-recover-full.txt",
+      "full_log_sha256": "3a0ece8afece62d53a8e3aa58eb47e6421c2da60cc32b4c9a178d18a11affa0f",
+      "name": "v100-passengers_transferred-recover",
+      "started_at": "2026-09-05T10:46:37.382486+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:47:29.161207+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-source_removed-stage-full.txt",
+      "full_log_sha256": "f995d17b7344257aecfe0fd30bb9423ae6ccae4b56377e27b3e87a5dcfb6b7f0",
+      "graceful_stop_command_sent": false,
+      "name": "v100-source_removed-stage",
+      "started_at": "2026-09-05T10:47:01.573065+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:47:53.366561+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-source_removed-recover-full.txt",
+      "full_log_sha256": "ff160dc394bab33cc00c4ec567e44e821e63316138d01951947bd6058f07d2e7",
+      "name": "v100-source_removed-recover",
+      "started_at": "2026-09-05T10:47:29.173891+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:48:20.905445+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-descent-stage-full.txt",
+      "full_log_sha256": "6f32d0eaa7b8dcfc2754d0dfcf75de312dc8339bbf6d1821e78f5823f15d069c",
+      "graceful_stop_command_sent": false,
+      "name": "v100-descent-stage",
+      "started_at": "2026-09-05T10:47:53.389865+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:48:44.946239+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-descent-recover-full.txt",
+      "full_log_sha256": "a895ef989e4d8c7d0cdfa438c222ef2a31d5d09d3eedf42c767d69152cc06b8e",
+      "name": "v100-descent-recover",
+      "started_at": "2026-09-05T10:48:20.920044+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:49:15.863799+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T104138173231Z-v100-landed-stage-full.txt",
+      "full_log_sha256": "86b37822a4f31b7731195c97d428c905fb1bfd82528b2c0d6fa0877099474cc6",
+      "graceful_stop_command_sent": false,
+      "name": "v100-landed-stage",
+      "started_at": "2026-09-05T10:48:44.962399+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:49:38.180822+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T104138173231Z-v100-landed-recover-full.txt",
+      "full_log_sha256": "7407f5739d8abf995892e11fb2bf3f5039430f289e907c47cf9d296be47e866c",
+      "name": "v100-landed-recover",
+      "started_at": "2026-09-05T10:49:15.878205+00:00"
+    }
+  ],
+  "requested_cases": [
+    "ASSEMBLED",
+    "FUELED",
+    "COUNTDOWN",
+    "ASCENT",
+    "TRANSIT_PREPARED",
+    "DESTINATION_SPAWNED",
+    "PASSENGERS_TRANSFERRED",
+    "SOURCE_REMOVED",
+    "DESCENT",
+    "LANDED"
+  ],
+  "schema_version": 1,
+  "scope": "unmanned flight checkpoints after explicit durable flush; not assembly, disassembly or player crash coverage",
+  "source_state": "development_worktree",
+  "status": "PASS",
+  "version": "v1.0.0"
+}

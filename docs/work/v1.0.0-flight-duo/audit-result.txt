@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_OBSERVATION_AUDIT", "driver_status": "FAIL", "source_inputs": 734, "native_processes": 3, "screenshots": 22, "screenshot_receipts": 20, "checksums": 172, "java_tests": 385, "game_tests": 44, "station_uuid_subcase_complete": false, "release_gate_approval": false}

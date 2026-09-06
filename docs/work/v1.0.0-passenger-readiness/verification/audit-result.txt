@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_READINESS_AND_RESTART", "source_files": 747, "java_tests": 405, "gametests": 50, "restart": "PASS", "native_deferred_queue_timing": "NOT_TESTED", "saved_rockets": 1}

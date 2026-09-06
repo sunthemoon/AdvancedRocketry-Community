@@ -1,0 +1,16 @@
+[PASS] Packaged station allocation 1/10
+[PASS] Packaged station allocation 2/10
+[PASS] Packaged station allocation 3/10
+[PASS] Packaged station allocation 4/10
+[PASS] Packaged station allocation 5/10
+[PASS] Packaged station allocation 6/10
+[PASS] Packaged station allocation 7/10
+[PASS] Packaged station allocation 8/10
+[PASS] Packaged station allocation 9/10
+[PASS] Packaged station allocation 10/10
+[PASS] 10 packaged stations allocated without overlap
+[PASS] Earth/station and Moon/station packaged round trips
+[PASS] Same-world restart preserved station authority and allocation
+[PASS] Exact-template deletion preserved the neighboring station
+[PASS] Artifact SHA-256: cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\build\v090-station-server-smoke\evidence

@@ -187,3 +187,10 @@ ADR
 3. 只有 `PASSED` 才创建 tag/release。
 
 单人项目也应保留第二步，避免同一执行会话自证完成。
+
+v1.0+ 的新增预算与证据等级见
+[质量预算](17-V1PLUS-QUALITY-BUDGETS.md)。新增模板仍使用原有
+`MANUAL-TEST.md`、`PERFORMANCE.md`、`checksums.txt`、`GATE-STATUS.md`，
+专项报告作补充，不建立第二份矛盾的版本状态。
+批准前用候选 commit 复建；证据完整且人工批准后才创建版本 tag，随后
+核对 tag 重建和发布下载的同一制品。规划文件不能替代这一流程。

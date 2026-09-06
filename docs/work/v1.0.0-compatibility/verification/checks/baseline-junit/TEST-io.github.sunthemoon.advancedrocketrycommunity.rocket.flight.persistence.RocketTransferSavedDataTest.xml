@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-05T12:16:29" hostname="DESKTOP-8J2KSNF" time="0.011">
+  <properties/>
+  <testcase name="currentJournalRoundTripsEveryAuthorityField()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest" time="0.002"/>
+  <testcase name="futureAndChecksumDamagedJournalsArePreservedWhole()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest" time="0.003"/>
+  <testcase name="journalRejectsPhaseRegressionAndConflictingAuthority()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest" time="0.003"/>
+  <testcase name="committedLandingReservationIsAtomicallyReplacedByReturnFlight()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

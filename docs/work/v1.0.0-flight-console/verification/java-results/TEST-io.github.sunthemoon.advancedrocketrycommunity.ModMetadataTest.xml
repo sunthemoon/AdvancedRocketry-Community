@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.ModMetadataTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-05T16:57:16" hostname="DESKTOP-8J2KSNF" time="0.003">
+  <properties/>
+  <testcase name="processedMetadataContainsApprovedIdentity()" classname="io.github.sunthemoon.advancedrocketrycommunity.ModMetadataTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-05T21:19:24" hostname="DESKTOP-8J2KSNF" time="0.063">
+  <properties/>
+  <testcase name="compressedInputRejectsEmptyTruncatedOversizedAndExpansionBombs()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.016"/>
+  <testcase name="compressedEncodingIsDeterministicForTheSameSnapshot()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.001"/>
+  <testcase name="schemaOneRoundTripsCanonicallyInExpandedAndCompressedForms()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.001"/>
+  <testcase name="encodedBoundsStatsAndCanonicalOrderAreVerified()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.001"/>
+  <testcase name="contentHashDetectsAnyStateOrPayloadModification()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.001"/>
+  <testcase name="futureSchemaIsPreservedAndNeverDecodedAsCurrent()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.001"/>
+  <testcase name="malformedAndWronglyTypedFieldsFailClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.001"/>
+  <testcase name="totalExpandedNbtLimitIsEnforcedBeforePersistence()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest" time="0.04"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

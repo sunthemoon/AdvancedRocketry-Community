@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-05T19:27:10" hostname="DESKTOP-8J2KSNF" time="0.427">
+  <properties/>
+  <testcase name="compressedAndExpandedSizeLimitsFailClosed(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.028"/>
+  <testcase name="symbolicManagedFileIsRejectedWhenPlatformAllowsLinks(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.017"/>
+  <testcase name="noManagedDataDoesNotCreateBackup(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.006"/>
+  <testcase name="currentDataIsIdempotentAndDoesNotCreateBackup(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.016"/>
+  <testcase name="failedSecondCommitRestoresEveryOriginal(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.112"/>
+  <testcase name="allAlphaFixturesMigrateAfterByteExactBackup(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.193"/>
+  <testcase name="futureAndMalformedSchemasFailBeforeBackupOrWrite(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.022"/>
+  <testcase name="backupLimitBlocksBeforeAuthoritativeWrite(Path)" classname="io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest" time="0.026"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

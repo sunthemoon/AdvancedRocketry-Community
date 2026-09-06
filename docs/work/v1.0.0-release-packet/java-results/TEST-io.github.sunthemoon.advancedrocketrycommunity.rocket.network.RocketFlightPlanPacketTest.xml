@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-06T02:40:01" hostname="DESKTOP-8J2KSNF" time="0.009">
+  <properties/>
+  <testcase name="oversizeAndTrailingBytesAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.002"/>
+  <testcase name="emptyAndAllDestinationsRoundTripAsAtomicFixedSizeFrames()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.001"/>
+  <testcase name="latePacketsMustMatchBothTheOpenContainerAndRocket()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.0"/>
+  <testcase name="everyTruncatedStationFrameIsRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.002"/>
+  <testcase name="malformedQuoteValuesAndFlagsAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.001"/>
+  <testcase name="fullWidthQuotesSurviveBeyondSignedContainerShortRange()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.0"/>
+  <testcase name="unknownDestinationIdsAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.001"/>
+  <testcase name="decodedNegativeIdentifiersAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.0"/>
+  <testcase name="negativeIdentifiersAndInvalidStationBindingsFail()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.001"/>
+  <testcase name="flightChannelRevisionAccountsForSynchronizedPassengerSeats()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,40 @@
+{
+  "java": {
+    "tests": 406,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 79
+  },
+  "java_execution": "FROM-CACHE",
+  "gametest_required": 51,
+  "gametest_pass": true,
+  "commands": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "src/generated"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code"
+      ],
+      "exit_code": 1
+    }
+  ]
+}

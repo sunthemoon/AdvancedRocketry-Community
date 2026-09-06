@@ -6,6 +6,13 @@ Use `docs/templates/SOURCE-PROVENANCE-TEMPLATE.md`.
 
 ## Recorded batches
 
+- [v1.0.0 Stable Core stabilization](v1.0.0-stable-core.md) records
+  community-authored tests, harnesses and metadata changes; review is pending.
+
+- [v1.0+ planning input](v1.0.0-v1plus-planning.md) records the user-supplied
+  development documentation package, its hashes and reference-only boundaries;
+  this is not an upstream asset import or release approval.
+
 - [`v0.0.2-forge-mdk-and-gradle-wrapper.md`](v0.0.2-forge-mdk-and-gradle-wrapper.md)
   records the official Forge MDK bootstrap inputs and Gradle Wrapper component.
 - [`v0.1.0-minimal-content.json`](v0.1.0-minimal-content.json) records the

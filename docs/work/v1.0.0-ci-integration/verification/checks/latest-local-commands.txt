@@ -1,0 +1,8 @@
+latest-compatibility Compile and test against latest Forge lane
+exit 0 seconds 25.432
+latest-compatibility Resolve built artifact identity
+exit 0 seconds 0.082
+latest-compatibility Audit the latest-lane distributable JAR
+exit 0 seconds 0.353
+latest-compatibility Run GameTests against latest Forge lane
+exit 0 seconds 104.379

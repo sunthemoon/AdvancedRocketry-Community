@@ -1,0 +1,12 @@
+{
+  "artifact_sha256": "46cb577653981a50638ff3d2bc32d0407dc4adaa5d7092fe73e65ae82bcd229c",
+  "authentication_tested": false,
+  "checks": [],
+  "client_pid": 17624,
+  "debug_port": 54540,
+  "port": 54539,
+  "screenshots": [],
+  "server_pid": 7400,
+  "started_at": "2026-09-05T19:54:30.404368+00:00",
+  "status": "IN_PROGRESS"
+}

@@ -1,0 +1,3 @@
+k2026-09-06 02:01:58,934 Test worker WARN Advanced terminal features are not available in this environment
+“’XARCE_ROCKET_VISUAL_PERF blocks=2048 payload_bytes=32888 chunks=2 elapsed_nanos=3477200
+¥¬UARCE_ROCKET_SCAN_PERF blocks=2048 ticks=41 inspections=10242 elapsed_nanos=18717900

@@ -1,0 +1,14 @@
+[
+  {
+    "command": "git diff --check",
+    "exit_code": 0
+  },
+  {
+    "command": "git diff --exit-code -- src/generated",
+    "exit_code": 0
+  },
+  {
+    "command": "git diff --exit-code",
+    "exit_code": 1
+  }
+]

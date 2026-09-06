@@ -7,7 +7,7 @@
 | `PROJECT-CONFIG.md` | 唯一项目变量和人工决策入口 |
 | `AGENTS.md` | Codex 的长期工程约束、Gate 和输出格式 |
 | `00-READ-ME-FIRST.md` | 人工启动顺序 |
-| `MASTER-EXECUTION-PLAN.md` | 完整单文件开发计划；分文件与当前 ADR/状态冲突时以后者为准 |
+| `MASTER-EXECUTION-PLAN.md` | v0.x–v1.0 初始单文件快照；后续规划以分文件、ADR/状态为准 |
 | `codex-prompts/00-initialize-repository.md` | 第一次执行，只完成 v0.0.1 |
 
 ## 产品与总体方案
@@ -17,9 +17,14 @@
 | `PRODUCT.md` | 产品是什么、v1.0 核心体验、非目标 |
 | `docs/01-PORTING-PRINCIPLES.md` | 为什么重写、如何使用旧代码/资产 |
 | `docs/03-TARGET-ARCHITECTURE.md` | 1.20.1 包结构和系统拆分 |
-| `docs/04-VERSION-ROADMAP.md` | 12 个版本里程碑和强制顺序 |
+| `docs/04-VERSION-ROADMAP.md` | v0.0.1–v2.0.0 里程碑和集成/验收顺序 |
 | `docs/PORTING_MATRIX.md` | 旧系统到新模块/版本/测试的映射 |
 | `docs/11-RISK-REGISTER.md` | 核心风险、触发与缓解 |
+| [并行与 worktree](docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md) | 任务 DAG、所有权、契约与独立审核 |
+| [远程 Linux 开发](docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md) | Debian 12、tmux、专服、V0/V1/V2 证据边界 |
+| [v1.0 后路线](docs/16-POST-1.0-VERSION-ROADMAP.md) | 扩展内核到 v2.0 经典功能对等 |
+| [v1.0+ 质量预算](docs/17-V1PLUS-QUALITY-BUDGETS.md) | 缺陷、性能、迁移、扫描/网络与视觉门槛 |
+| [外部技术来源](docs/18-V1PLUS-SOURCES.md) | 工具与远程流程参考；不是资产授权 |
 
 ## 上游和资产
 
@@ -58,6 +63,9 @@
 | `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` | 人工测试用例 |
 | `docs/templates/PERFORMANCE-REPORT-TEMPLATE.md` | 性能报告 |
 | `docs/templates/RELEASE-EVIDENCE-TEMPLATE.md` | 每版最终证据 |
+| [v1.0+ 发布证据模板](docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md) | 扩展版本契约、迁移和 G0–G9 |
+| [远程运行报告](docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md) | 实测主机、负载、退出码和采样 |
+| [视觉验证报告](docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md) | 候选、GPU、场景和真实多人 |
 | `docs/releases/v0.0.2/` | Forge bootstrap 的自动、人工、产物和风险证据 |
 | `docs/releases/v0.0.2/INSTALLATION.md` | 未发布开发预览的环境、客户端/服务端安装和存档边界 |
 | `docs/releases/v0.1.0/` | 资产/注册基线的来源、构建、客户端、专服和人工验收证据 |
@@ -108,6 +116,9 @@
 | `docs/work/v0.8.0-implementation-log.md` | 研究、卫星任务、双客户端、压力与验收任务树 |
 | `docs/work/v0.9.0-implementation-log.md` | Beta 迁移、兼容、安全、soak 与发布任务树 |
 | `docs/work/v0.9.0-feature-freeze.md` | v0.9.0 功能冻结范围与所有者批准记录 |
+| [v1.0 实施记录](docs/work/v1.0.0-implementation-log.md) | 文档整合、决策、实跑验证和剩余 Gate |
+| [v1plus 整合验证](docs/work/v1.0.0-planning-integration/VERIFICATION.md) | 本地检查结果、原始日志与发布验收边界 |
+| [v1plus 输入来源](docs/provenance/v1.0.0-v1plus-planning.md) | 用户提供规划包的来源、哈希和整合边界 |
 
 ## 分版本执行文件
 
@@ -124,6 +135,16 @@ docs/versions/V0.7.0-SPACE-STATION.md
 docs/versions/V0.8.0-PROGRESSION-SATELLITES.md
 docs/versions/V0.9.0-BETA-HARDENING.md
 docs/versions/V1.0.0-COMMUNITY-MVP.md
+docs/versions/V1.1.0-EXPANSION-KERNEL.md
+docs/versions/V1.2.0-MACHINE-MULTIBLOCK-KERNEL.md
+docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md
+docs/versions/V1.4.0-PLANETARY-EXPANSION.md
+docs/versions/V1.5.0-ORBITAL-STATION-WARP.md
+docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md
+docs/versions/V1.7.0-ENDGAME-SYSTEMS.md
+docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md
+docs/versions/V1.9.0-PARITY-BETA-HARDENING.md
+docs/versions/V2.0.0-CLASSIC-FEATURE-PARITY.md
 ```
 
 每个版本都包含：
@@ -151,6 +172,20 @@ Codex 报告格式
 | `codex-prompts/02-implement-next-version.md` | 实现当前未通过版本 |
 | `codex-prompts/03-audit-current-version.md` | 使用独立会话做怀疑式审核 |
 | `codex-prompts/04-release-gate.md` | 只跑 Gate 和证据，不扩功能 |
+| [v1.0 发布验证](codex-prompts/05-v1.0-release-validation.md) | 功能冻结与最终候选验证 |
+| [v1.1+ 任务实施](codex-prompts/06-implement-post-1.0-version.md) | 一个有范围/契约的任务包 |
+| [v1.1+ 独立审核](codex-prompts/07-audit-post-1.0-version.md) | 独立复跑、findings 与人工批准前审核 |
+| [Linux 环境审计](codex-prompts/08-remote-linux-environment-audit.md) | 只读检查，不自动安装或改变服务器 |
+
+## 开发辅助脚本
+
+v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/RELEASE-EVIDENCE.md)。
+该资料区分不同开发制品，不代表候选版或发布批准。
+
+- [Debian 节点检查](scripts/check-debian12-dev-host.sh)：诊断报告，不安装软件或执行 wrapper。
+- [tmux 布局](scripts/tmux-arce-layout.sh)：检查目录后创建/附着工作会话。
+- [软件视觉冒烟](scripts/start-xvfb-visual-smoke.sh)：私有 X display 与 loopback VNC；不放行真实 GPU Gate。
+- [规划一致性校验](scripts/validate_v1plus_planning.py)：版本清单、Gate、入口、链接与来源覆盖。
 
 ## 决策记录
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-05T12:16:25" hostname="DESKTOP-8J2KSNF" time="0.015">
+  <properties/>
+  <testcase name="leastRecentlyUsedVolumeIsEvictedAtHardLimits()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest" time="0.004"/>
+  <testcase name="lookupInvalidationAndOverlapFailClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest" time="0.003"/>
+  <testcase name="predicateInvalidationRemovesOnlyIntersectingVolumes()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest" time="0.002"/>
+  <testcase name="indexRejectsConfigurationOrVolumeBeyondItsBudget()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

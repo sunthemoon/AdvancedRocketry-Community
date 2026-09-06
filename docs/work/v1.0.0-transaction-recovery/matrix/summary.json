@@ -1,0 +1,2762 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+  "artifact_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "baseline_summary_sha256": "2858f6032251b181b6ff349d7cfe759b2c9a875c4f7574ab957bb2803f4d4698",
+  "build": "1.20.1-1.0.0-dev",
+  "cases": [
+    {
+      "authority": "ENTITY",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:SPAWNED:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:07:08.316303+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-stage-full.txt",
+        "full_log_sha256": "eb9d2c5a84b5d81b87fa0d217c1ff471335cdfc34c5a4602f18abbbc8942d469",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-spawned-5-stage",
+        "pid": 13032,
+        "started_at": "2026-09-05T10:06:46.859438+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "97eefd18-4e22-4dae-99c9-f2bdd85b0d58",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "SPAWNED",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "a8697084-911a-49a2-afec-216455e02901",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "97eefd18-4e22-4dae-99c9-f2bdd85b0d58",
+        "fuel": 0,
+        "logical": "a8697084-911a-49a2-afec-216455e02901",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-spawned-5-staged.dat",
+      "staged_journal_sha256": "5542f0cb4b020555678c3b9a5463c029535b5c00fa2d9dc35234e90ee9cd2da9"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "c0580f42-bdb4-4129-b538-d3a545ac807b",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "1a7e4d97-7269-4476-af25-989b177d34a7",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:RESTORING:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:08:09.806270+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-stage-full.txt",
+        "full_log_sha256": "4c07d6cda13752990d41902ff1799161a17f4ccda844d1a266ccb1b39e468d9f",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-restoring-2-stage",
+        "pid": 12600,
+        "started_at": "2026-09-05T10:07:50.965381+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "c0580f42-bdb4-4129-b538-d3a545ac807b",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "RESTORING",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "1a84918c-df95-47e1-8a98-457687f2efc9",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "c0580f42-bdb4-4129-b538-d3a545ac807b",
+        "fuel": 0,
+        "logical": "1a7e4d97-7269-4476-af25-989b177d34a7",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-restoring-2-staged.dat",
+      "staged_journal_sha256": "a274866c72b45e53ea0a9f760c5a6f58fc47388cffabcdd890ce0ad6e6ace30a"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:SNAPSHOT_VALIDATED:0",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:09:17.833847+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-stage-full.txt",
+        "full_log_sha256": "23a8a8bdc5e4572a8ef33c596e40f47d2a5a666621123047761a80d47f504cc3",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-snapshot_validated-0-stage",
+        "pid": 15708,
+        "started_at": "2026-09-05T10:08:54.237528+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "SNAPSHOT_VALIDATED",
+        "progress": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "88750331-312d-4d08-88fb-e6c0fe9c6120",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-snapshot_validated-0-staged.dat",
+      "staged_journal_sha256": "d70f391bafb4dd34e283be00600799bf3ffff48922ae62cf72b0272ed5dec60b"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:LOCKED:0",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:10:37.958799+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-locked-0-stage-full.txt",
+        "full_log_sha256": "c150423448d77cd6aa1a00ff72ebe8cf4a53d05da70c1a7fef9329b8090df151",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-locked-0-stage",
+        "pid": 11984,
+        "started_at": "2026-09-05T10:10:11.762517+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "LOCKED",
+        "progress": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "272c147d-9258-4901-b3df-622868cde2f6",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-locked-0-staged.dat",
+      "staged_journal_sha256": "8138c4fadd1171d73f411327322bd658519938190aea13cdcb77b82e42930df6"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTING:1",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:11:45.548487+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-stage-full.txt",
+        "full_log_sha256": "305bc10cdca0924515553630045c5c12ce0eeaa5954246172b04cd19ef057d71",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracting-1-stage",
+        "pid": 19656,
+        "started_at": "2026-09-05T10:11:23.860755+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTING",
+        "progress": 1,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "c3bab1a9-7bc0-4b5a-a70b-ff4a5309b0f0",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracting-1-staged.dat",
+      "staged_journal_sha256": "5a6385201f852014fe04e74ea9a06dc6b2c1bdb32748cb1c4f331b621b7ac32c"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTING:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:12:48.837219+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-stage-full.txt",
+        "full_log_sha256": "d6938dd257f0142ba54e3c603b7dbbf6f5eef19d2a0e6f6bed6d0e14211abcb9",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracting-2-stage",
+        "pid": 21080,
+        "started_at": "2026-09-05T10:12:29.056154+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTING",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "a2f4499f-b9f3-4755-9feb-3d99a3cd6bd7",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracting-2-staged.dat",
+      "staged_journal_sha256": "c49238e1f6c8541ff0b44e1c67f7e5cc6efa66655a72e173647e5cd959e6a654"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTING:3",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:13:52.568133+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-stage-full.txt",
+        "full_log_sha256": "1cd9c853c5aa943224ab44c697e9025077a3b5e49ac4cd0524971adf78c2cc9e",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracting-3-stage",
+        "pid": 1248,
+        "started_at": "2026-09-05T10:13:32.537847+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTING",
+        "progress": 3,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "50f9412e-58a2-4e4d-9c16-fcbddc1f45d8",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracting-3-staged.dat",
+      "staged_journal_sha256": "b96e438c472ac3431ba5a50b7b0956de26a6cab145fc4edf3e4826b339528e11"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTING:4",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:14:56.237585+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-stage-full.txt",
+        "full_log_sha256": "a3b46e54a640c279f4dffab9ec8e8ca52cdaff4bb93beebd3af63dc26709e29d",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracting-4-stage",
+        "pid": 20768,
+        "started_at": "2026-09-05T10:14:36.244626+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTING",
+        "progress": 4,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "f7b835f9-1b2c-4667-9050-f52171bb7957",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracting-4-staged.dat",
+      "staged_journal_sha256": "74c33892ff23d5fc6f0be561b2d3090ebbf3f574ba57db0e39dcc3498b31ccbe"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTING:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:15:59.405231+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-stage-full.txt",
+        "full_log_sha256": "2593db66174a6fda86e2e8e42a3ec279af1d5ad751d10f4416c9d04e1efe38bd",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracting-5-stage",
+        "pid": 7428,
+        "started_at": "2026-09-05T10:15:39.708703+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTING",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "42c358ca-fde9-4ee7-9cab-cb93a197e43f",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracting-5-staged.dat",
+      "staged_journal_sha256": "28deb42af5506cfc89e7b7bd2f5d29a93330312bf0239344084e79f5485998d6"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:EXTRACTED:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:16:59.224900+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-stage-full.txt",
+        "full_log_sha256": "7e34ab28d88551dd6e9ac928a3b72f79903ed72f9ab9b559cb3e0479f8d45994",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-extracted-5-stage",
+        "pid": 23820,
+        "started_at": "2026-09-05T10:16:40.499564+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "EXTRACTED",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "6652dd1b-6638-45c8-92a1-3fc114d5d3b4",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-extracted-5-staged.dat",
+      "staged_journal_sha256": "95e2ac833231cf7431009e2a46a3df83a2e981f0462565d890bb47d7d77a1402"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:COMMITTED:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:17:59.289639+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-committed-5-stage-full.txt",
+        "full_log_sha256": "ac5f2c496b2e67651df278a09c89f4d989384199de5c295dfcbcfc377a810400",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-committed-5-stage",
+        "pid": 2752,
+        "started_at": "2026-09-05T10:17:40.352936+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "69c441a3-b25d-49e0-af29-fe572721ef6d",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "COMMITTED",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "bbcc6a5c-f02e-475e-b86d-cc850ab31b7b",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "69c441a3-b25d-49e0-af29-fe572721ef6d",
+        "fuel": 0,
+        "logical": "bbcc6a5c-f02e-475e-b86d-cc850ab31b7b",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-committed-5-staged.dat",
+      "staged_journal_sha256": "e229fb6eb51f509de8614ecda696d2701ca98282e4d5aa7ec81d9757e9a5fd2c"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:ROLLING_BACK:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:18:59.100019+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-stage-full.txt",
+        "full_log_sha256": "d32631f4a1ea5673938db369e6845412683ffac9c2f14d4a4a6996ab5a340df6",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-rolling_back-2-stage",
+        "pid": 14148,
+        "started_at": "2026-09-05T10:18:40.332975+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "ROLLING_BACK",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "e8b68d8a-1b1b-4cd4-9e1d-3681bda7d9f6",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-rolling_back-2-staged.dat",
+      "staged_journal_sha256": "fb97e9249f36756cf4269bd7a55e29cfec81c1e410b0e2553e230dd78b896ce2"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:ROLLED_BACK:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:20:00.003200+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-stage-full.txt",
+        "full_log_sha256": "391561fb712e068b56df80190e580aacbbcbe9d00b2b2a1ce0afb1d7cdcf5314",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-rolled_back-2-stage",
+        "pid": 25780,
+        "started_at": "2026-09-05T10:19:40.808710+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "ROLLED_BACK",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "e357117d-68ef-4f5b-8e34-c4e79fcf4df3",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-rolled_back-2-staged.dat",
+      "staged_journal_sha256": "0f04b0a4a5fcab8691d53ba22a1d86fcb0886db3859b56b4e35778ad40a487ca"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "case": "ASSEMBLY:FAILED:1",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:21:01.344213+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-assembly-failed-1-stage-full.txt",
+        "full_log_sha256": "4d1558313253d8b0e77c143e0c51c8b82656160e69e1fe52041bf1fe2a818735",
+        "graceful_stop_command_sent": false,
+        "name": "assembly-failed-1-stage",
+        "pid": 18716,
+        "started_at": "2026-09-05T10:20:42.017954+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "none",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "FAILED",
+        "progress": 1,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "ab8c40d0-e47c-40bd-a64c-193e7754267d",
+        "type": "ASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "assembly-failed-1-staged.dat",
+      "staged_journal_sha256": "142a3dda6aa13c8a3c57f1cccf2b8473be1c424a71a92f68b6881cce8a539a1e"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "cb536200-4f5f-4ef4-a3ea-ef1ee424cdd7",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "9f93d6b5-4018-4e6a-9fe7-fec9bc718b4b",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:SNAPSHOT_VALIDATED:0",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:22:13.375387+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-stage-full.txt",
+        "full_log_sha256": "96ea645a2cbc202e00d7347fd7c9d1182623056b108cc05f45c7e3cd8fdfd4d9",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-snapshot_validated-0-stage",
+        "pid": 11048,
+        "started_at": "2026-09-05T10:21:48.209515+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "cb536200-4f5f-4ef4-a3ea-ef1ee424cdd7",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "SNAPSHOT_VALIDATED",
+        "progress": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "ecf5655a-0bb6-4790-be47-900eadf37b09",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "cb536200-4f5f-4ef4-a3ea-ef1ee424cdd7",
+        "fuel": 0,
+        "logical": "9f93d6b5-4018-4e6a-9fe7-fec9bc718b4b",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-snapshot_validated-0-staged.dat",
+      "staged_journal_sha256": "eec7262e4ec2e66b83ff2c9987a183414ff1f0b1f4615c91d65143f3caa81a05"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "c4160425-c3fa-45bd-b261-2ee76542d034",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "badba8d3-4a3f-4967-974e-785a033696bb",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:LOCKED:0",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:23:30.915888+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-stage-full.txt",
+        "full_log_sha256": "af1535295990193c66f36afba08a574103720a3e25b31d669ec17ed1fa30d084",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-locked-0-stage",
+        "pid": 27060,
+        "started_at": "2026-09-05T10:23:10.246421+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "c4160425-c3fa-45bd-b261-2ee76542d034",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "LOCKED",
+        "progress": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "b24a1367-4ed9-4fa6-bf9f-517324d22f63",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "c4160425-c3fa-45bd-b261-2ee76542d034",
+        "fuel": 0,
+        "logical": "badba8d3-4a3f-4967-974e-785a033696bb",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-locked-0-staged.dat",
+      "staged_journal_sha256": "0aa1438b36c113b9b9f566cd7d3ace9043e71df71ad715bf832b1654c3853427"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "c714a179-6398-4daa-9d9b-df634c554790",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "255a6bba-a572-43ef-a515-c91507345dca",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:RESTORING:1",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:24:34.429121+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-stage-full.txt",
+        "full_log_sha256": "50efb67edabfa41362b85c01ec6832ec62a66f987c06fbcf3e31e94e81a0dbc3",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-restoring-1-stage",
+        "pid": 20660,
+        "started_at": "2026-09-05T10:24:14.442921+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "c714a179-6398-4daa-9d9b-df634c554790",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "RESTORING",
+        "progress": 1,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "0f55cdaf-74fb-414a-b16b-896cf1a52b65",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "c714a179-6398-4daa-9d9b-df634c554790",
+        "fuel": 0,
+        "logical": "255a6bba-a572-43ef-a515-c91507345dca",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-restoring-1-staged.dat",
+      "staged_journal_sha256": "9725f539c01b3d327a0ee74bc8a3c21084a2b54c9baac1d6c5c1df5dc4490894"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "3a62213f-0c8d-4824-b88c-ea9cdbc7f16c",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "89b901c0-67ae-495a-b617-b4aaa73c36a8",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:RESTORING:3",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:25:37.886572+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-stage-full.txt",
+        "full_log_sha256": "cd33ad6710f343f07285044b139da367d97d60c886568d063c40fd6fbe34f979",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-restoring-3-stage",
+        "pid": 22404,
+        "started_at": "2026-09-05T10:25:17.549046+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "3a62213f-0c8d-4824-b88c-ea9cdbc7f16c",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "RESTORING",
+        "progress": 3,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "02c97f3e-38cf-451c-a145-a0547a544fa7",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "3a62213f-0c8d-4824-b88c-ea9cdbc7f16c",
+        "fuel": 0,
+        "logical": "89b901c0-67ae-495a-b617-b4aaa73c36a8",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-restoring-3-staged.dat",
+      "staged_journal_sha256": "d3b739b1b0d64b4c9e0cf36ddee1208a665e1c2952a7965cd1a922451ff0637c"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "ab8605f0-2108-4e5e-bd24-11c4dea7000c",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "07eb45dd-a881-41f2-bfec-8ee38b493ef5",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:RESTORING:4",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:26:42.366215+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-stage-full.txt",
+        "full_log_sha256": "af1ae57c021edb1cbf25f44a9b43db7c05ad2ae8de0a03f5d5970dcb24e09fb3",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-restoring-4-stage",
+        "pid": 17360,
+        "started_at": "2026-09-05T10:26:21.311530+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "ab8605f0-2108-4e5e-bd24-11c4dea7000c",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "RESTORING",
+        "progress": 4,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "82a96192-655d-49a4-b8a8-ee2ab9810f9d",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "ab8605f0-2108-4e5e-bd24-11c4dea7000c",
+        "fuel": 0,
+        "logical": "07eb45dd-a881-41f2-bfec-8ee38b493ef5",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-restoring-4-staged.dat",
+      "staged_journal_sha256": "d342ac07228a00a757d2a17a8e63f9590d9f64e67b46bf2559e16f1310736b50"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "000fa06b-f359-4132-9c51-7f9f8cd7a360",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "7cbf8278-78a7-4450-94c5-c6b283730a47",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:RESTORING:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:27:47.007889+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-stage-full.txt",
+        "full_log_sha256": "03ff67f0a4c914da9b373fafac3babb3454bdac479339ec8605018387914a4d6",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-restoring-5-stage",
+        "pid": 19596,
+        "started_at": "2026-09-05T10:27:26.930856+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "000fa06b-f359-4132-9c51-7f9f8cd7a360",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "RESTORING",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "6d0500b2-750f-475b-934a-4a7365e2ebbd",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "000fa06b-f359-4132-9c51-7f9f8cd7a360",
+        "fuel": 0,
+        "logical": "7cbf8278-78a7-4450-94c5-c6b283730a47",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-restoring-5-staged.dat",
+      "staged_journal_sha256": "318f265439bdd827eb2fa03223e9dc63dc70b9d88712356e3ed112af17ab2f0a"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "08789f1b-bee7-4150-b87b-915ddcf017f4",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "34683ac4-cd02-49a6-985a-df1e1d6b7e8e",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:RESTORED:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:28:51.650283+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-stage-full.txt",
+        "full_log_sha256": "061b57b26e2742d7819c439de0bd6068b4a3e65b10786c5587146baad0dc03c6",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-restored-5-stage",
+        "pid": 1068,
+        "started_at": "2026-09-05T10:28:31.063308+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "08789f1b-bee7-4150-b87b-915ddcf017f4",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "RESTORED",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "98453c5d-e74e-4c7f-92b8-e82782ad613e",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-restored-5-staged.dat",
+      "staged_journal_sha256": "03b43bdd385ccfe2da975da1702faf42387948da7b2bb57aea84bd2b65087d40"
+    },
+    {
+      "authority": "BLOCKS",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "d9a5d68d-05d3-43ea-9741-ec5987e7011c",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "a0c60f3c-f16e-4470-bd3f-085e958e6086",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:COMMITTED:5",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:29:58.359096+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-stage-full.txt",
+        "full_log_sha256": "037a9757b620ab58b9ca83d23f30da963fb336c662d8bdf9d32534361ce9039d",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-committed-5-stage",
+        "pid": 27096,
+        "started_at": "2026-09-05T10:29:35.475915+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "d9a5d68d-05d3-43ea-9741-ec5987e7011c",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "COMMITTED",
+        "progress": 5,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "5889982d-2591-4ac8-83a5-98cc28e39f87",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {},
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-committed-5-staged.dat",
+      "staged_journal_sha256": "5891f54db5f73129c84dbf71a6781c3a9149b1b3b5b2e87ca1b98158a8ae6093"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "5950bf26-460b-4f53-bd58-8dbf90b32290",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "a081ec01-6255-4943-815c-62e74469b905",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:ROLLING_BACK:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:31:19.631163+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-stage-full.txt",
+        "full_log_sha256": "642df2b13cdee7894d4a0a1ad048127a5dd5f12893f3c324a871ec548406248d",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-rolling_back-2-stage",
+        "pid": 27360,
+        "started_at": "2026-09-05T10:30:51.361499+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "5950bf26-460b-4f53-bd58-8dbf90b32290",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "ROLLING_BACK",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "9f7ced9f-9b9d-4519-a1d9-266cdd48beeb",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "5950bf26-460b-4f53-bd58-8dbf90b32290",
+        "fuel": 0,
+        "logical": "a081ec01-6255-4943-815c-62e74469b905",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-rolling_back-2-staged.dat",
+      "staged_journal_sha256": "f4864e6974796c786948e945c70e076ea70b81a3849eccebf37bfdcbb641f7d6"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "203b12dc-69a3-4bd2-b329-01071d1d58fb",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "70999df9-0cb9-42b2-8f2f-e4cd1782efde",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:ROLLED_BACK:2",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:32:48.439444+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-stage-full.txt",
+        "full_log_sha256": "12ba3b6b6b96f8002c8d9ca69b83b51f22a6c0dcda76fcbda1a1edb5becfb72c",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-rolled_back-2-stage",
+        "pid": 15292,
+        "started_at": "2026-09-05T10:32:21.934262+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "203b12dc-69a3-4bd2-b329-01071d1d58fb",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "ROLLED_BACK",
+        "progress": 2,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "c8e6f753-491c-46b2-9efe-e21d4f588b82",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "203b12dc-69a3-4bd2-b329-01071d1d58fb",
+        "fuel": 0,
+        "logical": "70999df9-0cb9-42b2-8f2f-e4cd1782efde",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-rolled_back-2-staged.dat",
+      "staged_journal_sha256": "79497167e3df01adc41f9a1b0035a2f187e14a29a76543525ceb0b58e84f8db0"
+    },
+    {
+      "authority": "ENTITY",
+      "before": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "5c9dc5b0-37b0-4d2a-a24e-1328a02d5bfb",
+        "fuel": 0,
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "logical": "423c4a3e-0248-467d-946a-6ec84f5965f3",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "case": "DISASSEMBLY:FAILED:1",
+      "first_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "first_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "forced_stop": {
+        "completed_at": "2026-09-05T10:34:13.196233+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-stage-full.txt",
+        "full_log_sha256": "5f2bee84bcd32fdb6ed2802128c578947d5e7107cad440533c44ab7f27e7a522",
+        "graceful_stop_command_sent": false,
+        "name": "disassembly-failed-1-stage",
+        "pid": 2888,
+        "started_at": "2026-09-05T10:33:46.058205+00:00",
+        "termination": "process_kill"
+      },
+      "paused": {
+        "blocks": 5,
+        "dimension": "minecraft:overworld",
+        "entity": "5c9dc5b0-37b0-4d2a-a24e-1328a02d5bfb",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "phase": "FAILED",
+        "progress": 1,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "transaction": "c5f1dde4-419e-4751-a28b-cf58581b92e4",
+        "type": "DISASSEMBLY"
+      },
+      "recovered_entity": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "5c9dc5b0-37b0-4d2a-a24e-1328a02d5bfb",
+        "fuel": 0,
+        "logical": "423c4a3e-0248-467d-946a-6ec84f5965f3",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "ASSEMBLED",
+        "transfer": "none"
+      },
+      "recovery_outcome": "RECOVERED",
+      "restored": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_operator_report": "ARCE-BETA-1101 build=1.20.1-1.0.0-dev forge=47.4.10 jei=absent root_schema=2 operational=true roots=11111 bodies=0 transactions=0 transfers=0 stations=0 missions=0 players=0/2 ",
+      "second_restart": {
+        "items_snbt": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322"
+      },
+      "second_shutdown": {
+        "journal_entries": 0,
+        "journal_sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "staged_journal_file": "disassembly-failed-1-staged.dat",
+      "staged_journal_sha256": "390b8a4f9826cf9fd9a813d32d26a8b485be4b8020b44c93fe6847b0c310fc89"
+    }
+  ],
+  "complete_transaction_matrix": true,
+  "completed_at": "2026-09-05T10:35:11.566207+00:00",
+  "harness_sha256": "c2d13ed9250d931b7fca399568811a6841fb72f77da466aa44b99b45828cd6a9",
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-committed-5-recover-full.txt",
+      "sha256": "8f5c4eed32def09d38cedcf6a6e6d5ff493913d8da88cff3e5b09b99e6ac1908"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-committed-5-second-restart-full.txt",
+      "sha256": "66edd7461da51221311cfffcdf933b360413095752247722bddc84a231f1f33a"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-committed-5-stage-full.txt",
+      "sha256": "ac5f2c496b2e67651df278a09c89f4d989384199de5c295dfcbcfc377a810400"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-recover-full.txt",
+      "sha256": "863916dbc5b6f5f37b80ebdea5452a8142b72c1b3645e55f03c36ec5756faf0d"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-second-restart-full.txt",
+      "sha256": "a71173f02ab3f9d516e7651950e720870ad33bc5d3665bf169a0b949e13a785b"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-stage-full.txt",
+      "sha256": "7e34ab28d88551dd6e9ac928a3b72f79903ed72f9ab9b559cb3e0479f8d45994"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-recover-full.txt",
+      "sha256": "bd14f36414ba14aa3ad54d647aafef3de3031913390439d23f7fbcece2066c1a"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-second-restart-full.txt",
+      "sha256": "66a06527db0d79538f089408a62933721c1077f2ebf1b380f5e60e7231f4d8be"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-stage-full.txt",
+      "sha256": "305bc10cdca0924515553630045c5c12ce0eeaa5954246172b04cd19ef057d71"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-recover-full.txt",
+      "sha256": "b0dee94421639b84618783f3053d0e72f42e2d26cd307df8d5230b62dfbb3acb"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-second-restart-full.txt",
+      "sha256": "eca3458e0848140b72f1106738862dfc557b8a9ad1d5247b4dca977edfc63a63"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-stage-full.txt",
+      "sha256": "d6938dd257f0142ba54e3c603b7dbbf6f5eef19d2a0e6f6bed6d0e14211abcb9"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-recover-full.txt",
+      "sha256": "091d72e42dd756fd5e831c7395091318c33eb456a7ac549df848196c7a726f28"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-second-restart-full.txt",
+      "sha256": "b7d13855869ea0be5661b88b9f6331794c95518ebfc6e906b3caa777625f9fac"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-stage-full.txt",
+      "sha256": "1cd9c853c5aa943224ab44c697e9025077a3b5e49ac4cd0524971adf78c2cc9e"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-recover-full.txt",
+      "sha256": "5e1e73330ba3e0d6b3b7c86f4ad31703622bf7c56076c0b104a31386470b77aa"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-second-restart-full.txt",
+      "sha256": "49acfb56fec3e1f390c61e94646b4d929dd54242ee30c916f9888eb7563f9a66"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-stage-full.txt",
+      "sha256": "a3b46e54a640c279f4dffab9ec8e8ca52cdaff4bb93beebd3af63dc26709e29d"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-recover-full.txt",
+      "sha256": "6536ec5b595eddea536fc728c0d30327b15fe3df78c26019d71ea78b54966fcd"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-second-restart-full.txt",
+      "sha256": "4154f4ce3586de88570430fede00bb4e0c5e855653928e03437f00d837f9cbbb"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-stage-full.txt",
+      "sha256": "2593db66174a6fda86e2e8e42a3ec279af1d5ad751d10f4416c9d04e1efe38bd"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-failed-1-recover-full.txt",
+      "sha256": "643e5f813351068af0822207b4a07abed116d35789faa2c8f7eac7bd4cd58d87"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-failed-1-second-restart-full.txt",
+      "sha256": "827e257d1708d386f41cde26783011e4e53e0d9e30fe153a84e902b0454ee60e"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-failed-1-stage-full.txt",
+      "sha256": "4d1558313253d8b0e77c143e0c51c8b82656160e69e1fe52041bf1fe2a818735"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-locked-0-recover-full.txt",
+      "sha256": "38e86d7762d00f6a2141c6f107987439a9815f61e9a9c030f4c7a115b0f1e1ac"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-locked-0-second-restart-full.txt",
+      "sha256": "9d7496f4d11fb465d7df738e883b8b9639fd61e9ec2182f64772aac17481392d"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-locked-0-stage-full.txt",
+      "sha256": "c150423448d77cd6aa1a00ff72ebe8cf4a53d05da70c1a7fef9329b8090df151"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-recover-full.txt",
+      "sha256": "274cfecc7597add394875f61f2b29a88f461e1f162d68671c19d7444fa4c814c"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-second-restart-full.txt",
+      "sha256": "b69e76269b7eff8a175ad0662a510f5a74d816e9debeb5dfc1ee9539e123049a"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-stage-full.txt",
+      "sha256": "391561fb712e068b56df80190e580aacbbcbe9d00b2b2a1ce0afb1d7cdcf5314"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-recover-full.txt",
+      "sha256": "f10f97075e2c87b0b29160d8b1912220b3b9c8cba8823a47543aa3d3cc0a0367"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-second-restart-full.txt",
+      "sha256": "282df43a1f1de72c57dad4bccebd88ad17ce8d86face5d7b90a0e745b483db44"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-stage-full.txt",
+      "sha256": "d32631f4a1ea5673938db369e6845412683ffac9c2f14d4a4a6996ab5a340df6"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-recover-full.txt",
+      "sha256": "5e35f5a39d6a53261243ac18a665634df0fded4963634fd53565c32fe7774285"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-second-restart-full.txt",
+      "sha256": "fcdd737bd014feadfce8db7e9df13981e83cf6fbc2590f1ea7b095684c961f9d"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-stage-full.txt",
+      "sha256": "23a8a8bdc5e4572a8ef33c596e40f47d2a5a666621123047761a80d47f504cc3"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-recover-full.txt",
+      "sha256": "ade5ded45a42a0868cf2202609ac23f3c5d4bd68861e6efc7f57a4e91f3bded5"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-second-restart-full.txt",
+      "sha256": "786e05a3d8641ed0a98ae776e5cc272ce680eb68fe2feb2f23a8e40e349d0f5b"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-stage-full.txt",
+      "sha256": "eb9d2c5a84b5d81b87fa0d217c1ff471335cdfc34c5a4602f18abbbc8942d469"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-recover-full.txt",
+      "sha256": "8ecea77d165a05153ddbe033b079a65406d247fa81a3a4942a843d06e94815f3"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-second-restart-full.txt",
+      "sha256": "283faf12a2d6447906aa4d576e1324e4c3f7d7351e0c7944f0bba55a33f94686"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-stage-full.txt",
+      "sha256": "037a9757b620ab58b9ca83d23f30da963fb336c662d8bdf9d32534361ce9039d"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-recover-full.txt",
+      "sha256": "8b4513e3ac9bf6ef32f5ea12f7ec90d4b9c3ec9145afb2f8ffbf0a2896c760c8"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-second-restart-full.txt",
+      "sha256": "cbefa200f057b5711df289cdc4958751875c9c0b6e015be0bee0d7cf9fc2970c"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-stage-full.txt",
+      "sha256": "5f2bee84bcd32fdb6ed2802128c578947d5e7107cad440533c44ab7f27e7a522"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-recover-full.txt",
+      "sha256": "399dbf5df6447a329fcd583048002d83814dc69233bde732414729cdc4369d5f"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-second-restart-full.txt",
+      "sha256": "90eb347e46a1e60e1e23e6c8e46eacf68f66128da390aa7793156f0d230c8902"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-stage-full.txt",
+      "sha256": "af1535295990193c66f36afba08a574103720a3e25b31d669ec17ed1fa30d084"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-recover-full.txt",
+      "sha256": "27df89cf692fbd2bf6b25f736d8a940911ed7a6c5264dafa47f7da1bbab6f6ae"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-second-restart-full.txt",
+      "sha256": "c9bda9f617f014bd9a9d189c94b4d495612018772f8ca269c3f419bfc4ae86c9"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-stage-full.txt",
+      "sha256": "061b57b26e2742d7819c439de0bd6068b4a3e65b10786c5587146baad0dc03c6"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-recover-full.txt",
+      "sha256": "ee89296305223a509e6745321dc111863bd061d2030183cb20886e88dacf1719"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-second-restart-full.txt",
+      "sha256": "80027a2c9657b73870a155703744315ea7e4f20a292087c73cf95766231e2112"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-stage-full.txt",
+      "sha256": "50efb67edabfa41362b85c01ec6832ec62a66f987c06fbcf3e31e94e81a0dbc3"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-recover-full.txt",
+      "sha256": "c4c30754640fdc156e4b642b118aae9c4731162cacc8dcfd720ed183c5743adc"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-second-restart-full.txt",
+      "sha256": "4a86efacc96cee8e5d19019d44711fec364e8a0c659714d9921850276631d058"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-stage-full.txt",
+      "sha256": "4c07d6cda13752990d41902ff1799161a17f4ccda844d1a266ccb1b39e468d9f"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-recover-full.txt",
+      "sha256": "a360690d521fcaf0320b618bd695414ad9a1a9f31789148bc3847ec760944d8e"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-second-restart-full.txt",
+      "sha256": "555535be5bb6f15d63b30278feb854057598a4107af459167b8efc5b6477bfb3"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-stage-full.txt",
+      "sha256": "cd33ad6710f343f07285044b139da367d97d60c886568d063c40fd6fbe34f979"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-recover-full.txt",
+      "sha256": "e509378ff45b2921f3cd55bf806db790621ead74a894411c915c90e31b5cbd6e"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-second-restart-full.txt",
+      "sha256": "3fde5e036e049eed8729efed23d0e8db771f0222d3c3cd61829eeee3f5e02ed1"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-stage-full.txt",
+      "sha256": "af1ae57c021edb1cbf25f44a9b43db7c05ad2ae8de0a03f5d5970dcb24e09fb3"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-recover-full.txt",
+      "sha256": "259e25c7a5a526cebe504242955ff3512c89c1b0852c07e992b71b0eeae464c9"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-second-restart-full.txt",
+      "sha256": "2ec1f7fb9746d03e74165fc031cd07f478b9b7f5d9f0e991b86bca4af07d1f51"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-stage-full.txt",
+      "sha256": "03ff67f0a4c914da9b373fafac3babb3454bdac479339ec8605018387914a4d6"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-recover-full.txt",
+      "sha256": "6d9220b636113795c600cebe86b292f82ef4e201fd44b87f0e262d2df811750b"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-second-restart-full.txt",
+      "sha256": "948bd4915999a7c74d87cf4513b64e988c776e567f45973b7316db795359a8be"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-stage-full.txt",
+      "sha256": "12ba3b6b6b96f8002c8d9ca69b83b51f22a6c0dcda76fcbda1a1edb5becfb72c"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-recover-full.txt",
+      "sha256": "5a62f787ec2a5852c17c9bab6fd60eba9c3dbd868be1cda12bef19b65b7ac703"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-second-restart-full.txt",
+      "sha256": "1bdcfd524933caca99d11a6e52c9f6ea3e8fd35b4d9e14ce01e2d595bfe76aae"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-stage-full.txt",
+      "sha256": "642df2b13cdee7894d4a0a1ad048127a5dd5f12893f3c324a871ec548406248d"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-recover-full.txt",
+      "sha256": "b4103db3c6c300e834fb151dcb1711f171a0ab6f3d8b335b64ff1b9e5e503716"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-second-restart-full.txt",
+      "sha256": "8168345adec76d7ac05678d61a7d090de8e6fa04b1b48696dd0293f29c071e42"
+    },
+    {
+      "file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-stage-full.txt",
+      "sha256": "96ea645a2cbc202e00d7347fd7c9d1182623056b108cc05f45c7e3cd8fdfd4d9"
+    }
+  ],
+  "online_mode": "true",
+  "processes": [
+    {
+      "completed_at": "2026-09-05T10:07:08.316303+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-stage-full.txt",
+      "full_log_sha256": "eb9d2c5a84b5d81b87fa0d217c1ff471335cdfc34c5a4602f18abbbc8942d469",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-spawned-5-stage",
+      "started_at": "2026-09-05T10:06:46.859438+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:07:30.924150+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-recover-full.txt",
+      "full_log_sha256": "ade5ded45a42a0868cf2202609ac23f3c5d4bd68861e6efc7f57a4e91f3bded5",
+      "name": "assembly-spawned-5-recover",
+      "started_at": "2026-09-05T10:07:08.333847+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:07:50.946012+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-spawned-5-second-restart-full.txt",
+      "full_log_sha256": "786e05a3d8641ed0a98ae776e5cc272ce680eb68fe2feb2f23a8e40e349d0f5b",
+      "name": "assembly-spawned-5-second-restart",
+      "started_at": "2026-09-05T10:07:30.942479+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:08:09.806270+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-stage-full.txt",
+      "full_log_sha256": "4c07d6cda13752990d41902ff1799161a17f4ccda844d1a266ccb1b39e468d9f",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-restoring-2-stage",
+      "started_at": "2026-09-05T10:07:50.965381+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:08:30.915476+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-recover-full.txt",
+      "full_log_sha256": "c4c30754640fdc156e4b642b118aae9c4731162cacc8dcfd720ed183c5743adc",
+      "name": "disassembly-restoring-2-recover",
+      "started_at": "2026-09-05T10:08:09.824409+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:08:54.218996+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-2-second-restart-full.txt",
+      "full_log_sha256": "4a86efacc96cee8e5d19019d44711fec364e8a0c659714d9921850276631d058",
+      "name": "disassembly-restoring-2-second-restart",
+      "started_at": "2026-09-05T10:08:30.931896+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:09:17.833847+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-stage-full.txt",
+      "full_log_sha256": "23a8a8bdc5e4572a8ef33c596e40f47d2a5a666621123047761a80d47f504cc3",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-snapshot_validated-0-stage",
+      "started_at": "2026-09-05T10:08:54.237528+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:09:42.934967+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-recover-full.txt",
+      "full_log_sha256": "5e35f5a39d6a53261243ac18a665634df0fded4963634fd53565c32fe7774285",
+      "name": "assembly-snapshot_validated-0-recover",
+      "started_at": "2026-09-05T10:09:17.856561+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:10:11.743471+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-snapshot_validated-0-second-restart-full.txt",
+      "full_log_sha256": "fcdd737bd014feadfce8db7e9df13981e83cf6fbc2590f1ea7b095684c961f9d",
+      "name": "assembly-snapshot_validated-0-second-restart",
+      "started_at": "2026-09-05T10:09:42.954770+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:10:37.958799+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-locked-0-stage-full.txt",
+      "full_log_sha256": "c150423448d77cd6aa1a00ff72ebe8cf4a53d05da70c1a7fef9329b8090df151",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-locked-0-stage",
+      "started_at": "2026-09-05T10:10:11.762517+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:11:01.000970+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-locked-0-recover-full.txt",
+      "full_log_sha256": "38e86d7762d00f6a2141c6f107987439a9815f61e9a9c030f4c7a115b0f1e1ac",
+      "name": "assembly-locked-0-recover",
+      "started_at": "2026-09-05T10:10:37.976814+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:11:23.835038+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-locked-0-second-restart-full.txt",
+      "full_log_sha256": "9d7496f4d11fb465d7df738e883b8b9639fd61e9ec2182f64772aac17481392d",
+      "name": "assembly-locked-0-second-restart",
+      "started_at": "2026-09-05T10:11:01.019129+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:11:45.548487+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-stage-full.txt",
+      "full_log_sha256": "305bc10cdca0924515553630045c5c12ce0eeaa5954246172b04cd19ef057d71",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracting-1-stage",
+      "started_at": "2026-09-05T10:11:23.860755+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:12:07.414379+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-recover-full.txt",
+      "full_log_sha256": "bd14f36414ba14aa3ad54d647aafef3de3031913390439d23f7fbcece2066c1a",
+      "name": "assembly-extracting-1-recover",
+      "started_at": "2026-09-05T10:11:45.564401+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:12:29.030923+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-1-second-restart-full.txt",
+      "full_log_sha256": "66a06527db0d79538f089408a62933721c1077f2ebf1b380f5e60e7231f4d8be",
+      "name": "assembly-extracting-1-second-restart",
+      "started_at": "2026-09-05T10:12:07.439416+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:12:48.837219+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-stage-full.txt",
+      "full_log_sha256": "d6938dd257f0142ba54e3c603b7dbbf6f5eef19d2a0e6f6bed6d0e14211abcb9",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracting-2-stage",
+      "started_at": "2026-09-05T10:12:29.056154+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:13:10.737407+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-recover-full.txt",
+      "full_log_sha256": "b0dee94421639b84618783f3053d0e72f42e2d26cd307df8d5230b62dfbb3acb",
+      "name": "assembly-extracting-2-recover",
+      "started_at": "2026-09-05T10:12:48.867964+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:13:32.511868+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-2-second-restart-full.txt",
+      "full_log_sha256": "eca3458e0848140b72f1106738862dfc557b8a9ad1d5247b4dca977edfc63a63",
+      "name": "assembly-extracting-2-second-restart",
+      "started_at": "2026-09-05T10:13:10.760763+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:13:52.568133+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-stage-full.txt",
+      "full_log_sha256": "1cd9c853c5aa943224ab44c697e9025077a3b5e49ac4cd0524971adf78c2cc9e",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracting-3-stage",
+      "started_at": "2026-09-05T10:13:32.537847+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:14:14.711145+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-recover-full.txt",
+      "full_log_sha256": "091d72e42dd756fd5e831c7395091318c33eb456a7ac549df848196c7a726f28",
+      "name": "assembly-extracting-3-recover",
+      "started_at": "2026-09-05T10:13:52.585861+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:14:36.228641+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-3-second-restart-full.txt",
+      "full_log_sha256": "b7d13855869ea0be5661b88b9f6331794c95518ebfc6e906b3caa777625f9fac",
+      "name": "assembly-extracting-3-second-restart",
+      "started_at": "2026-09-05T10:14:14.727002+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:14:56.237585+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-stage-full.txt",
+      "full_log_sha256": "a3b46e54a640c279f4dffab9ec8e8ca52cdaff4bb93beebd3af63dc26709e29d",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracting-4-stage",
+      "started_at": "2026-09-05T10:14:36.244626+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:15:17.864116+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-recover-full.txt",
+      "full_log_sha256": "5e1e73330ba3e0d6b3b7c86f4ad31703622bf7c56076c0b104a31386470b77aa",
+      "name": "assembly-extracting-4-recover",
+      "started_at": "2026-09-05T10:14:56.261385+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:15:39.680214+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-4-second-restart-full.txt",
+      "full_log_sha256": "49acfb56fec3e1f390c61e94646b4d929dd54242ee30c916f9888eb7563f9a66",
+      "name": "assembly-extracting-4-second-restart",
+      "started_at": "2026-09-05T10:15:17.880683+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:15:59.405231+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-stage-full.txt",
+      "full_log_sha256": "2593db66174a6fda86e2e8e42a3ec279af1d5ad751d10f4416c9d04e1efe38bd",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracting-5-stage",
+      "started_at": "2026-09-05T10:15:39.708703+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:16:20.071561+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-recover-full.txt",
+      "full_log_sha256": "6536ec5b595eddea536fc728c0d30327b15fe3df78c26019d71ea78b54966fcd",
+      "name": "assembly-extracting-5-recover",
+      "started_at": "2026-09-05T10:15:59.421817+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:16:40.474454+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracting-5-second-restart-full.txt",
+      "full_log_sha256": "4154f4ce3586de88570430fede00bb4e0c5e855653928e03437f00d837f9cbbb",
+      "name": "assembly-extracting-5-second-restart",
+      "started_at": "2026-09-05T10:16:20.087858+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:16:59.224900+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-stage-full.txt",
+      "full_log_sha256": "7e34ab28d88551dd6e9ac928a3b72f79903ed72f9ab9b559cb3e0479f8d45994",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-extracted-5-stage",
+      "started_at": "2026-09-05T10:16:40.499564+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:17:19.894089+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-recover-full.txt",
+      "full_log_sha256": "863916dbc5b6f5f37b80ebdea5452a8142b72c1b3645e55f03c36ec5756faf0d",
+      "name": "assembly-extracted-5-recover",
+      "started_at": "2026-09-05T10:16:59.250577+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:17:40.335694+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-extracted-5-second-restart-full.txt",
+      "full_log_sha256": "a71173f02ab3f9d516e7651950e720870ad33bc5d3665bf169a0b949e13a785b",
+      "name": "assembly-extracted-5-second-restart",
+      "started_at": "2026-09-05T10:17:19.917842+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:17:59.289639+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-committed-5-stage-full.txt",
+      "full_log_sha256": "ac5f2c496b2e67651df278a09c89f4d989384199de5c295dfcbcfc377a810400",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-committed-5-stage",
+      "started_at": "2026-09-05T10:17:40.352936+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:18:19.946740+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-committed-5-recover-full.txt",
+      "full_log_sha256": "8f5c4eed32def09d38cedcf6a6e6d5ff493913d8da88cff3e5b09b99e6ac1908",
+      "name": "assembly-committed-5-recover",
+      "started_at": "2026-09-05T10:17:59.305939+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:18:40.315470+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-committed-5-second-restart-full.txt",
+      "full_log_sha256": "66edd7461da51221311cfffcdf933b360413095752247722bddc84a231f1f33a",
+      "name": "assembly-committed-5-second-restart",
+      "started_at": "2026-09-05T10:18:19.963268+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:18:59.100019+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-stage-full.txt",
+      "full_log_sha256": "d32631f4a1ea5673938db369e6845412683ffac9c2f14d4a4a6996ab5a340df6",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-rolling_back-2-stage",
+      "started_at": "2026-09-05T10:18:40.332975+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:19:20.054841+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-recover-full.txt",
+      "full_log_sha256": "f10f97075e2c87b0b29160d8b1912220b3b9c8cba8823a47543aa3d3cc0a0367",
+      "name": "assembly-rolling_back-2-recover",
+      "started_at": "2026-09-05T10:18:59.125361+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:19:40.792959+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolling_back-2-second-restart-full.txt",
+      "full_log_sha256": "282df43a1f1de72c57dad4bccebd88ad17ce8d86face5d7b90a0e745b483db44",
+      "name": "assembly-rolling_back-2-second-restart",
+      "started_at": "2026-09-05T10:19:20.071223+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:20:00.003200+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-stage-full.txt",
+      "full_log_sha256": "391561fb712e068b56df80190e580aacbbcbe9d00b2b2a1ce0afb1d7cdcf5314",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-rolled_back-2-stage",
+      "started_at": "2026-09-05T10:19:40.808710+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:20:21.236090+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-recover-full.txt",
+      "full_log_sha256": "274cfecc7597add394875f61f2b29a88f461e1f162d68671c19d7444fa4c814c",
+      "name": "assembly-rolled_back-2-recover",
+      "started_at": "2026-09-05T10:20:00.021325+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:20:42.002387+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-rolled_back-2-second-restart-full.txt",
+      "full_log_sha256": "b69e76269b7eff8a175ad0662a510f5a74d816e9debeb5dfc1ee9539e123049a",
+      "name": "assembly-rolled_back-2-second-restart",
+      "started_at": "2026-09-05T10:20:21.251542+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:21:01.344213+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-failed-1-stage-full.txt",
+      "full_log_sha256": "4d1558313253d8b0e77c143e0c51c8b82656160e69e1fe52041bf1fe2a818735",
+      "graceful_stop_command_sent": false,
+      "name": "assembly-failed-1-stage",
+      "started_at": "2026-09-05T10:20:42.017954+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:21:23.573132+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-failed-1-recover-full.txt",
+      "full_log_sha256": "643e5f813351068af0822207b4a07abed116d35789faa2c8f7eac7bd4cd58d87",
+      "name": "assembly-failed-1-recover",
+      "started_at": "2026-09-05T10:21:01.362682+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:21:48.177414+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-assembly-failed-1-second-restart-full.txt",
+      "full_log_sha256": "827e257d1708d386f41cde26783011e4e53e0d9e30fe153a84e902b0454ee60e",
+      "name": "assembly-failed-1-second-restart",
+      "started_at": "2026-09-05T10:21:23.588778+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:22:13.375387+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-stage-full.txt",
+      "full_log_sha256": "96ea645a2cbc202e00d7347fd7c9d1182623056b108cc05f45c7e3cd8fdfd4d9",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-snapshot_validated-0-stage",
+      "started_at": "2026-09-05T10:21:48.209515+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:22:40.273769+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-recover-full.txt",
+      "full_log_sha256": "b4103db3c6c300e834fb151dcb1711f171a0ab6f3d8b335b64ff1b9e5e503716",
+      "name": "disassembly-snapshot_validated-0-recover",
+      "started_at": "2026-09-05T10:22:13.408065+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:23:10.229545+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-snapshot_validated-0-second-restart-full.txt",
+      "full_log_sha256": "8168345adec76d7ac05678d61a7d090de8e6fa04b1b48696dd0293f29c071e42",
+      "name": "disassembly-snapshot_validated-0-second-restart",
+      "started_at": "2026-09-05T10:22:40.303658+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:23:30.915888+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-stage-full.txt",
+      "full_log_sha256": "af1535295990193c66f36afba08a574103720a3e25b31d669ec17ed1fa30d084",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-locked-0-stage",
+      "started_at": "2026-09-05T10:23:10.246421+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:23:52.653261+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-recover-full.txt",
+      "full_log_sha256": "399dbf5df6447a329fcd583048002d83814dc69233bde732414729cdc4369d5f",
+      "name": "disassembly-locked-0-recover",
+      "started_at": "2026-09-05T10:23:30.950132+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:24:14.426024+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-locked-0-second-restart-full.txt",
+      "full_log_sha256": "90eb347e46a1e60e1e23e6c8e46eacf68f66128da390aa7793156f0d230c8902",
+      "name": "disassembly-locked-0-second-restart",
+      "started_at": "2026-09-05T10:23:52.669579+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:24:34.429121+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-stage-full.txt",
+      "full_log_sha256": "50efb67edabfa41362b85c01ec6832ec62a66f987c06fbcf3e31e94e81a0dbc3",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-restoring-1-stage",
+      "started_at": "2026-09-05T10:24:14.442921+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:24:55.829074+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-recover-full.txt",
+      "full_log_sha256": "ee89296305223a509e6745321dc111863bd061d2030183cb20886e88dacf1719",
+      "name": "disassembly-restoring-1-recover",
+      "started_at": "2026-09-05T10:24:34.447192+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:25:17.530435+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-1-second-restart-full.txt",
+      "full_log_sha256": "80027a2c9657b73870a155703744315ea7e4f20a292087c73cf95766231e2112",
+      "name": "disassembly-restoring-1-second-restart",
+      "started_at": "2026-09-05T10:24:55.844933+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:25:37.886572+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-stage-full.txt",
+      "full_log_sha256": "cd33ad6710f343f07285044b139da367d97d60c886568d063c40fd6fbe34f979",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-restoring-3-stage",
+      "started_at": "2026-09-05T10:25:17.549046+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:26:00.038845+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-recover-full.txt",
+      "full_log_sha256": "a360690d521fcaf0320b618bd695414ad9a1a9f31789148bc3847ec760944d8e",
+      "name": "disassembly-restoring-3-recover",
+      "started_at": "2026-09-05T10:25:37.902900+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:26:21.292939+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-3-second-restart-full.txt",
+      "full_log_sha256": "555535be5bb6f15d63b30278feb854057598a4107af459167b8efc5b6477bfb3",
+      "name": "disassembly-restoring-3-second-restart",
+      "started_at": "2026-09-05T10:26:00.055429+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:26:42.366215+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-stage-full.txt",
+      "full_log_sha256": "af1ae57c021edb1cbf25f44a9b43db7c05ad2ae8de0a03f5d5970dcb24e09fb3",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-restoring-4-stage",
+      "started_at": "2026-09-05T10:26:21.311530+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:27:05.034641+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-recover-full.txt",
+      "full_log_sha256": "e509378ff45b2921f3cd55bf806db790621ead74a894411c915c90e31b5cbd6e",
+      "name": "disassembly-restoring-4-recover",
+      "started_at": "2026-09-05T10:26:42.383073+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:27:26.911899+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-4-second-restart-full.txt",
+      "full_log_sha256": "3fde5e036e049eed8729efed23d0e8db771f0222d3c3cd61829eeee3f5e02ed1",
+      "name": "disassembly-restoring-4-second-restart",
+      "started_at": "2026-09-05T10:27:05.052484+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:27:47.007889+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-stage-full.txt",
+      "full_log_sha256": "03ff67f0a4c914da9b373fafac3babb3454bdac479339ec8605018387914a4d6",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-restoring-5-stage",
+      "started_at": "2026-09-05T10:27:26.930856+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:28:08.980371+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-recover-full.txt",
+      "full_log_sha256": "259e25c7a5a526cebe504242955ff3512c89c1b0852c07e992b71b0eeae464c9",
+      "name": "disassembly-restoring-5-recover",
+      "started_at": "2026-09-05T10:27:47.025407+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:28:31.046050+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restoring-5-second-restart-full.txt",
+      "full_log_sha256": "2ec1f7fb9746d03e74165fc031cd07f478b9b7f5d9f0e991b86bca4af07d1f51",
+      "name": "disassembly-restoring-5-second-restart",
+      "started_at": "2026-09-05T10:28:08.996769+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:28:51.650283+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-stage-full.txt",
+      "full_log_sha256": "061b57b26e2742d7819c439de0bd6068b4a3e65b10786c5587146baad0dc03c6",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-restored-5-stage",
+      "started_at": "2026-09-05T10:28:31.063308+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:29:13.574200+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-recover-full.txt",
+      "full_log_sha256": "27df89cf692fbd2bf6b25f736d8a940911ed7a6c5264dafa47f7da1bbab6f6ae",
+      "name": "disassembly-restored-5-recover",
+      "started_at": "2026-09-05T10:28:51.668343+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:29:35.450387+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-restored-5-second-restart-full.txt",
+      "full_log_sha256": "c9bda9f617f014bd9a9d189c94b4d495612018772f8ca269c3f419bfc4ae86c9",
+      "name": "disassembly-restored-5-second-restart",
+      "started_at": "2026-09-05T10:29:13.589334+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:29:58.359096+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-stage-full.txt",
+      "full_log_sha256": "037a9757b620ab58b9ca83d23f30da963fb336c662d8bdf9d32534361ce9039d",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-committed-5-stage",
+      "started_at": "2026-09-05T10:29:35.475915+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:30:22.425229+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-recover-full.txt",
+      "full_log_sha256": "8ecea77d165a05153ddbe033b079a65406d247fa81a3a4942a843d06e94815f3",
+      "name": "disassembly-committed-5-recover",
+      "started_at": "2026-09-05T10:29:58.374598+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:30:51.337321+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-committed-5-second-restart-full.txt",
+      "full_log_sha256": "283faf12a2d6447906aa4d576e1324e4c3f7d7351e0c7944f0bba55a33f94686",
+      "name": "disassembly-committed-5-second-restart",
+      "started_at": "2026-09-05T10:30:22.445413+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:31:19.631163+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-stage-full.txt",
+      "full_log_sha256": "642df2b13cdee7894d4a0a1ad048127a5dd5f12893f3c324a871ec548406248d",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-rolling_back-2-stage",
+      "started_at": "2026-09-05T10:30:51.361499+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:31:52.963383+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-recover-full.txt",
+      "full_log_sha256": "5a62f787ec2a5852c17c9bab6fd60eba9c3dbd868be1cda12bef19b65b7ac703",
+      "name": "disassembly-rolling_back-2-recover",
+      "started_at": "2026-09-05T10:31:19.672685+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:32:21.911177+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolling_back-2-second-restart-full.txt",
+      "full_log_sha256": "1bdcfd524933caca99d11a6e52c9f6ea3e8fd35b4d9e14ce01e2d595bfe76aae",
+      "name": "disassembly-rolling_back-2-second-restart",
+      "started_at": "2026-09-05T10:31:52.985835+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:32:48.439444+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-stage-full.txt",
+      "full_log_sha256": "12ba3b6b6b96f8002c8d9ca69b83b51f22a6c0dcda76fcbda1a1edb5becfb72c",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-rolled_back-2-stage",
+      "started_at": "2026-09-05T10:32:21.934262+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:33:17.557126+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-recover-full.txt",
+      "full_log_sha256": "6d9220b636113795c600cebe86b292f82ef4e201fd44b87f0e262d2df811750b",
+      "name": "disassembly-rolled_back-2-recover",
+      "started_at": "2026-09-05T10:32:48.462747+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:33:46.035921+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-rolled_back-2-second-restart-full.txt",
+      "full_log_sha256": "948bd4915999a7c74d87cf4513b64e988c776e567f45973b7316db795359a8be",
+      "name": "disassembly-rolled_back-2-second-restart",
+      "started_at": "2026-09-05T10:33:17.576173+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:34:13.196233+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-stage-full.txt",
+      "full_log_sha256": "5f2bee84bcd32fdb6ed2802128c578947d5e7107cad440533c44ab7f27e7a522",
+      "graceful_stop_command_sent": false,
+      "name": "disassembly-failed-1-stage",
+      "started_at": "2026-09-05T10:33:46.058205+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T10:34:42.006531+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-recover-full.txt",
+      "full_log_sha256": "8b4513e3ac9bf6ef32f5ea12f7ec90d4b9c3ec9145afb2f8ffbf0a2896c760c8",
+      "name": "disassembly-failed-1-recover",
+      "started_at": "2026-09-05T10:34:13.214287+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T10:35:11.562256+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T100646116262Z-v100-txn-disassembly-failed-1-second-restart-full.txt",
+      "full_log_sha256": "cbefa200f057b5711df289cdc4958751875c9c0b6e015be0bee0d7cf9fc2970c",
+      "name": "disassembly-failed-1-second-restart",
+      "started_at": "2026-09-05T10:34:42.031855+00:00"
+    }
+  ],
+  "requested_cases": [
+    "ASSEMBLY:SPAWNED:5",
+    "DISASSEMBLY:RESTORING:2",
+    "ASSEMBLY:SNAPSHOT_VALIDATED:0",
+    "ASSEMBLY:LOCKED:0",
+    "ASSEMBLY:EXTRACTING:1",
+    "ASSEMBLY:EXTRACTING:2",
+    "ASSEMBLY:EXTRACTING:3",
+    "ASSEMBLY:EXTRACTING:4",
+    "ASSEMBLY:EXTRACTING:5",
+    "ASSEMBLY:EXTRACTED:5",
+    "ASSEMBLY:COMMITTED:5",
+    "ASSEMBLY:ROLLING_BACK:2",
+    "ASSEMBLY:ROLLED_BACK:2",
+    "ASSEMBLY:FAILED:1",
+    "DISASSEMBLY:SNAPSHOT_VALIDATED:0",
+    "DISASSEMBLY:LOCKED:0",
+    "DISASSEMBLY:RESTORING:1",
+    "DISASSEMBLY:RESTORING:3",
+    "DISASSEMBLY:RESTORING:4",
+    "DISASSEMBLY:RESTORING:5",
+    "DISASSEMBLY:RESTORED:5",
+    "DISASSEMBLY:COMMITTED:5",
+    "DISASSEMBLY:ROLLING_BACK:2",
+    "DISASSEMBLY:ROLLED_BACK:2",
+    "DISASSEMBLY:FAILED:1"
+  ],
+  "schema_version": 1,
+  "scope": "five-block unmanned real transaction stages after durable flush; not power loss during writes, passengers, Beta upgrade or performance",
+  "server_port": 25610,
+  "source_state": "development_worktree",
+  "status": "PASS",
+  "template_artifact_sha256": "5b5d942a1c807a62ec030bc2150f246a7de6d5f78cd2ed3698db3445a53d2096",
+  "version": "v1.0.0"
+}

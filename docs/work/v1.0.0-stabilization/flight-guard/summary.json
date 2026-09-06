@@ -1,0 +1,124 @@
+{
+  "artifact_sha256": "5b5d942a1c807a62ec030bc2150f246a7de6d5f78cd2ed3698db3445a53d2096",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "baseline_summary_sha256": "2858f6032251b181b6ff349d7cfe759b2c9a875c4f7574ab957bb2803f4d4698",
+  "build": "1.20.1-1.0.0-dev",
+  "cases": [
+    {
+      "case": "SOURCE_REMOVED",
+      "disassembly_blocks_and_expected_inventory_verified": true,
+      "durable_save_before_kill": true,
+      "forced_stop": {
+        "completed_at": "2026-09-05T09:12:41.079823+00:00",
+        "exit_code": 1,
+        "full_log_file": "20260905T091212140066Z-v100-source_removed-stage-full.txt",
+        "full_log_sha256": "edfaba35671b6fc7829a928b6f27a5c60d9c489fea39d45d87a1a3b0e7293939",
+        "graceful_stop_command_sent": false,
+        "name": "v100-source_removed-stage",
+        "pid": 11908,
+        "started_at": "2026-09-05T09:12:12.847984+00:00",
+        "termination": "process_kill"
+      },
+      "one_loaded_authority": true,
+      "recovered": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "4b325e5d-a5c8-441b-a2fa-92c5583a37c7",
+        "fuel": 628,
+        "logical": "a7e6994e-b937-40b3-aaf1-aedb82f5ed12",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      },
+      "recovery": {
+        "action": "KEEP_DESTINATION",
+        "destination_count_before": 1,
+        "phase": "SOURCE_REMOVED",
+        "source_count_before": 0,
+        "status": "RECOVERED",
+        "transfer_id": "faf65588-2fee-469e-967d-4c5989fcd4e2"
+      },
+      "same_world_restart": true,
+      "snapshot_identity_and_fuel_preserved": true,
+      "staged": {
+        "checkpoint": "SOURCE_REMOVED",
+        "fuel_before": 1000,
+        "logical_rocket_id": "a7e6994e-b937-40b3-aaf1-aedb82f5ed12",
+        "paused_dimension": "advancedrocketrycommunity:moon",
+        "paused_entity": "4b325e5d-a5c8-441b-a2fa-92c5583a37c7",
+        "phase": "SOURCE_REMOVED",
+        "report": {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "4b325e5d-a5c8-441b-a2fa-92c5583a37c7",
+          "fuel": 628,
+          "logical": "a7e6994e-b937-40b3-aaf1-aedb82f5ed12",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+          "state": "DESCENT",
+          "transfer": "faf65588-2fee-469e-967d-4c5989fcd4e2"
+        },
+        "required_fuel": 372,
+        "source_entity": "5860244c-2821-4889-8f10-bf54ab4a3817",
+        "state": "DESCENT",
+        "transfer_id": "faf65588-2fee-469e-967d-4c5989fcd4e2"
+      }
+    }
+  ],
+  "complete_flight_matrix": false,
+  "completed_at": "2026-09-05T09:13:03.481029+00:00",
+  "harness_sha256": "f9259f666f911546f25653975b1d8ad3c8da33cd7997fb28e7041e62163dbded",
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "20260905T091212140066Z-v100-source_removed-recover-full.txt",
+      "sha256": "ee2bcf1fdc36468ac3804e8842be536fae462ff3d39bc2b32a1588f816022050"
+    },
+    {
+      "file": "20260905T091212140066Z-v100-source_removed-stage-full.txt",
+      "sha256": "edfaba35671b6fc7829a928b6f27a5c60d9c489fea39d45d87a1a3b0e7293939"
+    }
+  ],
+  "online_mode": "true",
+  "processes": [
+    {
+      "completed_at": "2026-09-05T09:12:41.079823+00:00",
+      "exit_code": 1,
+      "full_log_file": "20260905T091212140066Z-v100-source_removed-stage-full.txt",
+      "full_log_sha256": "edfaba35671b6fc7829a928b6f27a5c60d9c489fea39d45d87a1a3b0e7293939",
+      "graceful_stop_command_sent": false,
+      "name": "v100-source_removed-stage",
+      "started_at": "2026-09-05T09:12:12.847984+00:00",
+      "termination": "process_kill"
+    },
+    {
+      "completed_at": "2026-09-05T09:13:03.479303+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260905T091212140066Z-v100-source_removed-recover-full.txt",
+      "full_log_sha256": "ee2bcf1fdc36468ac3804e8842be536fae462ff3d39bc2b32a1588f816022050",
+      "name": "v100-source_removed-recover",
+      "started_at": "2026-09-05T09:12:41.117960+00:00"
+    }
+  ],
+  "requested_cases": [
+    "SOURCE_REMOVED"
+  ],
+  "schema_version": 1,
+  "scope": "unmanned flight checkpoints after explicit durable flush; not assembly, disassembly or player crash coverage",
+  "source_state": "development_worktree",
+  "status": "PASS",
+  "version": "v1.0.0"
+}

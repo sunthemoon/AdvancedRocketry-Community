@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T22:03:30" hostname="DESKTOP-8J2KSNF" time="0.004">
+  <properties/>
+  <testcase name="clockRollbackStartsAFreshWindow()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest" time="0.002"/>
+  <testcase name="boundsTrackedPlayersAndExpiresOldWindows()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest" time="0.001"/>
+  <testcase name="boundsEachPlayerAndAuditsOnlyTheFirstRejectedIntent()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

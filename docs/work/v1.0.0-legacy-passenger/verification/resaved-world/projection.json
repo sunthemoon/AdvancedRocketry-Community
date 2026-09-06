@@ -1,0 +1,167 @@
+{
+  "files": [
+    {
+      "file": "playerdata/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.dat",
+      "bytes": 830,
+      "sha256": "a8bb002e3ea525c43d847e976e52ead20baa8a38f8c69c5d879aaf3e33f65a44"
+    },
+    {
+      "file": "playerdata/6482f9f6-ff26-3046-b7ba-86db04b972f8.dat",
+      "bytes": 832,
+      "sha256": "aae8c65eb105d01f05956346e31aa16cc7186a0060716da6a80eba5257130cfd"
+    },
+    {
+      "file": "entities/r.0.-1.mca",
+      "bytes": 147456,
+      "sha256": "649416610260f39f46faff7c99882c54824a023ffe862c912ba76fbc2333c4f9"
+    },
+    {
+      "file": "entities/r.0.0.mca",
+      "bytes": 20480,
+      "sha256": "d56fb2060672eed17c2ea935cbf50234afe991c6661c91c843bb613f4f2e31b3"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca",
+      "bytes": 16384,
+      "sha256": "51ed252a360d167b6203ee047479707360cd0d28fccea485c4dd97f8cc805156"
+    }
+  ],
+  "players": [
+    {
+      "player": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+      "dimension": "advancedrocketrycommunity:moon",
+      "pos": [
+        8.5,
+        81.15,
+        8.5
+      ],
+      "root_vehicle": null
+    },
+    {
+      "player": "6482f9f6-ff26-3046-b7ba-86db04b972f8",
+      "dimension": "advancedrocketrycommunity:moon",
+      "pos": [
+        8.5,
+        81.15,
+        8.5
+      ],
+      "root_vehicle": null
+    }
+  ],
+  "rockets": [
+    {
+      "entity": "3af01cfc-06ef-41c2-b3dd-c08d5c4bb35a",
+      "logical": "0ce64af6-4ee0-4c9b-b019-08c2b512bfe4",
+      "snapshot": "eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196",
+      "state": "LANDED",
+      "fuel": 618,
+      "passengers": {
+        "assignments": [
+          {
+            "seat_index": 0,
+            "passenger_id": [
+              1656469963,
+              -1292224086,
+              -1704246517,
+              1911900479
+            ]
+          },
+          {
+            "seat_index": 1,
+            "passenger_id": [
+              1686305270,
+              -14274490,
+              -1212512549,
+              79262456
+            ]
+          }
+        ],
+        "seat_capacity": 2
+      },
+      "dimension": "advancedrocketrycommunity:moon",
+      "blocks": [
+        {
+          "palette": 1,
+          "position": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 2,
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "palette": 0,
+          "position": [
+            0,
+            2,
+            0
+          ]
+        },
+        {
+          "block_entity": {
+            "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+            "data": {
+              "Items": [
+                {
+                  "Slot": 0,
+                  "id": "minecraft:diamond",
+                  "Count": 17
+                }
+              ]
+            }
+          },
+          "palette": 4,
+          "position": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            1,
+            1,
+            0
+          ]
+        }
+      ],
+      "pos": [
+        8.5,
+        80.0,
+        8.5
+      ]
+    }
+  ],
+  "world_owned_only": true
+}

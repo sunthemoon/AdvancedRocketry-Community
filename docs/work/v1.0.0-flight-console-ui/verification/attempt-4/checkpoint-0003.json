@@ -1,0 +1,41 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T17:39:51.838683+00:00",
+      "request": {
+        "id": 1,
+        "op": "focus"
+      },
+      "result": {
+        "focused": true
+      }
+    },
+    {
+      "at": "2026-09-05T17:39:51.921925+00:00",
+      "request": {
+        "id": 2,
+        "key": 114,
+        "op": "key"
+      },
+      "result": {}
+    }
+  ],
+  "artifact_sha256": "fb8539b600da54da3f4e5453af07e285e7dec1c17ace12f1e52153137be71e04",
+  "authentication_tested": false,
+  "client_pid": 23512,
+  "entity": "00cc34e8-99d4-4881-bd36-76c564c2f5f4",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "port": 62021,
+  "processes": [],
+  "screenshots": [],
+  "server_pid": 26444,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T17:39:07.307101+00:00",
+  "stations": [
+    "6283a6ae-ff15-4e02-8085-1d677b11970c",
+    "68f9268b-e709-4e50-baf2-15663a8fbd9c"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 2427746
+}

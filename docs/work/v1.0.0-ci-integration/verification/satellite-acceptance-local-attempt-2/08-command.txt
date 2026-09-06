@@ -1,0 +1,7 @@
+[PASS] Two packaged satellite owners retained independent authority
+[PASS] Same-world restart preserved both active missions and deadlines
+[PASS] Deadline queue completed missions with zero chunk tickets
+[PASS] Discovery and repeated claims remained exact-once
+[PASS] 100 packaged missions drained within 32/64 completion/inspection budgets
+[PASS] Artifact SHA-256: cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\build\v090-satellite-server-smoke\evidence

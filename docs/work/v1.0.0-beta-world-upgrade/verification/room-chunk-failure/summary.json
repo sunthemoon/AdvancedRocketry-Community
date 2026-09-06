@@ -1,0 +1,31 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "candidate_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "candidate_version": "1.20.1-1.0.0-dev",
+  "completed_at": "2026-09-05T11:59:22.734389+00:00",
+  "error": "Fixture condition was not satisfied: ARCE_V100_SEALED_ROOM",
+  "harness_inputs": {
+    "inspect_v100_world_upgrade.py": "de59768ce23cd24b9ef801ecddac58f050ec3d9419127b0a9d6b7859561f6cf2",
+    "run_v100_beta_world_upgrade.py": "7332da632c74ff75f207f25005b011f2654687398d89dcd0fad6ced42f80a9ab",
+    "v100_beta_world_fixture.py": "4e2a764a0456d085d65327ed9f59b3aec7a93fa701b376636dae76729c8cd470"
+  },
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "v100-upgrade-beta-capture-full.txt",
+      "sha256": "ed68eef83a514c191bfe0837ee9fd3baa4911a1a4109a82b64925f8fbab96b7b"
+    }
+  ],
+  "mod_version": "1.20.1-0.9.0-beta.1",
+  "online_mode": "true",
+  "processes": [],
+  "schema_version": 1,
+  "scope": "actual unmodified Beta world, first candidate open and two restarts; unmanned, not V1/V2 or final release",
+  "server_port": 25612,
+  "source_state": "development_worktree",
+  "status": "FAIL",
+  "upgrades": [],
+  "version": "v1.0.0"
+}

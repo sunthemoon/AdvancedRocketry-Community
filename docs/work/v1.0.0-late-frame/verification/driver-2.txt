@@ -1,0 +1,19 @@
+CLIENT_START {"status": "IN_PROGRESS", "artifact_sha256": "46cb577653981a50638ff3d2bc32d0407dc4adaa5d7092fe73e65ae82bcd229c", "authentication_tested": false, "started_at": "2026-09-05T19:53:13.545261+00:00", "screenshots": [], "checks": [], "server_pid": 20612, "port": 56055, "debug_port": 56056, "client_pid": 5288}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp/arce-late-frame-session.py", line 76, in <module>
+    probe.wait_for(re.compile('READY_COMMANDS'),15)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\run_dedicated_server_smoke.py", line 660, in wait_for
+    raise SmokeError(
+        f"Server exited with code {code} before {marker.pattern!r}\n{tail}"
+    )
+scripts.run_dedicated_server_smoke.SmokeError: Server exited with code 1 before 'READY_COMMANDS'
+CAPTURE_ARMED
+CAPTURE packet=59 menu=88 container=1 rocket=179
+Exception in thread "main" java.lang.IllegalStateException: Ambiguous method: <init>
+	at ArceLateFrameProbe.method(ArceLateFrameProbe.java:21)
+	at ArceLateFrameProbe.construct(ArceLateFrameProbe.java:122)
+	at ArceLateFrameProbe.changedPacket(ArceLateFrameProbe.java:130)
+	at ArceLateFrameProbe.lambda$main$2(ArceLateFrameProbe.java:192)
+	at ArceLateFrameProbe.onTick(ArceLateFrameProbe.java:72)
+	at ArceLateFrameProbe.main(ArceLateFrameProbe.java:190)

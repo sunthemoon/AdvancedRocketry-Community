@@ -1,0 +1,13 @@
+{
+  "actions": [],
+  "artifact_sha256": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0",
+  "authentication_tested": false,
+  "cleanup_errors": [],
+  "completed_at": "2026-09-05T21:00:38.461281+00:00",
+  "failure": "FileExistsError: [Errno 17] File exists: 'C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Temp\\\\arce-legacy-before-ui\\\\server\\\\server.properties.v002-startup'",
+  "processes": [],
+  "screenshots": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:00:37.971083+00:00",
+  "status": "FAIL"
+}

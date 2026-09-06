@@ -1,0 +1,1 @@
+{"id": 5, "op": "server", "command": "execute in advancedrocketrycommunity:moon as @e[type=advancedrocketrycommunity:rocket] run data get entity @s RocketEntityData.snapshot.relative_blocks", "wait": "has the following entity data:"}

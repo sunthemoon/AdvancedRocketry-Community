@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+"""Kill owned packaged-server processes at each durable flight phase and recover."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+if __package__:
+    from . import run_dedicated_server_smoke as server_smoke
+    from . import run_v060_flight_server_smoke as flight
+    from .run_v090_forced_stop_recovery import force_stop
+    from .run_v090_migration_server_smoke import _copy_server
+else:
+    import run_dedicated_server_smoke as server_smoke
+    import run_v060_flight_server_smoke as flight
+    from run_v090_forced_stop_recovery import force_stop
+    from run_v090_migration_server_smoke import _copy_server
+
+
+SmokeError = server_smoke.SmokeError
+CASES = (
+    "ASSEMBLED", "FUELED", "COUNTDOWN", "ASCENT", "TRANSIT_PREPARED",
+    "DESTINATION_SPAWNED", "PASSENGERS_TRANSFERRED", "SOURCE_REMOVED", "DESCENT", "LANDED",
+)
+# Journal phase, loaded source count, destination count, recovery action.
+RECOVERY_CONTRACT = {
+    "COUNTDOWN": ("PREPARED", 1, 0, "KEEP_SOURCE"),
+    "ASCENT": ("PREPARED", 1, 0, "KEEP_SOURCE"),
+    "TRANSIT_PREPARED": ("PREPARED", 1, 0, "KEEP_SOURCE"),
+    "DESTINATION_SPAWNED": ("DESTINATION_SPAWNED", 1, 1, "REMOVE_SOURCE_KEEP_DESTINATION"),
+    "PASSENGERS_TRANSFERRED": ("PASSENGERS_TRANSFERRED", 1, 1, "REMOVE_SOURCE_KEEP_DESTINATION"),
+    "SOURCE_REMOVED": ("SOURCE_REMOVED", 0, 1, "KEEP_DESTINATION"),
+    "DESCENT": ("COMMITTED", 0, 1, "KEEP_DESTINATION"),
+    "LANDED": ("COMMITTED", 0, 1, "KEEP_DESTINATION"),
+}
+RUN_TOKEN = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+
+
+def validate_receipt(case: str, match: re.Match[str], transfer: str) -> dict[str, object]:
+    recovered, phase, source, destination, action, status = match.groups()
+    observed = (phase, int(source), int(destination), action)
+    if recovered != transfer or status != "RECOVERED" or observed != RECOVERY_CONTRACT[case]:
+        raise SmokeError(f"{case} recovery receipt violates the phase/authority contract")
+    return {
+        "transfer_id": recovered, "phase": phase, "source_count_before": int(source),
+        "destination_count_before": int(destination), "action": action, "status": status,
+    }
+
+
+def validate_report(case: str, staged: dict, report: dict) -> None:
+    before = staged["report"]
+    for key in ("logical", "snapshot", "capacity", "blocks", "passengers", "origin"):
+        if report[key] != before[key]:
+            raise SmokeError(f"{case} recovery changed {key}")
+    if report["passengers"] != 0:
+        raise SmokeError("This isolated flight harness does not exercise player passengers")
+    if case in {"ASSEMBLED", "FUELED"}:
+        state, dimension, fuel = case, flight.EARTH, before["fuel"]
+    elif RECOVERY_CONTRACT[case][3] == "KEEP_SOURCE":
+        state, dimension, fuel = "FUELED", flight.EARTH, staged["fuel_before"]
+    else:
+        state, dimension = "LANDED", flight.MOON
+        fuel = staged["fuel_before"] - staged["required_fuel"]
+    if (report["state"], report["dimension"], report["fuel"]) != (state, dimension, fuel):
+        raise SmokeError(f"{case} recovery changed state, dimension or exact fuel debit")
+    entity = staged["source_entity"] if dimension == flight.EARTH else staged["paused_entity"]
+    if report["entity"] != entity:
+        raise SmokeError(f"{case} recovery replaced a persisted authority unexpectedly")
+
+
+class RecoveryHarness(flight.FlightHarness):
+    def start(self, name: str) -> server_smoke.CapturedProcess:
+        log = self.server / f"{RUN_TOKEN}-{name}-full.txt"
+        process = server_smoke.CapturedProcess(flight._server_command(self.java), self.server, log)
+        setattr(process, "_arce_name", name)
+        setattr(process, "_arce_log_path", log)
+        setattr(process, "_arce_started_at", datetime.now(timezone.utc).isoformat())
+        try:
+            process.wait_for(server_smoke.READY_MARKER, self.startup_timeout)
+            server_smoke.validate_status_identity(
+                server_smoke.wait_for_status(self.port), self.expected_version,
+            )
+            return process
+        except BaseException:
+            process.abort()
+            raise
+
+
+def audit_recovery_log(lines: list[str], case: str, staged: dict) -> None:
+    for finding in server_smoke.scan_log(lines):
+        match = flight.RECOVERY_LOG.search(finding)
+        # Only the exact verified recovery WARN is expected. ERROR/FATAL still fail.
+        if (case in RECOVERY_CONTRACT and match is not None
+                and server_smoke.WARNING_LINE.search(finding)):
+            validate_receipt(case, match, staged["transfer_id"])
+            continue
+        raise SmokeError(f"{case} recovery logged a blocking finding: {finding}")
+
+
+def verify_single_authority(process, harness: RecoveryHarness, report: dict, case: str) -> None:
+    # This is a disposable, initially empty world with only one test rocket.
+    # Both source/destination regions are loaded by the normal recovery service.
+    # An unbounded @e selector is already cross-dimension; enumerate it once.
+    process.command("scoreboard objectives add arce_v100 dummy")
+    process.command("scoreboard players set #rockets arce_v100 0")
+    process.command("execute as @e[type=advancedrocketrycommunity:rocket] "
+                    "run scoreboard players add #rockets arce_v100 1")
+    marker = f"V100_{case}_ONE_LOADED_AUTHORITY"
+    harness.command_marker(process, flight._in_dimension(
+        report["dimension"], f"execute if score #rockets arce_v100 matches 1 "
+        f"if entity {report['entity']} run say {marker}",
+    ), marker)
+
+
+def run_case(harness: RecoveryHarness, case: str) -> dict[str, object]:
+    process = None
+    try:
+        process = harness.start(f"v100-{case.lower()}-stage")
+        initial = harness.assemble(process)
+        staged = {"source_entity": initial["entity"], "report": initial}
+        if case == "FUELED":
+            harness.refuel(process, flight.EARTH, initial["entity"])
+            staged["report"] = harness.report(process, flight.EARTH, initial["entity"])
+        elif case != "ASSEMBLED":
+            staged.update(harness.launch_to_checkpoint(
+                process, dimension=flight.EARTH, entity=initial["entity"],
+                destination_name="moon", checkpoint=case,
+            ))
+            if staged["phase"] != RECOVERY_CONTRACT[case][0]:
+                raise SmokeError(f"{case} did not stop at the requested journal phase")
+        save_at = len(process.lines)
+        process.command("save-all flush")
+        process.wait_for(server_smoke.SAVE_MARKER, 60.0, start_at=save_at)
+        abrupt = force_stop(process, harness)
+        process = None
+
+        process = harness.start(f"v100-{case.lower()}-recover")
+        receipt = {}
+        dimension, entity = flight.EARTH, staged["source_entity"]
+        if case in RECOVERY_CONTRACT:
+            transfer = staged["transfer_id"]
+            index = process.wait_for(re.compile(
+                rf"ARCE_TRANSFER_RECOVERY transfer={re.escape(transfer)} ",
+            ), 60.0)
+            match = flight.RECOVERY_LOG.search(process.lines[index])
+            if match is None:
+                raise SmokeError(f"{case} recovery receipt could not be parsed")
+            receipt = validate_receipt(case, match, transfer)
+            if receipt["action"] != "KEEP_SOURCE":
+                dimension, entity = flight.MOON, staged["paused_entity"]
+                if case != "LANDED":
+                    process.wait_for(re.compile(
+                        rf"ARCE_TRANSFER_PHASE transfer={re.escape(transfer)} .*"
+                        rf"event=landing_complete entity={re.escape(entity)}",
+                    ), 60.0)
+        report = harness.report(process, dimension, entity)
+        validate_report(case, staged, report)
+        verify_single_authority(process, harness, report, case)
+        harness.disassemble_and_verify(process, report, f"V100_{case}_DISASSEMBLED")
+        process.command(f"forceload remove {flight.X} {flight.Z}")
+        harness.stop(process)
+        audit_recovery_log(process.lines, case, staged)
+        process = None
+        return {
+            "case": case, "staged": staged, "recovered": report, "recovery": receipt,
+            "forced_stop": abrupt, "durable_save_before_kill": True,
+            "same_world_restart": True, "one_loaded_authority": True,
+            "snapshot_identity_and_fuel_preserved": True,
+            "disassembly_blocks_and_expected_inventory_verified": True,
+        }
+    except BaseException:
+        if process is not None:
+            process.abort()
+        raise
+
+
+def verify_local_session(server: Path, port: int) -> dict[str, str]:
+    properties = server_smoke.parse_java_properties((server / "server.properties").read_bytes())
+    if properties.get("server-ip") != "127.0.0.1" or properties.get("server-port") != str(port):
+        raise SmokeError("Recovery server must use the baseline port on loopback only")
+    return properties
+
+
+def write_evidence(directory: Path, session: Path, summary: dict) -> None:
+    # The directory is reserved before any server is started, never overwritten.
+    logs = []
+    for source in sorted(session.glob(f"{RUN_TOKEN}-v100-*-full.txt")):
+        if server_smoke.is_link_or_junction(source) or source.stat().st_size > 16 * 1024 * 1024:
+            raise SmokeError("Recovery log is unsafe or exceeds 16 MiB")
+        destination = directory / source.name
+        shutil.copy2(source, destination)
+        logs.append({"file": source.name, "sha256": server_smoke.digest_file(destination)})
+    summary["logs"] = logs
+    (directory / "summary.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n",
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source_server_dir", type=Path)
+    parser.add_argument("--session-dir", type=Path, required=True)
+    parser.add_argument("--baseline-summary", type=Path, required=True)
+    parser.add_argument("--evidence-dir", type=Path, required=True)
+    parser.add_argument("--base-commit", required=True)
+    parser.add_argument("--expected-version", default="1.20.1-1.0.0-dev")
+    parser.add_argument("--case", action="append", choices=CASES, dest="cases")
+    java_home = os.environ.get("JAVA_HOME")
+    parser.add_argument("--java", default=str(Path(java_home) / "bin/java") if java_home else "java")
+    parser.add_argument("--startup-timeout", type=float, default=240.0)
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    evidence = None
+    harness = None
+    summary = {
+        "schema_version": 1, "version": "v1.0.0", "build": args.expected_version,
+        "source_state": "development_worktree", "base_commit": args.base_commit,
+        "status": "IN_PROGRESS", "cases": [],
+        "requested_cases": list(dict.fromkeys(args.cases or CASES)),
+        "scope": "unmanned flight checkpoints after explicit durable flush; not assembly, disassembly or player crash coverage",
+    }
+    try:
+        if re.fullmatch(r"[0-9a-f]{40}", args.base_commit) is None:
+            raise SmokeError("Base commit must be a full lowercase SHA-1")
+        for path in (args.source_server_dir, args.session_dir, args.evidence_dir):
+            if server_smoke.is_link_or_junction(path):
+                raise SmokeError("Recovery inputs/outputs must not be linked directories")
+        if args.evidence_dir.exists():
+            raise SmokeError("Refusing to overwrite existing recovery evidence")
+        source, session = args.source_server_dir.resolve(), args.session_dir.resolve()
+        if source == session or source.is_relative_to(session) or session.is_relative_to(source):
+            raise SmokeError("Source and disposable session directories must not overlap")
+        output = args.evidence_dir.resolve()
+        if any(output == root or output.is_relative_to(root) or root.is_relative_to(output)
+               for root in (source, session)):
+            raise SmokeError("Evidence must be separate from server directories")
+        baseline = flight._load_summary(args.baseline_summary)
+        _copy_server(source, session)
+        port, artifact_hash = flight._verify_inputs(session, baseline, args.expected_version)
+        properties = verify_local_session(session, port)
+        java, java_version = server_smoke.resolve_java(args.java)
+        output.mkdir(parents=True, exist_ok=False)
+        evidence = output
+        summary.update({
+            "artifact_sha256": artifact_hash, "java": java_version,
+            "baseline_summary_sha256": server_smoke.digest_file(args.baseline_summary),
+            "harness_sha256": server_smoke.digest_file(Path(__file__)),
+            "online_mode": properties.get("online-mode"),
+        })
+        harness = RecoveryHarness(java=java, server=session, port=port,
+                                  expected_version=args.expected_version,
+                                  startup_timeout=args.startup_timeout)
+        for case in summary["requested_cases"]:
+            result = run_case(harness, case)
+            summary["cases"].append(result)
+            print(f"[PASS] Forced-stop flight checkpoint {case}", flush=True)
+        summary["status"] = "PASS"
+        summary["complete_flight_matrix"] = len(summary["cases"]) == len(CASES)
+        return 0
+    except (OSError, ValueError, SmokeError) as error:
+        summary["status"] = "FAIL"
+        summary["error"] = str(error)
+        print(f"[FAIL] {error}", file=sys.stderr)
+        return 1
+    finally:
+        if evidence is not None:
+            summary["completed_at"] = datetime.now(timezone.utc).isoformat()
+            summary["processes"] = harness.process_documents if harness else []
+            write_evidence(evidence, args.session_dir.resolve(), summary)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

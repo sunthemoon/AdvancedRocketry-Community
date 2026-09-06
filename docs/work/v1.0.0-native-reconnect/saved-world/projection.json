@@ -1,0 +1,167 @@
+{
+  "files": [
+    {
+      "file": "playerdata/62bbb9cb-b2fa-39aa-9a6b-430b71f5493f.dat",
+      "bytes": 816,
+      "sha256": "139a9d57c1c8d9ad7a52d17f9829672e5bf8461ec6773bb04e0dac0ee22affbd"
+    },
+    {
+      "file": "playerdata/6482f9f6-ff26-3046-b7ba-86db04b972f8.dat",
+      "bytes": 816,
+      "sha256": "98f8376c164fb106ecf712a292698508718b72b6dd6f8db3a1b63cac3ea262d2"
+    },
+    {
+      "file": "entities/r.0.-1.mca",
+      "bytes": 155648,
+      "sha256": "9789ab94d762d4525a0cbe5614a64bc0fdd67d1b2b845a997887894b575297d6"
+    },
+    {
+      "file": "entities/r.0.0.mca",
+      "bytes": 20480,
+      "sha256": "568bf3a0aa0896fb14a065d370c34c567f56e374fa05659d837dc1926a2136f9"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.-1.mca",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca",
+      "bytes": 16384,
+      "sha256": "e403481c81a28eb5479e0a8d57d0b78cc86c9972b449d17ad29d903b900b0ade"
+    }
+  ],
+  "players": [
+    {
+      "player": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+      "dimension": "minecraft:overworld",
+      "pos": [
+        288.5,
+        64.15,
+        -127.5
+      ],
+      "root_vehicle": null
+    },
+    {
+      "player": "6482f9f6-ff26-3046-b7ba-86db04b972f8",
+      "dimension": "minecraft:overworld",
+      "pos": [
+        288.5,
+        64.15,
+        -127.5
+      ],
+      "root_vehicle": null
+    }
+  ],
+  "rockets": [
+    {
+      "entity": "2c03e129-ca61-4718-9453-39f666e94d65",
+      "logical": "0ce64af6-4ee0-4c9b-b019-08c2b512bfe4",
+      "snapshot": "50481230343d03b7ca691f77d50acd20096f2636be43f878b7552995485e442c",
+      "state": "LANDED",
+      "fuel": 618,
+      "passengers": {
+        "assignments": [
+          {
+            "seat_index": 0,
+            "passenger_id": [
+              1656469963,
+              -1292224086,
+              -1704246517,
+              1911900479
+            ]
+          },
+          {
+            "seat_index": 1,
+            "passenger_id": [
+              1686305270,
+              -14274490,
+              -1212512549,
+              79262456
+            ]
+          }
+        ],
+        "seat_capacity": 2
+      },
+      "dimension": "minecraft:overworld",
+      "blocks": [
+        {
+          "palette": 1,
+          "position": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 2,
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "palette": 0,
+          "position": [
+            0,
+            2,
+            0
+          ]
+        },
+        {
+          "block_entity": {
+            "adapter": "advancedrocketrycommunity:vanilla_container_v1",
+            "data": {
+              "Items": [
+                {
+                  "Slot": 0,
+                  "id": "minecraft:diamond",
+                  "Count": 17
+                }
+              ]
+            }
+          },
+          "palette": 4,
+          "position": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 3,
+          "position": [
+            1,
+            1,
+            0
+          ]
+        }
+      ],
+      "pos": [
+        288.5,
+        63.0,
+        -127.5
+      ]
+    }
+  ],
+  "world_owned_only": true
+}

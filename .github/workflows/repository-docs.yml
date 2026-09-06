@@ -33,6 +33,13 @@ jobs:
       - name: Validate bootstrap provenance allowlist
         run: python scripts/validate_bootstrap_provenance.py
 
+      - name: Validate v1.0-v2.0 planning integration
+        run: |
+          python scripts/validate_v1plus_planning.py
+          bash -n scripts/check-debian12-dev-host.sh
+          bash -n scripts/tmux-arce-layout.sh
+          bash -n scripts/start-xvfb-visual-smoke.sh
+
       - name: Check out exact Advanced Rocketry 1.12 audit source
         run: |
           git clone --filter=blob:none --no-checkout https://github.com/Advanced-Rocketry/AdvancedRocketry.git build/upstream/AdvancedRocketry

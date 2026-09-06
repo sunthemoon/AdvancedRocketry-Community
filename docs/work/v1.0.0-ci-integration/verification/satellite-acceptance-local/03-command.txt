@@ -1,0 +1,10 @@
+{
+  "artifact": "build/libs/advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+  "build_version": "1.20.1-1.0.0-dev",
+  "minecraft_version": "1.20.1",
+  "mod_artifact_id": "advancedrocketry-community",
+  "mod_version": "1.0.0-dev",
+  "properties_sha256": "863997055221af5b17ca9183659145ba725c219fbdb0aa513e78cd5671c8fff6",
+  "schema_version": 1,
+  "sources": "build/libs/advancedrocketry-community-1.20.1-1.0.0-dev-sources.jar"
+}

@@ -1,0 +1,5 @@
+[PASS] Packaged server assembled a four-block rocket through server authority
+[PASS] Rocket entity identity, snapshot hash, and NBT persisted across restart
+[PASS] Stale pre-commit transaction recovered exact blocks and chest items
+[PASS] Artifact SHA-256: cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\build\v050-rocket-server-smoke\evidence

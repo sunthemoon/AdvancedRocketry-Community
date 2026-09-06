@@ -1,0 +1,174 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
+  "artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "base_commit": "34b2e99b48a33f4ba8905b6a69a38efee1649d3f",
+  "candidate_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8",
+  "candidate_version": "1.20.1-1.0.0-dev",
+  "completed_at": "2026-09-05T12:02:14.030966+00:00",
+  "error": "Server exited with code 0 before '^(?:\\\\[[^\\\\]\\\\r\\\\n]+\\\\]\\\\s*)*\\\\[Server thread/INFO\\\\]\\\\s+\\\\[(?:minecraft/MinecraftServer|net\\\\.minecraft\\\\.server\\\\.MinecraftServer)/?\\\\]:\\\\s+Saved the game\\\\s*$'\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (moon): All chunks are saved\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: Executed 23 command(s) from function 'arce_v100_upgrade:capture'\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players\n[20:02:11] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:moon\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:space\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (moon): All chunks are saved\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved\n[20:02:12] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved",
+  "harness_inputs": {
+    "inspect_v100_world_upgrade.py": "de59768ce23cd24b9ef801ecddac58f050ec3d9419127b0a9d6b7859561f6cf2",
+    "run_v100_beta_world_upgrade.py": "7332da632c74ff75f207f25005b011f2654687398d89dcd0fad6ced42f80a9ab",
+    "v100_beta_world_fixture.py": "c60842e9ff384d5007bef94ef4d96b4e524b495aa61f5b3c5a9f28ca87792f37"
+  },
+  "java": "17.0.7",
+  "logs": [
+    {
+      "file": "v100-upgrade-beta-capture-full.txt",
+      "sha256": "f9b74ca5bd42bf7ee61f63cdee40487d2b9ab4b1a5e50f497c139f19a2e27f43"
+    }
+  ],
+  "mod_version": "1.20.1-0.9.0-beta.1",
+  "online_mode": "true",
+  "processes": [],
+  "schema_version": 1,
+  "scope": "actual unmodified Beta world, first candidate open and two restarts; unmanned, not V1/V2 or final release",
+  "server_port": 25612,
+  "setup": {
+    "claim": {
+      "code": "SUCCESS",
+      "discovered": true,
+      "research": 20,
+      "status": "CLAIMED"
+    },
+    "flight": {
+      "block_count": 5,
+      "destination_dimension": "advancedrocketrycommunity:moon",
+      "destination_entity": "7230ddd7-fe38-4a82-bb35-8476602577c1",
+      "direction": "earth_to_moon",
+      "exact_debit": true,
+      "fuel_after": 628,
+      "fuel_before": 1000,
+      "logical_rocket_id": "4fca04ab-6194-4836-8b58-896bdcf173c9",
+      "origin": [
+        8,
+        80,
+        8
+      ],
+      "phase_events": [
+        "countdown_complete",
+        "ascent_complete",
+        "destination_spawned",
+        "passengers_transferred",
+        "source_removed",
+        "committed",
+        "landing_complete",
+        "landed_reservation_retained"
+      ],
+      "required_fuel": 372,
+      "sequence": 1,
+      "snapshot_hash": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+      "source_dimension": "minecraft:overworld",
+      "source_entity": "63fe601c-ec9c-4017-956b-faab8b2452e3",
+      "transfer_id": "2937c42c-3276-43df-bc39-98f48884afd3",
+      "trip": 1
+    },
+    "missions": [
+      {
+        "deadline": 535,
+        "mission_id": "98b03d57-b938-3a17-8b21-61781d98a904",
+        "owner_id": "00000000-0000-0000-0000-000000001001",
+        "satellite_id": "b53541b9-378c-4809-a76c-7fd5c3883b31",
+        "target": "advancedrocketrycommunity:earth"
+      },
+      {
+        "deadline": 535,
+        "mission_id": "e5aa667b-d978-3a7b-b421-0c6d4b64d722",
+        "owner_id": "00000000-0000-0000-0000-000000001002",
+        "satellite_id": "a9f0c172-ebdd-4c71-94db-a0746cf22aec",
+        "target": "advancedrocketrycommunity:moon"
+      },
+      {
+        "deadline": 746,
+        "mission_id": "6efc3029-4c4b-3e40-8403-16b156e29af7",
+        "owner_id": "00000000-0000-0000-0000-000000001001",
+        "satellite_id": "29088e41-e3db-4f2a-9d8f-b84924167e2f",
+        "target": "advancedrocketrycommunity:moon"
+      }
+    ],
+    "rockets": {
+      "earth": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "minecraft:overworld",
+        "entity": "eb1f1629-342b-4f9a-9830-18e7eaf22a56",
+        "fuel": 1000,
+        "logical": "2a2d5294-8305-45cb-91c6-c549ca1e2235",
+        "origin": [
+          384,
+          101,
+          384
+        ],
+        "passengers": 0,
+        "snapshot": "95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322",
+        "state": "FUELED",
+        "transfer": "none"
+      },
+      "moon": {
+        "blocks": 5,
+        "capacity": 1000,
+        "dimension": "advancedrocketrycommunity:moon",
+        "entity": "7230ddd7-fe38-4a82-bb35-8476602577c1",
+        "fuel": 628,
+        "logical": "4fca04ab-6194-4836-8b58-896bdcf173c9",
+        "origin": [
+          8,
+          80,
+          8
+        ],
+        "passengers": 0,
+        "snapshot": "a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9",
+        "state": "LANDED",
+        "transfer": "none"
+      }
+    },
+    "satellite_report": {
+      "active": 1,
+      "cancelled": 0,
+      "chunk_tickets": 0,
+      "claimed": 1,
+      "missions": 3,
+      "pending": 0,
+      "ready": 1,
+      "research": 20,
+      "satellites": 3,
+      "scheduler": "deadline_queue",
+      "unfinished": 2
+    },
+    "station": {
+      "cell": [
+        0,
+        0
+      ],
+      "owner_id": "00000000-0000-0000-0000-000000001001",
+      "region": [
+        -256,
+        -256,
+        255,
+        255
+      ],
+      "station_id": "ed27d498-8f07-4181-8b82-139c54996803"
+    },
+    "station_after": [
+      {
+        "cell": [
+          0,
+          0
+        ],
+        "members": 1,
+        "owner_id": "00000000-0000-0000-0000-000000001002",
+        "region": [
+          -256,
+          -256,
+          255,
+          255
+        ],
+        "station_id": "ed27d498-8f07-4181-8b82-139c54996803"
+      }
+    ]
+  },
+  "source_state": "development_worktree",
+  "status": "FAIL",
+  "upgrades": [],
+  "version": "v1.0.0"
+}

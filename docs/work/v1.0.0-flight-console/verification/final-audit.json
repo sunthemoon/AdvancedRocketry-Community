@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "source_inputs_unchanged": 732,
+  "packaged_processes": 3,
+  "artifact_sha256": "fb8539b600da54da3f4e5453af07e285e7dec1c17ace12f1e52153137be71e04",
+  "java_tests": 376,
+  "game_tests": 44,
+  "rendered_gui_verified": false
+}

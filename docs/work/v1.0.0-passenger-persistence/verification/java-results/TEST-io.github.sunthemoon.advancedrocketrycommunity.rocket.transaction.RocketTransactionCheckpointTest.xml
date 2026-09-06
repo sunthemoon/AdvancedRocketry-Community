@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" tests="44" skipped="0" failures="0" errors="0" timestamp="2026-09-05T20:45:52" hostname="DESKTOP-8J2KSNF" time="0.046">
+  <properties/>
+  <testcase name="rejectsUnreachableStructureProgressAndOversizedInput()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[1] ASSEMBLY:SNAPSHOT_VALIDATED:0, 5, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.008"/>
+  <testcase name="[2] ASSEMBLY:LOCKED:0, 5, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[3] ASSEMBLY:EXTRACTING:1, 4, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[4] ASSEMBLY:EXTRACTING:2, 3, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[5] ASSEMBLY:EXTRACTING:3, 2, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[6] ASSEMBLY:EXTRACTING:4, 1, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[7] ASSEMBLY:EXTRACTING:5, 0, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[8] ASSEMBLY:EXTRACTED:5, 0, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[9] ASSEMBLY:SPAWNED:5, 0, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[10] ASSEMBLY:COMMITTED:5, 0, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[11] ASSEMBLY:ROLLING_BACK:2, 3, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[12] ASSEMBLY:ROLLED_BACK:2, 5, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[13] ASSEMBLY:FAILED:1, 4, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[14] DISASSEMBLY:SNAPSHOT_VALIDATED:0, 0, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[15] DISASSEMBLY:LOCKED:0, 0, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[16] DISASSEMBLY:RESTORING:1, 1, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[17] DISASSEMBLY:RESTORING:2, 2, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[18] DISASSEMBLY:RESTORING:3, 3, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[19] DISASSEMBLY:RESTORING:4, 4, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[20] DISASSEMBLY:RESTORING:5, 5, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[21] DISASSEMBLY:RESTORED:5, 5, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[22] DISASSEMBLY:COMMITTED:5, 5, false" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[23] DISASSEMBLY:ROLLING_BACK:2, 2, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[24] DISASSEMBLY:ROLLED_BACK:2, 0, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[25] DISASSEMBLY:FAILED:1, 1, true" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[1] null" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[2] " classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[3] ASSEMBLY:UNKNOWN:0" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[4] OTHER:LOCKED:0" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[5] ASSEMBLY:RESTORING:1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[6] DISASSEMBLY:EXTRACTED:5" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[7] DISASSEMBLY:SPAWNED:5" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[8] ASSEMBLY:LOCKED:1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[9] ASSEMBLY:EXTRACTING:0" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[10] ASSEMBLY:EXTRACTING:-1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[11] ASSEMBLY:EXTRACTING:2049" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="[12] ASSEMBLY:EXTRACTING:01" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[13] ASSEMBLY:LOCKED:0:EXTRA" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[14] ASSEMBLY:FAILED:2" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[15] DISASSEMBLY:ROLLING_BACK:1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[16] ASSEMBLY:ROLLED_BACK:0" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.0"/>
+  <testcase name="[17] ASSEMBLY:LOCKED:+0" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <testcase name="returningObserverPreservesNormalTransactionAndJournalCleanup()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

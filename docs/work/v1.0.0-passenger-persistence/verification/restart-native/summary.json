@@ -1,0 +1,256 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T20:54:39.024278+00:00",
+      "request": {
+        "command": "execute as V100Visual1 on vehicle if entity @s[nbt={UUID:[I;51828862,774393285,-1494178476,1973096490]}] run say RESTART_OWNER_MOUNTED",
+        "id": 1,
+        "op": "server",
+        "wait": "RESTART_OWNER_MOUNTED"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [menu.advancedrocketrycommunity.rocket_flight] RESTART_OWNER_MOUNTED"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.065633+00:00",
+      "request": {
+        "command": "execute as V100Visual2 on vehicle if entity @s[nbt={UUID:[I;51828862,774393285,-1494178476,1973096490]}] run say RESTART_PASSENGER_MOUNTED",
+        "id": 2,
+        "op": "server",
+        "wait": "RESTART_PASSENGER_MOUNTED"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [menu.advancedrocketrycommunity.rocket_flight] RESTART_PASSENGER_MOUNTED"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.114544+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon run arce rocket release-test report 0316d87e-2e28-4dc5-a6f0-a554759b102a",
+        "id": 3,
+        "op": "server",
+        "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=0316d87e-2e28-4dc5-a6f0-a554759b102a logical=15d78efc-025a-4e27-9ddc-22451f4f0782 snapshot=eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196 dimension=advancedrocketrycommunity:moon state=LANDED fuel=618 capacity=1000 passengers=2 transfer=none origin=8,80,8 blocks=6"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.170168+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon run data get entity 0316d87e-2e28-4dc5-a6f0-a554759b102a RocketEntityData.flight_data.passengers",
+        "id": 4,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: {assignments: [{seat_index: 0, passenger_id: [I; 1656469963, -1292224086, -1704246517, 1911900479]}, {seat_index: 1, passenger_id: [I; 1686305270, -14274490, -1212512549, 79262456]}], seat_capacity: 2}"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.216642+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon run data get entity 0316d87e-2e28-4dc5-a6f0-a554759b102a RocketEntityData.snapshot.relative_blocks",
+        "id": 5,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: menu.advancedrocketrycommunity.rocket_flight has the following entity data: [{palette: 1, position: [I; -1, 0, 0]}, {palette: 2, position: [I; 0, 0, 0]}, {palette: 3, position: [I; 0, 1, 0]}, {palette: 0, position: [I; 0, 2, 0]}, {block_entity: {adapter: \"advancedrocketrycommunity:vanilla_container_v1\", data: {Items: [{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}]}}, palette: 4, position: [I; 1, 0, 0]}, {palette: 3, position: [I; 1, 1, 0]}]"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.267548+00:00",
+      "request": {
+        "command": "execute in advancedrocketrycommunity:moon if entity @e[type=advancedrocketrycommunity:rocket]",
+        "id": 6,
+        "op": "server",
+        "wait": "Test passed, count: 1"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: Test passed, count: 1"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.316327+00:00",
+      "request": {
+        "command": "data get entity V100Visual1 Pos",
+        "id": 7,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: V100Visual1 has the following entity data: [8.5d, 81.15d, 8.5d]"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.364585+00:00",
+      "request": {
+        "command": "data get entity V100Visual2 Pos",
+        "id": 8,
+        "op": "server",
+        "wait": "has the following entity data:"
+      },
+      "result": {
+        "receipt": "[04:54:39] [Server thread/INFO] [minecraft/MinecraftServer]: V100Visual2 has the following entity data: [8.5d, 81.15d, 8.5d]"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:39.446109+00:00",
+      "request": {
+        "id": 10,
+        "key": 114,
+        "op": "key",
+        "player": "owner"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T20:54:39.528113+00:00",
+      "request": {
+        "id": 11,
+        "key": 114,
+        "op": "key",
+        "player": "operator"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T20:54:40.321994+00:00",
+      "request": {
+        "id": 12,
+        "name": "01-owner-restart",
+        "op": "screenshot",
+        "player": "owner"
+      },
+      "result": {
+        "bytes": 106305,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "01-owner-restart.png",
+        "sha256": "cf544ac6f02a9605fd01b142e28fd3bef83cb057b3508dfcec4660e0848d2764",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T20:54:40.907247+00:00",
+      "request": {
+        "id": 13,
+        "name": "01-operator-restart",
+        "op": "screenshot",
+        "player": "operator"
+      },
+      "result": {
+        "bytes": 101341,
+        "client_size": [
+          1280,
+          720
+        ],
+        "file": "01-operator-restart.png",
+        "sha256": "1f667a95a3e9c28703890a626fe411ca2254393a74cbaba4612b70185075ba47",
+        "source": "native Minecraft F2 screenshot"
+      }
+    }
+  ],
+  "artifact_sha256": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0",
+  "authentication_tested": false,
+  "cleanup_errors": [],
+  "client_pid": 12420,
+  "completed_at": "2026-09-05T20:54:56.936057+00:00",
+  "entity": "0316d87e-2e28-4dc5-a6f0-a554759b102a",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 64796,
+  "processes": [
+    {
+      "exit_code": 0,
+      "full_log_file": "client-2-full.txt",
+      "full_log_sha256": "4c42983f0b5022c228ce3495e7827c896ade05309d9395b4fa1f4681854fef6a",
+      "kind": "client-2",
+      "native_logs": [
+        {
+          "bytes": 14565,
+          "file": "client-2-latest.log",
+          "sha256": "3be0dc8c5556c9e06760c32e53ad2ad390891063f95a547e7b7c79a01012d196"
+        },
+        {
+          "bytes": 95778,
+          "file": "client-2-debug.log",
+          "sha256": "e30a8281be46b0a076fb12ea7ea57b2b6800fd1ab390c8b535194819aa6be3f9"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "client-full.txt",
+      "full_log_sha256": "dbf4157c1bdda3612b81ba291a020b28ad0ae6152b6e53a8498838600922e2ea",
+      "kind": "client",
+      "native_logs": [
+        {
+          "bytes": 14844,
+          "file": "client-latest.log",
+          "sha256": "6bc9dbd9ad7237b9e7b5132b882d8f596c1e23f2918adf5b2220ea20961755b5"
+        },
+        {
+          "bytes": 94927,
+          "file": "client-debug.log",
+          "sha256": "b28ddf6cd24faede6ef7bd98aa3fc1d0adf4312ca827918ef2a129517fac2887"
+        }
+      ]
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "server-full.txt",
+      "full_log_sha256": "c27d460de7a5f067b230f35b5f91c1083f294e9c4284bd31b8943f38f156e759",
+      "kind": "server",
+      "native_logs": [
+        {
+          "bytes": 16396,
+          "file": "server-latest.log",
+          "sha256": "c9e03f7aab067afb64b4545a1c71fc854e40d237aa06b889a752c7def2c5589f"
+        },
+        {
+          "bytes": 119960,
+          "file": "server-debug.log",
+          "sha256": "a7d14ba4ed461ac47890a8ac04e12d787bce964acbda65a9ed52e6acbe1d3595"
+        }
+      ]
+    }
+  ],
+  "restart_report": "[04:52:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_FLIGHT_REPORT entity=0316d87e-2e28-4dc5-a6f0-a554759b102a logical=15d78efc-025a-4e27-9ddc-22451f4f0782 snapshot=eb0f5513248453439523a73ad78f5fd93b40073c1aec3634e1d23745102c3196 dimension=advancedrocketrycommunity:moon state=LANDED fuel=618 capacity=1000 passengers=2 transfer=none origin=8,80,8 blocks=6",
+  "screenshots": [
+    {
+      "bytes": 106305,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-owner-restart.png",
+      "sha256": "cf544ac6f02a9605fd01b142e28fd3bef83cb057b3508dfcec4660e0848d2764",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 101341,
+      "client_size": [
+        1280,
+        720
+      ],
+      "file": "01-operator-restart.png",
+      "sha256": "1f667a95a3e9c28703890a626fe411ca2254393a74cbaba4612b70185075ba47",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "second_client_pid": 26244,
+  "second_username": "V100Visual2",
+  "second_window": 590148,
+  "server_pid": 19220,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T20:52:22.899847+00:00",
+  "stations": [],
+  "status": "COMPLETE_WITH_OBSERVATIONS",
+  "username": "V100Visual1",
+  "window": 724156
+}

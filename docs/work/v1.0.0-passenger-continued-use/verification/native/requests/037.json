@@ -1,0 +1,1 @@
+{"op":"server","command":"execute in minecraft:overworld run data get entity 2c03e129-ca61-4718-9453-39f666e94d65 RocketEntityData.snapshot.relative_blocks","id":37,"wait":"has the following entity data"}

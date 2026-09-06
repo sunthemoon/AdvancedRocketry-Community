@@ -1,0 +1,1 @@
+{"id":3,"op":"server","wait":"has the following entity data","command":"execute as V100Visual1 on vehicle run data get entity @s UUID"}

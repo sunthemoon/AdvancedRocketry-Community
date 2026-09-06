@@ -1,0 +1,6 @@
+{
+  "command": "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe -u -m unittest discover -s tests -v",
+  "exit_code": 0,
+  "start": "2026-09-05T14:11:14.1765405+08:00",
+  "end": "2026-09-05T15:09:01.4907887+08:00"
+}

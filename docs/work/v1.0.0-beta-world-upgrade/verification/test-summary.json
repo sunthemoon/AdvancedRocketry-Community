@@ -1,0 +1,10 @@
+{
+  "java_suites": 70,
+  "tests": 362,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "python_server_harness_tests": 101,
+  "new_python_upgrade_tests": 25,
+  "required_gametests": 44
+}

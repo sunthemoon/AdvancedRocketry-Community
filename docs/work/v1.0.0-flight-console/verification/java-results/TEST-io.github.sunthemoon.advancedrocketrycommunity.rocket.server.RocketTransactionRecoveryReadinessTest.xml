@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-05T16:57:21" hostname="DESKTOP-8J2KSNF" time="0.012">
+  <properties/>
+  <testcase name="loadedBlocksDoNotMeanPersistedEntityAbsence()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.003"/>
+  <testcase name="[1] 384, 384, 24, 24" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.001"/>
+  <testcase name="[2] 383, 383, 23, 23" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <testcase name="[3] 0, 0, 0, 0" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <testcase name="[4] 15, 16, 0, 1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <testcase name="[5] -1, -1, -1, -1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.001"/>
+  <testcase name="[6] -16, -17, -1, -2" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <testcase name="[7] -17, 16, -2, 1" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <testcase name="[8] 2147483647, -2147483648, 134217727, -134217728" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <testcase name="unloadedBlockRegionNeverQueriesOrLoadsEntityChunks()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

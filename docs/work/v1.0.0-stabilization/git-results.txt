@@ -1,0 +1,4 @@
+git diff --check: exit 0
+git diff --exit-code -- src/generated: exit 0
+git diff --exit-code -- historical v0.5/v0.6/v0.8/v0.9 releases: exit 0
+git diff --exit-code --quiet: exit 1 (intentional dirty development tree)

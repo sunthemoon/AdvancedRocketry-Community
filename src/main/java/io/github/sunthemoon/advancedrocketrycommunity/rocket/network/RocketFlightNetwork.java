@@ -4,12 +4,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class RocketFlightNetwork {
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "5";
     private static SimpleChannel channel;
 
     public RocketFlightNetwork() {
@@ -27,11 +29,23 @@ public final class RocketFlightNetwork {
                 .decoder(RocketFlightIntentPacket::decode)
                 .consumerMainThread(RocketFlightIntentPacket::handle)
                 .add();
+        created.messageBuilder(RocketFlightPlanPacket.class, 1, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(RocketFlightPlanPacket::encode)
+                .decoder(RocketFlightPlanPacket::decode)
+                .consumerMainThread(RocketFlightPlanPacket::handle)
+                .add();
         channel = created;
     }
 
     public static String protocolVersion() {
         return PROTOCOL_VERSION;
+    }
+
+    public static void sendPlan(ServerPlayer player, RocketFlightPlanPacket packet) {
+        if (channel == null) {
+            throw new IllegalStateException("Rocket flight channel is not initialized");
+        }
+        channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
 
     public static void sendIntent(

@@ -1,0 +1,1 @@
+[PASS] v0.6.0 release evidence is complete: provenance_ready, artifact_ready, post_merge_ready, data_ready, automated_ready, server_ready, persistence_ready, authority_ready, performance_ready, client_ready, docs_ready, checksums_ready, human_approved

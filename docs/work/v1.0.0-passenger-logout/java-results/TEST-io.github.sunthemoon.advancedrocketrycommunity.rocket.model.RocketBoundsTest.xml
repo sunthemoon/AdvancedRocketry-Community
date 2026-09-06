@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-06T02:40:01" hostname="DESKTOP-8J2KSNF" time="0.001">
+  <properties/>
+  <testcase name="emptyBoundsUseTheSnapshotDiagnostic()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest" time="0.0"/>
+  <testcase name="computesInclusiveDimensionsAndContainment()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest" time="0.001"/>
+  <testcase name="extremeCoordinatesFailAsOversizedWithoutOverflowing()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

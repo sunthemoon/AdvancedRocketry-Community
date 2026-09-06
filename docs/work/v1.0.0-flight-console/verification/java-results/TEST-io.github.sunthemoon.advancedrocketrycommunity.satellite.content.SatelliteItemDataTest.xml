@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T16:57:21" hostname="DESKTOP-8J2KSNF" time="0.004">
+  <properties/>
+  <testcase name="malformedAndOversizedPayloadsFailClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest" time="0.002"/>
+  <testcase name="futureSchemaIsPreservedAndFailsClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest" time="0.0"/>
+  <testcase name="blankAndBoundItemsDecodeWithoutImplicitMutation()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

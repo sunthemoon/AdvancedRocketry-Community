@@ -1,0 +1,86 @@
+test_bootstrap_or_unrecognized_status_keeps_mutable_validation (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_bootstrap_or_unrecognized_status_keeps_mutable_validation) ... ok
+test_explicit_selected_commit_still_takes_precedence (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_explicit_selected_commit_still_takes_precedence) ... ok
+test_historical_dispatch_cannot_prepare_an_approval_digest (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_historical_dispatch_cannot_prepare_an_approval_digest) ... 
+  test_historical_dispatch_cannot_prepare_an_approval_digest (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_historical_dispatch_cannot_prepare_an_approval_digest) (mode='--prepare-approval-digest') ... ERROR
+  test_historical_dispatch_cannot_prepare_an_approval_digest (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_historical_dispatch_cannot_prepare_an_approval_digest) (mode='--diagnostic-pending-digest') ... FAIL
+test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) ... 
+  test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v1.0.0') ... FAIL
+  test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v1.1.0') ... FAIL
+  test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v2.0.0') ... FAIL
+  test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v12.42.1') ... FAIL
+test_require_approved_review_still_rejects_pending_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_require_approved_review_still_rejects_pending_history) ... ERROR
+
+======================================================================
+ERROR: test_historical_dispatch_cannot_prepare_an_approval_digest (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_historical_dispatch_cannot_prepare_an_approval_digest) (mode='--prepare-approval-digest')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 51, in test_historical_dispatch_cannot_prepare_an_approval_digest
+    code, _, historical, mutable = self.run_dispatch("v1.0.0", (mode,))
+                                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 22, in run_dispatch
+    code = validator.main(["--repository-root", str(root), *extra])
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\validate_bootstrap_provenance.py", line 3687, in main
+    details["review_status"] == APPROVED_RECORD_STATUS
+    ~~~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'review_status'
+
+======================================================================
+ERROR: test_require_approved_review_still_rejects_pending_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_require_approved_review_still_rejects_pending_history)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 67, in test_require_approved_review_still_rejects_pending_history
+    code = validator.main(["--repository-root", str(root), "--require-approved-review"])
+  File "D:\GitHub\AdvancedRocketry-Community\scripts\validate_bootstrap_provenance.py", line 3680, in main
+    errors, details = validate_bootstrap_provenance(
+    ^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 0)
+
+======================================================================
+FAIL: test_historical_dispatch_cannot_prepare_an_approval_digest (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_historical_dispatch_cannot_prepare_an_approval_digest) (mode='--diagnostic-pending-digest')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 52, in test_historical_dispatch_cannot_prepare_an_approval_digest
+    self.assertEqual(2, code)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v1.0.0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 30, in test_later_minor_and_major_versions_use_the_same_accepted_history
+    self.assertIsNone(mutable)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+AssertionError: call(repository_root=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/tmp1hc3r7pg'), manifest_path=WindowsPath('docs/provenance/v0.0.2-bootstrap-inputs.json')) is not None
+
+======================================================================
+FAIL: test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v1.1.0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 30, in test_later_minor_and_major_versions_use_the_same_accepted_history
+    self.assertIsNone(mutable)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+AssertionError: call(repository_root=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/tmprvgbrk11'), manifest_path=WindowsPath('docs/provenance/v0.0.2-bootstrap-inputs.json')) is not None
+
+======================================================================
+FAIL: test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v2.0.0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 30, in test_later_minor_and_major_versions_use_the_same_accepted_history
+    self.assertIsNone(mutable)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+AssertionError: call(repository_root=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/tmp89jn74uo'), manifest_path=WindowsPath('docs/provenance/v0.0.2-bootstrap-inputs.json')) is not None
+
+======================================================================
+FAIL: test_later_minor_and_major_versions_use_the_same_accepted_history (tests.test_bootstrap_version_dispatch.BootstrapVersionDispatchTests.test_later_minor_and_major_versions_use_the_same_accepted_history) (version='v12.42.1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_bootstrap_version_dispatch.py", line 30, in test_later_minor_and_major_versions_use_the_same_accepted_history
+    self.assertIsNone(mutable)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+AssertionError: call(repository_root=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/tmpic0eiukw'), manifest_path=WindowsPath('docs/provenance/v0.0.2-bootstrap-inputs.json')) is not None
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.090s
+
+FAILED (failures=5, errors=2)

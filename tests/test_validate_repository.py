@@ -2331,8 +2331,8 @@ class WorkflowStructureTests(unittest.TestCase):
             ),
             (
                 "satellite-acceptance",
-                "          name: v090-core-47.4.10-${{ env.REVIEW_COMMIT }}\n",
-                "          name: v090-core-47.4.10-${{ github.sha }}\n",
+                "          name: core-47.4.10-${{ env.REVIEW_COMMIT }}\n",
+                "          name: core-47.4.10-${{ github.sha }}\n",
                 "satellite-acceptance exact head-bound artifact upload",
             ),
         )
@@ -2635,7 +2635,7 @@ class WorkflowStructureTests(unittest.TestCase):
             ),
             (
                 "satellite-acceptance",
-                "    name: v0.9.0 packaged core regression gate",
+                "    name: Packaged core regression gate",
                 "enabled blocking satellite-acceptance job",
             ),
         )

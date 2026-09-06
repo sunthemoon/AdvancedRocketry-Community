@@ -1,0 +1,118 @@
+{
+  "actions": [
+    {
+      "at": "2026-09-05T17:39:51.838683+00:00",
+      "request": {
+        "id": 1,
+        "op": "focus"
+      },
+      "result": {
+        "focused": true
+      }
+    },
+    {
+      "at": "2026-09-05T17:39:51.921925+00:00",
+      "request": {
+        "id": 2,
+        "key": 114,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T17:39:52.597038+00:00",
+      "request": {
+        "id": 3,
+        "name": "01-world-debug",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 160191,
+        "client_size": [
+          960,
+          540
+        ],
+        "file": "01-world-debug.png",
+        "sha256": "8bbcf070bcda520089f0eae4de23b97bb65268b4e4c3dd0049e8ffdaa582fd80",
+        "source": "native Minecraft F2 screenshot"
+      }
+    },
+    {
+      "at": "2026-09-05T17:39:52.679756+00:00",
+      "request": {
+        "id": 4,
+        "key": 114,
+        "op": "key"
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T17:39:52.874279+00:00",
+      "request": {
+        "id": 5,
+        "op": "click",
+        "right": true,
+        "x": 480,
+        "y": 270
+      },
+      "result": {}
+    },
+    {
+      "at": "2026-09-05T17:39:53.184970+00:00",
+      "request": {
+        "id": 6,
+        "name": "02-console-open",
+        "op": "screenshot"
+      },
+      "result": {
+        "bytes": 143278,
+        "client_size": [
+          960,
+          540
+        ],
+        "file": "02-console-open.png",
+        "sha256": "053c6d550b53d869ab33157b18a6e82fc663ba4bbe1894e746e1005fbbc2c8fb",
+        "source": "native Minecraft F2 screenshot"
+      }
+    }
+  ],
+  "artifact_sha256": "fb8539b600da54da3f4e5453af07e285e7dec1c17ace12f1e52153137be71e04",
+  "authentication_tested": false,
+  "client_pid": 23512,
+  "entity": "00cc34e8-99d4-4881-bd36-76c564c2f5f4",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "port": 62021,
+  "processes": [],
+  "screenshots": [
+    {
+      "bytes": 160191,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "01-world-debug.png",
+      "sha256": "8bbcf070bcda520089f0eae4de23b97bb65268b4e4c3dd0049e8ffdaa582fd80",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 143278,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "02-console-open.png",
+      "sha256": "053c6d550b53d869ab33157b18a6e82fc663ba4bbe1894e746e1005fbbc2c8fb",
+      "source": "native Minecraft F2 screenshot"
+    }
+  ],
+  "server_pid": 26444,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T17:39:07.307101+00:00",
+  "stations": [
+    "6283a6ae-ff15-4e02-8085-1d677b11970c",
+    "68f9268b-e709-4e50-baf2-15663a8fbd9c"
+  ],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 2427746
+}

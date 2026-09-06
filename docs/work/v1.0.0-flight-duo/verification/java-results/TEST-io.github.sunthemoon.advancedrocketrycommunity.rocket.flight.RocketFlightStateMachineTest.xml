@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-05T18:02:03" hostname="DESKTOP-8J2KSNF" time="0.002">
+  <properties/>
+  <testcase name="countdownCancellationAndRecoverableFailureHaveNarrowExits()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest" time="0.0"/>
+  <testcase name="stableNetworkIdsRoundTripAndUnknownIdsFail()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest" time="0.0"/>
+  <testcase name="everyUnlistedTransitionIsRejectedWithoutChangingState()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest" time="0.001"/>
+  <testcase name="onlyStationarySafeStatesCanDisassemble()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest" time="0.0"/>
+  <testcase name="completeEarthMoonStateSequenceIsExplicit()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

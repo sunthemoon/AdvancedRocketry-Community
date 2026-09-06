@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-05T20:22:55" hostname="DESKTOP-8J2KSNF" time="0.008">
+  <properties/>
+  <testcase name="sealedRoomCompletesIncrementallyWithinEveryStepBudget()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest" time="0.004"/>
+  <testcase name="oversizedSpaceRetainsOnlyTheConfiguredMaximum()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest" time="0.001"/>
+  <testcase name="cancellationAndBudgetsAreStrict()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest" time="0.0"/>
+  <testcase name="explicitOpenBoundaryStopsTheScan()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest" time="0.0"/>
+  <testcase name="unloadedCellSuspendsWithoutGrowingAndCanResume()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

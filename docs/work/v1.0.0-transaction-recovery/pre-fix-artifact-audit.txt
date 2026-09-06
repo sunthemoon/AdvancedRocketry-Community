@@ -1,0 +1,1 @@
+[FAIL] Artifact filename must be advancedrocketry-community-1.20.1-1.0.0-dev.jar, got pre-fix-dev.jar

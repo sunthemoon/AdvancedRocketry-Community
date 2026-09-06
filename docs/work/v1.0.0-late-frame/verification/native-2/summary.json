@@ -1,0 +1,42 @@
+{
+  "artifact_sha256": "46cb577653981a50638ff3d2bc32d0407dc4adaa5d7092fe73e65ae82bcd229c",
+  "authentication_tested": false,
+  "checks": [],
+  "cleanup_errors": [],
+  "client_exit_code": 0,
+  "client_native_logs": [
+    {
+      "bytes": 14035,
+      "file": "client-latest.log",
+      "sha256": "0fa7b83948e2a63f215b923cd2d56d5ed54ba41b240130b9bc6dce15b03da80e"
+    },
+    {
+      "bytes": 94009,
+      "file": "client-debug.log",
+      "sha256": "6461993b2a6ce58e14e56e18bd4edd123a657d8878f429f01044b13993d31b59"
+    }
+  ],
+  "client_pid": 5288,
+  "completed_at": "2026-09-05T19:53:54.717541+00:00",
+  "debug_port": 56056,
+  "port": 56055,
+  "probe_exit_code": 1,
+  "probe_pid": 9256,
+  "screenshots": [],
+  "server_exit_code": 0,
+  "server_native_logs": [
+    {
+      "bytes": 14030,
+      "file": "server-latest.log",
+      "sha256": "4d79d0ec8d79c4587900c47afe0297c1a26e0d8d6de1a7c89c59cc1562ebe89d"
+    },
+    {
+      "bytes": 99123,
+      "file": "server-debug.log",
+      "sha256": "85f8c2ee933645d22217e11ee88c1b9ec862765976c27e4a7de6dbd724ba79fe"
+    }
+  ],
+  "server_pid": 20612,
+  "started_at": "2026-09-05T19:53:13.545261+00:00",
+  "status": "FAIL"
+}

@@ -1,0 +1,12 @@
+CAPTURE_ARMED
+CAPTURE packet=52 menu=81 container=1 rocket=179
+HELD_SENTINEL captured-envelope=true destination=MOON quotes=111,222,333 packet=7031
+READY_COMMANDS
+PASS reject-closed thread=Render thread
+STATE menu=7073 container=2 rocket=179 plan=instance of io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightPlanSnapshot(id=7074) quotes=instance of io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes(id=7075)
+PASS reject-reopened thread=Render thread
+STATE menu=7073 container=2 rocket=179 plan=instance of io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightPlanSnapshot(id=7074) quotes=instance of io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes(id=7075)
+PASS reject-wrong-rocket thread=Render thread
+STATE menu=7073 container=2 rocket=179 plan=instance of io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightPlanSnapshot(id=7074) quotes=instance of io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes(id=7075)
+PASS positive thread=Render thread
+PASS reject-no-player thread=Render thread

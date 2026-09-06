@@ -1,0 +1,64 @@
+{
+  "jobs": [
+    {
+      "job": "baseline",
+      "started_at": "2026-09-05T15:38:03Z",
+      "completed_at": "2026-09-05T16:11:29Z",
+      "commands": 36,
+      "retained_failures": [
+        "Require a clean DataGen worktree",
+        "Reject untracked DataGen outputs"
+      ],
+      "java_suites": 70,
+      "java": {
+        "tests": 362,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "game_tests": 44,
+      "packaged_reports": 8,
+      "upload_inventory_files": 283,
+      "jar_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+    },
+    {
+      "job": "satellite-acceptance",
+      "started_at": "2026-09-05T16:11:29Z",
+      "completed_at": "2026-09-05T16:20:30Z",
+      "commands": 8,
+      "retained_failures": [],
+      "java_suites": 70,
+      "java": {
+        "tests": 362,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "game_tests": 0,
+      "packaged_reports": 3,
+      "upload_inventory_files": 214,
+      "jar_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+    },
+    {
+      "job": "latest-compatibility",
+      "started_at": "2026-09-05T16:20:30Z",
+      "completed_at": "2026-09-05T16:22:16Z",
+      "commands": 5,
+      "retained_failures": [],
+      "java_suites": 70,
+      "java": {
+        "tests": 362,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "game_tests": 44,
+      "packaged_reports": 0,
+      "upload_inventory_files": 186,
+      "jar_sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+    }
+  ],
+  "packaged_processes": 38,
+  "source_inputs": 726,
+  "python_unique_cases": 812
+}

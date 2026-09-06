@@ -1,0 +1,809 @@
+test_canonical_crlf_and_leading_property_whitespace (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_canonical_crlf_and_leading_property_whitespace) ... ok
+test_cli_manifest_and_environment_agree (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_cli_manifest_and_environment_agree) ... ok
+test_cli_rejects_missing_environment_or_overlapping_files (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_cli_rejects_missing_environment_or_overlapping_files) ... ok
+test_exact_names_and_input_digest (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_exact_names_and_input_digest) ... ok
+test_invalid_input_does_not_write_either_output (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_invalid_input_does_not_write_either_output) ... ok
+test_rejects_ambiguous_or_unsafe_properties (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_rejects_ambiguous_or_unsafe_properties) ... ok
+test_rejects_oversized_or_invalid_utf8_input (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_rejects_oversized_or_invalid_utf8_input) ... ok
+test_repository_properties_are_supported (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_repository_properties_are_supported) ... ok
+test_unrelated_values_are_not_exported (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_unrelated_values_are_not_exported) ... ok
+test_version_transition_changes_all_outputs (tests.test_ci_artifact_identity.ArtifactIdentityTests.test_version_transition_changes_all_outputs) ... ok
+test_all_forge_jobs_resolve_and_audit_the_configured_artifact (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_all_forge_jobs_resolve_and_audit_the_configured_artifact) ... ok
+test_consumer_before_identity_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_consumer_before_identity_is_rejected) ... FAIL
+test_historical_release_checks_remain_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_historical_release_checks_remain_required) ... FAIL
+test_latest_upload_is_head_bound_and_audit_cannot_be_disabled (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_latest_upload_is_head_bound_and_audit_cannot_be_disabled) ... FAIL
+test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) ... 
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        if: false\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        if: ${{ inputs.resolve }}\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        continue-on-error: true\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "build/env.txt"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --properties historical.properties --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        if: false\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        if: ${{ inputs.resolve }}\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        continue-on-error: true\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "build/env.txt"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --properties historical.properties --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        if: false\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        if: ${{ inputs.resolve }}\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        continue-on-error: true\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "build/env.txt"\n\n') ... FAIL
+  test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --properties historical.properties --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n') ... FAIL
+test_no_clean_step_can_delete_the_identity_manifest (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_no_clean_step_can_delete_the_identity_manifest) ... FAIL
+test_producer_before_clean_build_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_producer_before_clean_build_is_rejected) ... ok
+test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) ... 
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='build/libs/*.jar') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='1.20.1-0.9.0-beta.1') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='${ARCE_ARTIFACT}') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='${ARCE_BUILD_VERSION}') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='build/libs/*.jar') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='1.20.1-0.9.0-beta.1') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='${ARCE_ARTIFACT}') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='${ARCE_BUILD_VERSION}') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='build/libs/*.jar') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='1.20.1-0.9.0-beta.1') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='${ARCE_ARTIFACT}') ... FAIL
+  test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='${ARCE_BUILD_VERSION}') ... FAIL
+test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) ... 
+  test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='baseline', addition='      - name: Override identity\n        run: echo test\n        env:\n          ARCE_ARTIFACT: historical.jar\n\n') ... FAIL
+  test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='baseline', addition='      - name: Override identity\n        run: echo ARCE_ARTIFACT=historical.jar >> $GITHUB_ENV\n\n') ... FAIL
+  test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='satellite-acceptance', addition='      - name: Override identity\n        run: echo test\n        env:\n          ARCE_ARTIFACT: historical.jar\n\n') ... FAIL
+  test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='satellite-acceptance', addition='      - name: Override identity\n        run: echo ARCE_ARTIFACT=historical.jar >> $GITHUB_ENV\n\n') ... FAIL
+  test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='latest-compatibility', addition='      - name: Override identity\n        run: echo test\n        env:\n          ARCE_ARTIFACT: historical.jar\n\n') ... FAIL
+  test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='latest-compatibility', addition='      - name: Override identity\n        run: echo ARCE_ARTIFACT=historical.jar >> $GITHUB_ENV\n\n') ... FAIL
+test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) ... 
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='            build/libs/*.jar\n') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='        if: success()\n') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='            build/libs/*.jar\n') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='        if: success()\n') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='            build/libs/*.jar\n') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='') ... FAIL
+  test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='        if: success()\n') ... FAIL
+test_command_text_in_step_name_is_not_treated_as_run (tests.test_validate_repository.WorkflowStructureTests.test_command_text_in_step_name_is_not_treated_as_run) ... ok
+test_commented_validator_command_does_not_satisfy_requirement (tests.test_validate_repository.WorkflowStructureTests.test_commented_validator_command_does_not_satisfy_requirement) ... ok
+test_current_workflows_have_required_enabled_steps (tests.test_validate_repository.WorkflowStructureTests.test_current_workflows_have_required_enabled_steps) ... ok
+test_disabled_forge_provenance_step_is_rejected (tests.test_validate_repository.WorkflowStructureTests.test_disabled_forge_provenance_step_is_rejected) ... ok
+test_dynamic_continue_on_error_rejects_required_job (tests.test_validate_repository.WorkflowStructureTests.test_dynamic_continue_on_error_rejects_required_job) ... ok
+test_dynamic_continue_on_error_rejects_required_step (tests.test_validate_repository.WorkflowStructureTests.test_dynamic_continue_on_error_rejects_required_step) ... ok
+test_false_continue_on_error_keeps_required_step_blocking (tests.test_validate_repository.WorkflowStructureTests.test_false_continue_on_error_keeps_required_step_blocking) ... ok
+test_final_g0_review_input_sequence_rejects_an_extra_command (tests.test_validate_repository.WorkflowStructureTests.test_final_g0_review_input_sequence_rejects_an_extra_command) ... ok
+test_final_g0_review_input_sequence_requires_python_isolation (tests.test_validate_repository.WorkflowStructureTests.test_final_g0_review_input_sequence_requires_python_isolation) ... ok
+test_forge_artifact_identity_is_exact_head_bound (tests.test_validate_repository.WorkflowStructureTests.test_forge_artifact_identity_is_exact_head_bound) ... ok
+test_forge_jobs_bind_checkout_to_review_commit (tests.test_validate_repository.WorkflowStructureTests.test_forge_jobs_bind_checkout_to_review_commit) ... ok
+test_forge_jobs_bind_exact_review_commit_environments (tests.test_validate_repository.WorkflowStructureTests.test_forge_jobs_bind_exact_review_commit_environments) ... ok
+test_g0_review_packet_sequence_rejects_an_extra_command (tests.test_validate_repository.WorkflowStructureTests.test_g0_review_packet_sequence_rejects_an_extra_command) ... ok
+test_g0_review_packet_sequence_requires_python_isolation (tests.test_validate_repository.WorkflowStructureTests.test_g0_review_packet_sequence_requires_python_isolation) ... ok
+test_if_false_validator_step_does_not_satisfy_requirement (tests.test_validate_repository.WorkflowStructureTests.test_if_false_validator_step_does_not_satisfy_requirement) ... ok
+test_latest_advisory_job_still_requires_blocking_build_step (tests.test_validate_repository.WorkflowStructureTests.test_latest_advisory_job_still_requires_blocking_build_step) ... ok
+test_pre_colon_whitespace_cannot_hide_job_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_pre_colon_whitespace_cannot_hide_job_continue_on_error) ... ok
+test_pre_colon_whitespace_cannot_hide_step_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_pre_colon_whitespace_cannot_hide_step_continue_on_error) ... ok
+test_quoted_key_cannot_hide_job_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_quoted_key_cannot_hide_job_continue_on_error) ... ok
+test_quoted_key_cannot_hide_step_continue_on_error (tests.test_validate_repository.WorkflowStructureTests.test_quoted_key_cannot_hide_step_continue_on_error) ... ok
+test_repository_workflow_action_contract_mutations_are_rejected (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_action_contract_mutations_are_rejected) ... ok
+test_repository_workflow_binds_review_inputs_to_head_or_push_commit (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_binds_review_inputs_to_head_or_push_commit) ... ok
+test_repository_workflow_permissions_are_read_only (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_permissions_are_read_only) ... ok
+test_repository_workflow_rejects_additional_upload_inputs (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_rejects_additional_upload_inputs) ... ok
+test_repository_workflow_rejects_an_additional_upload_step (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_rejects_an_additional_upload_step) ... ok
+test_repository_workflow_rejects_missing_checkout_ref (tests.test_validate_repository.WorkflowStructureTests.test_repository_workflow_rejects_missing_checkout_ref) ... ok
+test_retired_final_g0_review_input_commands_are_rejected (tests.test_validate_repository.WorkflowStructureTests.test_retired_final_g0_review_input_commands_are_rejected) ... ok
+test_retired_g0_review_packet_commands_are_rejected (tests.test_validate_repository.WorkflowStructureTests.test_retired_g0_review_packet_commands_are_rejected) ... ok
+test_truthy_continue_on_error_rejects_baseline_job (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_baseline_job) ... ok
+test_truthy_continue_on_error_rejects_baseline_step (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_baseline_step) ... ok
+test_truthy_continue_on_error_rejects_required_job (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_required_job) ... ok
+test_truthy_continue_on_error_rejects_required_step (tests.test_validate_repository.WorkflowStructureTests.test_truthy_continue_on_error_rejects_required_step) ... ok
+test_unsupported_escaped_step_key_is_rejected_conservatively (tests.test_validate_repository.WorkflowStructureTests.test_unsupported_escaped_step_key_is_rejected_conservatively) ... ok
+
+======================================================================
+FAIL: test_consumer_before_identity_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_consumer_before_identity_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 196, in test_consumer_before_identity_is_rejected
+    without = self.mutate_job(job, self.PRODUCER, "")
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_historical_release_checks_remain_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_historical_release_checks_remain_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 255, in test_historical_release_checks_remain_required
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job("baseline", command, "echo skipped")))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: 'python scripts/validate_v040_release_evidence.py --require-approved' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_latest_upload_is_head_bound_and_audit_cannot_be_disabled (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_latest_upload_is_head_bound_and_audit_cannot_be_disabled)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 240, in test_latest_upload_is_head_bound_and_audit_cannot_be_disabled
+    self.mutate_job("latest-compatibility", "forge-47.4.23-${{ env.REVIEW_COMMIT }}",
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    "forge-47.4.23-${{ github.sha }}")))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: 'forge-47.4.23-${{ env.REVIEW_COMMIT }}' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        if: false\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        if: ${{ inputs.resolve }}\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        continue-on-error: true\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "build/env.txt"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='baseline', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --properties historical.properties --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        if: false\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        if: ${{ inputs.resolve }}\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        continue-on-error: true\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "build/env.txt"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='satellite-acceptance', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --properties historical.properties --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        if: false\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        if: ${{ inputs.resolve }}\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        continue-on-error: true\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "build/env.txt"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_missing_disabled_duplicate_or_changed_producer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_missing_disabled_duplicate_or_changed_producer_is_rejected) (job='latest-compatibility', replacement='      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --properties historical.properties --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 182, in test_missing_disabled_duplicate_or_changed_producer_is_rejected
+    errors = validate_forge_workflow_text(self.mutate_job(job, self.PRODUCER, replacement))
+                                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_no_clean_step_can_delete_the_identity_manifest (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_no_clean_step_can_delete_the_identity_manifest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 250, in test_no_clean_step_can_delete_the_identity_manifest
+    self.mutate_job(job, self.PRODUCER, changed)))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='build/libs/*.jar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='1.20.1-0.9.0-beta.1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_BUILD_VERSION}"' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='${ARCE_ARTIFACT}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='baseline', replacement='${ARCE_BUILD_VERSION}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_BUILD_VERSION}"' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='build/libs/*.jar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='1.20.1-0.9.0-beta.1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_BUILD_VERSION}"' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='${ARCE_ARTIFACT}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='satellite-acceptance', replacement='${ARCE_BUILD_VERSION}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_BUILD_VERSION}"' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='build/libs/*.jar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='1.20.1-0.9.0-beta.1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_BUILD_VERSION}"' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='${ARCE_ARTIFACT}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_ARTIFACT}"' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_stale_or_wildcard_artifact_and_version_consumers_are_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_stale_or_wildcard_artifact_and_version_consumers_are_rejected) (job='latest-compatibility', replacement='${ARCE_BUILD_VERSION}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 224, in test_stale_or_wildcard_artifact_and_version_consumers_are_rejected
+    self.assertTrue(validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '"${ARCE_BUILD_VERSION}"' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='baseline', addition='      - name: Override identity\n        run: echo test\n        env:\n          ARCE_ARTIFACT: historical.jar\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 211, in test_step_environment_override_or_extra_writer_is_rejected
+    self.mutate_job(job, self.PRODUCER, self.PRODUCER + addition))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='baseline', addition='      - name: Override identity\n        run: echo ARCE_ARTIFACT=historical.jar >> $GITHUB_ENV\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 211, in test_step_environment_override_or_extra_writer_is_rejected
+    self.mutate_job(job, self.PRODUCER, self.PRODUCER + addition))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='satellite-acceptance', addition='      - name: Override identity\n        run: echo test\n        env:\n          ARCE_ARTIFACT: historical.jar\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 211, in test_step_environment_override_or_extra_writer_is_rejected
+    self.mutate_job(job, self.PRODUCER, self.PRODUCER + addition))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='satellite-acceptance', addition='      - name: Override identity\n        run: echo ARCE_ARTIFACT=historical.jar >> $GITHUB_ENV\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 211, in test_step_environment_override_or_extra_writer_is_rejected
+    self.mutate_job(job, self.PRODUCER, self.PRODUCER + addition))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='latest-compatibility', addition='      - name: Override identity\n        run: echo test\n        env:\n          ARCE_ARTIFACT: historical.jar\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 211, in test_step_environment_override_or_extra_writer_is_rejected
+    self.mutate_job(job, self.PRODUCER, self.PRODUCER + addition))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_step_environment_override_or_extra_writer_is_rejected (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_step_environment_override_or_extra_writer_is_rejected) (job='latest-compatibility', addition='      - name: Override identity\n        run: echo ARCE_ARTIFACT=historical.jar >> $GITHUB_ENV\n\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 211, in test_step_environment_override_or_extra_writer_is_rejected
+    self.mutate_job(job, self.PRODUCER, self.PRODUCER + addition))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '      - name: Resolve built artifact identity\n        run: >-\n          python scripts/ci_artifact_identity.py\n          --manifest build/release-evidence/build-identity.json\n          --github-env "${GITHUB_ENV}"\n\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='            build/libs/*.jar\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            ${{ env.ARCE_ARTIFACT }}\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            build/release-evidence/build-identity.json\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            build/test-results/test/\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='baseline', replacement='        if: success()\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '        if: always()\n' not found in '    name: Forge 47.4.10 baseline'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='            build/libs/*.jar\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            ${{ env.ARCE_ARTIFACT }}\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            build/release-evidence/build-identity.json\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            build/test-results/test/\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='satellite-acceptance', replacement='        if: success()\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '        if: always()\n' not found in '    name: Packaged core regression gate'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='            build/libs/*.jar\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            ${{ env.ARCE_ARTIFACT }}\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            build/release-evidence/build-identity.json\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '            build/test-results/test/\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+======================================================================
+FAIL: test_upload_identity_reports_and_unconditional_execution_are_required (tests.test_ci_artifact_identity.ArtifactWorkflowTests.test_upload_identity_reports_and_unconditional_execution_are_required) (job='latest-compatibility', replacement='        if: success()\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 236, in test_upload_identity_reports_and_unconditional_execution_are_required
+    validate_forge_workflow_text(self.mutate_job(job, old, new)))
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\GitHub\AdvancedRocketry-Community\tests\test_ci_artifact_identity.py", line 158, in mutate_job
+    self.assertIn(old, job)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: '        if: always()\n' not found in '    name: Forge 47.4.23 compatibility (advisory)'
+
+----------------------------------------------------------------------
+Ran 53 tests in 1.350s
+
+FAILED (failures=58)

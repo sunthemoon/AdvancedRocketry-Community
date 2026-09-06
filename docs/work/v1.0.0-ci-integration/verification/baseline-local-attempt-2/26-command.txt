@@ -1,0 +1,1831 @@
+diff --git a/.github/workflows/forge-bootstrap.yml b/.github/workflows/forge-bootstrap.yml
+index 7478f41..58b6c63 100644
+--- a/.github/workflows/forge-bootstrap.yml
++++ b/.github/workflows/forge-bootstrap.yml
+@@ -48,15 +48,21 @@ jobs:
+       - name: Build and run unit tests
+         run: ./gradlew clean build --no-daemon --stacktrace
+ 
++      - name: Resolve built artifact identity
++        run: >-
++          python scripts/ci_artifact_identity.py
++          --manifest build/release-evidence/build-identity.json
++          --github-env "${GITHUB_ENV}"
++
+       - name: Validate bootstrap provenance allowlist
+         run: python scripts/validate_bootstrap_provenance.py
+ 
+-      - name: Audit v0.9.0 Beta distributable JAR
++      - name: Audit the current distributable JAR
+         run: >-
+           python scripts/validate_build_artifact.py
+-          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+-          --expected-version 1.20.1-0.9.0-beta.1
+-          --content-manifest build/release-evidence/v090-jar-content-manifest.json
++          "${ARCE_ARTIFACT}"
++          --expected-version "${ARCE_BUILD_VERSION}"
++          --content-manifest build/release-evidence/jar-content-manifest.json
+ 
+       - name: Validate frozen v0.1.0 resources
+         run: python scripts/validate_v010_asset_baseline.py
+@@ -130,13 +136,13 @@ jobs:
+       - name: Run packaged dedicated-server smoke test
+         run: >-
+           python scripts/run_dedicated_server_smoke.py
+-          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+-          --expected-mod-version 1.20.1-0.9.0-beta.1
++          "${ARCE_ARTIFACT}"
++          --expected-mod-version "${ARCE_BUILD_VERSION}"
+           --session-dir build/dedicated-server-smoke/session
+           --evidence-dir build/dedicated-server-smoke/evidence
+           --port 25585
+ 
+-      - name: Run packaged Alpha-to-Beta migration and restart smoke test
++      - name: Run packaged schema-1 migration and restart regression
+         run: >-
+           python scripts/run_v090_migration_server_smoke.py
+           build/dedicated-server-smoke/session
+@@ -144,9 +150,9 @@ jobs:
+           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v090-migration-server-smoke/evidence
+           --tested-commit ${REVIEW_COMMIT}
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+-      - name: Kill and recover one durable Beta flight checkpoint
++      - name: Kill and recover one durable flight checkpoint
+         run: >-
+           python scripts/run_v090_forced_stop_recovery.py
+           build/v090-migration-server-smoke/session
+@@ -155,7 +161,7 @@ jobs:
+           --migration-summary build/v090-migration-server-smoke/evidence/summary.json
+           --evidence-dir build/v090-forced-stop/evidence
+           --tested-commit ${REVIEW_COMMIT}
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Run packaged Electrolyzer restart smoke test
+         run: >-
+@@ -163,7 +169,7 @@ jobs:
+           build/v090-migration-server-smoke/session
+           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v020-machine-server-smoke/evidence
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Run packaged celestial restart and reload smoke test
+         run: >-
+@@ -171,7 +177,7 @@ jobs:
+           build/v090-migration-server-smoke/session
+           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v030-celestial-server-smoke/evidence
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Run packaged atmosphere restart and five-minute smoke test
+         run: >-
+@@ -179,7 +185,7 @@ jobs:
+           build/v090-migration-server-smoke/session
+           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v040-atmosphere-server-smoke/evidence
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Run packaged rocket assembly and recovery smoke test
+         run: >-
+@@ -187,7 +193,7 @@ jobs:
+           build/v090-migration-server-smoke/session
+           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v050-rocket-server-smoke/evidence
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Run packaged Earth-Moon flight and restart matrix
+         run: >-
+@@ -195,7 +201,7 @@ jobs:
+           build/v090-migration-server-smoke/session
+           --baseline-summary build/dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v060-flight-server-smoke/evidence
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Upload baseline JAR and test reports
+         if: always()
+@@ -204,14 +210,22 @@ jobs:
+           name: forge-47.4.10-${{ env.REVIEW_COMMIT }}
+           if-no-files-found: error
+           path: |
+-            build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+-            build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1-sources.jar
++            ${{ env.ARCE_ARTIFACT }}
++            ${{ env.ARCE_SOURCES }}
+             build/reports/tests/test/
+             build/test-results/test/
+-            build/release-evidence/v090-jar-content-manifest.json
++            build/gametest/logs/
++            build/release-evidence/build-identity.json
++            build/release-evidence/jar-content-manifest.json
+             build/dedicated-server-smoke/evidence/
++            build/dedicated-server-smoke/session/*-full.txt
++            build/dedicated-server-smoke/session/logs/
+             build/v090-migration-server-smoke/evidence/
++            build/v090-migration-server-smoke/session/*-full.txt
++            build/v090-migration-server-smoke/session/logs/
+             build/v090-forced-stop/evidence/
++            build/v090-forced-stop/session/*-full.txt
++            build/v090-forced-stop/session/logs/
+             build/v020-machine-server-smoke/evidence/
+             build/v030-celestial-server-smoke/evidence/
+             build/v040-atmosphere-server-smoke/evidence/
+@@ -219,7 +233,7 @@ jobs:
+             build/v060-flight-server-smoke/evidence/
+ 
+   satellite-acceptance:
+-    name: v0.9.0 packaged core regression gate
++    name: Packaged core regression gate
+     runs-on: ubuntu-latest
+     timeout-minutes: 20
+     env:
+@@ -249,24 +263,30 @@ jobs:
+       - name: Enable Gradle wrapper execution
+         run: chmod +x ./gradlew
+ 
+-      - name: Build the exact Beta candidate
++      - name: Build the checked-out core
+         run: ./gradlew clean build --no-daemon --stacktrace
+ 
+-      - name: Audit the Beta candidate
++      - name: Resolve built artifact identity
++        run: >-
++          python scripts/ci_artifact_identity.py
++          --manifest build/release-evidence/build-identity.json
++          --github-env "${GITHUB_ENV}"
++
++      - name: Audit the current distributable JAR
+         run: >-
+           python scripts/validate_build_artifact.py
+-          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+-          --expected-version 1.20.1-0.9.0-beta.1
+-          --content-manifest build/release-evidence/v090-core-jar-content-manifest.json
++          "${ARCE_ARTIFACT}"
++          --expected-version "${ARCE_BUILD_VERSION}"
++          --content-manifest build/release-evidence/core-jar-content-manifest.json
+ 
+-      - name: Validate committed candidate evidence
++      - name: Validate accepted historical Beta release evidence
+         run: python scripts/validate_v090_release_evidence.py --require-approved
+ 
+       - name: Start and restart the packaged baseline
+         run: >-
+           python scripts/run_dedicated_server_smoke.py
+-          build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+-          --expected-mod-version 1.20.1-0.9.0-beta.1
++          "${ARCE_ARTIFACT}"
++          --expected-mod-version "${ARCE_BUILD_VERSION}"
+           --session-dir build/v090-dedicated-server-smoke/session
+           --evidence-dir build/v090-dedicated-server-smoke/evidence
+           --port 25595
+@@ -277,7 +297,7 @@ jobs:
+           build/v090-dedicated-server-smoke/session
+           --baseline-summary build/v090-dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v090-station-server-smoke/evidence
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+       - name: Run packaged satellite restart and stress smoke test
+         run: >-
+@@ -286,18 +306,23 @@ jobs:
+           --baseline-summary build/v090-dedicated-server-smoke/evidence/summary.json
+           --evidence-dir build/v090-satellite-server-smoke/evidence
+           --tested-commit ${REVIEW_COMMIT}
+-          --expected-version 1.20.1-0.9.0-beta.1
++          --expected-version "${ARCE_BUILD_VERSION}"
+ 
+-      - name: Upload Beta core regression evidence
++      - name: Upload current core regression evidence
+         if: always()
+         uses: actions/upload-artifact@v7
+         with:
+-          name: v090-core-47.4.10-${{ env.REVIEW_COMMIT }}
++          name: core-47.4.10-${{ env.REVIEW_COMMIT }}
+           if-no-files-found: error
+           path: |
+-            build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar
+-            build/release-evidence/v090-core-jar-content-manifest.json
++            ${{ env.ARCE_ARTIFACT }}
++            build/reports/tests/test/
++            build/test-results/test/
++            build/release-evidence/build-identity.json
++            build/release-evidence/core-jar-content-manifest.json
+             build/v090-dedicated-server-smoke/evidence/
++            build/v090-dedicated-server-smoke/session/*-full.txt
++            build/v090-dedicated-server-smoke/session/logs/
+             build/v090-station-server-smoke/evidence/
+             build/v090-satellite-server-smoke/evidence/
+ 
+@@ -326,11 +351,44 @@ jobs:
+       - name: Set up Gradle
+         uses: gradle/actions/setup-gradle@v6
+ 
++      - name: Set up Python 3.12
++        uses: actions/setup-python@v7
++        with:
++          python-version: "3.12"
++
+       - name: Enable Gradle wrapper execution
+         run: chmod +x ./gradlew
+ 
+       - name: Compile and test against latest Forge lane
+         run: ./gradlew clean build --no-daemon --stacktrace
+ 
++      - name: Resolve built artifact identity
++        run: >-
++          python scripts/ci_artifact_identity.py
++          --manifest build/release-evidence/build-identity.json
++          --github-env "${GITHUB_ENV}"
++
++      - name: Audit the latest-lane distributable JAR
++        run: >-
++          python scripts/validate_build_artifact.py
++          "${ARCE_ARTIFACT}"
++          --expected-version "${ARCE_BUILD_VERSION}"
++          --content-manifest build/release-evidence/jar-content-manifest.json
++
+       - name: Run GameTests against latest Forge lane
+         run: ./gradlew runGameTestServer --no-daemon --stacktrace
++
++      - name: Upload latest-lane JAR and test reports
++        if: always()
++        uses: actions/upload-artifact@v7
++        with:
++          name: forge-47.4.23-${{ env.REVIEW_COMMIT }}
++          if-no-files-found: error
++          path: |
++            ${{ env.ARCE_ARTIFACT }}
++            ${{ env.ARCE_SOURCES }}
++            build/reports/tests/test/
++            build/test-results/test/
++            build/gametest/logs/
++            build/release-evidence/build-identity.json
++            build/release-evidence/jar-content-manifest.json
+diff --git a/.github/workflows/repository-docs.yml b/.github/workflows/repository-docs.yml
+index 8aff075..0e07866 100644
+--- a/.github/workflows/repository-docs.yml
++++ b/.github/workflows/repository-docs.yml
+@@ -33,6 +33,13 @@ jobs:
+       - name: Validate bootstrap provenance allowlist
+         run: python scripts/validate_bootstrap_provenance.py
+ 
++      - name: Validate v1.0-v2.0 planning integration
++        run: |
++          python scripts/validate_v1plus_planning.py
++          bash -n scripts/check-debian12-dev-host.sh
++          bash -n scripts/tmux-arce-layout.sh
++          bash -n scripts/start-xvfb-visual-smoke.sh
++
+       - name: Check out exact Advanced Rocketry 1.12 audit source
+         run: |
+           git clone --filter=blob:none --no-checkout https://github.com/Advanced-Rocketry/AdvancedRocketry.git build/upstream/AdvancedRocketry
+diff --git a/AGENTS.md b/AGENTS.md
+index cc41501..2e6855e 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -21,6 +21,11 @@
+ 6. `docs/05-MASTER-TEST-PLAN.md`
+ 7. `docs/06-RELEASE-AND-ACCEPTANCE-GATES.md`
+ 
++v1.0+ 任务额外读取 `docs/16-POST-1.0-VERSION-ROADMAP.md` 和
++`docs/17-V1PLUS-QUALITY-BUDGETS.md`。涉及并行任务时读取
++`docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md`；涉及远程
++Linux 或视觉验证时读取 `docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md`。
++
+ 若任务涉及上游文件，额外读取：
+ 
+ - `UPSTREAM.md`
+@@ -195,3 +200,21 @@ docs/releases/
+ ```
+ 
+ Codex 不得自行把版本标记为通过；只能生成证据并建议人工确认。
++
++## 8. v1.0+ 与并行执行
++
++- `v1.0.0` 是功能冻结的 Stable Core MVP；目的地/BodyContext 扩展属于
++  `v1.1.0`，机器/多方块内核属于 `v1.2.0`，不得混入稳定化任务。
++- 后续计划见 `docs/16-POST-1.0-VERSION-ROADMAP.md` 和各版本文档。
++  规划、只读研究和测试设计不等于功能实现；独立 worktree 不豁免第 3.1 节。
++- 同一版本的独立写入任务使用独立 worktree，声明互不重叠的 `write_scope`。
++  公共契约先冻结；中央注册、协议、构建和状态文件由集成者独占。
++- 实现者只更新自身任务记录；独立审核者审查实际 diff 并复跑关键测试。
++  版本 `status` 沿用主路线枚举，契约/集成阶段另记 `phase`。
++- v1.0 起新增公开/持久化 ID 必须稳定命名并有明确迁移策略。
++- Xvfb/LLVMpipe 只算 `V0` 视觉冒烟，不能放行真实 GPU Gate。
++  客户端可见变化需要 `V1` 报告，多人变化需要至少两个真实客户端的 `V2` 证据。
++- 远程 Linux 开发不得以 root 运行 Codex、Gradle 或 Minecraft；不得为不可信
++  公共 PR 安装带长期凭据的高权限常驻 self-hosted runner。
++- tmux 只负责进程连续性；Git、任务记录、日志和 fixtures 才是恢复依据。
++- 以上规则不改写历史 Gate，也不延长已批准 ADR 的到期豁免。
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index e48aed9..7826890 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -4,6 +4,21 @@ This file records player- and operator-visible changes. The project is an
+ unofficial community rewrite and is not supported by the original Advanced
+ Rocketry maintainers.
+ 
++## v1.0.0 — in development
++
++**Status:** `IN_PROGRESS`; development identity `1.20.1-1.0.0-dev`.
++No stable artifact or release approval exists yet.
++
++- Freeze the accepted Beta gameplay; preserve schema 2, its existing format
++  epoch, stable IDs and network authority boundaries.
++- Add populated five-root persistence regression coverage for lossless loads,
++  migration backups, partial-commit rollback, malformed/future data rejection,
++  ownership and mission/research replay protection.
++- Defer interrupted assembly/disassembly recovery until the origin's persisted
++  entities have loaded, preventing restored blocks from coexisting with a
++  late-loading rocket. Existing save formats and chunk-ticket policy are unchanged.
++- Plan `1.0.x` as a compatible maintenance line, with feature expansion in v1.1+.
++
+ ## v0.9.0 — PASSED Beta 1 pre-release
+ 
+ **Status:** `PASSED` by repository owner `sunthemoon` on 2026-09-03. PR #13
+diff --git a/DOCUMENT-INDEX.md b/DOCUMENT-INDEX.md
+index 1579c7c..0fcb7e5 100644
+--- a/DOCUMENT-INDEX.md
++++ b/DOCUMENT-INDEX.md
+@@ -7,7 +7,7 @@
+ | `PROJECT-CONFIG.md` | 唯一项目变量和人工决策入口 |
+ | `AGENTS.md` | Codex 的长期工程约束、Gate 和输出格式 |
+ | `00-READ-ME-FIRST.md` | 人工启动顺序 |
+-| `MASTER-EXECUTION-PLAN.md` | 完整单文件开发计划；分文件与当前 ADR/状态冲突时以后者为准 |
++| `MASTER-EXECUTION-PLAN.md` | v0.x–v1.0 初始单文件快照；后续规划以分文件、ADR/状态为准 |
+ | `codex-prompts/00-initialize-repository.md` | 第一次执行，只完成 v0.0.1 |
+ 
+ ## 产品与总体方案
+@@ -17,9 +17,14 @@
+ | `PRODUCT.md` | 产品是什么、v1.0 核心体验、非目标 |
+ | `docs/01-PORTING-PRINCIPLES.md` | 为什么重写、如何使用旧代码/资产 |
+ | `docs/03-TARGET-ARCHITECTURE.md` | 1.20.1 包结构和系统拆分 |
+-| `docs/04-VERSION-ROADMAP.md` | 12 个版本里程碑和强制顺序 |
++| `docs/04-VERSION-ROADMAP.md` | v0.0.1–v2.0.0 里程碑和集成/验收顺序 |
+ | `docs/PORTING_MATRIX.md` | 旧系统到新模块/版本/测试的映射 |
+ | `docs/11-RISK-REGISTER.md` | 核心风险、触发与缓解 |
++| [并行与 worktree](docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md) | 任务 DAG、所有权、契约与独立审核 |
++| [远程 Linux 开发](docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md) | Debian 12、tmux、专服、V0/V1/V2 证据边界 |
++| [v1.0 后路线](docs/16-POST-1.0-VERSION-ROADMAP.md) | 扩展内核到 v2.0 经典功能对等 |
++| [v1.0+ 质量预算](docs/17-V1PLUS-QUALITY-BUDGETS.md) | 缺陷、性能、迁移、扫描/网络与视觉门槛 |
++| [外部技术来源](docs/18-V1PLUS-SOURCES.md) | 工具与远程流程参考；不是资产授权 |
+ 
+ ## 上游和资产
+ 
+@@ -58,6 +63,9 @@
+ | `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` | 人工测试用例 |
+ | `docs/templates/PERFORMANCE-REPORT-TEMPLATE.md` | 性能报告 |
+ | `docs/templates/RELEASE-EVIDENCE-TEMPLATE.md` | 每版最终证据 |
++| [v1.0+ 发布证据模板](docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md) | 扩展版本契约、迁移和 G0–G9 |
++| [远程运行报告](docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md) | 实测主机、负载、退出码和采样 |
++| [视觉验证报告](docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md) | 候选、GPU、场景和真实多人 |
+ | `docs/releases/v0.0.2/` | Forge bootstrap 的自动、人工、产物和风险证据 |
+ | `docs/releases/v0.0.2/INSTALLATION.md` | 未发布开发预览的环境、客户端/服务端安装和存档边界 |
+ | `docs/releases/v0.1.0/` | 资产/注册基线的来源、构建、客户端、专服和人工验收证据 |
+@@ -108,6 +116,9 @@
+ | `docs/work/v0.8.0-implementation-log.md` | 研究、卫星任务、双客户端、压力与验收任务树 |
+ | `docs/work/v0.9.0-implementation-log.md` | Beta 迁移、兼容、安全、soak 与发布任务树 |
+ | `docs/work/v0.9.0-feature-freeze.md` | v0.9.0 功能冻结范围与所有者批准记录 |
++| [v1.0 实施记录](docs/work/v1.0.0-implementation-log.md) | 文档整合、决策、实跑验证和剩余 Gate |
++| [v1plus 整合验证](docs/work/v1.0.0-planning-integration/VERIFICATION.md) | 本地检查结果、原始日志与发布验收边界 |
++| [v1plus 输入来源](docs/provenance/v1.0.0-v1plus-planning.md) | 用户提供规划包的来源、哈希和整合边界 |
+ 
+ ## 分版本执行文件
+ 
+@@ -124,6 +135,16 @@ docs/versions/V0.7.0-SPACE-STATION.md
+ docs/versions/V0.8.0-PROGRESSION-SATELLITES.md
+ docs/versions/V0.9.0-BETA-HARDENING.md
+ docs/versions/V1.0.0-COMMUNITY-MVP.md
++docs/versions/V1.1.0-EXPANSION-KERNEL.md
++docs/versions/V1.2.0-MACHINE-MULTIBLOCK-KERNEL.md
++docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md
++docs/versions/V1.4.0-PLANETARY-EXPANSION.md
++docs/versions/V1.5.0-ORBITAL-STATION-WARP.md
++docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md
++docs/versions/V1.7.0-ENDGAME-SYSTEMS.md
++docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md
++docs/versions/V1.9.0-PARITY-BETA-HARDENING.md
++docs/versions/V2.0.0-CLASSIC-FEATURE-PARITY.md
+ ```
+ 
+ 每个版本都包含：
+@@ -151,6 +172,17 @@ Codex 报告格式
+ | `codex-prompts/02-implement-next-version.md` | 实现当前未通过版本 |
+ | `codex-prompts/03-audit-current-version.md` | 使用独立会话做怀疑式审核 |
+ | `codex-prompts/04-release-gate.md` | 只跑 Gate 和证据，不扩功能 |
++| [v1.0 发布验证](codex-prompts/05-v1.0-release-validation.md) | 功能冻结与最终候选验证 |
++| [v1.1+ 任务实施](codex-prompts/06-implement-post-1.0-version.md) | 一个有范围/契约的任务包 |
++| [v1.1+ 独立审核](codex-prompts/07-audit-post-1.0-version.md) | 独立复跑、findings 与人工批准前审核 |
++| [Linux 环境审计](codex-prompts/08-remote-linux-environment-audit.md) | 只读检查，不自动安装或改变服务器 |
++
++## 开发辅助脚本
++
++- [Debian 节点检查](scripts/check-debian12-dev-host.sh)：诊断报告，不安装软件或执行 wrapper。
++- [tmux 布局](scripts/tmux-arce-layout.sh)：检查目录后创建/附着工作会话。
++- [软件视觉冒烟](scripts/start-xvfb-visual-smoke.sh)：私有 X display 与 loopback VNC；不放行真实 GPU Gate。
++- [规划一致性校验](scripts/validate_v1plus_planning.py)：版本清单、Gate、入口、链接与来源覆盖。
+ 
+ ## 决策记录
+ 
+diff --git a/MASTER-EXECUTION-PLAN.md b/MASTER-EXECUTION-PLAN.md
+index b034a6a..a032201 100644
+--- a/MASTER-EXECUTION-PLAN.md
++++ b/MASTER-EXECUTION-PLAN.md
+@@ -6,7 +6,9 @@
+ >
+ > **目标：** Minecraft 1.20.1 / Forge / Java 17，采用分版本 Gate 驱动的社区重写。
+ >
+-> **状态：** 规划与执行规约；不包含实际 Forge 模组源码。
++> **状态：** v0.x–v1.0 初始规划快照，不是现有源码或最新版本状态。
++> v1.0–v2.0 的更新以 [主路线](docs/04-VERSION-ROADMAP.md)、
++> [后续路线](docs/16-POST-1.0-VERSION-ROADMAP.md)和[分版本文档](DOCUMENT-INDEX.md)为准。
+ 
+ ## 使用规则
+ 
+diff --git a/PRODUCT.md b/PRODUCT.md
+index ab821a0..04d0da7 100644
+--- a/PRODUCT.md
++++ b/PRODUCT.md
+@@ -36,7 +36,8 @@ Minecraft 1.12.2 到 1.20.1 跨越了注册、维度、世界数据、网络、B
+ 
+ ## 首版不追求的内容
+ 
+-以下内容不进入核心闭环，默认推迟到 `v1.x`：
++以下内容不进入 v1.0 核心闭环；部分按后续版本恢复，其余保持研究或非目标，
++不表示承诺全部实现：
+ 
+ - 任意运行时动态创建新维度；
+ - 完整旧科技树和全部机器；
+@@ -94,3 +95,11 @@ Minecraft 1.12.2 到 1.20.1 跨越了注册、维度、世界数据、网络、B
+ | `v0.8.0` | 基础研究与卫星闭环成立 |
+ | `v0.9.0` | Beta 稳定性、性能和兼容性达标 |
+ | `v1.0.0` | 社区 MVP 正式发布 |
++| `v1.1.0–v1.3.0` | 旅行、机器/多方块、公共 API 扩展内核 |
++| `v1.4.0–v1.8.0` | 多天体、轨道跃迁、资源任务、终局与经典内容恢复 |
++| `v1.9.0` | 功能对等 Beta 稳定化 |
++| `v2.0.0` | 经典功能对等稳定版 |
++
++完整安排见 [v1.0 后路线](docs/16-POST-1.0-VERSION-ROADMAP.md)。
++“功能对等”依据逐项玩家行为和现代重设计验收，不是复刻旧结构、旧漏洞、
++二进制兼容或直接加载 1.12.2 世界。规划未通过 Gate 前不属于已交付能力。
+diff --git a/README.md b/README.md
+index 3646aea..8580970 100644
+--- a/README.md
++++ b/README.md
+@@ -8,10 +8,9 @@
+ 
+ ## Status
+ 
+-**The v0.9.0 Beta 1 pre-release is available for Forge 1.20.1. The authoritative
+-build and acceptance state is recorded in
+-[`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md). This is not a stable
+-v1.0 release.**
++**v1.0.0 Stable Core is in development (`1.0.0-dev`), not yet a stable release.
++The latest published build remains v0.9.0 Beta 1. Development and acceptance
++status are recorded in [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md).**
+ 
+ Current target:
+ 
+@@ -32,6 +31,13 @@ See
+ and [`docs/status/GATE_STATUS.md`](docs/status/GATE_STATUS.md) for the exact
+ candidate and acceptance record.
+ 
++v1.0 freezes the existing gameplay and focuses on world upgrades, interrupted
++transactions, compatibility and performance. Test development builds only on
++copies of backed-up worlds. The planned `1.0.x` maintenance line is limited to
++compatible defect, security and migration fixes; expansion work starts in
++v1.1. Current checks and remaining acceptance work are listed in the
++[v1.0 implementation log](docs/work/v1.0.0-implementation-log.md).
++
+ ## What this project is
+ 
+ Advanced Rocketry: Community Edition aims to rebuild the core Advanced Rocketry experience on a maintainable Forge 1.20.1 foundation:
+@@ -40,7 +46,7 @@ Advanced Rocketry: Community Edition aims to rebuild the core Advanced Rocketry
+ - Earth, Moon, and space travel;
+ - vacuum and life support;
+ - basic space stations;
+-- later, research and satellites;
++- basic research and satellites;
+ - server-authoritative multiplayer behavior;
+ - versioned save data and automated tests.
+ 
+@@ -74,6 +80,16 @@ The first stable release is complete only when a player can:
+ | `v0.8.0` | Progression and satellites |
+ | `v0.9.0` | Beta hardening |
+ | `v1.0.0` | Stable community MVP |
++| `v1.1.0–v1.3.0` | Travel, machine/multiblock, and public API expansion kernels |
++| `v1.4.0–v1.8.0` | Planetary, orbital, mission, endgame, and classic content expansion |
++| `v1.9.0` | Feature-parity Beta hardening |
++| `v2.0.0` | Classic feature parity stable |
++
++These are plans, not shipped features. v1.0 stabilizes the existing core;
++classic feature parity is the v2.0 target, not a promise of 1.12.2 save or
++binary compatibility. See the
++[post-1.0 roadmap](docs/16-POST-1.0-VERSION-ROADMAP.md) and
++[version plans](DOCUMENT-INDEX.md).
+ 
+ ## Attribution
+ 
+@@ -94,17 +110,36 @@ A feature is not complete until its required automated, dedicated-server, persis
+ 
+ ## Support policy
+ 
+-Before a public Beta is published:
++The published Beta's runtime, world-upgrade, optional-mod, server-scale and
++report scope is defined in [the Beta support policy](docs/BETA-SUPPORT-POLICY.md).
++Development builds are not stable releases:
+ 
+-- test worlds may be reset;
+-- APIs may change;
+-- binary releases may be withheld;
+-- unsupported mod combinations are not investigated unless a minimal reproduction is provided.
++- use copies of backed-up worlds for `1.0.0-dev` testing;
++- the intended v1.0 upgrade source is the accepted `v0.9.0-beta.1` world format;
++  representative-world acceptance is still in progress;
++- direct 1.12.2 world loading and downgrading an upgraded world are unsupported;
++- provide a minimal reproduction for combinations outside the tested Forge/JEI matrix.
+ 
+ Security-sensitive duplication, arbitrary chunk loading, packet abuse, or save corruption reports should follow [`SECURITY.md`](SECURITY.md).
+ 
+-The v0.9.x runtime, save-upgrade, optional-mod, server-scale, and report scope
+-is defined in [`docs/BETA-SUPPORT-POLICY.md`](docs/BETA-SUPPORT-POLICY.md).
++## Install the published Beta
++
++1. Use Java 17 and a Minecraft 1.20.1 instance with Forge `47.4.10`.
++   Forge `47.4.23` is the separately tested compatibility lane.
++2. Download the main mod JAR from the [Beta release](https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1).
++   Put it in the instance's `mods` directory; do not install the `-sources.jar`.
++3. For multiplayer, use the same Community Edition version on the server and
++   every client. JEI is optional on clients; the tested version is `15.56.0.205`.
++   It is not needed on the dedicated server.
++4. Back up the complete world before upgrading. Follow the supported source
++   versions and recovery instructions in the Beta support policy. Keep the
++   backup separate; restoring it is the supported rollback, not opening an
++   upgraded world with an older mod.
++5. Start the instance and check that **Advanced Rocketry: Community Edition**
++   appears in the mod list. Report problems with the exact mod/Forge/Java
++   versions, relevant logs and reproduction steps using the repository issues.
++
++The unpublished `1.0.0-dev` build is not the download offered by these steps.
+ 
+ ## License
+ 
+diff --git a/THIRD-PARTY-NOTICES.md b/THIRD-PARTY-NOTICES.md
+index b4bb040..6651a43 100644
+--- a/THIRD-PARTY-NOTICES.md
++++ b/THIRD-PARTY-NOTICES.md
+@@ -56,7 +56,7 @@ Recorded modification dates:
+ | `.gitattributes` | 2026-08-26, 2026-08-27, 2026-08-30 |
+ | `.gitignore` | 2026-08-26, 2026-08-30 |
+ | `build.gradle` | 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03 |
+-| `gradle.properties` | 2026-08-26, 2026-08-30, 2026-09-03 |
++| `gradle.properties` | 2026-08-26, 2026-08-30, 2026-09-03, 2026-09-05 |
+ | `settings.gradle` | 2026-08-26, 2026-08-30 |
+ | `gradle/wrapper/gradle-wrapper.properties` | 2026-08-26, 2026-08-30 |
+ | `src/main/resources/pack.mcmeta` | 2026-08-26, 2026-08-30 |
+diff --git a/codex-prompts/02-implement-next-version.md b/codex-prompts/02-implement-next-version.md
+index e1bea11..c7cd41b 100644
+--- a/codex-prompts/02-implement-next-version.md
++++ b/codex-prompts/02-implement-next-version.md
+@@ -14,6 +14,11 @@ Read:
+ 
+ Implement only that version, or one reviewable PR slice of it.
+ 
++If task packages are enabled, read the parallel-work policy and claim only one
++READY task with satisfied dependencies and a non-overlapping write_scope.
++Use its worktree and task records rather than implementing the whole version.
++For v1.0+, also read the post-1.0 roadmap and quality budgets.
++
+ Before coding:
+ 
+ - inspect the repository and existing implementation;
+diff --git a/docs/04-VERSION-ROADMAP.md b/docs/04-VERSION-ROADMAP.md
+index 5d880f7..7a24364 100644
+--- a/docs/04-VERSION-ROADMAP.md
++++ b/docs/04-VERSION-ROADMAP.md
+@@ -33,6 +33,10 @@ v1.0.0
+ | Playable alpha | `v0.6.0–v0.8.0` | 可测试核心玩法 |
+ | Beta | `v0.9.0` | 稳定性和兼容性 |
+ | Stable MVP | `v1.0.0` | 正式社区版 |
++| Expansion kernels | `v1.1.0–v1.3.0` | 旅行、机器和公共 API 扩展基础 |
++| Classic content | `v1.4.0–v1.8.0` | 多天体、轨道、任务与经典内容恢复 |
++| Parity Beta | `v1.9.0` | 完整内容稳定化 |
++| Classic feature parity | `v2.0.0` | 经典功能对等稳定版 |
+ 
+ ## 3. 里程碑总览
+ 
+@@ -49,7 +53,21 @@ v1.0.0
+ | `v0.7.0` | 共享空间维度中的基础空间站 | Ownership / Region allocation / Reload |
+ | `v0.8.0` | 基础研究、数据卫星、离线任务 | No forced chunks / Persistence |
+ | `v0.9.0` | Beta 稳定化、性能、兼容和迁移 | Soak / Compatibility / No critical bugs |
+-| `v1.0.0` | 文档、发布、稳定存档承诺 | All release gates |
++| `v1.0.0` | Stable Core MVP：功能冻结、真实多人/GPU、迁移恢复、可重现发布 | G0–G9 |
++| `v1.1.0` | Expansion Kernel：TravelTarget、数据路线、BodyContext | G0–G9；旧世界升级、多轨道定位 |
++| `v1.2.0` | Machine & Multiblock Kernel：过程、端口、三种代表机器 | G0–G9；资源守恒、旋转/卸载/重启 |
++| `v1.3.0` | Public API & Compatibility：适配器、扩展契约、测试模组 | G0–G9；API 边界与第三方恢复 |
++| `v1.4.0` | Planetary Expansion：多天体、环境、星图和天空 | G0–G9；数据重载、多 GPU |
++| `v1.5.0` | Orbital / Station / Warp：多轨道、多恒星、跃迁事务 | G0–G9；权限、阶段恢复 |
++| `v1.6.0` | Satellites / Resource Missions：卫星、小行星和气体任务 | G0–G9；500 任务、幂等奖励 |
++| `v1.7.0` | Endgame Systems：轨道激光、黑洞、重力、空间电梯 | G0–G9；逐系统威胁模型与预算 |
++| `v1.8.0` | Classic Content Completion：机器、资产、科技树和矩阵 | G0–G9；来源批次与内容可达性 |
++| `v1.9.0` | Feature-Parity Beta：迁移链、模组包、8–12 小时压力 | G0–G9；真实多人、多 GPU、无未决对等项 |
++| `v2.0.0` | Classic Feature Parity Stable：功能对等与稳定支持 | G0–G9；完整对等矩阵和可重现发布 |
++
++v1.0 是稳定核心，不表示完整旧版移植。详细依赖与对等判定见
++[`16-POST-1.0-VERSION-ROADMAP.md`](16-POST-1.0-VERSION-ROADMAP.md)，
++全部版本文件见[文档索引](../DOCUMENT-INDEX.md)。加入规划不会推进版本状态。
+ 
+ ## 4. 强制顺序
+ 
+@@ -77,10 +95,18 @@ v0.8.0
+ v0.9.0
+   ↓
+ v1.0.0
++  ↓
++v1.1.0 → v1.2.0 → v1.3.0 → v1.4.0 → v1.5.0
++  → v1.6.0 → v1.7.0 → v1.8.0 → v1.9.0 → v2.0.0
+ ```
+ 
+ 允许同一版本拆多个 PR，但不允许后续系统在前置 Gate 未通过时成为主线功能。
+ 
++版本顺序是集成和验收顺序，同一版本的独立任务可以并行。后续版本的只读
++研究和测试设计可以提前；功能实现仍遵守 AGENTS 的当前版本限制。
++worktree、写入所有权和独立审核见
++[`14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md`](14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md)。
++
+ ## 5. 版本状态
+ 
+ 每个版本只能处于：
+diff --git a/docs/05-MASTER-TEST-PLAN.md b/docs/05-MASTER-TEST-PLAN.md
+index e69c877..8275050 100644
+--- a/docs/05-MASTER-TEST-PLAN.md
++++ b/docs/05-MASTER-TEST-PLAN.md
+@@ -305,6 +305,10 @@ Gate 规则：
+ 
+ ## 14. 测试证据不可伪造
+ 
++v1.0 起还适用 [质量预算](17-V1PLUS-QUALITY-BUDGETS.md)和具体版本的
++真实 GPU、双真实客户端、迁移恢复与压力场景。Linux 软件渲染只计 `V0`
++补充冒烟，不能替代 `V1/V2`；历史视觉豁免按 ADR 到期，不自动继承。
++
+ 不接受：
+ 
+ - 未实际运行却填写 PASS；
+diff --git a/docs/06-RELEASE-AND-ACCEPTANCE-GATES.md b/docs/06-RELEASE-AND-ACCEPTANCE-GATES.md
+index f9570be..7f618a8 100644
+--- a/docs/06-RELEASE-AND-ACCEPTANCE-GATES.md
++++ b/docs/06-RELEASE-AND-ACCEPTANCE-GATES.md
+@@ -187,3 +187,10 @@ ADR
+ 3. 只有 `PASSED` 才创建 tag/release。
+ 
+ 单人项目也应保留第二步，避免同一执行会话自证完成。
++
++v1.0+ 的新增预算与证据等级见
++[质量预算](17-V1PLUS-QUALITY-BUDGETS.md)。新增模板仍使用原有
++`MANUAL-TEST.md`、`PERFORMANCE.md`、`checksums.txt`、`GATE-STATUS.md`，
++专项报告作补充，不建立第二份矛盾的版本状态。
++批准前用候选 commit 复建；证据完整且人工批准后才创建版本 tag，随后
++核对 tag 重建和发布下载的同一制品。规划文件不能替代这一流程。
+diff --git a/docs/10-CODEX-EXECUTION-RUNBOOK.md b/docs/10-CODEX-EXECUTION-RUNBOOK.md
+index ca47b58..48d12bd 100644
+--- a/docs/10-CODEX-EXECUTION-RUNBOOK.md
++++ b/docs/10-CODEX-EXECUTION-RUNBOOK.md
+@@ -107,7 +107,8 @@ codex-prompts/04-release-gate.md
+ - 一次 Gate 审计；
+ - 一次发布准备。
+ 
+-会话结束前必须更新：
++单窗口会话结束前更新版本实施日志；只有集成者更新权威 Gate 状态。
++启用任务包时，实现者更新自己的 PROGRESS/HANDOFF，不共同修改中央状态：
+ 
+ ```text
+ docs/work/<version>-implementation-log.md
+@@ -133,6 +134,12 @@ git worktree add ../arce-v040 -b codex/v0.4.0-atmosphere
+ - 原版行为记录；
+ - 原创资产草案。
+ 
++同一版本的独立写入任务必须使用独立 worktree，遵守
++[并行规约](14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md)。
++v1.0 验证使用 `codex-prompts/05-v1.0-release-validation.md`；
++v1.1+ 的任务实施/独立审核分别使用第 06/07 号提示词。
++远程工作先审计环境，软件视觉冒烟不代替真实客户端 Gate。
++
+ ## 9. Codex 不得自行做的决定
+ 
+ - 更换许可证；
+diff --git a/docs/PORTING_MATRIX.md b/docs/PORTING_MATRIX.md
+index bd97821..31d6555 100644
+--- a/docs/PORTING_MATRIX.md
++++ b/docs/PORTING_MATRIX.md
+@@ -21,18 +21,18 @@
+ | 重力 | dimension/entity/event | 全局事件、兼容 | server attribute/effect service | `v0.3.0` | player/entity behavior | PASSED |
+ | 真空伤害 | atmosphere/armor/event | 装备同步 | life support service | `v0.4.0` | suit/no-suit tests | PASSED |
+ | 氧气设备 | atmosphere/tile | flood fill | budgeted atmosphere service | `v0.4.0` | sealed/open/perf | PASSED |
+-| 火箭扫描 | tile assembler/entity | 任意结构、LibVulpes storage | validator + snapshot | `v0.5.0` | limits and diagnostics | IN_PROGRESS |
+-| 火箭组装 | entity/tile | 删除/生成非事务 | assembly transaction | `v0.5.0` | rollback/no duplication | IN_PROGRESS |
+-| 火箭实体 | EntityRocket | 巨型类、渲染/业务混合 | thin entity + domain state | `v0.5.0` | same-dimension lifecycle | IN_PROGRESS |
+-| 火箭燃料 | entity/tile/item | 多系统耦合 | RocketFuelState + loaders | `v0.6.0` | consume exactly once | NOT_AUDITED |
+-| 目的地选择 | GUI/network/dimension | 客户端信任 | server-validated plan | `v0.6.0` | forged request rejected | NOT_AUDITED |
+-| 跨维度飞行 | EntityRocket/dimension | 玩家卡空中、双实体 | transfer journal | `v0.6.0` | restart matrix/20 trips | NOT_AUDITED |
+-| 降落/拆解 | entity/world storage | 方块/库存丢失 | landing + disassembly transaction | `v0.6.0` | exact restoration | NOT_AUDITED |
++| 火箭扫描 | tile assembler/entity | 任意结构、LibVulpes storage | validator + snapshot | `v0.5.0` | limits and diagnostics | PASSED |
++| 火箭组装 | entity/tile | 删除/生成非事务 | assembly transaction | `v0.5.0` | rollback/no duplication | PASSED |
++| 火箭实体 | EntityRocket | 巨型类、渲染/业务混合 | thin entity + domain state | `v0.5.0` | same-dimension lifecycle | PASSED |
++| 火箭燃料 | entity/tile/item | 多系统耦合 | RocketFuelState + loaders | `v0.6.0` | consume exactly once | PASSED |
++| 目的地选择 | GUI/network/dimension | 客户端信任 | server-validated plan | `v0.6.0` | forged request rejected | PASSED |
++| 跨维度飞行 | EntityRocket/dimension | 玩家卡空中、双实体 | transfer journal | `v0.6.0` | restart matrix/20 trips | PASSED |
++| 降落/拆解 | entity/world storage | 方块/库存丢失 | landing + disassembly transaction | `v0.6.0` | exact restoration | PASSED |
+ | 空间站 | stations/dimension | 每站维度/ID | shared regions + SavedData | `v0.7.0` | no overlap/ownership | PASSED |
+ | 站点重力/光照 | stations/client | 渲染/逻辑耦合 | profile/state separation | `v0.7.x+` | reload + visual | NOT_AUDITED |
+-| 研究数据 | unit/item/machine | 旧 GUI/数值 | progression service | `v0.8.0` | deterministic persistence | NOT_AUDITED |
+-| 卫星 | satellite/mission | chunk load、计时 | SavedData async mission | `v0.8.0` | no forced chunks | NOT_AUDITED |
+-| JEI | integration | API 版本 | optional compat | `v0.2.0+` | absent/present startup | NOT_AUDITED |
++| 研究数据 | unit/item/machine | 旧 GUI/数值 | progression service | `v0.8.0` | deterministic persistence | PASSED |
++| 卫星 | satellite/mission | chunk load、计时 | SavedData async mission | `v0.8.0` | no forced chunks | PASSED |
++| JEI | integration | API 版本 | optional compat | `v0.2.0+` | absent/present startup | PASSED |
+ | ASM/coremod | asm | 高风险、时代 API | 不迁移 | never unless ADR | no coremod | REJECTED |
+ | 旧世界直开 | backwardCompat/dimension | ID/格式跨度巨大 | 不属于 v1.0 | `v1.x` research | offline conversion only | DEFERRED |
+ | 跃迁/多星系 | stations/dimension | 动态天体复杂 | post-MVP | `v1.x` | future plan | DEFERRED |
+@@ -41,6 +41,13 @@
+ 
+ ## 使用规则
+ 
++v1.0 后的目标版本和最终对等分类见
++[后续路线](16-POST-1.0-VERSION-ROADMAP.md)。本表的实施状态不自动等于
++`PASSED_EQUIVALENT` 或 `PASSED_REDESIGNED`；对等审计必须保留证据和批准。
++2026-09-05 的[核心基线审计](work/v1.0.0-core-baseline-audit.md)将十条滞后的
++核心行与已有 v0.5/v0.6/v0.8/v0.9 人工接受记录、实现和测试对应。
++这些历史 `PASSED` 不表示 v1.0 已验收，也不扩展旧视觉豁免或经典内容范围。
++
+ - 完成上游审计后，把“主要位置”替换成准确类/资产路径；
+ - 每行必须最终指向自动测试和人工用例；
+ - 状态不能因“代码存在”直接从 PLANNED 跳到 PASSED；
+diff --git a/docs/provenance/README.md b/docs/provenance/README.md
+index 6af3a3f..0cb6cc8 100644
+--- a/docs/provenance/README.md
++++ b/docs/provenance/README.md
+@@ -6,6 +6,13 @@ Use `docs/templates/SOURCE-PROVENANCE-TEMPLATE.md`.
+ 
+ ## Recorded batches
+ 
++- [v1.0.0 Stable Core stabilization](v1.0.0-stable-core.md) records
++  community-authored tests, harnesses and metadata changes; review is pending.
++
++- [v1.0+ planning input](v1.0.0-v1plus-planning.md) records the user-supplied
++  development documentation package, its hashes and reference-only boundaries;
++  this is not an upstream asset import or release approval.
++
+ - [`v0.0.2-forge-mdk-and-gradle-wrapper.md`](v0.0.2-forge-mdk-and-gradle-wrapper.md)
+   records the official Forge MDK bootstrap inputs and Gradle Wrapper component.
+ - [`v0.1.0-minimal-content.json`](v0.1.0-minimal-content.json) records the
+diff --git a/docs/status/CURRENT_VERSION.md b/docs/status/CURRENT_VERSION.md
+index d71d9a3..0f5fee4 100644
+--- a/docs/status/CURRENT_VERSION.md
++++ b/docs/status/CURRENT_VERSION.md
+@@ -1,29 +1,22 @@
+ # CURRENT_VERSION
+ 
+ ```yaml
+-current_version: v0.9.0
+-status: PASSED
+-next_action: Begin v1.0.0 community MVP work from the accepted Beta baseline
+-last_updated: 2026-09-03
+-prerequisite_version: v0.8.0
++current_version: v1.0.0
++status: IN_PROGRESS
++next_action: Align current-artifact CI, investigate the retained handshake timeout and complete reference-load/client acceptance
++last_updated: 2026-09-05
++prerequisite_version: v0.9.0
+ prerequisite_status: PASSED
+-prerequisite_merge_commit: 8e39b1ef440306632cf101b5017e0bcb1f12eef5
+-work_branch: codex/v0.9.0-beta-hardening
+-base_commit: 0d59c01da458e13ed0014e98f91379c6f783e19d
+-build: 1.20.1-0.9.0-beta.1
+-tested_implementation_commit: f6cd77cebdb0a851cab76accbf66de565473b545
+-reviewed_head_commit: 7841dcc0d30b26a207ee221b0efbd1e25d459ed3
+-merge_commit: a7196ff9b22220c344071a1af69a663036f76aef
+-artifact_sha256: fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad
+-release_url: https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1
++prerequisite_merge_commit: a7196ff9b22220c344071a1af69a663036f76aef
++work_branch: codex/v1.0.0-stable-core
++base_commit: 34b2e99b48a33f4ba8905b6a69a38efee1649d3f
++build: 1.20.1-1.0.0-dev
++tested_implementation_commit: ""
++artifact_sha256: ""
+ ```
+ 
+-The immutable v0.8.0 acceptance, PR checks, merge identity, and exact
+-post-merge JAR reproduction are recorded in
+-[`../releases/v0.8.0/GATE-STATUS.md`](../releases/v0.8.0/GATE-STATUS.md).
+-The v0.9.0 feature freeze, support contract, and bounded G8 visual decision are
+-owner-approved. PR #13 and its merge commit passed all four checks; a clean
+-`main` build reproduced the accepted JAR and 758-entry manifest byte-for-byte.
+-The same download-verified artifact is available as GitHub pre-release
+-`v0.9.0-beta.1`. The next milestone is v1.0.0; this Beta does not claim stable
+-release status.
++The accepted Beta identity, approvals and published artifact remain immutable
++in [v0.9.0 GATE-STATUS](../releases/v0.9.0/GATE-STATUS.md). v1.0 stabilizes that
++core without implementing v1.1+ features. Development-tree checks are not a
++frozen release-candidate commit or stable approval. See the
++[implementation log](../work/v1.0.0-implementation-log.md).
+diff --git a/docs/status/GATE_STATUS.md b/docs/status/GATE_STATUS.md
+index 66a1756..526cba2 100644
+--- a/docs/status/GATE_STATUS.md
++++ b/docs/status/GATE_STATUS.md
+@@ -1,44 +1,38 @@
+ # GATE_STATUS
+ 
+ ```yaml
+-version: v0.9.0
+-status: PASSED
+-tested_implementation_commit: "f6cd77cebdb0a851cab76accbf66de565473b545"
+-reviewed_head_commit: "7841dcc0d30b26a207ee221b0efbd1e25d459ed3"
+-build: "1.20.1-0.9.0-beta.1"
+-branch: "codex/v0.9.0-beta-hardening"
+-base_commit: "0d59c01da458e13ed0014e98f91379c6f783e19d"
+-merge_commit: "a7196ff9b22220c344071a1af69a663036f76aef"
+-upstream_commit: "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
+-provenance_review: APPROVED
+-pull_request: "https://github.com/sunthemoon/AdvancedRocketry-Community/pull/13"
+-forge_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33738824242"
+-governance_ci: "https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/33738824130"
+-pull_request_checks: 4/4_PASS
+-accepted_exception: "docs/decisions/ADR-013-V090-VISUAL-EVIDENCE-INHERITANCE.md"
+-release_url: "https://github.com/sunthemoon/AdvancedRocketry-Community/releases/tag/v0.9.0-beta.1"
++version: v1.0.0
++status: IN_PROGRESS
++build: "1.20.1-1.0.0-dev"
++branch: "codex/v1.0.0-stable-core"
++base_commit: "34b2e99b48a33f4ba8905b6a69a38efee1649d3f"
++tested_implementation_commit: ""
++artifact_sha256: ""
++provenance_review: IN_PROGRESS
+ gates:
+-  G0: PASS
+-  G1: PASS
+-  G2: PASS
+-  G3: PASS
+-  G4: PASS
+-  G5: PASS
+-  G6: PASS
+-  G7: PASS
+-  G8: PASS
+-  G9: PASS
+-overall: PASSED
+-remaining_items: []
+-human_approved_by: "sunthemoon"
+-human_approved_at: "2026-09-03"
++  G0: IN_PROGRESS
++  G1: IN_PROGRESS
++  G2: IN_PROGRESS
++  G3: IN_PROGRESS
++  G4: IN_PROGRESS
++  G5: IN_PROGRESS
++  G6: IN_PROGRESS
++  G7: NOT_STARTED
++  G8: NOT_STARTED
++  G9: NOT_STARTED
++overall: IN_PROGRESS
++remaining_items:
++  - Candidate-bound automated and packaged lifecycle evidence
++  - Final-candidate Beta-world upgrade rerun and passenger recovery
++  - Current-artifact CI, retained handshake-timeout review and final-candidate compatibility
++  - Four-hour reference workload
++  - Fresh real-GPU and two-client gameplay acceptance
++  - Independent review, installation test and human release approval
++human_approved_by: ""
++human_approved_at: ""
+ ```
+ 
+-The immutable v0.8.0 Gate remains at
+-[`../releases/v0.8.0/GATE-STATUS.md`](../releases/v0.8.0/GATE-STATUS.md).
+-v0.9.0 passed G0-G9. PR #13 passed all four required checks and merged as
+-`a7196ff9b22220c344071a1af69a663036f76aef`; the merge tree equals reviewed
+-head `7841dcc0d30b26a207ee221b0efbd1e25d459ed3`. A cache-disabled clean `main`
+-build reproduced the accepted JAR and content manifest byte-for-byte, all four
+-merge checks passed, and the same verified JAR is published as Beta pre-release
+-`v0.9.0-beta.1`.
++No v1.0 Required Gate is approved by this development status update. The
++[accepted v0.9.0 Gate](../releases/v0.9.0/GATE-STATUS.md) is preserved separately;
++its version-limited visual exception is not extended. Test results and their
++scope are tracked in the [implementation log](../work/v1.0.0-implementation-log.md).
+diff --git a/docs/versions/V1.0.0-COMMUNITY-MVP.md b/docs/versions/V1.0.0-COMMUNITY-MVP.md
+index d994c5e..1115b04 100644
+--- a/docs/versions/V1.0.0-COMMUNITY-MVP.md
++++ b/docs/versions/V1.0.0-COMMUNITY-MVP.md
+@@ -1,103 +1,177 @@
+-# v1.0.0 — 社区 MVP 正式发布
++# v1.0.0 — Stable Core MVP 完整发布验证
++
++
++> 平台：Minecraft 1.20.1 / Forge / Java 17
++> 版本策略：实现、审核和人工批准分离
++> 适用规约：`AGENTS.md`、`docs/05-MASTER-TEST-PLAN.md`、`docs/06-RELEASE-AND-ACCEPTANCE-GATES.md`、`docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md`、`docs/17-V1PLUS-QUALITY-BUDGETS.md`
++
+ 
+ ## 1. 版本目标
+ 
+-发布具有明确稳定承诺、完整归属、可重复构建和核心闭环证据的第一个正式版本。
++在严格 Feature Freeze 下，把当前 `v0.9.0-beta.1` 的地月核心闭环收敛为可重复构建、可升级、可恢复、经过真实客户端和真实多人验证的第一个稳定版本。`v1.0.0` 不承担扩展内核重构。
+ 
+ ### 玩家可见结果
+ 
+-获得可在 Minecraft 1.20.1 Forge 小型/中型服务器使用的稳定社区版核心体验。
++- 从全新安装开始完成电解、供氧、造火箭、地月往返、空间站和基础卫星流程。
++- 服务器重启、玩家断线和关键事务中断后，核心资产与玩家状态可恢复。
++- 最近一次受支持 Beta 世界可安全升级到稳定版。
++- 玩家能在发布页清楚看到非官方身份、支持范围、已知限制和问题入口。
+ 
+ ## 2. 前置 Gate
+ 
+-- [ ] v0.9.0 PASSED
+-- [ ] 所有 v1.0 范围冻结
+-- [ ] 发布负责人完成人工 Gate 审核
++- [x] `v0.9.0` 在不可变的 `docs/releases/v0.9.0/GATE-STATUS.md` 中为 `PASSED`，候选 commit/JAR/证据可定位。
++- [x] `docs/PORTING_MATRIX.md` 已与真实实现对齐；十条历史核心行的批准和测试见 `docs/work/v1.0.0-core-baseline-audit.md`。
++- [x] Feature Freeze 已记录在 `docs/work/v1.0.0-implementation-log.md`：只允许稳定、测试、迁移、文档、可观测性和安全修复。
++- [ ] 指定发布负责人、独立审核者和至少一位未参与实现的安装测试者。
+ 
+-前置版本未 `PASSED` 时，本版本只能进行文档、测试设计或不产生主线依赖的审计工作。
++前置版本未 `PASSED` 时，本版本只允许只读审计、测试设计和数据样例，不提前实现功能。独立 worktree 不豁免 AGENTS 的版本范围限制。
+ 
+ ## 3. 本版范围
+ 
+-- 最终 README、安装、服务端、备份、配置、玩法和问题报告文档。
+-- 稳定版本号、changelog、Git tag、GitHub Release。
+-- JAR、sources（如发布）、checksums、LICENSE/NOTICE。
+-- v1.0 支持/存档兼容承诺。
+-- 最终 G0–G9 证据归档。
+-- 确认下载渠道和唯一 issue tracker。
+-- 发布后补丁流程。
++- 清理并冻结版本、manifest、mods.toml、README、CHANGELOG、NOTICE 和发布声明。
++- 补齐真实客户端、真实双人、真实 GPU 和候选版截图/录像证据。
++- 验证 `v0.9.0-beta.1 → v1.0.0` 的代表性存档迁移。
++- 验证火箭组装、拆解、跨维度事务的分阶段强制停止与恢复。
++- 验证 baseline Forge 与 compatibility lane，JEI 有/无组合。
++- 验证干净客户端、打包专服、全新世界和升级世界。
++- 完成发行制品可重现、hash、tag、Release 和 `1.0.x` 维护政策。
+ 
+ ## 4. 明确不做
+ 
+-- 不在 release commit 添加新功能。
+-- 不宣称与所有模组兼容。
+-- 不宣称原项目官方续作。
+-- 不承诺 1.12 世界兼容。
+-- 不同时发布 1.20.1 NeoForge/Fabric。
+-
+-任何“不做”项若确需提前，必须单独 ADR，并说明为什么不破坏当前版本收敛。
+-
+-## 5. 实施顺序
+-
+-1. 将版本改为 `1.20.1-1.0.0`，确认 manifest/mods.toml。
+-2. 生成最终 changelog：新增、已知限制、存档、依赖、升级路径。
+-3. 从干净 checkout 构建 release JAR。
+-4. 验证 JAR 内容、LICENSE/NOTICE/provenance。
+-5. 运行最终 full test + dedicated + manual smoke。
+-6. 生成 SHA-256。
+-7. 创建 signed/annotated tag（可用时）。
+-8. GitHub Release 不标 pre-release；附所有证据链接。
+-9. 更新 README 状态为 stable MVP，但保留非官方声明。
+-10. 建立 `1.0.x` bugfix policy 和下一个 `1.1` 路线，不在同一 release 中实现。
+-
+-Codex 应将这些步骤拆成小提交，不应在一个不可审查提交中同时完成模型、网络、渲染、资产和测试。
+-
+-## 6. 自动测试
+-
+-- [ ] 干净 checkout full build/test/runData/GameTest。
+-- [ ] baseline/latest lanes。
+-- [ ] release JAR content/provenance/checksum。
+-- [ ] 迁移 fixtures。
+-- [ ] 全量安全回归。
+-- [ ] 核心地月、站点、卫星自动套件。
+-- [ ] Git tag 与 JAR version 一致检查。
+-
+-所有打勾项必须有实际命令、日志或测试报告，不以代码存在代替运行结果。
+-
+-## 7. 人工/专服测试
+-
+-- [ ] 新建纯净客户端/专服安装。
+-- [ ] 新世界完整地月往返。
+-- [ ] 创建站点和基础卫星。
+-- [ ] 重启/重连。
+-- [ ] 从最近 Beta 存档升级。
+-- [ ] 核对 README 安装步骤由未参与开发者执行。
+-- [ ] 检查 release 页面第一屏非官方声明和 Known Issues。
+-
+-使用 `docs/templates/MANUAL-TEST-CASE-TEMPLATE.md` 记录构建 hash、步骤、预期、实际和证据。
+-
+-## 8. 通过确认
+-
+-版本只有全部满足下列条件，才可由人工标记 `PASSED`：
++- 不新增火星、金星、多恒星、跃迁或完整卫星种类。
++- 不把 `RocketDestination` 改为新扩展模型；留给 `v1.1`。
++- 不建立完整通用机器/多方块框架；留给 `v1.2`。
++- 不承诺直接加载 1.12.2 世界。
++- 不进行大规模目录重排或纯审美重构。
++- 不宣称“完整 Advanced Rocketry 移植”。
++
++任何非目标若要提前，必须单独 ADR，明确存档、网络、兼容、安全和回退影响。
++
++## 5. 本版待冻结契约
++
++- 现有地球、月球、空间维度和空间站行为作为 `v1.0` 兼容基线。
++- 保存 schema、火箭事务日志、空间站/卫星数据必须有已记录版本。
++- 客户端不决定燃料、目的地、权限、资源结果或事务提交。
++- `v1.0.x` 只接受兼容性、安全、迁移和缺陷修复，不引入破坏性玩法重构。
++
++契约冻结后，下游任务只能通过变更提案请求调整，不能在各自 worktree 中自行改变公共语义。
++
++## 6. 详细实施顺序
++
++1. 创建符合仓库命名规则的 v1.0.0 工作分支，记录 Feature Freeze 和候选基线。
++2. 更新 `PORTING_MATRIX`、PRODUCT、README、CURRENT_VERSION、Known Issues，使公开声明和代码一致。
++3. 创建包含运行中电解机、密闭房间、已加油火箭、月球火箭、空间站、卫星任务和研究状态的 `v0.9` 代表世界。
++4. 从世界副本执行迁移；比较迁移前后资源、实体、任务、权限和 schema。
++5. 对组装、拆解和跨维度事务的每个持久化阶段执行真实强制停止与恢复。
++6. 在经审计的 Debian 12 或等价节点运行全套 headless、打包专服和至少 4 小时参考负载 soak。
++7. 使用两个真实 Minecraft 客户端完成在线模式地月往返、乘客掉线/重连、空间站和卫星流程。
++8. 在真实 GPU 上测试 64/512/2048 方块火箭、GUI scale、天空、模型、粒子和缓存释放。
++9. 创建 `rc1`，禁止再合入非阻断修复；独立审核 G0–G9。
++10. 从干净候选 commit 重建制品，核对 SHA-256、JAR 内容、许可证和来源。
++11. 由未参与开发的人按 README 从零安装一次。
++12. 人工批准且 RELEASE-EVIDENCE 完整后创建不可变 tag，再从该 tag 重建并比较同一制品，发布正式 GitHub Release。
++
++## 7. 可并行工作流
++
++| 工作流 | 允许写入 | 依赖/说明 |
++|---|---|---|
++| Release/documentation | `README.md`, `CHANGELOG.md`, `docs/releases/v1.0.0/**` | 不修改运行时代码 |
++| Migration/recovery | `scripts/**`, `tests/fixtures/**`, migration tests | 独占代表世界和恢复脚本 |
++| Dedicated/performance | 测试脚本与 evidence | 不得降低负载以规避失败 |
++| Visual/multiplayer | 报告与截图目录 | 使用真实客户端，不改代码 |
++| Bugfix | 缺陷明确涉及的最小路径 | 一缺陷一任务，需回归测试 |
++| Independent audit | `docs/work/<audit>/**` | 只读产品代码 |
++
++中央注册、版本、网络总入口、Gradle、`mods.toml` 和状态文件由集成任务独占。
++
++## 8. 存档、网络与数据迁移
++
++- 保留不可修改的 `v0.9.0-beta.1` 原始世界 fixture 和 JAR hash。
++- 迁移在副本上运行，失败不得覆盖原世界。
++- 核对机器进度/库存/流体、火箭结构/燃料/乘客/位置、站点权限、卫星任务、研究和大气状态。
++- 重复打开迁移后的世界不得再次扣减、复制或重置数据。
++- 记录 `v1.0` 对未来 `v1.1` 的迁移入口，但不提前改变目标模型。
++- 协议不兼容时明确拒绝旧客户端，而不是部分连接。
++
++## 9. 自动测试
++
++- [ ] `clean build`、全部 Java tests、资源/来源/文档校验。
++- [ ] `runData` 后 `git diff --exit-code`。
++- [ ] `runGameTestServer` 全通过。
++- [ ] baseline/latest Forge lanes。
++- [ ] JEI absent/present 两组合。
++- [ ] 20 次连续地月往返资源守恒。
++- [ ] 组装、拆解、转移、恢复的重复执行与幂等测试。
++- [ ] 恶意/超限 packet、NBT、结构和坐标测试。
++- [ ] release JAR 内容、版本、许可证、重复资源和 SHA-256 校验。
++
++所有勾选项必须对应实际执行命令、退出码、日志和 commit；测试代码存在不等于测试已通过。
++
++## 10. Dedicated Server、重启与多人测试
++
++- [ ] 打包专服全新安装首次启动、正常停止、再次启动。
++- [ ] 全新世界完成核心流程。
++- [ ] `v0.9` 代表世界升级后至少重启两次。
++- [ ] 在每个事务阶段强制停止 Java 进程并恢复。
++- [ ] 两个真实客户端：所有者 + 乘客；乘客飞行中断线并重连。
++- [ ] 非 OP 玩家权限、空间站邀请/拒绝和越权请求。
++- [ ] 在线模式、白名单和正常认证场景。
++- [ ] 4 小时参考负载 soak 无 OOM、watchdog、资源复制或单调泄漏。
++
++## 11. 人工与视觉测试
++
++- [ ] 候选版重新制作截图/视频，不沿用旧 Beta 证据。
++- [ ] 真实 GPU 环境记录 OS、GPU、驱动、分辨率、GUI scale。
++- [ ] 测试 64、512、2048 方块火箭首次显示、飞行、跨维度和缓存释放。
++- [ ] 电解机、氧气 GUI、火箭界面、空间站和卫星界面无关键越界。
++- [ ] 地球/太空/月球天空、粒子、声音和模型与服务端状态一致。
++- [ ] 两个真实客户端观察同一火箭和乘客，状态一致。
++- [ ] baseline Forge 完整视觉流程；compatibility lane 关键冒烟。
++
++Xvfb/LLVMpipe 只形成 `V0` 视觉冒烟证据。涉及 GUI、天空、模型、粒子或客户端性能时，必须在真实 GPU 客户端形成 `V1`；涉及多人时形成 `V2`。
++
++## 12. 安全与滥用测试
++
++- [ ] 重放发射、拆解、目的地和空间站请求被安全拒绝。
++- [ ] 伪造远距离坐标不触发任意区块加载。
++- [ ] 第三方/超大 BlockEntity NBT 被拒绝且世界不丢失。
++- [ ] 越权玩家不能控制、拆解或改道他人火箭/空间站。
++- [ ] 异常 packet 不回显巨大内容或造成日志洪水。
++- [ ] Release JAR 不含 token、绝对路径、测试世界或私有日志。
++
++## 13. 性能与资源预算
++
++- [ ] 4 vCPU/8 GiB 参考服满足 `docs/17-*` 的 MSPT/RSS 预算或有批准 ADR。
++- [ ] 2048 方块火箭组装/拆解有明确耗时和主线程尖峰记录。
++- [ ] 16 个大气设备和多个密闭体不导致无界队列。
++- [ ] 真实 GPU 报告记录三档火箭 FPS/1% low/缓存。
++- [ ] 4 小时 soak 后内存无持续单调增长。
++- [ ] 所有缓存可在实体删除、跨维度和资源重载后释放。
++
++## 14. 通过确认
++
++版本只有全部满足后，才可由独立审核者标记 `READY_FOR_AUDIT`，再由维护者标记 `PASSED`：
+ 
+ - [ ] G0–G9 全部 PASS。
+-- [ ] 零 Critical/High 已知问题。
+-- [ ] 干净安装与 Beta 升级均通过。
+-- [ ] 核心玩家流程有最终证据。
+-- [ ] 发布 JAR 可从 tag 重建。
+-- [ ] LICENSE/NOTICE/来源完整。
+-- [ ] 存档兼容和支持范围写明。
+-- [ ] 发布页无官方误导。
+-- [ ] release 后问题有明确接收位置。
+-
+-## 9. 必须归档的证据
+-
+-- `docs/releases/v1.0.0/` 全套文件
+-- 最终 CI runs
+-- release JAR SHA-256
+-- tag/commit
+-- 完整玩法视频
+-- Beta migration report
+-- 公开 release 页面截图
++- [ ] 零未修复 Critical/High；无未经审核的 Medium。
++- [ ] 全新安装、全新世界、Beta 升级三条路径通过。
++- [ ] 真实双客户端多人流程通过。
++- [ ] 真实 GPU `V1` 与多人 `V2` 视觉证据完成。
++- [ ] 强制停止恢复矩阵全部通过且资源守恒。
++- [ ] release JAR 可从 tag 重建并得到相同 hash。
++- [ ] PORTING_MATRIX、Known Issues、支持与兼容声明真实。
++- [ ] 未参与开发者按公开说明安装成功。
++- [ ] 独立审核者和维护者均签署。
++
++## 15. 必须归档的证据
++
++- `docs/releases/v1.0.0/RELEASE-EVIDENCE.md`。
++- `TEST-REPORT.md`、`MIGRATION-REPORT.md`、`RECOVERY-MATRIX.md`。
++- `MULTIPLAYER-REPORT.md` 和两个真实客户端日志。
++- `VISUAL-VALIDATION-REPORT.md`、候选截图和视频索引。
++- `PERFORMANCE.md` 与原始采样。
++- `SECURITY-REVIEW.md`。
++- 最终 JAR、tag、commit、SHA-256 和可重现构建日志。
+ 
+ 推荐目录：
+ 
+@@ -105,45 +179,78 @@ Codex 应将这些步骤拆成小提交，不应在一个不可审查提交中
+ docs/releases/v1.0.0/
+ ```
+ 
+-## 10. 推荐 PR 拆分
++通用证据文件沿用 `MANUAL-TEST.md`、`PERFORMANCE.md`、`checksums.txt` 和
++`GATE-STATUS.md`；新增迁移、视觉、安全等专项报告作为补充，不替代原 G0–G9 证据。
++
++## 16. 推荐 PR 拆分
+ 
+-- PR 1：release docs/version freeze
+-- PR 2：final evidence/checksums
+-- 人工步骤：tag 与 GitHub Release
++- PR 1：文档/矩阵对齐与 Feature Freeze。
++- PR 2：迁移和恢复测试补强。
++- PR 3：专服/多人/视觉证据基础设施。
++- PR 4+：每个候选阻断缺陷单独修复。
++- PR Final：只包含版本、最终证据、hash 和 release metadata。
+ 
+-## 11. 失败与回退
++每个 PR 均附：范围、非目标、迁移影响、命令实跑结果、证据路径和回退方式。
+ 
+-若发布后发现 Critical，立即将 release 标记有问题/撤下推荐，发布安全说明并准备 v1.0.1；不要修改已有 tag 对应文件。
++## 17. 失败与回退
+ 
+-## 12. Codex 完成报告
++- Critical/High 立即撤销候选推荐，保留不可变失败证据。
++- 迁移失败只处理副本；原 fixture 永不修改。
++- 发布后 Critical 使用 `v1.0.1` 修复，不重写 `v1.0.0` tag/JAR。
++- 任何新重构需求推迟到 `v1.1`，不得借修复名义扩大 v1.0 diff。
++
++## 18. Codex 完成报告
+ 
+ ```markdown
+ # v1.0.0 Execution Result
+ 
+-## Implemented
+-## Not implemented
++## Scope implemented
+ ## Explicit non-goals preserved
+-## Design decisions / ADRs
++## Contracts changed/frozen
+ ## Files changed
++## Save/network/data migration
+ ## Tests added
+ ## Commands actually run
+-## Test results
+-## Dedicated/manual results
++## Test results and failures
++## Dedicated/multiplayer results
++## Visual environment and evidence
++## Performance results
++## Security review
+ ## Provenance changes
+-## Save/network changes
++## Known issues
+ ## Gate status
+ ## Evidence paths
+-## Blocking risks
++## Rollback readiness
++```
++
++## 19. Required Gate 与版本状态
++
++本版本 Required Gate 为 **G0–G9 全部**，具体判定沿用
++[发布门槛](../06-RELEASE-AND-ACCEPTANCE-GATES.md)及
++[质量预算](../17-V1PLUS-QUALITY-BUDGETS.md)。至少执行：
++
++```bash
++./gradlew clean build
++./gradlew test
++./gradlew runData
++git diff --exit-code
++./gradlew runGameTestServer
+ ```
+ 
+-## 13. 版本状态
++专服、迁移恢复、真实客户端、性能和许可证分别验收；本文件的契约与目录是
++规划目标，不表示已有实现或冻结批准。平台仍固定为 Minecraft 1.20.1、
++Forge 47.4.10（兼容通道 47.4.23）、Java 17。
+ 
+ ```yaml
+ version: v1.0.0
+-status: PLANNED
+-commit: ""
+-build: ""
+-required_gates: []
++status: IN_PROGRESS
++integration_commit: ""
++candidate_commit: ""
++jar_sha256: ""
++save_schema: ""
++network_protocol: ""
++required_gates: [G0, G1, G2, G3, G4, G5, G6, G7, G8, G9]
++independent_reviewer: ""
+ human_approved_by: ""
+ human_approved_at: ""
+ ```
+diff --git a/gradle.properties b/gradle.properties
+index c9ef92c..7f1dfc1 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -1,5 +1,5 @@
+ # Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
+-# Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-30, and 2026-09-03; see THIRD-PARTY-NOTICES.md.
++# Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-30, 2026-09-03, and 2026-09-05; see THIRD-PARTY-NOTICES.md.
+ # Gradle runtime settings
+ org.gradle.jvmargs=-Xmx3G
+ org.gradle.daemon=false
+@@ -24,9 +24,9 @@ jei_version_range=[15.56.0.205,16)
+ mod_id=advancedrocketrycommunity
+ mod_name=Advanced Rocketry: Community Edition
+ mod_license=MIT
+-mod_version=0.9.0-beta.1
++mod_version=1.0.0-dev
+ mod_group_id=io.github.sunthemoon.advancedrocketrycommunity
+ mod_artifact_id=advancedrocketry-community
+ mod_authors=sunthemoon and contributors
+ mod_credits=Based on the MIT-licensed Advanced Rocketry project. Unofficial community rewrite; not supported by the original maintainers.
+-mod_description=An unofficial community rewrite of Advanced Rocketry for Minecraft 1.20.1 Forge.\nThis v0.9.0 Beta candidate freezes the accepted core loop while save migration, dedicated-server soak, security, performance, and optional compatibility are verified; it is not a stable release.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
++mod_description=An unofficial community rewrite of Advanced Rocketry for Minecraft 1.20.1 Forge.\nThis v1.0.0 development build stabilizes the accepted Beta core. Upgrade, recovery, compatibility, and performance validation are in progress; this is not a stable release.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
+diff --git a/scripts/validate_bootstrap_provenance.py b/scripts/validate_bootstrap_provenance.py
+index e5cd057..79ed4e4 100644
+--- a/scripts/validate_bootstrap_provenance.py
++++ b/scripts/validate_bootstrap_provenance.py
+@@ -3660,7 +3660,11 @@ def main(argv: list[str] | None = None) -> int:
+             )
+         except (OSError, UnicodeError):
+             current_version = ""
+-        if re.search(r"^current_version:\s+v0\.(?:[1-9]|[1-9][0-9]+)\.", current_version, re.MULTILINE):
++        if re.search(
++            r"^current_version:[ \t]+v(?:0\.[1-9][0-9]*|[1-9][0-9]*\.[0-9]+)\.[0-9]+[ \t]*\r?$",
++            current_version,
++            re.MULTILINE,
++        ):
+             selected_commit = HISTORICAL_V002_RECORD_COMMIT
+ 
+     if selected_commit is not None:
+diff --git a/scripts/validate_repository.py b/scripts/validate_repository.py
+index db2d6d4..ff97b8e 100644
+--- a/scripts/validate_repository.py
++++ b/scripts/validate_repository.py
+@@ -1443,7 +1443,14 @@ def _parse_step(lines: list[str], start: int, end: int, step_indent: int) -> Wor
+                 if lines[child].strip() and _indent(lines[child]) == field_indent + 2:
+                     child_entry = _mapping_entry(lines[child].strip())
+                     if child_entry is not None:
+-                        step.fields[f"{key}.{child_entry[0]}"] = child_entry[1]
++                        child_key, child_value = child_entry
++                        if child_value in {"|", "|-", "|+", ">", ">-", ">+"}:
++                            child_value, child = _multiline_scalar(
++                                lines, child + 1, end, field_indent + 2, child_value
++                            )
++                            step.fields[f"{key}.{child_key}"] = child_value
++                            continue
++                        step.fields[f"{key}.{child_key}"] = child_value
+                     else:
+                         step.structurally_safe = False
+                 child += 1
+@@ -1862,6 +1869,91 @@ def validate_repository_workflow_text(text: str) -> list[str]:
+     return errors
+ 
+ 
++def _ci_artifact_identity_errors(job: WorkflowJob, job_id: str) -> list[str]:
++    """Require one post-build identity producer before every artifact consumer."""
++    expected = (
++        "python", "scripts/ci_artifact_identity.py", "--manifest",
++        "build/release-evidence/build-identity.json", "--github-env", "${GITHUB_ENV}",
++    )
++    producers = [
++        index for index, step in enumerate(job.steps)
++        if "scripts/ci_artifact_identity.py" in step.fields.get("run", "")
++    ]
++    if len(producers) != 1:
++        return [f"{job_id} one enabled exact build-identity producer"]
++    index = producers[0]
++    producer = job.steps[index]
++    if (
++        not producer.blocking
++        or set(producer.fields) != {"name", "run"}
++        or _run_commands(producer.fields.get("run", "")) != [expected]
++    ):
++        return [f"{job_id} one enabled exact build-identity producer"]
++    errors: list[str] = []
++    prior = job.steps[:index]
++    if not (
++        any(step.blocking and step.fields.get("uses") == "actions/checkout@v7" for step in prior)
++        and any(step.blocking and step.fields.get("uses") == "actions/setup-python@v7" for step in prior)
++        and any(step.blocking and _run_commands(step.fields.get("run", "")) == [
++            ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace")
++        ] for step in prior)
++    ):
++        errors.append(f"{job_id} identity follows checkout, Python and clean build")
++    for position, step in enumerate(job.steps):
++        run = step.fields.get("run", "")
++        if any(key.startswith("env.ARCE_") or key == "env.GITHUB_ENV" for key in step.fields):
++            errors.append(f"{job_id} no step-level artifact identity override")
++        if position != index and ("GITHUB_ENV" in run or re.search(r"\bARCE_\w+\s*=", run)):
++            errors.append(f"{job_id} no additional artifact environment writer")
++        if position <= index and any(
++            "ARCE_" in value for value in step.fields.values()
++        ):
++            errors.append(f"{job_id} artifact consumers follow the identity producer")
++        if position > index and any("clean" in command and command[0] == "./gradlew"
++                                   for command in _run_commands(run)):
++            errors.append(f"{job_id} no clean after build identity manifest")
++        for variable in ("ARCE_ARTIFACT", "ARCE_BUILD_VERSION"):
++            if variable in run and f'"${{{variable}}}"' not in run:
++                errors.append(f"{job_id} quoted {variable} consumer")
++    if not _job_has_exact_action_contract(
++        job, "actions/setup-python@v7", {"python-version": "3.12"}, require_blocking_job=False
++    ):
++        errors.append(f"{job_id} exact Python action contract for build identity")
++    uploads = [step for step in job.steps
++               if step.fields.get("uses", "").startswith("actions/upload-artifact@")]
++    required_paths = {
++        "${{ env.ARCE_ARTIFACT }}", "build/reports/tests/test/", "build/test-results/test/",
++        "build/release-evidence/build-identity.json",
++        "build/release-evidence/core-jar-content-manifest.json" if job_id == "satellite-acceptance"
++        else "build/release-evidence/jar-content-manifest.json",
++    }
++    if job_id != "satellite-acceptance":
++        required_paths.update({"${{ env.ARCE_SOURCES }}", "build/gametest/logs/"})
++    if job_id == "baseline":
++        required_paths.update(f"build/{directory}/session/{suffix}" for directory in (
++            "dedicated-server-smoke", "v090-migration-server-smoke", "v090-forced-stop",
++        ) for suffix in ("*-full.txt", "logs/"))
++        required_paths.update(f"build/{directory}/evidence/" for directory in (
++            "dedicated-server-smoke", "v090-migration-server-smoke", "v090-forced-stop",
++            "v020-machine-server-smoke", "v030-celestial-server-smoke",
++            "v040-atmosphere-server-smoke", "v050-rocket-server-smoke", "v060-flight-server-smoke",
++        ))
++    elif job_id == "satellite-acceptance":
++        required_paths.update({"build/v090-dedicated-server-smoke/session/*-full.txt",
++                               "build/v090-dedicated-server-smoke/session/logs/"})
++        required_paths.update(f"build/{directory}/evidence/" for directory in (
++            "v090-dedicated-server-smoke", "v090-station-server-smoke", "v090-satellite-server-smoke",
++        ))
++    if (
++        len(uploads) != 1 or not uploads[0].blocking
++        or uploads[0].fields.get("if") != "always()"
++        or required_paths != {line.strip() for line in
++                              uploads[0].fields.get("with.path", "").splitlines() if line.strip()}
++    ):
++        errors.append(f"{job_id} unconditional upload of exact artifact, identity and test evidence")
++    return errors
++
++
+ def validate_forge_workflow_text(text: str) -> list[str]:
+     errors: list[str] = []
+     if "\t" in text:
+@@ -1877,6 +1969,10 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+     baseline = jobs.get("baseline")
+     satellite = jobs.get("satellite-acceptance")
+     latest = jobs.get("latest-compatibility")
++    for job_id, job in (("baseline", baseline), ("satellite-acceptance", satellite),
++                        ("latest-compatibility", latest)):
++        if job is not None:
++            errors.extend(_ci_artifact_identity_errors(job, job_id))
+     if baseline is None or not baseline.blocking:
+         errors.append("enabled blocking baseline job")
+     else:
+@@ -1920,11 +2016,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+             (
+                 "python",
+                 "scripts/validate_build_artifact.py",
+-                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
++                "${ARCE_ARTIFACT}",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+                 "--content-manifest",
+-                "build/release-evidence/v090-jar-content-manifest.json",
++                "build/release-evidence/jar-content-manifest.json",
+             ),
+             ("python", "scripts/validate_v010_asset_baseline.py"),
+             ("python", "scripts/manage_v020_generated_manifest.py", "verify"),
+@@ -1981,9 +2077,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+             (
+                 "python",
+                 "scripts/run_dedicated_server_smoke.py",
+-                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
++                "${ARCE_ARTIFACT}",
+                 "--expected-mod-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+                 "--session-dir",
+                 "build/dedicated-server-smoke/session",
+                 "--evidence-dir",
+@@ -2004,7 +2100,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--tested-commit",
+                 "${REVIEW_COMMIT}",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2021,7 +2117,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--tested-commit",
+                 "${REVIEW_COMMIT}",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2032,7 +2128,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--evidence-dir",
+                 "build/v020-machine-server-smoke/evidence",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2043,7 +2139,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--evidence-dir",
+                 "build/v030-celestial-server-smoke/evidence",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2054,7 +2150,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--evidence-dir",
+                 "build/v040-atmosphere-server-smoke/evidence",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2065,7 +2161,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--evidence-dir",
+                 "build/v050-rocket-server-smoke/evidence",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2076,7 +2172,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--evidence-dir",
+                 "build/v060-flight-server-smoke/evidence",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+         )
+         for command in baseline_commands:
+@@ -2125,7 +2221,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+             len(upload_steps) != 1
+             or upload_steps[0].fields.get("uses") != "actions/upload-artifact@v7"
+             or upload_steps[0].fields.get("with.name")
+-            != "v090-core-47.4.10-${{ env.REVIEW_COMMIT }}"
++            != "core-47.4.10-${{ env.REVIEW_COMMIT }}"
+             or upload_steps[0].fields.get("with.if-no-files-found") != "error"
+         ):
+             errors.append("satellite-acceptance exact head-bound artifact upload")
+@@ -2135,11 +2231,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+             (
+                 "python",
+                 "scripts/validate_build_artifact.py",
+-                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
++                "${ARCE_ARTIFACT}",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+                 "--content-manifest",
+-                "build/release-evidence/v090-core-jar-content-manifest.json",
++                "build/release-evidence/core-jar-content-manifest.json",
+             ),
+             (
+                 "python",
+@@ -2149,9 +2245,9 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+             (
+                 "python",
+                 "scripts/run_dedicated_server_smoke.py",
+-                "build/libs/advancedrocketry-community-1.20.1-0.9.0-beta.1.jar",
++                "${ARCE_ARTIFACT}",
+                 "--expected-mod-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+                 "--session-dir",
+                 "build/v090-dedicated-server-smoke/session",
+                 "--evidence-dir",
+@@ -2168,7 +2264,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--evidence-dir",
+                 "build/v090-station-server-smoke/evidence",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+             (
+                 "python",
+@@ -2181,7 +2277,7 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 "--tested-commit",
+                 "${REVIEW_COMMIT}",
+                 "--expected-version",
+-                "1.20.1-0.9.0-beta.1",
++                "${ARCE_BUILD_VERSION}",
+             ),
+         )
+         for command in satellite_commands:
+@@ -2226,6 +2322,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+         for command in (
+             ("chmod", "+x", "./gradlew"),
+             ("./gradlew", "clean", "build", "--no-daemon", "--stacktrace"),
++            (
++                "python", "scripts/validate_build_artifact.py", "${ARCE_ARTIFACT}",
++                "--expected-version", "${ARCE_BUILD_VERSION}", "--content-manifest",
++                "build/release-evidence/jar-content-manifest.json",
++            ),
+             (
+                 "./gradlew",
+                 "runGameTestServer",
+@@ -2237,6 +2338,11 @@ def validate_forge_workflow_text(text: str) -> list[str]:
+                 latest, command, require_blocking_job=False
+             ):
+                 errors.append("latest enabled run command " + " ".join(command))
++        uploads = _job_action_steps(latest, "actions/upload-artifact@v7", require_blocking_job=False)
++        if (len(uploads) != 1
++            or uploads[0].fields.get("with.name") != "forge-47.4.23-${{ env.REVIEW_COMMIT }}"
++            or uploads[0].fields.get("with.if-no-files-found") != "error"):
++            errors.append("latest exact head-bound artifact upload identity")
+     return errors
+ 
+ 
+diff --git a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightReleaseCheckpoint.java b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightReleaseCheckpoint.java
+index 7e72d20..e0edc7d 100644
+--- a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightReleaseCheckpoint.java
++++ b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightReleaseCheckpoint.java
+@@ -1,11 +1,29 @@
+ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
+ 
++import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
++import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
++
+ /** Packaged-server-only checkpoints used to freeze an exact durable flight state. */
+ public enum RocketFlightReleaseCheckpoint {
+     COUNTDOWN,
+     ASCENT,
+     TRANSIT_PREPARED,
+     DESTINATION_SPAWNED,
++    PASSENGERS_TRANSFERRED,
++    SOURCE_REMOVED,
+     DESCENT,
+-    LANDED
++    LANDED;
++
++    boolean reached(RocketTransferPhase phase, RocketFlightState state) {
++        return switch (this) {
++            case COUNTDOWN -> phase == RocketTransferPhase.PREPARED && state == RocketFlightState.COUNTDOWN;
++            case ASCENT -> phase == RocketTransferPhase.PREPARED && state == RocketFlightState.ASCENT;
++            case TRANSIT_PREPARED -> phase == RocketTransferPhase.PREPARED && state == RocketFlightState.TRANSIT;
++            case DESTINATION_SPAWNED -> phase == RocketTransferPhase.DESTINATION_SPAWNED;
++            case PASSENGERS_TRANSFERRED -> phase == RocketTransferPhase.PASSENGERS_TRANSFERRED;
++            case SOURCE_REMOVED -> phase == RocketTransferPhase.SOURCE_REMOVED;
++            case DESCENT -> phase == RocketTransferPhase.COMMITTED && state == RocketFlightState.DESCENT;
++            case LANDED -> phase == RocketTransferPhase.COMMITTED && state == RocketFlightState.LANDED;
++        };
++    }
+ }
+diff --git a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java
+index a77a25e..329c7f1 100644
+--- a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java
++++ b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java
+@@ -30,6 +30,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketO
+ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegionLockManager;
+ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
++import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
+ import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+ import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
+ import java.util.ArrayDeque;
+@@ -57,6 +58,9 @@ public final class RocketManager implements RocketOperationService {
+     private final RocketOperationLedger ledger = new RocketOperationLedger();
+     private final RocketTransactionRecoveryService recovery;
+     private final RocketFlightService flights = new RocketFlightService();
++    private final RocketTransactionReleaseProbe transactionReleaseProbe = new RocketTransactionReleaseProbe(
++            Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks"),
++            System.getProperty(RocketTransactionReleaseProbe.PROPERTY));
+     private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
+     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
+     private boolean recoverySuppressedForReleaseTest;
+@@ -200,11 +204,13 @@ public final class RocketManager implements RocketOperationService {
+         }
+ 
+         UUID transactionId = UUID.randomUUID();
++        var observed = transactionReleaseProbe.bind(level.getServer(), RocketTransactionType.DISASSEMBLY, snapshot,
++                new ServerLevelRocketTransactionWorld(level, adapters, owner), savedData.journalFor(snapshot, owner));
+         RocketTransactionResult result = new RocketDisassemblyTransaction(
+-                new ServerLevelRocketTransactionWorld(level, adapters, owner),
++                observed.world(),
+                 locks,
+                 ledger,
+-                savedData.journalFor(snapshot, owner)
++                observed.journal()
+         ).execute(transactionId, rocket.getUUID(), snapshot);
+         if (result.success()) {
+             flights.releaseLandedReservation(rocket);
+@@ -313,6 +319,7 @@ public final class RocketManager implements RocketOperationService {
+         locks.clear();
+         ledger.clear();
+         flights.clear();
++        transactionReleaseProbe.clear();
+         recoverySuppressedForReleaseTest = false;
+         releaseCheckpointTransferId = null;
+         releaseCheckpoint = null;
+@@ -369,11 +376,13 @@ public final class RocketManager implements RocketOperationService {
+             return RocketValidationCode.REGION_BUSY;
+         }
+         UUID owner = rocket.ownerId().orElseThrow();
++        var observed = transactionReleaseProbe.bind(level.getServer(), RocketTransactionType.DISASSEMBLY, snapshot,
++                new ServerLevelRocketTransactionWorld(level, adapters, owner), savedData.journalFor(snapshot, owner));
+         RocketTransactionResult result = new RocketDisassemblyTransaction(
+-                new ServerLevelRocketTransactionWorld(level, adapters, owner),
++                observed.world(),
+                 locks,
+                 ledger,
+-                savedData.journalFor(snapshot, owner)
++                observed.journal()
+         ).execute(UUID.randomUUID(), rocket.getUUID(), snapshot);
+         if (result.success()) {
+             flights.releaseLandedReservation(rocket);
+@@ -412,20 +421,7 @@ public final class RocketManager implements RocketOperationService {
+         RocketFlightState state = authority == null
+                 ? null
+                 : authority.flightData().map(data -> data.state()).orElse(null);
+-        boolean reached = switch (checkpoint) {
+-            case COUNTDOWN -> record.phase() == RocketTransferPhase.PREPARED
+-                    && state == RocketFlightState.COUNTDOWN;
+-            case ASCENT -> record.phase() == RocketTransferPhase.PREPARED
+-                    && state == RocketFlightState.ASCENT;
+-            case TRANSIT_PREPARED -> record.phase() == RocketTransferPhase.PREPARED
+-                    && state == RocketFlightState.TRANSIT;
+-            case DESTINATION_SPAWNED -> record.phase() == RocketTransferPhase.DESTINATION_SPAWNED;
+-            case DESCENT -> record.phase() == RocketTransferPhase.COMMITTED
+-                    && state == RocketFlightState.DESCENT;
+-            case LANDED -> record.phase() == RocketTransferPhase.COMMITTED
+-                    && state == RocketFlightState.LANDED;
+-        };
+-        if (!reached) {
++        if (!checkpoint.reached(record.phase(), state)) {
+             return;
+         }
+         flightLifecycleActive = false;
+@@ -520,11 +516,14 @@ public final class RocketManager implements RocketOperationService {
+         }
+ 
+         UUID transactionId = UUID.randomUUID();
+-        RocketTransactionResult transaction = new RocketAssemblyTransaction(
++        var observed = transactionReleaseProbe.bind(server, RocketTransactionType.ASSEMBLY, snapshot,
+                 new ServerLevelRocketTransactionWorld(level, adapters, active.ownerId()),
++                savedData.journalFor(snapshot, active.ownerId()));
++        RocketTransactionResult transaction = new RocketAssemblyTransaction(
++                observed.world(),
+                 locks,
+                 ledger,
+-                savedData.journalFor(snapshot, active.ownerId())
++                observed.journal()
+         ).execute(transactionId, snapshot);
+         reportTransaction(level, snapshot, player, transaction, "assembly");
+         return false;
+diff --git a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransactionRecoveryService.java b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransactionRecoveryService.java
+index 2145cb1..57b4668 100644
+--- a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransactionRecoveryService.java
++++ b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransactionRecoveryService.java
+@@ -16,8 +16,10 @@ import java.util.List;
+ import java.util.Objects;
+ import java.util.Optional;
+ import java.util.UUID;
++import java.util.function.LongPredicate;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.ServerLevel;
++import net.minecraft.world.level.ChunkPos;
+ 
+ /** Idempotent loaded-region recovery for durable v0.5 transaction records. */
+ public final class RocketTransactionRecoveryService {
+@@ -53,7 +55,8 @@ public final class RocketTransactionRecoveryService {
+                     adapters,
+                     entry.ownerId()
+             );
+-            if (!world.isRegionLoaded(entry.record().region())) {
++            if (!readyForRecovery(world.isRegionLoaded(entry.record().region()),
++                    entry.snapshot().sourceOrigin(), level::areEntitiesLoaded)) {
+                 sawUnloaded = true;
+                 continue;
+             }
+@@ -64,6 +67,18 @@ public final class RocketTransactionRecoveryService {
+         return sawUnloaded ? Outcome.DEFERRED_UNLOADED : Outcome.NO_WORK;
+     }
+ 
++    static boolean readyForRecovery(
++            boolean regionLoaded, RocketPosition origin, LongPredicate entityChunksLoaded
++    ) {
++        Objects.requireNonNull(origin, "origin");
++        Objects.requireNonNull(entityChunksLoaded, "entityChunksLoaded");
++        // Block chunks can arrive before their persisted entities. A missing
++        // entity is authoritative only after the origin's entity read finishes.
++        // Assembly/disassembly entities are anchored at this snapshot origin;
++        // this query neither loads a chunk nor creates a recovery ticket.
++        return regionLoaded && entityChunksLoaded.test(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4));
++    }
++
+     private boolean recoverLoaded(
+             RocketTransactionSavedData data,
+             ServerLevelRocketTransactionWorld world,
+diff --git a/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java b/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java
+index 2d8df1b..50103f9 100644
+--- a/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java
++++ b/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java
+@@ -20,8 +20,9 @@ class ModMetadataTest {
+             assertTrue(metadata.contains("modId=\"advancedrocketrycommunity\""));
+             assertTrue(metadata.contains("displayName=\"Advanced Rocketry: Community Edition\""));
+             assertTrue(metadata.contains("license=\"MIT\""));
+-            assertTrue(metadata.contains("version=\"1.20.1-0.9.0-beta.1\""));
+-            assertTrue(metadata.contains("This v0.9.0 Beta candidate"));
++            assertTrue(metadata.contains("version=\"1.20.1-1.0.0-dev\""));
++            assertTrue(metadata.contains("This v1.0.0 development build"));
++            assertTrue(metadata.contains("this is not a stable release"));
+             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
+             assertTrue(metadata.contains("modId=\"jei\""));
+             assertTrue(metadata.contains("mandatory=false"));
+diff --git a/tests/test_validate_repository.py b/tests/test_validate_repository.py
+index e3726d2..4493c0a 100644
+--- a/tests/test_validate_repository.py
++++ b/tests/test_validate_repository.py
+@@ -2331,8 +2331,8 @@ class WorkflowStructureTests(unittest.TestCase):
+             ),
+             (
+                 "satellite-acceptance",
+-                "          name: v090-core-47.4.10-${{ env.REVIEW_COMMIT }}\n",
+-                "          name: v090-core-47.4.10-${{ github.sha }}\n",
++                "          name: core-47.4.10-${{ env.REVIEW_COMMIT }}\n",
++                "          name: core-47.4.10-${{ github.sha }}\n",
+                 "satellite-acceptance exact head-bound artifact upload",
+             ),
+         )
+@@ -2635,7 +2635,7 @@ class WorkflowStructureTests(unittest.TestCase):
+             ),
+             (
+                 "satellite-acceptance",
+-                "    name: v0.9.0 packaged core regression gate",
++                "    name: Packaged core regression gate",
+                 "enabled blocking satellite-acceptance job",
+             ),
+         )

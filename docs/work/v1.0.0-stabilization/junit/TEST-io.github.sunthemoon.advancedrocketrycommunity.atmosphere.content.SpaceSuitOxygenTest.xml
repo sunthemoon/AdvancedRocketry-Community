@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T08:52:00" hostname="DESKTOP-8J2KSNF" time="0.015">
+  <properties/>
+  <testcase name="futureSchemaIsPreservedAndCannotBeMutated()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest" time="0.012"/>
+  <testcase name="wrongItemOrInvalidPayloadFailsClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest" time="0.0"/>
+  <testcase name="chestOxygenStaysWithinCapacityAndTransfersAtomically()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

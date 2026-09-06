@@ -1,0 +1,1 @@
+{"id": 1, "op": "server", "command": "arce rocket release-test report 895687d0-0e34-4375-8b6f-e98b687f1ec3", "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="}

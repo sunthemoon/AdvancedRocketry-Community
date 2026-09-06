@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_MIGRATION_AND_EVIDENCE", "strict_migration_driver": "FAIL_RETAINED", "clean_restart": "PASS", "source_files": 744, "original_files": 58, "before_rockets": 2, "after_rockets": 1, "resaved_rockets": 1, "screenshots": 2}

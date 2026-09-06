@@ -1,0 +1,7 @@
+[PASS] Forge installer SHA-1: 66bfea9963bfa60d88bab6b2750e74a958392715
+[PASS] Artifact SHA-256: 5b5d942a1c807a62ec030bc2150f246a7de6d5f78cd2ed3698db3445a53d2096
+[PASS] First start, status query, save, and clean stop on port 25610
+[PASS] Same-world restart, status query, save, and clean stop
+[PASS] Harness session binding: v002-990b2073b505717eb45f2305
+[PASS] Evidence: C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-evidence
+[INFO] Full disposable server session: C:\Users\Administrator\AppData\Local\Temp\arce-v100-stabilization\baseline-server

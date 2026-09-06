@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-09-05T21:19:24" hostname="DESKTOP-8J2KSNF" time="0.01">
+  <properties/>
+  <testcase name="[1] COUNTDOWN, PREPARED, COUNTDOWN" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.001"/>
+  <testcase name="[2] ASCENT, PREPARED, ASCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[3] TRANSIT_PREPARED, PREPARED, TRANSIT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.001"/>
+  <testcase name="[4] DESTINATION_SPAWNED, DESTINATION_SPAWNED, DESCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[5] PASSENGERS_TRANSFERRED, PASSENGERS_TRANSFERRED, DESCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[6] SOURCE_REMOVED, SOURCE_REMOVED, DESCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[7] DESCENT, COMMITTED, DESCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[8] LANDED, COMMITTED, LANDED" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.001"/>
+  <testcase name="[1] COUNTDOWN, PREPARED, ASCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[2] ASCENT, PREPARED, TRANSIT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[3] TRANSIT_PREPARED, PREPARED, COUNTDOWN" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[4] DESCENT, COMMITTED, LANDED" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.0"/>
+  <testcase name="[5] LANDED, COMMITTED, DESCENT" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-05T20:22:58" hostname="DESKTOP-8J2KSNF" time="0.006">
+  <properties/>
+  <testcase name="countdownBodyMarkersIgnoreTheEditableStationChoice()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.001"/>
+  <testcase name="missingCountdownPlanDoesNotHighlightAnEditableDestination()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.001"/>
+  <testcase name="stationCancellationDoesNotRequireTheTargetInTheOpeningAccessibleList()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.001"/>
+  <testcase name="cancellationUsesTheActiveBodyRatherThanTheEditedChoice()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.0"/>
+  <testcase name="countdownStationMarkerDoesNotOverwriteTheEditableBodyOrStation()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.0"/>
+  <testcase name="resizingDoesNotResetAChosenStationToTheOpeningPayload()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.001"/>
+  <testcase name="cancellationUsesAnotherPlayersStationNotTheOpeningOrSelectedStation()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.0"/>
+  <testcase name="launchStillUsesTheEditedChoiceNotAnOldPlan()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.0"/>
+  <testcase name="cancellationWaitsForAnActivePlanInsteadOfInventingOne()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

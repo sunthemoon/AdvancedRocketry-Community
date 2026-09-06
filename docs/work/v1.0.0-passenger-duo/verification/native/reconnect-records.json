@@ -1,0 +1,70 @@
+[
+  {
+    "pid": 5288,
+    "address": "127.0.0.1:61895",
+    "action": "WM_CHAR address then native Join",
+    "process_restarted": false
+  },
+  {
+    "file": "08-passenger-address.png",
+    "bytes": 63664,
+    "sha256": "750de373504178ef5dcadd06f03258e95327319a57a318653220ffda6cd22291",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "receipt": "V100Visual2 joined the game"
+  },
+  {
+    "id": 50,
+    "op": "server",
+    "command": "execute as V100Visual1 on vehicle if entity @s[nbt={UUID:[I;-1650922317,611600616,-1991391855,1112293731]}] run say V100Visual1_MOUNTED_RECONNECTED_AUTHORITY",
+    "wait": "V100Visual1_MOUNTED_RECONNECTED_AUTHORITY"
+  },
+  {
+    "id": 51,
+    "op": "server",
+    "command": "execute as V100Visual2 on vehicle if entity @s[nbt={UUID:[I;-1650922317,611600616,-1991391855,1112293731]}] run say V100Visual2_MOUNTED_RECONNECTED_AUTHORITY",
+    "wait": "V100Visual2_MOUNTED_RECONNECTED_AUTHORITY"
+  },
+  {
+    "id": 52,
+    "op": "server",
+    "command": "data get entity V100Visual2 Dimension",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 53,
+    "op": "server",
+    "command": "data get entity V100Visual2 Pos",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 54,
+    "op": "server",
+    "command": "execute in advancedrocketrycommunity:moon run arce rocket release-test report 9d98ecb3-2474-48e8-894d-c591424c4163",
+    "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="
+  },
+  {
+    "id": 55,
+    "op": "server",
+    "command": "say PASSENGER_RECONNECT_REPORTED",
+    "wait": "PASSENGER_RECONNECT_REPORTED"
+  },
+  {
+    "receipt": "PASSENGER_RECONNECT_REPORTED"
+  },
+  {
+    "file": "09-passenger-reconnected.png",
+    "bytes": 66508,
+    "sha256": "1bdb3dbcb3f5c94cf26a2d584033d6b12347c5089c1cdebb20cf84dc82c05ee4",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  }
+]

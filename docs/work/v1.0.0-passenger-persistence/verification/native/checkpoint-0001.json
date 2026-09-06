@@ -1,0 +1,22 @@
+{
+  "actions": [],
+  "artifact_sha256": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0",
+  "authentication_tested": false,
+  "client_pid": 3452,
+  "entity": "895687d0-0e34-4375-8b6f-e98b687f1ec3",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 64796,
+  "processes": [],
+  "screenshots": [],
+  "second_client_pid": 25008,
+  "second_username": "V100Visual2",
+  "second_window": 3476338,
+  "server_pid": 17268,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T20:46:10.767753+00:00",
+  "stations": [],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 2427316
+}

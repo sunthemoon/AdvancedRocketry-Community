@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-05T20:22:58" hostname="DESKTOP-8J2KSNF" time="0.005">
+  <properties/>
+  <testcase name="selectedStationDoesNotReuseTheDefaultMoonQuote()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.002"/>
+  <testcase name="countdownKeepsTheCostButDisablesLaunch()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.0"/>
+  <testcase name="stationDeparturesCanQuoteBothEarthAndMoonIndependently()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.001"/>
+  <testcase name="everyExistingRouteMatchesTheLaunchPlanner()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.0"/>
+  <testcase name="quoteBoundsAndZeroFuelSuccessAreRejected()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.001"/>
+  <testcase name="missingRouteOrComponentsCannotCreateAnAvailableQuote()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.001"/>
+  <testcase name="routeSpecificFuelThresholdControlsTheLaunchAffordance()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferReturnReasonTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-05T19:27:11" hostname="DESKTOP-8J2KSNF" time="0.007">
+  <properties/>
+  <testcase name="requestedCancellationIsInformationalAndKeepsTheDiagnosticPayload()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferReturnReasonTest" time="0.006"/>
+  <testcase name="everyTransferFaultStillEmitsExactlyOneWarningWithItsStableReason()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferReturnReasonTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

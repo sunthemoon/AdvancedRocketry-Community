@@ -1,0 +1,28 @@
+Working directory: D:\GitHub\AdvancedRocketry-Community
+JAVA_HOME=C:\Program Files\Java\jdk-17.0.7
+Python=D:\python\pyenv\pyenv-win\versions\3.13.15\python.exe
+PYTHONUTF8=1
+TEMP=TMP=C:\Users\Administrator\AppData\Local\Temp
+
+gradlew.bat test --tests '*RocketFlightQuotesTest' --tests '*RocketFlightPlanPacketTest' --tests '*RocketFlightSelectionTest' --no-daemon
+  exit 0; targeted-tests.txt
+gradlew.bat clean build --no-daemon
+  exit 0; clean-build.txt
+gradlew.bat test runData --no-daemon
+  exit 0; test-data.txt
+git diff --exit-code -- src/generated/resources
+  exit 0; generated-diff.txt
+git diff --exit-code
+  exit 1; worktree-diff.txt (intended uncommitted changes)
+git diff --check
+  exit 0; diff-check.txt
+gradlew.bat runGameTestServer --no-daemon
+  exit 0; gametest.txt; original build/gametest/logs/latest.log copied unchanged
+D:\python\pyenv\pyenv-win\versions\3.13.15\python.exe C:\Users\Administrator\AppData\Local\Temp\arce-v100-quote-smoke.py
+  exit 0; packaged-command.txt; executed script and native logs in packaged/
+D:\python\pyenv\pyenv-win\versions\3.13.15\python.exe C:\Users\Administrator\AppData\Local\Temp\arce-console-quote-ui-session.py
+  exit 0; unified exec session 2169; exact script, input checkpoints and native logs in gui/
+D:\python\pyenv\pyenv-win\versions\3.13.15\python.exe scripts/validate_repository.py --require-approved-identity
+  exit 0; repository-validation.txt; 45 passed, 0 pending, 0 warnings, 0 failed
+D:\python\pyenv\pyenv-win\versions\3.13.15\python.exe docs/work/v1.0.0-flight-quote/verification/audit.py
+  exit 0; ../audit-result.txt; scoped evidence audit, not Gate approval

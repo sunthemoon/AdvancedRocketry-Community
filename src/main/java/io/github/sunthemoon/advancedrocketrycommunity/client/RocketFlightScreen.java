@@ -4,10 +4,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestin
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
 import java.util.List;
-import java.util.UUID;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -23,7 +23,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private static final int FUEL = 0xFF5BC7A8;
     private static final int MUTED = 0xFF91A6AC;
 
-    private RocketDestination selected;
+    private final RocketFlightSelection selection;
     private Button earthButton;
     private Button moonButton;
     private Button stationButton;
@@ -31,11 +31,10 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private Button cancelButton;
     private Button boardButton;
     private Button leaveButton;
-    private UUID selectedStationId;
-    private int selectedStationIndex;
 
     public RocketFlightScreen(RocketFlightMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        selection = new RocketFlightSelection(menu.accessibleStations());
         imageWidth = 248;
         imageHeight = 216;
         titleLabelX = 12;
@@ -46,28 +45,15 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     @Override
     protected void init() {
         super.init();
-        selected = menu.plannedDestination();
-        if (selected == null && menu.currentDestination() != null) {
-            selected = menu.currentDestination().opposite();
-        }
-        List<StationDestinationSummary> stations = menu.accessibleStations();
-        if (!stations.isEmpty()) {
-            selectedStationIndex = menu.plannedStationId()
-                    .flatMap(planned -> java.util.stream.IntStream.range(0, stations.size())
-                            .filter(index -> stations.get(index).stationId().equals(planned))
-                            .boxed()
-                            .findFirst())
-                    .orElse(0);
-            selectedStationId = stations.get(selectedStationIndex).stationId();
-        }
+        initializeSelection();
         earthButton = addRenderableWidget(Button.builder(
                 body(RocketDestination.EARTH),
-                button -> selected = RocketDestination.EARTH
-        ).bounds(leftPos + 22, topPos + 89, 94, 20).build());
+                button -> selection.select(RocketDestination.EARTH)
+        ).bounds(leftPos + 22, topPos + RocketFlightScreenLayout.DESTINATION_BUTTON_Y, 94, 20).build());
         moonButton = addRenderableWidget(Button.builder(
                 body(RocketDestination.MOON),
-                button -> selected = RocketDestination.MOON
-        ).bounds(leftPos + 132, topPos + 89, 94, 20).build());
+                button -> selection.select(RocketDestination.MOON)
+        ).bounds(leftPos + 132, topPos + RocketFlightScreenLayout.DESTINATION_BUTTON_Y, 94, 20).build());
         stationButton = addRenderableWidget(Button.builder(
                 stationLabel(),
                 button -> selectNextStation()
@@ -92,40 +78,26 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     }
 
     private void send(RocketFlightAction action) {
-        RocketDestination destination = selected == null
-                ? menu.plannedDestination()
-                : selected;
-        if (destination != null && menu.rocketEntityId() >= 0) {
+        var target = selection.target(action, menu.activePlan());
+        if (target.destination() != null && menu.rocketEntityId() >= 0) {
             RocketFlightNetwork.sendIntent(
                     action,
                     menu.rocketEntityId(),
-                    destination,
-                    destination == RocketDestination.SPACE_STATION ? selectedStationId : null
+                    target.destination(),
+                    target.stationId()
             );
         }
     }
 
     private void selectNextStation() {
-        List<StationDestinationSummary> stations = menu.accessibleStations();
-        if (stations.isEmpty()) {
-            selectedStationId = null;
-            return;
-        }
-        if (selected != RocketDestination.SPACE_STATION) {
-            selected = RocketDestination.SPACE_STATION;
-        } else {
-            selectedStationIndex = (selectedStationIndex + 1) % stations.size();
-        }
-        selectedStationId = stations.get(selectedStationIndex).stationId();
+        selection.selectNextStation();
         stationButton.setMessage(stationLabel());
     }
 
     @Override
     protected void containerTick() {
         super.containerTick();
-        if (selected == null) {
-            selected = menu.plannedDestination();
-        }
+        initializeSelection();
         updateButtons();
     }
 
@@ -134,27 +106,26 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
             return;
         }
         RocketDestination current = menu.currentDestination();
-        earthButton.active = current != RocketDestination.EARTH;
-        moonButton.active = current != RocketDestination.MOON;
-        stationButton.active = current != RocketDestination.SPACE_STATION
+        RocketDestination selected = selection.selected();
+        boolean stationary = menu.state() == RocketFlightState.ASSEMBLED
+                || menu.state() == RocketFlightState.FUELED
+                || menu.state() == RocketFlightState.LANDED;
+        earthButton.active = stationary && current != RocketDestination.EARTH;
+        moonButton.active = stationary && current != RocketDestination.MOON;
+        stationButton.active = stationary && current != RocketDestination.SPACE_STATION
                 && !menu.accessibleStations().isEmpty();
         earthButton.setMessage(choiceLabel(RocketDestination.EARTH));
         moonButton.setMessage(choiceLabel(RocketDestination.MOON));
         stationButton.setMessage(stationLabel());
         boolean countdown = menu.state() == RocketFlightState.COUNTDOWN;
         launchButton.visible = !countdown;
-        boolean quotedLaunch = selected == RocketDestination.SPACE_STATION
-                ? menu.fuelAmount() > 0
-                : menu.canLaunch();
-        launchButton.active = quotedLaunch
+        boolean quotedLaunch = menu.quotes().forDestination(selected).canLaunch();
+        launchButton.active = stationary && quotedLaunch
                 && selected != null
                 && selected != current
-                && (selected != RocketDestination.SPACE_STATION || selectedStationId != null);
+                && (selected != RocketDestination.SPACE_STATION || selection.stationId() != null);
         cancelButton.visible = countdown;
-        cancelButton.active = countdown;
-        boolean stationary = menu.state() == RocketFlightState.ASSEMBLED
-                || menu.state() == RocketFlightState.FUELED
-                || menu.state() == RocketFlightState.LANDED;
+        cancelButton.active = countdown && menu.activePlan().destination() != null;
         boardButton.visible = stationary;
         boardButton.active = stationary;
         leaveButton.visible = stationary;
@@ -162,24 +133,32 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     }
 
     private Component choiceLabel(RocketDestination destination) {
-        return Component.literal(selected == destination ? "[ " : "  ")
+        return Component.literal(displayedDestination() == destination ? "[ " : "  ")
                 .append(body(destination))
-                .append(selected == destination ? " ]" : "  ");
+                .append(displayedDestination() == destination ? " ]" : "  ");
     }
 
     private Component stationLabel() {
         List<StationDestinationSummary> stations = menu.accessibleStations();
+        if (menu.state() == RocketFlightState.COUNTDOWN
+                && menu.activePlan().destination() == RocketDestination.SPACE_STATION) {
+            var activeId = menu.activePlan().stationId();
+            String name = stations.stream().filter(station -> station.stationId().equals(activeId))
+                    .map(StationDestinationSummary::name).findFirst().orElse(activeId.toString());
+            return Component.literal(font.plainSubstrByWidth("[ " + name + " ]", 190));
+        }
         if (stations.isEmpty()) {
             return Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations");
         }
-        StationDestinationSummary station = stations.get(Math.min(selectedStationIndex, stations.size() - 1));
+        int selectedStationIndex = selection.stationIndex();
+        StationDestinationSummary station = stations.get(selectedStationIndex);
         Component label = Component.translatable(
                 "screen.advancedrocketrycommunity.rocket.station_choice",
                 station.name(),
                 selectedStationIndex + 1,
                 stations.size()
         );
-        return selected == RocketDestination.SPACE_STATION
+        return displayedDestination() == RocketDestination.SPACE_STATION
                 ? Component.literal("[ ").append(label).append(" ]")
                 : label;
     }
@@ -197,8 +176,10 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         int y = topPos;
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, FRAME, 0xFF101A1E);
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
-        graphics.fill(x + 10, y + 27, x + imageWidth - 10, y + 79, PANEL);
-        graphics.renderOutline(x + 10, y + 27, imageWidth - 20, 52, 0xFF40565D);
+        graphics.fill(x + 10, y + RocketFlightScreenLayout.PANEL_TOP,
+                x + imageWidth - 10, y + RocketFlightScreenLayout.PANEL_BOTTOM, PANEL);
+        graphics.renderOutline(x + 10, y + RocketFlightScreenLayout.PANEL_TOP, imageWidth - 20,
+                RocketFlightScreenLayout.PANEL_BOTTOM - RocketFlightScreenLayout.PANEL_TOP, 0xFF40565D);
 
         int gaugeX = x + 22;
         int gaugeY = y + 60;
@@ -208,8 +189,8 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         if (fill > 0) {
             graphics.fill(gaugeX + 1, gaugeY + 1, gaugeX + 1 + fill, gaugeY + 8, FUEL);
         }
-        if (menu.requiredFuel() > 0 && menu.fuelCapacity() > 0) {
-            int marker = scale(menu.requiredFuel(), menu.fuelCapacity(), gaugeWidth - 2);
+        if (displayedRequiredFuel() > 0 && menu.fuelCapacity() > 0) {
+            int marker = scale(displayedRequiredFuel(), menu.fuelCapacity(), gaugeWidth - 2);
             graphics.fill(gaugeX + 1 + marker, gaugeY - 2, gaugeX + 2 + marker, gaugeY + 11, ACCENT);
         }
     }
@@ -218,6 +199,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE7F0F2, false);
         RocketDestination current = menu.currentDestination();
+        RocketDestination selected = displayedDestination();
         Component route = Component.translatable("screen.advancedrocketrycommunity.rocket.route",
                 current == null ? Component.literal("?") : body(current),
                 selected == null ? Component.literal("?") : body(selected));
@@ -239,10 +221,10 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
                         "screen.advancedrocketrycommunity.rocket.fuel",
                         menu.fuelAmount(),
                         menu.fuelCapacity(),
-                        menu.requiredFuel()
+                        displayedRequiredFuel()
                 ),
                 22,
-                72,
+                RocketFlightScreenLayout.FUEL_TEXT_Y,
                 MUTED,
                 false
         );
@@ -275,6 +257,20 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         return Component.translatable(
                 "body.advancedrocketrycommunity." + destination.name().toLowerCase(java.util.Locale.ROOT)
         );
+    }
+
+    private RocketDestination displayedDestination() {
+        return selection.displayedDestination(menu.state(), menu.activePlan());
+    }
+
+    private void initializeSelection() {
+        if (menu.hasPlanSnapshot()) {
+            selection.initialize(menu.plannedDestination(), menu.currentDestination(), menu.activePlan().stationId());
+        }
+    }
+
+    private int displayedRequiredFuel() {
+        return menu.quotes().forDestination(displayedDestination()).requiredFuel();
     }
 
     private static String stateKey(RocketFlightState state) {

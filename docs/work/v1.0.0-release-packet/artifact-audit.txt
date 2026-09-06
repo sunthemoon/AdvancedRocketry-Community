@@ -1,0 +1,5 @@
+[PASS] Artifact: build\libs\advancedrocketry-community-1.20.1-1.0.0-dev.jar
+[PASS] SHA-256: 569f41ab59d953e3b4fad3c1b00588705b260fc0b73f1deaf829024bc603e381
+[PASS] Entries: 782
+[PASS] Metadata, notices, paths, and credential name/content scan
+[PASS] Content manifest: docs\work\v1.0.0-release-packet\jar-content-manifest.json (782 entries)

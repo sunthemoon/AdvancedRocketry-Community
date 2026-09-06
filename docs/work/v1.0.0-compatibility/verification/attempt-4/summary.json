@@ -1,0 +1,51 @@
+{
+  "artifact": {
+    "artifact": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\artifacts\\advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+    "entry_count": 766,
+    "expected_version": "1.20.1-1.0.0-dev",
+    "sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+  },
+  "authentication_tested": false,
+  "build": "1.20.1-1.0.0-dev",
+  "clients": [],
+  "completed_at": "2026-09-05T13:17:00.010069+00:00",
+  "failure": "Expected one owned GLFW client window, observed 2",
+  "java_version": "17.0.7",
+  "owned_processes": [
+    {
+      "completed_at": "2026-09-05T13:16:59.914037+00:00",
+      "exit_code": 1,
+      "full_log_bytes": 22855,
+      "full_log_file": "forge-47.4.10-jei-present.txt",
+      "full_log_sha256": "b6d544c83180784583993a11c3e9fa560a97ebb901f968855517102849a106b5",
+      "pid": 20500,
+      "started_at": "2026-09-05T13:16:36.329412+00:00"
+    },
+    {
+      "completed_at": "2026-09-05T13:17:00.008612+00:00",
+      "exit_code": 1,
+      "full_log_bytes": 12693,
+      "full_log_file": "server-47.4.10-matrix.txt",
+      "full_log_sha256": "fa0284b13fba8a859c0e2d9fb84475c07ffb0772dcebac461f8d342a91012b6d",
+      "pid": 8676,
+      "started_at": "2026-09-05T13:16:06.527079+00:00"
+    }
+  ],
+  "prepared_runtime": {
+    "asset_count": 3598,
+    "forge": [
+      "47.4.10",
+      "47.4.23"
+    ],
+    "jei": "15.56.0.205",
+    "jei_sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c",
+    "schema_version": 1
+  },
+  "schema_version": 1,
+  "servers": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T13:16:05.653387+00:00",
+  "status": "FAIL",
+  "target_version": "v1.0.0",
+  "visual_or_multiplayer_behavior_approved": false
+}

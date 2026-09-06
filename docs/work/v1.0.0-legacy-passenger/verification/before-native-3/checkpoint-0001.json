@@ -1,0 +1,25 @@
+{
+  "actions": [],
+  "artifact_sha256": "e8a066ca4be3b4fcf179fad88a72b502ba65d8c8b6695bcba5aca04293739af0",
+  "authentication_tested": false,
+  "client_pid": 1924,
+  "entity": "00808f92-994e-46a0-811c-82998883587c",
+  "owner": "62bbb9cb-b2fa-39aa-9a6b-430b71f5493f",
+  "owner_is_operator": false,
+  "port": 53780,
+  "processes": [],
+  "screenshots": [],
+  "second_client_pid": 24152,
+  "second_username": "V100Visual2",
+  "second_window": 328316,
+  "server_pid": 19956,
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T21:01:39.909599+00:00",
+  "startup_recovery_findings": [
+    "[05:01:58] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED"
+  ],
+  "stations": [],
+  "status": "IN_PROGRESS",
+  "username": "V100Visual1",
+  "window": 3803720
+}

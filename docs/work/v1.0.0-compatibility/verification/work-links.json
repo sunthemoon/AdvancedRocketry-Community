@@ -1,0 +1,178 @@
+{
+  "status": "PASS",
+  "checked_links": 43,
+  "links": [
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-7/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-8/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-1/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-2/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-3/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-4/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-5/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-6/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-7/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/attempt-8/summary.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/preparation/runtime-inventory.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/source-inventory.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/final-source-inventory.json"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "COMMANDS.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/VERIFICATION.md",
+      "target": "verification/checks"
+    },
+    {
+      "document": "docs/work/v1.0.0-compatibility/COMMANDS.md",
+      "target": "VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-beta-world-upgrade/BASELINE.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-beta-world-upgrade/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-transaction-recovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-stabilization-gap-audit.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-stabilization/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-transaction-recovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-beta-world-upgrade/BASELINE.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-beta-world-upgrade/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-compatibility/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "../provenance/v1.0.0-v1plus-planning.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-implementation-log.md",
+      "target": "v1.0.0-planning-integration/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "../versions/V1.0.0-COMMUNITY-MVP.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "../17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "../releases/v0.9.0/TEST-REPORT.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "../releases/v0.9.0/KNOWN-ISSUES.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "../decisions/ADR-013-V090-VISUAL-EVIDENCE-INHERITANCE.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "v1.0.0-transaction-recovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "v1.0.0-beta-world-upgrade/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.0.0-stabilization-gap-audit.md",
+      "target": "v1.0.0-compatibility/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/GATE_STATUS.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/GATE_STATUS.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/provenance/v1.0.0-stable-core.md",
+      "target": "v1.0.0-v1plus-planning.md"
+    }
+  ]
+}

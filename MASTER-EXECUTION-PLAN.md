@@ -6,7 +6,9 @@
 >
 > **目标：** Minecraft 1.20.1 / Forge / Java 17，采用分版本 Gate 驱动的社区重写。
 >
-> **状态：** 规划与执行规约；不包含实际 Forge 模组源码。
+> **状态：** v0.x–v1.0 初始规划快照，不是现有源码或最新版本状态。
+> v1.0–v2.0 的更新以 [主路线](docs/04-VERSION-ROADMAP.md)、
+> [后续路线](docs/16-POST-1.0-VERSION-ROADMAP.md)和[分版本文档](DOCUMENT-INDEX.md)为准。
 
 ## 使用规则
 

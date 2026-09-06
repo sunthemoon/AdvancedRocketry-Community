@@ -1,0 +1,14 @@
+satellite-acceptance Build the checked-out core
+exit 0 seconds 23.994
+satellite-acceptance Resolve built artifact identity
+exit 0 seconds 0.085
+satellite-acceptance Audit the current distributable JAR
+exit 0 seconds 0.365
+satellite-acceptance Validate accepted historical Beta release evidence
+exit 0 seconds 0.385
+satellite-acceptance Start and restart the packaged baseline
+exit 0 seconds 326.988
+satellite-acceptance Run packaged station regression
+exit 0 seconds 122.58
+satellite-acceptance Run packaged satellite restart and stress smoke test
+exit 0 seconds 65.331

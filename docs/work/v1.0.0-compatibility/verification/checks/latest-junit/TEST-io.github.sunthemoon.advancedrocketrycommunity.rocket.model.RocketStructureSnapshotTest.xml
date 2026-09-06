@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-05T13:30:46" hostname="DESKTOP-8J2KSNF" time="0.019">
+  <properties/>
+  <testcase name="translationKeysAreStableAndNamespaced()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.0"/>
+  <testcase name="statsAndPassengerAnchorsMustMatchCapturedBlocks()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="canonicalOrderingAndHashDoNotDependOnScanOrPropertyInsertionOrder()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.002"/>
+  <testcase name="hashCoversDimensionOriginStatePayloadAnchorsAndStatsButNotUuidOrGameTime()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="blockCountLimitStopsAtFirstInvalidSnapshot()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.005"/>
+  <testcase name="mutableInputsAndReturnedNbtCannotChangeSnapshot()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="blockEntityCountIsBounded()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="blockEntityPayloadRejectsIdentityFieldsAndOversizeData()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="boundingVolumeLimitUsesLongArithmetic()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="absolutePositionOverflowFailsBeforeWorldAccess()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="duplicatePositionsFailWithExactDiagnostic()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.001"/>
+  <testcase name="paletteLimitIsIndependentFromBlockLimit()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

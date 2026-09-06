@@ -1,0 +1,149 @@
+[
+  {
+    "id": 1,
+    "op": "server",
+    "command": "arce rocket release-test report 193edd8f-526d-4314-bdb7-f28ca34e9755",
+    "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="
+  },
+  {
+    "id": 2,
+    "op": "server",
+    "command": "execute as V100Visual1 on vehicle if entity @s[nbt={UUID:[I;423550351,1382892308,-1112018292,-1555130539]}] run say OWNER_MOUNTED_SOURCE",
+    "wait": "OWNER_MOUNTED_SOURCE"
+  },
+  {
+    "id": 3,
+    "op": "server",
+    "command": "execute as V100Visual2 on vehicle if entity @s[nbt={UUID:[I;423550351,1382892308,-1112018292,-1555130539]}] run say PASSENGER_MOUNTED_SOURCE",
+    "wait": "PASSENGER_MOUNTED_SOURCE"
+  },
+  {
+    "id": 4,
+    "op": "server",
+    "command": "data get entity 193edd8f-526d-4314-bdb7-f28ca34e9755 RocketEntityData.flight_data.passengers",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 5,
+    "op": "server",
+    "command": "data get entity V100Visual1 Dimension",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 6,
+    "op": "server",
+    "command": "data get entity V100Visual2 Dimension",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 7,
+    "op": "server",
+    "command": "say PASSENGER_PREFLIGHT_COMPLETE",
+    "wait": "PASSENGER_PREFLIGHT_COMPLETE"
+  },
+  {
+    "action": "owner launch pointer",
+    "receipt": "ARCE_FLIGHT_INTENT request=d4064015-8648-4ce4-aac1-f022d5cf6e2c player=62bbb9cb-b2fa-39aa-9a6b-430b71f5493f rocket=193edd8f-526d-4314-bdb7-f28ca34e9755 action=LAUNCH destination=advancedrocketrycommunity:moon station=null code=SUCCESS required_fuel=382"
+  },
+  {
+    "file": "04-owner-countdown.png",
+    "bytes": 79932,
+    "sha256": "3fb51d19bf3a681ecbcd7ad769276f1857e3b0c46f1c8dfda43060368078a5f5",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "action": "ascent observed before disconnect",
+    "receipt": "ARCE_TRANSFER_PHASE transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c logical=0ce64af6-4ee0-4c9b-b019-08c2b512bfe4 phase=PREPARED event=countdown_complete entity=193edd8f-526d-4314-bdb7-f28ca34e9755 fuel_before=1000 fuel_after=618 required=382"
+  },
+  {
+    "id": 20,
+    "op": "server",
+    "command": "kick V100Visual2 Passenger ascent reconnect probe",
+    "wait": "V100Visual2 left the game"
+  },
+  {
+    "file": "05-passenger-disconnected.png",
+    "bytes": 57389,
+    "sha256": "cd462a82ad0518e6ee1c16904548d3541de4831a1b9a8245ebc411a892708108",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "05-owner-ascent.png",
+    "bytes": 66530,
+    "sha256": "592f7e9acddc334b90f8c497af1d7eabd2fa414578bae92b177a7b4aa4ab3ca0",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "action": "landed while passenger offline",
+    "entity": "dc69c542-80f6-47e6-98d8-6bbb7f4eb6e1",
+    "receipt": "ARCE_TRANSFER_PHASE transfer=d4064015-8648-4ce4-aac1-f022d5cf6e2c logical=0ce64af6-4ee0-4c9b-b019-08c2b512bfe4 phase=COMMITTED event=landing_complete entity=dc69c542-80f6-47e6-98d8-6bbb7f4eb6e1 fuel_before=1000 fuel_after=618 required=382"
+  },
+  {
+    "id": 30,
+    "op": "server",
+    "command": "execute in advancedrocketrycommunity:moon run arce rocket release-test report dc69c542-80f6-47e6-98d8-6bbb7f4eb6e1",
+    "wait": "ARCE_RELEASE_TEST_FLIGHT_REPORT entity="
+  },
+  {
+    "id": 31,
+    "op": "server",
+    "command": "execute as V100Visual1 on vehicle if entity @s[nbt={UUID:[I;-597047998,-2131343386,-1730647109,2135865057]}] run say OWNER_MOUNTED_MOON",
+    "wait": "OWNER_MOUNTED_MOON"
+  },
+  {
+    "id": 32,
+    "op": "server",
+    "command": "execute in advancedrocketrycommunity:moon run data get entity dc69c542-80f6-47e6-98d8-6bbb7f4eb6e1 RocketEntityData.flight_data.passengers",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 33,
+    "op": "server",
+    "command": "data get entity V100Visual1 Dimension",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 34,
+    "op": "server",
+    "command": "data get entity V100Visual1 Pos",
+    "wait": "has the following entity data:"
+  },
+  {
+    "id": 35,
+    "op": "server",
+    "command": "say PASSENGER_OFFLINE_LANDING_REPORTED",
+    "wait": "PASSENGER_OFFLINE_LANDING_REPORTED"
+  },
+  {
+    "file": "06-owner-moon-offline-passenger.png",
+    "bytes": 80857,
+    "sha256": "1854211c1bedd40a45f42224a9d296e549fd28c5cbec1287cbfd6d61a8e09852",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "06b-owner-moon-coordinates.png",
+    "bytes": 94265,
+    "sha256": "c49dda92b4b35b495b063b3444d702230b6efa73960693e939c85961b544705d",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  }
+]

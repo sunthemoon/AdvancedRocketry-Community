@@ -1,0 +1,1 @@
+{"status": "PASS_SCOPED_AUDIT", "source_inputs": 734, "java_tests": 385, "game_tests": 44, "native_processes": 5, "screenshots": 6, "checksums": 132, "artifact_sha256": "6953ecfe64ae937080f8bc99eb000791e76e24cc36d6d786976a08658f3064fc", "full_visual_or_release_approval": false}

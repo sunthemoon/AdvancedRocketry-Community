@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-05T08:52:00" hostname="DESKTOP-8J2KSNF" time="0.012">
+  <properties/>
+  <testcase name="globalBudgetAndActiveTaskLimitAreNeverExceeded()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest" time="0.006"/>
+  <testcase name="pendingTaskDoesNoWorkUntilExplicitResume()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest" time="0.002"/>
+  <testcase name="dirtyCancellationAndChunkResumeRemainBounded()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest" time="0.0"/>
+  <testcase name="connectedSeedsMergeIntoOneStableVolume()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest" time="0.001"/>
+  <testcase name="disconnectedSeedsProduceDistinctVolumes()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

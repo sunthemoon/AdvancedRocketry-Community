@@ -1,0 +1,15 @@
+{
+  "pid": 15580,
+  "operation": "owned-window WM_MOUSEMOVE 640,560 with native raw input off",
+  "posted": true,
+  "screenshot": {
+    "file": "14-owner-look-down.png",
+    "bytes": 95610,
+    "sha256": "b5b680642d39658f4db69f3eda87c516565a2ec4966c256d661ee3748ce0e219",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      1280,
+      720
+    ]
+  }
+}

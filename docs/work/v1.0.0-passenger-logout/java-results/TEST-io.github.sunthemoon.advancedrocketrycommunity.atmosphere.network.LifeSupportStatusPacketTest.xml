@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-06T02:39:59" hostname="DESKTOP-8J2KSNF" time="0.556">
+  <properties/>
+  <testcase name="fixedVersionedFieldsRoundTrip()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest" time="0.554"/>
+  <testcase name="unknownEnumsSchemaAndOutOfRangeValuesFailClosed()" classname="io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest" time="0.002"/>
+  <system-out><![CDATA[2026-09-06 10:39:59,696 Test worker WARN Advanced terminal features are not available in this environment
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

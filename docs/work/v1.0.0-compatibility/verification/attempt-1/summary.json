@@ -1,0 +1,42 @@
+{
+  "artifact": {
+    "artifact": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v100-compatibility\\artifacts\\advancedrocketry-community-1.20.1-1.0.0-dev.jar",
+    "entry_count": 766,
+    "expected_version": "1.20.1-1.0.0-dev",
+    "sha256": "cf077ef750149f6b957ac4e8dc8a7da8e5cb91eafbe80703859157aac34a49b8"
+  },
+  "authentication_tested": false,
+  "build": "1.20.1-1.0.0-dev",
+  "clients": [],
+  "completed_at": "2026-09-05T13:08:51.833132+00:00",
+  "failure": "Timed out waiting for server marker '^(?:\\\\[[^\\\\]\\\\r\\\\n]+\\\\]\\\\s*)+[^\\\\r\\\\n]*?:\\\\s+Forge\\\\ mod\\\\ loading,\\\\ version\\\\ 47\\\\.4\\\\.10,\\\\ for\\\\ MC\\\\ 1\\\\.20\\\\.1\\\\s*$'",
+  "java_version": "17.0.7",
+  "owned_processes": [
+    {
+      "completed_at": "2026-09-05T13:08:51.832050+00:00",
+      "exit_code": 1,
+      "full_log_bytes": 11609,
+      "full_log_file": "server-47.4.10-matrix.txt",
+      "full_log_sha256": "12de2095c1b233e1c95b417d13362bc0ea9d5bb37af9fee434b4d255d750bb40",
+      "pid": 23476,
+      "started_at": "2026-09-05T13:08:14.368150+00:00"
+    }
+  ],
+  "prepared_runtime": {
+    "asset_count": 3598,
+    "forge": [
+      "47.4.10",
+      "47.4.23"
+    ],
+    "jei": "15.56.0.205",
+    "jei_sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c",
+    "schema_version": 1
+  },
+  "schema_version": 1,
+  "servers": [],
+  "source_state": "development_worktree",
+  "started_at": "2026-09-05T13:08:13.513165+00:00",
+  "status": "FAIL",
+  "target_version": "v1.0.0",
+  "visual_or_multiplayer_behavior_approved": false
+}
