@@ -4,6 +4,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
@@ -38,6 +41,18 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(ElectrolyzerBlock.LIT) ? 8 : 0)
                     .sound(SoundType.METAL))
     );
+    public static final RegistryObject<RollingMachineBlock> ROLLING_MACHINE = BLOCKS.register(
+            "rolling_machine",
+            () -> new RollingMachineBlock(metalProperties())
+    );
+    public static final RegistryObject<RollingMachinePortBlock> ROLLING_MACHINE_ITEM_INPUT_PORT =
+            rollingPort(RollingMachinePortType.ITEM_INPUT);
+    public static final RegistryObject<RollingMachinePortBlock> ROLLING_MACHINE_FLUID_INPUT_PORT =
+            rollingPort(RollingMachinePortType.FLUID_INPUT);
+    public static final RegistryObject<RollingMachinePortBlock> ROLLING_MACHINE_ENERGY_INPUT_PORT =
+            rollingPort(RollingMachinePortType.ENERGY_INPUT);
+    public static final RegistryObject<RollingMachinePortBlock> ROLLING_MACHINE_ITEM_OUTPUT_PORT =
+            rollingPort(RollingMachinePortType.ITEM_OUTPUT);
     public static final RegistryObject<Block> OXYGEN_VENT = BLOCKS.register(
             "oxygen_vent",
             () -> new OxygenVentBlock(BlockBehaviour.Properties.of()
@@ -73,6 +88,13 @@ public final class ModBlocks {
 
     private static RegistryObject<Block> metalBlock(String name) {
         return BLOCKS.register(name, () -> new Block(metalProperties()));
+    }
+
+    private static RegistryObject<RollingMachinePortBlock> rollingPort(RollingMachinePortType type) {
+        return BLOCKS.register(
+                type.registryPath(),
+                () -> new RollingMachinePortBlock(type, metalProperties())
+        );
     }
 
     private static BlockBehaviour.Properties metalProperties() {

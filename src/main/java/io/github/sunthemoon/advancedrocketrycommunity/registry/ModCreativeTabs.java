@@ -23,6 +23,11 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.MACHINE_CASING.get());
                         output.accept(ModItems.ELECTROLYZER.get());
+                        output.accept(ModItems.ROLLING_MACHINE.get());
+                        output.accept(ModItems.ROLLING_MACHINE_ITEM_INPUT_PORT.get());
+                        output.accept(ModItems.ROLLING_MACHINE_FLUID_INPUT_PORT.get());
+                        output.accept(ModItems.ROLLING_MACHINE_ENERGY_INPUT_PORT.get());
+                        output.accept(ModItems.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get());
                         output.accept(ModItems.EMPTY_CANISTER.get());
                         output.accept(ModItems.HYDROGEN_CANISTER.get());
                         output.accept(ModItems.OXYGEN_CANISTER.get());

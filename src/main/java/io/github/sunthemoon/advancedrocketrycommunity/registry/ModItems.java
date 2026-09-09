@@ -30,6 +30,26 @@ public final class ModItems {
             "electrolyzer",
             () -> new BlockItem(ModBlocks.ELECTROLYZER.get(), new Item.Properties())
     );
+    public static final RegistryObject<Item> ROLLING_MACHINE = blockItem(
+            "rolling_machine",
+            ModBlocks.ROLLING_MACHINE
+    );
+    public static final RegistryObject<Item> ROLLING_MACHINE_ITEM_INPUT_PORT = blockItem(
+            "rolling_machine_item_input_port",
+            ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT
+    );
+    public static final RegistryObject<Item> ROLLING_MACHINE_FLUID_INPUT_PORT = blockItem(
+            "rolling_machine_fluid_input_port",
+            ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT
+    );
+    public static final RegistryObject<Item> ROLLING_MACHINE_ENERGY_INPUT_PORT = blockItem(
+            "rolling_machine_energy_input_port",
+            ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT
+    );
+    public static final RegistryObject<Item> ROLLING_MACHINE_ITEM_OUTPUT_PORT = blockItem(
+            "rolling_machine_item_output_port",
+            ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT
+    );
     public static final RegistryObject<Item> EMPTY_CANISTER = ITEMS.register(
             "empty_canister",
             () -> new Item(new Item.Properties().stacksTo(16))

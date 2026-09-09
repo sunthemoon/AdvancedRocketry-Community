@@ -90,4 +90,8 @@ public final class MultiblockDirtyQueue {
     public int pendingCount() {
         return pending.size();
     }
+
+    public void clear() {
+        pending.clear();
+    }
 }

@@ -22,6 +22,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineManager;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
@@ -60,6 +63,7 @@ public final class AdvancedRocketryCommunity {
     private final RouteCatalogManager routeCatalogs = new RouteCatalogManager();
     private final MultiblockPatternCatalogManager multiblockPatterns =
             new MultiblockPatternCatalogManager();
+    private final RollingMachineManager rollingMachines = new RollingMachineManager(multiblockPatterns);
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
     private final RocketManager rocketManager;
@@ -76,6 +80,14 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
         MinecraftForge.EVENT_BUS.addListener(new BetaWorldMigrationEvents()::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(new BetaDataCommands()::register);
+        RollingMachineRuntime.install(rollingMachines);
+        RollingMachineServerEvents rollingEvents = new RollingMachineServerEvents(rollingMachines);
+        MinecraftForge.EVENT_BUS.addListener(rollingEvents::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(rollingEvents::onBlockBroken);
+        MinecraftForge.EVENT_BUS.addListener(rollingEvents::onBlockPlaced);
+        MinecraftForge.EVENT_BUS.addListener(rollingEvents::onNeighborNotify);
+        MinecraftForge.EVENT_BUS.addListener(rollingEvents::onChunkLoad);
+        MinecraftForge.EVENT_BUS.addListener(rollingEvents::onChunkUnload);
         CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
@@ -168,6 +180,8 @@ public final class AdvancedRocketryCommunity {
         stationManager.clear();
         satelliteManager.clear();
         routeCatalogs.clear();
+        rollingMachines.clear();
+        RollingMachineRuntime.clear();
         multiblockPatterns.clear();
         StationRuntime.clear();
         SatelliteRuntime.clear();

@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity;
@@ -24,6 +26,25 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ElectrolyzerBlockEntity::new,
                             ModBlocks.ELECTROLYZER.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<RollingMachineBlockEntity>> ROLLING_MACHINE =
+            BLOCK_ENTITIES.register(
+                    "rolling_machine",
+                    () -> BlockEntityType.Builder.of(
+                            RollingMachineBlockEntity::new,
+                            ModBlocks.ROLLING_MACHINE.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<RollingMachinePortBlockEntity>> ROLLING_MACHINE_PORT =
+            BLOCK_ENTITIES.register(
+                    "rolling_machine_port",
+                    () -> BlockEntityType.Builder.of(
+                            RollingMachinePortBlockEntity::new,
+                            ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT.get(),
+                            ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT.get(),
+                            ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT.get(),
+                            ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get()
                     ).build(null)
             );
     public static final RegistryObject<BlockEntityType<OxygenVentBlockEntity>> OXYGEN_VENT =
