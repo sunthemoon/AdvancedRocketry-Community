@@ -20,6 +20,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
@@ -56,6 +58,8 @@ public final class AdvancedRocketryCommunity {
     private final CelestialCatalogManager celestialCatalogs = new CelestialCatalogManager();
     private final SatelliteCatalogManager satelliteCatalogs = new SatelliteCatalogManager();
     private final RouteCatalogManager routeCatalogs = new RouteCatalogManager();
+    private final MultiblockPatternCatalogManager multiblockPatterns =
+            new MultiblockPatternCatalogManager();
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
     private final RocketManager rocketManager;
@@ -154,6 +158,7 @@ public final class AdvancedRocketryCommunity {
         event.addListener(new CelestialDefinitionReloadListener(celestialCatalogs));
         event.addListener(new RouteDefinitionReloadListener(routeCatalogs, celestialCatalogs));
         event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs));
+        event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
     }
 
     private void onServerStopped(ServerStoppedEvent event) {
@@ -163,6 +168,7 @@ public final class AdvancedRocketryCommunity {
         stationManager.clear();
         satelliteManager.clear();
         routeCatalogs.clear();
+        multiblockPatterns.clear();
         StationRuntime.clear();
         SatelliteRuntime.clear();
         celestialCatalogs.clear();
