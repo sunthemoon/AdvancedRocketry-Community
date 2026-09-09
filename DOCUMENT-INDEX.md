@@ -127,6 +127,7 @@
 | [v1.2.0 process core 验证](docs/work/v1.2.0-process-core/VERIFICATION.md) | 纯 Java 模拟、边界、事务顺序和中断恢复证据 |
 | [v1.2.0 port core 验证](docs/work/v1.2.0-port-core/VERIFICATION.md) | 端口策略、方向、Forge wrapper 与 capability GameTest 证据 |
 | [v1.2.0 pattern core 验证](docs/work/v1.2.0-pattern-core/VERIFICATION.md) | schema、变换、诊断与未加载区块 GameTest 证据 |
+| [v1.2.0 lifecycle core 验证](docs/work/v1.2.0-lifecycle-core/VERIFICATION.md) | controller/part 状态、原子 binding、dirty queue 与重建 GameTest 证据 |
 
 ## 分版本执行文件
 

@@ -1,0 +1,53 @@
+command=./gradlew test --tests "*MultiblockLifecycleCoordinatorTest" --tests "*MultiblockDirtyQueueTest" --tests "*PartBindingVerifierTest" --tests "*LoadedPartBindingGatewayTest" --tests "*MultiblockNbtCodecTest"
+result=PASS
+test_suites=5
+tests=22
+failures=0
+errors=0
+skipped=0
+
+command=./gradlew clean build --no-daemon
+result=PASS
+test_suites=102
+tests=521
+failures=0
+errors=0
+skipped=0
+java=17.0.7
+
+command=./gradlew runGameTestServer --no-daemon
+result=PASS
+required_gametests=58
+failed_gametests=0
+new_lifecycle_gametests=1
+
+command=./gradlew runData --no-daemon
+result=PASS
+generated_files_written=0
+
+check=lifecycle_client_import_scan
+result=PASS
+matches=0
+
+check=lifecycle_class_size
+result=PASS
+largest_class=MultiblockLifecycleCoordinator.java
+largest_class_lines=208
+
+check=staged_credential_scan
+result=PASS
+matches=0
+
+command=python scripts/validate_v1plus_planning.py
+result=PASS
+version_plans=11
+source_inventory_inputs=33
+
+command=python scripts/validate_repository.py --require-approved-identity
+result=PASS
+checks=45
+pending=0
+warnings=0
+failures=0
+
+production_commit=843ff2734d787bfa414228c72d28acc0eb1f2d5e

@@ -1,0 +1,1 @@
+5cef1399fe31b9f4625bf78f8650a39f7fbc7aef12bf41dd42dd805692867d43  docs/work/v1.2.0-lifecycle-core/test-summary.txt
