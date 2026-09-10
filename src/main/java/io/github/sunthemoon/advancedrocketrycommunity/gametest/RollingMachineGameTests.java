@@ -6,9 +6,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingValidationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockControllerNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockPartBindingNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -182,7 +185,7 @@ public final class RollingMachineGameTests {
                     "Port outside the controller part set accepted a copied binding"
             );
             helper.assertTrue(
-                    items.insertItem(0, new ItemStack(Items.IRON_INGOT, 3), false).isEmpty(),
+                    items.insertItem(0, new ItemStack(Items.GOLD_INGOT, 3), false).isEmpty(),
                     "Formed Item input rejected a valid stack"
             );
             helper.assertTrue(
@@ -300,6 +303,248 @@ public final class RollingMachineGameTests {
                 1.0D,
                 3
         ));
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 150)
+    public static void rollingRecipeConsumesEnergyAndCommitsResourcesExactlyOnce(
+            GameTestHelper helper
+    ) {
+        placeStructure(helper);
+        helper.runAtTickTime(6, () -> {
+            IItemHandler input = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            IFluidHandler fluid = port(helper, FLUID_INPUT)
+                    .getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow();
+            IEnergyStorage energy = port(helper, ENERGY_INPUT)
+                    .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
+            helper.assertTrue(
+                    input.insertItem(0, new ItemStack(Items.IRON_INGOT, 2), false).isEmpty(),
+                    "Rolling recipe input was rejected"
+            );
+            helper.assertTrue(
+                    fluid.fill(new FluidStack(Fluids.WATER, 500), IFluidHandler.FluidAction.EXECUTE) == 500,
+                    "Rolling recipe water was rejected"
+            );
+            for (int transfer = 0; transfer < 4; transfer++) {
+                helper.assertTrue(
+                        energy.receiveEnergy(1_000, false) == 1_000,
+                        "Rolling recipe energy transfer was rejected"
+                );
+            }
+        });
+        helper.runAtTickTime(12, () -> {
+            RollingMachineBlockEntity controller = controller(helper);
+            helper.assertTrue(
+                    controller.processState() == ProcessMachineState.RUNNING,
+                    "Rolling recipe did not enter RUNNING"
+            );
+            helper.assertTrue(
+                    controller.processProgress().map(progress -> progress.progressTicks() > 0).orElse(false),
+                    "Rolling recipe did not persist positive progress"
+            );
+            IItemHandler input = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            helper.assertTrue(
+                    input.insertItem(0, new ItemStack(Items.IRON_INGOT), false).getCount() == 1,
+                    "Active Rolling recipe did not lock external Item insertion"
+            );
+        });
+        helper.runAtTickTime(130, () -> {
+            RollingMachineBlockEntity controller = controller(helper);
+            IItemHandler input = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            IFluidHandler fluid = port(helper, FLUID_INPUT)
+                    .getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow();
+            IEnergyStorage energy = port(helper, ENERGY_INPUT)
+                    .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
+            IItemHandler output = port(helper, ITEM_OUTPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            CompoundTag saved = controller.saveWithFullMetadata();
+            helper.assertTrue(input.getStackInSlot(0).isEmpty(), "Rolling batch did not consume two ingots");
+            helper.assertTrue(fluid.getFluidInTank(0).getAmount() == 400, "Rolling batch did not consume 100 mB");
+            helper.assertTrue(energy.getEnergyStored() == 2_000, "Rolling batch did not consume exactly 2,000 FE");
+            helper.assertTrue(
+                    output.getStackInSlot(0).is(Items.IRON_BARS)
+                            && output.getStackInSlot(0).getCount() == 8,
+                    "Rolling batch did not produce exactly eight iron bars"
+            );
+            helper.assertTrue(controller.processState() == ProcessMachineState.IDLE, "Completed batch did not idle");
+            helper.assertTrue(controller.processProgress().isEmpty(), "Completed batch retained active progress");
+            helper.assertTrue(controller.resourceRevision() == 7, "Resource revision did not advance exactly once");
+            helper.assertTrue(saved.contains("arce_process"), "Process state root was not persisted");
+            helper.assertTrue(!saved.contains("arce_process_journal"), "Completed batch retained a journal");
+            helper.assertTrue(
+                    !saved.getCompound("arce_process").getString("last_applied_transaction").isEmpty(),
+                    "Completed batch did not persist its replay marker"
+            );
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 30)
+    public static void futureProcessRootIsPreservedAndHidesAllPortCapabilities(GameTestHelper helper) {
+        placeStructure(helper);
+        RollingMachineBlockEntity controller = controller(helper);
+        CompoundTag futureProcess = futureRoot("process-marker");
+        CompoundTag parent = new CompoundTag();
+        parent.put("arce_process", futureProcess.copy());
+        controller.load(parent);
+
+        helper.runAtTickTime(10, () -> {
+            helper.assertTrue(
+                    controller.formationState() == MultiblockFormationState.FORMED,
+                    "Future process root incorrectly prevented structural formation"
+            );
+            helper.assertTrue(
+                    controller.processState() == ProcessMachineState.UNSUPPORTED_DATA,
+                    "Future process root did not block process execution"
+            );
+            helper.assertTrue(
+                    allPorts(helper).stream().noneMatch(port ->
+                            port.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()
+                                    || port.getCapability(ForgeCapabilities.FLUID_HANDLER).isPresent()
+                                    || port.getCapability(ForgeCapabilities.ENERGY).isPresent()),
+                    "Future process root exposed a resource capability"
+            );
+            helper.assertTrue(
+                    futureProcess.equals(controller.saveWithFullMetadata().get("arce_process")),
+                    "Future process root was not preserved exactly"
+            );
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 150)
+    public static void activeRollingProgressResumesAfterNbtReload(GameTestHelper helper) {
+        placeStructure(helper);
+        helper.runAtTickTime(6, () -> {
+            IItemHandler input = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            IFluidHandler fluid = port(helper, FLUID_INPUT)
+                    .getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow();
+            IEnergyStorage energy = port(helper, ENERGY_INPUT)
+                    .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
+            helper.assertTrue(
+                    input.insertItem(0, new ItemStack(Items.IRON_INGOT, 2), false).isEmpty(),
+                    "Reload fixture input was rejected"
+            );
+            helper.assertTrue(
+                    fluid.fill(new FluidStack(Fluids.WATER, 500), IFluidHandler.FluidAction.EXECUTE) == 500,
+                    "Reload fixture water was rejected"
+            );
+            for (int transfer = 0; transfer < 4; transfer++) {
+                energy.receiveEnergy(1_000, false);
+            }
+        });
+        helper.runAtTickTime(35, () -> {
+            RollingMachineBlockEntity controller = controller(helper);
+            int progressBefore = controller.processProgress().orElseThrow().progressTicks();
+            int energyBefore = port(helper, ENERGY_INPUT)
+                    .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().getEnergyStored();
+            CompoundTag controllerData = controller.saveWithFullMetadata();
+            List<CompoundTag> portData = allPorts(helper).stream()
+                    .map(RollingMachinePortBlockEntity::saveWithFullMetadata)
+                    .toList();
+
+            controller.load(controllerData);
+            List<RollingMachinePortBlockEntity> ports = allPorts(helper);
+            for (int index = 0; index < ports.size(); index++) {
+                ports.get(index).load(portData.get(index));
+            }
+            helper.assertTrue(
+                    controller.processProgress().orElseThrow().progressTicks() == progressBefore,
+                    "NBT reload changed active Rolling progress"
+            );
+            helper.assertTrue(
+                    port(helper, ENERGY_INPUT).getCapability(ForgeCapabilities.ENERGY)
+                            .resolve().orElseThrow().getEnergyStored() == energyBefore,
+                    "NBT reload changed stored Rolling energy"
+            );
+        });
+        helper.runAtTickTime(135, () -> {
+            RollingMachineBlockEntity controller = controller(helper);
+            ItemStack output = port(helper, ITEM_OUTPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow()
+                    .getStackInSlot(0);
+            helper.assertTrue(
+                    controller.processState() == ProcessMachineState.IDLE
+                            && controller.processProgress().isEmpty(),
+                    "Reloaded Rolling process did not finish"
+            );
+            helper.assertTrue(
+                    output.is(Items.IRON_BARS) && output.getCount() == 8,
+                    "Reloaded Rolling process duplicated or lost its output"
+            );
+            helper.assertTrue(
+                    port(helper, ENERGY_INPUT).getCapability(ForgeCapabilities.ENERGY)
+                            .resolve().orElseThrow().getEnergyStored() == 2_000,
+                    "Reloaded Rolling process consumed energy more than once"
+            );
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 30)
+    public static void completedProgressWithoutJournalFailsClosed(GameTestHelper helper) {
+        placeStructure(helper);
+        helper.runAtTickTime(6, () -> {
+            IItemHandler input = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            IFluidHandler fluid = port(helper, FLUID_INPUT)
+                    .getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow();
+            IEnergyStorage energy = port(helper, ENERGY_INPUT)
+                    .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
+            input.insertItem(0, new ItemStack(Items.IRON_INGOT, 4), false);
+            fluid.fill(new FluidStack(Fluids.WATER, 500), IFluidHandler.FluidAction.EXECUTE);
+            for (int transfer = 0; transfer < 4; transfer++) {
+                energy.receiveEnergy(1_000, false);
+            }
+
+            ResourceLocation recipeId = ResourceLocation.tryBuild(
+                    AdvancedRocketryCommunity.MOD_ID,
+                    "rolling_iron_bars"
+            );
+            RollingMachineRecipe recipe = (RollingMachineRecipe) helper.getLevel()
+                    .getRecipeManager().byKey(recipeId).orElseThrow();
+            RollingMachineBlockEntity controller = controller(helper);
+            CompoundTag saved = controller.saveWithFullMetadata();
+            CompoundTag process = saved.getCompound("arce_process");
+            process.putString("state", "running");
+            process.putString("definition_id", recipeId.toString());
+            process.putString("recipe_signature", recipe.signature());
+            process.putInt("progress_ticks", recipe.processDefinition().durationTicks());
+            process.putLong("consumed_energy", recipe.processDefinition().totalEnergy());
+            controller.load(saved);
+        });
+        helper.runAtTickTime(15, () -> {
+            RollingMachineBlockEntity controller = controller(helper);
+            CompoundTag input = port(helper, ITEM_INPUT).saveWithFullMetadata()
+                    .getCompound("arce_rolling_port").getCompound("item");
+            CompoundTag output = port(helper, ITEM_OUTPUT).saveWithFullMetadata()
+                    .getCompound("arce_rolling_port").getCompound("item");
+            CompoundTag fluid = port(helper, FLUID_INPUT).saveWithFullMetadata()
+                    .getCompound("arce_rolling_port").getCompound("fluid");
+            CompoundTag energy = port(helper, ENERGY_INPUT).saveWithFullMetadata()
+                    .getCompound("arce_rolling_port");
+            helper.assertTrue(
+                    controller.processState() == ProcessMachineState.RECOVERY_REQUIRED,
+                    "Completed progress without a journal was not stopped for recovery"
+            );
+            helper.assertTrue(
+                    input.getByte("Count") == 4,
+                    "Ambiguous completed progress consumed another input batch"
+            );
+            helper.assertTrue(output.isEmpty(), "Ambiguous completed progress produced duplicate output");
+            helper.assertTrue(fluid.getInt("Amount") == 500, "Ambiguous completed progress consumed water");
+            helper.assertTrue(energy.getInt("energy") == 4_000, "Ambiguous completed progress consumed energy");
+            IItemHandler retainedInput = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            helper.assertTrue(
+                    retainedInput.insertItem(0, new ItemStack(Items.IRON_INGOT), false).getCount() == 1,
+                    "Recovery-required process accepted an external resource mutation"
+            );
+            helper.succeed();
+        });
     }
 
     private static void placeStructure(GameTestHelper helper) {

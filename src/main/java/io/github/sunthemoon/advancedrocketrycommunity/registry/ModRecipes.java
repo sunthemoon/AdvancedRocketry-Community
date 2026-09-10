@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipe;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -30,6 +31,17 @@ public final class ModRecipes {
     );
     public static final RegistryObject<RecipeSerializer<ElectrolyzerRecipe>> ELECTROLYZING_SERIALIZER =
             SERIALIZERS.register("electrolyzing", ElectrolyzerRecipe.Serializer::new);
+    public static final RegistryObject<RecipeType<RollingMachineRecipe>> ROLLING_TYPE = TYPES.register(
+            "rolling",
+            () -> new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return AdvancedRocketryCommunity.MOD_ID + ":rolling";
+                }
+            }
+    );
+    public static final RegistryObject<RecipeSerializer<RollingMachineRecipe>> ROLLING_SERIALIZER =
+            SERIALIZERS.register("rolling", RollingMachineRecipe.Serializer::new);
 
     private ModRecipes() {
     }

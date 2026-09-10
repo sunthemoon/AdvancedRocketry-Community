@@ -42,6 +42,11 @@ final class RollingMachineItemStorage extends ItemStackHandler {
         stacks.set(0, stack.copy());
     }
 
+    void replaceStored(ItemStack stack) {
+        loadStored(stack);
+        changed.run();
+    }
+
     @Override
     protected void onContentsChanged(int slot) {
         changed.run();
@@ -71,6 +76,11 @@ final class RollingMachineFluidStorage extends FluidTank {
             throw new IllegalArgumentException("Rolling Machine port rejected loaded fluid data");
         }
         fluid = stack.copy();
+    }
+
+    void replaceStored(FluidStack stack) {
+        loadStored(stack);
+        changed.run();
     }
 
     @Override
@@ -109,5 +119,19 @@ final class RollingMachineEnergyStorage extends EnergyStorage {
             throw new IllegalArgumentException("Rolling Machine port rejected loaded energy data");
         }
         energy = stored;
+    }
+
+    boolean consumeInternal(int requested) {
+        if (requested < 0) {
+            throw new IllegalArgumentException("Rolling Machine cannot consume negative energy");
+        }
+        if (requested > energy) {
+            return false;
+        }
+        if (requested > 0) {
+            energy -= requested;
+            changed.run();
+        }
+        return true;
     }
 }

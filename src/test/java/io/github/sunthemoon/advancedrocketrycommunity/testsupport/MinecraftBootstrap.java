@@ -26,6 +26,8 @@ public final class MinecraftBootstrap {
             // Initialize this class before Registries to preserve Minecraft's normal bootstrap
             // order and avoid a circular lookup of partially initialized registry keys.
             Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+            Class.forName("net.minecraft.world.item.Items");
+            Class.forName("net.minecraft.world.level.material.Fluids");
             initialized = true;
         } catch (ReflectiveOperationException exception) {
             throw new IllegalStateException("Could not prepare Minecraft ResourceKey constants", exception);

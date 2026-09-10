@@ -12,6 +12,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternValidationResult;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.forge.ServerLevelPatternWorldView;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailure;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessProgress;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import java.util.Optional;
 import java.util.Set;
@@ -27,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /** Thin Minecraft lifecycle adapter around the immutable multiblock controller state. */
 public final class RollingMachineBlockEntity extends BlockEntity {
     private MultiblockControllerState controllerState;
+    private final RollingMachineProcessController process;
     private MultiblockNbtStatus persistenceStatus = MultiblockNbtStatus.SUPPORTED;
     @Nullable
     private Tag preservedControllerRoot;
@@ -36,6 +40,8 @@ public final class RollingMachineBlockEntity extends BlockEntity {
     public RollingMachineBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.ROLLING_MACHINE.get(), position, state);
         controllerState = freshState(state);
+        process = new RollingMachineProcessController(this::setChanged);
+        process.initialize(controllerState.machineInstanceId());
     }
 
     @Override
@@ -139,9 +145,44 @@ public final class RollingMachineBlockEntity extends BlockEntity {
         return Optional.ofNullable(lastValidation);
     }
 
-    /** No resource process can run until the remaining Rolling process slice is connected. */
     boolean processLocked() {
-        return false;
+        return process.locked();
+    }
+
+    boolean acceptsResourceAccess() {
+        return process.acceptsResourceAccess();
+    }
+
+    boolean permitsExternalResourceOperations() {
+        return process.permitsExternalResourceOperations();
+    }
+
+    boolean tickProcess(ServerLevel level) {
+        return process.tick(level, this);
+    }
+
+    void recordExternalResourceMutation(ServerLevel level) {
+        process.recordExternalMutation(level, this);
+    }
+
+    void requireRecoveryAfterUnexpectedTickFailure() {
+        process.requireRecoveryAfterUnexpectedTickFailure();
+    }
+
+    public ProcessMachineState processState() {
+        return process.state();
+    }
+
+    public ProcessFailure processFailure() {
+        return process.failure();
+    }
+
+    public Optional<ProcessProgress> processProgress() {
+        return process.progress();
+    }
+
+    public long resourceRevision() {
+        return process.resourceRevision();
     }
 
     @Override
@@ -155,6 +196,7 @@ public final class RollingMachineBlockEntity extends BlockEntity {
                     MultiblockControllerNbtCodec.encode(controllerState)
             );
         }
+        process.save(parent);
     }
 
     @Override
@@ -167,18 +209,19 @@ public final class RollingMachineBlockEntity extends BlockEntity {
         persistenceStatus = decoded.status();
         if (decoded.status() == MultiblockNbtStatus.SUPPORTED) {
             controllerState = decoded.value().orElseThrow();
-            return;
+        } else {
+            controllerState = freshState(getBlockState());
+            if (decoded.status() == MultiblockNbtStatus.EMPTY) {
+                persistenceStatus = MultiblockNbtStatus.SUPPORTED;
+            } else {
+                preservedControllerRoot = decoded.preservedRoot().orElseThrow();
+                controllerState = controllerState.withState(
+                        MultiblockFormationState.UNSUPPORTED_DATA,
+                        Set.of()
+                );
+            }
         }
-        controllerState = freshState(getBlockState());
-        if (decoded.status() == MultiblockNbtStatus.EMPTY) {
-            persistenceStatus = MultiblockNbtStatus.SUPPORTED;
-            return;
-        }
-        preservedControllerRoot = decoded.preservedRoot().orElseThrow();
-        controllerState = controllerState.withState(
-                MultiblockFormationState.UNSUPPORTED_DATA,
-                Set.of()
-        );
+        process.load(parent, controllerState.machineInstanceId());
     }
 
     private static MultiblockControllerState freshState(BlockState state) {

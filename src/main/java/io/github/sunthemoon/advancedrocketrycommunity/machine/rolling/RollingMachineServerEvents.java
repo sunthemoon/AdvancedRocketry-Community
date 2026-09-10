@@ -4,9 +4,11 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 
 /** Forge event adapter for bounded block/chunk invalidation and central server ticks. */
 public final class RollingMachineServerEvents {
@@ -59,6 +61,17 @@ public final class RollingMachineServerEvents {
         if (event.getLevel() instanceof ServerLevel level) {
             machines.onChunkUnloading(level, event.getChunk().getPos().x, event.getChunk().getPos().z);
         }
+    }
+
+    public void onDatapackSync(OnDatapackSyncEvent event) {
+        if (event.getPlayer() == null) {
+            machines.onRecipesReloaded();
+        }
+    }
+
+    public void onServerAboutToStart(ServerAboutToStartEvent event) {
+        machines.clear();
+        RollingMachineRuntime.install(machines);
     }
 
     private void mark(net.minecraft.world.level.LevelAccessor accessor, BlockPos position) {

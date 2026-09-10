@@ -4,12 +4,15 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.DirtyEnqueueResult;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockControllerKey;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockDirtyQueue;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFootprintIndex;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -23,6 +26,7 @@ public final class RollingMachineManager {
     public static final int MAX_TRACKED_CELL_REFERENCES = 1_000_000;
     public static final int MAX_CONTROLLERS_PER_TICK = 32;
     public static final int MAX_CELLS_PER_TICK = 8_192;
+    public static final int MAX_PROCESSES_PER_TICK = 256;
 
     private final MultiblockPatternCatalogManager patterns;
     private final MultiblockFootprintIndex footprints = new MultiblockFootprintIndex(
@@ -36,6 +40,7 @@ public final class RollingMachineManager {
     );
     private final LinkedHashSet<MultiblockControllerKey> dirtyRetries = new LinkedHashSet<>();
     private final LinkedHashSet<MultiblockControllerKey> reindexPending = new LinkedHashSet<>();
+    private final LinkedHashSet<MultiblockControllerKey> processReady = new LinkedHashSet<>();
     private long observedCatalogGeneration = -1L;
 
     public RollingMachineManager(MultiblockPatternCatalogManager patterns) {
@@ -54,6 +59,7 @@ public final class RollingMachineManager {
             return;
         }
         enqueue(key);
+        enqueueProcess(key);
     }
 
     public void removeController(ServerLevel level, RollingMachineBlockEntity controller) {
@@ -62,6 +68,7 @@ public final class RollingMachineManager {
         footprints.remove(key);
         dirtyRetries.remove(key);
         reindexPending.remove(key);
+        processReady.remove(key);
     }
 
     public void markDirty(ServerLevel level, BlockPos changedPosition) {
@@ -101,11 +108,25 @@ public final class RollingMachineManager {
         }
     }
 
+    public void markProcessReady(ServerLevel level, BlockPos controllerPosition) {
+        MultiblockControllerKey key = key(level, controllerPosition);
+        if (footprints.containsController(key)) {
+            enqueueProcess(key);
+        }
+    }
+
+    public void onRecipesReloaded() {
+        for (MultiblockControllerKey key : footprints.controllers()) {
+            enqueueProcess(key);
+        }
+    }
+
     public void tick(MinecraftServer server) {
         scheduleCatalogRefresh();
         processReindex(server);
         retryDirtyQueue();
         dirty.tick(controller -> validateLoaded(server, controller));
+        processReady(server);
     }
 
     public int trackedControllerCount() {
@@ -116,11 +137,16 @@ public final class RollingMachineManager {
         return dirty.pendingCount() + dirtyRetries.size();
     }
 
+    public int pendingProcessCount() {
+        return processReady.size();
+    }
+
     public void clear() {
         footprints.clear();
         dirty.clear();
         dirtyRetries.clear();
         reindexPending.clear();
+        processReady.clear();
         observedCatalogGeneration = -1L;
     }
 
@@ -176,15 +202,22 @@ public final class RollingMachineManager {
         BlockEntity blockEntity = level.getBlockEntity(key.position());
         if (!(blockEntity instanceof RollingMachineBlockEntity controller)) {
             footprints.remove(key);
+            processReady.remove(key);
             return;
         }
         Optional<MultiblockPatternDefinition> definition = definition();
         if (definition.isEmpty()) {
             controller.invalidateMissingDefinition(level);
+            processReady.remove(key);
             return;
         }
         try {
             controller.revalidate(level, definition.orElseThrow());
+            if (controller.formationState() == MultiblockFormationState.FORMED) {
+                enqueueProcess(key);
+            } else {
+                processReady.remove(key);
+            }
         } catch (RuntimeException exception) {
             if (dirtyRetries.size() < MAX_TRACKED_CONTROLLERS) {
                 dirtyRetries.add(key);
@@ -236,6 +269,52 @@ public final class RollingMachineManager {
                 && dirtyRetries.size() < MAX_TRACKED_CONTROLLERS) {
             dirtyRetries.add(key);
         }
+    }
+
+    private void enqueueProcess(MultiblockControllerKey key) {
+        if (processReady.size() < MAX_TRACKED_CONTROLLERS || processReady.contains(key)) {
+            processReady.add(key);
+        } else {
+            AdvancedRocketryCommunity.LOGGER.error(
+                    "Rolling Machine process queue limit rejected controller at {} in {}",
+                    key.position(),
+                    key.level().location()
+            );
+        }
+    }
+
+    private void processReady(MinecraftServer server) {
+        Iterator<MultiblockControllerKey> iterator = processReady.iterator();
+        List<MultiblockControllerKey> requeue = new ArrayList<>();
+        int processed = 0;
+        while (iterator.hasNext() && processed < MAX_PROCESSES_PER_TICK) {
+            MultiblockControllerKey key = iterator.next();
+            iterator.remove();
+            processed++;
+            ServerLevel level = server.getLevel(key.level());
+            if (level == null || !level.hasChunkAt(key.position())) {
+                continue;
+            }
+            BlockEntity blockEntity = level.getBlockEntity(key.position());
+            if (!(blockEntity instanceof RollingMachineBlockEntity controller)) {
+                footprints.remove(key);
+                continue;
+            }
+            try {
+                if (controller.tickProcess(level)) {
+                    requeue.add(key);
+                }
+            } catch (RuntimeException exception) {
+                controller.requireRecoveryAfterUnexpectedTickFailure();
+                AdvancedRocketryCommunity.LOGGER.error(
+                        "Rolling Machine process tick failed at {} in {}",
+                        key.position(),
+                        key.level().location(),
+                        exception
+                );
+            }
+        }
+        requeue.forEach(this::enqueueProcess);
     }
 
     private int patternCellCount() {

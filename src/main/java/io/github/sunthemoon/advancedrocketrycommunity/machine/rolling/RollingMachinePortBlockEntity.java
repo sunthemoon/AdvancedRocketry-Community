@@ -156,6 +156,30 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
         return energyStorage.getEnergyStored();
     }
 
+    void replaceStoredItemInternal(ItemStack replacement) {
+        if (portType().kind() != io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortKind.ITEM
+                || resourcePersistenceStatus != MultiblockNbtStatus.SUPPORTED) {
+            throw new IllegalStateException("Rolling Machine port cannot accept an internal Item replacement");
+        }
+        itemStorage.replaceStored(replacement);
+    }
+
+    void replaceStoredFluidInternal(FluidStack replacement) {
+        if (portType() != RollingMachinePortType.FLUID_INPUT
+                || resourcePersistenceStatus != MultiblockNbtStatus.SUPPORTED) {
+            throw new IllegalStateException("Rolling Machine port cannot accept an internal Fluid replacement");
+        }
+        fluidStorage.replaceStored(replacement);
+    }
+
+    boolean consumeEnergyInternal(int amount) {
+        if (portType() != RollingMachinePortType.ENERGY_INPUT
+                || resourcePersistenceStatus != MultiblockNbtStatus.SUPPORTED) {
+            return false;
+        }
+        return energyStorage.consumeInternal(amount);
+    }
+
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(
@@ -266,6 +290,12 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
         return acceptsBindingMutations() && loadedFormedController().isPresent();
     }
 
+    private boolean capabilityOperationAllowed() {
+        return loadedFormedController()
+                .map(RollingMachineBlockEntity::permitsExternalResourceOperations)
+                .orElse(false);
+    }
+
     private boolean processLocked() {
         return loadedFormedController()
                 .map(RollingMachineBlockEntity::processLocked)
@@ -286,6 +316,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
                 || !controller.controllerState().machineInstanceId().equals(expected.machineInstanceId())
                 || controller.generation() != expected.generation()
                 || !controller.controllerState().partPositions().contains(worldPosition)
+                || !controller.acceptsResourceAccess()
                 || controller.formationState() != MultiblockFormationState.FORMED) {
             return Optional.empty();
         }
@@ -303,7 +334,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
                             itemStorage,
                             definition,
                             this::processLocked,
-                            () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                            () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                             externalRevision
                     )
             );
@@ -313,7 +344,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
                             List.of(fluidStorage),
                             definition,
                             this::processLocked,
-                            () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                            () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                             externalRevision
                     )
             );
@@ -323,7 +354,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
                             energyStorage,
                             definition,
                             this::processLocked,
-                            () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                            () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                             externalRevision
                     )
             );
@@ -384,6 +415,10 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
 
     private void recordExternalResourceMutation() {
         setChanged();
+        if (level instanceof ServerLevel serverLevel) {
+            loadedFormedController().ifPresent(controller ->
+                    controller.recordExternalResourceMutation(serverLevel));
+        }
     }
 
     private static MultiblockNbtStatus normalizeEmpty(MultiblockNbtStatus status) {
