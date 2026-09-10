@@ -15,6 +15,7 @@ public final class ProcessItemPortHandler implements IItemHandler {
     private final IItemHandler delegate;
     private final ProcessPortDefinition port;
     private final BooleanSupplier processLocked;
+    private final BooleanSupplier accessAllowed;
     private final ProcessPortRevision revision;
 
     public ProcessItemPortHandler(
@@ -23,9 +24,20 @@ public final class ProcessItemPortHandler implements IItemHandler {
             BooleanSupplier processLocked,
             ProcessPortRevision revision
     ) {
+        this(delegate, port, processLocked, () -> true, revision);
+    }
+
+    public ProcessItemPortHandler(
+            IItemHandler delegate,
+            ProcessPortDefinition port,
+            BooleanSupplier processLocked,
+            BooleanSupplier accessAllowed,
+            ProcessPortRevision revision
+    ) {
         this.delegate = Objects.requireNonNull(delegate, "delegate");
         this.port = Objects.requireNonNull(port, "port");
         this.processLocked = Objects.requireNonNull(processLocked, "processLocked");
+        this.accessAllowed = Objects.requireNonNull(accessAllowed, "accessAllowed");
         this.revision = Objects.requireNonNull(revision, "revision");
         if (port.kind() != ProcessPortKind.ITEM || port.range().endExclusive() > delegate.getSlots()) {
             throw new IllegalArgumentException("item port does not fit its delegate");
@@ -40,13 +52,18 @@ public final class ProcessItemPortHandler implements IItemHandler {
     @Nonnull
     @Override
     public ItemStack getStackInSlot(int slot) {
-        return delegate.getStackInSlot(toDelegateSlot(slot));
+        if (!accessAllowed.getAsBoolean()) {
+            return ItemStack.EMPTY;
+        }
+        return delegate.getStackInSlot(toDelegateSlot(slot)).copy();
     }
 
     @Nonnull
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        if (!port.canInsert(processLocked.getAsBoolean()) || !allows(stack)) {
+        if (!accessAllowed.getAsBoolean()
+                || !port.canInsert(processLocked.getAsBoolean())
+                || !allows(stack)) {
             return stack;
         }
         ItemStack remainder = delegate.insertItem(toDelegateSlot(slot), stack, simulate);
@@ -59,7 +76,9 @@ public final class ProcessItemPortHandler implements IItemHandler {
     @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (amount <= 0 || !port.canExtract(processLocked.getAsBoolean())) {
+        if (amount <= 0
+                || !accessAllowed.getAsBoolean()
+                || !port.canExtract(processLocked.getAsBoolean())) {
             return ItemStack.EMPTY;
         }
         ItemStack extracted = delegate.extractItem(toDelegateSlot(slot), amount, simulate);
@@ -76,7 +95,8 @@ public final class ProcessItemPortHandler implements IItemHandler {
 
     @Override
     public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-        return port.canInsert(processLocked.getAsBoolean())
+        return accessAllowed.getAsBoolean()
+                && port.canInsert(processLocked.getAsBoolean())
                 && allows(stack)
                 && delegate.isItemValid(toDelegateSlot(slot), stack);
     }

@@ -139,6 +139,11 @@ public final class RollingMachineBlockEntity extends BlockEntity {
         return Optional.ofNullable(lastValidation);
     }
 
+    /** No resource process can run until the remaining Rolling process slice is connected. */
+    boolean processLocked() {
+        return false;
+    }
+
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);

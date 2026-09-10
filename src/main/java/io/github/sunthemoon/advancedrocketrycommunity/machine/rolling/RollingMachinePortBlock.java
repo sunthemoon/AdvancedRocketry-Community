@@ -6,7 +6,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -62,6 +64,18 @@ public final class RollingMachinePortBlock extends BaseEntityBlock {
             boolean moved
     ) {
         if (level instanceof ServerLevel serverLevel && !state.is(newState.getBlock())) {
+            if (!moved && level.getBlockEntity(position) instanceof RollingMachinePortBlockEntity port) {
+                ItemStack stored = port.storedItemCopy();
+                if (!stored.isEmpty()) {
+                    Containers.dropItemStack(
+                            level,
+                            position.getX() + 0.5,
+                            position.getY() + 0.5,
+                            position.getZ() + 0.5,
+                            stored
+                    );
+                }
+            }
             RollingMachineRuntime.markDirty(serverLevel, position);
         }
         super.onRemove(state, level, position, newState, moved);

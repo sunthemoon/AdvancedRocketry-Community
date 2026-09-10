@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.testsupport;
 
 import java.lang.reflect.Field;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 
 public final class MinecraftBootstrap {
@@ -15,6 +16,7 @@ public final class MinecraftBootstrap {
         }
 
         try {
+            SharedConstants.tryDetectVersion();
             // Plain JUnit does not run through ModLauncher, so Forge's patched full bootstrap
             // cannot initialize its transformed event classes. ResourceKey constants only need
             // Minecraft's bootstrap guard enabled; GameTest covers the real Forge bootstrap.

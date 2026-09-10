@@ -17,6 +17,7 @@ public final class ProcessFluidPortHandler implements IFluidHandler {
     private final List<? extends IFluidTank> tanks;
     private final ProcessPortDefinition port;
     private final BooleanSupplier processLocked;
+    private final BooleanSupplier accessAllowed;
     private final ProcessPortRevision revision;
 
     public ProcessFluidPortHandler(
@@ -25,9 +26,20 @@ public final class ProcessFluidPortHandler implements IFluidHandler {
             BooleanSupplier processLocked,
             ProcessPortRevision revision
     ) {
+        this(tanks, port, processLocked, () -> true, revision);
+    }
+
+    public ProcessFluidPortHandler(
+            List<? extends IFluidTank> tanks,
+            ProcessPortDefinition port,
+            BooleanSupplier processLocked,
+            BooleanSupplier accessAllowed,
+            ProcessPortRevision revision
+    ) {
         this.tanks = List.copyOf(Objects.requireNonNull(tanks, "tanks"));
         this.port = Objects.requireNonNull(port, "port");
         this.processLocked = Objects.requireNonNull(processLocked, "processLocked");
+        this.accessAllowed = Objects.requireNonNull(accessAllowed, "accessAllowed");
         this.revision = Objects.requireNonNull(revision, "revision");
         if (port.kind() != ProcessPortKind.FLUID || port.range().endExclusive() > tanks.size()) {
             throw new IllegalArgumentException("fluid port does not fit its tank list");
@@ -42,7 +54,7 @@ public final class ProcessFluidPortHandler implements IFluidHandler {
     @Nonnull
     @Override
     public FluidStack getFluidInTank(int tank) {
-        return tank(tank).getFluid().copy();
+        return accessAllowed.getAsBoolean() ? tank(tank).getFluid().copy() : FluidStack.EMPTY;
     }
 
     @Override
@@ -52,12 +64,18 @@ public final class ProcessFluidPortHandler implements IFluidHandler {
 
     @Override
     public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
-        return port.canInsert(processLocked.getAsBoolean()) && allows(stack) && tank(tank).isFluidValid(stack);
+        return accessAllowed.getAsBoolean()
+                && port.canInsert(processLocked.getAsBoolean())
+                && allows(stack)
+                && tank(tank).isFluidValid(stack);
     }
 
     @Override
     public int fill(FluidStack resource, FluidAction action) {
-        if (resource.isEmpty() || !port.canInsert(processLocked.getAsBoolean()) || !allows(resource)) {
+        if (resource.isEmpty()
+                || !accessAllowed.getAsBoolean()
+                || !port.canInsert(processLocked.getAsBoolean())
+                || !allows(resource)) {
             return 0;
         }
         int filled = 0;
@@ -75,7 +93,10 @@ public final class ProcessFluidPortHandler implements IFluidHandler {
     @Nonnull
     @Override
     public FluidStack drain(FluidStack resource, FluidAction action) {
-        if (resource.isEmpty() || !port.canExtract(processLocked.getAsBoolean()) || !allows(resource)) {
+        if (resource.isEmpty()
+                || !accessAllowed.getAsBoolean()
+                || !port.canExtract(processLocked.getAsBoolean())
+                || !allows(resource)) {
             return FluidStack.EMPTY;
         }
         FluidStack drained = FluidStack.EMPTY;
@@ -98,7 +119,9 @@ public final class ProcessFluidPortHandler implements IFluidHandler {
     @Nonnull
     @Override
     public FluidStack drain(int maxDrain, FluidAction action) {
-        if (maxDrain <= 0 || !port.canExtract(processLocked.getAsBoolean())) {
+        if (maxDrain <= 0
+                || !accessAllowed.getAsBoolean()
+                || !port.canExtract(processLocked.getAsBoolean())) {
             return FluidStack.EMPTY;
         }
         FluidStack drained = FluidStack.EMPTY;

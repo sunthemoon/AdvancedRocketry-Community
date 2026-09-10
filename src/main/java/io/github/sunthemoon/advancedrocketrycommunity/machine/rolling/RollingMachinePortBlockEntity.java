@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.ControllerBindingView;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockPartBinding;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingValidationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingVerifier;
@@ -8,27 +9,69 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockNbtLoadResult;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockNbtStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockPartBindingNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortFilter;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortRange;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortRevision;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortSide;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.ProcessCapabilityCache;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.ProcessEnergyPortStorage;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.ProcessFluidPortHandler;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.ProcessItemPortHandler;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidStack;
 
-/** Typed part adapter that persists only its generation-aware controller binding for now. */
+/** Typed resource port with generation-aware, loaded-only controller access. */
 public final class RollingMachinePortBlockEntity extends BlockEntity
         implements MultiblockPartBindingTarget {
+    public static final int FLUID_CAPACITY = 4_000;
+    public static final int ENERGY_CAPACITY = 20_000;
+    public static final int ENERGY_RECEIVE_LIMIT = 1_000;
+
+    private final RollingMachineItemStorage itemStorage = new RollingMachineItemStorage(
+            this::markResourceStorageChanged
+    );
+    private final RollingMachineFluidStorage fluidStorage = new RollingMachineFluidStorage(
+            this::markResourceStorageChanged
+    );
+    private final RollingMachineEnergyStorage energyStorage = new RollingMachineEnergyStorage(
+            this::markResourceStorageChanged
+    );
+    private final ProcessPortRevision externalRevision = new ProcessPortRevision(
+            0,
+            this::recordExternalResourceMutation
+    );
+
     private Optional<MultiblockPartBinding> binding = Optional.empty();
-    private MultiblockNbtStatus persistenceStatus = MultiblockNbtStatus.SUPPORTED;
+    private MultiblockNbtStatus bindingPersistenceStatus = MultiblockNbtStatus.SUPPORTED;
+    private MultiblockNbtStatus resourcePersistenceStatus = MultiblockNbtStatus.SUPPORTED;
+    private ProcessCapabilityCache capabilityCache;
+    private long capabilityEpoch;
     @Nullable
     private Tag preservedBindingRoot;
+    @Nullable
+    private Tag preservedResourceRoot;
 
     public RollingMachinePortBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.ROLLING_MACHINE_PORT.get(), position, state);
+        createCapabilityViews();
     }
 
     @Override
@@ -47,7 +90,8 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
     }
 
     boolean acceptsBindingMutations() {
-        return persistenceStatus == MultiblockNbtStatus.SUPPORTED;
+        return bindingPersistenceStatus == MultiblockNbtStatus.SUPPORTED
+                && resourcePersistenceStatus == MultiblockNbtStatus.SUPPORTED;
     }
 
     @Override
@@ -58,7 +102,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
     @Override
     public void setMultiblockBinding(Optional<MultiblockPartBinding> replacement) {
         if (!acceptsBindingMutations()) {
-            throw new IllegalStateException("rolling port binding data is blocked");
+            throw new IllegalStateException("rolling port persisted data is blocked");
         }
         Optional<MultiblockPartBinding> checked = java.util.Objects.requireNonNull(
                 replacement,
@@ -67,6 +111,8 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
         if (!binding.equals(checked)) {
             binding = checked;
             setChanged();
+            refreshCapabilityViews();
+            notifyCapabilityNeighbors();
         }
     }
 
@@ -78,22 +124,92 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
                 value,
                 serverLevel.dimension(),
                 serverLevel::hasChunkAt,
-                position -> loadedController(serverLevel, position)
+                position -> loadedControllerView(serverLevel, position)
         ));
     }
 
+    public MultiblockNbtStatus resourcePersistenceStatus() {
+        return resourcePersistenceStatus;
+    }
+
     String bindingStatusText() {
-        if (!acceptsBindingMutations()) {
-            return persistenceStatus.name().toLowerCase(Locale.ROOT);
+        if (resourcePersistenceStatus != MultiblockNbtStatus.SUPPORTED) {
+            return "resource_" + resourcePersistenceStatus.name().toLowerCase(Locale.ROOT);
+        }
+        if (bindingPersistenceStatus != MultiblockNbtStatus.SUPPORTED) {
+            return bindingPersistenceStatus.name().toLowerCase(Locale.ROOT);
         }
         return bindingStatus()
                 .map(status -> status.name().toLowerCase(Locale.ROOT))
                 .orElse("unbound");
     }
 
+    ItemStack storedItemCopy() {
+        return itemStorage.storedCopy();
+    }
+
+    FluidStack storedFluidCopy() {
+        return fluidStorage.storedCopy();
+    }
+
+    int storedEnergy() {
+        return energyStorage.getEnergyStored();
+    }
+
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(
+            @Nonnull Capability<T> capability,
+            @Nullable Direction side
+    ) {
+        if (capabilityMatchesPort(capability) && capabilityAccessAllowed()) {
+            return capabilityCache.get(capability, side);
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        invalidateCapabilityViews();
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+        if (!capabilityCache.isValid()) {
+            createCapabilityViews();
+        }
+    }
+
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);
+        writeBinding(parent);
+        if (preservedResourceRoot != null) {
+            parent.put(RollingMachinePortPersistence.ROOT, preservedResourceRoot.copy());
+        } else {
+            parent.put(
+                    RollingMachinePortPersistence.ROOT,
+                    RollingMachinePortPersistence.encode(
+                            portType(),
+                            itemStorage.storedCopy(),
+                            fluidStorage.storedCopy(),
+                            energyStorage.getEnergyStored()
+                    )
+            );
+        }
+    }
+
+    @Override
+    public void load(CompoundTag parent) {
+        super.load(parent);
+        loadBinding(parent);
+        loadResources(parent);
+        refreshCapabilityViews();
+    }
+
+    private void writeBinding(CompoundTag parent) {
         if (preservedBindingRoot != null) {
             parent.put(MultiblockPartBindingNbtCodec.ROOT, preservedBindingRoot.copy());
         } else if (binding.isPresent()) {
@@ -106,24 +222,175 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
         }
     }
 
-    @Override
-    public void load(CompoundTag parent) {
-        super.load(parent);
+    private void loadBinding(CompoundTag parent) {
         binding = Optional.empty();
         preservedBindingRoot = null;
         MultiblockNbtLoadResult<MultiblockPartBinding> decoded =
                 MultiblockPartBindingNbtCodec.decode(parent);
-        persistenceStatus = decoded.status();
+        bindingPersistenceStatus = normalizeEmpty(decoded.status());
         if (decoded.status() == MultiblockNbtStatus.SUPPORTED) {
             binding = decoded.value();
-        } else if (decoded.status() == MultiblockNbtStatus.EMPTY) {
-            persistenceStatus = MultiblockNbtStatus.SUPPORTED;
-        } else {
+        } else if (decoded.status() != MultiblockNbtStatus.EMPTY) {
             preservedBindingRoot = decoded.preservedRoot().orElseThrow();
         }
     }
 
-    private static Optional<ControllerBindingView> loadedController(
+    private void loadResources(CompoundTag parent) {
+        itemStorage.loadStored(ItemStack.EMPTY);
+        fluidStorage.loadStored(FluidStack.EMPTY);
+        energyStorage.loadStored(0);
+        preservedResourceRoot = null;
+
+        RollingMachinePortPersistence.DecodeResult decoded =
+                RollingMachinePortPersistence.decode(parent, portType());
+        resourcePersistenceStatus = normalizeEmpty(decoded.status());
+        if (decoded.status() == MultiblockNbtStatus.SUPPORTED) {
+            RollingMachinePortPersistence.PortData data = decoded.value().orElseThrow();
+            itemStorage.loadStored(data.item());
+            fluidStorage.loadStored(data.fluid());
+            energyStorage.loadStored(data.energy());
+        } else if (decoded.status() != MultiblockNbtStatus.EMPTY) {
+            preservedResourceRoot = decoded.preservedRoot().orElseThrow();
+        }
+    }
+
+    private boolean capabilityMatchesPort(Capability<?> capability) {
+        return switch (portType().kind()) {
+            case ITEM -> capability == ForgeCapabilities.ITEM_HANDLER;
+            case FLUID -> capability == ForgeCapabilities.FLUID_HANDLER;
+            case ENERGY -> capability == ForgeCapabilities.ENERGY;
+        };
+    }
+
+    private boolean capabilityAccessAllowed() {
+        return acceptsBindingMutations() && loadedFormedController().isPresent();
+    }
+
+    private boolean processLocked() {
+        return loadedFormedController()
+                .map(RollingMachineBlockEntity::processLocked)
+                .orElse(true);
+    }
+
+    private Optional<RollingMachineBlockEntity> loadedFormedController() {
+        if (!(level instanceof ServerLevel serverLevel) || binding.isEmpty()) {
+            return Optional.empty();
+        }
+        MultiblockPartBinding expected = binding.orElseThrow();
+        if (!expected.controllerLevel().equals(serverLevel.dimension())
+                || !serverLevel.hasChunkAt(expected.controllerPosition())) {
+            return Optional.empty();
+        }
+        BlockEntity blockEntity = serverLevel.getBlockEntity(expected.controllerPosition());
+        if (!(blockEntity instanceof RollingMachineBlockEntity controller)
+                || !controller.controllerState().machineInstanceId().equals(expected.machineInstanceId())
+                || controller.generation() != expected.generation()
+                || !controller.controllerState().partPositions().contains(worldPosition)
+                || controller.formationState() != MultiblockFormationState.FORMED) {
+            return Optional.empty();
+        }
+        return Optional.of(controller);
+    }
+
+    private void createCapabilityViews() {
+        capabilityCache = new ProcessCapabilityCache();
+        ProcessPortDefinition definition = definition();
+        long viewEpoch = capabilityEpoch;
+        switch (portType().kind()) {
+            case ITEM -> registerEverySide(
+                    ForgeCapabilities.ITEM_HANDLER,
+                    new ProcessItemPortHandler(
+                            itemStorage,
+                            definition,
+                            this::processLocked,
+                            () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                            externalRevision
+                    )
+            );
+            case FLUID -> registerEverySide(
+                    ForgeCapabilities.FLUID_HANDLER,
+                    new ProcessFluidPortHandler(
+                            List.of(fluidStorage),
+                            definition,
+                            this::processLocked,
+                            () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                            externalRevision
+                    )
+            );
+            case ENERGY -> registerEverySide(
+                    ForgeCapabilities.ENERGY,
+                    new ProcessEnergyPortStorage(
+                            energyStorage,
+                            definition,
+                            this::processLocked,
+                            () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                            externalRevision
+                    )
+            );
+        }
+    }
+
+    private ProcessPortDefinition definition() {
+        ProcessPortFilter filter = portType() == RollingMachinePortType.FLUID_INPUT
+                ? ProcessPortFilter.exact(Set.of("minecraft:water"))
+                : ProcessPortFilter.any();
+        return new ProcessPortDefinition(
+                portType().channel(),
+                portType().kind(),
+                portType().mode(),
+                Set.of(
+                        ProcessPortSide.FRONT,
+                        ProcessPortSide.BACK,
+                        ProcessPortSide.LEFT,
+                        ProcessPortSide.RIGHT,
+                        ProcessPortSide.TOP,
+                        ProcessPortSide.BOTTOM
+                ),
+                new ProcessPortRange(0, 1),
+                filter
+        );
+    }
+
+    private <T> void registerEverySide(Capability<T> capability, T view) {
+        capabilityCache.register(capability, null, () -> view);
+        for (Direction side : Direction.values()) {
+            capabilityCache.register(capability, side, () -> view);
+        }
+    }
+
+    private void refreshCapabilityViews() {
+        invalidateCapabilityViews();
+        if (!isRemoved()) {
+            createCapabilityViews();
+        }
+    }
+
+    private void invalidateCapabilityViews() {
+        capabilityEpoch = Math.incrementExact(capabilityEpoch);
+        if (capabilityCache != null) {
+            capabilityCache.invalidate();
+        }
+    }
+
+    private void notifyCapabilityNeighbors() {
+        if (level != null) {
+            level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+        }
+    }
+
+    private void markResourceStorageChanged() {
+        setChanged();
+    }
+
+    private void recordExternalResourceMutation() {
+        setChanged();
+    }
+
+    private static MultiblockNbtStatus normalizeEmpty(MultiblockNbtStatus status) {
+        return status == MultiblockNbtStatus.EMPTY ? MultiblockNbtStatus.SUPPORTED : status;
+    }
+
+    private static Optional<ControllerBindingView> loadedControllerView(
             ServerLevel level,
             BlockPos position
     ) {

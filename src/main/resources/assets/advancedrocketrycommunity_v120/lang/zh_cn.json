@@ -1,0 +1,9 @@
+{
+  "block.advancedrocketrycommunity.rolling_machine": "轧制机",
+  "block.advancedrocketrycommunity.rolling_machine_energy_input_port": "轧制机能源输入口",
+  "block.advancedrocketrycommunity.rolling_machine_fluid_input_port": "轧制机流体输入口",
+  "block.advancedrocketrycommunity.rolling_machine_item_input_port": "轧制机物品输入口",
+  "block.advancedrocketrycommunity.rolling_machine_item_output_port": "轧制机物品输出口",
+  "message.advancedrocketrycommunity.rolling_machine.formation": "轧制机：%s | 世代 %s",
+  "message.advancedrocketrycommunity.rolling_machine.port": "%s 端口：%s"
+}
