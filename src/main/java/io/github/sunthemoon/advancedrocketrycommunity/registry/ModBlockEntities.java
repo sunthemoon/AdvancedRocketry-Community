@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
@@ -45,6 +47,24 @@ public final class ModBlockEntities {
                             ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT.get(),
                             ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT.get(),
                             ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<PrecisionAssemblerBlockEntity>> PRECISION_ASSEMBLER =
+            BLOCK_ENTITIES.register(
+                    "precision_assembler",
+                    () -> BlockEntityType.Builder.of(
+                            PrecisionAssemblerBlockEntity::new,
+                            ModBlocks.PRECISION_ASSEMBLER.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<PrecisionAssemblerPortBlockEntity>> PRECISION_ASSEMBLER_PORT =
+            BLOCK_ENTITIES.register(
+                    "precision_assembler_port",
+                    () -> BlockEntityType.Builder.of(
+                            PrecisionAssemblerPortBlockEntity::new,
+                            ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT.get(),
+                            ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(),
+                            ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get()
                     ).build(null)
             );
     public static final RegistryObject<BlockEntityType<OxygenVentBlockEntity>> OXYGEN_VENT =

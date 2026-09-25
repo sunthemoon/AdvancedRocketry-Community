@@ -4,6 +4,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortType;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortType;
@@ -53,6 +56,16 @@ public final class ModBlocks {
             rollingPort(RollingMachinePortType.ENERGY_INPUT);
     public static final RegistryObject<RollingMachinePortBlock> ROLLING_MACHINE_ITEM_OUTPUT_PORT =
             rollingPort(RollingMachinePortType.ITEM_OUTPUT);
+    public static final RegistryObject<PrecisionAssemblerBlock> PRECISION_ASSEMBLER = BLOCKS.register(
+            "precision_assembler",
+            () -> new PrecisionAssemblerBlock(metalProperties())
+    );
+    public static final RegistryObject<PrecisionAssemblerPortBlock> PRECISION_ASSEMBLER_ITEM_INPUT_PORT =
+            precisionPort(PrecisionAssemblerPortType.ITEM_INPUT);
+    public static final RegistryObject<PrecisionAssemblerPortBlock> PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT =
+            precisionPort(PrecisionAssemblerPortType.ITEM_OUTPUT);
+    public static final RegistryObject<PrecisionAssemblerPortBlock> PRECISION_ASSEMBLER_ENERGY_INPUT_PORT =
+            precisionPort(PrecisionAssemblerPortType.ENERGY_INPUT);
     public static final RegistryObject<Block> OXYGEN_VENT = BLOCKS.register(
             "oxygen_vent",
             () -> new OxygenVentBlock(BlockBehaviour.Properties.of()
@@ -94,6 +107,13 @@ public final class ModBlocks {
         return BLOCKS.register(
                 type.registryPath(),
                 () -> new RollingMachinePortBlock(type, metalProperties())
+        );
+    }
+
+    private static RegistryObject<PrecisionAssemblerPortBlock> precisionPort(PrecisionAssemblerPortType type) {
+        return BLOCKS.register(
+                type.registryPath(),
+                () -> new PrecisionAssemblerPortBlock(type, metalProperties())
         );
     }
 

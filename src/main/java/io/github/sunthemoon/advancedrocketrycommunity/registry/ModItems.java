@@ -50,6 +50,22 @@ public final class ModItems {
             "rolling_machine_item_output_port",
             ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT
     );
+    public static final RegistryObject<Item> PRECISION_ASSEMBLER = blockItem(
+            "precision_assembler",
+            ModBlocks.PRECISION_ASSEMBLER
+    );
+    public static final RegistryObject<Item> PRECISION_ASSEMBLER_ITEM_INPUT_PORT = blockItem(
+            "precision_assembler_item_input_port",
+            ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT
+    );
+    public static final RegistryObject<Item> PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT = blockItem(
+            "precision_assembler_item_output_port",
+            ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT
+    );
+    public static final RegistryObject<Item> PRECISION_ASSEMBLER_ENERGY_INPUT_PORT = blockItem(
+            "precision_assembler_energy_input_port",
+            ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT
+    );
     public static final RegistryObject<Item> EMPTY_CANISTER = ITEMS.register(
             "empty_canister",
             () -> new Item(new Item.Properties().stacksTo(16))

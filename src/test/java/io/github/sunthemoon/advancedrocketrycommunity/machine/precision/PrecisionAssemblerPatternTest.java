@@ -50,6 +50,16 @@ class PrecisionAssemblerPatternTest {
         ));
         assertEquals(new PatternMatcher.Port("energy_input"),
                 definition.cells().get(PrecisionAssemblerPortLayout.ENERGY_CELL));
+        assertTrue(PrecisionAssemblerPortLayout.matchesDefinition(definition));
+
+        Map<PatternPosition, PatternMatcher> remapped = new HashMap<>(definition.cells());
+        remapped.put(PrecisionAssemblerPortLayout.ENERGY_CELL, new PatternMatcher.Port("item_input"));
+        MultiblockPatternDefinition incompatible = new MultiblockPatternDefinition(
+                definition.id(), definition.schemaVersion(), definition.encodedSizeBytes(),
+                definition.size(), definition.controllerAnchor(), definition.allowedRotations(),
+                definition.allowMirrorLocalX(), remapped
+        );
+        assertFalse(PrecisionAssemblerPortLayout.matchesDefinition(incompatible));
     }
 
     @Test
