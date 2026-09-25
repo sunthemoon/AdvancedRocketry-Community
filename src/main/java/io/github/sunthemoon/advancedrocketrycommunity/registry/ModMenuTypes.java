@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalMenu;
@@ -25,6 +26,10 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<RollingMachineMenu>> ROLLING_MACHINE = MENUS.register(
             "rolling_machine",
             () -> IForgeMenuType.create(RollingMachineMenu::new)
+    );
+    public static final RegistryObject<MenuType<PrecisionAssemblerMenu>> PRECISION_ASSEMBLER = MENUS.register(
+            "precision_assembler",
+            () -> IForgeMenuType.create(PrecisionAssemblerMenu::new)
     );
     public static final RegistryObject<MenuType<RocketFlightMenu>> ROCKET_FLIGHT = MENUS.register(
             "rocket_flight",

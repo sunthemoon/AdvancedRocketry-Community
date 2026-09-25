@@ -4,6 +4,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -16,8 +20,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.network.NetworkHooks;
 
-/** Physical Precision Assembler controller; processing and UI follow in later leaves. */
+/** Physical Precision Assembler controller with a server-validated menu entry point. */
 public final class PrecisionAssemblerBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -30,6 +36,26 @@ public final class PrecisionAssemblerBlock extends BaseEntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    public InteractionResult use(
+            BlockState state,
+            Level level,
+            BlockPos position,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit
+    ) {
+        if (!level.hasChunkAt(position)
+                || !(level.getBlockEntity(position) instanceof PrecisionAssemblerBlockEntity controller)) {
+            return InteractionResult.PASS;
+        }
+        if (player instanceof ServerPlayer serverPlayer
+                && PrecisionAssemblerMenu.canOpen(controller, serverPlayer)) {
+            NetworkHooks.openScreen(serverPlayer, controller, position);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

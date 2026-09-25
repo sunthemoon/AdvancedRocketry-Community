@@ -191,7 +191,7 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
     }
 
     boolean locked() {
-        return !acceptsResourceAccess() || progress != null || journal != null;
+        return !permitsExternalResourceOperations() || progress != null;
     }
 
     boolean acceptsResourceAccess() {
@@ -229,6 +229,23 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
 
     Optional<ProcessProgress> progress() {
         return Optional.ofNullable(progress);
+    }
+
+    int totalProcessingTicks(ServerLevel level) {
+        if (progress == null || recipeSignature == null) {
+            return 0;
+        }
+        ResourceLocation id = ResourceLocation.tryParse(progress.definitionId());
+        if (id == null) {
+            return 0;
+        }
+        Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> loaded =
+                level.getRecipeManager().byKey(id);
+        if (loaded.isEmpty() || !(loaded.orElseThrow() instanceof PrecisionAssemblerRecipe recipe)
+                || !recipe.signature().equals(recipeSignature)) {
+            return 0;
+        }
+        return recipe.processDefinition().durationTicks();
     }
 
     long resourceRevision() {

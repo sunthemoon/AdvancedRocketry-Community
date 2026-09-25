@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortFilter;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortMode;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortRange;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortRevision;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortSide;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
 
 /** Per-port resources and generation-scoped, loaded-only automation access. */
 public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
@@ -58,6 +60,8 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
     private MultiblockNbtStatus bindingPersistenceStatus = MultiblockNbtStatus.SUPPORTED;
     private MultiblockNbtStatus resourcePersistenceStatus = MultiblockNbtStatus.SUPPORTED;
     private ProcessCapabilityCache capabilityCache;
+    @Nullable
+    private IItemHandler menuItemView;
     private long capabilityEpoch;
     @Nullable
     private Tag preservedBindingRoot;
@@ -134,6 +138,10 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
 
     int storedEnergy() {
         return energyStorage.getEnergyStored();
+    }
+
+    Optional<IItemHandler> menuItemView() {
+        return Optional.ofNullable(menuItemView);
     }
 
     void replaceStoredItemInternal(ItemStack replacement) {
@@ -307,6 +315,22 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
                     () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                     externalRevision
             ));
+            ProcessPortMode menuMode = portType() == PrecisionAssemblerPortType.ITEM_INPUT
+                    ? ProcessPortMode.BIDIRECTIONAL : ProcessPortMode.OUTPUT;
+            menuItemView = new ProcessItemPortHandler(
+                    itemStorage,
+                    new ProcessPortDefinition(
+                            portType().patternChannel(),
+                            ProcessPortKind.ITEM,
+                            menuMode,
+                            ALL_SIDES,
+                            new ProcessPortRange(0, 1),
+                            ProcessPortFilter.any()
+                    ),
+                    this::processLocked,
+                    () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
+                    externalRevision
+            );
         } else {
             registerEverySide(ForgeCapabilities.ENERGY, new ProcessEnergyPortStorage(
                     energyStorage,
@@ -334,6 +358,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
 
     private void invalidateCapabilityViews() {
         capabilityEpoch = Math.incrementExact(capabilityEpoch);
+        menuItemView = null;
         if (capabilityCache != null) {
             capabilityCache.invalidate();
         }

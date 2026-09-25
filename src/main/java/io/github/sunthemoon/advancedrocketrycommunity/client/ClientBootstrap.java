@@ -33,6 +33,10 @@ public final class ClientBootstrap {
                 RollingMachineScreen::new
         ));
         event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.PRECISION_ASSEMBLER.get(),
+                PrecisionAssemblerScreen::new
+        ));
+        event.enqueueWork(() -> MenuScreens.register(
                 ModMenuTypes.ROCKET_FLIGHT.get(),
                 RocketFlightScreen::new
         ));

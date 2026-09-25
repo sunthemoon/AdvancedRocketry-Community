@@ -28,12 +28,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Minecraft lifecycle adapter around the structure and process state owners. */
-public final class PrecisionAssemblerBlockEntity extends BlockEntity {
+public final class PrecisionAssemblerBlockEntity extends BlockEntity implements MenuProvider {
     private MultiblockControllerState controllerState;
     private final PrecisionAssemblerProcessController process;
     private MultiblockNbtStatus persistenceStatus = MultiblockNbtStatus.SUPPORTED;
@@ -188,6 +193,24 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity {
 
     public Optional<ProcessProgress> processProgress() {
         return process.progress();
+    }
+
+    int totalProcessingTicks() {
+        return level instanceof ServerLevel serverLevel
+                ? process.totalProcessingTicks(serverLevel) : 0;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("menu.advancedrocketrycommunity.precision_assembler");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return PrecisionAssemblerMenu.canOpen(this, player)
+                ? new PrecisionAssemblerMenu(containerId, inventory, this)
+                : null;
     }
 
     public long resourceRevision() {
