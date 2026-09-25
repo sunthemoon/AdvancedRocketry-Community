@@ -3,7 +3,7 @@
 ```yaml
 version: v1.2.0
 slice: V120-MCH-03
-verified_leaves: [V120-PREC-01, V120-PREC-02, V120-PREC-03, V120-PREC-05]
+verified_leaves: [V120-PREC-01, V120-PREC-02, V120-PREC-03, V120-PREC-05, V120-PREC-06]
 slice_status: IN_PROGRESS
 date: 2026-09-25
 branch: codex/v1.2.0-precision-assembler
@@ -18,6 +18,9 @@ process_checkpoint_artifact_sha256: edac60ea023d35a56597fb07d01d91e87cf83102e64d
 menu_datagen_commit: 5f5815b053b42faf1d9685e448b567fe3d3c7513
 menu_runtime_commit: 617a9efc357ad46347afdb23f36b40ac8109738c
 menu_dev_jar_sha256: 63941ac68b24ee93314fbd79ff178fee61f112857ec1ded12b81851101b4ee73
+restart_fixture_commit: ea654f678d6a0d94ab3508c3743f99fc52cfa3c8
+restart_harness_commit: c4d28092ceff8a1190ec0548e95bb816dc11817a
+restart_dev_jar_sha256: e339deda6ade5bccd034cbf6d6953e7ca8da8c547ce4af99a8e8befc6878cd55
 ```
 
 ## Verified behavior
@@ -165,11 +168,11 @@ world. No packaged dedicated restart has yet been run for Precision Assembler.
 | `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
 | `git diff --check` | PASS |
 
-The build JAR above is a development artifact, not a v1.2.0 release candidate. A real
-packaged-server stop/restart against one persisted Precision Assembler, especially with
-ports spanning chunks, has not been verified. `setChanged()` alone does not prove that
-journal and port chunk writes are durably ordered across a forced stop. This remains a
-recovery risk and keeps `V120-PREC-04` in progress; it is not waived by ADR-018.
+At this earlier checkpoint, a packaged-server stop/restart had not yet been verified;
+the later `V120-PREC-06` checkpoint below supplies a saved-state restart. The build JAR
+is a development artifact, not a v1.2.0 release candidate. `setChanged()` alone still
+does not prove that journal and port chunk writes are durably ordered at arbitrary
+crash points. This keeps `V120-PREC-04` in progress and is not waived by ADR-018.
 The pending human checks are listed in [short manual checks](MANUAL-TEST.md).
 
 ## V120-PREC-05 menu, screen and generated resources (verified implementation)
@@ -216,15 +219,59 @@ not make it a v1.2 candidate. A client-only slot-number drawing change followed 
 GameTest run and was included in the final clean build; no server behavior changed.
 
 Real-GPU visual confirmation and two-client interaction remain unexecuted under
-ADR-018. `V120-PREC-04/06` short packaged-server persistence/restart and durable
-cross-chunk transaction ordering remain open; this menu checkpoint does not prove
-the Precision Assembler slice or v1.2.0 G0–G9 complete.
+ADR-018. At this menu checkpoint, `V120-PREC-04/06` packaged persistence and durable
+cross-chunk transaction ordering were open. The later saved-state restart below
+does not close the transaction-ordering gap or prove v1.2.0 G0–G9 complete.
+
+## V120-PREC-06 bounded packaged-server restart (verified)
+
+- The opt-in release fixture constructs the community 3×3×4 structure at
+  `(143, 80, 143)`. Its physical ports cross the X=143/144 chunk boundary. The
+  test hook is disabled unless `advancedrocketrycommunity.releaseTestHooks=true`
+  and requires command permission level 2.
+- The packaged Forge 47.4.10 server first passed a clean-start/same-world-restart
+  baseline with JDK 17. The fixture then ran to progress 1, paused by redstone,
+  completed `save-all flush`, and was killed without a graceful `stop` command.
+  On the same world's restart, formation, generation, all seven Item slots,
+  progress 1/20, 1560 FE, revision 4, and journal/marker state were identical.
+- Resuming produced one advanced circuit and two redstone torches. The inputs
+  became empty, Energy became 800 FE, revision became 5, and a single transaction
+  UUID appeared. The output and UUID remained unchanged after an idle wait and a
+  final clean restart. This proves the saved snapshot and one completion in this
+  bounded fixture; it does **not** prove durable ordering when a crash occurs
+  between journal and separate port chunk writes.
+
+| Command or check | Result |
+|---|---|
+| `gradlew clean build --offline --no-daemon` with JDK 17 | PASS; 119 suites, 581 tests, 0 failures/errors/skips |
+| `gradlew runData --offline --no-daemon` | PASS; 61 files, written 0 |
+| `gradlew runGameTestServer --offline --no-daemon` on preserved development world | PASS; 89/89 Required GameTests |
+| `python scripts/run_dedicated_server_smoke.py ... --offline-mode` | PASS; first start and same-world restart, no project ERROR |
+| `python scripts/run_v120_precision_restart_smoke.py ...` | PASS; saved forced stop, recovery, completion and final restart |
+| `python scripts/validate_v120_machine_resources.py` | PASS; 9 machine block resource sets |
+| `python scripts/validate_repository.py --require-approved-identity` | PASS; 45 checks, 873 links |
+| `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and 33-input inventory |
+| `python -m py_compile scripts/run_v120_precision_restart_smoke.py` | PASS |
+
+The development JAR SHA-256 is
+`e339deda6ade5bccd034cbf6d6953e7ca8da8c547ce4af99a8e8befc6878cd55`.
+The [baseline summary](packaged-restart/baseline/summary.json),
+[fixture summary](packaged-restart/precision/summary.json),
+[filtered lifecycle](packaged-restart/precision/filtered-lifecycle.log), and
+[SHA-256 manifest](packaged-restart/SHA256SUMS) bind the short verification to the
+artifact and the same-world identity. Full logs stay in the ignored local disposable
+server session; the fixture summary records their hashes. The preserved GameTest
+console is ignored at `build/prec06-gametest-console.txt` (SHA-256
+`1985ce390b21ccdd3f2be6854462ab1a2699d2c5197ddd7680d2f528d11d6e57`).
+
+The complete long-load, remote Linux, real-GPU, two-client and all-machine/dimension
+matrix is deferred by ADR-018 until all original machines and dimensions are
+implemented. This does not make the Precision slice or v1.2.0 release-ready.
 
 ## Remaining slice work
 
-- `V120-PREC-04`: complete short packaged-server same-world stop/restart and resolve
-  the durable cross-chunk transaction boundary before claiming exact-once recovery.
-- `V120-PREC-06`: bounded packaged-server restart and evidence review.
+- `V120-PREC-04`: resolve the durable cross-chunk transaction boundary before
+  claiming exact-once recovery at arbitrary crash points.
 
 The complete long-load, remote Linux, real-GPU, two-client and all-machine/all-dimension
 campaign remains deferred by ADR-018. This phase does not satisfy v1.2.0 G0–G9 or the

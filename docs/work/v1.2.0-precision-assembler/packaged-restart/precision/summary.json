@@ -1,0 +1,185 @@
+{
+  "after_final_restart": {
+    "energy": 800,
+    "failure": "NONE",
+    "formation": "FORMED",
+    "generation": 1,
+    "inputs": [
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "journal": "none",
+    "last_applied": "06cb2c96-2b03-4e07-9fea-49da84e2f778",
+    "outputs": [
+      "advancedrocketrycommunity:advanced_circuit:1",
+      "minecraft:redstone_torch:2"
+    ],
+    "progress": 0,
+    "revision": 5,
+    "state": "IDLE",
+    "total": 0
+  },
+  "after_forced_stop_restart": {
+    "energy": 1560,
+    "failure": "REDSTONE_DISABLED",
+    "formation": "FORMED",
+    "generation": 1,
+    "inputs": [
+      "minecraft:iron_ingot:2",
+      "minecraft:redstone:2",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "journal": "none",
+    "last_applied": "none",
+    "outputs": [
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "progress": 1,
+    "revision": 4,
+    "state": "REDSTONE_DISABLED",
+    "total": 20
+  },
+  "artifact_sha256": "e339deda6ade5bccd034cbf6d6953e7ca8da8c547ce4af99a8e8befc6878cd55",
+  "before_forced_stop": {
+    "energy": 1560,
+    "failure": "REDSTONE_DISABLED",
+    "formation": "FORMED",
+    "generation": 1,
+    "inputs": [
+      "minecraft:iron_ingot:2",
+      "minecraft:redstone:2",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "journal": "none",
+    "last_applied": "none",
+    "outputs": [
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "progress": 1,
+    "revision": 4,
+    "state": "REDSTONE_DISABLED",
+    "total": 20
+  },
+  "build": "1.20.1-1.1.1-dev",
+  "completed": {
+    "energy": 800,
+    "failure": "NONE",
+    "formation": "FORMED",
+    "generation": 1,
+    "inputs": [
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "journal": "none",
+    "last_applied": "06cb2c96-2b03-4e07-9fea-49da84e2f778",
+    "outputs": [
+      "advancedrocketrycommunity:advanced_circuit:1",
+      "minecraft:redstone_torch:2"
+    ],
+    "progress": 0,
+    "revision": 5,
+    "state": "IDLE",
+    "total": 0
+  },
+  "completed_at": "2026-09-25T13:51:25.281253+00:00",
+  "durable_save_before_forced_stop": true,
+  "exact_once_output_verified": true,
+  "fixture_crosses_chunk_boundary": true,
+  "forced_exit_code": 1,
+  "graceful_stop_command_sent_before_kill": false,
+  "java": "17.0.7",
+  "port": 56050,
+  "processes": [
+    {
+      "completed_at": "2026-09-25T13:50:46.251615+00:00",
+      "durable_region_sha256": "638b05d64bad2b7502b5f6c9f89f54607fd4b8497a83b4ddab66c1aca60589ff",
+      "durable_save_observed": true,
+      "exit_code": 1,
+      "forced": true,
+      "full_log_file": "20260925T135028127630Z-v120-precision-forced-stop-full.txt",
+      "full_log_sha256": "1940f20e32a8c3b7ae0bcd839dcd32887ec7b38eceab0a2393f36e09d82dcdb9",
+      "graceful_stop_command_sent": false,
+      "name": "v120-precision-forced-stop",
+      "started_at": "2026-09-25T13:50:44.479575+00:00"
+    },
+    {
+      "completed_at": "2026-09-25T13:51:06.267388+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260925T135028127630Z-v120-precision-recovery-full.txt",
+      "full_log_sha256": "08a4237f7996e67dc20b40d70848bb0ee5e7e153d388040c41a7c71411c9d83e",
+      "name": "v120-precision-recovery",
+      "started_at": "2026-09-25T13:51:02.694722+00:00"
+    },
+    {
+      "completed_at": "2026-09-25T13:51:25.278225+00:00",
+      "exit_code": 0,
+      "full_log_file": "20260925T135028127630Z-v120-precision-final-restart-full.txt",
+      "full_log_sha256": "8577a2dc6e30f97dde82c38280d0419ebb7cc37c221ea07588524f927289bc2d",
+      "name": "v120-precision-final-restart",
+      "started_at": "2026-09-25T13:51:22.913058+00:00"
+    }
+  ],
+  "progress_preserved_exactly": true,
+  "region_after_final_restart": {
+    "path": "world/region/r.0.0.mca",
+    "sha256": "66ba5141c0568e7abcd156f1b19c6a9b6de25d63af14acbb8308ddf2b242954e",
+    "size": 2916352
+  },
+  "region_before_forced_stop": {
+    "path": "world/region/r.0.0.mca",
+    "sha256": "638b05d64bad2b7502b5f6c9f89f54607fd4b8497a83b4ddab66c1aca60589ff",
+    "size": 2912420
+  },
+  "same_world_verified": true,
+  "schema_version": 1,
+  "slice": "V120-PREC-06",
+  "stable_after_completion": {
+    "energy": 800,
+    "failure": "NONE",
+    "formation": "FORMED",
+    "generation": 1,
+    "inputs": [
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0",
+      "minecraft:air:0"
+    ],
+    "journal": "none",
+    "last_applied": "06cb2c96-2b03-4e07-9fea-49da84e2f778",
+    "outputs": [
+      "advancedrocketrycommunity:advanced_circuit:1",
+      "minecraft:redstone_torch:2"
+    ],
+    "progress": 0,
+    "revision": 5,
+    "state": "IDLE",
+    "total": 0
+  },
+  "tested_implementation_commit": "ea654f678d6a0d94ab3508c3743f99fc52cfa3c8",
+  "version": "v1.2.0",
+  "world": {
+    "identity": "fa4d39d39e0117b78b8e4bd165783625b3410b2cb6e59fa057133a02186734fb",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "b505a2983cba8547e2278804ebf33d270e17a24a7ccae7c1a8ac80b823a54bc1",
+    "level_dat_after_restart_sha256": "152363cd0698df8c3da3190f6109ce8bc8341d6aff7b485bb193af91837f28ba",
+    "level_dat_after_restart_size": 37844,
+    "level_dat_before_restart_sha256": "dec7566fed2521e6792dca7b7b2381b6ad15abfb2dc81019d2aae121d3fcb15f",
+    "level_dat_before_restart_size": 37842,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "d4c8b3507ac0ebd075fe9bb36493f5fca6dea592dee1500b2c2a0e8991e482b7"
+  }
+}
