@@ -1,0 +1,21 @@
+=== v020-machine-before-restart-full.txt ===
+[17:49:57] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.1.1-dev initialized
+[17:50:01] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:59953
+[17:50:05] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.599s)! For help, type "help"
+[17:50:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V020_PERSISTED_BEFORE_RESTART
+[17:50:05] [Server thread/INFO] [minecraft/MinecraftServer]: 0, 100, 0 has the following block data: {schema_version: 1, active_recipe: "advancedrocketrycommunity:electrolyzer_water", progress: 40, fluid: {FluidName: "minecraft:water", Amount: 1000}, inventory: {Size: 4, Items: [{Slot: 0, id: "advancedrocketrycommunity:empty_canister", Count: 2b}]}, energy: 1200}
+[17:50:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[17:50:06] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[17:50:06] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+
+=== v020-machine-after-restart-full.txt ===
+[17:50:16] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.1.1-dev initialized
+[17:50:20] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:59953
+[17:50:24] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.490s)! For help, type "help"
+[17:50:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V020_PERSISTED_AFTER_RESTART
+[17:50:24] [Server thread/INFO] [minecraft/MinecraftServer]: 0, 100, 0 has the following block data: {schema_version: 1, active_recipe: "advancedrocketrycommunity:electrolyzer_water", progress: 40, fluid: {FluidName: "minecraft:water", Amount: 1000}, inventory: {Size: 4, Items: [{Slot: 0, id: "advancedrocketrycommunity:empty_canister", Count: 2b}]}, energy: 1200}
+[17:50:29] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] V020_COMPLETED_AFTER_RESTART
+[17:50:29] [Server thread/INFO] [minecraft/MinecraftServer]: 0, 100, 0 has the following block data: {schema_version: 1, progress: 0, fluid: {FluidName: "minecraft:empty", Amount: 0}, inventory: {Size: 4, Items: [{Slot: 2, id: "advancedrocketrycommunity:hydrogen_canister", Count: 1b}, {Slot: 3, id: "advancedrocketrycommunity:oxygen_canister", Count: 1b}]}, energy: 0}
+[17:50:29] [Server thread/INFO] [minecraft/MinecraftServer]: Saving the game (this may take a moment!)
+[17:50:29] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[17:50:29] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
