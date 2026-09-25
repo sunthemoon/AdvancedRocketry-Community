@@ -30,6 +30,20 @@ public final class V120MachineLanguageProvider extends LanguageProvider {
                 chinese ? "精密装配机物品输出口" : "Precision Assembler Item Output");
         add("block.advancedrocketrycommunity.precision_assembler_energy_input_port",
                 chinese ? "精密装配机能源输入口" : "Precision Assembler Energy Input");
+        add("menu.advancedrocketrycommunity.precision_assembler",
+                chinese ? "精密装配机控制台" : "Precision Assembler Console");
+        add("screen.advancedrocketrycommunity.precision_assembler.inputs",
+                chinese ? "物品输入 0–4" : "ITEM INPUTS 0–4");
+        add("screen.advancedrocketrycommunity.precision_assembler.outputs",
+                chinese ? "输出 0–1" : "OUTPUT 0–1");
+        add("screen.advancedrocketrycommunity.precision_assembler.formation",
+                chinese ? "结构：%s" : "STRUCTURE  %s");
+        add("screen.advancedrocketrycommunity.precision_assembler.process",
+                chinese ? "过程：%s" : "PROCESS  %s");
+        add("screen.advancedrocketrycommunity.precision_assembler.diagnostic_location",
+                chinese ? "方块 %s, %s, %s（局部 %s, %s, %s）" : "Block %s, %s, %s (local %s, %s, %s)");
+        add("tooltip.advancedrocketrycommunity.precision_assembler.progress",
+                chinese ? "进度：%s / %s tick" : "Progress: %s / %s ticks");
         add("block.advancedrocketrycommunity.rolling_machine", chinese ? "轧制机" : "Rolling Machine");
         add("block.advancedrocketrycommunity.rolling_machine_energy_input_port",
                 chinese ? "轧制机能源输入口" : "Rolling Machine Energy Input");
@@ -65,10 +79,37 @@ public final class V120MachineLanguageProvider extends LanguageProvider {
         for (PatternDiagnosticReason reason : PatternDiagnosticReason.values()) {
             add(key("diagnostic", reason.name()), chinese ? diagnosticChinese(reason) : diagnosticEnglish(reason));
         }
+        for (MultiblockFormationState state : MultiblockFormationState.values()) {
+            add(precisionKey("formation", state.name()),
+                    chinese ? formationChinese(state) : formationEnglish(state));
+        }
+        for (ProcessMachineState state : ProcessMachineState.values()) {
+            add(precisionKey("process", state.name()),
+                    state == ProcessMachineState.RUNNING
+                            ? (chinese ? "装配中" : "ASSEMBLING")
+                            : (chinese ? processChinese(state) : processEnglish(state)));
+        }
+        for (ProcessFailureCode code : ProcessFailureCode.values()) {
+            add(precisionKey("failure", code.name()),
+                    code == ProcessFailureCode.MISSING_FLUID_INPUT
+                            ? (chinese ? "缺少流体输入" : "Missing fluid input")
+                            : (chinese ? failureChinese(code) : failureEnglish(code)));
+        }
+        for (PatternDiagnosticReason reason : PatternDiagnosticReason.values()) {
+            add(precisionKey("diagnostic", reason.name()),
+                    chinese ? diagnosticChinese(reason) : diagnosticEnglish(reason));
+        }
     }
 
     private static String key(String group, String value) {
         return "status.advancedrocketrycommunity.rolling_machine."
+                + group
+                + "."
+                + value.toLowerCase(Locale.ROOT);
+    }
+
+    private static String precisionKey(String group, String value) {
+        return "status.advancedrocketrycommunity.precision_assembler."
                 + group
                 + "."
                 + value.toLowerCase(Locale.ROOT);

@@ -65,8 +65,46 @@ public final class RollingMachineRecipeProvider extends RecipeProvider {
                 Items.DROPPER,
                 "has_dropper"
         );
+        precisionAssemblerCraftingRecipes(output);
         output.accept(new RollingFinishedRecipe());
         PrecisionAssemblerRecipeProvider.addRecipes(output);
+    }
+
+    private static void precisionAssemblerCraftingRecipes(Consumer<FinishedRecipe> output) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.PRECISION_ASSEMBLER.get())
+                .pattern("ICI")
+                .pattern("PMP")
+                .pattern("IRI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                .define('P', Items.PISTON)
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_advanced_circuit", has(ModItems.ADVANCED_CIRCUIT.get()))
+                .save(output);
+        precisionPortRecipe(output, ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT.get(),
+                Items.HOPPER, "has_hopper");
+        precisionPortRecipe(output, ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(),
+                Items.DROPPER, "has_dropper");
+        precisionPortRecipe(output, ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get(),
+                Items.REDSTONE_BLOCK, "has_redstone_block");
+    }
+
+    private static void precisionPortRecipe(
+            Consumer<FinishedRecipe> output,
+            net.minecraft.world.level.block.Block result,
+            net.minecraft.world.level.ItemLike component,
+            String criterion
+    ) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
+                .pattern("I")
+                .pattern("C")
+                .pattern("M")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('C', component)
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .unlockedBy(criterion, has(component))
+                .save(output);
     }
 
     private static void portRecipe(
