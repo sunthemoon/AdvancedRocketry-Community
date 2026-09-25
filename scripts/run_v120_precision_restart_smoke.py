@@ -272,10 +272,11 @@ def main() -> int:
             "after_final_restart": final_restart, "processes": harness.process_documents,
         }
         (evidence / "summary.json").write_text(
-            json.dumps(summary, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+            json.dumps(summary, ensure_ascii=True, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8", newline="\n",
         )
         (evidence / "filtered-lifecycle.log").write_text(
-            "\n".join(harness.filtered_lines) + "\n", encoding="utf-8",
+            "\n".join(harness.filtered_lines) + "\n", encoding="utf-8", newline="\n",
         )
         print("[PASS] Packaged cross-chunk Precision progress survived a saved forced stop")
         print("[PASS] Same-world resume produced one batch and no duplicate after final restart")
