@@ -9,10 +9,10 @@ import java.util.Locale;
 import net.minecraft.data.PackOutput;
 import net.minecraftforge.common.data.LanguageProvider;
 
-public final class RollingMachineLanguageProvider extends LanguageProvider {
+public final class V120MachineLanguageProvider extends LanguageProvider {
     private final boolean chinese;
 
-    public RollingMachineLanguageProvider(PackOutput output, String locale) {
+    public V120MachineLanguageProvider(PackOutput output, String locale) {
         super(output, AdvancedRocketryCommunity.MOD_ID + "_v120", locale);
         if (!locale.equals("en_us") && !locale.equals("zh_cn")) {
             throw new IllegalArgumentException("Unsupported locale " + locale);
@@ -22,6 +22,14 @@ public final class RollingMachineLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("block.advancedrocketrycommunity.precision_assembler",
+                chinese ? "精密装配机" : "Precision Assembler");
+        add("block.advancedrocketrycommunity.precision_assembler_item_input_port",
+                chinese ? "精密装配机物品输入口" : "Precision Assembler Item Input");
+        add("block.advancedrocketrycommunity.precision_assembler_item_output_port",
+                chinese ? "精密装配机物品输出口" : "Precision Assembler Item Output");
+        add("block.advancedrocketrycommunity.precision_assembler_energy_input_port",
+                chinese ? "精密装配机能源输入口" : "Precision Assembler Energy Input");
         add("block.advancedrocketrycommunity.rolling_machine", chinese ? "轧制机" : "Rolling Machine");
         add("block.advancedrocketrycommunity.rolling_machine_energy_input_port",
                 chinese ? "轧制机能源输入口" : "Rolling Machine Energy Input");

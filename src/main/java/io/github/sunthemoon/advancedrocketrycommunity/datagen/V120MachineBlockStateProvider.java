@@ -9,8 +9,8 @@ import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 /** Community-authored placeholder models composed from project and vanilla textures. */
-public final class RollingMachineBlockStateProvider extends BlockStateProvider {
-    public RollingMachineBlockStateProvider(PackOutput output, ExistingFileHelper existingFiles) {
+public final class V120MachineBlockStateProvider extends BlockStateProvider {
+    public V120MachineBlockStateProvider(PackOutput output, ExistingFileHelper existingFiles) {
         super(output, AdvancedRocketryCommunity.MOD_ID, existingFiles);
     }
 
@@ -46,6 +46,22 @@ public final class RollingMachineBlockStateProvider extends BlockStateProvider {
                 ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get(),
                 mcLoc("block/orange_concrete")
         );
+
+        ModelFile precisionController = models().orientableWithBottom(
+                "precision_assembler",
+                modLoc("block/machine_casing_side"),
+                mcLoc("block/crafting_table_front"),
+                modLoc("block/machine_casing_top"),
+                modLoc("block/machine_casing_top")
+        );
+        horizontalBlock(ModBlocks.PRECISION_ASSEMBLER.get(), precisionController);
+        simpleBlockItem(ModBlocks.PRECISION_ASSEMBLER.get(), precisionController);
+        port("precision_assembler_item_input_port",
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT.get(), mcLoc("block/lime_concrete"));
+        port("precision_assembler_item_output_port",
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(), mcLoc("block/orange_concrete"));
+        port("precision_assembler_energy_input_port",
+                ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get(), mcLoc("block/redstone_block"));
     }
 
     private void port(String name, net.minecraft.world.level.block.Block block, ResourceLocation top) {

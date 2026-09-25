@@ -1,4 +1,8 @@
 {
+  "block.advancedrocketrycommunity.precision_assembler": "Precision Assembler",
+  "block.advancedrocketrycommunity.precision_assembler_energy_input_port": "Precision Assembler Energy Input",
+  "block.advancedrocketrycommunity.precision_assembler_item_input_port": "Precision Assembler Item Input",
+  "block.advancedrocketrycommunity.precision_assembler_item_output_port": "Precision Assembler Item Output",
   "block.advancedrocketrycommunity.rolling_machine": "Rolling Machine",
   "block.advancedrocketrycommunity.rolling_machine_energy_input_port": "Rolling Machine Energy Input",
   "block.advancedrocketrycommunity.rolling_machine_fluid_input_port": "Rolling Machine Fluid Input",

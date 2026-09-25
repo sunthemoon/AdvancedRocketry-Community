@@ -22,14 +22,14 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
 
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
-        generator.addProvider(event.includeClient(), new RollingMachineBlockStateProvider(output, existingFiles));
-        generator.addProvider(event.includeClient(), new RollingMachineLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new RollingMachineLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeClient(), new V120MachineBlockStateProvider(output, existingFiles));
+        generator.addProvider(event.includeClient(), new V120MachineLanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new V120MachineLanguageProvider(output, "zh_cn"));
         generator.addProvider(event.includeServer(), new RollingMachineRecipeProvider(output));
-        generator.addProvider(event.includeServer(), RollingMachineLootTableProvider.create(output));
+        generator.addProvider(event.includeServer(), V120MachineLootTableProvider.create(output));
         generator.addProvider(
                 event.includeServer(),
-                new RollingMachineBlockTagsProvider(output, event.getLookupProvider(), existingFiles)
+                new V120MachineBlockTagsProvider(output, event.getLookupProvider(), existingFiles)
         );
     }
 }

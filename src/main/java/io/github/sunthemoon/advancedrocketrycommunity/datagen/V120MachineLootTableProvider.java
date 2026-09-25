@@ -10,8 +10,8 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 
-public final class RollingMachineLootTableProvider {
-    private RollingMachineLootTableProvider() {
+public final class V120MachineLootTableProvider {
+    private V120MachineLootTableProvider() {
     }
 
     public static LootTableProvider create(PackOutput output) {
@@ -19,22 +19,26 @@ public final class RollingMachineLootTableProvider {
                 output,
                 Set.of(),
                 List.of(new LootTableProvider.SubProviderEntry(
-                        RollingMachineBlockLoot::new,
+                        MachineBlockLoot::new,
                         LootContextParamSets.BLOCK
                 ))
         );
     }
 
-    private static final class RollingMachineBlockLoot extends BlockLootSubProvider {
+    private static final class MachineBlockLoot extends BlockLootSubProvider {
         private static final List<Block> BLOCKS = List.of(
                 ModBlocks.ROLLING_MACHINE.get(),
                 ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT.get(),
                 ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT.get(),
                 ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT.get(),
-                ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get()
+                ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get()
         );
 
-        private RollingMachineBlockLoot() {
+        private MachineBlockLoot() {
             super(Set.of(), FeatureFlags.REGISTRY.allFlags());
         }
 

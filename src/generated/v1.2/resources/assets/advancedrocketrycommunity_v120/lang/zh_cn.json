@@ -1,4 +1,8 @@
 {
+  "block.advancedrocketrycommunity.precision_assembler": "精密装配机",
+  "block.advancedrocketrycommunity.precision_assembler_energy_input_port": "精密装配机能源输入口",
+  "block.advancedrocketrycommunity.precision_assembler_item_input_port": "精密装配机物品输入口",
+  "block.advancedrocketrycommunity.precision_assembler_item_output_port": "精密装配机物品输出口",
   "block.advancedrocketrycommunity.rolling_machine": "轧制机",
   "block.advancedrocketrycommunity.rolling_machine_energy_input_port": "轧制机能源输入口",
   "block.advancedrocketrycommunity.rolling_machine_fluid_input_port": "轧制机流体输入口",

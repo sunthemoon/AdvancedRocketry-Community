@@ -6,6 +6,10 @@
     "advancedrocketrycommunity:rolling_machine_item_input_port",
     "advancedrocketrycommunity:rolling_machine_fluid_input_port",
     "advancedrocketrycommunity:rolling_machine_energy_input_port",
-    "advancedrocketrycommunity:rolling_machine_item_output_port"
+    "advancedrocketrycommunity:rolling_machine_item_output_port",
+    "advancedrocketrycommunity:precision_assembler",
+    "advancedrocketrycommunity:precision_assembler_item_input_port",
+    "advancedrocketrycommunity:precision_assembler_item_output_port",
+    "advancedrocketrycommunity:precision_assembler_energy_input_port"
   ]
 }

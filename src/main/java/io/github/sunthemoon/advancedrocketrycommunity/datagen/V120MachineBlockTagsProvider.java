@@ -9,8 +9,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
-public final class RollingMachineBlockTagsProvider extends BlockTagsProvider {
-    public RollingMachineBlockTagsProvider(
+public final class V120MachineBlockTagsProvider extends BlockTagsProvider {
+    public V120MachineBlockTagsProvider(
             PackOutput output,
             CompletableFuture<HolderLookup.Provider> lookupProvider,
             ExistingFileHelper existingFiles
@@ -27,7 +27,11 @@ public final class RollingMachineBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT.get(),
                 ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT.get(),
                 ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT.get(),
-                ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get()
+                ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get()
         );
         tag(BlockTags.NEEDS_IRON_TOOL).add(
                 ModBlocks.MACHINE_CASING.get(),
@@ -36,7 +40,11 @@ public final class RollingMachineBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT.get(),
                 ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT.get(),
                 ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT.get(),
-                ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get()
+                ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_INPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(),
+                ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get()
         );
     }
 }
