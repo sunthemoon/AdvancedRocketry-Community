@@ -15,6 +15,18 @@
 | Performance/soak | tick、内存、网络、长时间稳定 | 半自动 |
 | Compatibility | Forge 版本、可选模组、最小冲突集 | 半自动 |
 
+### 完整测试的执行时机
+
+按 [ADR-018](decisions/ADR-018-PARITY-FIRST-FULL-ACCEPTANCE-SCHEDULING.md)，
+以 `docs/PORTING_MATRIX.md` 为准，全部原有机械和维度完成实现后，再执行
+长时间负载、完整远程专服、真实 GPU、双真实客户端及全机械/全维度集成测试。
+仅将清单项标记为 `DEFERRED`、`REJECTED`、`MISSING` 或 `UNKNOWN` 不算完成；
+单个切片或中间版本完成也不触发这套完整测试。
+
+开发期间仍须完成各切片的短周期构建、定向自动测试，以及新增行为对应的
+存档迁移、资源守恒、安全和恢复验证。延期项目不得记为通过；版本发布前
+仍须取得对应 Required Gate 的实际证据和人工批准。
+
 ## 2. 通用构建命令
 
 每个版本至少：
