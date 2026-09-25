@@ -3,7 +3,7 @@
 ```yaml
 version: v1.2.0
 slice: V120-MCH-01
-status: IN_PROGRESS
+status: VERIFIED
 date: 2026-09-25
 branch: codex/v1.2.0-rolling-machine
 ```
@@ -39,12 +39,17 @@ branch: codex/v1.2.0-rolling-machine
   side-effect free, FE is consumed per tick, and final Item/Fluid replacement advances
   the shared revision exactly once through the recoverable process executor.
 - The stop path clears all manager indexes and the next `ServerAboutToStartEvent`
-  reinstalls the narrow runtime bridge. A packaged two-start lifecycle fixture remains
-  part of `V120-ROLL-05` rather than being inferred from the initial GameTest startup.
+  reinstalls the narrow runtime bridge. A packaged first-start/restart baseline verified
+  both clean server cycles against the same world identity.
 - The built-in batch consumes two iron ingots, 100 mB water and 2000 FE, then produces
   eight iron bars. Forge tests cover exact completion, an active-process NBT reload and
   a completed-progress/no-journal state that enters `RECOVERY_REQUIRED` without a
   second resource commit.
+- A property-gated, permission-level-2 packaged-server fixture uses the real typed
+  capabilities and respects their 1000 FE per-call receive limit. It pauses at progress
+  10, performs `save-all flush`, kills the process without `stop`, and verifies the same
+  progress, resources and revision after restart. Resume produces one eight-bar batch
+  and one replay UUID; an idle wait and a final restart produce no duplicate output.
 - The vanilla menu protocol exposes fixed IDs for formation, validation, the first
   structured diagnostic, process state/failure, progress/total, FE, water and inspected
   cells. Full 32-bit coordinates and the 72,000-tick upper bound are split into explicit
@@ -88,20 +93,36 @@ branch: codex/v1.2.0-rolling-machine
 | final `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
 | common/server import, class-size and sensitive-diff scans | PASS; 0 client imports, largest production class 493 lines, no known credential pattern |
 | final `git diff --check` | PASS |
+| packaged `run_dedicated_server_smoke.py` baseline | PASS; first start and same-world restart both saved and stopped cleanly, with zero project errors or client-linkage failures |
+| `python scripts/run_v120_rolling_restart_smoke.py ...` | PASS; durable-save forced stop preserved progress 10, 500 mB water, 3800 FE and revision 6 exactly; completion retained 8 iron bars, 400 mB water, 2000 FE and revision 7 through a final restart |
+| final `gradlew clean build` after `V120-ROLL-05` | PASS; 550 JUnit tests, 0 failures/errors/skips |
+| final `gradlew runData` after `V120-ROLL-05` | PASS; 35 total files, written 0 |
+| final `gradlew runGameTestServer` after `V120-ROLL-05` | PASS; all 68 Required GameTests |
+| final repository and planning validators | PASS; 45 checks and 856 links; 11 plans and the 33-input inventory |
 
 The GameTest command is a bounded slice check under ADR-018. It is not long-load,
 remote-Linux, real-GPU, two-client or final all-machine/all-dimension acceptance.
 
-## Remaining before the complete Rolling slice is verified
+## Packaged restart evidence
 
-- Add the packaged-server forced-interruption/restart fixture and rerun the final Rolling
-  short-cycle verification set. The current journal phases mark the BlockEntity dirty;
-  this evidence does not claim a synchronous disk flush for every phase.
+- Tested implementation commit:
+  `3c54daf797a9e8ff45d496a308d2a7eae4369c6e`.
+- Packaged artifact SHA-256:
+  `3fa6b6b0724507afd03470ef42bac0aeec6dd095ef1d6551c0e835e2290702e5`.
+- [Baseline first-start/restart summary](packaged-restart/baseline-summary.json)
+- [Forced-stop/recovery summary](packaged-restart/summary.json)
+- [Filtered lifecycle log](packaged-restart/filtered-lifecycle.txt)
+- [Evidence SHA-256 manifest](packaged-restart/SHA256SUMS)
+
+## Deferred acceptance outside this slice
+
 - Perform the real-client visual check only at the ADR-018 acceptance point. Compilation
   and server-side menu interaction prove protocol behavior, not GPU rendering quality.
+- The forced stop follows an observed `save-all flush`; it proves recovery of durable
+  active state, not synchronous disk flush at every transaction-journal phase.
 
 ## Gate statement
 
-This evidence verifies `V120-ROLL-01` through `V120-ROLL-04`. It does not satisfy
-`V120-ROLL-05`, the complete Rolling Machine slice, v1.2.0 release Gates, or the
-acceptance campaign deferred by ADR-018.
+This evidence verifies `V120-ROLL-01` through `V120-ROLL-05` and the functional
+`V120-MCH-01` Rolling Machine slice. It does not satisfy the v1.2.0 release Gates or the
+full acceptance campaign deferred by ADR-018.
