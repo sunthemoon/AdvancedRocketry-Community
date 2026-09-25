@@ -3,7 +3,7 @@
 ```yaml
 version: v1.2.0
 slice: V120-MCH-03
-verified_leaves: [V120-PREC-01, V120-PREC-02, V120-PREC-03]
+verified_leaves: [V120-PREC-01, V120-PREC-02, V120-PREC-03, V120-PREC-05]
 slice_status: IN_PROGRESS
 date: 2026-09-25
 branch: codex/v1.2.0-precision-assembler
@@ -15,6 +15,9 @@ process_safety_commit: a64b411ef94c1b51fb2f8a66b420caca7e0ee17b
 process_recipes_commit: 9ff02da1cf3565c6d56ddb2055d092a9332d1b21
 process_runtime_commit: 8af00d4bd439cc263b7b7a18d3796baf346007e4
 process_checkpoint_artifact_sha256: edac60ea023d35a56597fb07d01d91e87cf83102e64db6d253cca2c9d9cc64a6
+menu_datagen_commit: 5f5815b053b42faf1d9685e448b567fe3d3c7513
+menu_runtime_commit: 617a9efc357ad46347afdb23f36b40ac8109738c
+menu_dev_jar_sha256: 63941ac68b24ee93314fbd79ff178fee61f112857ec1ded12b81851101b4ee73
 ```
 
 ## Verified behavior
@@ -169,12 +172,58 @@ journal and port chunk writes are durably ordered across a forced stop. This rem
 recovery risk and keeps `V120-PREC-04` in progress; it is not waived by ADR-018.
 The pending human checks are listed in [short manual checks](MANUAL-TEST.md).
 
+## V120-PREC-05 menu, screen and generated resources (verified implementation)
+
+- The controller opens a server-authoritative menu only for a non-spectator within eight
+  blocks of the loaded, exact controller BlockEntity. The server menu captures its
+  instance UUID and generation; distant, removed or rebuilt controllers invalidate
+  clicks and quick transfers. No client packet supplies formation, progress or results.
+- Five numbered input slots and two output slots resolve the current physical ports.
+  The eighth port appears as a server-synchronized 20,000 FE gauge. Menu Item views
+  preserve the port's process lock, generation epoch and resource-revision accounting;
+  the output slot cannot accept manual insertion. The 22 read-only data fields include
+  process/failure states, 32-bit progress and the first local/world structure diagnostic.
+- The client-only screen uses a code-drawn panel and bilingual labels. Four distinct
+  community crafting recipes and their advancements now make the controller and its
+  three physical port types craftable. Existing community block models, loot and tags
+  remain DataGen-owned; no upstream file or unreviewed visual asset was imported.
+- Two JUnit cases cover stable menu IDs and signed-short transport. Three new Forge
+  GameTests cover five-slot routing plus Energy, distance and generation rejection,
+  structural diagnostics, process input locking, two-output transfer and a partial
+  inventory merge without duplication. `validate_v120_machine_resources.py` checks
+  nine v1.2 machine blocks' models, recipe results, advancements, loot, tags and
+  bilingual keys, including local model/texture references.
+
+| Command or check | Result |
+|---|---|
+| `gradlew test --tests '...machine.precision.*' --offline --no-daemon` | PASS; targeted Precision JUnit |
+| `gradlew clean build --offline --no-daemon` on the final source tree | PASS; 119 JUnit suites, 581 tests, 0 failures/errors |
+| `gradlew test --offline --no-daemon` | PASS; up-to-date after the clean build |
+| consecutive `gradlew runData --offline --no-daemon` | PASS; 61 generated files, second invocation written 0 |
+| `gradlew runGameTestServer --offline --no-daemon` on the preserved development world | PASS; 89/89 Required GameTests, including 3 new menu tests |
+| `python scripts/validate_v120_machine_resources.py` | PASS; 9 machine block resource sets and bilingual keys |
+| `python scripts/validate_repository.py --require-approved-identity` | PASS; 45 checks, 873 relative links, 0 failures |
+| `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
+| `git diff --check` | PASS |
+
+The complete GameTest console log remains at ignored local
+`build/prec05-gametest-console.txt` (SHA-256
+`d3deac4df980fe90f4f48fbc9de3bb27af6dbb4ce9a86fe713ff0f11ab6ceeeb`).
+The final development JAR SHA-256 is
+`63941ac68b24ee93314fbd79ff178fee61f112857ec1ded12b81851101b4ee73`;
+its `1.1.1-dev` name is inherited from the unfrozen development baseline and does
+not make it a v1.2 candidate. A client-only slot-number drawing change followed the
+GameTest run and was included in the final clean build; no server behavior changed.
+
+Real-GPU visual confirmation and two-client interaction remain unexecuted under
+ADR-018. `V120-PREC-04/06` short packaged-server persistence/restart and durable
+cross-chunk transaction ordering remain open; this menu checkpoint does not prove
+the Precision Assembler slice or v1.2.0 G0–G9 complete.
+
 ## Remaining slice work
 
 - `V120-PREC-04`: complete short packaged-server same-world stop/restart and resolve
   the durable cross-chunk transaction boundary before claiming exact-once recovery.
-- `V120-PREC-05`: server-authoritative menu, client-only screen, generated resources and
-  readable diagnostics.
 - `V120-PREC-06`: bounded packaged-server restart and evidence review.
 
 The complete long-load, remote Linux, real-GPU, two-client and all-machine/all-dimension
