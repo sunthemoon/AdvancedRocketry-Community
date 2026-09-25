@@ -42,9 +42,9 @@ else:
 
 
 EXPECTED_VERSION = "1.20.1-1.1.1-dev"
-X = 128
+X = 132
 Y = 80
-Z = 128
+Z = 132
 POSITION = f"{X} {Y} {Z}"
 POSITION_COMPACT = f"{X},{Y},{Z}"
 IRON_INGOT = "minecraft:iron_ingot"
