@@ -22,6 +22,8 @@ public final class V120MachineLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("jei.advancedrocketrycommunity.process_cost",
+                chinese ? "耗时 %s 刻 / %s FE/刻" : "%s t / %s FE/t");
         add("block.advancedrocketrycommunity.precision_assembler",
                 chinese ? "精密装配机" : "Precision Assembler");
         add("block.advancedrocketrycommunity.precision_assembler_item_input_port",

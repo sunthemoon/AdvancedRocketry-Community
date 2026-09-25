@@ -134,6 +134,8 @@ def validate(root: Path) -> list[str]:
     required.update(f"screen.{MOD_ID}.precision_assembler.{key}" for key in (
         "inputs", "outputs", "formation", "process", "diagnostic_location"))
     required.add(f"tooltip.{MOD_ID}.precision_assembler.progress")
+    cost_key = f"jei.{MOD_ID}.process_cost"
+    required.add(cost_key)
     required.update(
         f"status.{MOD_ID}.precision_assembler.{group}.{value}"
         for group, values in PRECISION_STATUSES.items() for value in values
@@ -142,6 +144,8 @@ def validate(root: Path) -> list[str]:
         missing = required - set(translations)
         if missing:
             errors.append(f"{locale}: missing translations {sorted(missing)}")
+        elif translations[cost_key].count("%s") != 2:
+            errors.append(f"{locale}: JEI process cost must contain duration and energy placeholders")
 
     return errors
 

@@ -3,8 +3,12 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.compat.jei;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.client.ElectrolyzerScreen;
+import io.github.sunthemoon.advancedrocketrycommunity.client.PrecisionAssemblerScreen;
+import io.github.sunthemoon.advancedrocketrycommunity.client.RollingMachineScreen;
 import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnosticId;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipe;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipe;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.util.List;
@@ -30,28 +34,46 @@ public final class ArceJeiPlugin implements IModPlugin {
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
-        registration.addRecipeCategories(new ElectrolyzerJeiCategory(
-                registration.getJeiHelpers().getGuiHelper()
-        ));
+        var helper = registration.getJeiHelpers().getGuiHelper();
+        registration.addRecipeCategories(
+                new ElectrolyzerJeiCategory(helper),
+                new RollingMachineJeiCategory(helper),
+                new PrecisionAssemblerJeiCategory(helper)
+        );
     }
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         ClientLevel level = Minecraft.getInstance().level;
-        List<ElectrolyzerRecipe> recipes = level == null
+        List<ElectrolyzerRecipe> electrolyzerRecipes = level == null
                 ? List.of()
                 : level.getRecipeManager().getAllRecipesFor(ModRecipes.ELECTROLYZING_TYPE.get());
-        registration.addRecipes(ElectrolyzerJeiCategory.TYPE, recipes);
+        List<RollingMachineRecipe> rollingRecipes = level == null
+                ? List.of()
+                : level.getRecipeManager().getAllRecipesFor(ModRecipes.ROLLING_TYPE.get());
+        List<PrecisionAssemblerRecipe> precisionRecipes = level == null
+                ? List.of()
+                : level.getRecipeManager().getAllRecipesFor(ModRecipes.PRECISION_ASSEMBLING_TYPE.get());
+        registration.addRecipes(ElectrolyzerJeiCategory.TYPE, electrolyzerRecipes);
+        registration.addRecipes(RollingMachineJeiCategory.TYPE, rollingRecipes);
+        registration.addRecipes(PrecisionAssemblerJeiCategory.TYPE, precisionRecipes);
         AdvancedRocketryCommunity.LOGGER.info(
                 "{} optional_compat=jei status=registered recipes={}",
                 BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
-                recipes.size()
+                electrolyzerRecipes.size()
+        );
+        AdvancedRocketryCommunity.LOGGER.info(
+                "{} optional_compat=jei machine_recipes rolling={} precision={}",
+                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
+                rollingRecipes.size(), precisionRecipes.size()
         );
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(ModItems.ELECTROLYZER.get(), ElectrolyzerJeiCategory.TYPE);
+        registration.addRecipeCatalyst(ModItems.ROLLING_MACHINE.get(), RollingMachineJeiCategory.TYPE);
+        registration.addRecipeCatalyst(ModItems.PRECISION_ASSEMBLER.get(), PrecisionAssemblerJeiCategory.TYPE);
     }
 
     @Override
@@ -63,6 +85,14 @@ public final class ArceJeiPlugin implements IModPlugin {
                 32,
                 8,
                 ElectrolyzerJeiCategory.TYPE
+        );
+        registration.addRecipeClickArea(
+                RollingMachineScreen.class, 96, 43, 47, 12,
+                RollingMachineJeiCategory.TYPE
+        );
+        registration.addRecipeClickArea(
+                PrecisionAssemblerScreen.class, 18, 71, 212, 11,
+                PrecisionAssemblerJeiCategory.TYPE
         );
     }
 }

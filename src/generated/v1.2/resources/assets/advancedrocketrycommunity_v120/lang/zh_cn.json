@@ -8,6 +8,7 @@
   "block.advancedrocketrycommunity.rolling_machine_fluid_input_port": "轧制机流体输入口",
   "block.advancedrocketrycommunity.rolling_machine_item_input_port": "轧制机物品输入口",
   "block.advancedrocketrycommunity.rolling_machine_item_output_port": "轧制机物品输出口",
+  "jei.advancedrocketrycommunity.process_cost": "耗时 %s 刻 / %s FE/刻",
   "menu.advancedrocketrycommunity.precision_assembler": "精密装配机控制台",
   "menu.advancedrocketrycommunity.rolling_machine": "轧制机控制台",
   "message.advancedrocketrycommunity.rolling_machine.formation": "轧制机：%s | 世代 %s",
