@@ -27,9 +27,10 @@ bounded-work invariants cannot be reconstructed reliably only at the end.
 
 ## Decision
 
-Defer the complete integrated acceptance campaign until the original machine and
-dimension scope recorded by the porting matrix is implemented or explicitly
-dispositioned. The deferred campaign includes:
+Defer the complete integrated acceptance campaign until every original machine and
+dimension in the porting matrix has a completed implementation. A `DEFERRED`,
+`REJECTED`, `MISSING` or `UNKNOWN` row does not satisfy this scheduling trigger.
+The deferred campaign includes:
 
 - long-duration and high-population load/soak runs;
 - the complete remote Debian dedicated-server matrix;
@@ -53,16 +54,14 @@ The decision changes test scheduling only. It does not:
 ## Completion trigger
 
 The full campaign becomes mandatory when the porting matrix shows every original
-machine and dimension as implemented or explicitly covered by an accepted disposition.
-In practical terms, the original machine and dimension inventories must be closed before
-the complete campaign starts: finishing an individual machine, dimension, slice or
-intermediate version is not a trigger for that campaign. The owner reaffirmed this rule
-on 2026-09-10 and again on 2026-09-11: complete the original machines and dimensions
-first, then run the complete acceptance campaign. The owner reaffirmed this
-completion-first scheduling on 2026-09-25.
-Before assigning the first feature-parity candidate, the owner must review the matrix,
-run or precisely disposition every deferred environment and record the resulting Gate
-status. A version number alone does not satisfy this trigger.
+machine and dimension implemented. Closing an inventory row by deferring or rejecting
+it is not completion for this trigger. Finishing an individual machine, dimension,
+slice or intermediate version is not a trigger for the campaign. The owner reaffirmed
+this rule on 2026-09-10, 2026-09-11 and 2026-09-25: complete the original machines and
+dimensions first, then run the complete acceptance campaign. Before assigning the first
+feature-parity candidate, the owner must review the matrix, run or precisely disposition
+every deferred environment and record the resulting Gate status. A version number alone
+does not satisfy this trigger.
 
 ## Consequences
 
