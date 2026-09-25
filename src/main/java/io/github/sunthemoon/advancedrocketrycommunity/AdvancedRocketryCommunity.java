@@ -22,6 +22,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineServerEvents;
@@ -90,6 +91,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(rollingEvents::onChunkUnload);
         MinecraftForge.EVENT_BUS.addListener(rollingEvents::onDatapackSync);
         MinecraftForge.EVENT_BUS.addListener(rollingEvents::onServerAboutToStart);
+        MinecraftForge.EVENT_BUS.addListener(new RollingMachineCommands()::register);
         CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
