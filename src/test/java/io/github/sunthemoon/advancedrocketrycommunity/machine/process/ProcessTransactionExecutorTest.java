@@ -108,6 +108,28 @@ class ProcessTransactionExecutorTest {
     }
 
     @Test
+    void persistedMarkerWithoutAfterResourcesCannotDiscardTheJournal() {
+        Fixture fixture = fixture();
+        fixture.journals.journal = journal(fixture.plan, ProcessJournalPhase.APPLYING);
+        fixture.resources.lastApplied = Optional.of(TRANSACTION_ID);
+
+        ProcessTransactionResult recovered = ProcessTransactionExecutor.recover(
+                fixture.resources, fixture.journals
+        );
+
+        assertEquals(ProcessTransactionStatus.RECOVERY_REQUIRED, recovered.status());
+        assertEquals(ProcessFailureCode.RECOVERY_DIVERGED, recovered.failure().code());
+        assertEquals(fixture.plan.before(), fixture.resources.snapshot());
+        assertTrue(fixture.journals.load().isPresent());
+
+        ProcessTransactionResult duplicate = ProcessTransactionExecutor.commit(
+                TRANSACTION_ID, MACHINE_ID, fixture.plan, fixture.resources, fixture.journals
+        );
+        assertEquals(ProcessTransactionStatus.RECOVERY_REQUIRED, duplicate.status());
+        assertTrue(fixture.journals.load().isPresent());
+    }
+
+    @Test
     void preparedOrApplyingBeforeSnapshotRecoversByApplyingOnce() {
         for (ProcessJournalPhase phase : List.of(ProcessJournalPhase.PREPARED, ProcessJournalPhase.APPLYING)) {
             Fixture fixture = fixture();

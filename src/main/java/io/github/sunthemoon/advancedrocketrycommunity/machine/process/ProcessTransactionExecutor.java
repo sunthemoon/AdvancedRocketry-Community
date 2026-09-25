@@ -16,7 +16,13 @@ public final class ProcessTransactionExecutor {
             ProcessJournalStore journals
     ) {
         if (resources.lastAppliedTransactionId().filter(transactionId::equals).isPresent()) {
-            return ProcessTransactionResult.success(ProcessTransactionStatus.DUPLICATE);
+            return resources.snapshot().equals(plan.after())
+                    ? ProcessTransactionResult.success(ProcessTransactionStatus.DUPLICATE)
+                    : ProcessTransactionResult.failure(
+                            ProcessTransactionStatus.RECOVERY_REQUIRED,
+                            ProcessFailureCode.RECOVERY_DIVERGED,
+                            plan.definitionId()
+                    );
         }
         Optional<ProcessTransactionJournal> active = journals.load();
         if (active.isPresent()) {
@@ -59,6 +65,13 @@ public final class ProcessTransactionExecutor {
         }
         ProcessTransactionJournal journal = loaded.orElseThrow();
         if (resources.lastAppliedTransactionId().filter(journal.transactionId()::equals).isPresent()) {
+            if (!resources.snapshot().equals(journal.after())) {
+                return ProcessTransactionResult.failure(
+                        ProcessTransactionStatus.RECOVERY_REQUIRED,
+                        ProcessFailureCode.RECOVERY_DIVERGED,
+                        journal.definitionId()
+                );
+            }
             persistAppliedAndClear(journal, journals);
             return ProcessTransactionResult.success(ProcessTransactionStatus.RECOVERED_FINALIZE);
         }
