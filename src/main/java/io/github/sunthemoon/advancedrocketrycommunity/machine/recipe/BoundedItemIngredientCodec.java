@@ -1,12 +1,14 @@
-package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
+package io.github.sunthemoon.advancedrocketrycommunity.machine.recipe;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessInput;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -16,15 +18,16 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
-/** Decoder for the deliberately limited vanilla item/tag ingredient subset. */
-final class RollingMachineIngredientCodec {
+/** Shared decoder for the bounded vanilla item/tag ingredient subset. */
+public final class BoundedItemIngredientCodec {
+    public static final int MAX_INGREDIENT_JSON_CHARS = 4_096;
     private static final Set<String> ITEM_FIELDS = Set.of("item");
     private static final Set<String> TAG_FIELDS = Set.of("tag");
 
-    private RollingMachineIngredientCodec() {
+    private BoundedItemIngredientCodec() {
     }
 
-    static Ingredient decode(JsonElement raw) {
+    public static Ingredient decode(JsonElement raw) {
         List<JsonObject> entries = validate(raw);
         List<Ingredient.Value> values = new ArrayList<>(entries.size());
         for (JsonObject entry : entries) {
@@ -43,13 +46,38 @@ final class RollingMachineIngredientCodec {
         return Ingredient.fromValues(values.stream());
     }
 
-    static void validateOnly(JsonElement raw) {
+    public static void validateOnly(JsonElement raw) {
         validate(raw);
+    }
+
+    public static List<String> resolveAlternatives(Ingredient ingredient) {
+        if (ingredient == null || ingredient.isEmpty()) {
+            throw new IllegalArgumentException("machine ingredient cannot be empty");
+        }
+        ItemStack[] variants = ingredient.getItems();
+        if (variants.length < 1 || variants.length > ProcessInput.MAX_VARIANTS) {
+            throw new IllegalArgumentException("machine ingredient must resolve to 1..32 variants");
+        }
+        TreeSet<String> alternatives = new TreeSet<>();
+        for (ItemStack variant : variants) {
+            if (variant.isEmpty() || variant.hasTag()) {
+                throw new IllegalArgumentException("machine ingredients cannot be empty or carry NBT");
+            }
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(variant.getItem());
+            if (id == null || id.toString().length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
+                throw new IllegalArgumentException("machine ingredient has an invalid resource id");
+            }
+            alternatives.add(id.toString());
+        }
+        if (alternatives.size() != variants.length) {
+            throw new IllegalArgumentException("machine ingredient variants cannot overlap");
+        }
+        return List.copyOf(alternatives);
     }
 
     private static List<JsonObject> validate(JsonElement raw) {
         String encoded = raw.toString();
-        if (encoded.length() > RollingMachineRecipe.MAX_INGREDIENT_JSON_CHARS) {
+        if (encoded.length() > MAX_INGREDIENT_JSON_CHARS) {
             throw new IllegalArgumentException("ingredient JSON exceeds the character limit");
         }
         List<JsonObject> entries = new ArrayList<>();
@@ -70,7 +98,7 @@ final class RollingMachineIngredientCodec {
             }
             String resource = GsonHelper.getAsString(entry, item ? "item" : "tag");
             ResourceLocation parsed = ResourceLocation.tryParse(resource);
-            if (parsed == null || resource.length() > RollingMachineRecipe.MAX_RESOURCE_ID_CHARS) {
+            if (parsed == null || resource.length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
                 throw new IllegalArgumentException("ingredient resource id is invalid");
             }
         }
@@ -87,7 +115,7 @@ final class RollingMachineIngredientCodec {
     private static Item requireItem(String rawId) {
         ResourceLocation id = ResourceLocation.tryParse(rawId);
         Item item = id == null ? null : BuiltInRegistries.ITEM.getOptional(id).orElse(null);
-        if (rawId.length() > RollingMachineRecipe.MAX_RESOURCE_ID_CHARS
+        if (rawId.length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS
                 || item == null
                 || item.getDefaultInstance().isEmpty()) {
             throw new IllegalArgumentException("ingredient item is unknown or empty");
