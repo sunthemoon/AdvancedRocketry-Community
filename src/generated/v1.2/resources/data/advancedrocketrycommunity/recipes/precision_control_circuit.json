@@ -1,0 +1,30 @@
+{
+  "type": "advancedrocketrycommunity:precision_assembling",
+  "energy_per_tick": 40,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "minecraft:iron_ingot"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "minecraft:redstone"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    {
+      "count": 2,
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "processing_time": 20,
+  "schema_version": 1
+}

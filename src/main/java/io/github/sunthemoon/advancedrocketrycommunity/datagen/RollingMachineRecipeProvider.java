@@ -66,6 +66,7 @@ public final class RollingMachineRecipeProvider extends RecipeProvider {
                 "has_dropper"
         );
         output.accept(new RollingFinishedRecipe());
+        PrecisionAssemblerRecipeProvider.addRecipes(output);
     }
 
     private static void portRecipe(

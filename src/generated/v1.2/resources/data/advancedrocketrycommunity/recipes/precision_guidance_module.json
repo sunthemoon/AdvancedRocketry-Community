@@ -1,0 +1,44 @@
+{
+  "type": "advancedrocketrycommunity:precision_assembling",
+  "energy_per_tick": 50,
+  "inputs": [
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "minecraft:iron_ingot"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "minecraft:redstone"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:gold_ingot"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:quartz"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:copper_ingot"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "count": 1,
+      "item": "minecraft:comparator"
+    }
+  ],
+  "processing_time": 30,
+  "schema_version": 1
+}
