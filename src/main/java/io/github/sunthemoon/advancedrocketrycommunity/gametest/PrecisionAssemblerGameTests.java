@@ -1,13 +1,27 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockPartBinding;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingValidationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineLogic;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceBalance;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionJournal;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessJournalPersistence;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +33,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -31,10 +46,12 @@ import net.minecraftforge.items.IItemHandler;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class PrecisionAssemblerGameTests {
-    private static final BlockPos CONTROLLER = new BlockPos(2, 1, 1);
-    private static final BlockPos INPUT_0 = new BlockPos(1, 1, 1);
-    private static final BlockPos OUTPUT_0 = new BlockPos(3, 1, 3);
-    private static final BlockPos ENERGY = new BlockPos(3, 1, 4);
+    static final BlockPos CONTROLLER = new BlockPos(2, 1, 1);
+    static final BlockPos INPUT_0 = new BlockPos(1, 1, 1);
+    static final BlockPos INPUT_1 = new BlockPos(3, 1, 1);
+    static final BlockPos OUTPUT_0 = new BlockPos(3, 1, 3);
+    static final BlockPos OUTPUT_1 = new BlockPos(1, 1, 4);
+    static final BlockPos ENERGY = new BlockPos(3, 1, 4);
     private static final BlockPos BREAK_CASING = new BlockPos(2, 2, 1);
     private static final Map<BlockPos, String> CHANNELS = channels();
 
@@ -224,7 +241,175 @@ public final class PrecisionAssemblerGameTests {
         helper.succeedWhen(() -> helper.assertItemEntityCountIs(Items.IRON_INGOT, INPUT_0, 1.0D, 3));
     }
 
-    private static void placeStructure(GameTestHelper helper) {
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 65)
+    public static void twoOutputRecipeConsumesInputsOnce(GameTestHelper helper) {
+        placeStructure(helper);
+        helper.runAtTickTime(8, () -> {
+            requireProcessRecipe(helper);
+            feedProcess(helper);
+        });
+        helper.runAtTickTime(14, () -> {
+            helper.assertTrue(controller(helper).processProgress().isPresent(),
+                    "Precision Assembler did not begin the recipe");
+            helper.assertTrue(controller(helper).processState() == ProcessMachineState.RUNNING,
+                    "Precision Assembler is not in a running state");
+        });
+        helper.runAtTickTime(38, () -> {
+            assertCompletedBatch(helper);
+            helper.assertTrue(controller(helper).processProgress().isEmpty(),
+                    "Completed process still has progress");
+        });
+        helper.runAtTickTime(55, () -> {
+            assertCompletedBatch(helper);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 80)
+    public static void blockedOutputAndMissingEnergyPreserveInputs(GameTestHelper helper) {
+        placeStructure(helper);
+        helper.runAtTickTime(8, () -> {
+            PrecisionAssemblerPortBlockEntity output = port(helper, OUTPUT_0);
+            CompoundTag saved = output.saveWithFullMetadata();
+            saved.getCompound("arce_precision_port").put("item",
+                    new ItemStack(ModItems.ADVANCED_CIRCUIT.get(), 64).save(new CompoundTag()));
+            output.load(saved);
+            insertInputs(helper);
+        });
+        helper.runAtTickTime(16, () -> {
+            helper.assertTrue(controller(helper).processState() == ProcessMachineState.WAITING_OUTPUT,
+                    "Full output did not pause the process");
+            assertInputs(helper, 2, 2);
+            helper.assertTrue(port(helper, OUTPUT_1).getCapability(ForgeCapabilities.ITEM_HANDLER)
+                    .resolve().orElseThrow().getStackInSlot(0).isEmpty(),
+                    "Blocked recipe produced its second output");
+            IItemHandler output = port(helper, OUTPUT_0).getCapability(
+                    ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            helper.assertTrue(output.extractItem(0, 64, false).getCount() == 64,
+                    "Full output could not be cleared");
+        });
+        helper.runAtTickTime(24, () -> {
+            helper.assertTrue(controller(helper).processState() == ProcessMachineState.WAITING_ENERGY,
+                    "Missing energy did not pause the process");
+            assertInputs(helper, 2, 2);
+            receiveEnergy(helper, 800);
+        });
+        helper.runAtTickTime(55, () -> {
+            assertCompletedBatch(helper);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 65)
+    public static void preparedJournalReplaysWithoutDuplicateOutputs(GameTestHelper helper) {
+        placeStructure(helper);
+        AtomicReference<ProcessTransactionJournal> savedJournal = new AtomicReference<>();
+        helper.runAtTickTime(8, () -> {
+            PrecisionAssemblerRecipe recipe = requireProcessRecipe(helper);
+            insertInputs(helper);
+            PrecisionAssemblerBlockEntity machine = controller(helper);
+            ProcessTransactionJournal prepared = preparedJournal(helper, recipe);
+            savedJournal.set(prepared);
+            CompoundTag saved = machine.saveWithFullMetadata();
+            saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(prepared));
+            machine.load(saved);
+            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), helper.absolutePos(CONTROLLER));
+        });
+        helper.runAtTickTime(16, () -> {
+            assertCompletedBatch(helper);
+            PrecisionAssemblerBlockEntity machine = controller(helper);
+            helper.assertTrue(!machine.saveWithFullMetadata().contains(ProcessJournalPersistence.ROOT),
+                    "Recovered journal was not cleared");
+            CompoundTag replay = machine.saveWithFullMetadata();
+            replay.getCompound(ProcessStatePersistence.ROOT).putString("last_applied_transaction", "");
+            replay.put(ProcessJournalPersistence.ROOT,
+                    ProcessJournalPersistence.encode(savedJournal.get().advance(ProcessJournalPhase.APPLYING)));
+            machine.load(replay);
+            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), helper.absolutePos(CONTROLLER));
+        });
+        helper.runAtTickTime(26, () -> {
+            assertCompletedBatch(helper);
+            helper.assertTrue(!controller(helper).saveWithFullMetadata().contains(ProcessJournalPersistence.ROOT),
+                    "Replayed journal was not finalized");
+            helper.succeed();
+        });
+    }
+
+    static PrecisionAssemblerRecipe requireProcessRecipe(GameTestHelper helper) {
+        ResourceLocation id = ModIdentity.id("precision_control_circuit");
+        var loaded = helper.getLevel().getRecipeManager().byKey(id);
+        helper.assertTrue(loaded.isPresent() && loaded.orElseThrow() instanceof PrecisionAssemblerRecipe,
+                "Precision Assembler process recipe is absent from the server");
+        return (PrecisionAssemblerRecipe) loaded.orElseThrow();
+    }
+
+    private static void feedProcess(GameTestHelper helper) {
+        insertInputs(helper);
+        receiveEnergy(helper, 800);
+    }
+
+    static void insertInputs(GameTestHelper helper) {
+        IItemHandler iron = port(helper, INPUT_0).getCapability(
+                ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+        IItemHandler redstone = port(helper, INPUT_1).getCapability(
+                ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+        helper.assertTrue(iron.insertItem(0, new ItemStack(Items.IRON_INGOT, 2), false).isEmpty(),
+                "Iron input fixture was rejected");
+        helper.assertTrue(redstone.insertItem(0, new ItemStack(Items.REDSTONE, 2), false).isEmpty(),
+                "Redstone input fixture was rejected");
+    }
+
+    private static void receiveEnergy(GameTestHelper helper, int amount) {
+        IEnergyStorage energy = port(helper, ENERGY).getCapability(
+                ForgeCapabilities.ENERGY).resolve().orElseThrow();
+        helper.assertTrue(energy.receiveEnergy(amount, false) == amount,
+                "Energy input fixture was rejected");
+    }
+
+    static void assertInputs(GameTestHelper helper, int iron, int redstone) {
+        helper.assertTrue(port(helper, INPUT_0).getCapability(ForgeCapabilities.ITEM_HANDLER)
+                .resolve().orElseThrow().getStackInSlot(0).getCount() == iron,
+                "Iron input count changed unexpectedly");
+        helper.assertTrue(port(helper, INPUT_1).getCapability(ForgeCapabilities.ITEM_HANDLER)
+                .resolve().orElseThrow().getStackInSlot(0).getCount() == redstone,
+                "Redstone input count changed unexpectedly");
+    }
+
+    static void assertCompletedBatch(GameTestHelper helper) {
+        assertInputs(helper, 0, 0);
+        helper.assertTrue(port(helper, OUTPUT_0).getCapability(ForgeCapabilities.ITEM_HANDLER)
+                .resolve().orElseThrow().getStackInSlot(0).getCount() == 1,
+                "First result was not produced exactly once");
+        helper.assertTrue(port(helper, OUTPUT_1).getCapability(ForgeCapabilities.ITEM_HANDLER)
+                .resolve().orElseThrow().getStackInSlot(0).getCount() == 2,
+                "Second result was not produced exactly once");
+    }
+
+    private static ProcessResourceKey resource(String channel, net.minecraft.world.item.Item item) {
+        return new ProcessResourceKey(ProcessResourceKind.ITEM, channel,
+                BuiltInRegistries.ITEM.getKey(item).toString());
+    }
+
+    private static ProcessResourceBalance balance(int amount, net.minecraft.world.item.Item item) {
+        return new ProcessResourceBalance(amount, item.getMaxStackSize());
+    }
+
+    static ProcessTransactionJournal preparedJournal(GameTestHelper helper, PrecisionAssemblerRecipe recipe) {
+        PrecisionAssemblerBlockEntity machine = controller(helper);
+        Map<ProcessResourceKey, ProcessResourceBalance> balances = new LinkedHashMap<>();
+        balances.put(resource("item_input_0", Items.IRON_INGOT), balance(2, Items.IRON_INGOT));
+        balances.put(resource("item_input_1", Items.REDSTONE), balance(2, Items.REDSTONE));
+        balances.put(resource("item_output_0", ModItems.ADVANCED_CIRCUIT.get()),
+                balance(0, ModItems.ADVANCED_CIRCUIT.get()));
+        balances.put(resource("item_output_1", Items.REDSTONE_TORCH),
+                balance(0, Items.REDSTONE_TORCH));
+        ProcessResourceSnapshot before = new ProcessResourceSnapshot(machine.resourceRevision(), balances);
+        return ProcessTransactionJournal.prepared(UUID.randomUUID(),
+                machine.controllerState().machineInstanceId(),
+                ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow());
+    }
+
+    static void placeStructure(GameTestHelper helper) {
         for (int z = 0; z < 4; z++) {
             for (int y = 0; y < 3; y++) {
                 for (int x = 0; x < 3; x++) {
@@ -250,11 +435,11 @@ public final class PrecisionAssemblerGameTests {
                         + " for " + BuiltInRegistries.BLOCK.getKey(helper.getBlockState(INPUT_0).getBlock()));
     }
 
-    private static PrecisionAssemblerBlockEntity controller(GameTestHelper helper) {
+    static PrecisionAssemblerBlockEntity controller(GameTestHelper helper) {
         return (PrecisionAssemblerBlockEntity) helper.getBlockEntity(CONTROLLER);
     }
 
-    private static PrecisionAssemblerPortBlockEntity port(GameTestHelper helper, BlockPos position) {
+    static PrecisionAssemblerPortBlockEntity port(GameTestHelper helper, BlockPos position) {
         return (PrecisionAssemblerPortBlockEntity) helper.getBlockEntity(position);
     }
 

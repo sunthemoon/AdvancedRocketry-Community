@@ -249,7 +249,26 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         return !isRemoved() && acceptsBindingMutations() && loadedAssignment().isPresent();
     }
 
+    private boolean capabilityOperationAllowed() {
+        return capabilityAccessAllowed() && loadedFormedController()
+                .map(PrecisionAssemblerBlockEntity::permitsExternalResourceOperations)
+                .orElse(false);
+    }
+
+    private boolean processLocked() {
+        return loadedFormedController().map(PrecisionAssemblerBlockEntity::processLocked)
+                .orElse(true);
+    }
+
     private Optional<PrecisionAssemblerPortLayout.Assignment> loadedAssignment() {
+        return loadedFormedController().flatMap(controller -> PrecisionAssemblerPortLayout.atWorld(
+                controller.controllerState().selectedTransform(),
+                patternPosition(controller.getBlockPos()),
+                patternPosition(worldPosition)
+        )).filter(portType()::accepts);
+    }
+
+    private Optional<PrecisionAssemblerBlockEntity> loadedFormedController() {
         if (!(level instanceof ServerLevel serverLevel) || binding.isEmpty()) {
             return Optional.empty();
         }
@@ -266,12 +285,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
                 || !controller.acceptsResourceAccess()) {
             return Optional.empty();
         }
-        Optional<PrecisionAssemblerPortLayout.Assignment> assignment = PrecisionAssemblerPortLayout.atWorld(
-                controller.controllerState().selectedTransform(),
-                patternPosition(expected.controllerPosition()),
-                patternPosition(worldPosition)
-        );
-        return assignment.filter(portType()::accepts);
+        return Optional.of(controller);
     }
 
     private void createCapabilityViews() {
@@ -289,8 +303,8 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
             registerEverySide(ForgeCapabilities.ITEM_HANDLER, new ProcessItemPortHandler(
                     itemStorage,
                     definition,
-                    () -> false,
-                    () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                    this::processLocked,
+                    () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                     externalRevision
             ));
         } else {
@@ -298,7 +312,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
                     energyStorage,
                     definition,
                     () -> false,
-                    () -> viewEpoch == capabilityEpoch && capabilityAccessAllowed(),
+                    () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                     externalRevision
             ));
         }
@@ -333,6 +347,10 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
 
     private void recordExternalMutation() {
         setChanged();
+        if (level instanceof ServerLevel serverLevel) {
+            loadedFormedController().ifPresent(controller ->
+                    controller.recordExternalResourceMutation(serverLevel));
+        }
     }
 
     private static MultiblockNbtStatus normalizeEmpty(MultiblockNbtStatus status) {

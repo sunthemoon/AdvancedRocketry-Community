@@ -16,6 +16,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternValidator;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.forge.ServerLevelPatternWorldView;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailure;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessProgress;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import java.util.Optional;
 import java.util.Set;
@@ -29,9 +32,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Formation-only controller adapter; process transactions are introduced by PREC-04. */
+/** Minecraft lifecycle adapter around the structure and process state owners. */
 public final class PrecisionAssemblerBlockEntity extends BlockEntity {
     private MultiblockControllerState controllerState;
+    private final PrecisionAssemblerProcessController process;
     private MultiblockNbtStatus persistenceStatus = MultiblockNbtStatus.SUPPORTED;
     @Nullable
     private Tag preservedControllerRoot;
@@ -41,6 +45,8 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity {
     public PrecisionAssemblerBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.PRECISION_ASSEMBLER.get(), position, state);
         controllerState = freshState(state);
+        process = new PrecisionAssemblerProcessController(this::setChanged);
+        process.initialize(controllerState.machineInstanceId());
     }
 
     @Override
@@ -148,7 +154,44 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity {
 
     boolean acceptsResourceAccess() {
         return persistenceStatus == MultiblockNbtStatus.SUPPORTED
+                && process.acceptsResourceAccess()
                 && controllerState.formationState() == MultiblockFormationState.FORMED;
+    }
+
+    boolean processLocked() {
+        return process.locked();
+    }
+
+    boolean permitsExternalResourceOperations() {
+        return process.permitsExternalResourceOperations();
+    }
+
+    boolean tickProcess(ServerLevel level) {
+        return process.tick(level, this);
+    }
+
+    void recordExternalResourceMutation(ServerLevel level) {
+        process.recordExternalMutation(level, this);
+    }
+
+    void requireRecoveryAfterUnexpectedTickFailure() {
+        process.requireRecoveryAfterUnexpectedTickFailure();
+    }
+
+    public ProcessMachineState processState() {
+        return process.state();
+    }
+
+    public ProcessFailure processFailure() {
+        return process.failure();
+    }
+
+    public Optional<ProcessProgress> processProgress() {
+        return process.progress();
+    }
+
+    public long resourceRevision() {
+        return process.resourceRevision();
     }
 
     private void updateState(ServerLevel level, MultiblockControllerState replacement) {
@@ -184,6 +227,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity {
                         ? preservedControllerRoot.copy()
                         : MultiblockControllerNbtCodec.encode(controllerState)
         );
+        process.save(parent);
     }
 
     @Override
@@ -208,6 +252,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity {
                 );
             }
         }
+        process.load(parent, controllerState.machineInstanceId());
     }
 
     private static MultiblockControllerState freshState(BlockState state) {

@@ -104,6 +104,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onNeighborNotify);
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onChunkLoad);
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onChunkUnload);
+        MinecraftForge.EVENT_BUS.addListener(precisionEvents::onDatapackSync);
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onServerAboutToStart);
         CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);

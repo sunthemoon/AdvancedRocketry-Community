@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessInp
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessOutput;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import io.netty.buffer.Unpooled;
@@ -44,6 +45,8 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
     public static final int MIN_OUTPUTS = 1;
     public static final int MAX_OUTPUTS = PrecisionAssemblerChannels.OUTPUT_COUNT;
     public static final int MAX_ITEM_COUNT = 64;
+    // Reserve nine journal entries for currently stored foreign Items and output identities.
+    public static final int MAX_TOTAL_ALTERNATIVES = ProcessResourceSnapshot.MAX_ENTRIES - 9;
 
     private static final Set<String> ROOT_FIELDS = Set.of(
             "type", "schema_version", "inputs", "outputs", "processing_time", "energy_per_tick"
@@ -80,9 +83,14 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
 
         List<List<String>> resolved = new ArrayList<>(this.inputs.size());
         List<ProcessInput> processInputs = new ArrayList<>(this.inputs.size());
+        int totalAlternatives = 0;
         for (int index = 0; index < this.inputs.size(); index++) {
             Input input = this.inputs.get(index);
             List<String> choices = BoundedItemIngredientCodec.resolveAlternatives(input.ingredient());
+            totalAlternatives = Math.addExact(totalAlternatives, choices.size());
+            if (totalAlternatives > MAX_TOTAL_ALTERNATIVES) {
+                throw new IllegalArgumentException("precision recipe exceeds the 64-entry journal snapshot");
+            }
             for (ItemStack variant : input.ingredient().getItems()) {
                 if (input.count() > variant.getMaxStackSize()) {
                     throw new IllegalArgumentException("input count exceeds an ingredient stack limit");

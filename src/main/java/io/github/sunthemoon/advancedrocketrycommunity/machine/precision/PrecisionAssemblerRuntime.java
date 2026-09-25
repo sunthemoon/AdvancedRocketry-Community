@@ -36,6 +36,13 @@ public final class PrecisionAssemblerRuntime {
         }
     }
 
+    public static void markProcessReady(ServerLevel level, BlockPos controllerPosition) {
+        PrecisionAssemblerManager current = manager;
+        if (current != null) {
+            current.markProcessReady(level, controllerPosition);
+        }
+    }
+
     public static void clear() {
         manager = null;
     }

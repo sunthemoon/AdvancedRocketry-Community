@@ -10,14 +10,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.netty.buffer.Unpooled;
 import java.util.Collections;
 import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -194,6 +197,38 @@ class PrecisionAssemblerRecipeTest {
         } finally {
             malformed.release();
         }
+    }
+
+    @Test
+    void totalIngredientAlternativesFitTheJournalSnapshot() {
+        List<Item> variants = BuiltInRegistries.ITEM.stream()
+                .filter(item -> !item.getDefaultInstance().isEmpty()
+                        && item.getDefaultInstance().getMaxStackSize() >= 2)
+                .limit(56).toList();
+        assertEquals(56, variants.size());
+        JsonObject json = twoInputJson();
+        JsonArray first = alternatives(variants.subList(0, 32));
+        JsonArray second = alternatives(variants.subList(32, 55));
+        json.getAsJsonArray("inputs").get(0).getAsJsonObject().add("ingredient", first);
+        json.getAsJsonArray("inputs").get(1).getAsJsonObject().add("ingredient", second);
+        PrecisionAssemblerRecipe accepted = serializer.fromJson(ID, json);
+        assertEquals(ProcessResourceSnapshot.MAX_ENTRIES - 9,
+                accepted.ingredientAlternatives().stream().mapToInt(List::size).sum());
+
+        JsonObject extra = new JsonObject();
+        extra.addProperty("item", BuiltInRegistries.ITEM.getKey(variants.get(55)).toString());
+        second.add(extra);
+        assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, json));
+    }
+
+    private static JsonArray alternatives(List<Item> items) {
+        JsonArray variants = new JsonArray();
+        for (Item item : items) {
+            JsonObject value = new JsonObject();
+            value.addProperty("item", BuiltInRegistries.ITEM.getKey(item).toString());
+            variants.add(value);
+        }
+        return variants;
     }
 
     private static SimpleContainer slots(ItemStack... values) {

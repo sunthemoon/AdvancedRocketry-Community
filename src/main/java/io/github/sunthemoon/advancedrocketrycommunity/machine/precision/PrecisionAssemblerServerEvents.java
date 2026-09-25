@@ -4,6 +4,7 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -65,6 +66,12 @@ public final class PrecisionAssemblerServerEvents {
     public void onServerAboutToStart(ServerAboutToStartEvent event) {
         machines.clear();
         PrecisionAssemblerRuntime.install(machines);
+    }
+
+    public void onDatapackSync(OnDatapackSyncEvent event) {
+        if (event.getPlayer() == null) {
+            machines.onRecipesReloaded();
+        }
     }
 
     private void mark(net.minecraft.world.level.LevelAccessor accessor, BlockPos position) {
