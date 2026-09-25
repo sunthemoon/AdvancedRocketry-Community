@@ -270,6 +270,9 @@ implemented. This does not make the Precision slice or v1.2.0 release-ready.
 
 ## Remaining slice work
 
+- Bounded recovery for saved mixed Item-port states is documented in
+  [V120-PREC-04A](PREC04A-VERIFICATION.md); its passing tests do not prove
+  journal-before-port disk ordering.
 - `V120-PREC-04`: resolve the durable cross-chunk transaction boundary before
   claiming exact-once recovery at arbitrary crash points.
 
