@@ -4,7 +4,7 @@
 version: v1.2.0
 slice: V120-MCH-01
 status: IN_PROGRESS
-date: 2026-09-11
+date: 2026-09-25
 branch: codex/v1.2.0-rolling-machine
 ```
 
@@ -45,6 +45,22 @@ branch: codex/v1.2.0-rolling-machine
   eight iron bars. Forge tests cover exact completion, an active-process NBT reload and
   a completed-progress/no-journal state that enters `RECOVERY_REQUIRED` without a
   second resource commit.
+- The vanilla menu protocol exposes fixed IDs for formation, validation, the first
+  structured diagnostic, process state/failure, progress/total, FE, water and inspected
+  cells. Full 32-bit coordinates and the 72,000-tick upper bound are split into explicit
+  low/high fields rather than truncated to the protocol's signed shorts.
+- Menu slots resolve only the current loaded and formed port generation. Input/output
+  shift-click uses authoritative handler operations; GameTests cover merging into an
+  occupied input and a one-item-capacity partial output transfer without loss or
+  duplication. Breaking the first casing reports its exact local and world position,
+  removes slot access and leaves a distant menu invalid.
+- The client screen is an original code-drawn static panel and only renders synchronized
+  state. No custom C2S packet, upstream texture or sound was added; JEI remains in
+  `V120-INT`, and real-GPU visual acceptance remains deferred by ADR-018.
+- v1.2 DataGen owns 35 non-cache outputs: five blockstates/models/item models, bilingual
+  language data, five crafting recipes, the controlled Rolling recipe, advancements,
+  five loot tables and consolidated pickaxe/iron-tool tags. A consecutive run writes
+  zero files.
 
 ## Verification commands
 
@@ -63,20 +79,29 @@ branch: codex/v1.2.0-rolling-machine
 | `gradlew runData --no-daemon` after process integration | PASS; 22 cache entries, written 0 |
 | `python scripts/validate_repository.py --require-approved-identity` after process integration | PASS; 45 checks and 848 links |
 | `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
+| Rolling recipe/menu wire targeted JUnit | PASS; 6 tests, 0 failures/errors/skips |
+| first v1.2 `gradlew runData --no-daemon` | PASS; 35 non-cache files written |
+| consecutive v1.2 `gradlew runData --no-daemon` | PASS; written 0 |
+| `gradlew clean build --no-daemon` with menu/DataGen | PASS; 550 JUnit tests, 0 failures/errors/skips |
+| `gradlew runGameTestServer --no-daemon` with menu conservation regressions | PASS; all 68 Required GameTests |
+| final `python scripts/validate_repository.py --require-approved-identity` | PASS; 45 checks and 850 links |
+| final `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
+| common/server import, class-size and sensitive-diff scans | PASS; 0 client imports, largest production class 493 lines, no known credential pattern |
+| final `git diff --check` | PASS |
 
 The GameTest command is a bounded slice check under ADR-018. It is not long-load,
 remote-Linux, real-GPU, two-client or final all-machine/all-dimension acceptance.
 
-## Remaining before this slice is verified
+## Remaining before the complete Rolling slice is verified
 
-- Add menu diagnostics and v1.2-specific deterministic DataGen evidence for the already
-  registered blocks and controlled recipe data.
 - Add the packaged-server forced-interruption/restart fixture and rerun the final Rolling
   short-cycle verification set. The current journal phases mark the BlockEntity dirty;
   this evidence does not claim a synchronous disk flush for every phase.
+- Perform the real-client visual check only at the ADR-018 acceptance point. Compilation
+  and server-side menu interaction prove protocol behavior, not GPU rendering quality.
 
 ## Gate statement
 
-This evidence verifies `V120-ROLL-02`, `V120-ROLL-03` and the recipe/process portion of
-`V120-ROLL-01/04`. It does not satisfy the complete Rolling Machine slice, v1.2.0
-release Gates, or the acceptance campaign deferred by ADR-018.
+This evidence verifies `V120-ROLL-01` through `V120-ROLL-04`. It does not satisfy
+`V120-ROLL-05`, the complete Rolling Machine slice, v1.2.0 release Gates, or the
+acceptance campaign deferred by ADR-018.

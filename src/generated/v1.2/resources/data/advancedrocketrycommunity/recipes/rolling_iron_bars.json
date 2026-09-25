@@ -1,0 +1,18 @@
+{
+  "type": "advancedrocketrycommunity:rolling",
+  "energy_per_tick": 20,
+  "fluid": {
+    "amount": 100,
+    "fluid": "minecraft:water"
+  },
+  "ingredient": {
+    "item": "minecraft:iron_ingot"
+  },
+  "input_count": 2,
+  "processing_time": 100,
+  "result": {
+    "count": 8,
+    "item": "minecraft:iron_bars"
+  },
+  "schema_version": 1
+}

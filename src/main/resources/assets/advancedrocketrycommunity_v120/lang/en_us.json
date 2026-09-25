@@ -1,9 +1,0 @@
-{
-  "block.advancedrocketrycommunity.rolling_machine": "Rolling Machine",
-  "block.advancedrocketrycommunity.rolling_machine_energy_input_port": "Rolling Machine Energy Input",
-  "block.advancedrocketrycommunity.rolling_machine_fluid_input_port": "Rolling Machine Fluid Input",
-  "block.advancedrocketrycommunity.rolling_machine_item_input_port": "Rolling Machine Item Input",
-  "block.advancedrocketrycommunity.rolling_machine_item_output_port": "Rolling Machine Item Output",
-  "message.advancedrocketrycommunity.rolling_machine.formation": "Rolling Machine: %s | generation %s",
-  "message.advancedrocketrycommunity.rolling_machine.port": "%s port: %s"
-}

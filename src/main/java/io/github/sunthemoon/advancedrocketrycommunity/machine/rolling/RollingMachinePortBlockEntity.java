@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockPartBindingNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortFilter;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortMode;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortRange;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortRevision;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortSide;
@@ -37,6 +38,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.items.IItemHandler;
 
 /** Typed resource port with generation-aware, loaded-only controller access. */
 public final class RollingMachinePortBlockEntity extends BlockEntity
@@ -63,6 +65,8 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
     private MultiblockNbtStatus bindingPersistenceStatus = MultiblockNbtStatus.SUPPORTED;
     private MultiblockNbtStatus resourcePersistenceStatus = MultiblockNbtStatus.SUPPORTED;
     private ProcessCapabilityCache capabilityCache;
+    @Nullable
+    private IItemHandler menuItemView;
     private long capabilityEpoch;
     @Nullable
     private Tag preservedBindingRoot;
@@ -154,6 +158,10 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
 
     int storedEnergy() {
         return energyStorage.getEnergyStored();
+    }
+
+    Optional<IItemHandler> menuItemView() {
+        return Optional.ofNullable(menuItemView);
     }
 
     void replaceStoredItemInternal(ItemStack replacement) {
@@ -291,7 +299,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
     }
 
     private boolean capabilityOperationAllowed() {
-        return loadedFormedController()
+        return acceptsBindingMutations() && loadedFormedController()
                 .map(RollingMachineBlockEntity::permitsExternalResourceOperations)
                 .orElse(false);
     }
@@ -328,16 +336,25 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
         ProcessPortDefinition definition = definition();
         long viewEpoch = capabilityEpoch;
         switch (portType().kind()) {
-            case ITEM -> registerEverySide(
-                    ForgeCapabilities.ITEM_HANDLER,
-                    new ProcessItemPortHandler(
+            case ITEM -> {
+                registerEverySide(
+                        ForgeCapabilities.ITEM_HANDLER,
+                        new ProcessItemPortHandler(
+                                itemStorage,
+                                definition,
+                                this::processLocked,
+                                () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
+                                externalRevision
+                        )
+                );
+                menuItemView = new ProcessItemPortHandler(
                             itemStorage,
-                            definition,
+                            definition(menuMode()),
                             this::processLocked,
                             () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
                             externalRevision
-                    )
-            );
+                );
+            }
             case FLUID -> registerEverySide(
                     ForgeCapabilities.FLUID_HANDLER,
                     new ProcessFluidPortHandler(
@@ -362,13 +379,17 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
     }
 
     private ProcessPortDefinition definition() {
+        return definition(portType().mode());
+    }
+
+    private ProcessPortDefinition definition(ProcessPortMode mode) {
         ProcessPortFilter filter = portType() == RollingMachinePortType.FLUID_INPUT
                 ? ProcessPortFilter.exact(Set.of("minecraft:water"))
                 : ProcessPortFilter.any();
         return new ProcessPortDefinition(
                 portType().channel(),
                 portType().kind(),
-                portType().mode(),
+                mode,
                 Set.of(
                         ProcessPortSide.FRONT,
                         ProcessPortSide.BACK,
@@ -380,6 +401,12 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
                 new ProcessPortRange(0, 1),
                 filter
         );
+    }
+
+    private ProcessPortMode menuMode() {
+        return portType() == RollingMachinePortType.ITEM_INPUT
+                ? ProcessPortMode.BIDIRECTIONAL
+                : ProcessPortMode.OUTPUT;
     }
 
     private <T> void registerEverySide(Capability<T> capability, T view) {
@@ -398,6 +425,7 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
 
     private void invalidateCapabilityViews() {
         capabilityEpoch = Math.incrementExact(capabilityEpoch);
+        menuItemView = null;
         if (capabilityCache != null) {
             capabilityCache.invalidate();
         }

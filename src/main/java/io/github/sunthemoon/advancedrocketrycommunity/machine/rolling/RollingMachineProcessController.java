@@ -244,6 +244,10 @@ final class RollingMachineProcessController implements ProcessJournalStore {
         return resourceRevision;
     }
 
+    Optional<String> recipeSignature() {
+        return Optional.ofNullable(recipeSignature);
+    }
+
     Optional<UUID> lastAppliedTransactionId() {
         return lastAppliedTransactionId;
     }

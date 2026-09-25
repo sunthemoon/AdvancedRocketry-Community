@@ -22,16 +22,14 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
 
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
-        generator.addProvider(event.includeClient(), new SatelliteBlockStateProvider(output, existingFiles));
-        generator.addProvider(event.includeClient(), new SatelliteItemModelProvider(output, existingFiles));
-        generator.addProvider(event.includeClient(), new SatelliteLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new SatelliteLanguageProvider(output, "zh_cn"));
-        generator.addProvider(event.includeServer(), new SatelliteRecipeProvider(output));
-        generator.addProvider(event.includeServer(), SatelliteLootTableProvider.create(output));
+        generator.addProvider(event.includeClient(), new RollingMachineBlockStateProvider(output, existingFiles));
+        generator.addProvider(event.includeClient(), new RollingMachineLanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new RollingMachineLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeServer(), new RollingMachineRecipeProvider(output));
+        generator.addProvider(event.includeServer(), RollingMachineLootTableProvider.create(output));
         generator.addProvider(
                 event.includeServer(),
-                new SatelliteBlockTagsProvider(output, event.getLookupProvider(), existingFiles)
+                new RollingMachineBlockTagsProvider(output, event.getLookupProvider(), existingFiles)
         );
-        generator.addProvider(event.includeServer(), new SatelliteDefinitionProvider(output));
     }
 }

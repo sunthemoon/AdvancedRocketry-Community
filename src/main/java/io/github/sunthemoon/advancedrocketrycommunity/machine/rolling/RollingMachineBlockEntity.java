@@ -23,14 +23,21 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Thin Minecraft lifecycle adapter around the immutable multiblock controller state. */
-public final class RollingMachineBlockEntity extends BlockEntity {
+public final class RollingMachineBlockEntity extends BlockEntity implements MenuProvider {
     private MultiblockControllerState controllerState;
     private final RollingMachineProcessController process;
+    private final RollingMachineMenuData menuData;
     private MultiblockNbtStatus persistenceStatus = MultiblockNbtStatus.SUPPORTED;
     @Nullable
     private Tag preservedControllerRoot;
@@ -42,6 +49,7 @@ public final class RollingMachineBlockEntity extends BlockEntity {
         controllerState = freshState(state);
         process = new RollingMachineProcessController(this::setChanged);
         process.initialize(controllerState.machineInstanceId());
+        menuData = new RollingMachineMenuData(this);
     }
 
     @Override
@@ -183,6 +191,42 @@ public final class RollingMachineBlockEntity extends BlockEntity {
 
     public long resourceRevision() {
         return process.resourceRevision();
+    }
+
+    int totalProcessingTicks() {
+        if (!(level instanceof ServerLevel serverLevel)
+                || process.progress().isEmpty()
+                || process.recipeSignature().isEmpty()) {
+            return 0;
+        }
+        ResourceLocation recipeId = ResourceLocation.tryParse(
+                process.progress().orElseThrow().definitionId()
+        );
+        if (recipeId == null) {
+            return 0;
+        }
+        Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> loaded =
+                serverLevel.getRecipeManager().byKey(recipeId);
+        if (loaded.isEmpty() || !(loaded.orElseThrow() instanceof RollingMachineRecipe recipe)
+                || !recipe.signature().equals(process.recipeSignature().orElseThrow())) {
+            return 0;
+        }
+        return recipe.processDefinition().durationTicks();
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("menu.advancedrocketrycommunity.rolling_machine");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(
+            int containerId,
+            Inventory playerInventory,
+            Player player
+    ) {
+        return new RollingMachineMenu(containerId, playerInventory, this, menuData);
     }
 
     @Override

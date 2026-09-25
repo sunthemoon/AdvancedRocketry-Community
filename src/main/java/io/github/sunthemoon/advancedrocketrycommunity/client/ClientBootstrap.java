@@ -29,6 +29,10 @@ public final class ClientBootstrap {
                 ElectrolyzerScreen::new
         ));
         event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.ROLLING_MACHINE.get(),
+                RollingMachineScreen::new
+        ));
+        event.enqueueWork(() -> MenuScreens.register(
                 ModMenuTypes.ROCKET_FLIGHT.get(),
                 RocketFlightScreen::new
         ));

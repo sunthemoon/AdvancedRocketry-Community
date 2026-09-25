@@ -3,7 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,8 +21,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.network.NetworkHooks;
 
-/** Server-authoritative controller block; process UI is added by the later menu leaf. */
+/** Server-authoritative controller block and validated menu entry point. */
 public final class RollingMachineBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -50,15 +51,8 @@ public final class RollingMachineBlock extends BaseEntityBlock {
         if (!(blockEntity instanceof RollingMachineBlockEntity controller)) {
             return InteractionResult.PASS;
         }
-        if (!level.isClientSide) {
-            player.displayClientMessage(
-                    Component.translatable(
-                            "message.advancedrocketrycommunity.rolling_machine.formation",
-                            controller.formationState().name().toLowerCase(java.util.Locale.ROOT),
-                            controller.generation()
-                    ),
-                    true
-            );
+        if (player instanceof ServerPlayer serverPlayer) {
+            NetworkHooks.openScreen(serverPlayer, controller, position);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

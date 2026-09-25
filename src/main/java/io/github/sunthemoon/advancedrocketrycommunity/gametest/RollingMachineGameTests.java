@@ -6,9 +6,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingValidationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockControllerNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockPartBindingNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnosticReason;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -22,6 +25,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -348,6 +352,27 @@ public final class RollingMachineGameTests {
                     input.insertItem(0, new ItemStack(Items.IRON_INGOT), false).getCount() == 1,
                     "Active Rolling recipe did not lock external Item insertion"
             );
+            Player viewer = helper.makeMockPlayer();
+            BlockPos controllerWorld = helper.absolutePos(CONTROLLER);
+            viewer.setPos(
+                    controllerWorld.getX() + 0.5D,
+                    controllerWorld.getY() + 0.5D,
+                    controllerWorld.getZ() + 0.5D
+            );
+            RollingMachineMenu menu = (RollingMachineMenu) controller.createMenu(
+                    11,
+                    viewer.getInventory(),
+                    viewer
+            );
+            helper.assertTrue(menu.progress() == controller.processProgress().orElseThrow().progressTicks(),
+                    "Menu progress diverged from the server process");
+            helper.assertTrue(menu.totalProcessingTicks() == 100,
+                    "Menu did not expose the active recipe duration");
+            helper.assertTrue(menu.energyStored() == port(helper, ENERGY_INPUT)
+                            .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().getEnergyStored(),
+                    "Menu energy diverged from the bound energy port");
+            helper.assertTrue(menu.waterAmount() == 500,
+                    "Menu water diverged from the bound fluid port");
         });
         helper.runAtTickTime(130, () -> {
             RollingMachineBlockEntity controller = controller(helper);
@@ -376,6 +401,43 @@ public final class RollingMachineGameTests {
             helper.assertTrue(
                     !saved.getCompound("arce_process").getString("last_applied_transaction").isEmpty(),
                     "Completed batch did not persist its replay marker"
+            );
+            Player viewer = helper.makeMockPlayer();
+            BlockPos controllerWorld = helper.absolutePos(CONTROLLER);
+            viewer.setPos(
+                    controllerWorld.getX() + 0.5D,
+                    controllerWorld.getY() + 0.5D,
+                    controllerWorld.getZ() + 0.5D
+            );
+            RollingMachineMenu menu = (RollingMachineMenu) controller.createMenu(
+                    13,
+                    viewer.getInventory(),
+                    viewer
+            );
+            for (int slot = 0; slot < 36; slot++) {
+                viewer.getInventory().setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+            }
+            viewer.getInventory().setItem(8, new ItemStack(Items.IRON_BARS, 63));
+            helper.assertTrue(
+                    menu.quickMoveStack(viewer, RollingMachineMenu.SLOT_OUTPUT).getCount() == 8,
+                    "Menu output did not begin the bounded partial quick-move"
+            );
+            helper.assertTrue(
+                    output.getStackInSlot(0).getCount() == 7
+                            && viewer.getInventory().getItem(8).getCount() == 64,
+                    "Partial output quick-move duplicated or lost an item"
+            );
+            viewer.getInventory().setItem(7, ItemStack.EMPTY);
+            helper.assertTrue(
+                    menu.quickMoveStack(viewer, RollingMachineMenu.SLOT_OUTPUT).getCount() == 7,
+                    "Menu output did not quick-move the remaining batch"
+            );
+            helper.assertTrue(output.getStackInSlot(0).isEmpty(),
+                    "Menu output quick-move did not clear the authoritative port");
+            helper.assertTrue(
+                    viewer.getInventory().getItem(7).is(Items.IRON_BARS)
+                            && viewer.getInventory().getItem(7).getCount() == 7,
+                    "Remaining output quick-move did not reach the player inventory"
             );
             helper.succeed();
         });
@@ -543,6 +605,105 @@ public final class RollingMachineGameTests {
                     retainedInput.insertItem(0, new ItemStack(Items.IRON_INGOT), false).getCount() == 1,
                     "Recovery-required process accepted an external resource mutation"
             );
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 40)
+    public static void rollingMenuUsesBoundPortsAndLocatesFirstStructureDiagnostic(
+            GameTestHelper helper
+    ) {
+        placeStructure(helper);
+        AtomicReference<RollingMachineMenu> openedMenu = new AtomicReference<>();
+        AtomicReference<Player> openedPlayer = new AtomicReference<>();
+        BlockPos brokenCasing = new BlockPos(2, 3, 4);
+
+        helper.runAtTickTime(6, () -> {
+            RollingMachineBlockEntity controller = controller(helper);
+            Player player = helper.makeMockPlayer();
+            BlockPos controllerWorld = helper.absolutePos(CONTROLLER);
+            player.setPos(
+                    controllerWorld.getX() + 0.5D,
+                    controllerWorld.getY() + 0.5D,
+                    controllerWorld.getZ() + 0.5D
+            );
+            RollingMachineMenu menu = (RollingMachineMenu) controller.createMenu(
+                    12,
+                    player.getInventory(),
+                    player
+            );
+            helper.assertTrue(menu != null, "Rolling Machine menu construction failed");
+            helper.assertTrue(menu.stillValid(player), "Nearby Rolling Machine menu was invalid");
+            helper.assertTrue(
+                    menu.formationState() == MultiblockFormationState.FORMED,
+                    "Formed state was not exposed to the menu"
+            );
+
+            player.getInventory().setItem(9, new ItemStack(Items.IRON_INGOT, 2));
+            helper.assertTrue(
+                    menu.quickMoveStack(player, RollingMachineMenu.MACHINE_SLOT_COUNT)
+                            .is(Items.IRON_INGOT),
+                    "Player inventory did not quick-move into the bound input port"
+            );
+            IItemHandler input = port(helper, ITEM_INPUT)
+                    .getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+            helper.assertTrue(
+                    input.getStackInSlot(0).getCount() == 2,
+                    "Menu input did not reach the authoritative port"
+            );
+            player.getInventory().setItem(10, new ItemStack(Items.IRON_INGOT));
+            helper.assertTrue(
+                    menu.quickMoveStack(player, RollingMachineMenu.MACHINE_SLOT_COUNT + 1)
+                            .is(Items.IRON_INGOT),
+                    "Player inventory did not quick-move into the occupied input port"
+            );
+            helper.assertTrue(
+                    input.getStackInSlot(0).getCount() == 3
+                            && player.getInventory().getItem(10).isEmpty(),
+                    "Occupied input merge duplicated or lost an item"
+            );
+            helper.assertTrue(
+                    menu.quickMoveStack(player, RollingMachineMenu.SLOT_INPUT).getCount() == 3,
+                    "Bound input did not quick-move back to the player"
+            );
+            helper.assertTrue(
+                    input.getStackInSlot(0).isEmpty(),
+                    "Menu extraction did not clear the authoritative port"
+            );
+
+            openedMenu.set(menu);
+            openedPlayer.set(player);
+            helper.setBlock(brokenCasing, Blocks.AIR);
+        });
+
+        helper.runAtTickTime(14, () -> {
+            RollingMachineMenu menu = openedMenu.get();
+            Player player = openedPlayer.get();
+            helper.assertTrue(
+                    menu.formationState() == MultiblockFormationState.UNFORMED,
+                    "Broken structure remained formed in the menu"
+            );
+            helper.assertTrue(
+                    menu.diagnosticReason().orElse(null) == PatternDiagnosticReason.BLOCK_MISMATCH,
+                    "Menu did not expose the first structured mismatch"
+            );
+            helper.assertTrue(
+                    menu.diagnosticLocalPosition().orElseThrow().equals(new PatternPosition(0, 1, 0)),
+                    "Menu diagnostic reported the wrong local cell"
+            );
+            helper.assertTrue(
+                    menu.diagnosticWorldPosition().orElseThrow().equals(helper.absolutePos(brokenCasing)),
+                    "Menu diagnostic reported the wrong world block"
+            );
+            helper.assertTrue(
+                    !menu.getSlot(RollingMachineMenu.SLOT_INPUT)
+                            .mayPlace(new ItemStack(Items.IRON_INGOT)),
+                    "Unformed menu retained input access"
+            );
+
+            BlockPos controllerWorld = helper.absolutePos(CONTROLLER);
+            player.setPos(controllerWorld.getX() + 100.0D, controllerWorld.getY(), controllerWorld.getZ());
+            helper.assertTrue(!menu.stillValid(player), "Distant player retained Rolling Machine menu validity");
             helper.succeed();
         });
     }
