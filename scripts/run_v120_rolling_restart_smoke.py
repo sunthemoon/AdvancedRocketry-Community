@@ -84,7 +84,7 @@ def _report(process: CapturedProcess) -> dict[str, object]:
     start = len(process.lines)
     process.command(f"arce rolling release-test report {POSITION}")
     index = process.wait_for(REPORT_LOG, 30.0, start_at=start)
-    match = REPORT_LOG.search(process.lines[index])
+    match = REPORT_LOG.search(process.lines[index].strip())
     if match is None:
         raise SmokeError("Could not parse packaged Rolling Machine report")
     (
