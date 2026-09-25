@@ -5,7 +5,7 @@ status: ACCEPTED
 date: 2026-09-06
 deciders: [sunthemoon]
 accepted_at: 2026-09-06
-owner_reaffirmed_at: 2026-09-11
+owner_reaffirmed_at: 2026-09-25
 owner: sunthemoon
 scope: v1.2.0 through classic machine and dimension completion
 expires: before the first feature-parity release candidate
@@ -58,7 +58,8 @@ In practical terms, the original machine and dimension inventories must be close
 the complete campaign starts: finishing an individual machine, dimension, slice or
 intermediate version is not a trigger for that campaign. The owner reaffirmed this rule
 on 2026-09-10 and again on 2026-09-11: complete the original machines and dimensions
-first, then run the complete acceptance campaign.
+first, then run the complete acceptance campaign. The owner reaffirmed this
+completion-first scheduling on 2026-09-25.
 Before assigning the first feature-parity candidate, the owner must review the matrix,
 run or precisely disposition every deferred environment and record the resulting Gate
 status. A version number alone does not satisfy this trigger.
