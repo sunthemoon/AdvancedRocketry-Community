@@ -122,12 +122,10 @@ def _run_phase(
         if before_restart:
             process.command(f"forceload add {COORDINATES.split()[0]} {COORDINATES.split()[2]}")
             process.command(f"setblock {REDSTONE_COORDINATES} minecraft:redstone_block")
+            process.command(f"setblock {COORDINATES} minecraft:air")
             process.command(
                 f"setblock {COORDINATES} "
                 "advancedrocketrycommunity:electrolyzer[facing=north,lit=false,powered=true]"
-            )
-            process.command(
-                f"data merge block {COORDINATES} "
                 "{arce_machine:{schema_version:1,inventory:{Size:4,Items:["
                 "{Slot:0,id:\"advancedrocketrycommunity:empty_canister\",Count:2b}]},"
                 "fluid:{FluidName:\"minecraft:water\",Amount:1000},energy:1200,"
