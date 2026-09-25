@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -26,6 +28,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
 
     private final ContainerLevelAccess access;
     private final ContainerData data;
+    private final IItemHandler machineInventory;
 
     public ElectrolyzerMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(containerId, playerInventory, requireMachine(playerInventory, buffer.readBlockPos()));
@@ -65,9 +68,10 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         checkContainerDataCount(data, ElectrolyzerBlockEntity.MENU_DATA_COUNT);
         this.data = data;
         this.access = access;
+        this.machineInventory = machineInventory;
 
-        addSlot(new SlotItemHandler(machineInventory, ElectrolyzerBlockEntity.SLOT_INPUT, 44, 35));
-        addSlot(new SlotItemHandler(machineInventory, ElectrolyzerBlockEntity.SLOT_CHARGE, 44, 59));
+        addSlot(new MachineSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_INPUT, 44, 35));
+        addSlot(new MachineSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_CHARGE, 44, 59));
         addSlot(new OutputSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_HYDROGEN, 116, 35));
         addSlot(new OutputSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_OXYGEN, 140, 35));
         addPlayerInventory(playerInventory);
@@ -105,7 +109,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
             return empty;
         }
         net.minecraft.world.inventory.Slot sourceSlot = slots.get(index);
-        if (!sourceSlot.hasItem()) {
+        if (!sourceSlot.hasItem() || !sourceSlot.mayPickup(player)) {
             return empty;
         }
 
@@ -115,9 +119,9 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         if (index < MACHINE_SLOT_COUNT) {
             moved = moveItemStackTo(source, PLAYER_SLOT_START, HOTBAR_SLOT_END, true);
         } else if (source.is(ModItems.EMPTY_CANISTER.get())) {
-            moved = moveItemStackTo(source, ElectrolyzerBlockEntity.SLOT_INPUT, ElectrolyzerBlockEntity.SLOT_INPUT + 1, false);
+            moved = insertIntoMachine(source, ElectrolyzerBlockEntity.SLOT_INPUT);
         } else if (source.is(Items.REDSTONE)) {
-            moved = moveItemStackTo(source, ElectrolyzerBlockEntity.SLOT_CHARGE, ElectrolyzerBlockEntity.SLOT_CHARGE + 1, false);
+            moved = insertIntoMachine(source, ElectrolyzerBlockEntity.SLOT_CHARGE);
         } else if (index < PLAYER_SLOT_END) {
             moved = moveItemStackTo(source, PLAYER_SLOT_END, HOTBAR_SLOT_END, false);
         } else {
@@ -127,13 +131,19 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
             return empty;
         }
 
-        if (source.isEmpty()) {
-            sourceSlot.set(ItemStack.EMPTY);
-        } else {
-            sourceSlot.setChanged();
-        }
+        sourceSlot.set(source.isEmpty() ? ItemStack.EMPTY : source);
         sourceSlot.onTake(player, source);
         return original;
+    }
+
+    private boolean insertIntoMachine(ItemStack source, int slot) {
+        ItemStack remainder = machineInventory.insertItem(slot, source.copy(), false);
+        int inserted = source.getCount() - remainder.getCount();
+        if (inserted <= 0) {
+            return false;
+        }
+        source.shrink(inserted);
+        return true;
     }
 
     @Override
@@ -169,7 +179,58 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         return ElectrolyzerStatus.fromNetworkId(data.get(6));
     }
 
-    private static final class OutputSlot extends SlotItemHandler {
+    private static class MachineSlot extends SlotItemHandler {
+        private MachineSlot(IItemHandler handler, int index, int x, int y) {
+            super(handler, index, x, y);
+        }
+
+        @Override
+        public void set(ItemStack replacement) {
+            replace(replacement);
+            setChanged();
+        }
+
+        @Override
+        public void initialize(ItemStack replacement) {
+            replace(replacement);
+            setChanged();
+        }
+
+        private void replace(ItemStack replacement) {
+            IItemHandler handler = getItemHandler();
+            int slot = getSlotIndex();
+            if (handler instanceof IItemHandlerModifiable modifiable) {
+                modifiable.setStackInSlot(slot, replacement);
+                return;
+            }
+
+            ItemStack current = handler.getStackInSlot(slot);
+            if (ItemStack.matches(current, replacement)) {
+                return;
+            }
+            if (replacement.isEmpty()) {
+                handler.extractItem(slot, current.getCount(), false);
+                return;
+            }
+            if (current.isEmpty()) {
+                handler.insertItem(slot, replacement, false);
+                return;
+            }
+            if (!ItemHandlerHelper.canItemStacksStack(current, replacement)) {
+                return;
+            }
+            int difference = replacement.getCount() - current.getCount();
+            if (difference > 0) {
+                ItemStack addition = replacement.copy();
+                addition.setCount(difference);
+                handler.insertItem(slot, addition, false);
+            } else if (difference < 0) {
+                handler.extractItem(slot, -difference, false);
+            }
+        }
+    }
+
+    private static final class OutputSlot extends MachineSlot {
         private OutputSlot(IItemHandler handler, int index, int x, int y) {
             super(handler, index, x, y);
         }

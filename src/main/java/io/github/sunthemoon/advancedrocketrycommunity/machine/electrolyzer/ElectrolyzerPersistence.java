@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -22,6 +23,13 @@ final class ElectrolyzerPersistence {
     private static final String ACTIVE_RECIPE_KEY = "active_recipe";
     private static final int MAX_MACHINE_NBT_BYTES = 65_536;
     private static final int MAX_RECIPE_ID_LENGTH = 128;
+    private static final Set<String> REQUIRED_FIELDS = Set.of(
+            SCHEMA_KEY,
+            INVENTORY_KEY,
+            FLUID_KEY,
+            ENERGY_KEY,
+            PROGRESS_KEY
+    );
 
     private ElectrolyzerPersistence() {
     }
@@ -49,25 +57,42 @@ final class ElectrolyzerPersistence {
     }
 
     static DecodeResult decode(CompoundTag parent) {
-        if (!parent.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
+        if (!parent.contains(DATA_KEY)) {
             return DecodeResult.empty();
         }
-
-        CompoundTag machine = parent.getCompound(DATA_KEY);
-        if (machine.sizeInBytes() > MAX_MACHINE_NBT_BYTES) {
-            return DecodeResult.blockedInvalid();
+        Tag raw = parent.get(DATA_KEY);
+        if (!(raw instanceof CompoundTag machine)) {
+            return DecodeResult.blockedInvalid(raw);
         }
-        int schema = machine.contains(SCHEMA_KEY, Tag.TAG_INT) ? machine.getInt(SCHEMA_KEY) : 0;
+        if (machine.sizeInBytes() > MAX_MACHINE_NBT_BYTES) {
+            return DecodeResult.blockedInvalid(machine);
+        }
+        if (!machine.contains(SCHEMA_KEY, Tag.TAG_INT)) {
+            return DecodeResult.blockedInvalid(machine);
+        }
+        int schema = machine.getInt(SCHEMA_KEY);
         if (schema > ElectrolyzerRecipeSpec.CURRENT_SCHEMA_VERSION) {
             return DecodeResult.future(machine.copy());
         }
         if (schema != ElectrolyzerRecipeSpec.CURRENT_SCHEMA_VERSION) {
-            return DecodeResult.blockedInvalid();
+            return DecodeResult.blockedInvalid(machine);
         }
 
+        Set<String> actualFields = machine.getAllKeys();
+        boolean validFields = actualFields.equals(REQUIRED_FIELDS)
+                || (actualFields.size() == REQUIRED_FIELDS.size() + 1
+                && actualFields.containsAll(REQUIRED_FIELDS)
+                && actualFields.contains(ACTIVE_RECIPE_KEY));
+        boolean validTypes = validFields
+                && machine.contains(INVENTORY_KEY, Tag.TAG_COMPOUND)
+                && machine.contains(FLUID_KEY, Tag.TAG_COMPOUND)
+                && machine.contains(ENERGY_KEY, Tag.TAG_INT)
+                && machine.contains(PROGRESS_KEY, Tag.TAG_INT)
+                && (!machine.contains(ACTIVE_RECIPE_KEY)
+                || machine.contains(ACTIVE_RECIPE_KEY, Tag.TAG_STRING));
         InventoryResult inventory = decodeInventory(machine.getCompound(INVENTORY_KEY));
         FluidResult fluid = decodeFluid(machine.getCompound(FLUID_KEY));
-        boolean valid = inventory.valid() && fluid.valid();
+        boolean valid = validTypes && inventory.valid() && fluid.valid();
 
         int energy = machine.getInt(ENERGY_KEY);
         if (energy < 0 || energy > ElectrolyzerBlockEntity.ENERGY_CAPACITY) {
@@ -76,7 +101,7 @@ final class ElectrolyzerPersistence {
         }
 
         int progress = machine.getInt(PROGRESS_KEY);
-        if (progress < 0 || progress >= ElectrolyzerRecipeSpec.MAX_PROCESSING_TICKS) {
+        if (progress < 0 || progress > ElectrolyzerRecipeSpec.MAX_PROCESSING_TICKS) {
             progress = 0;
             valid = false;
         }
@@ -92,16 +117,19 @@ final class ElectrolyzerPersistence {
             }
         }
         boolean missingActiveRecipe = progress > 0 && activeRecipe == null;
-        if (missingActiveRecipe) {
+        boolean inactiveRecipe = progress == 0 && activeRecipe != null;
+        if (missingActiveRecipe || inactiveRecipe) {
             progress = 0;
+            activeRecipe = null;
             valid = false;
         }
 
         return new DecodeResult(
+                true,
                 false,
                 !valid,
-                !valid && !missingActiveRecipe,
-                null,
+                !valid,
+                valid ? null : machine.copy(),
                 inventory.stacks(),
                 fluid.stack(),
                 energy,
@@ -112,16 +140,23 @@ final class ElectrolyzerPersistence {
 
     private static InventoryResult decodeInventory(CompoundTag tag) {
         ItemStack[] stacks = emptyStacks();
-        if (!tag.contains("Size", Tag.TAG_INT)
-                || tag.getInt("Size") != ElectrolyzerBlockEntity.SLOT_COUNT) {
+        if (!tag.getAllKeys().equals(Set.of("Size", "Items"))
+                || !tag.contains("Size", Tag.TAG_INT)
+                || tag.getInt("Size") != ElectrolyzerBlockEntity.SLOT_COUNT
+                || !(tag.get("Items") instanceof ListTag items)
+                || items.size() > ElectrolyzerBlockEntity.SLOT_COUNT
+                || (!items.isEmpty() && items.getElementType() != Tag.TAG_COMPOUND)) {
             return new InventoryResult(false, stacks);
         }
 
         boolean valid = true;
         boolean[] occupied = new boolean[ElectrolyzerBlockEntity.SLOT_COUNT];
-        ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
         for (int index = 0; index < items.size(); index++) {
             CompoundTag itemTag = items.getCompound(index);
+            if (!itemTag.contains("Slot", Tag.TAG_INT)) {
+                valid = false;
+                continue;
+            }
             int slot = itemTag.getInt("Slot");
             if (slot < 0 || slot >= ElectrolyzerBlockEntity.SLOT_COUNT || occupied[slot]) {
                 valid = false;
@@ -139,9 +174,19 @@ final class ElectrolyzerPersistence {
     }
 
     private static FluidResult decodeFluid(CompoundTag tag) {
+        if (tag.isEmpty()) {
+            return new FluidResult(true, FluidStack.EMPTY);
+        }
+        if (!tag.getAllKeys().equals(Set.of("FluidName", "Amount"))
+                || !tag.contains("FluidName", Tag.TAG_STRING)
+                || !tag.contains("Amount", Tag.TAG_INT)) {
+            return new FluidResult(false, FluidStack.EMPTY);
+        }
         FluidStack loaded = FluidStack.loadFluidStackFromNBT(tag);
         if (loaded.isEmpty()) {
-            return new FluidResult(true, FluidStack.EMPTY);
+            boolean canonicalEmpty = "minecraft:empty".equals(tag.getString("FluidName"))
+                    && tag.getInt("Amount") == 0;
+            return new FluidResult(canonicalEmpty, FluidStack.EMPTY);
         }
         if (loaded.getFluid() != Fluids.WATER
                 || loaded.getAmount() < 0
@@ -175,10 +220,11 @@ final class ElectrolyzerPersistence {
     }
 
     record DecodeResult(
+            boolean present,
             boolean future,
             boolean invalid,
             boolean blockingInvalid,
-            @Nullable CompoundTag preservedFutureData,
+            @Nullable Tag preservedData,
             ItemStack[] inventory,
             FluidStack water,
             int energy,
@@ -187,6 +233,7 @@ final class ElectrolyzerPersistence {
     ) {
         private static DecodeResult empty() {
             return new DecodeResult(
+                    false,
                     false,
                     false,
                     false,
@@ -202,6 +249,7 @@ final class ElectrolyzerPersistence {
         private static DecodeResult future(CompoundTag data) {
             return new DecodeResult(
                     true,
+                    true,
                     false,
                     false,
                     data,
@@ -213,18 +261,25 @@ final class ElectrolyzerPersistence {
             );
         }
 
-        private static DecodeResult blockedInvalid() {
+        private static DecodeResult blockedInvalid(Tag data) {
             return new DecodeResult(
+                    true,
                     false,
                     true,
                     true,
-                    null,
+                    data == null ? null : data.copy(),
                     emptyStacks(),
                     FluidStack.EMPTY,
                     0,
                     0,
                     null
             );
+        }
+
+        @Nullable
+        @Override
+        public Tag preservedData() {
+            return preservedData == null ? null : preservedData.copy();
         }
     }
 

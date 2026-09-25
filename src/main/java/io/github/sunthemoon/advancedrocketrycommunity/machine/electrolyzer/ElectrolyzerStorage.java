@@ -33,6 +33,15 @@ final class ElectrolyzerInventory extends ItemStackHandler {
 
     @Override
     public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+        if (!internalMutation.getAsBoolean()) {
+            if (slot == ElectrolyzerBlockEntity.SLOT_INPUT && inputLocked.getAsBoolean()) {
+                return;
+            }
+            if (slot == ElectrolyzerBlockEntity.SLOT_CHARGE
+                    && stack.getCount() < getStackInSlot(slot).getCount()) {
+                return;
+            }
+        }
         if (!stack.isEmpty()) {
             boolean allowedType = switch (slot) {
                 case ElectrolyzerBlockEntity.SLOT_INPUT -> stack.is(ModItems.EMPTY_CANISTER.get());
@@ -46,10 +55,7 @@ final class ElectrolyzerInventory extends ItemStackHandler {
             if (!allowedType
                     || !hasNoTag(stack)
                     || stack.getCount() > Math.min(stack.getMaxStackSize(), getSlotLimit(slot))
-                    || (outputSlot && !internalMutation.getAsBoolean())
-                    || (slot == ElectrolyzerBlockEntity.SLOT_INPUT
-                    && inputLocked.getAsBoolean()
-                    && !internalMutation.getAsBoolean())) {
+                    || (outputSlot && !internalMutation.getAsBoolean())) {
                 return;
             }
         }
