@@ -132,12 +132,12 @@ public final class RollingMachineCommands {
         if (items == null || fluids == null || energy == null
                 || !items.insertItem(0, itemInput, true).isEmpty()
                 || fluids.fill(water, IFluidHandler.FluidAction.SIMULATE) != WATER_AMOUNT
-                || energy.receiveEnergy(ENERGY_AMOUNT, true) != ENERGY_AMOUNT) {
+                || !canReceiveEnergy(energy, ENERGY_AMOUNT)) {
             return fail(source, "Rolling fixture rejected simulated seed resources");
         }
-        if (!items.insertItem(0, itemInput, false).isEmpty()
+        if (!receiveEnergyFully(energy, ENERGY_AMOUNT)
                 || fluids.fill(water, IFluidHandler.FluidAction.EXECUTE) != WATER_AMOUNT
-                || energy.receiveEnergy(ENERGY_AMOUNT, false) != ENERGY_AMOUNT) {
+                || !items.insertItem(0, itemInput, false).isEmpty()) {
             return fail(source, "Rolling fixture rejected committed seed resources");
         }
         RollingMachineRuntime.markProcessReady(source.getLevel(), fixture.controller().getBlockPos());
@@ -254,6 +254,26 @@ public final class RollingMachineCommands {
     private static int fail(CommandSourceStack source, String message) {
         source.sendFailure(Component.literal(message));
         return 0;
+    }
+
+    private static boolean canReceiveEnergy(IEnergyStorage storage, int requested) {
+        long available = (long) storage.getMaxEnergyStored() - storage.getEnergyStored();
+        return requested > 0
+                && storage.canReceive()
+                && available >= requested
+                && storage.receiveEnergy(requested, true) > 0;
+    }
+
+    private static boolean receiveEnergyFully(IEnergyStorage storage, int requested) {
+        int remaining = requested;
+        while (remaining > 0) {
+            int received = storage.receiveEnergy(remaining, false);
+            if (received <= 0) {
+                return false;
+            }
+            remaining -= received;
+        }
+        return true;
     }
 
     private static String compact(BlockPos position) {

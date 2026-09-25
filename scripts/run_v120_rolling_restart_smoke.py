@@ -50,6 +50,8 @@ POSITION_COMPACT = f"{X},{Y},{Z}"
 IRON_INGOT = "minecraft:iron_ingot"
 IRON_BARS = "minecraft:iron_bars"
 AIR = "minecraft:air"
+SEEDED_RESOURCE_REVISION = 6
+COMPLETED_RESOURCE_REVISION = 7
 PREPARE_MARKER = f"ARCE_RELEASE_TEST_ROLLING_PREPARE controller={POSITION_COMPACT} cells=30"
 SEED_MARKER = (
     f"ARCE_RELEASE_TEST_ROLLING_SEED controller={POSITION_COMPACT} "
@@ -153,7 +155,7 @@ def _assert_active(report: dict[str, object], *, paused: bool) -> None:
         or report["energy"] != 4_000 - progress * 20
         or report["output_item"] != AIR
         or report["output_count"] != 0
-        or report["revision"] != 3
+        or report["revision"] != SEEDED_RESOURCE_REVISION
         or report["journal"] != "none"
         or report["last_applied"] != "none"
     ):
@@ -173,7 +175,7 @@ def _assert_complete(report: dict[str, object], last_applied: str | None = None)
         or report["energy"] != 2_000
         or report["output_item"] != IRON_BARS
         or report["output_count"] != 8
-        or report["revision"] != 4
+        or report["revision"] != COMPLETED_RESOURCE_REVISION
         or report["journal"] != "none"
         or UUID.fullmatch(marker) is None
         or (last_applied is not None and marker != last_applied)
