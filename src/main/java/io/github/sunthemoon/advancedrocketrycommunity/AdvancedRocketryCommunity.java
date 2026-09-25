@@ -23,6 +23,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLi
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineCommands;
@@ -106,6 +107,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onChunkUnload);
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onDatapackSync);
         MinecraftForge.EVENT_BUS.addListener(precisionEvents::onServerAboutToStart);
+        MinecraftForge.EVENT_BUS.addListener(new PrecisionAssemblerCommands()::register);
         CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
