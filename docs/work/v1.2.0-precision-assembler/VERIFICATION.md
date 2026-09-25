@@ -1,4 +1,4 @@
-# v1.2.0 Precision Assembler recipe and pattern verification
+# v1.2.0 Precision Assembler partial verification
 
 ```yaml
 version: v1.2.0
@@ -52,10 +52,38 @@ The current GameTest run validates existing behavior and packaging of the new pa
 not a working Precision Assembler. No Precision BlockEntity, port capability, process
 transaction, menu or world-level machine GameTest exists yet.
 
+## V120-PREC-03 port foundation (in progress)
+
+- Defined stable physical Item-input, Item-output and Energy-input port roles. The
+  pattern's fixed local cell, rather than placement order, will select each logical
+  process channel when the runtime adapter is implemented.
+- Added a separate `arce_precision_port` schema-1 resource root with a 64 KiB root
+  limit, 16 KiB Item limit, strict fields and type identity, no Item NBT, and a
+  20,000 FE Energy limit. Unknown or malformed roots decode as preserved, blocked
+  payloads rather than silently becoming empty resources.
+- Added one-slot Item and bounded 1,000 FE/t receive stores. Seven new JUnit cases
+  cover typed round-trip, defensive copy, future/malformed/oversized roots, mixed
+  resources, invalid automation input and Energy accounting.
+
+| Command or check | Result |
+|---|---|
+| `gradlew test --tests '...machine.precision.PrecisionAssemblerPort*Test' --no-daemon` | PASS; 7 new JUnit tests |
+| `gradlew clean build --no-daemon` with JDK 17 | PASS; 118 suites, 577 tests, 0 failures/errors |
+| `gradlew runData --no-daemon` | PASS; 35 total files, written 0 |
+| `gradlew runGameTestServer --no-daemon` | PASS; 73 existing Required GameTests; none exercises these unregistered ports |
+| `python scripts/validate_repository.py --require-approved-identity` | PASS; 45 checks, 868 relative links, 0 failures |
+| `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
+| `git diff --check` | PASS |
+
+The port BlockEntity, registry entries, generation-aware binding, capability lifecycle,
+drop behavior and lifecycle GameTests are still required before `V120-PREC-03` can be
+marked verified. These foundation tests do not establish resource retention in a world.
+
 ## Remaining slice work
 
-- `V120-PREC-03`: persistent, bounded Item/Energy ports with loaded-generation binding,
-  invalidated capability views and exact resource retention.
+- `V120-PREC-03`: connect the tested persistence and stores to registered Item/Energy
+  port BlockEntities with loaded-generation binding, invalidated capability views,
+  exact world resource retention and lifecycle GameTests.
 - `V120-PREC-04`: controller formation, server recipe selection, two-output atomic
   commit, journal recovery and world-level GameTests.
 - `V120-PREC-05`: server-authoritative menu, client-only screen, generated resources and
