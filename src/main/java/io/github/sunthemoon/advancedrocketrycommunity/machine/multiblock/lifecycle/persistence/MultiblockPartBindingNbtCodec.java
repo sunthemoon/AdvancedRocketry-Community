@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockPartBinding;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -13,6 +14,12 @@ import net.minecraft.world.level.Level;
 /** Codec for the independent {@code arce_part_binding} schema. */
 public final class MultiblockPartBindingNbtCodec {
     public static final String ROOT = "arce_part_binding";
+    public static final int MAX_ROOT_BYTES = 65_536;
+
+    private static final Set<String> ROOT_FIELDS = Set.of(
+            "schema_version", "controller_level", "controller", "machine_instance_id", "generation"
+    );
+    private static final Set<String> POSITION_FIELDS = Set.of("x", "y", "z");
 
     private MultiblockPartBindingNbtCodec() {
     }
@@ -24,6 +31,9 @@ public final class MultiblockPartBindingNbtCodec {
         root.put("controller", encodePosition(binding.controllerPosition()));
         root.putString("machine_instance_id", binding.machineInstanceId().toString());
         root.putLong("generation", binding.generation());
+        if (root.sizeInBytes() > MAX_ROOT_BYTES) {
+            throw new IllegalStateException("part binding NBT exceeded its 64 KiB bound");
+        }
         return root;
     }
 
@@ -38,13 +48,17 @@ public final class MultiblockPartBindingNbtCodec {
                     raw == null ? new CompoundTag() : raw
             );
         }
-        if (!root.contains("schema_version", Tag.TAG_INT)) {
+        if (root.sizeInBytes() > MAX_ROOT_BYTES
+                || !root.contains("schema_version", Tag.TAG_INT)) {
             return MultiblockNbtLoadResult.rejected(MultiblockNbtStatus.INVALID_DATA, root);
         }
         if (root.getInt("schema_version") != MultiblockPartBinding.SCHEMA_VERSION) {
             return MultiblockNbtLoadResult.rejected(MultiblockNbtStatus.UNSUPPORTED_SCHEMA, root);
         }
         try {
+            if (!ROOT_FIELDS.equals(root.getAllKeys())) {
+                throw new IllegalArgumentException("part binding NBT has missing or unexpected fields");
+            }
             require(root, "controller_level", Tag.TAG_STRING);
             require(root, "controller", Tag.TAG_COMPOUND);
             require(root, "machine_instance_id", Tag.TAG_STRING);
@@ -63,7 +77,7 @@ public final class MultiblockPartBindingNbtCodec {
                     root.getInt("schema_version"),
                     level,
                     decodePosition(root.getCompound("controller")),
-                    UUID.fromString(root.getString("machine_instance_id")),
+                    parseUuid(root.getString("machine_instance_id")),
                     root.getLong("generation")
             );
             return MultiblockNbtLoadResult.supported(binding);
@@ -87,9 +101,20 @@ public final class MultiblockPartBindingNbtCodec {
     }
 
     private static BlockPos decodePosition(CompoundTag encoded) {
+        if (!POSITION_FIELDS.equals(encoded.getAllKeys())) {
+            throw new IllegalArgumentException("part binding position NBT has missing or unexpected fields");
+        }
         require(encoded, "x", Tag.TAG_INT);
         require(encoded, "y", Tag.TAG_INT);
         require(encoded, "z", Tag.TAG_INT);
         return new BlockPos(encoded.getInt("x"), encoded.getInt("y"), encoded.getInt("z"));
+    }
+
+    private static UUID parseUuid(String encoded) {
+        UUID parsed = UUID.fromString(encoded);
+        if (!parsed.toString().equals(encoded)) {
+            throw new IllegalArgumentException("part binding UUID is not canonical");
+        }
+        return parsed;
     }
 }

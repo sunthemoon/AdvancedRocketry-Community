@@ -9,12 +9,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternRotation;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternTransform;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -127,5 +129,102 @@ class MultiblockNbtCodecTest {
                 MultiblockPartBindingNbtCodec.decode(parent);
         assertEquals(MultiblockNbtStatus.INVALID_DATA, malformed.status());
         assertTrue(malformed.preservedRoot().isPresent());
+    }
+
+    @Test
+    void malformedControllerPartsAndExtraFieldsPreserveTheOriginalRoot() {
+        MultiblockControllerState initial = MultiblockControllerState.initial(
+                UUID.randomUUID(), new PatternTransform(PatternRotation.ZERO, false));
+        CompoundTag root = MultiblockControllerNbtCodec.encode(initial);
+        ListTag wrongElementType = new ListTag();
+        wrongElementType.add(IntTag.valueOf(42));
+        root.put("parts", wrongElementType);
+        assertRejectedControllerPreserved(root);
+
+        root = MultiblockControllerNbtCodec.encode(initial);
+        root.putString("unrecognized_state", "must-not-disappear");
+        assertRejectedControllerPreserved(root);
+
+        root = MultiblockControllerNbtCodec.encode(initial);
+        root.putString("machine_instance_id", "1-1-1-1-1");
+        assertRejectedControllerPreserved(root);
+
+        MultiblockControllerState formed = initial.formed(1, Set.of(new BlockPos(1, 64, 2)));
+        root = MultiblockControllerNbtCodec.encode(formed);
+        root.getList("parts", Tag.TAG_COMPOUND).getCompound(0).putString("unknown_position_data", "keep");
+        assertRejectedControllerPreserved(root);
+    }
+
+    @Test
+    void malformedPartBindingAndFutureSchemaPreserveTheOriginalRoot() {
+        MultiblockPartBinding binding = new MultiblockPartBinding(
+                1, Level.OVERWORLD, new BlockPos(10, 70, -4), UUID.randomUUID(), 7);
+        CompoundTag root = MultiblockPartBindingNbtCodec.encode(binding);
+        root.getCompound("controller").putString("unknown_position_data", "keep");
+        assertRejectedBindingPreserved(root, MultiblockNbtStatus.INVALID_DATA);
+
+        root = MultiblockPartBindingNbtCodec.encode(binding);
+        root.putString("unrecognized_state", "must-not-disappear");
+        assertRejectedBindingPreserved(root, MultiblockNbtStatus.INVALID_DATA);
+
+        root = MultiblockPartBindingNbtCodec.encode(binding);
+        root.putString("machine_instance_id", "1-1-1-1-1");
+        assertRejectedBindingPreserved(root, MultiblockNbtStatus.INVALID_DATA);
+
+        root = MultiblockPartBindingNbtCodec.encode(binding);
+        root.putInt("schema_version", 99);
+        root.putString("future_payload", "keep");
+        assertRejectedBindingPreserved(root, MultiblockNbtStatus.UNSUPPORTED_SCHEMA);
+    }
+
+    @Test
+    void oversizedRootsAreRejectedAndMaximumPartCountStillRoundTrips() {
+        MultiblockControllerState initial = MultiblockControllerState.initial(
+                UUID.randomUUID(), new PatternTransform(PatternRotation.ZERO, false));
+        Set<BlockPos> positions = new HashSet<>();
+        for (int index = 0; index < MultiblockControllerState.MAX_PARTS; index++) {
+            positions.add(new BlockPos(index, 64, 0));
+        }
+        MultiblockControllerState maximum = initial.formed(1, positions);
+        CompoundTag valid = MultiblockControllerNbtCodec.encode(maximum);
+        assertTrue(valid.sizeInBytes() <= MultiblockControllerNbtCodec.MAX_ROOT_BYTES);
+        CompoundTag parent = new CompoundTag();
+        parent.put(MultiblockControllerNbtCodec.ROOT, valid);
+        assertEquals(maximum, MultiblockControllerNbtCodec.decode(parent).value().orElseThrow());
+
+        CompoundTag oversizedController = MultiblockControllerNbtCodec.encode(initial);
+        oversizedController.putByteArray(
+                "oversized_payload", new byte[MultiblockControllerNbtCodec.MAX_ROOT_BYTES]);
+        assertTrue(oversizedController.sizeInBytes() > MultiblockControllerNbtCodec.MAX_ROOT_BYTES);
+        assertRejectedControllerPreserved(oversizedController);
+
+        MultiblockPartBinding binding = new MultiblockPartBinding(
+                1, Level.OVERWORLD, new BlockPos(10, 70, -4), UUID.randomUUID(), 7);
+        CompoundTag oversizedBinding = MultiblockPartBindingNbtCodec.encode(binding);
+        oversizedBinding.putByteArray(
+                "oversized_payload", new byte[MultiblockPartBindingNbtCodec.MAX_ROOT_BYTES]);
+        assertTrue(oversizedBinding.sizeInBytes() > MultiblockPartBindingNbtCodec.MAX_ROOT_BYTES);
+        assertRejectedBindingPreserved(oversizedBinding, MultiblockNbtStatus.INVALID_DATA);
+    }
+
+    private static void assertRejectedControllerPreserved(CompoundTag root) {
+        CompoundTag parent = new CompoundTag();
+        parent.put(MultiblockControllerNbtCodec.ROOT, root);
+        MultiblockNbtLoadResult<MultiblockControllerState> result =
+                MultiblockControllerNbtCodec.decode(parent);
+        assertEquals(MultiblockNbtStatus.INVALID_DATA, result.status());
+        CompoundTag rewritten = new CompoundTag();
+        result.writeRoot(rewritten, MultiblockControllerNbtCodec.ROOT, MultiblockControllerNbtCodec::encode);
+        assertEquals(root, rewritten.get(MultiblockControllerNbtCodec.ROOT));
+    }
+
+    private static void assertRejectedBindingPreserved(CompoundTag root, MultiblockNbtStatus expected) {
+        CompoundTag parent = new CompoundTag();
+        parent.put(MultiblockPartBindingNbtCodec.ROOT, root);
+        MultiblockNbtLoadResult<MultiblockPartBinding> result = MultiblockPartBindingNbtCodec.decode(parent);
+        assertEquals(expected, result.status());
+        CompoundTag rewritten = new CompoundTag();
+        result.writeRoot(rewritten, MultiblockPartBindingNbtCodec.ROOT, MultiblockPartBindingNbtCodec::encode);
+        assertEquals(root, rewritten.get(MultiblockPartBindingNbtCodec.ROOT));
     }
 }

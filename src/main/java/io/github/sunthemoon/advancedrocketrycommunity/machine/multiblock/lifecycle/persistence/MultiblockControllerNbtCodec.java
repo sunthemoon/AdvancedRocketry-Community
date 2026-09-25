@@ -15,6 +15,14 @@ import net.minecraft.nbt.Tag;
 /** Codec for the independent {@code arce_multiblock} schema. */
 public final class MultiblockControllerNbtCodec {
     public static final String ROOT = "arce_multiblock";
+    // MAX_PARTS occupies 1,172,078 NBT-accounted bytes in the current schema.
+    public static final int MAX_ROOT_BYTES = 1_310_720;
+
+    private static final Set<String> ROOT_FIELDS = Set.of(
+            "schema_version", "machine_instance_id", "generation", "rotation",
+            "mirror_local_x", "formation_state", "parts"
+    );
+    private static final Set<String> POSITION_FIELDS = Set.of("x", "y", "z");
 
     private MultiblockControllerNbtCodec() {
     }
@@ -30,6 +38,10 @@ public final class MultiblockControllerNbtCodec {
         ListTag parts = new ListTag();
         state.partPositions().forEach(position -> parts.add(encodePosition(position)));
         root.put("parts", parts);
+        if (root.sizeInBytes() > MAX_ROOT_BYTES) {
+            throw new IllegalStateException("controller NBT size " + root.sizeInBytes()
+                    + " exceeded its " + MAX_ROOT_BYTES + " byte bound");
+        }
         return root;
     }
 
@@ -44,7 +56,8 @@ public final class MultiblockControllerNbtCodec {
                     raw == null ? new CompoundTag() : raw
             );
         }
-        if (!root.contains("schema_version", Tag.TAG_INT)) {
+        if (root.sizeInBytes() > MAX_ROOT_BYTES
+                || !root.contains("schema_version", Tag.TAG_INT)) {
             return MultiblockNbtLoadResult.rejected(MultiblockNbtStatus.INVALID_DATA, root);
         }
         if (root.getInt("schema_version") != MultiblockControllerState.SCHEMA_VERSION) {
@@ -52,9 +65,11 @@ public final class MultiblockControllerNbtCodec {
         }
         try {
             requireTypes(root);
-            ListTag encodedParts = root.getList("parts", Tag.TAG_COMPOUND);
-            if (encodedParts.size() > MultiblockControllerState.MAX_PARTS) {
-                throw new IllegalArgumentException("controller NBT exceeds the part limit");
+            Tag rawParts = root.get("parts");
+            if (!(rawParts instanceof ListTag encodedParts)
+                    || (!encodedParts.isEmpty() && encodedParts.getElementType() != Tag.TAG_COMPOUND)
+                    || encodedParts.size() > MultiblockControllerState.MAX_PARTS) {
+                throw new IllegalArgumentException("controller NBT parts are malformed or exceed the part limit");
             }
             Set<BlockPos> parts = new HashSet<>();
             for (int index = 0; index < encodedParts.size(); index++) {
@@ -78,6 +93,9 @@ public final class MultiblockControllerNbtCodec {
     }
 
     private static void requireTypes(CompoundTag root) {
+        if (!ROOT_FIELDS.equals(root.getAllKeys())) {
+            throw new IllegalArgumentException("controller NBT has missing or unexpected fields");
+        }
         require(root, "machine_instance_id", Tag.TAG_STRING);
         require(root, "generation", Tag.TAG_LONG);
         require(root, "rotation", Tag.TAG_INT);
@@ -105,6 +123,9 @@ public final class MultiblockControllerNbtCodec {
     }
 
     private static BlockPos decodePosition(CompoundTag encoded) {
+        if (!POSITION_FIELDS.equals(encoded.getAllKeys())) {
+            throw new IllegalArgumentException("controller position NBT has missing or unexpected fields");
+        }
         require(encoded, "x", Tag.TAG_INT);
         require(encoded, "y", Tag.TAG_INT);
         require(encoded, "z", Tag.TAG_INT);
@@ -112,7 +133,11 @@ public final class MultiblockControllerNbtCodec {
     }
 
     private static UUID parseUuid(String encoded) {
-        return UUID.fromString(encoded);
+        UUID parsed = UUID.fromString(encoded);
+        if (!parsed.toString().equals(encoded)) {
+            throw new IllegalArgumentException("controller UUID is not canonical");
+        }
+        return parsed;
     }
 
     private static PatternRotation parseRotation(int degrees) {

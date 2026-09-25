@@ -24,6 +24,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -139,6 +141,52 @@ public final class RollingMachineGameTests {
                 futureBinding.equals(port.saveWithFullMetadata().get(MultiblockPartBindingNbtCodec.ROOT)),
                 "Future part binding root was not preserved exactly"
         );
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void malformedCurrentControllerAndBindingRootsArePreservedAndBlocked(GameTestHelper helper) {
+        BlockPos controllerPosition = new BlockPos(2, 2, 2);
+        BlockPos portPosition = controllerPosition.east();
+        helper.setBlock(controllerPosition, ModBlocks.ROLLING_MACHINE.get());
+        helper.setBlock(portPosition, ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT.get());
+        RollingMachineBlockEntity controller = (RollingMachineBlockEntity) helper.getBlockEntity(controllerPosition);
+        RollingMachinePortBlockEntity port = (RollingMachinePortBlockEntity) helper.getBlockEntity(portPosition);
+
+        CompoundTag malformedController = MultiblockControllerNbtCodec.encode(controller.controllerState());
+        ListTag wrongParts = new ListTag();
+        wrongParts.add(IntTag.valueOf(42));
+        malformedController.put("parts", wrongParts);
+        CompoundTag controllerParent = new CompoundTag();
+        controllerParent.put(MultiblockControllerNbtCodec.ROOT, malformedController.copy());
+        controller.load(controllerParent);
+        helper.assertTrue(controller.formationState() == MultiblockFormationState.UNSUPPORTED_DATA,
+                "Malformed current controller schema did not fail closed");
+        helper.assertTrue(malformedController.equals(
+                        controller.saveWithFullMetadata().get(MultiblockControllerNbtCodec.ROOT)),
+                "Malformed current controller root was not preserved exactly");
+
+        CompoundTag malformedBinding = MultiblockPartBindingNbtCodec.encode(new MultiblockPartBinding(
+                MultiblockPartBinding.SCHEMA_VERSION,
+                helper.getLevel().dimension(),
+                helper.absolutePos(controllerPosition),
+                UUID.randomUUID(),
+                1L
+        ));
+        malformedBinding.getCompound("controller").putString("unknown_position_data", "keep");
+        CompoundTag portParent = new CompoundTag();
+        portParent.put(MultiblockPartBindingNbtCodec.ROOT, malformedBinding.copy());
+        port.load(portParent);
+        boolean rejected = false;
+        try {
+            port.setMultiblockBinding(Optional.empty());
+        } catch (IllegalStateException expected) {
+            rejected = true;
+        }
+        helper.assertTrue(rejected, "Malformed current part binding accepted a lifecycle mutation");
+        helper.assertTrue(malformedBinding.equals(
+                        port.saveWithFullMetadata().get(MultiblockPartBindingNbtCodec.ROOT)),
+                "Malformed current part binding root was not preserved exactly");
         helper.succeed();
     }
 
