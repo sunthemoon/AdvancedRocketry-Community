@@ -1,12 +1,14 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineLogic;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceBalance;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceStore;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessSimulationResult;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionJournal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,12 @@ import net.minecraft.world.item.ItemStack;
 
 /** Bounded server-thread transaction over five inputs and two independent outputs. */
 final class PrecisionAssemblerResourceStore implements ProcessResourceStore {
+    private static final List<String> ITEM_CHANNELS = List.of(
+            PrecisionAssemblerChannels.input(0), PrecisionAssemblerChannels.input(1),
+            PrecisionAssemblerChannels.input(2), PrecisionAssemblerChannels.input(3),
+            PrecisionAssemblerChannels.input(4), PrecisionAssemblerChannels.output(0),
+            PrecisionAssemblerChannels.output(1)
+    );
     private final ServerLevel level;
     private final PrecisionAssemblerBlockEntity controller;
     private final PrecisionAssemblerProcessController process;
@@ -142,6 +150,110 @@ final class PrecisionAssemblerResourceStore implements ProcessResourceStore {
             rollback(beforeInputs, beforeOutputs, beforeRevision, failure);
             throw failure;
         }
+    }
+
+    /** Replays a persisted journal only when every physical slot is before or after that batch. */
+    boolean reconcileJournal(ProcessTransactionJournal journal) {
+        requireUsablePorts();
+        ProcessResourceSnapshot actual = snapshot();
+        ProcessResourceSnapshot before = journal.before();
+        ProcessResourceSnapshot after = journal.after();
+        boolean appliedMarker = process.lastAppliedTransactionId()
+                .filter(journal.transactionId()::equals).isPresent();
+        boolean invalidPrepared = journal.phase() == ProcessJournalPhase.PREPARED
+                && (actual.revision() != before.revision() || appliedMarker);
+        boolean invalidApplied = journal.phase() == ProcessJournalPhase.APPLIED
+                && (actual.revision() != after.revision() || !appliedMarker);
+        if ((actual.revision() != before.revision() && actual.revision() != after.revision())
+                || invalidPrepared || invalidApplied
+                || (appliedMarker && actual.revision() != after.revision())
+                || !sameShape(actual, before) || !sameShape(before, after)) {
+            return false;
+        }
+        List<ItemStack> beforeStacks;
+        List<ItemStack> afterStacks;
+        try {
+            beforeStacks = physicalStacks(before);
+            afterStacks = physicalStacks(after);
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
+        List<ItemStack> current = new ArrayList<>(inputStacks());
+        current.addAll(outputStacks());
+        for (int index = 0; index < current.size(); index++) {
+            if (!sameStack(current.get(index), beforeStacks.get(index))
+                    && !sameStack(current.get(index), afterStacks.get(index))) {
+                return false;
+            }
+        }
+
+        List<ItemStack> oldInputs = inputStacks();
+        List<ItemStack> oldOutputs = outputStacks();
+        long oldRevision = process.resourceRevision();
+        try {
+            for (int index = 0; index < oldInputs.size(); index++) {
+                ports.inputs().get(index).replaceStoredItemInternal(afterStacks.get(index));
+            }
+            for (int index = 0; index < oldOutputs.size(); index++) {
+                ports.outputs().get(index).replaceStoredItemInternal(
+                        afterStacks.get(oldInputs.size() + index));
+            }
+            process.restoreResourceRevision(after.revision());
+            if (!snapshot().equals(after)) {
+                throw new IllegalStateException("Precision Assembler replay differs from its journal");
+            }
+        } catch (RuntimeException failure) {
+            rollback(oldInputs, oldOutputs, oldRevision, failure);
+            throw failure;
+        }
+        process.markApplied(journal.transactionId());
+        return true;
+    }
+
+    private static boolean sameShape(ProcessResourceSnapshot left, ProcessResourceSnapshot right) {
+        if (!left.balances().keySet().equals(right.balances().keySet())) {
+            return false;
+        }
+        return left.balances().keySet().stream().allMatch(key ->
+                left.balance(key).capacity() == right.balance(key).capacity());
+    }
+
+    private static List<ItemStack> physicalStacks(ProcessResourceSnapshot snapshot) {
+        if (snapshot.balances().keySet().stream().anyMatch(key ->
+                key.kind() != ProcessResourceKind.ITEM || !ITEM_CHANNELS.contains(key.channel()))) {
+            throw new IllegalArgumentException("Journal contains an unrelated Precision resource");
+        }
+        List<ItemStack> stacks = new ArrayList<>(ITEM_CHANNELS.size());
+        for (String channel : ITEM_CHANNELS) {
+            ItemStack selected = ItemStack.EMPTY;
+            for (var entry : snapshot.balances().entrySet()) {
+                if (!entry.getKey().channel().equals(channel)) {
+                    continue;
+                }
+                ResourceLocation id = ResourceLocation.tryParse(entry.getKey().resourceId());
+                var item = id == null ? null : BuiltInRegistries.ITEM.getOptional(id).orElse(null);
+                if (item == null || item.getDefaultInstance().isEmpty()
+                        || entry.getValue().capacity() != item.getMaxStackSize()) {
+                    throw new IllegalArgumentException("Journal contains an invalid Item capacity");
+                }
+                long amount = entry.getValue().amount();
+                if (amount > 0) {
+                    if (!selected.isEmpty() || amount > item.getMaxStackSize()) {
+                        throw new IllegalArgumentException("Journal contains multiple or oversized Item stacks");
+                    }
+                    selected = new ItemStack(item, Math.toIntExact(amount));
+                }
+            }
+            stacks.add(selected);
+        }
+        return stacks;
+    }
+
+    private static boolean sameStack(ItemStack left, ItemStack right) {
+        if (left.isEmpty() || right.isEmpty()) {
+            return left.isEmpty() && right.isEmpty();
+        }
+        return left.getCount() == right.getCount() && ItemStack.isSameItemSameTags(left, right);
     }
 
     @Override

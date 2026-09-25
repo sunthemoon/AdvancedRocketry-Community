@@ -152,6 +152,12 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
                     failure(ProcessFailureCode.INVALID_RECIPE, active.definitionId()));
             return false;
         }
+        if (progress != null
+                && active.progressTicks() == recipe.processDefinition().durationTicks()) {
+            updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, active.definitionId()));
+            return false;
+        }
         PrecisionAssemblerResourceStore resources = new PrecisionAssemblerResourceStore(
                 level, controller, this, recipe, ports
         );
@@ -160,10 +166,6 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
                     failure(ProcessFailureCode.MISSING_ITEM_INPUT, recipe.getId().toString()));
             return false;
         }
-        if (active.progressTicks() == recipe.processDefinition().durationTicks()) {
-            return complete(controller, recipe, resources);
-        }
-
         ProcessSimulationResult simulation = ProcessMachineLogic.simulate(
                 recipe.processDefinition(), resources.snapshot()
         );
@@ -334,9 +336,15 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
                     failure(ProcessFailureCode.RECOVERY_DIVERGED, pending.definitionId()));
             return false;
         }
-        return handleTransactionResult(ProcessTransactionExecutor.recover(
-                new PrecisionAssemblerResourceStore(level, controller, this, recipe, ports), this
-        ));
+        PrecisionAssemblerResourceStore resources = new PrecisionAssemblerResourceStore(
+                level, controller, this, recipe, ports
+        );
+        if (!resources.reconcileJournal(pending)) {
+            updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, pending.definitionId()));
+            return false;
+        }
+        return handleTransactionResult(ProcessTransactionExecutor.recover(resources, this));
     }
 
     private boolean complete(

@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailureCode;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessProgress;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionJournal;
@@ -208,6 +209,123 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
                     .contains(ProcessJournalPersistence.ROOT), "Stale journal was silently discarded");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 40)
+    public static void savedFullProgressWithoutJournalDoesNotSettleMixedPorts(GameTestHelper helper) {
+        PrecisionAssemblerGameTests.placeStructure(helper);
+        helper.runAtTickTime(8, () -> {
+            var recipe = PrecisionAssemblerGameTests.requireProcessRecipe(helper);
+            PrecisionAssemblerGameTests.insertInputs(helper);
+            PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
+            CompoundTag saved = machine.saveWithFullMetadata();
+            CompoundTag process = saved.getCompound(ProcessStatePersistence.ROOT);
+            process.putString("state", "running");
+            process.putString("definition_id", recipe.getId().toString());
+            process.putString("recipe_signature", recipe.signature());
+            process.putInt("progress_ticks", recipe.processDefinition().durationTicks());
+            process.putLong("consumed_energy", Math.multiplyExact(
+                    (long) recipe.processDefinition().durationTicks(),
+                    recipe.processDefinition().energyPerTick()));
+            machine.load(saved);
+            replaceStoredItem(helper, PrecisionAssemblerGameTests.INPUT_0, ItemStack.EMPTY);
+            replaceStoredItem(helper, PrecisionAssemblerGameTests.OUTPUT_0, recipe.outputs().get(0));
+            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(),
+                    helper.absolutePos(PrecisionAssemblerGameTests.CONTROLLER));
+        });
+        helper.runAtTickTime(20, () -> {
+            PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
+            helper.assertTrue(machine.processState() == ProcessMachineState.RECOVERY_REQUIRED,
+                    "Saved full progress without a journal was allowed to settle");
+            helper.assertTrue(machine.processFailure().code() == ProcessFailureCode.RECOVERY_DIVERGED,
+                    "Saved full progress did not report a recovery failure");
+            helper.assertTrue(storedCount(helper, PrecisionAssemblerGameTests.INPUT_0) == 0
+                            && storedCount(helper, PrecisionAssemblerGameTests.INPUT_1) == 2
+                            && storedCount(helper, PrecisionAssemblerGameTests.OUTPUT_0) == 1
+                            && storedCount(helper, PrecisionAssemblerGameTests.OUTPUT_1) == 0,
+                    "Saved full progress rewrote mixed port resources");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 40)
+    public static void preparedJournalReconcilesMixedSavedPortsOnce(GameTestHelper helper) {
+        reconcileMixedSavedPorts(helper, false);
+    }
+
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 40)
+    public static void appliedJournalReconcilesMixedSavedPortsOnce(GameTestHelper helper) {
+        reconcileMixedSavedPorts(helper, true);
+    }
+
+    private static void reconcileMixedSavedPorts(GameTestHelper helper, boolean applied) {
+        PrecisionAssemblerGameTests.placeStructure(helper);
+        helper.runAtTickTime(8, () -> {
+            var recipe = PrecisionAssemblerGameTests.requireProcessRecipe(helper);
+            PrecisionAssemblerGameTests.insertInputs(helper);
+            var prepared = PrecisionAssemblerGameTests.preparedJournal(helper, recipe);
+            var journal = applied
+                    ? prepared.advance(ProcessJournalPhase.APPLYING).advance(ProcessJournalPhase.APPLIED)
+                    : prepared;
+            PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
+            CompoundTag saved = machine.saveWithFullMetadata();
+            saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(journal));
+            if (applied) {
+                saved.getCompound(ProcessStatePersistence.ROOT).putLong(
+                        "resource_revision", journal.after().revision());
+                saved.getCompound(ProcessStatePersistence.ROOT).putString(
+                        "last_applied_transaction", journal.transactionId().toString());
+            }
+            machine.load(saved);
+            replaceStoredItem(helper, PrecisionAssemblerGameTests.INPUT_0, ItemStack.EMPTY);
+            replaceStoredItem(helper, PrecisionAssemblerGameTests.OUTPUT_0, recipe.outputs().get(0));
+            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(),
+                    helper.absolutePos(PrecisionAssemblerGameTests.CONTROLLER));
+        });
+        helper.runAtTickTime(20, () -> {
+            PrecisionAssemblerGameTests.assertCompletedBatch(helper);
+            PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
+            helper.assertTrue(machine.processProgress().isEmpty()
+                            && !machine.saveWithFullMetadata().contains(ProcessJournalPersistence.ROOT),
+                    "Mixed-port journal was not finalized");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", batch = "precision_assembler", timeoutTicks = 40)
+    public static void journalWithForeignPortContentsRemainsBlocked(GameTestHelper helper) {
+        PrecisionAssemblerGameTests.placeStructure(helper);
+        helper.runAtTickTime(8, () -> {
+            var recipe = PrecisionAssemblerGameTests.requireProcessRecipe(helper);
+            PrecisionAssemblerGameTests.insertInputs(helper);
+            var journal = PrecisionAssemblerGameTests.preparedJournal(helper, recipe);
+            PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
+            CompoundTag saved = machine.saveWithFullMetadata();
+            saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(journal));
+            machine.load(saved);
+            replaceStoredItem(helper, PrecisionAssemblerGameTests.OUTPUT_0, new ItemStack(Items.DIRT));
+            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(),
+                    helper.absolutePos(PrecisionAssemblerGameTests.CONTROLLER));
+        });
+        helper.runAtTickTime(20, () -> {
+            PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
+            helper.assertTrue(machine.processState() == ProcessMachineState.RECOVERY_REQUIRED
+                            && machine.saveWithFullMetadata().contains(ProcessJournalPersistence.ROOT),
+                    "Foreign port state was overwritten or the journal was cleared");
+            helper.assertTrue(storedCount(helper, PrecisionAssemblerGameTests.INPUT_0) == 2
+                            && storedCount(helper, PrecisionAssemblerGameTests.OUTPUT_0) == 1
+                            && storedCount(helper, PrecisionAssemblerGameTests.OUTPUT_1) == 0,
+                    "Foreign port state was partially replaced");
+            helper.succeed();
+        });
+    }
+
+    private static void replaceStoredItem(GameTestHelper helper, BlockPos position, ItemStack stack) {
+        var port = PrecisionAssemblerGameTests.port(helper, position);
+        CompoundTag saved = port.saveWithFullMetadata();
+        saved.getCompound("arce_precision_port").put("item",
+                stack.isEmpty() ? new CompoundTag() : stack.save(new CompoundTag()));
+        port.load(saved);
     }
 
     private static int storedCount(GameTestHelper helper, BlockPos position) {
