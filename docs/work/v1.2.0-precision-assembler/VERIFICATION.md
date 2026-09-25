@@ -11,6 +11,10 @@ shared_codec_commit: 2348c088e322ce7881e71e428554ca8ed125e733
 implementation_commit: da78f33086d039f8d981b07cc2b99bb1d57385a5
 recipe_pattern_artifact_sha256: 10521cb9775db199a733bdc179b7ddd3c658d9b7cf7eba295e3498d2d7cbed57
 port_runtime_artifact_sha256: 534bd4793da524ce14ad83bc410094a7f41afa265e87dff012d1e75ab163a109
+process_safety_commit: a64b411ef94c1b51fb2f8a66b420caca7e0ee17b
+process_recipes_commit: 9ff02da1cf3565c6d56ddb2055d092a9332d1b21
+process_runtime_commit: 8af00d4bd439cc263b7b7a18d3796baf346007e4
+process_checkpoint_artifact_sha256: edac60ea023d35a56597fb07d01d91e87cf83102e64db6d253cca2c9d9cc64a6
 ```
 
 ## Verified behavior
@@ -123,10 +127,52 @@ the overall v1.2 Gate is not marked passed. Four Precision tests passed in that
 fresh-world run; the fifth mirror test was added afterward and passed on the preserved
 world. No packaged dedicated restart has yet been run for Precision Assembler.
 
+## V120-PREC-04 server process checkpoint (in progress)
+
+- The controller now owns independent schema-1 `arce_process` and
+  `arce_process_journal` roots, while Item and Energy remain in their physical port
+  BlockEntities. Unsupported or malformed process roots are preserved and block
+  automation and processing. No client packet selects a recipe or submits a result.
+- The loaded-only port set resolves five fixed input cells, two output cells and one
+  Energy cell for the current controller generation. The server process queue handles
+  at most 256 controllers per tick. Item automation is locked while progress is active;
+  Energy can be replenished during processing. Capability access never loads a chunk.
+- Two generated community recipes exercise 2-input/2-output and 5-input/1-output
+  processing. Recipe selection remains order-independent and rejects ambiguity.
+  A combined maximum of 55 ingredient alternatives reserves space for current foreign
+  stacks and both output identities inside the shared 64-entry journal snapshot.
+- The final resource replacement simulates all inputs and both outputs before mutation,
+  checks the controller resource revision, validates the exact live port set, and rolls
+  back all seven Item stores on an in-memory mutation failure. The shared journal now
+  retains a mismatched persisted marker instead of clearing an unverified transaction.
+- Eight new process GameTests cover both recipe shapes, two-output exact-once behavior,
+  running Energy replenishment, full output and missing Energy pauses, active-progress
+  NBT round-trip, PREPARED/APPLYING journal replay, stale revision rejection, recipe
+  signature mismatch and future process/journal schema preservation. A JUnit case
+  covers the 55-alternative snapshot bound; another covers marker/resource divergence.
+
+| Command or check | Result |
+|---|---|
+| `gradlew test --tests '...machine.precision.*' --tests '...machine.process.ProcessTransactionExecutorTest' --no-daemon` | PASS; targeted JUnit |
+| `gradlew clean build --no-daemon` with JDK 17 | PASS; 118 suites, 579 tests, 0 failures/errors |
+| `gradlew test --no-daemon` | PASS; task up-to-date after the clean build |
+| consecutive `gradlew runData --no-daemon` | PASS; 53 total files, written 0 |
+| `gradlew runGameTestServer --no-daemon` on the preserved development world | PASS; 86/86 Required GameTests, including 13 Precision tests |
+| `python scripts/validate_repository.py --require-approved-identity` | PASS; 45 checks, 871 relative links, 0 failures |
+| `python scripts/validate_v1plus_planning.py` | PASS; 11 plans and the 33-input inventory |
+| `git diff --check` | PASS |
+
+The build JAR above is a development artifact, not a v1.2.0 release candidate. A real
+packaged-server stop/restart against one persisted Precision Assembler, especially with
+ports spanning chunks, has not been verified. `setChanged()` alone does not prove that
+journal and port chunk writes are durably ordered across a forced stop. This remains a
+recovery risk and keeps `V120-PREC-04` in progress; it is not waived by ADR-018.
+The pending human checks are listed in [short manual checks](MANUAL-TEST.md).
+
 ## Remaining slice work
 
-- `V120-PREC-04`: server recipe selection, two-output atomic
-  commit, journal recovery and world-level GameTests.
+- `V120-PREC-04`: complete short packaged-server same-world stop/restart and resolve
+  the durable cross-chunk transaction boundary before claiming exact-once recovery.
 - `V120-PREC-05`: server-authoritative menu, client-only screen, generated resources and
   readable diagnostics.
 - `V120-PREC-06`: bounded packaged-server restart and evidence review.
