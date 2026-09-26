@@ -1,0 +1,308 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2213336,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "9f93fc3e60a2af02c9b506fa372c2bce47db0fcb6ea0bbd1c25d1e4a70d4eb1d",
+      "version": "1.20.1-1.3.0-dev"
+    },
+    {
+      "bytes": 26805,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "b8178c4cda9890cb6daeb7d248e9ee2fef2363cb1597a66a640b482164747593",
+      "version": "1.0.0"
+    }
+  ],
+  "cycles": [
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "50881",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T18:05:55.185339+00:00",
+      "disk_evidence": {
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 2994176,
+          "sha256": "7c46612da5217aaa24cdc1f20b24f3334904631c4867965f96b6d05523a74982"
+        },
+        "world/level.dat": {
+          "bytes": 37953,
+          "sha256": "d5d07bc690e37ed2d32c19a547794f2bde1f417715497c8353d52f7f6a7745e8"
+        }
+      },
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 25
+      },
+      "observation_ticks": 22,
+      "phase": "setup-reload",
+      "result": "PASS",
+      "started_at": "2026-09-26T18:05:14.444764+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 02:05:16,376 main WARN Advanced terminal features are not available in this environment",
+        "[02:05:16] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\config\\fml.toml is not correct. Correcting",
+        "[02:05:16] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:16] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:16] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:16] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:24] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\config\\advancedrocketrycommunity-common.toml is not correct. Correcting",
+        "[02:05:24] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}.",
+        "[02:05:24] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096.",
+        "[02:05:24] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024.",
+        "[02:05:25] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[02:05:25] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[02:05:27] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[02:05:27] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[02:05:27] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[02:05:27] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file .\\world\\serverconfig\\forge-server.toml is not correct. Correcting",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true.",
+        "[02:05:27] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false."
+      ]
+    },
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "50881",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T18:06:16.141915+00:00",
+      "disk_evidence": {
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 2998272,
+          "sha256": "7e973677bece1dcc1ab291d51333e258b14d093755063d1e3bb0538f1aa0128d"
+        },
+        "world/level.dat": {
+          "bytes": 37955,
+          "sha256": "21c2d3205edbb3523f752ff1a632fb90d2f664ce8427f7b78d4149e3882976ef"
+        }
+      },
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 22,
+      "phase": "open-restart",
+      "result": "PASS",
+      "started_at": "2026-09-26T18:05:55.193649+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 02:05:57,136 main WARN Advanced terminal features are not available in this environment",
+        "[02:05:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:05:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:06] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[02:06:06] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[02:06:08] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[02:06:08] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[02:06:08] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[02:06:08] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+      ]
+    },
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "50881",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T18:06:36.722118+00:00",
+      "disk_evidence": {
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 2998272,
+          "sha256": "979ac1957f95e530c7816fda70e876b06a8721707ef06257aa802dcc03f7d1a0"
+        },
+        "world/level.dat": {
+          "bytes": 37954,
+          "sha256": "e0ab9608e3ca3ef0121bb23bc1f029e22ae707e684135b646c3b49e97c531669"
+        }
+      },
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 22,
+      "phase": "provider-skipped",
+      "result": "PASS",
+      "started_at": "2026-09-26T18:06:16.147590+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 02:06:17,968 main WARN Advanced terminal features are not available in this environment",
+        "[02:06:18] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:18] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:18] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:18] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:26] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[02:06:26] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[02:06:29] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[02:06:29] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[02:06:29] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[02:06:29] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+      ]
+    },
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "50881",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T18:07:02.605112+00:00",
+      "disk_evidence": {
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 2998272,
+          "sha256": "65b522d4768b3906b37f6fc059942f07365c033bf203b72f34e2a095c4b0dace"
+        },
+        "world/level.dat": {
+          "bytes": 37953,
+          "sha256": "4130a1e10b385c09143137e67bb4acbbc1eb05c9bd4ae776c9095dd6d0771dcb"
+        }
+      },
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 22,
+      "phase": "provider-restored",
+      "result": "PASS",
+      "started_at": "2026-09-26T18:06:36.726192+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 02:06:38,848 main WARN Advanced terminal features are not available in this environment",
+        "[02:06:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:39] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[02:06:49] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[02:06:49] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-atm01-1790444703294/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[02:06:52] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[02:06:52] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[02:06:52] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[02:06:52] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+      ]
+    }
+  ],
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "port": 50881,
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "four clean processes; one room; two live tag reloads; no long load",
+  "server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm01-1790444703294\\server",
+  "world": {
+    "identity": "9b1a22b4ac350532ff804e9fe0d6f93d5ec15c5a40450c7d27b2d08637f34d0c",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "d168fbe93ab329e2d93134b24119db3470f0c36870d99516dcaabe42112a7a79",
+    "level_dat_after_restart_sha256": "4130a1e10b385c09143137e67bb4acbbc1eb05c9bd4ae776c9095dd6d0771dcb",
+    "level_dat_after_restart_size": 37953,
+    "level_dat_before_restart_sha256": "d5d07bc690e37ed2d32c19a547794f2bde1f417715497c8353d52f7f6a7745e8",
+    "level_dat_before_restart_size": 37953,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "300ff6e5a8742929d3f9f8f3265d198247c2b2b60661827136f64a09a6576d44"
+  }
+}

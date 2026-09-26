@@ -1,0 +1,130 @@
+{
+  "open-restart": {
+    "boundary": {
+      "Name": "arce_adapter_test:state_boundary",
+      "Properties": {
+        "open": "true"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 2998272,
+        "sha256": "7e973677bece1dcc1ab291d51333e258b14d093755063d1e3bb0538f1aa0128d"
+      },
+      "world/level.dat": {
+        "bytes": 37955,
+        "sha256": "21c2d3205edbb3523f752ff1a632fb90d2f664ce8427f7b78d4149e3882976ef"
+      }
+    },
+    "vent_block": {
+      "Name": "advancedrocketrycommunity:oxygen_vent",
+      "Properties": {
+        "lit": "false"
+      }
+    },
+    "vent_data": {
+      "empty_canisters": 0,
+      "energy": 38600,
+      "oxygen_canisters": 0,
+      "oxygen_phase": 0,
+      "oxygen_units": 2997,
+      "schema_version": 1
+    }
+  },
+  "provider-restored": {
+    "boundary": {
+      "Name": "arce_adapter_test:state_boundary",
+      "Properties": {
+        "open": "true"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 2998272,
+        "sha256": "65b522d4768b3906b37f6fc059942f07365c033bf203b72f34e2a095c4b0dace"
+      },
+      "world/level.dat": {
+        "bytes": 37953,
+        "sha256": "4130a1e10b385c09143137e67bb4acbbc1eb05c9bd4ae776c9095dd6d0771dcb"
+      }
+    },
+    "vent_block": {
+      "Name": "advancedrocketrycommunity:oxygen_vent",
+      "Properties": {
+        "lit": "false"
+      }
+    },
+    "vent_data": {
+      "empty_canisters": 0,
+      "energy": 37920,
+      "oxygen_canisters": 0,
+      "oxygen_phase": 0,
+      "oxygen_units": 2996,
+      "schema_version": 1
+    }
+  },
+  "provider-skipped": {
+    "boundary": {
+      "Name": "arce_adapter_test:state_boundary",
+      "Properties": {
+        "open": "true"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 2998272,
+        "sha256": "979ac1957f95e530c7816fda70e876b06a8721707ef06257aa802dcc03f7d1a0"
+      },
+      "world/level.dat": {
+        "bytes": 37954,
+        "sha256": "e0ab9608e3ca3ef0121bb23bc1f029e22ae707e684135b646c3b49e97c531669"
+      }
+    },
+    "vent_block": {
+      "Name": "advancedrocketrycommunity:oxygen_vent",
+      "Properties": {
+        "lit": "true"
+      }
+    },
+    "vent_data": {
+      "empty_canisters": 0,
+      "energy": 37920,
+      "oxygen_canisters": 0,
+      "oxygen_phase": 14,
+      "oxygen_units": 2996,
+      "schema_version": 1
+    }
+  },
+  "setup-reload": {
+    "boundary": {
+      "Name": "arce_adapter_test:state_boundary",
+      "Properties": {
+        "open": "true"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 2994176,
+        "sha256": "7c46612da5217aaa24cdc1f20b24f3334904631c4867965f96b6d05523a74982"
+      },
+      "world/level.dat": {
+        "bytes": 37953,
+        "sha256": "d5d07bc690e37ed2d32c19a547794f2bde1f417715497c8353d52f7f6a7745e8"
+      }
+    },
+    "vent_block": {
+      "Name": "advancedrocketrycommunity:oxygen_vent",
+      "Properties": {
+        "lit": "false"
+      }
+    },
+    "vent_data": {
+      "empty_canisters": 0,
+      "energy": 38600,
+      "oxygen_canisters": 0,
+      "oxygen_phase": 0,
+      "oxygen_units": 2997,
+      "schema_version": 1
+    }
+  }
+}

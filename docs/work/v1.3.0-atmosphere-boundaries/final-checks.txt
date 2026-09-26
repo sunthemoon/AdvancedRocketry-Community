@@ -1,0 +1,4 @@
+[PASS] Markdown relative links resolve (1321 checked)
+[PASS] No forbidden legacy source or unapproved binary found; applicable source-resource allowlists match (1 wrapper JAR and 7 v0.0.1 evidence screenshots verified)
+[PASS] No case-insensitive path collisions found
+Summary: 3 passed, 0 pending, 0 warnings, 0 failed
