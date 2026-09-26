@@ -8,8 +8,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ApiVersionsTest {
     @Test
-    void currentVersionIsTheInitialPublicContract() {
-        assertEquals(new ApiVersion(1, 0), ApiVersions.current());
+    void currentVersionIncludesTheFrozenRocketContract() {
+        assertEquals(new ApiVersion(1, 1), ApiVersions.current());
+    }
+
+    @Test
+    void currentHostSupportsPreviousAndCurrentMinorButRejectsFutureMinor() {
+        assertEquals(ApiCompatibility.COMPATIBLE,
+                ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 0)));
+        assertEquals(ApiCompatibility.COMPATIBLE,
+                ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 1)));
+        assertEquals(ApiCompatibility.MINOR_TOO_OLD,
+                ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 2)));
     }
 
     @Test
