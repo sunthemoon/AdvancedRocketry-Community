@@ -1,0 +1,6 @@
+server\first-start-full.txt {"client_linkage_failure_count": 0, "error_count": 0, "fatal_count": 0, "project_error_count": 0, "project_fatal_count": 0, "project_warning_count": 0, "warning_count": 25}
+server\restart-full.txt {"client_linkage_failure_count": 0, "error_count": 0, "fatal_count": 0, "project_error_count": 0, "project_fatal_count": 0, "project_warning_count": 0, "warning_count": 10}
+server\v050-rocket-assembled-full.txt {"client_linkage_failure_count": 0, "error_count": 0, "fatal_count": 0, "project_error_count": 0, "project_fatal_count": 0, "project_warning_count": 0, "warning_count": 10}
+server\v050-rocket-persisted-full.txt {"client_linkage_failure_count": 0, "error_count": 0, "fatal_count": 0, "project_error_count": 0, "project_fatal_count": 0, "project_warning_count": 0, "warning_count": 10}
+server\v050-rocket-recovered-full.txt {"client_linkage_failure_count": 0, "error_count": 0, "fatal_count": 0, "project_error_count": 0, "project_fatal_count": 0, "project_warning_count": 0, "warning_count": 10}
+Port no longer listening; repository helper SHA256 recorded

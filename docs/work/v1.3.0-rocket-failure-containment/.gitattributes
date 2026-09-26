@@ -1,0 +1,5 @@
+# Preserve original verification capture bytes and archive digests.
+*.txt -text -whitespace
+*.json -text whitespace=cr-at-eol
+*.dat -text
+*.zip -text

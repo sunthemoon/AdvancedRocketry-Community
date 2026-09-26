@@ -1,0 +1,5 @@
+[PASS] Packaged server assembled a four-block rocket through server authority
+[PASS] Rocket entity identity, snapshot hash, and NBT persisted across restart
+[PASS] Stale pre-commit transaction recovered exact blocks and chest items
+[PASS] Artifact SHA-256: d9687101d868b3dca5ce45d263547835faed3a333cdcc1ad50ff7b6d6ed01394
+[PASS] Evidence: C:\Users\Administrator\AppData\Local\Temp\arce-v130-rocket-restart-6c762934334d46bc9c76bd782ba8d9b3\rocket-evidence

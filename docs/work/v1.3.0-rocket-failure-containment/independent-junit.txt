@@ -1,0 +1,36 @@
+HEAD=01bcb9222a436be6e4224274459db612d7880fe4
+COMMAND=.\gradlew.bat test --tests *RocketTransactionExceptionTest --tests *RocketBlockRecoveryTest --tests *RocketTransactionsTest --tests *RocketTransactionRecoveryReadinessTest --tests *RocketRecoveryDecisionTest --offline --no-daemon --no-build-cache
+JAVA_HOME=C:\Program Files\Java\jdk-17.0.7
+BEFORE=[{"Name":"advancedrocketry-community-1.20.1-1.3.0-dev-api.jar","SHA256":"8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5"},{"Name":"advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar","SHA256":"d3fc18c5065e30c8073db966814f44196e39d492322dad7416ae68743cc0dd33"},{"Name":"advancedrocketry-community-1.20.1-1.3.0-dev.jar","SHA256":"d9687101d868b3dca5ce45d263547835faed3a333cdcc1ad50ff7b6d6ed01394"}]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileApiJava UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :apiJar UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+> Task :test
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 25s
+12 actionable tasks: 4 executed, 8 up-to-date
+EXIT=0; ELAPSED_SECONDS=25.5327393
+AFTER=[{"Name":"advancedrocketry-community-1.20.1-1.3.0-dev-api.jar","SHA256":"8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5"},{"Name":"advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar","SHA256":"d3fc18c5065e30c8073db966814f44196e39d492322dad7416ae68743cc0dd33"},{"Name":"advancedrocketry-community-1.20.1-1.3.0-dev.jar","SHA256":"d9687101d868b3dca5ce45d263547835faed3a333cdcc1ad50ff7b6d6ed01394"}]
+SUITES=[{"Suite":"io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketBlockRecoveryTest","Tests":5,"Failures":0,"Errors":0,"Skipped":0},{"Suite":"io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest","Tests":10,"Failures":0,"Errors":0,"Skipped":0},{"Suite":"io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRecoveryDecisionTest","Tests":3,"Failures":0,"Errors":0,"Skipped":0},{"Suite":"io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionExceptionTest","Tests":6,"Failures":0,"Errors":0,"Skipped":0},{"Suite":"io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest","Tests":14,"Failures":0,"Errors":0,"Skipped":0}]
