@@ -1,0 +1,50 @@
+[
+  {
+    "action": "owned WM_MOUSEMOVE",
+    "x": 237,
+    "y": 119,
+    "pid": 14752,
+    "screenshot": {
+      "file": "precision-catalyst-tooltip.png",
+      "bytes": 108751,
+      "sha256": "fcee31483df0bc0e175d9b56c1dc49eb994ddeffe864b194561bdab691aafaa7",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    }
+  },
+  {
+    "action": "owned WM_MOUSEMOVE",
+    "x": 580,
+    "y": 225,
+    "pid": 14752,
+    "screenshot": {
+      "file": "precision-comparator-tooltip.png",
+      "bytes": 106735,
+      "sha256": "e8f8beedb0ff26a696e1d038e681455ca51ff301dd544c0edf1e513b50ef9bbc",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    }
+  },
+  {
+    "action": "owned WM_MOUSEMOVE",
+    "x": 580,
+    "y": 385,
+    "pid": 14752,
+    "screenshot": {
+      "file": "precision-circuit-tooltip.png",
+      "bytes": 110772,
+      "sha256": "7ed93bf89044a64ed3c5816e21b427f2ee8c398c978eb205c73faf4122a382e1",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    }
+  }
+]

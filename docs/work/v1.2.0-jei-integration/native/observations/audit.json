@@ -1,0 +1,148 @@
+{
+  "screenshots_checked": 11,
+  "all_match_native_files": true,
+  "session_errors": [],
+  "processes": [
+    {
+      "exit_code": 0,
+      "pid": 14752,
+      "role": "client"
+    },
+    {
+      "exit_code": 0,
+      "pid": 21648,
+      "role": "server"
+    }
+  ],
+  "registered_receipts": [
+    [
+      168,
+      "[18:55:46] [Render thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei machine_recipes rolling=1 precision=2"
+    ]
+  ],
+  "error_lines": {
+    "client": 0,
+    "server": 0
+  },
+  "executed_driver_sha256": "d9da97eb71fdba20d80c219f984fa298b17c50e8edc626ea4e9d5ad6fb889904",
+  "post_review_driver_sha256": "8654964aa86d62bfefd92cf62b54f84d5042741bbd77f697f5a3285231dc667b",
+  "post_review_driver_runtime_tested": false,
+  "helper_hashes": {
+    "scripts\\run_dedicated_server_smoke.py": "6503c3d03594abb92d8d48bfb20c6c6245707dda98963e6f77a78bdd423b2f7d",
+    "scripts\\v100_compatibility_runtime.py": "6a301dbb665237eea46f2b0ceecd0adb6e858fde58830b3383378e1221c2d901",
+    "scripts\\run_v100_compatibility_matrix.py": "9dae3e7a8dea21d9ce2bc6782277d452773b5c3d70ff8b910fc32f9df156946c",
+    "docs\\work\\v1.0.0-native-reconnect\\native\\arce-console-ui-control.py": "2c065cdca8db2555fcf011214ba8766f15eb71b2d35936a8f2574ad647163a56"
+  },
+  "screenshot_records": [
+    {
+      "bytes": 56722,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "environment.png",
+      "sha256": "0cf59d8c53836a8f3b0c6bd6d4373aeb7e46d95d7e6b22cc93d5dda93f537c8b",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 40390,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "rolling-menu.png",
+      "sha256": "67b1d9319802288faeb65b95cc186ce5d3a18c2aa8aed24a4171d41aecc5db39",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 109969,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "rolling-menu-visible.png",
+      "sha256": "36a3097f64c7dacd7653185d4ddbb98f4391512a11fb9cddbcf9afeb40b16cb6",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 112051,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "rolling-jei-from-menu.png",
+      "sha256": "faa907ebaefd2e3b77d8d2587855db1a7d7064da2c899a05c0e4ed76e80f35bd",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 93560,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "precision-menu.png",
+      "sha256": "2e8b06bb2fd2da28bb6adac7964358cfc2298433cf0f54f464d13c25c65393b7",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "bytes": 107010,
+      "client_size": [
+        960,
+        540
+      ],
+      "file": "precision-jei-from-menu.png",
+      "sha256": "0277b40e37002a7aeaad3a0c5375d48bc3d9082804322f94b0b3a2cf49efbcb5",
+      "source": "native Minecraft F2 screenshot"
+    },
+    {
+      "file": "rolling-fluid-tooltip.png",
+      "bytes": 113610,
+      "sha256": "c31573e5cb55c9af49266f3409757ff424d57023211e80e7f75807d8ddc998f2",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    },
+    {
+      "file": "precision-catalyst-tooltip.png",
+      "bytes": 108751,
+      "sha256": "fcee31483df0bc0e175d9b56c1dc49eb994ddeffe864b194561bdab691aafaa7",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    },
+    {
+      "file": "precision-comparator-tooltip.png",
+      "bytes": 106735,
+      "sha256": "e8f8beedb0ff26a696e1d038e681455ca51ff301dd544c0edf1e513b50ef9bbc",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    },
+    {
+      "file": "precision-circuit-tooltip.png",
+      "bytes": 110772,
+      "sha256": "7ed93bf89044a64ed3c5816e21b427f2ee8c398c978eb205c73faf4122a382e1",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    },
+    {
+      "file": "rolling-catalyst-tooltip.png",
+      "bytes": 114205,
+      "sha256": "93ff4284be3eee4b284ca615627f84ea790534749548d57a2afcf182ba7faab9",
+      "source": "native Minecraft F2 screenshot",
+      "client_size": [
+        960,
+        540
+      ]
+    }
+  ]
+}

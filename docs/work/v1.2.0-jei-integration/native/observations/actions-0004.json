@@ -1,0 +1,306 @@
+[
+  {
+    "action": {
+      "action": "server",
+      "command": "gamemode creative V120Jei"
+    },
+    "at": "2026-09-26T10:56:12.455470+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "time set day"
+    },
+    "at": "2026-09-26T10:56:12.455502+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "weather clear"
+    },
+    "at": "2026-09-26T10:56:12.455516+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "tp V120Jei 0.5 -60 -2.5 0 20"
+    },
+    "at": "2026-09-26T10:56:12.455525+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 2
+    },
+    "at": "2026-09-26T10:56:12.455534+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "setblock 0 -60 0 advancedrocketrycommunity:rolling_machine[facing=north]"
+    },
+    "at": "2026-09-26T10:56:14.456139+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "setblock 10 -60 0 advancedrocketrycommunity:precision_assembler[facing=north]"
+    },
+    "at": "2026-09-26T10:56:14.456228+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "focus"
+    },
+    "at": "2026-09-26T10:56:14.456241+00:00",
+    "focused": false,
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "key",
+      "key": 114
+    },
+    "at": "2026-09-26T10:56:14.456386+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:56:14.537034+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "shot",
+      "name": "environment.png"
+    },
+    "at": "2026-09-26T10:56:15.537472+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "key",
+      "key": 114
+    },
+    "at": "2026-09-26T10:56:15.820634+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "click",
+      "right": true,
+      "x": 480,
+      "y": 270
+    },
+    "at": "2026-09-26T10:56:15.901134+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:56:16.061728+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "shot",
+      "name": "rolling-menu.png"
+    },
+    "at": "2026-09-26T10:56:17.062037+00:00",
+    "source": "0001.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "fill -4 -60 -6 14 -55 5 minecraft:air"
+    },
+    "at": "2026-09-26T10:56:54.855285+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "fill -4 -61 -6 14 -61 5 minecraft:stone"
+    },
+    "at": "2026-09-26T10:56:54.855322+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "setblock 0 -60 0 advancedrocketrycommunity:rolling_machine[facing=north]"
+    },
+    "at": "2026-09-26T10:56:54.855338+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "setblock 10 -60 0 advancedrocketrycommunity:precision_assembler[facing=north]"
+    },
+    "at": "2026-09-26T10:56:54.855351+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "tp V120Jei 0.5 -60 -2.5 0 20"
+    },
+    "at": "2026-09-26T10:56:54.855364+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 2
+    },
+    "at": "2026-09-26T10:56:54.855376+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "click",
+      "right": true,
+      "x": 480,
+      "y": 270
+    },
+    "at": "2026-09-26T10:56:56.855478+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:56:57.016503+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "shot",
+      "name": "rolling-menu-visible.png"
+    },
+    "at": "2026-09-26T10:56:58.017015+00:00",
+    "source": "0002.json"
+  },
+  {
+    "action": {
+      "action": "click",
+      "x": 522,
+      "y": 156
+    },
+    "at": "2026-09-26T10:57:17.012890+00:00",
+    "source": "0003.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:57:17.173381+00:00",
+    "source": "0003.json"
+  },
+  {
+    "action": {
+      "action": "shot",
+      "name": "rolling-jei-from-menu.png"
+    },
+    "at": "2026-09-26T10:57:18.173636+00:00",
+    "source": "0003.json"
+  },
+  {
+    "action": {
+      "action": "key",
+      "key": 27
+    },
+    "at": "2026-09-26T10:58:28.484722+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "key",
+      "key": 27
+    },
+    "at": "2026-09-26T10:58:28.565270+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "server",
+      "command": "tp V120Jei 10.5 -60 -2.5 0 20"
+    },
+    "at": "2026-09-26T10:58:28.645811+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:58:28.645858+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "click",
+      "right": true,
+      "x": 480,
+      "y": 270
+    },
+    "at": "2026-09-26T10:58:29.646235+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:58:29.806916+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "shot",
+      "name": "precision-menu.png"
+    },
+    "at": "2026-09-26T10:58:30.807379+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "click",
+      "x": 484,
+      "y": 196
+    },
+    "at": "2026-09-26T10:58:31.107210+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "wait",
+      "seconds": 1
+    },
+    "at": "2026-09-26T10:58:31.267689+00:00",
+    "source": "0004.json"
+  },
+  {
+    "action": {
+      "action": "shot",
+      "name": "precision-jei-from-menu.png"
+    },
+    "at": "2026-09-26T10:58:32.267872+00:00",
+    "source": "0004.json"
+  }
+]
