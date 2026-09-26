@@ -13,3 +13,10 @@ v1.2.0-jei-integration/native/observations/** -text -whitespace
 v1.2.0-rolling-test-fixtures/*.txt -text -whitespace
 v1.2.0-rolling-test-fixtures/*.log -text -whitespace
 v1.2.0-rolling-test-fixtures/*.json -text -whitespace
+# V1.3 raw command/JUnit captures; hand-authored reports retain normal attributes.
+v1.3.0-api-version/evidence/** -text -whitespace
+# Previously referenced historical captures backfilled byte-for-byte.
+v1.0.0-cancel-diagnostic/verification/gametest-native.log -text -whitespace
+v1.0.0-console-presentation/verification/gametest-native.log -text -whitespace
+v1.0.0-late-frame/verification/gametest-native.log -text -whitespace
+v1.0.0-station-duo/verification/attempt-1/server-latest.log -text -whitespace
