@@ -1,0 +1,21 @@
+test_actual_candidate_world_chunk_matches_report (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_actual_candidate_world_chunk_matches_report) ... ok
+test_compressed_size_and_trailing_bytes_are_bounded (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_compressed_size_and_trailing_bytes_are_bounded) ... ok
+test_create_refuses_existing_output (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_create_refuses_existing_output) ... ok
+test_create_rejects_wrong_region_without_writing (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_create_rejects_wrong_region_without_writing) ... ok
+test_duplicate_identity_or_foreign_binding_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_duplicate_identity_or_foreign_binding_is_rejected) ... ok
+test_extra_file_or_manifest_provenance_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_extra_file_or_manifest_provenance_is_rejected) ... ok
+test_linked_parent_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_linked_parent_is_rejected) ... ok
+test_rehashed_dataversion_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_dataversion_is_rejected) ... ok
+test_rehashed_energy_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_energy_is_rejected) ... ok
+test_rehashed_fluid_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_fluid_is_rejected) ... ok
+test_rehashed_output_item_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_output_item_is_rejected) ... ok
+test_rehashed_rotation_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_rotation_is_rejected) ... ok
+test_rehashed_summary_cannot_change_batch_ledger (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_summary_cannot_change_batch_ledger) ... ok
+test_rehashed_transaction_id_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_rehashed_transaction_id_is_rejected) ... ok
+test_summary_cannot_claim_dirty_artifact_as_clean_commit (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_summary_cannot_claim_dirty_artifact_as_clean_commit) ... ok
+test_tampered_chunk_hash_is_rejected (tests.test_v120_rolling_world_fixture.RollingWorldFixtureTests.test_tampered_chunk_hash_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.168s
+
+OK

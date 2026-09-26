@@ -321,17 +321,11 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
     }
 
     private static void replaceStoredItem(GameTestHelper helper, BlockPos position, ItemStack stack) {
-        var port = PrecisionAssemblerGameTests.port(helper, position);
-        CompoundTag saved = port.saveWithFullMetadata();
-        saved.getCompound("arce_precision_port").put("item",
-                stack.isEmpty() ? new CompoundTag() : stack.save(new CompoundTag()));
-        port.load(saved);
+        PrecisionAssemblerGameTests.replaceControllerItem(helper, position, stack);
     }
 
     private static int storedCount(GameTestHelper helper, BlockPos position) {
-        CompoundTag root = PrecisionAssemblerGameTests.port(helper, position)
-                .saveWithFullMetadata().getCompound("arce_precision_port");
-        return ItemStack.of(root.getCompound("item")).getCount();
+        return PrecisionAssemblerGameTests.storedControllerItemCount(helper, position);
     }
 
     private static void insert(GameTestHelper helper, BlockPos position, net.minecraft.world.item.Item item) {

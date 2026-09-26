@@ -1,0 +1,11 @@
+{
+  "before_sha256": "92821ec3273a7b87c2892003ca5321f8cf65105a41572a3f730c3582d67c2000",
+  "after_sha256": "709f157c49f25b006b09f1c52908a42c0ef6c4bbdaa215e68451ce6f906a27c2",
+  "added": [
+    "io/github/sunthemoon/advancedrocketrycommunity/gametest/RollingMachineGameTestFixtures.class"
+  ],
+  "removed": [],
+  "changed": [
+    "io/github/sunthemoon/advancedrocketrycommunity/gametest/RollingMachineGameTests.class"
+  ]
+}

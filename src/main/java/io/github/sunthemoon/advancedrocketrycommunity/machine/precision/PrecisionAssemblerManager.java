@@ -10,10 +10,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternTransform;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -28,6 +31,7 @@ public final class PrecisionAssemblerManager {
     public static final int MAX_CONTROLLERS_PER_TICK = 32;
     public static final int MAX_CELLS_PER_TICK = 8_192;
     public static final int MAX_PROCESSES_PER_TICK = 256;
+    public static final int MAX_MIGRATIONS_PER_TICK = 4;
 
     private final MultiblockPatternCatalogManager patterns;
     private final MultiblockFootprintIndex footprints = new MultiblockFootprintIndex(
@@ -272,6 +276,8 @@ public final class PrecisionAssemblerManager {
     private void processReady(MinecraftServer server) {
         Iterator<MultiblockControllerKey> iterator = processReady.iterator();
         List<MultiblockControllerKey> requeue = new ArrayList<>();
+        Map<ServerLevel, List<PendingMigration>> migrations = new LinkedHashMap<>();
+        int migrationCount = 0;
         int processed = 0;
         while (iterator.hasNext() && processed < MAX_PROCESSES_PER_TICK) {
             MultiblockControllerKey key = iterator.next();
@@ -287,6 +293,16 @@ public final class PrecisionAssemblerManager {
                 continue;
             }
             try {
+                if (controller.needsResourceMigration()) {
+                    if (migrationCount < MAX_MIGRATIONS_PER_TICK) {
+                        migrations.computeIfAbsent(level, ignored -> new ArrayList<>())
+                                .add(new PendingMigration(key, controller));
+                        migrationCount++;
+                    } else {
+                        requeue.add(key);
+                    }
+                    continue;
+                }
                 if (controller.tickProcess(level)) {
                     requeue.add(key);
                 }
@@ -299,7 +315,126 @@ public final class PrecisionAssemblerManager {
             }
         }
         requeue.forEach(this::enqueueProcess);
+        migrations.forEach(this::migrateLegacyItems);
     }
+
+    private void migrateLegacyItems(ServerLevel level, List<PendingMigration> candidates) {
+        List<PendingMigration> prepared = new ArrayList<>();
+        for (PendingMigration candidate : candidates) {
+            try {
+                if (migrationIsLoaded(level, candidate)
+                        && candidate.controller().prepareLegacyItems(level)) {
+                    // ChunkMap clears unsaved before serialization, even if saving fails.
+                    // An explicit retry must schedule the validated snapshot again.
+                    candidate.controller().setChanged();
+                    prepared.add(candidate);
+                }
+            } catch (RuntimeException exception) {
+                AdvancedRocketryCommunity.LOGGER.error(
+                        "Precision Assembler legacy Item preparation failed at {} in {}",
+                        candidate.key().position(), candidate.key().level().location(), exception
+                );
+            }
+        }
+        if (prepared.isEmpty() || !flushMigrationBarrier(level, "controller snapshot")) {
+            return;
+        }
+        PrecisionAssemblerMigrationSaveVerifier firstSave = new PrecisionAssemblerMigrationSaveVerifier(level);
+        List<PendingMigration> durablePrepared = new ArrayList<>();
+        for (PendingMigration candidate : prepared) {
+            if (migrationIsLoaded(level, candidate)
+                    && migrationSaved(level, candidate, firstSave, false)) {
+                durablePrepared.add(candidate);
+            }
+        }
+        List<PendingMigration> marked = new ArrayList<>();
+        for (PendingMigration candidate : durablePrepared) {
+            try {
+                if (migrationIsLoaded(level, candidate)
+                        && candidate.controller().markLegacyPorts(level)) {
+                    marked.add(candidate);
+                }
+            } catch (RuntimeException exception) {
+                AdvancedRocketryCommunity.LOGGER.error(
+                        "Precision Assembler legacy Item marker update failed at {} in {}",
+                        candidate.key().position(), candidate.key().level().location(), exception
+                );
+            }
+        }
+        if (marked.isEmpty() || !flushMigrationBarrier(level, "port markers")) {
+            return;
+        }
+        PrecisionAssemblerMigrationSaveVerifier secondSave = new PrecisionAssemblerMigrationSaveVerifier(level);
+        for (PendingMigration candidate : marked) {
+            try {
+                if (migrationIsLoaded(level, candidate)
+                        && migrationSaved(level, candidate, secondSave, true)
+                        && candidate.controller().activateMigratedItems(level)) {
+                    enqueueProcess(candidate.key());
+                }
+            } catch (RuntimeException exception) {
+                AdvancedRocketryCommunity.LOGGER.error(
+                        "Precision Assembler legacy Item activation failed at {} in {}",
+                        candidate.key().position(), candidate.key().level().location(), exception
+                );
+            }
+        }
+    }
+
+    private static boolean migrationSaved(
+            ServerLevel level,
+            PendingMigration candidate,
+            PrecisionAssemblerMigrationSaveVerifier verifier,
+            boolean markersRequired
+    ) {
+        try {
+            boolean confirmed = verifier.controllerSaved(candidate.controller());
+            if (confirmed && markersRequired) {
+                Optional<PrecisionAssemblerPortSet> ports = PrecisionAssemblerPortSet.resolveForMigration(
+                        level, candidate.controller());
+                confirmed = ports.isPresent() && verifier.portsSaved(ports.orElseThrow());
+            }
+            if (!confirmed) {
+                AdvancedRocketryCommunity.LOGGER.error(
+                        "Precision Assembler migration {} roots are not confirmed on disk at {} in {}: {}",
+                        markersRequired ? "port marker" : "controller snapshot",
+                        candidate.key().position(), candidate.key().level().location(), verifier.lastMismatch()
+                );
+            }
+            return confirmed;
+        } catch (IOException | RuntimeException exception) {
+            AdvancedRocketryCommunity.LOGGER.error(
+                    "Precision Assembler migration {} save readback failed at {} in {}",
+                    markersRequired ? "port marker" : "controller snapshot",
+                    candidate.key().position(), candidate.key().level().location(), exception
+            );
+            return false;
+        }
+    }
+
+    private static boolean migrationIsLoaded(ServerLevel level, PendingMigration candidate) {
+        return level.hasChunkAt(candidate.key().position())
+                && !candidate.controller().isRemoved()
+                && level.getBlockEntity(candidate.key().position()) == candidate.controller();
+    }
+
+    private static boolean flushMigrationBarrier(ServerLevel level, String phase) {
+        try {
+            level.getChunkSource().save(true);
+            return true;
+        } catch (RuntimeException exception) {
+            AdvancedRocketryCommunity.LOGGER.error(
+                    "Precision Assembler legacy Item migration {} save barrier failed in {}",
+                    phase, level.dimension().location(), exception
+            );
+            return false;
+        }
+    }
+
+    private record PendingMigration(
+            MultiblockControllerKey key,
+            PrecisionAssemblerBlockEntity controller
+    ) {}
 
     private int patternCellCount() {
         return definition().map(value -> value.size().volume() * 3).orElse(1);

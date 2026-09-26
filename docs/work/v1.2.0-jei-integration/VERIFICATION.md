@@ -1,5 +1,10 @@
 # v1.2.0 optional JEI integration checkpoint
 
+This file preserves the earlier implementation checkpoint. The subsequent
+[scoped client inspection](CLIENT-VERIFICATION.md) verifies INT-02's default
+recipe, catalyst and menu-click behavior on the later `92821ec3…` artifact.
+Its real-GPU observations do not replace the full V1/V2 campaign.
+
 ```yaml
 version: v1.2.0
 slice: V120-INT

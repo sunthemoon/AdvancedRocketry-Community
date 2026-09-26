@@ -1,0 +1,46 @@
+[PASS] Required governance files and 12 version plans exist
+[PASS] Project identity is APPROVED and expected values are present
+[PASS] README, NOTICE, branding, and issue intake state unofficial status
+[PASS] LICENSE preserves the original notice and community attribution
+[PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
+[PASS] Markdown relative links resolve (907 checked)
+[PASS] No forbidden legacy source or unapproved binary found; applicable source-resource allowlists match (1 wrapper JAR and 7 v0.0.1 evidence screenshots verified)
+[PASS] No case-insensitive path collisions found
+[PASS] Issue template files have the required dependency-free structure
+[PASS] Repository governance workflow invokes validators in enabled blocking run steps
+[PASS] Forge baseline and advisory latest-lane commands are in enabled blocking run steps
+[PASS] v0.0.2 bootstrap provenance validates 11 imported targets and 2 local resources
+[PASS] v0.0.2 final-G0 records are mechanically valid; source=APPROVED, README=APPROVED; Gate not computed
+[PASS] v0.0.2 client evidence bundle is structurally valid and mechanically READY_FOR_HUMAN_GATE_REVIEW
+[PASS] v0.0.2 ADR-005 is ACCEPTED and matches canonical client evidence
+[PASS] v0.0.2 Gate status does not overstate final-G0, G4, G8, or G9 evidence
+[PASS] v0.0.2 release checksums cover 36 evidence files and match the JAR manifest
+[PASS] v0.1.0 imported and generated resources have exact provenance, hashes, and references
+[PASS] v0.1.0 artifact, provenance, client, dedicated-server, and checksum evidence is valid
+[PASS] v0.1.0 Gate status does not overstate mechanical or human evidence
+[PASS] v0.2.0 DataGen resources match the bounded authored-resource inventory
+[PASS] v0.3.0 DataGen resources match the exact fixed-world inventory
+[PASS] v0.4.0 DataGen resources match the exact atmosphere inventory
+[PASS] v0.5.0 DataGen resources match the exact rocket inventory
+[PASS] v0.6.0 DataGen resources match the exact fuel inventory
+[PASS] v0.7.0 DataGen resources match the exact station inventory
+[PASS] v0.8.0 DataGen resources match the exact satellite inventory
+[PASS] v0.9.0 migration fixtures match the exact hash inventory
+[PASS] v0.9.0 resource and localization audit covers 250 files and 317 bilingual keys
+[PASS] v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid
+[PASS] v0.2.0 Gate status does not overstate machine-slice evidence
+[PASS] v0.3.0 artifact, celestial, persistence, multiplayer, client, and checksum evidence is valid
+[PASS] v0.3.0 Gate status is evidence-bound in docs\releases\v0.3.0\GATE-STATUS.md
+[PASS] v0.4.0 artifact, atmosphere, persistence, performance, multiplayer, client, and checksum evidence is valid
+[PASS] v0.4.0 Gate status is evidence-bound in docs\releases\v0.4.0\GATE-STATUS.md
+[PASS] v0.5.0 artifact, rocket, persistence, performance, client, and checksum evidence is valid
+[PASS] v0.5.0 Gate status is evidence-bound in docs\releases\v0.5.0\GATE-STATUS.md
+[PASS] v0.6.0 artifact, flight, recovery, multiplayer, performance, and checksum evidence is valid
+[PASS] v0.6.0 Gate status is evidence-bound in docs\releases\v0.6.0\GATE-STATUS.md
+[PASS] v0.7.0 artifact, station, recovery, multiplayer, performance, and checksum evidence is valid
+[PASS] v0.7.0 Gate status is evidence-bound in docs\releases\v0.7.0\GATE-STATUS.md
+[PASS] v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid
+[PASS] v0.8.0 Gate status is evidence-bound in docs\releases\v0.8.0\GATE-STATUS.md
+[PASS] v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid
+[PASS] v0.9.0 Gate status is evidence-bound in docs\releases\v0.9.0\GATE-STATUS.md
+Summary: 45 passed, 0 pending, 0 warnings, 0 failed

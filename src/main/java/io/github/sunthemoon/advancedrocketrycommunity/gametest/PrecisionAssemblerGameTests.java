@@ -32,6 +32,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -269,11 +271,7 @@ public final class PrecisionAssemblerGameTests {
     public static void blockedOutputAndMissingEnergyPreserveInputs(GameTestHelper helper) {
         placeStructure(helper);
         helper.runAtTickTime(8, () -> {
-            PrecisionAssemblerPortBlockEntity output = port(helper, OUTPUT_0);
-            CompoundTag saved = output.saveWithFullMetadata();
-            saved.getCompound("arce_precision_port").put("item",
-                    new ItemStack(ModItems.ADVANCED_CIRCUIT.get(), 64).save(new CompoundTag()));
-            output.load(saved);
+            replaceControllerItem(helper, OUTPUT_0, new ItemStack(ModItems.ADVANCED_CIRCUIT.get(), 64));
             insertInputs(helper);
         });
         helper.runAtTickTime(16, () -> {
@@ -383,6 +381,37 @@ public final class PrecisionAssemblerGameTests {
         helper.assertTrue(port(helper, OUTPUT_1).getCapability(ForgeCapabilities.ITEM_HANDLER)
                 .resolve().orElseThrow().getStackInSlot(0).getCount() == 2,
                 "Second result was not produced exactly once");
+    }
+
+    static void replaceControllerItem(GameTestHelper helper, BlockPos portPosition, ItemStack replacement) {
+        PrecisionAssemblerBlockEntity machine = controller(helper);
+        CompoundTag saved = machine.saveWithFullMetadata();
+        ListTag items = saved.getCompound("arce_precision_resources").getList("items", Tag.TAG_COMPOUND);
+        items.set(controllerItemSlot(helper, portPosition),
+                replacement.isEmpty() ? new CompoundTag() : replacement.save(new CompoundTag()));
+        machine.load(saved);
+    }
+
+    static int storedControllerItemCount(GameTestHelper helper, BlockPos portPosition) {
+        CompoundTag resources = controller(helper).saveWithFullMetadata()
+                .getCompound("arce_precision_resources");
+        ListTag items = resources.getList("items", Tag.TAG_COMPOUND);
+        return ItemStack.of(items.getCompound(controllerItemSlot(helper, portPosition))).getCount();
+    }
+
+    private static int controllerItemSlot(GameTestHelper helper, BlockPos portPosition) {
+        String channel = port(helper, portPosition).assignedChannel().orElseThrow();
+        for (int index = 0; index < 5; index++) {
+            if (channel.equals("item_input_" + index)) {
+                return index;
+            }
+        }
+        for (int index = 0; index < 2; index++) {
+            if (channel.equals("item_output_" + index)) {
+                return 5 + index;
+            }
+        }
+        throw new IllegalArgumentException("Position is not a Precision Item port");
     }
 
     private static ProcessResourceKey resource(String channel, net.minecraft.world.item.Item item) {

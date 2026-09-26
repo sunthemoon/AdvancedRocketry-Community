@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.OnDatapackSyncEvent;
@@ -25,6 +26,12 @@ public final class PrecisionAssemblerServerEvents {
     }
 
     public void onBlockBroken(BlockEvent.BreakEvent event) {
+        if (PrecisionAssemblerRemovalPolicy.blocksRemoval(event.getLevel(), event.getPos())) {
+            event.setCanceled(true);
+            event.getPlayer().displayClientMessage(Component.translatable(
+                    "message.advancedrocketrycommunity.precision_assembler.removal_blocked"), true);
+            return;
+        }
         mark(event.getLevel(), event.getPos());
     }
 

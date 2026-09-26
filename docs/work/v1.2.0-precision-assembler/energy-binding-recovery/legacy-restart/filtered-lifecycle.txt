@@ -1,0 +1,6 @@
+[17:59:38] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.410s)! For help, type "help"
+[17:59:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_PRECISION_REPORT controller=143,80,143 formation=FORMED generation=1 process=IDLE failure=NONE progress=0 total=0 inputs=minecraft:air:0,minecraft:air:0,minecraft:air:0,minecraft:air:0,minecraft:air:0 outputs=advancedrocketrycommunity:advanced_circuit:1,minecraft:redstone_torch:2 energy=800 revision=5 journal=none last_applied=06cb2c96-2b03-4e07-9fea-49da84e2f778
+[17:59:41] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[17:59:58] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.471s)! For help, type "help"
+[17:59:58] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_PRECISION_REPORT controller=143,80,143 formation=FORMED generation=1 process=IDLE failure=NONE progress=0 total=0 inputs=minecraft:air:0,minecraft:air:0,minecraft:air:0,minecraft:air:0,minecraft:air:0 outputs=advancedrocketrycommunity:advanced_circuit:1,minecraft:redstone_torch:2 energy=800 revision=5 journal=none last_applied=06cb2c96-2b03-4e07-9fea-49da84e2f778
+[17:59:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game

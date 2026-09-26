@@ -1,0 +1,215 @@
+{
+  "observed_date": "2026-09-26",
+  "branch": "codex/v1.2.0-precision-assembler",
+  "head": "3dbe6884e6d8bff3c676c4f7cebee0824b507602",
+  "worktree_has_uncommitted_implementation": true,
+  "runtime_jar_sha256": "709f157c49f25b006b09f1c52908a42c0ef6c4bbdaa215e68451ce6f906a27c2",
+  "main_java_file_count": 580,
+  "project_api_packages": [],
+  "local_link_check": {
+    "documents": 3,
+    "checked": 132,
+    "missing": 0
+  },
+  "referenced_sources": [
+    {
+      "path": "build.gradle",
+      "sha256": "3320b6c4554271e19778bb064db9eb9f9bfda2044c0e6d2b86cea3ddf3fb3ea5"
+    },
+    {
+      "path": "settings.gradle",
+      "sha256": "b2c41bf9515febafc2b14068552dc09eb32707c6fc285ca5137d7531aa09f70d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "829145c46cb1bd77e334eaefac4414e6663119957fb21ec711aa61c403b0b355"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/AtmosphereLimits.java",
+      "sha256": "f9f7c6b0c64a9ae9d0aae89a7f39da4e2a37071bc24524da38791d426d74229a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/SpaceSuitOxygen.java",
+      "sha256": "1ca2be35bf637bf689481f391ba041d7d10f48eda79d4405e550b3f5e23df96d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/network/LifeSupportNetwork.java",
+      "sha256": "d6c55c5a41c2f47f79c3ca232712522ac8117f9ce122e1af011db330a113141f"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereLevelService.java",
+      "sha256": "03f202392629ca89ecb4062217a585158e1739c53b2af22ef9cf7743864ed0e2"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/AtmosphereManager.java",
+      "sha256": "92ce000b80cb0da09e333d39e2d7607ea19e7f10e1d0382bb422ad3a7bf32f0d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/PlayerLifeSupportService.java",
+      "sha256": "1cbd658eb41d3114267b7948be127f1058c9b505081ee48d5eae40ba16278000"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/server/ServerLevelVolumeWorldView.java",
+      "sha256": "c593dcc38052adb5d4cdd9a095887efdd81f4aac05ef9bd89b76354578c4f13a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/context/BodyContextResolver.java",
+      "sha256": "6be9e440186cb3eed1e6568679855de0a9d2ba63cbf7fd0d44cf370ec00848cf"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialNetwork.java",
+      "sha256": "76d93bc8caab1aa3b0eeef648f2bf4d21620cec79b308b3f08b20fc0f6317527"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialEnvironmentService.java",
+      "sha256": "c2514148f222b4be227d03245ec00aec22c06185bff377142fbe760aed32551b"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityController.java",
+      "sha256": "f0fbf68f426d4791f102d572847e906f1fd6a511102f5cda9dbea12997b6cc35"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketGameTests.java",
+      "sha256": "7f61db10a6a118376e8d40839f59b3464042f7922a2df56e8da35b1da9fa7dc6"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketBlockEntityAdapter.java",
+      "sha256": "68eeead459c1cf96aff4b2c38b46f04ee4a80eafacaaa892bf83f379e4409daa"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketBlockEntityAdapters.java",
+      "sha256": "0ffa0391a2400581d0483bedf013edb697663800a658f4f561e1cff159d3bb65"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/RocketForgeMetrics.java",
+      "sha256": "457542ddfb9787eff49442b5b2da08ff34d2ec5c3111551d3c158f370bb0bef3"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/ServerLevelRocketScanWorld.java",
+      "sha256": "49bfc66b4c4af72313c92bbcf8c3654ed9f2ef3b77c0c724c081739dff046158"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/ServerLevelRocketTransactionWorld.java",
+      "sha256": "701041712ee8364a59521d3177ce3e5544e5acfd1c2622473ca7462116698047"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/forge/VanillaContainerRocketAdapter.java",
+      "sha256": "cd963ca3f572320ff20248472e27a4485f8082e6a957075f8f9bd2ba1fd446de"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/fuel/FuelLoaderBlockEntity.java",
+      "sha256": "37030e0f0c1c922b23d8d240a0f3be542a2bf0ee2e65bd9e478f90ae9d120052"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/model/RocketBlockEntityPayload.java",
+      "sha256": "1f6c1153feefce7376cd17400772e3b30d48e8b4aa6831d2fe99d7214b784a8f"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightNetwork.java",
+      "sha256": "1f4595e00a7aceb407d4ab07bc65d9028964c9ca9dad6ce971580c75647c98fa"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketVisualNetwork.java",
+      "sha256": "c05dbf282be350c4a4757c2814248851f66503b6e4a59a2b56d015aa1440a0e2"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/RocketLimits.java",
+      "sha256": "2e639da81f819ae944b595c74ad4ff40132f2a160b8b67672b8fadd685337ff1"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+      "sha256": "eaa7510163e470325a996a31e516bc19ba8774f6e8ac5ae0adce09ec2ae7e25d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTargetContextService.java",
+      "sha256": "5052abe8fa9c826a86f02fc669b324b7bb4ef3532a363c88410e26e8f6c0e4a7"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketDisassemblyTransaction.java",
+      "sha256": "e7e525dafdf20205866a8b5e1c25a330bdbd06b429917974aef91e55432759f7"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java",
+      "sha256": "f8cbbbd8819dfa4dd11fe9dbd01b5eceda96311e2e1f6c11e0c3fd8d8b7b16a8"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteDefinition.java",
+      "sha256": "edd842b2ae38fd56df45ad97bcb490c4d1789200e3bf26685a4929bccdd317b2"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteLimits.java",
+      "sha256": "f0a1dea0afbfdfc38eb58e54b1222d94f133050855d1398148660863e5d95f83"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java",
+      "sha256": "4be09617e4a0f21fa57dbc0b108251cf3c5a832c94a3b39102268ebf0516fe59"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteCatalog.java",
+      "sha256": "28e7918c4b1f77d9b5ebc4f13baa33308b9fbdf4642bd09e2f56b1de3a5db1ed"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteCatalogDecoder.java",
+      "sha256": "ac976f1b426d0ac8d9801eadd5578450983106234357ca1263c66910c9ad11d9"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteCatalogManager.java",
+      "sha256": "424674325bee970c8f5407f892acf3f27e04a1be8043b3a864c6e83dbeb54b7e"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java",
+      "sha256": "2f79a2ddeb6af103baa96764625cbbf467ec668538229830ab2c31692fd9d157"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteRuntime.java",
+      "sha256": "aba7890ea894ae052dcc07a692043e336c45d5d5185465e7e546c5532d6f4587"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationEnvironmentProfile.java",
+      "sha256": "679726c28c09de1868dc466afc8e48fa53f117e60d37f8f0db8b2871d56ec098"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/SpaceSuitOxygenTest.java",
+      "sha256": "1cbeb9a9291a6080cf10be9478e335e8595d2306df99a63ee85d1e84030cbfaa"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/life/PlayerLifeSupportEngineTest.java",
+      "sha256": "d4a19a829a9a5be58b0bf0c44b01616eedd3e4c825573c5cb890a3e7dfc27c0f"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/context/BodyContextResolverTest.java",
+      "sha256": "60a8c807a64a87b7f225e129ea23fbba7d9b010b8b9ba358feab81366a107e31"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketSnapshotNbtCodecTest.java",
+      "sha256": "22fd035671c8c6f55d4a49f9d0d2eed23a722cd775dc4dc48c51ef4ed44f0c71"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/transaction/RocketTransactionsTest.java",
+      "sha256": "0fe90f0d0c68e6934f93b65ea53800960d97b8f93c9a4d97bcd61f17deb12a00"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistryTest.java",
+      "sha256": "44c178c030701d70351dbce305b2cb72596226d67677421aa49fe07453ce4c31"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/SatelliteCatalogDecoderTest.java",
+      "sha256": "9abb754c6f8e6bb90569cf2cfc8e6b265946614c8072c0ccf2de3e6debf78f23"
+    }
+  ],
+  "gradle_or_runtime_tests_rerun": false,
+  "planning_validation_exit": 0,
+  "diff_check_exit": 0,
+  "independent_reviews": [
+    {
+      "scope": "rocket, API baseline, satellite",
+      "findings": 0,
+      "local_links_checked": 50
+    },
+    {
+      "scope": "atmosphere, equipment, environment, proposed world-access boundary",
+      "findings": 0,
+      "local_links_checked": 13
+    }
+  ]
+}

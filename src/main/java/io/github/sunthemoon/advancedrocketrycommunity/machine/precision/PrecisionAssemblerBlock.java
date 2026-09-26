@@ -10,6 +10,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -82,6 +85,9 @@ public final class PrecisionAssemblerBlock extends BaseEntityBlock {
     ) {
         if (level instanceof ServerLevel serverLevel && !state.is(newState.getBlock())
                 && level.getBlockEntity(position) instanceof PrecisionAssemblerBlockEntity controller) {
+            if (!moved) {
+                controller.dropAllItemsForRemoval();
+            }
             PrecisionAssemblerRuntime.removeController(serverLevel, controller);
         }
         super.onRemove(state, level, position, newState, moved);
@@ -90,6 +96,25 @@ public final class PrecisionAssemblerBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public boolean canDropFromExplosion(BlockState state, BlockGetter level, BlockPos position, Explosion explosion) {
+        return !PrecisionAssemblerRemovalPolicy.blocksRemoval(level, position)
+                && super.canDropFromExplosion(state, level, position, explosion);
+    }
+
+    @Override
+    public void onBlockExploded(BlockState state, Level level, BlockPos position, Explosion explosion) {
+        if (!PrecisionAssemblerRemovalPolicy.blocksRemoval(level, position)) {
+            super.onBlockExploded(state, level, position, explosion);
+        }
+    }
+
+    @Override
+    public boolean canEntityDestroy(BlockState state, BlockGetter level, BlockPos position, Entity entity) {
+        return !PrecisionAssemblerRemovalPolicy.blocksRemoval(level, position)
+                && super.canEntityDestroy(state, level, position, entity);
     }
 
     @Nullable

@@ -12,7 +12,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-/** Independent schema-1 resource root for one physical Precision Assembler port. */
+/** Schema-1 legacy Item root or physically persistent Energy port root. */
 final class PrecisionAssemblerPortPersistence {
     static final String ROOT = "arce_precision_port";
     static final int SCHEMA_VERSION = 1;
@@ -110,7 +110,7 @@ final class PrecisionAssemblerPortPersistence {
                 && BuiltInRegistries.ITEM.getOptional(id).orElse(null) == stack.getItem();
     }
 
-    private static CompoundTag encodeItem(ItemStack item) {
+    static CompoundTag encodeItem(ItemStack item) {
         if (item.isEmpty()) {
             return new CompoundTag();
         }
@@ -124,7 +124,7 @@ final class PrecisionAssemblerPortPersistence {
         return encoded;
     }
 
-    private static ItemStack decodeItem(CompoundTag encoded) {
+    static ItemStack decodeItem(CompoundTag encoded) {
         if (encoded.isEmpty()) {
             return ItemStack.EMPTY;
         }

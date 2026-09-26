@@ -1,0 +1,16 @@
+{
+  "action": "owned WM_MOUSEMOVE",
+  "x": 414,
+  "y": 232,
+  "pid": 14752,
+  "screenshot": {
+    "file": "rolling-fluid-tooltip.png",
+    "bytes": 113610,
+    "sha256": "c31573e5cb55c9af49266f3409757ff424d57023211e80e7f75807d8ddc998f2",
+    "source": "native Minecraft F2 screenshot",
+    "client_size": [
+      960,
+      540
+    ]
+  }
+}

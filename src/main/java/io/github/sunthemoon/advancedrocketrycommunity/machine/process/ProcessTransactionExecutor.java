@@ -3,7 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.process;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Orders durable journal writes and performs idempotent final resource replacement. */
+/** Orders journal state transitions and performs idempotent final resource replacement. */
 public final class ProcessTransactionExecutor {
     private ProcessTransactionExecutor() {
     }

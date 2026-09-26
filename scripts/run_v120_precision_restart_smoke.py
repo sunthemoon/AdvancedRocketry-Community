@@ -159,6 +159,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--baseline-summary", type=Path, required=True)
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--tested-commit", required=True)
+    parser.add_argument("--tested-worktree", action="store_true",
+                        help="record the Git SHA as a base commit, not an exact tested commit")
     parser.add_argument("--java", default=default_java)
     parser.add_argument("--expected-version", default=EXPECTED_VERSION)
     parser.add_argument("--startup-timeout", type=float, default=240.0)
@@ -253,7 +255,9 @@ def main() -> int:
         summary = {
             "schema_version": 1, "version": "v1.2.0", "slice": "V120-PREC-06",
             "build": args.expected_version, "artifact_sha256": artifact_sha256,
-            "tested_implementation_commit": args.tested_commit,
+            "tested_implementation_commit": None if args.tested_worktree else args.tested_commit,
+            "implementation_base_commit": args.tested_commit,
+            "uncommitted_worktree": args.tested_worktree,
             "completed_at": datetime.now(timezone.utc).isoformat(),
             "java": java_version, "port": port, "same_world_verified": True,
             "fixture_crosses_chunk_boundary": True,

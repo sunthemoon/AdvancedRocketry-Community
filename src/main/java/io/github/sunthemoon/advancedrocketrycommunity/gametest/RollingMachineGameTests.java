@@ -1,15 +1,26 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.CONTROLLER;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.ENERGY_INPUT;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.FLUID_INPUT;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.ITEM_INPUT;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.ITEM_OUTPUT;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.allPorts;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.assertPortsValid;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.controller;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.futureRoot;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.placeStructure;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.port;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RollingMachineGameTestFixtures.remainingPorts;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockPartBinding;
-import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingValidationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockControllerNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockPartBindingNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnosticReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
-import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortBlockEntity;
@@ -43,12 +54,6 @@ import net.minecraftforge.items.IItemHandler;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RollingMachineGameTests {
-    private static final BlockPos CONTROLLER = new BlockPos(4, 2, 4);
-    private static final BlockPos ITEM_INPUT = new BlockPos(2, 2, 4);
-    private static final BlockPos FLUID_INPUT = new BlockPos(3, 2, 4);
-    private static final BlockPos ENERGY_INPUT = new BlockPos(5, 2, 4);
-    private static final BlockPos ITEM_OUTPUT = new BlockPos(6, 2, 4);
-
     private RollingMachineGameTests() {
     }
 
@@ -754,66 +759,5 @@ public final class RollingMachineGameTests {
             helper.assertTrue(!menu.stillValid(player), "Distant player retained Rolling Machine menu validity");
             helper.succeed();
         });
-    }
-
-    private static void placeStructure(GameTestHelper helper) {
-        for (int z = 0; z < 2; z++) {
-            for (int y = 0; y < 3; y++) {
-                for (int x = 0; x < 5; x++) {
-                    BlockPos position = new BlockPos(2 + x, 2 + y, 4 + z);
-                    helper.setBlock(position, ModBlocks.MACHINE_CASING.get());
-                }
-            }
-        }
-        helper.setBlock(ITEM_INPUT, ModBlocks.ROLLING_MACHINE_ITEM_INPUT_PORT.get());
-        helper.setBlock(FLUID_INPUT, ModBlocks.ROLLING_MACHINE_FLUID_INPUT_PORT.get());
-        helper.setBlock(ENERGY_INPUT, ModBlocks.ROLLING_MACHINE_ENERGY_INPUT_PORT.get());
-        helper.setBlock(ITEM_OUTPUT, ModBlocks.ROLLING_MACHINE_ITEM_OUTPUT_PORT.get());
-        helper.setBlock(
-                CONTROLLER,
-                ModBlocks.ROLLING_MACHINE.get().defaultBlockState()
-                        .setValue(RollingMachineBlock.FACING, Direction.NORTH)
-        );
-    }
-
-    private static void assertPortsValid(GameTestHelper helper) {
-        for (RollingMachinePortBlockEntity port : allPorts(helper)) {
-            helper.assertTrue(
-                    port.bindingStatus().orElse(null) == PartBindingValidationStatus.VALID,
-                    "Typed port did not hold a valid active binding"
-            );
-        }
-    }
-
-    private static List<RollingMachinePortBlockEntity> allPorts(GameTestHelper helper) {
-        return List.of(
-                port(helper, ITEM_INPUT),
-                port(helper, FLUID_INPUT),
-                port(helper, ENERGY_INPUT),
-                port(helper, ITEM_OUTPUT)
-        );
-    }
-
-    private static List<RollingMachinePortBlockEntity> remainingPorts(GameTestHelper helper) {
-        return List.of(
-                port(helper, ITEM_INPUT),
-                port(helper, ENERGY_INPUT),
-                port(helper, ITEM_OUTPUT)
-        );
-    }
-
-    private static RollingMachineBlockEntity controller(GameTestHelper helper) {
-        return (RollingMachineBlockEntity) helper.getBlockEntity(CONTROLLER);
-    }
-
-    private static RollingMachinePortBlockEntity port(GameTestHelper helper, BlockPos position) {
-        return (RollingMachinePortBlockEntity) helper.getBlockEntity(position);
-    }
-
-    private static CompoundTag futureRoot(String marker) {
-        CompoundTag root = new CompoundTag();
-        root.putInt("schema_version", 2);
-        root.putString("marker", marker);
-        return root;
     }
 }

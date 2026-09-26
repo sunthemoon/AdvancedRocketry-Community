@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": "6077fd10695ef387edfda8de6543e51cc4b9deb94d0005fe398dc23ad8ada63a",
+  "chunks": {
+    "c.8.8.nbt.zlib": "385f2c53b18a1de138b1e3a6581456fde97a41e99d542f959283a02b795e8274"
+  },
+  "implementation_base_commit": "3dbe6884e6d8bff3c676c4f7cebee0824b507602",
+  "machine_instance_id": "c070794b-4e9c-4bf8-9001-ba991274a598",
+  "schema_version": 1,
+  "source_region_bytes": 3002368,
+  "source_region_sha256": "e6f27d28197813de6ed5aaddb3f694310e6c1b532b3299fb3fd282578a97dc9d",
+  "source_summary_sha256": "051d44f004d1a66d22f88dccf5caa8a94cdd8805fb43c3536ea40b1d4d763090",
+  "source_tested_commit": null,
+  "uncommitted_worktree": true
+}

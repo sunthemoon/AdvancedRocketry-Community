@@ -1,0 +1,1243 @@
+{
+  "schema_version": 1,
+  "command": "gradlew.bat clean build test runData runGameTestServer --offline --no-daemon",
+  "suite_count": 123,
+  "totals": {
+    "tests": 600,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:12",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.013"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransferTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:12",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngineTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:12",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupplyEngineTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:12",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.004"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.52"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIdentityTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePositionTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.01"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.009"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentPersistenceTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:13",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.004"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogDecoderTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.047"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.015"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSavedDataTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.025"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSnapshotTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.031"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContextResolverTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.012"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.legacy.LegacyCelestialImporterTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.153"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityControllerTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.client.compat.jei.MachineRecipeViewTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.016"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.client.RocketFlightScreenLayoutTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfigTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.017"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaOperationalReportTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.012"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerKernelParityTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.01"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMaterialLedgerTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMigrationTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.013"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerPersistenceTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerPortPolicyTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerProcessEngineTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeContractTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.forge.LoadedPartBindingGatewayTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockDirtyQueueTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFootprintIndexTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockLifecycleCoordinatorTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.02"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingVerifierTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.004"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockNbtCodecTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:15",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.034"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternCatalogDecoderTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.012"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternJsonCodecTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.007"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternValidatorTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.009"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternTransformTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManagerTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.004"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.ProcessForgePortAdapterTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.009"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortPolicyTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMenuWireTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPatternTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.014"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPersistedChunkReaderTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.178"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortMigrationPersistenceTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortPersistenceTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.043"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortStorageTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipeTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.025"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerResourcePersistenceTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinitionTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.004"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineLogicTest",
+      "tests": "10",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.007"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionExecutorTest",
+      "tests": "10",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.012"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenuWireTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortPersistenceTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineProcessPersistenceTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.009"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipeTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineTransformsTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:12",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.157"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.ModMetadataTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:12",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataLoaderMigrationTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.011"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest",
+      "tests": "18",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:16",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "1.254"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigratorTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.007"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.195"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccountTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodecTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDataTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimitsTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.0"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlannerTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelStateTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifestTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerPositionTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.004"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTargetFlightPlannerTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.022"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferAuthorityOrderTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecordTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.009"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryDecisionTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderPersistenceTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest",
+      "tests": "9",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest",
+      "tests": "12",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:17",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.014"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightIntentPacketTest",
+      "tests": "7",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.011"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.015"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.059"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSnapshotCodecTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.009"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.586"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedDataTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest",
+      "tests": "12",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.075"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest",
+      "tests": "13",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMaintenanceStructureTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest",
+      "tests": "10",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.008"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionReleaseProbeTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryLogTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.01"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferReturnReasonTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStatsCalculatorTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRecoveryDecisionTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest",
+      "tests": "44",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.039"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest",
+      "tests": "14",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.023"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketStatsValidatorTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionDeadlineSchedulerTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.007"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStateTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.002"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MonotonicMissionClockTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.0"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStateTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedDataTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.003"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteCatalogDecoderTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.012"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModelTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.012"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedDataTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyFlightTargetMigratorTest",
+      "tests": "5",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.006"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapterTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.route.RouteCatalogDecoderTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.013"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.route.RouteCatalogTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.022"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.route.RouteDefinitionCodecTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.005"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.route.TravelFuelFormulaTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:19",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.001"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.travel.TravelTargetCodecTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-09-26T10:20:18",
+      "hostname": "DESKTOP-8J2KSNF",
+      "time": "0.007"
+    }
+  ]
+}

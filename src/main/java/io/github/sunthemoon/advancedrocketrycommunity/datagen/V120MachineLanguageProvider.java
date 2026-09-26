@@ -34,6 +34,9 @@ public final class V120MachineLanguageProvider extends LanguageProvider {
                 chinese ? "精密装配机能源输入口" : "Precision Assembler Energy Input");
         add("menu.advancedrocketrycommunity.precision_assembler",
                 chinese ? "精密装配机控制台" : "Precision Assembler Console");
+        add("message.advancedrocketrycommunity.precision_assembler.removal_blocked",
+                chinese ? "资源归属尚未确认，暂不能拆除。请加载并修复整台精密装配机，等待迁移完成；不支持的存档需先恢复兼容版本。"
+                        : "Removal paused: resource ownership is unresolved. Load and repair the full assembler to finish migration; unsupported saves need a compatible version.");
         add("screen.advancedrocketrycommunity.precision_assembler.inputs",
                 chinese ? "物品输入 0–4" : "ITEM INPUTS 0–4");
         add("screen.advancedrocketrycommunity.precision_assembler.outputs",

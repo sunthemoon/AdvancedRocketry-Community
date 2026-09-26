@@ -27,8 +27,24 @@ record PrecisionAssemblerPortSet(
             ServerLevel level,
             PrecisionAssemblerBlockEntity controller
     ) {
+        return resolve(level, controller, false);
+    }
+
+    static Optional<PrecisionAssemblerPortSet> resolveForMigration(
+            ServerLevel level,
+            PrecisionAssemblerBlockEntity controller
+    ) {
+        return resolve(level, controller, true);
+    }
+
+    private static Optional<PrecisionAssemblerPortSet> resolve(
+            ServerLevel level,
+            PrecisionAssemblerBlockEntity controller,
+            boolean migration
+    ) {
         if (controller.formationState() != MultiblockFormationState.FORMED
-                || !controller.acceptsResourceAccess()) {
+                || !(migration ? controller.acceptsPortBindingAccess()
+                : controller.acceptsResourceAccess())) {
             return Optional.empty();
         }
         List<PrecisionAssemblerPortBlockEntity> inputs = new ArrayList<>();
@@ -112,6 +128,7 @@ record PrecisionAssemblerPortSet(
                 && port.getBlockPos().equals(position)
                 && level.hasChunkAt(position)
                 && level.getBlockEntity(position) == port
+                && port.acceptsBindingMutations()
                 && port.portType() == type
                 && controller.controllerState().partPositions().contains(position)
                 && port.assignedChannel().filter(channel::equals).isPresent();

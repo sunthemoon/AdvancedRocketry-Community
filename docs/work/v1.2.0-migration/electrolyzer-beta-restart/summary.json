@@ -1,0 +1,231 @@
+{
+  "artifact_sha256": "6077fd10695ef387edfda8de6543e51cc4b9deb94d0005fe398dc23ad8ada63a",
+  "artifact_version": "1.20.1-1.1.1-dev",
+  "completed_at": "2026-09-26T09:29:52.106378+00:00",
+  "implementation_base_commit": "3dbe6884e6d8bff3c676c4f7cebee0824b507602",
+  "java": "17.0.7",
+  "original_archive_unchanged": true,
+  "port": 56061,
+  "processes": [
+    {
+      "completed_at": "2026-09-26T09:29:35.429393+00:00",
+      "exit_code": 0,
+      "full_log_file": "v100-upgrade-electrolyzer-beta-upgrade-full.txt",
+      "full_log_sha256": "955d9b022d138e63f144e56071f9183f51ab59f0cf9ffbbf61c4233d75bd4827",
+      "name": "electrolyzer-beta-upgrade",
+      "started_at": "2026-09-26T09:29:14.527537+00:00"
+    },
+    {
+      "completed_at": "2026-09-26T09:29:52.089270+00:00",
+      "exit_code": 0,
+      "full_log_file": "v100-upgrade-electrolyzer-beta-restart-full.txt",
+      "full_log_sha256": "847cf9f78aa5de834c88fb3766393e9804b0d32e8e105a867bb6d770a54269ed",
+      "name": "electrolyzer-beta-restart",
+      "started_at": "2026-09-26T09:29:49.019646+00:00"
+    }
+  ],
+  "same_world_restarted": true,
+  "schema_version": 1,
+  "scope": "two_electrolyzers_only_not_whole_world_acceptance",
+  "slice": "V120-MIG-03B3",
+  "snapshots": [
+    {
+      "chunk": "upgrade-c.0.0.nbt.zlib",
+      "chunk_sha256": "0b470c84ddd68aed9378fdcc14fb33b935ca09038bc73e59dae1aca664d9b551",
+      "machines": {
+        "paused": {
+          "arce_machine": {
+            "active_recipe": "advancedrocketrycommunity:electrolyzer_water",
+            "energy": 0,
+            "fluid": {
+              "Amount": 1000,
+              "FluidName": "minecraft:water"
+            },
+            "inventory": {
+              "Items": [
+                {
+                  "Count": 2,
+                  "Slot": 0,
+                  "id": "advancedrocketrycommunity:empty_canister"
+                }
+              ],
+              "Size": 4
+            },
+            "progress": 40,
+            "schema_version": 1
+          },
+          "arce_process": {
+            "consumed_energy": 800,
+            "definition_id": "advancedrocketrycommunity:electrolyzer_water",
+            "failure_code": "insufficient_energy",
+            "failure_subject": "advancedrocketrycommunity:electrolyzer_water",
+            "last_applied_transaction": "",
+            "progress_ticks": 40,
+            "recipe_signature": "5eacb5d39d636c9045ea0e1e198e41e89d411dc2cc8f13c9994466cdfb53d152",
+            "resource_revision": 0,
+            "schema_version": 1,
+            "state": "waiting_energy"
+          },
+          "id": "advancedrocketrycommunity:electrolyzer",
+          "keepPacked": 0,
+          "x": 0,
+          "y": 100,
+          "z": 0
+        },
+        "running": {
+          "arce_machine": {
+            "energy": 12000,
+            "fluid": {
+              "Amount": 0,
+              "FluidName": "minecraft:empty"
+            },
+            "inventory": {
+              "Items": [
+                {
+                  "Count": 4,
+                  "Slot": 2,
+                  "id": "advancedrocketrycommunity:hydrogen_canister"
+                },
+                {
+                  "Count": 4,
+                  "Slot": 3,
+                  "id": "advancedrocketrycommunity:oxygen_canister"
+                }
+              ],
+              "Size": 4
+            },
+            "progress": 0,
+            "schema_version": 1
+          },
+          "arce_process": {
+            "consumed_energy": 0,
+            "definition_id": "",
+            "failure_code": "none",
+            "failure_subject": "",
+            "last_applied_transaction": "12101332-e03c-43f8-9c79-107ae3f1c560",
+            "progress_ticks": 0,
+            "recipe_signature": "",
+            "resource_revision": 4,
+            "schema_version": 1,
+            "state": "idle"
+          },
+          "id": "advancedrocketrycommunity:electrolyzer",
+          "keepPacked": 0,
+          "x": 4,
+          "y": 100,
+          "z": 0
+        }
+      },
+      "phase": "upgrade",
+      "region_sha256": "343783ead1568b8b37fb2cc454ba1d5ea638da15986e6c4a9abeb019e9fb3bea"
+    },
+    {
+      "chunk": "restart-c.0.0.nbt.zlib",
+      "chunk_sha256": "8cc0c4f4e1d0ab75b7db0862e421e85d56f019e19d3873ecaffff1d778bebb42",
+      "machines": {
+        "paused": {
+          "arce_machine": {
+            "active_recipe": "advancedrocketrycommunity:electrolyzer_water",
+            "energy": 0,
+            "fluid": {
+              "Amount": 1000,
+              "FluidName": "minecraft:water"
+            },
+            "inventory": {
+              "Items": [
+                {
+                  "Count": 2,
+                  "Slot": 0,
+                  "id": "advancedrocketrycommunity:empty_canister"
+                }
+              ],
+              "Size": 4
+            },
+            "progress": 40,
+            "schema_version": 1
+          },
+          "arce_process": {
+            "consumed_energy": 800,
+            "definition_id": "advancedrocketrycommunity:electrolyzer_water",
+            "failure_code": "insufficient_energy",
+            "failure_subject": "advancedrocketrycommunity:electrolyzer_water",
+            "last_applied_transaction": "",
+            "progress_ticks": 40,
+            "recipe_signature": "5eacb5d39d636c9045ea0e1e198e41e89d411dc2cc8f13c9994466cdfb53d152",
+            "resource_revision": 0,
+            "schema_version": 1,
+            "state": "waiting_energy"
+          },
+          "id": "advancedrocketrycommunity:electrolyzer",
+          "keepPacked": 0,
+          "x": 0,
+          "y": 100,
+          "z": 0
+        },
+        "running": {
+          "arce_machine": {
+            "energy": 12000,
+            "fluid": {
+              "Amount": 0,
+              "FluidName": "minecraft:empty"
+            },
+            "inventory": {
+              "Items": [
+                {
+                  "Count": 4,
+                  "Slot": 2,
+                  "id": "advancedrocketrycommunity:hydrogen_canister"
+                },
+                {
+                  "Count": 4,
+                  "Slot": 3,
+                  "id": "advancedrocketrycommunity:oxygen_canister"
+                }
+              ],
+              "Size": 4
+            },
+            "progress": 0,
+            "schema_version": 1
+          },
+          "arce_process": {
+            "consumed_energy": 0,
+            "definition_id": "",
+            "failure_code": "none",
+            "failure_subject": "",
+            "last_applied_transaction": "12101332-e03c-43f8-9c79-107ae3f1c560",
+            "progress_ticks": 0,
+            "recipe_signature": "",
+            "resource_revision": 4,
+            "schema_version": 1,
+            "state": "idle"
+          },
+          "id": "advancedrocketrycommunity:electrolyzer",
+          "keepPacked": 0,
+          "x": 4,
+          "y": 100,
+          "z": 0
+        }
+      },
+      "phase": "restart",
+      "region_sha256": "cc08d89dcc2f3a060f87d0d4900c72b984411fddaf2dc5cd3fb2579ee7c33559"
+    }
+  ],
+  "source": {
+    "chunks": {
+      "c.0.0.nbt.zlib": "f7a92f8f4d8656d5d6058c4cbc29e51d1f8d5eea7703a2d48806bc8ab247113c"
+    },
+    "schema_version": 1,
+    "source_archive_bytes": 8403030,
+    "source_archive_sha256": "9022b2fdf4537168bc33f1db06f96c8d5ce150c221177cd4e0890b037f9bed1c",
+    "source_artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+    "source_region_bytes": 4554752,
+    "source_region_sha256": "5879aeeeb33acf50bc584c07eccab56362a7420fff22fcf85a81efb00ea8fb0d",
+    "source_state_sha256": "dab6306a19583bca8b8fd5b76f0379d9e03286769c68ced2fa97f6562976e27d",
+    "source_summary_sha256": "c6629cba5544403a676d69e6bdda1f4caae2506247dcc704679a603cdba30966",
+    "source_version": "1.20.1-0.9.0-beta.1"
+  },
+  "source_world_files_verified": 59,
+  "status": "PASS",
+  "tested_implementation_commit": null,
+  "uncommitted_worktree": true
+}

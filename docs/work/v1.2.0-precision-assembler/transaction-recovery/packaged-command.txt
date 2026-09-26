@@ -1,0 +1,4 @@
+[PASS] Archived physical Item roots migrated to controller ownership
+[PASS] Same-world restart preserved seven inert shadows and exact controller resources
+[PASS] Artifact SHA-256: 96962cc968816ef7a7b4235a0888d0c0c83b4ef0718f3bc7969d17c6a6aefb99
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\docs\work\v1.2.0-precision-assembler\transaction-recovery\legacy-restart

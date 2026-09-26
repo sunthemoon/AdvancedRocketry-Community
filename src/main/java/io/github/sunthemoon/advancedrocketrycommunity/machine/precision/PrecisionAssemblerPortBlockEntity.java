@@ -22,6 +22,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.Process
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -37,7 +38,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 
-/** Per-port resources and generation-scoped, loaded-only automation access. */
+/** Generation-scoped Item facade and physically persistent Energy input. */
 public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         implements MultiblockPartBindingTarget {
     private static final Set<ProcessPortSide> ALL_SIDES = Set.of(
@@ -59,6 +60,9 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
     private Optional<MultiblockPartBinding> binding = Optional.empty();
     private MultiblockNbtStatus bindingPersistenceStatus = MultiblockNbtStatus.SUPPORTED;
     private MultiblockNbtStatus resourcePersistenceStatus = MultiblockNbtStatus.SUPPORTED;
+    private MultiblockNbtStatus migrationPersistenceStatus = MultiblockNbtStatus.SUPPORTED;
+    @Nullable
+    private PrecisionAssemblerPortMigrationPersistence.Marker migrationMarker;
     private ProcessCapabilityCache capabilityCache;
     @Nullable
     private IItemHandler menuItemView;
@@ -67,6 +71,8 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
     private Tag preservedBindingRoot;
     @Nullable
     private Tag preservedResourceRoot;
+    @Nullable
+    private Tag preservedMigrationRoot;
 
     public PrecisionAssemblerPortBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.PRECISION_ASSEMBLER_PORT.get(), position, state);
@@ -90,7 +96,8 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
 
     boolean acceptsBindingMutations() {
         return bindingPersistenceStatus == MultiblockNbtStatus.SUPPORTED
-                && resourcePersistenceStatus == MultiblockNbtStatus.SUPPORTED;
+                && resourcePersistenceStatus == MultiblockNbtStatus.SUPPORTED
+                && migrationPersistenceStatus == MultiblockNbtStatus.SUPPORTED;
     }
 
     @Override
@@ -133,7 +140,29 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
     }
 
     ItemStack storedItemCopy() {
+        return itemOwner().map(slot -> slot.controller().storedItemCopy(slot.index()))
+                .orElseGet(() -> migrationMarker == null ? itemStorage.storedCopy() : ItemStack.EMPTY);
+    }
+
+    ItemStack legacyStoredItemCopy() {
         return itemStorage.storedCopy();
+    }
+
+    Optional<PrecisionAssemblerPortMigrationPersistence.Marker> migrationMarker() {
+        return Optional.ofNullable(migrationMarker);
+    }
+
+    void markLegacyMigrated(UUID machineId, String channel) {
+        if (portType().kind() != ProcessPortKind.ITEM || !acceptsBindingMutations()
+                || (migrationMarker != null && (!migrationMarker.machineId().equals(machineId)
+                || !migrationMarker.channel().equals(channel)))) {
+            throw new IllegalStateException("Precision port cannot change its migration owner");
+        }
+        if (migrationMarker == null) {
+            migrationMarker = new PrecisionAssemblerPortMigrationPersistence.Marker(machineId, channel);
+        }
+        // A previous failed save may have cleared the chunk's dirty flag.
+        setChanged();
     }
 
     int storedEnergy() {
@@ -149,7 +178,40 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
                 || resourcePersistenceStatus != MultiblockNbtStatus.SUPPORTED) {
             throw new IllegalStateException("precision port cannot accept internal Item replacement");
         }
-        itemStorage.replaceStored(replacement);
+        Optional<ItemOwner> owned = itemOwner();
+        if (owned.isPresent()) {
+            ItemOwner slot = owned.orElseThrow();
+            slot.controller().replaceStoredItemInternal(slot.index(), replacement);
+        } else {
+            if (migrationMarker != null) {
+                throw new IllegalStateException("Migrated Precision Item root is no longer authoritative");
+            }
+            itemStorage.replaceStored(replacement);
+        }
+    }
+
+    void dropStoredItemForRemoval() {
+        if (portType().kind() != ProcessPortKind.ITEM) {
+            return;
+        }
+        Optional<ItemOwner> owned = itemOwner();
+        if (owned.isPresent()) {
+            ItemOwner slot = owned.orElseThrow();
+            slot.controller().dropItemFromPort(slot.index());
+            return;
+        }
+        if (migrationMarker != null) {
+            return;
+        }
+        ItemStack stored = itemStorage.storedCopy();
+        if (!stored.isEmpty() && level != null) {
+            itemStorage.replaceStored(ItemStack.EMPTY);
+            net.minecraft.world.Containers.dropItemStack(level,
+                    worldPosition.getX() + 0.5D,
+                    worldPosition.getY() + 0.5D,
+                    worldPosition.getZ() + 0.5D,
+                    stored);
+        }
     }
 
     boolean consumeEnergyInternal(int amount) {
@@ -207,6 +269,14 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
                         : PrecisionAssemblerPortPersistence.encode(
                                 portType(), itemStorage.storedCopy(), energyStorage.getEnergyStored())
         );
+        if (preservedMigrationRoot != null) {
+            parent.put(PrecisionAssemblerPortMigrationPersistence.ROOT, preservedMigrationRoot.copy());
+        } else if (migrationMarker != null) {
+            parent.put(PrecisionAssemblerPortMigrationPersistence.ROOT,
+                    PrecisionAssemblerPortMigrationPersistence.encode(migrationMarker));
+        } else {
+            parent.remove(PrecisionAssemblerPortMigrationPersistence.ROOT);
+        }
     }
 
     @Override
@@ -214,6 +284,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         super.load(parent);
         loadBinding(parent);
         loadResources(parent);
+        loadMigration(parent);
         refreshCapabilityViews();
     }
 
@@ -245,6 +316,23 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         }
     }
 
+    private void loadMigration(CompoundTag parent) {
+        migrationMarker = null;
+        preservedMigrationRoot = null;
+        var decoded = PrecisionAssemblerPortMigrationPersistence.decode(parent);
+        migrationPersistenceStatus = normalizeEmpty(decoded.status());
+        if (decoded.status() == MultiblockNbtStatus.SUPPORTED) {
+            migrationMarker = decoded.value().orElseThrow();
+            if (portType().kind() != ProcessPortKind.ITEM) {
+                migrationPersistenceStatus = MultiblockNbtStatus.INVALID_DATA;
+                preservedMigrationRoot = parent.get(PrecisionAssemblerPortMigrationPersistence.ROOT).copy();
+                migrationMarker = null;
+            }
+        } else if (decoded.status() != MultiblockNbtStatus.EMPTY) {
+            preservedMigrationRoot = decoded.preservedRoot().orElseThrow();
+        }
+    }
+
     private boolean capabilityMatchesPort(Capability<?> capability) {
         return switch (portType().kind()) {
             case ITEM -> capability == ForgeCapabilities.ITEM_HANDLER;
@@ -254,7 +342,9 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
     }
 
     private boolean capabilityAccessAllowed() {
-        return !isRemoved() && acceptsBindingMutations() && loadedAssignment().isPresent();
+        return !isRemoved() && acceptsBindingMutations()
+                && loadedAssignment().isPresent()
+                && loadedFormedController().map(PrecisionAssemblerBlockEntity::acceptsResourceAccess).orElse(false);
     }
 
     private boolean capabilityOperationAllowed() {
@@ -290,7 +380,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
                 || !controller.controllerState().machineInstanceId().equals(expected.machineInstanceId())
                 || controller.generation() != expected.generation()
                 || !controller.controllerState().partPositions().contains(worldPosition)
-                || !controller.acceptsResourceAccess()) {
+                || !controller.acceptsPortBindingAccess()) {
             return Optional.empty();
         }
         return Optional.of(controller);
@@ -309,7 +399,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         );
         if (portType().kind() == ProcessPortKind.ITEM) {
             registerEverySide(ForgeCapabilities.ITEM_HANDLER, new ProcessItemPortHandler(
-                    itemStorage,
+                    new PrecisionAssemblerControllerItemView(this),
                     definition,
                     this::processLocked,
                     () -> viewEpoch == capabilityEpoch && capabilityOperationAllowed(),
@@ -318,7 +408,7 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
             ProcessPortMode menuMode = portType() == PrecisionAssemblerPortType.ITEM_INPUT
                     ? ProcessPortMode.BIDIRECTIONAL : ProcessPortMode.OUTPUT;
             menuItemView = new ProcessItemPortHandler(
-                    itemStorage,
+                    new PrecisionAssemblerControllerItemView(this),
                     new ProcessPortDefinition(
                             portType().patternChannel(),
                             ProcessPortKind.ITEM,
@@ -371,11 +461,30 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
     }
 
     private void recordExternalMutation() {
-        setChanged();
+        if (portType() == PrecisionAssemblerPortType.ENERGY_INPUT) {
+            setChanged();
+        }
         if (level instanceof ServerLevel serverLevel) {
             loadedFormedController().ifPresent(controller ->
                     controller.recordExternalResourceMutation(serverLevel));
         }
+    }
+
+    Optional<ItemOwner> itemOwner() {
+        return loadedFormedController().filter(PrecisionAssemblerBlockEntity::ownsItems).flatMap(controller ->
+                PrecisionAssemblerPortLayout.atWorld(
+                        controller.controllerState().selectedTransform(),
+                        patternPosition(controller.getBlockPos()), patternPosition(worldPosition))
+                        .filter(portType()::accepts)
+                        .filter(assignment -> assignment.role()
+                                != PrecisionAssemblerPortLayout.Role.ENERGY_INPUT)
+                        .map(assignment -> new ItemOwner(controller,
+                                assignment.role() == PrecisionAssemblerPortLayout.Role.ITEM_INPUT
+                                        ? assignment.index()
+                                        : PrecisionAssemblerChannels.INPUT_COUNT + assignment.index())));
+    }
+
+    record ItemOwner(PrecisionAssemblerBlockEntity controller, int index) {
     }
 
     private static MultiblockNbtStatus normalizeEmpty(MultiblockNbtStatus status) {

@@ -1,5 +1,12 @@
 # v1.2.0 Precision Assembler partial verification
 
+This file preserves the earlier implementation checkpoints and artifact IDs.
+The subsequent [ADR-019 persistence report](PREC04B-VERIFICATION.md) and
+[unload notification verification](PREC04B-UNLOAD-VERIFICATION.md) complete the
+finite runtime slice as of 2026-09-26. The canonical implementation log marks
+`V120-MCH-03` verified; historical results below are not relabeled, and version
+Gates remain open.
+
 ```yaml
 version: v1.2.0
 slice: V120-MCH-03

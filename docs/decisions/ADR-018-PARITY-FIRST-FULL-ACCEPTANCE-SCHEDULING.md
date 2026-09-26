@@ -5,7 +5,7 @@ status: ACCEPTED
 date: 2026-09-06
 deciders: [sunthemoon]
 accepted_at: 2026-09-06
-owner_reaffirmed_at: 2026-09-25
+owner_reaffirmed_at: 2026-09-26
 owner: sunthemoon
 scope: v1.2.0 through classic machine and dimension completion
 expires: before the first feature-parity release candidate
@@ -57,10 +57,11 @@ The full campaign becomes mandatory when the porting matrix shows every original
 machine and dimension implemented. Closing an inventory row by deferring or rejecting
 it is not completion for this trigger. Finishing an individual machine, dimension,
 slice or intermediate version is not a trigger for the campaign. The owner reaffirmed
-this rule on 2026-09-10, 2026-09-11 and 2026-09-25: complete the original machines and
-dimensions first, then run the complete acceptance campaign. Before assigning the first
-feature-parity candidate, the owner must review the matrix, run or precisely disposition
-every deferred environment and record the resulting Gate status. A version number alone
+this rule on 2026-09-10, 2026-09-11, 2026-09-25 and 2026-09-26: complete the original
+machines and dimensions first, then run the complete acceptance campaign. Before
+assigning the first feature-parity candidate, the owner must review the matrix,
+run or precisely disposition every deferred environment and record the resulting
+Gate status. A version number alone
 does not satisfy this trigger.
 
 ## Consequences

@@ -1,0 +1,12 @@
+{
+  "previous_sha256": "96962cc968816ef7a7b4235a0888d0c0c83b4ef0718f3bc7969d17c6a6aefb99",
+  "current_sha256": "92821ec3273a7b87c2892003ca5321f8cf65105a41572a3f730c3582d67c2000",
+  "added": [
+    "io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerUnloadGameTests$Fixture.class",
+    "io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerUnloadGameTests$Snapshot.class",
+    "io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerUnloadGameTests$Views.class",
+    "io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerUnloadGameTests.class"
+  ],
+  "removed": [],
+  "changed": []
+}
