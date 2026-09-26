@@ -146,7 +146,14 @@ public final class RocketAssemblyTransaction {
             for (RocketBlock block : snapshot.blocks()) {
                 RocketPosition absolute = snapshot.sourceOrigin().add(block.position());
                 RocketWorldBlock expected = RocketWorldBlock.fromSnapshotBlock(block);
-                if (!world.removeBlockNoDrops(absolute, expected)) {
+                boolean removed;
+                try {
+                    removed = world.removeBlockNoDrops(absolute, expected);
+                } catch (RuntimeException exception) {
+                    throw new RocketTransactionAbortException(RocketValidationCode.ROLLBACK_FAILED,
+                            absolute, "block extraction threw before its result was confirmed");
+                }
+                if (!removed) {
                     throw new RocketTransactionAbortException(
                             RocketValidationCode.EXTRACTION_FAILED,
                             absolute,
@@ -259,16 +266,26 @@ public final class RocketAssemblyTransaction {
                 extracted.size(),
                 rocketId
         ));
-        boolean rollbackComplete = true;
-        if (rocketId != null && !world.removeRocket(rocketId, snapshot.snapshotId())) {
-            rollbackComplete = false;
+        boolean rollbackComplete = originalCode != RocketValidationCode.ROLLBACK_FAILED;
+        boolean entityRemoved = rocketId == null;
+        try {
+            if (rocketId != null) {
+                entityRemoved = world.removeRocket(rocketId, snapshot.snapshotId());
+            }
+        } catch (RuntimeException exception) {
+            // Do not expose block inventories until entity removal is confirmed.
         }
+        rollbackComplete &= entityRemoved;
         int restored = 0;
-        for (int index = extracted.size() - 1; index >= 0; index--) {
+        for (int index = extracted.size() - 1; entityRemoved && index >= 0; index--) {
             PlacedBlock block = extracted.get(index);
-            if (world.placeBlockIfEmpty(block.position(), block.block())) {
-                restored++;
-            } else {
+            try {
+                if (world.placeBlockIfEmpty(block.position(), block.block())) {
+                    restored++;
+                } else {
+                    rollbackComplete = false;
+                }
+            } catch (RuntimeException exception) {
                 rollbackComplete = false;
             }
         }

@@ -7,7 +7,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionAbortException;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionWorld;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
 import java.util.Comparator;
 import java.util.List;
@@ -70,6 +72,19 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
     }
 
     @Override
+    public boolean canRestoreSnapshot(RocketStructureSnapshot snapshot) {
+        for (var block : snapshot.blocks()) {
+            Optional<BlockState> state = RocketBlockStateAdapter.restore(block.state());
+            if (state.isEmpty() || !state.orElseThrow().is(ModBlockTags.ROCKET_MOVABLE)
+                    || state.orElseThrow().is(ModBlockTags.ROCKET_FORBIDDEN)
+                    || block.blockEntityPayload().filter(payload -> !adapters.supportsPayload(payload)).isPresent()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public Optional<RocketWorldBlock> readBlock(RocketPosition absolutePosition) {
         BlockPos position = ServerLevelRocketScanWorld.toBlockPos(absolutePosition);
         if (!level.hasChunkAt(position)) {
@@ -110,11 +125,16 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
         if (current.isEmpty() || !expected.equals(current.orElseThrow())) {
             return false;
         }
-        level.removeBlockEntity(position);
-        if (!level.setBlock(position, Blocks.AIR.defaultBlockState(), UPDATE_FLAGS)) {
-            return false;
+        try {
+            level.removeBlockEntity(position);
+            if (level.setBlock(position, Blocks.AIR.defaultBlockState(), UPDATE_FLAGS)
+                    && level.getBlockState(position).isAir() && level.getBlockEntity(position) == null) {
+                return true;
+            }
+        } catch (RuntimeException exception) {
+            throw uncertainMutation(absolutePosition);
         }
-        return level.getBlockState(position).isAir() && level.getBlockEntity(position) == null;
+        throw uncertainMutation(absolutePosition);
     }
 
     @Override
@@ -137,23 +157,49 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
                 || state.is(ModBlockTags.ROCKET_FORBIDDEN)) {
             return false;
         }
-        if (!level.setBlock(position, state, UPDATE_FLAGS)) {
+        try {
+            if (level.setBlock(position, state, UPDATE_FLAGS)) {
+                BlockEntity blockEntity = level.getBlockEntity(position);
+                boolean restoredPayload = block.payload().isPresent()
+                        ? blockEntity != null && adapters.restore(blockEntity, block.payload().orElseThrow())
+                        : blockEntity == null;
+                if (restoredPayload && level.getBlockState(position).equals(state)
+                        && level.getBlockEntity(position) == blockEntity) {
+                    return true;
+                }
+            }
+        } catch (RuntimeException exception) {
+            // All failed attempts pass through checked, no-drop local cleanup.
+        }
+        if (clearFailedPlacement(position, state)) {
             return false;
         }
-        BlockEntity blockEntity = level.getBlockEntity(position);
-        boolean restoredPayload;
-        if (block.payload().isPresent()) {
-            restoredPayload = blockEntity != null
-                    && adapters.restore(blockEntity, block.payload().orElseThrow());
-        } else {
-            restoredPayload = blockEntity == null;
-        }
-        if (!restoredPayload) {
+        throw uncertainMutation(absolutePosition);
+    }
+
+    private boolean clearFailedPlacement(BlockPos position, BlockState placedState) {
+        try {
+            if (!level.hasChunkAt(position)) {
+                return false;
+            }
+            BlockState current = level.getBlockState(position);
+            if (current.isAir()) {
+                return level.getBlockEntity(position) == null;
+            }
+            if (!current.equals(placedState)) {
+                return false;
+            }
             level.removeBlockEntity(position);
-            level.setBlock(position, Blocks.AIR.defaultBlockState(), UPDATE_FLAGS);
+            return level.setBlock(position, Blocks.AIR.defaultBlockState(), UPDATE_FLAGS)
+                    && level.getBlockState(position).isAir() && level.getBlockEntity(position) == null;
+        } catch (RuntimeException exception) {
             return false;
         }
-        return true;
+    }
+
+    private static RocketTransactionAbortException uncertainMutation(RocketPosition position) {
+        return new RocketTransactionAbortException(RocketValidationCode.ROLLBACK_FAILED, position,
+                "World mutation could not be confirmed or cleaned; recovery snapshot must be retained");
     }
 
     @Override

@@ -69,6 +69,11 @@ public final class RocketTransactionFaultProbe {
             }
 
             @Override
+            public boolean canRestoreSnapshot(RocketStructureSnapshot snapshot) {
+                return delegate.canRestoreSnapshot(snapshot);
+            }
+
+            @Override
             public Optional<RocketWorldBlock> readBlock(RocketPosition position) {
                 return delegate.readBlock(position);
             }

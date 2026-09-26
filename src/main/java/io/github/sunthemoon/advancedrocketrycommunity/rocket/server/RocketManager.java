@@ -214,6 +214,7 @@ public final class RocketManager implements RocketOperationService {
     }
 
     public void clear() {
+        recovery.clear();
         assemblerScans.clear();
         transactions.clear();
         flights.clear();

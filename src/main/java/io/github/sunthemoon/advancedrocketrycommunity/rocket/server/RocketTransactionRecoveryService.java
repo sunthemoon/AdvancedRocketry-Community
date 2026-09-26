@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketP
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRecoveryDecision;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,6 +32,7 @@ public final class RocketTransactionRecoveryService {
     }
 
     private final RocketBlockEntityAdapters adapters;
+    private UUID lastAttempted;
 
     public RocketTransactionRecoveryService(RocketBlockEntityAdapters adapters) {
         this.adapters = Objects.requireNonNull(adapters, "adapters");
@@ -40,11 +42,25 @@ public final class RocketTransactionRecoveryService {
     public Outcome recoverOne(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
         RocketTransactionSavedData data = RocketTransactionSavedData.get(server);
-        if (!data.operational() || data.entries().isEmpty()) {
+        if (!data.operational()) {
+            lastAttempted = null;
             return Outcome.NO_WORK;
         }
+        List<RocketPersistedTransaction> entries = data.entries();
+        if (entries.isEmpty()) {
+            lastAttempted = null;
+            return Outcome.NO_WORK;
+        }
+        int start = 0;
+        if (lastAttempted != null) {
+            while (start < entries.size()
+                    && entries.get(start).record().transactionId().compareTo(lastAttempted) <= 0) {
+                start++;
+            }
+        }
         boolean sawUnloaded = false;
-        for (RocketPersistedTransaction entry : data.entries()) {
+        for (int offset = 0; offset < entries.size(); offset++) {
+            RocketPersistedTransaction entry = entries.get((start + offset) % entries.size());
             ServerLevel level = levelFor(server, entry);
             if (level == null) {
                 sawUnloaded = true;
@@ -60,11 +76,19 @@ public final class RocketTransactionRecoveryService {
                 sawUnloaded = true;
                 continue;
             }
-            return recoverLoaded(data, world, entry)
-                    ? Outcome.RECOVERED
-                    : Outcome.CONFLICT;
+            lastAttempted = entry.record().transactionId();
+            try {
+                return recoverLoaded(data, world, entry) ? Outcome.RECOVERED : Outcome.CONFLICT;
+            } catch (RuntimeException exception) {
+                // Keep the full journal snapshot and allow other entries next tick.
+                return Outcome.CONFLICT;
+            }
         }
         return sawUnloaded ? Outcome.DEFERRED_UNLOADED : Outcome.NO_WORK;
+    }
+
+    public void clear() {
+        lastAttempted = null;
     }
 
     static boolean readyForRecovery(
@@ -84,6 +108,9 @@ public final class RocketTransactionRecoveryService {
             ServerLevelRocketTransactionWorld world,
             RocketPersistedTransaction entry
     ) {
+        if (!world.canRestoreSnapshot(entry.snapshot())) {
+            return false;
+        }
         List<UUID> matchingRockets = matchingRockets(world, entry);
         RocketRecoveryDecision.Authority authority = RocketRecoveryDecision.authority(
                 entry.record().type(),
@@ -123,16 +150,13 @@ public final class RocketTransactionRecoveryService {
         return List.copyOf(matches);
     }
 
-    private static boolean recoverBlocks(
-            ServerLevelRocketTransactionWorld world,
+    static boolean recoverBlocks(
+            RocketTransactionWorld world,
             RocketStructureSnapshot snapshot,
             List<UUID> matchingRockets
     ) {
-        for (UUID rocketId : matchingRockets) {
-            if (!world.removeRocket(rocketId, snapshot.snapshotId())) {
-                return false;
-            }
-        }
+        ArrayList<RocketBlock> missing = new ArrayList<>();
+        // Inspect the complete bounded target before changing either authority.
         for (RocketBlock block : snapshot.blocks()) {
             RocketPosition absolute = snapshot.sourceOrigin().add(block.position());
             RocketWorldBlock expected = RocketWorldBlock.fromSnapshotBlock(block);
@@ -146,7 +170,21 @@ public final class RocketTransactionRecoveryService {
                 if (!current.orElseThrow().equals(expected)) {
                     return false;
                 }
-            } else if (!world.placeBlockIfEmpty(absolute, expected)) {
+            } else {
+                missing.add(block);
+            }
+        }
+        // Availability/conflicts have been checked without mutation. Retire
+        // entity authority before exposing restored inventories. The complete
+        // journal remains authoritative until every restoration succeeds.
+        for (UUID rocketId : matchingRockets) {
+            if (!world.removeRocket(rocketId, snapshot.snapshotId())) {
+                return false;
+            }
+        }
+        for (RocketBlock block : missing) {
+            if (!world.placeBlockIfEmpty(snapshot.sourceOrigin().add(block.position()),
+                    RocketWorldBlock.fromSnapshotBlock(block))) {
                 return false;
             }
         }

@@ -106,6 +106,11 @@ public final class RocketDisassemblyTransaction {
                         "RocketEntity identity or snapshot hash does not match"
                 );
             }
+            if (!world.canRestoreSnapshot(snapshot)) {
+                return failWithoutMutation(transactionId, rocketId,
+                        RocketValidationCode.UNSUPPORTED_BLOCK_ENTITY, snapshot.sourceOrigin(),
+                        "snapshot restoration dependencies are unavailable");
+            }
             occupied = firstOccupiedPosition(snapshot);
             if (occupied.isPresent()) {
                 return failWithoutMutation(
@@ -178,7 +183,14 @@ public final class RocketDisassemblyTransaction {
             for (RocketBlock block : snapshot.blocks()) {
                 RocketPosition absolute = snapshot.sourceOrigin().add(block.position());
                 RocketWorldBlock restoredBlock = RocketWorldBlock.fromSnapshotBlock(block);
-                if (!world.placeBlockIfEmpty(absolute, restoredBlock)) {
+                boolean placed;
+                try {
+                    placed = world.placeBlockIfEmpty(absolute, restoredBlock);
+                } catch (RuntimeException exception) {
+                    throw new RocketTransactionAbortException(RocketValidationCode.ROLLBACK_FAILED,
+                            absolute, "block restoration threw before its result was confirmed");
+                }
+                if (!placed) {
                     throw new RocketTransactionAbortException(
                             RocketValidationCode.TARGET_OCCUPIED,
                             absolute,
@@ -284,16 +296,24 @@ public final class RocketDisassemblyTransaction {
                 restored.size()
         ));
         int removed = 0;
-        boolean rollbackComplete = true;
+        boolean rollbackComplete = originalCode != RocketValidationCode.ROLLBACK_FAILED;
         for (int index = restored.size() - 1; index >= 0; index--) {
             PlacedBlock block = restored.get(index);
-            if (world.removeBlockNoDrops(block.position(), block.block())) {
-                removed++;
-            } else {
+            try {
+                if (world.removeBlockNoDrops(block.position(), block.block())) {
+                    removed++;
+                } else {
+                    rollbackComplete = false;
+                }
+            } catch (RuntimeException exception) {
                 rollbackComplete = false;
             }
         }
-        if (!world.rocketMatches(rocketId, snapshot.snapshotId(), snapshot.contentHash())) {
+        try {
+            if (!world.rocketMatches(rocketId, snapshot.snapshotId(), snapshot.contentHash())) {
+                rollbackComplete = false;
+            }
+        } catch (RuntimeException exception) {
             rollbackComplete = false;
         }
         ledger.finish(transactionId, false);

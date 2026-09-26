@@ -33,12 +33,16 @@ public final class RocketBlockEntityAdapters {
 
     public CaptureResult capture(BlockEntity blockEntity) {
         for (RocketBlockEntityAdapter adapter : adapters) {
-            if (adapter.supports(blockEntity)) {
-                try {
-                    return CaptureResult.supported(adapter.capture(blockEntity));
-                } catch (RuntimeException exception) {
-                    return CaptureResult.rejected(typeId(blockEntity) + ": " + safeMessage(exception));
+            try {
+                if (adapter.supports(blockEntity)) {
+                    RocketBlockEntityPayload payload = Objects.requireNonNull(adapter.capture(blockEntity));
+                    if (!adapter.id().equals(payload.adapterId())) {
+                        return CaptureResult.rejected(typeId(blockEntity) + ": adapter identity mismatch");
+                    }
+                    return CaptureResult.supported(payload);
                 }
+            } catch (RuntimeException exception) {
+                return CaptureResult.rejected(typeId(blockEntity) + ": " + safeMessage(exception));
             }
         }
         return CaptureResult.rejected(typeId(blockEntity));
@@ -46,7 +50,18 @@ public final class RocketBlockEntityAdapters {
 
     public boolean restore(BlockEntity blockEntity, RocketBlockEntityPayload payload) {
         RocketBlockEntityAdapter adapter = byId.get(payload.adapterId());
-        return adapter != null && adapter.restore(blockEntity, payload);
+        try {
+            return adapter != null && adapter.supports(blockEntity)
+                    && adapter.restore(blockEntity, payload)
+                    && payload.equals(adapter.capture(blockEntity));
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
+    /** Registry availability only; this query never calls a provider or touches a world. */
+    public boolean supportsPayload(RocketBlockEntityPayload payload) {
+        return byId.containsKey(payload.adapterId());
     }
 
     private static String typeId(BlockEntity blockEntity) {
@@ -55,7 +70,8 @@ public final class RocketBlockEntityAdapters {
     }
 
     private static String safeMessage(RuntimeException exception) {
-        return exception.getMessage() == null ? exception.getClass().getSimpleName() : exception.getMessage();
+        // Callback messages may contain arbitrary data; keep rejection details bounded.
+        return exception.getClass().getSimpleName();
     }
 
     public record CaptureResult(RocketBlockEntityPayload payload, String rejectionDetail) {
