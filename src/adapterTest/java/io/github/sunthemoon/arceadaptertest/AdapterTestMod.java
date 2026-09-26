@@ -1,6 +1,10 @@
 package io.github.sunthemoon.arceadaptertest;
 
+import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiCompatibility;
+import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersion;
+import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersions;
 import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -12,7 +16,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-/** Dedicated GameTest fixture; this mod is not part of the distributed host JAR. */
+/** Dedicated API compatibility fixture; never bundled in the distributed host JAR. */
 @Mod(AdapterTestMod.MOD_ID)
 public final class AdapterTestMod {
     public static final String MOD_ID = "arce_adapter_test";
@@ -35,6 +39,9 @@ public final class AdapterTestMod {
     private static volatile RegisterRocketAdaptersEvent receivedEvent;
 
     public AdapterTestMod(FMLJavaModLoadingContext context) {
+        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 1)) != ApiCompatibility.COMPATIBLE) {
+            throw new IllegalStateException("Rocket adapter fixture requires ARCE API 1.1");
+        }
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
@@ -46,6 +53,9 @@ public final class AdapterTestMod {
         registrationEvents++;
         // Intentionally retained only to exercise the host's closed registration window.
         receivedEvent = event;
+        ApiVersion version = ApiVersions.current();
+        LogUtils.getLogger().info("Registered rocket adapter {} (payload {}, API {}.{}, event {})",
+                ADAPTER_ID, PAYLOAD_VERSION, version.major(), version.minor(), registrationEvents);
     }
 
     static int registrationEvents() {

@@ -5,8 +5,8 @@ license="MIT"
 [[mods]]
 modId="arce_adapter_test"
 version="1.0.0"
-displayName="ARCE Rocket Adapter GameTest Fixture"
-description='''Dedicated GameTest-only public API consumer. Not a distributable gameplay mod.'''
+displayName="ARCE Rocket Adapter Compatibility Fixture"
+description='''Dedicated public API consumer for GameTest and packaged compatibility checks. Not a gameplay mod.'''
 
 [[dependencies.arce_adapter_test]]
 modId="forge"
