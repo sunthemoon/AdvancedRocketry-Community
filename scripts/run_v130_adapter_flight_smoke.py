@@ -44,11 +44,27 @@ TRANSFER_JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 OWNER = "00000000-0000-0000-0000-000000000005"
 REQUIRED_FUEL = 372  # Bundled route 50, mass 210, gravity 1000/165; no data packs.
 RELOCATED = {"snapshot_id", "source_dimension", "source_origin", "created_at_game_time", "content_hash"}
+PROPERTIES_TIMESTAMP = re.compile(
+    rb"#(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) "
+    rb"(?:0[1-9]|[12][0-9]|3[01]) (?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9] "
+    rb"(?:[A-Za-z]{1,10}|GMT[+-][0-9]{2}:[0-9]{2}) [0-9]{4}\r?\n"
+)
 
 
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise SmokeError(message)
+
+
+def configuration_identity(relative: str, payload: bytes) -> str:
+    if relative == "server.properties":
+        lines = payload.splitlines(keepends=True)
+        require(len(lines) >= 3 and lines[0] in (b"#Minecraft server properties\n", b"#Minecraft server properties\r\n")
+                and PROPERTIES_TIMESTAMP.fullmatch(lines[1]) is not None,
+                "server.properties lacks the exact generated header/timestamp")
+        # Java rewrites this one timestamp on each boot; every other byte remains binding.
+        payload = lines[0] + b"".join(lines[2:])
+    return hashlib.sha256(payload).hexdigest()
 
 
 def site(dimension: str, origin: list | tuple) -> dict:
@@ -460,13 +476,15 @@ class FlightRun(recovery.RecoveryRun):
         document["warnings"] = [line.rstrip() for line in process.lines if "WARN" in line]
         document["active_properties"] = server_smoke.verify_active_server_properties(
             recovery.regular(self.server / "server.properties", 65536), self.port)
-        configs = {}
+        configs, raw_hashes = {}, {}
         for relative in ("server.properties", "config/advancedrocketrycommunity-common.toml", "config/fml.toml"):
             data = recovery.regular(self.server / relative, 65536)
             target = directory / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-            configs[relative] = hashlib.sha256(data).hexdigest()
+            raw_hashes[relative] = hashlib.sha256(data).hexdigest()
+            configs[relative] = configuration_identity(relative, data)
+        document["configuration_sha256"] = raw_hashes
         require(self.config_hashes is None or configs == self.config_hashes, "Configuration changed between processes")
         self.config_hashes = configs
         self.mods(True)

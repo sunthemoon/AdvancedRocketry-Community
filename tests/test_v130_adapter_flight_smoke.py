@@ -206,6 +206,29 @@ class OracleTests(unittest.TestCase):
 
 
 class BoundsAndDriverTests(unittest.TestCase):
+    def test_only_the_validated_generated_properties_timestamp_may_change(self):
+        original = (b"#Minecraft server properties\r\n#Sun Sep 27 00:24:52 CST 2026\r\n"
+                    b"server-ip=127.0.0.1\r\nserver-port=50046\r\nunknown-setting=value\r\n")
+        identity = runner.configuration_identity("server.properties", original)
+        later = original.replace(b"00:24:52", b"00:25:37")
+        self.assertNotEqual(original, later)
+        self.assertEqual(identity, runner.configuration_identity("server.properties", later))
+        for changed in (original.replace(b"127.0.0.1", b"0.0.0.0"),
+                        original.replace(b"50046", b"50047"),
+                        original.replace(b"unknown-setting=value", b"unknown-setting=other"),
+                        original + b"#new comment\r\n", original + b"new-setting=true\r\n",
+                        original.replace(b"\r\n", b"\n")):
+            with self.subTest(changed=changed):
+                self.assertNotEqual(identity, runner.configuration_identity("server.properties", changed))
+        for malformed in (original.replace(b"#Minecraft server properties", b"#Other header"),
+                          original.replace(b"#Sun Sep 27 00:24:52 CST 2026\r\n", b""),
+                          original.replace(b"00:24:52", b"99:99:99"),
+                          original.replace(b"CST 2026", b"CST 2026 extra")):
+            with self.subTest(malformed=malformed), self.assertRaises(runner.SmokeError):
+                runner.configuration_identity("server.properties", malformed)
+        self.assertNotEqual(runner.configuration_identity("config/fml.toml", original),
+                            runner.configuration_identity("config/fml.toml", later))
+
     def test_dimension_region_coordinates_include_negative_and_boundary_chunks(self):
         self.assertEqual(Path("world/dimensions/advancedrocketrycommunity/moon/entities/r.-1.0.mca"),
                          runner.region_path(runner.MOON, "entities", -1, 0))

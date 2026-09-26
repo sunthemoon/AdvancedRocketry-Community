@@ -29,6 +29,9 @@ launch hooks are explicitly enabled; this is not player fuel-loader coverage.
 Each `moon-landing`, `earth-landing`, `disassembly`, `container-restart` directory
 contains its result/exit code, launch and command records, actual status, stdout,
 debug/latest logs, active config, decoded disk state and unchanged native files.
+Configuration comparison excludes only the validated generated second-line Java
+timestamp in `server.properties`; all other properties bytes and both TOMLs must
+remain identical. Raw configuration bytes and their hashes are always retained.
 Landing directories also contain the full `RocketEntityData.snbt` observation.
 The next process compares that complete data and the saved transfer inspection
 receipt before launching or disassembling. Failure results and raw logs remain
@@ -47,6 +50,6 @@ python -B scripts/run_v130_adapter_flight_smoke.py --help
 git diff --check
 ```
 
-The 19-test focused run passed during implementation. Independent packaged runtime
+The 20-test focused run passed after the timestamp regression correction. Independent packaged runtime
 results must be recorded separately; the script's existence and Python test results
 do not approve release gates or imply Minecraft execution has passed.
