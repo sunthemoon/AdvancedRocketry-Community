@@ -1,0 +1,26 @@
+usage: run_v130_adapter_flight_smoke.py [-h] --host-jar HOST_JAR
+                                        --fixture-jar FIXTURE_JAR
+                                        --evidence-dir EVIDENCE_DIR
+                                        --java JAVA
+                                        [--expected-version EXPECTED_VERSION]
+                                        [--startup-timeout STARTUP_TIMEOUT]
+                                        --accept-eula
+                                        server_dir
+
+Run one external-cargo Earth/Moon round trip across four clean server
+processes. Requires a fresh disposable Forge libraries-only directory and two
+explicit JARs. Uses operator-only release-test fueling/launch, not player
+fuel-loader gameplay.
+
+positional arguments:
+  server_dir
+
+options:
+  -h, --help            show this help message and exit
+  --host-jar HOST_JAR
+  --fixture-jar FIXTURE_JAR
+  --evidence-dir EVIDENCE_DIR
+  --java JAVA
+  --expected-version EXPECTED_VERSION
+  --startup-timeout STARTUP_TIMEOUT
+  --accept-eula
