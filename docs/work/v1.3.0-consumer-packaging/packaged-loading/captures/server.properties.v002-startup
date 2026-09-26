@@ -1,0 +1,15 @@
+difficulty=peaceful
+enable-command-block=false
+enforce-secure-profile=false
+generate-structures=false
+level-name=world
+level-type=minecraft:normal
+max-players=2
+motd=ARCE v0.0.2 dedicated smoke
+online-mode=false
+server-ip=127.0.0.1
+server-port=52949
+simulation-distance=2
+spawn-protection=0
+sync-chunk-writes=true
+view-distance=2

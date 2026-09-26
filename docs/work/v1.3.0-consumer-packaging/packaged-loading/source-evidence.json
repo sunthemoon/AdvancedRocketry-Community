@@ -1,0 +1,7 @@
+{
+  "fixture_source_path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\adapterTest\\java\\io\\github\\sunthemoon\\arceadaptertest\\AdapterTestMod.java",
+  "fixture_source_sha256": "98a275f102d1663750c470113932a777c46c9c7810958ab6d3a0314142e2a6bd",
+  "forge_sources_jar": "C:\\Users\\Administrator\\.gradle\\caches\\forge_gradle\\maven_downloader\\net\\minecraftforge\\forge\\1.20.1-47.4.10\\forge-1.20.1-47.4.10-sources.jar",
+  "forge_sources_sha256": "918a11bdfceace2752d4c29bddbdf327981e1f6a1e1f0675f23e5fbf01e226c0",
+  "game_test_hooks_sha256": "9f4166737f8380d66a65b16975c6bfcd44e8433d0cae3a5c4544dcc4fa278e9e"
+}

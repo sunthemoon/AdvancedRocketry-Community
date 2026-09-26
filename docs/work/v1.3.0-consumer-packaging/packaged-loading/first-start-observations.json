@@ -1,0 +1,64 @@
+{
+  "actual_mod_sources": [
+    "[26Sep2026 23:18:46.200] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+    "[26Sep2026 23:18:46.002] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFileInfo/LOADING]: Found valid mod file advancedrocketry-community-1.20.1-1.3.0-dev.jar with {advancedrocketrycommunity} mods - versions {1.20.1-1.3.0-dev}",
+    "[26Sep2026 23:18:46.200] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFileInfo/LOADING]: Found valid mod file advancedrocketry-community-1.20.1-1.3.0-dev.jar with {advancedrocketrycommunity} mods - versions {1.20.1-1.3.0-dev}",
+    "[26Sep2026 23:18:46.199] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+    "[26Sep2026 23:18:46.007] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFileInfo/LOADING]: Found valid mod file arce-adapter-compat-test-1.0.0.jar with {arce_adapter_test} mods - versions {1.0.0}",
+    "[26Sep2026 23:18:46.199] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFileInfo/LOADING]: Found valid mod file arce-adapter-compat-test-1.0.0.jar with {arce_adapter_test} mods - versions {1.0.0}"
+  ],
+  "audit_counts": {
+    "client_linkage_failure_count": 0,
+    "error_count": 0,
+    "fatal_count": 0,
+    "project_error_count": 0,
+    "project_fatal_count": 0,
+    "project_warning_count": 0,
+    "warning_count": 25
+  },
+  "completed_at": "2026-09-26T15:19:13.474564+00:00",
+  "debug_log": "captures\\first-start-debug.log",
+  "debug_log_sha256": "43518c4a22025e22eb5bb121d77abb0b7ae93d26d7dc9356ab58c45aa43a1948",
+  "exit_code": 0,
+  "full_log": "captures\\first-start-full.txt",
+  "full_log_sha256": "b5d192db11ea54e012b4b9837874d247a65a8c94a166581e55352b825300be19",
+  "name": "first-start",
+  "registration_lines": [
+    "[23:18:52] [main/INFO] [io.gi.su.ar.AdapterTestMod/]: Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.1, event 1)\n"
+  ],
+  "started_at": "2026-09-26T15:18:43.834787+00:00",
+  "status_mod_versions": {
+    "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+    "arce_adapter_test": "1.0.0",
+    "forge": "",
+    "minecraft": "1.20.1"
+  },
+  "warnings": [
+    "2026-09-26 23:18:45,625 main WARN Advanced terminal features are not available in this environment\n",
+    "[23:18:45] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\config\\fml.toml is not correct. Correcting\n",
+    "[23:18:46] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file\n",
+    "[23:18:46] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file\n",
+    "[23:18:46] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file\n",
+    "[23:18:46] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file\n",
+    "[23:18:52] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\config\\advancedrocketrycommunity-common.toml is not correct. Correcting\n",
+    "[23:18:52] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. \n",
+    "[23:18:52] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. \n",
+    "[23:18:52] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. \n",
+    "[23:18:53] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema\n",
+    "[23:18:53] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema\n",
+    "[23:18:56] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!\n",
+    "[23:18:56] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.\n",
+    "[23:18:56] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.\n",
+    "[23:18:56] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file.\n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file .\\world\\serverconfig\\forge-server.toml is not correct. Correcting\n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. \n",
+    "[23:18:56] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. \n"
+  ]
+}

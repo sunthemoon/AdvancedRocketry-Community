@@ -1,0 +1,28 @@
+[
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\packaged_consumer_runner.py",
+      "prepare"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\packaged_consumer_runner.py",
+      "run"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "C:/Users/Administrator/AppData/Local/Temp/arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269/evidence_postcheck.py"
+    ],
+    "exit_code": 0
+  }
+]

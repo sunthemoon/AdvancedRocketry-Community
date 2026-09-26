@@ -1,0 +1,19 @@
+{
+    "file": "D:\\GitHub\\AdvancedRocketry-Community\\compat-test-mod\\build\\libs\\arce-adapter-compat-test-1.0.0.jar",
+    "bytes": 19304,
+    "sha256": "0432704f79ea3c85d5af64bba4aedd1f0a5fb7dfafeb7ee83ff99468e23e70a8",
+    "entries": [
+        "META-INF/LICENSE",
+        "META-INF/MANIFEST.MF",
+        "META-INF/NOTICE.md",
+        "META-INF/mods.toml",
+        "data/advancedrocketrycommunity/tags/blocks/rocket_movable.json",
+        "io/github/sunthemoon/arceadaptertest/AdapterRegistrationGameTests.class",
+        "io/github/sunthemoon/arceadaptertest/AdapterTestMod.class",
+        "io/github/sunthemoon/arceadaptertest/FixtureContainerBlock.class",
+        "io/github/sunthemoon/arceadaptertest/FixtureContainerBlockEntity.class",
+        "io/github/sunthemoon/arceadaptertest/FixtureInventoryAdapter.class",
+        "pack.mcmeta"
+    ],
+    "reobfuscated": true
+}

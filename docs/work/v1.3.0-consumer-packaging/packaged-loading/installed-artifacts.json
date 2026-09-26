@@ -1,0 +1,18 @@
+[
+  {
+    "bytes": 2171579,
+    "installed": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+    "mod_id": "advancedrocketrycommunity",
+    "path": "D:/GitHub/AdvancedRocketry-Community/build/libs/advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+    "sha256": "3f8be1e0adce70b1c25fc1eeeffeac5b7f398016abf6670af11b42c52c84c200",
+    "version": "1.20.1-1.3.0-dev"
+  },
+  {
+    "bytes": 19304,
+    "installed": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-packaged-consumer-443d17059d864ec1ba2aaa07a7d5a269\\server\\mods\\arce-adapter-compat-test-1.0.0.jar",
+    "mod_id": "arce_adapter_test",
+    "path": "D:/GitHub/AdvancedRocketry-Community/compat-test-mod/build/libs/arce-adapter-compat-test-1.0.0.jar",
+    "sha256": "0432704f79ea3c85d5af64bba4aedd1f0a5fb7dfafeb7ee83ff99468e23e70a8",
+    "version": "1.0.0"
+  }
+]

@@ -134,3 +134,10 @@ production commands and entity interaction; it is not shipped in the main JAR.
 Full external-provider uninstall/restart and other integration systems remain
 separate compatibility coverage. Contract details are in
 [ADR-022](decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md).
+
+For an actual ForgeGradle classifier consumer, use the independent
+[compatibility fixture build](../compat-test-mod/README.md). It reuses the fixture
+source files but resolves the API from a Maven repository, not host source or
+compiled output. Its separately reobfuscated JAR is installed alongside the normal
+host JAR on a disposable dedicated server. Do not install both that JAR and the
+development source-set fixture, or install the API classifier as a third mod.

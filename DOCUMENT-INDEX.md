@@ -203,6 +203,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 ## 决策记录
 
 - [公共 API 接入指南](docs/PUBLIC-API-GUIDE.md)：compile-only classifier、版本查询、火箭容器注册与数据兼容性。
+- [独立兼容测试模组](compat-test-mod/README.md)：实际 Maven API 消费者、独立构建与打包边界检查。
 - [v1.3 实施日志](docs/work/v1.3.0-implementation-log.md)：API 切片及其实际验证范围。
 - [v1.3 开发基线例外](docs/decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md)。
 - [公共 API 版本政策](docs/decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md)。

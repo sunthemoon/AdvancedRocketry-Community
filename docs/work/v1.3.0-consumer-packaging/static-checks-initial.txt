@@ -1,0 +1,232 @@
+V130-ROCKET-03A static checks; integration e2391891e101a7e2e31493b1923a49466c793c8f
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+Scope: planning validation only; no release Gate or human approval asserted.
+[PASS] Markdown relative links resolve (1227 checked)
+Summary: 1 passed, 0 pending, 0 warnings, 0 failed
+git diff --exit-code -- src/generated: exit 0
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:825: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:832: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:839: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:846: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:853: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:860: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:867: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:874: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:881: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:888: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:895: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:902: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:909: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:916: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:923: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:930: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:937: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:944: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:951: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:958: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:965: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:972: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:979: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:986: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:993: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1000: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1007: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1014: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1021: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1028: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1035: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1042: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1049: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1056: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1063: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1070: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1077: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1084: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1091: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1098: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1105: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1112: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1119: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1126: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1133: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1140: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1147: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1154: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1161: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1168: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1175: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1182: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1189: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1196: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1203: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1210: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1217: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1224: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1231: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1238: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1245: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1252: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1259: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1266: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1273: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1280: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1287: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1294: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1301: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1308: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1315: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1322: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1329: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1336: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1343: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1350: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1357: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1364: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1371: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1378: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1385: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1392: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1399: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1406: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1413: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1420: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1427: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1434: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1441: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1448: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1455: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1462: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1469: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1476: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1483: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1490: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1497: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1504: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1511: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1518: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1525: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1532: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1539: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1546: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1553: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1560: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1567: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1574: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1581: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1588: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1595: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1602: trailing whitespace.
++                
+docs/work/v1.3.0-consumer-packaging/consumer-reports/classpath.json:1609: trailing whitespace.
++                

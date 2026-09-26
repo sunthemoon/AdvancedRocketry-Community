@@ -1,0 +1,1 @@
+PASS: two artifact identities, process exits, source/registration/status receipts, full logs and closed port
