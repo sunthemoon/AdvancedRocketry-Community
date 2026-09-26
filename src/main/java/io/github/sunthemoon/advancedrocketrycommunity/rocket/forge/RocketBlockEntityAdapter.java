@@ -12,4 +12,8 @@ public interface RocketBlockEntityAdapter {
     RocketBlockEntityPayload capture(BlockEntity blockEntity);
 
     boolean restore(BlockEntity blockEntity, RocketBlockEntityPayload payload);
+
+    default boolean canRestorePayload(RocketBlockEntityPayload payload) {
+        return id().equals(payload.adapterId());
+    }
 }

@@ -51,7 +51,7 @@ public final class RocketBlockEntityAdapters {
     public boolean restore(BlockEntity blockEntity, RocketBlockEntityPayload payload) {
         RocketBlockEntityAdapter adapter = byId.get(payload.adapterId());
         try {
-            return adapter != null && adapter.supports(blockEntity)
+            return adapter != null && adapter.canRestorePayload(payload) && adapter.supports(blockEntity)
                     && adapter.restore(blockEntity, payload)
                     && payload.equals(adapter.capture(blockEntity));
         } catch (RuntimeException exception) {
@@ -59,9 +59,10 @@ public final class RocketBlockEntityAdapters {
         }
     }
 
-    /** Registry availability only; this query never calls a provider or touches a world. */
+    /** Checks availability/envelope version without calling external providers or touching a world. */
     public boolean supportsPayload(RocketBlockEntityPayload payload) {
-        return byId.containsKey(payload.adapterId());
+        RocketBlockEntityAdapter adapter = byId.get(payload.adapterId());
+        return adapter != null && adapter.canRestorePayload(payload);
     }
 
     private static String typeId(BlockEntity blockEntity) {

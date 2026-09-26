@@ -19,6 +19,15 @@ java {
     withSourcesJar()
 }
 
+// A separate development-only mod: platform + independently compiled API, never main classes.
+sourceSets {
+    adapterTest {
+        compileClasspath = sourceSets.main.compileClasspath + files(
+                layout.buildDirectory.dir('classes/api'), layout.buildDirectory.dir('classes/rocketApi'))
+        runtimeClasspath = output + sourceSets.main.runtimeClasspath
+    }
+}
+
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
 minecraft {
@@ -71,7 +80,12 @@ minecraft {
 
         gameTestServer {
             workingDirectory project.file('build/gametest')
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'forge.enabledGameTestNamespaces', "${mod_id},arce_adapter_test"
+            mods {
+                arce_adapter_test {
+                    source sourceSets.adapterTest
+                }
+            }
         }
 
         data {
@@ -269,6 +283,10 @@ tasks.named('jar', Jar).configure {
 // This independent compilation prevents API types from acquiring platform dependencies.
 def apiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/version'
 def exportedApiTypes = ['ApiVersion', 'ApiCompatibility', 'ApiVersions']
+def rocketApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/rocket'
+def exportedRocketApiTypes = ['RocketBlockEntityAdapter', 'RocketAdapterRegistrar', 'RegisterRocketAdaptersEvent']
+def exportedApiClasses = exportedApiTypes.collect { "${apiPackage}/${it}.class" } +
+        exportedRocketApiTypes.collect { "${rocketApiPackage}/${it}.class" }
 def compileApiJava = tasks.register('compileApiJava', JavaCompile) {
     source exportedApiTypes.collect { "src/main/java/${apiPackage}/${it}.java" }
     classpath = files()
@@ -280,12 +298,33 @@ def compileApiJava = tasks.register('compileApiJava', JavaCompile) {
     }
 }
 
+def compileRocketApiJava = tasks.register('compileRocketApiJava', JavaCompile) {
+    source exportedRocketApiTypes.collect { "src/main/java/${rocketApiPackage}/${it}.java" }
+    classpath = sourceSets.main.compileClasspath + files(compileApiJava.flatMap { it.destinationDirectory })
+    options.sourcepath = files()
+    options.annotationProcessorPath = files()
+    destinationDirectory = layout.buildDirectory.dir('classes/rocketApi')
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.named('compileAdapterTestJava', JavaCompile) {
+    dependsOn compileApiJava, compileRocketApiJava
+    options.sourcepath = files()
+    options.annotationProcessorPath = files()
+}
+
+tasks.named('check') {
+    dependsOn 'compileAdapterTestJava'
+}
+
 def apiJar = tasks.register('apiJar', Jar) {
-    dependsOn compileApiJava, 'reobfJar'
+    dependsOn compileApiJava, compileRocketApiJava, 'reobfJar'
     archiveClassifier = 'api'
     // Publish the actual runtime bytes; Forge's remapper can rewrite even JDK-only classes.
     from({ zipTree(tasks.named('jar', Jar).get().archiveFile.get().asFile) }) {
-        include exportedApiTypes.collect { "${apiPackage}/${it}.class" }
+        include exportedApiClasses
     }
 }
 
@@ -299,6 +338,10 @@ tasks.named('test', Test) {
     inputs.file(tasks.named('jar', Jar).flatMap { it.archiveFile })
     systemProperty 'arce.apiJar', apiJar.get().archiveFile.get().asFile.absolutePath
     systemProperty 'arce.runtimeJar', tasks.named('jar', Jar).get().archiveFile.get().asFile.absolutePath
+    inputs.files(sourceSets.main.compileClasspath)
+    doFirst {
+        systemProperty 'arce.apiPlatformClasspath', sourceSets.main.compileClasspath.asPath
+    }
 }
 
 publishing {

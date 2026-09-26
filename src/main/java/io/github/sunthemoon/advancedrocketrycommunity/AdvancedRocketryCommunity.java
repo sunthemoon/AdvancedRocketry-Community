@@ -32,6 +32,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualNetwork;
@@ -52,6 +54,8 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -72,7 +76,7 @@ public final class AdvancedRocketryCommunity {
     private final PrecisionAssemblerManager precisionAssemblers = new PrecisionAssemblerManager(multiblockPatterns);
     private final AtmosphereManager atmosphereManager;
     private final PlayerLifeSupportService playerLifeSupport;
-    private final RocketManager rocketManager;
+    private RocketManager rocketManager;
     private final StationManager stationManager;
     private final SatelliteManager satelliteManager;
 
@@ -120,13 +124,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
-        rocketManager = new RocketManager(celestialCatalogs, routeCatalogs);
-        RocketRuntime.install(rocketManager);
         new RocketFlightNetwork();
-        MinecraftForge.EVENT_BUS.addListener(rocketManager::onServerTick);
-        MinecraftForge.EVENT_BUS.addListener(rocketManager::onPlayerLoggedIn);
-        MinecraftForge.EVENT_BUS.addListener(rocketManager::onPlayerLoggedOut);
-        MinecraftForge.EVENT_BUS.addListener(new RocketCommands(rocketManager)::register);
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
         MinecraftForge.EVENT_BUS.addListener(rocketVisualSynchronizer::onStartTracking);
@@ -169,6 +167,7 @@ public final class AdvancedRocketryCommunity {
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(this::initializeRocketAdapters);
         String version = ModList.get()
                 .getModContainerById(MOD_ID)
                 .map(container -> container.getModInfo().getVersion().toString())
@@ -186,6 +185,24 @@ public final class AdvancedRocketryCommunity {
         );
     }
 
+    private void initializeRocketAdapters() {
+        if (rocketManager != null) {
+            throw new IllegalStateException("Rocket services were already initialized");
+        }
+        try (RocketAdapterRegistry registry = new RocketAdapterRegistry(
+                ForgeRegistries.BLOCK_ENTITY_TYPES::containsKey)) {
+            ModLoader.get().runEventGenerator(container -> new RegisterRocketAdaptersEvent(
+                    registry.forOwner(container.getModId())));
+            RocketManager manager = new RocketManager(registry.freeze(), celestialCatalogs, routeCatalogs);
+            RocketRuntime.install(manager);
+            MinecraftForge.EVENT_BUS.addListener(manager::onServerTick);
+            MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedIn);
+            MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedOut);
+            MinecraftForge.EVENT_BUS.addListener(new RocketCommands(manager)::register);
+            rocketManager = manager;
+        }
+    }
+
     private void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new CelestialDefinitionReloadListener(celestialCatalogs));
         event.addListener(new RouteDefinitionReloadListener(routeCatalogs, celestialCatalogs));
@@ -196,7 +213,9 @@ public final class AdvancedRocketryCommunity {
     private void onServerStopped(ServerStoppedEvent event) {
         playerLifeSupport.clear();
         atmosphereManager.clear();
-        rocketManager.clear();
+        if (rocketManager != null) {
+            rocketManager.clear();
+        }
         stationManager.clear();
         satelliteManager.clear();
         routeCatalogs.clear();

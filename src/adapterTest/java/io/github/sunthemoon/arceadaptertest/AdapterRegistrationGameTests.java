@@ -30,7 +30,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 @PrefixGameTestTemplate(false)
 public final class AdapterRegistrationGameTests {
     private static final String HOST_ID = "advancedrocketrycommunity";
-    private static final ResourceLocation ROCKET_TYPE = new ResourceLocation(HOST_ID, "rocket");
+    private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");
 
     private AdapterRegistrationGameTests() {
     }
@@ -45,7 +45,7 @@ public final class AdapterRegistrationGameTests {
         try {
             AdapterTestMod.receivedEvent().register(
                     AdapterTestMod.id("late_inventory"),
-                    Set.of(new ResourceLocation("minecraft", "furnace")),
+                    Set.of(ResourceLocation.tryParse("minecraft:furnace")),
                     AdapterTestMod.PAYLOAD_VERSION,
                     new FixtureInventoryAdapter());
         } catch (IllegalStateException expected) {
@@ -180,7 +180,7 @@ public final class AdapterRegistrationGameTests {
     }
 
     private static Block hostBlock(String path) {
-        ResourceLocation id = new ResourceLocation(HOST_ID, path);
+        ResourceLocation id = ResourceLocation.tryParse(HOST_ID + ":" + path);
         if (!ForgeRegistries.BLOCKS.containsKey(id)) {
             throw new IllegalStateException("Missing required host block " + id);
         }
