@@ -1,0 +1,30 @@
+{
+  "command": "python -B -m unittest tests.test_v130_adapter_flight_smoke -v",
+  "cwd": "D:\\GitHub\\arce-v130-adapter-flight",
+  "commit": "5cd46401723ea4c824d43c0c6dc3e50ce1738784",
+  "status_before": [],
+  "status_after": [],
+  "exit_code": 0,
+  "elapsed_seconds": 0.7077246,
+  "source_before": [
+    {
+      "path": "scripts/run_v130_adapter_flight_smoke.py",
+      "sha256": "3396dd3fdfce004b19abb4c5a7413fafe64061274373a1fc26944a39ad26d939"
+    },
+    {
+      "path": "tests/test_v130_adapter_flight_smoke.py",
+      "sha256": "a5968da7ce4995284f7fade1ffcbc6c652e76f06ee6c8f95d834e60547d03a5a"
+    }
+  ],
+  "source_after": [
+    {
+      "path": "scripts/run_v130_adapter_flight_smoke.py",
+      "sha256": "3396dd3fdfce004b19abb4c5a7413fafe64061274373a1fc26944a39ad26d939"
+    },
+    {
+      "path": "tests/test_v130_adapter_flight_smoke.py",
+      "sha256": "a5968da7ce4995284f7fade1ffcbc6c652e76f06ee6c8f95d834e60547d03a5a"
+    }
+  ],
+  "log_sha256": "71cea01ecd2065ef5d16fea49975b67783a94aa17499e2fc4c71b84f2f63c38e"
+}

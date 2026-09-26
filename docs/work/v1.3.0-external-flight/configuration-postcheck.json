@@ -1,0 +1,74 @@
+[
+  {
+    "phase": "moon-landing",
+    "path": "server.properties",
+    "raw_sha256": "eb62cc8649524a4e4df93c1f6401e7d72d921910b3db44540ff3d2e5407fd2fc",
+    "identity_sha256": "600e83a97d88b0a11cbceede1a77885d135c17a34585bc32f1e09c96b7baf600"
+  },
+  {
+    "phase": "moon-landing",
+    "path": "config/advancedrocketrycommunity-common.toml",
+    "raw_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "identity_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8"
+  },
+  {
+    "phase": "moon-landing",
+    "path": "config/fml.toml",
+    "raw_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "identity_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b"
+  },
+  {
+    "phase": "earth-landing",
+    "path": "server.properties",
+    "raw_sha256": "78e1d88fcc24bd634de247e1f7dfa471fc88ee41e35762faa6300de89efa99b0",
+    "identity_sha256": "600e83a97d88b0a11cbceede1a77885d135c17a34585bc32f1e09c96b7baf600"
+  },
+  {
+    "phase": "earth-landing",
+    "path": "config/advancedrocketrycommunity-common.toml",
+    "raw_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "identity_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8"
+  },
+  {
+    "phase": "earth-landing",
+    "path": "config/fml.toml",
+    "raw_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "identity_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b"
+  },
+  {
+    "phase": "disassembly",
+    "path": "server.properties",
+    "raw_sha256": "f816d18898fc5abd8ee7263d16bc72823713e1f5c72081e56821ab83d06000bd",
+    "identity_sha256": "600e83a97d88b0a11cbceede1a77885d135c17a34585bc32f1e09c96b7baf600"
+  },
+  {
+    "phase": "disassembly",
+    "path": "config/advancedrocketrycommunity-common.toml",
+    "raw_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "identity_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8"
+  },
+  {
+    "phase": "disassembly",
+    "path": "config/fml.toml",
+    "raw_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "identity_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b"
+  },
+  {
+    "phase": "container-restart",
+    "path": "server.properties",
+    "raw_sha256": "c69acf9e395d5a94acce5073beee615d6f5c04038123a0f4a6074c8b38907b6d",
+    "identity_sha256": "600e83a97d88b0a11cbceede1a77885d135c17a34585bc32f1e09c96b7baf600"
+  },
+  {
+    "phase": "container-restart",
+    "path": "config/advancedrocketrycommunity-common.toml",
+    "raw_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "identity_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8"
+  },
+  {
+    "phase": "container-restart",
+    "path": "config/fml.toml",
+    "raw_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "identity_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b"
+  }
+]

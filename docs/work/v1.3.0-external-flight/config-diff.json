@@ -1,0 +1,49 @@
+{
+  "source": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v130-adapter-flight-e1769690262f4565a228cc18bf07a75c\\flight-evidence",
+  "files": [
+    {
+      "path": "server.properties",
+      "before_sha256": "ab181784ae85f0757c773366888de229a95064b16b423e3a05229ee8c0ab6d42",
+      "after_sha256": "23317d6ad72dba14678826aba8d73d8d4ae7e9e552f049e22293dd2fdbc136b9",
+      "before_bytes": 1351,
+      "after_bytes": 1351,
+      "byte_equal": false,
+      "equal_except_second_line": true,
+      "line_differences": [
+        "--- ",
+        "+++ ",
+        "@@ -1,5 +1,5 @@",
+        " #Minecraft server properties",
+        "-#Sun Sep 27 00:24:52 CST 2026",
+        "+#Sun Sep 27 00:25:37 CST 2026",
+        " allow-flight=false",
+        " allow-nether=true",
+        " broadcast-console-to-ops=true"
+      ]
+    },
+    {
+      "path": "config/advancedrocketrycommunity-common.toml",
+      "before_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+      "after_sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+      "before_bytes": 410,
+      "after_bytes": 410,
+      "byte_equal": true,
+      "equal_except_second_line": true,
+      "line_differences": []
+    },
+    {
+      "path": "config/fml.toml",
+      "before_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+      "after_sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+      "before_bytes": 1146,
+      "after_bytes": 1146,
+      "byte_equal": true,
+      "equal_except_second_line": true,
+      "line_differences": []
+    }
+  ],
+  "phase_exits": {
+    "moon-landing": 0,
+    "earth-landing": 0
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "server.properties": {
+    "raw_sha256_before": "ab181784ae85f0757c773366888de229a95064b16b423e3a05229ee8c0ab6d42",
+    "raw_sha256_after": "23317d6ad72dba14678826aba8d73d8d4ae7e9e552f049e22293dd2fdbc136b9",
+    "comparison_sha256_before": "9f593668dc36a86c45f4f25e98baf30fd72ceab357bde2131bf450d1f2d6b724",
+    "comparison_sha256_after": "9f593668dc36a86c45f4f25e98baf30fd72ceab357bde2131bf450d1f2d6b724"
+  },
+  "config/advancedrocketrycommunity-common.toml": {
+    "raw_sha256_before": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "raw_sha256_after": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "comparison_sha256_before": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+    "comparison_sha256_after": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8"
+  },
+  "config/fml.toml": {
+    "raw_sha256_before": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "raw_sha256_after": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "comparison_sha256_before": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+    "comparison_sha256_after": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b"
+  }
+}

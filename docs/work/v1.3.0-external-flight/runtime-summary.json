@@ -1,0 +1,747 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2171579,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "3f8be1e0adce70b1c25fc1eeeffeac5b7f398016abf6670af11b42c52c84c200",
+      "version": "1.20.1-1.3.0-dev"
+    },
+    {
+      "bytes": 19417,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "8144ded5d03764cdd6b1eda8ff5e778f7dd87c564ebde3e5dfe20d382629085f",
+      "version": "1.0.0"
+    }
+  ],
+  "cycles": [
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "57526",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T16:31:54.898758+00:00",
+      "configuration_sha256": {
+        "config/advancedrocketrycommunity-common.toml": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+        "config/fml.toml": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+        "server.properties": "eb62cc8649524a4e4df93c1f6401e7d72d921910b3db44540ff3d2e5407fd2fc"
+      },
+      "disk_evidence": {
+        "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+          "bytes": 108,
+          "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+        },
+        "world/data/advancedrocketrycommunity_rocket_transfers.dat": {
+          "bytes": 1396,
+          "sha256": "d093842183174b96359afc0cbec118cb617e18b138901de87b66fc7bcca30d4b"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca": {
+          "bytes": 16384,
+          "sha256": "a1d8bfb9a126ad1336b1c999a3b7bb206ac00694f0fb065cc2e44993afb5a8ef"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 811008,
+          "sha256": "c394b2dc7389b49cd1543594d0f8d63d3852d56ec825eff68c1c14229b7f4441"
+        },
+        "world/entities/r.0.0.mca": {
+          "bytes": 36864,
+          "sha256": "c22dcdd7c0ed24b936c97018ae9c96a54122031145f30efde9dad84985bf4010"
+        },
+        "world/level.dat": {
+          "bytes": 37914,
+          "sha256": "ca40b3004e285f8a55909ab85f937fa0c6149c11d1074dc59a92b55f56aa5274"
+        },
+        "world/region/r.0.0.mca": {
+          "bytes": 4628480,
+          "sha256": "1ab6bdd4a16db06aa7dad867816219d7051ab17f08b0d2fc9d6737434ae0c4d6"
+        }
+      },
+      "exit_code": 0,
+      "legs": [
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 628,
+          "fuel_before": 1000,
+          "required": 372,
+          "transfer": "7524591a-935f-448e-ad52-33da0d80e1a7"
+        }
+      ],
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 25
+      },
+      "observation_ticks": 21,
+      "phase": "moon-landing",
+      "reports": [
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "cd509cf8-12cd-4c88-a609-8541c87ddae5",
+          "fuel": 1000,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            264,
+            101,
+            264
+          ],
+          "passengers": 0,
+          "snapshot": "cbe7cddff068212a3c9a90d37553572fc281499554bceb407a0df7b4ee88b386",
+          "state": "FUELED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "67e98164-a97e-4d33-a560-4d43e53b98b6",
+          "fuel": 628,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "c2c309599c5dfee0ac77dc5ceb0b866bde47860abbec4f8393d358ecb96ec301",
+          "state": "LANDED",
+          "transfer": "none"
+        }
+      ],
+      "result": "PASS",
+      "started_at": "2026-09-26T16:31:10.712026+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 00:31:12,375 main WARN Advanced terminal features are not available in this environment",
+        "[00:31:12] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\config\\fml.toml is not correct. Correcting",
+        "[00:31:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:19] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\config\\advancedrocketrycommunity-common.toml is not correct. Correcting",
+        "[00:31:19] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}.",
+        "[00:31:19] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096.",
+        "[00:31:19] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024.",
+        "[00:31:20] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[00:31:20] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[00:31:22] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[00:31:22] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[00:31:22] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[00:31:22] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file .\\world\\serverconfig\\forge-server.toml is not correct. Correcting",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true.",
+        "[00:31:22] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false."
+      ]
+    },
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "57526",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T16:32:28.171278+00:00",
+      "configuration_sha256": {
+        "config/advancedrocketrycommunity-common.toml": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+        "config/fml.toml": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+        "server.properties": "78e1d88fcc24bd634de247e1f7dfa471fc88ee41e35762faa6300de89efa99b0"
+      },
+      "disk_evidence": {
+        "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+          "bytes": 108,
+          "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+        },
+        "world/data/advancedrocketrycommunity_rocket_transfers.dat": {
+          "bytes": 1431,
+          "sha256": "841343242d0835870e80fc8568aa0c2b3d8954de57ca821be6cce43265e0d18f"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca": {
+          "bytes": 16384,
+          "sha256": "bca56952ff34f57a07f447a792204d93690537cb8e093ea0d4372d40cd2c2f0b"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 815104,
+          "sha256": "6564e58321f8e656a040a9a95bb36315a26ce094ad3d68e9f2c27d9e6ccf6f64"
+        },
+        "world/entities/r.-1.0.mca": {
+          "bytes": 94208,
+          "sha256": "7bca8e5c3daff42d48d161097c2506549f46e53d508cf16c5679718356cc7b78"
+        },
+        "world/entities/r.0.0.mca": {
+          "bytes": 40960,
+          "sha256": "d8ffbbb0fdbcc6a1811ece8eb39d45a1a8985eb99380b58f241c0dc6cbfc2276"
+        },
+        "world/level.dat": {
+          "bytes": 37915,
+          "sha256": "1f7df5ce912743d0f958e89205c597c1eaf3dad8af3bcffb758bad83faa787ec"
+        },
+        "world/region/r.-1.0.mca": {
+          "bytes": 3047424,
+          "sha256": "a637e1a561319cc43389b23fc33d015817a1f1ec69735ab0c32da0f3a10610f4"
+        },
+        "world/region/r.0.0.mca": {
+          "bytes": 4673536,
+          "sha256": "83161785b1362ea83d9a1c703b1de83212bc6f672ad15cfbe036f1f492a92a15"
+        }
+      },
+      "exit_code": 0,
+      "legs": [
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 628,
+          "fuel_before": 1000,
+          "required": 372,
+          "transfer": "7524591a-935f-448e-ad52-33da0d80e1a7"
+        },
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 256,
+          "fuel_before": 628,
+          "required": 372,
+          "transfer": "e8ca447f-b9ba-4af8-9a2f-bc9d760aa0fa"
+        }
+      ],
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 22,
+      "phase": "earth-landing",
+      "reports": [
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "cd509cf8-12cd-4c88-a609-8541c87ddae5",
+          "fuel": 1000,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            264,
+            101,
+            264
+          ],
+          "passengers": 0,
+          "snapshot": "cbe7cddff068212a3c9a90d37553572fc281499554bceb407a0df7b4ee88b386",
+          "state": "FUELED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "67e98164-a97e-4d33-a560-4d43e53b98b6",
+          "fuel": 628,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "c2c309599c5dfee0ac77dc5ceb0b866bde47860abbec4f8393d358ecb96ec301",
+          "state": "LANDED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "e4dc68f6-0054-46f0-bcd6-c8224d0dc3cd",
+          "fuel": 256,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            0,
+            66,
+            32
+          ],
+          "passengers": 0,
+          "snapshot": "651aaab601ea045eeafc65f863489f4247dcc56a322d9211be91bf94953298f4",
+          "state": "LANDED",
+          "transfer": "none"
+        }
+      ],
+      "result": "PASS",
+      "started_at": "2026-09-26T16:31:54.907831+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 00:31:56,580 main WARN Advanced terminal features are not available in this environment",
+        "[00:31:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:31:57] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:05] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[00:32:05] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[00:32:07] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[00:32:07] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[00:32:07] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[00:32:07] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+      ]
+    },
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "57526",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T16:32:49.394666+00:00",
+      "configuration_sha256": {
+        "config/advancedrocketrycommunity-common.toml": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+        "config/fml.toml": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+        "server.properties": "f816d18898fc5abd8ee7263d16bc72823713e1f5c72081e56821ab83d06000bd"
+      },
+      "disk_evidence": {
+        "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+          "bytes": 108,
+          "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+        },
+        "world/data/advancedrocketrycommunity_rocket_transfers.dat": {
+          "bytes": 105,
+          "sha256": "ebe5bc1c3308b2e8fe23a367322d02c0f18322c4ba9a31ff693d020533483ca7"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca": {
+          "bytes": 16384,
+          "sha256": "bca56952ff34f57a07f447a792204d93690537cb8e093ea0d4372d40cd2c2f0b"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 815104,
+          "sha256": "c779668d9341281d419b6ac65739b9552671fd7df199e3409e1fb5d2c6a47023"
+        },
+        "world/entities/r.-1.0.mca": {
+          "bytes": 94208,
+          "sha256": "7b95f92ee583f096b9e61f710ae4efbc01dc855e389bf194c07019a3204932a5"
+        },
+        "world/entities/r.0.0.mca": {
+          "bytes": 40960,
+          "sha256": "b337484f8d57f21437c53033e6e985d3c21fa9cf413f51572a30cc463864552c"
+        },
+        "world/level.dat": {
+          "bytes": 37915,
+          "sha256": "ffc69f56b5f8064c45b5d16285d4b68e6f2ff1a5c66ca3ecb11cfe7133513e20"
+        },
+        "world/region/r.-1.0.mca": {
+          "bytes": 3067904,
+          "sha256": "b00713c3155b8957df6af1c535957ce58c27bb4bf2916e631736ef81c73ae380"
+        },
+        "world/region/r.0.0.mca": {
+          "bytes": 4681728,
+          "sha256": "748746c7ed201d23bbc798877723cfd65f66d8d3ed3c89c1410fc41793ba2873"
+        }
+      },
+      "exit_code": 0,
+      "legs": [
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 628,
+          "fuel_before": 1000,
+          "required": 372,
+          "transfer": "7524591a-935f-448e-ad52-33da0d80e1a7"
+        },
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 256,
+          "fuel_before": 628,
+          "required": 372,
+          "transfer": "e8ca447f-b9ba-4af8-9a2f-bc9d760aa0fa"
+        }
+      ],
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 21,
+      "phase": "disassembly",
+      "reports": [
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "cd509cf8-12cd-4c88-a609-8541c87ddae5",
+          "fuel": 1000,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            264,
+            101,
+            264
+          ],
+          "passengers": 0,
+          "snapshot": "cbe7cddff068212a3c9a90d37553572fc281499554bceb407a0df7b4ee88b386",
+          "state": "FUELED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "67e98164-a97e-4d33-a560-4d43e53b98b6",
+          "fuel": 628,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "c2c309599c5dfee0ac77dc5ceb0b866bde47860abbec4f8393d358ecb96ec301",
+          "state": "LANDED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "e4dc68f6-0054-46f0-bcd6-c8224d0dc3cd",
+          "fuel": 256,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            0,
+            66,
+            32
+          ],
+          "passengers": 0,
+          "snapshot": "651aaab601ea045eeafc65f863489f4247dcc56a322d9211be91bf94953298f4",
+          "state": "LANDED",
+          "transfer": "none"
+        }
+      ],
+      "result": "PASS",
+      "started_at": "2026-09-26T16:32:28.177150+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 00:32:29,901 main WARN Advanced terminal features are not available in this environment",
+        "[00:32:30] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:30] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:30] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:30] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:38] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[00:32:38] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[00:32:40] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[00:32:40] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[00:32:40] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[00:32:40] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+      ]
+    },
+    {
+      "active_properties": {
+        "difficulty": "peaceful",
+        "enable-command-block": "false",
+        "enforce-secure-profile": "false",
+        "generate-structures": "false",
+        "level-name": "world",
+        "level-type": "minecraft:normal",
+        "max-players": "2",
+        "motd": "ARCE v0.0.2 dedicated smoke",
+        "online-mode": "false",
+        "server-ip": "127.0.0.1",
+        "server-port": "57526",
+        "simulation-distance": "2",
+        "spawn-protection": "0",
+        "sync-chunk-writes": "true",
+        "view-distance": "2"
+      },
+      "completed_at": "2026-09-26T16:33:10.365231+00:00",
+      "configuration_sha256": {
+        "config/advancedrocketrycommunity-common.toml": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8",
+        "config/fml.toml": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b",
+        "server.properties": "c69acf9e395d5a94acce5073beee615d6f5c04038123a0f4a6074c8b38907b6d"
+      },
+      "disk_evidence": {
+        "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+          "bytes": 108,
+          "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+        },
+        "world/data/advancedrocketrycommunity_rocket_transfers.dat": {
+          "bytes": 105,
+          "sha256": "ebe5bc1c3308b2e8fe23a367322d02c0f18322c4ba9a31ff693d020533483ca7"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca": {
+          "bytes": 16384,
+          "sha256": "bca56952ff34f57a07f447a792204d93690537cb8e093ea0d4372d40cd2c2f0b"
+        },
+        "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+          "bytes": 815104,
+          "sha256": "f0f923412499eeccfc60b8044da1c428ba8cc633b2f86acec14085edca224ec9"
+        },
+        "world/entities/r.-1.0.mca": {
+          "bytes": 94208,
+          "sha256": "2288f2dfaafe94f7d7d6199ed25cf695d20d42dddb41b8656227972fb09aba96"
+        },
+        "world/entities/r.0.0.mca": {
+          "bytes": 40960,
+          "sha256": "16a7b9aa2872fafedf45afa1acd10de98c827c17ba745de84f4d6cb1a9b35573"
+        },
+        "world/level.dat": {
+          "bytes": 37914,
+          "sha256": "0612054fdc79aaa5d915ef833abd0a20648e7369335f92d21d5e429fb3f322c7"
+        },
+        "world/region/r.-1.0.mca": {
+          "bytes": 3067904,
+          "sha256": "c211def2c297da51e40938f6d45679df558aea44914b1aa05b291ffe3dc98a9b"
+        },
+        "world/region/r.0.0.mca": {
+          "bytes": 4681728,
+          "sha256": "a3a43f3800ab395504caae90c1ff3a85bdd994b4e391a8cd6c1e23e48825a666"
+        }
+      },
+      "exit_code": 0,
+      "legs": [
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 628,
+          "fuel_before": 1000,
+          "required": 372,
+          "transfer": "7524591a-935f-448e-ad52-33da0d80e1a7"
+        },
+        {
+          "events": [
+            "countdown_complete",
+            "ascent_complete",
+            "destination_spawned",
+            "passengers_transferred",
+            "source_removed",
+            "committed",
+            "landing_complete",
+            "landed_reservation_retained"
+          ],
+          "fuel_after": 256,
+          "fuel_before": 628,
+          "required": 372,
+          "transfer": "e8ca447f-b9ba-4af8-9a2f-bc9d760aa0fa"
+        }
+      ],
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 22,
+      "phase": "container-restart",
+      "reports": [
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "cd509cf8-12cd-4c88-a609-8541c87ddae5",
+          "fuel": 1000,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            264,
+            101,
+            264
+          ],
+          "passengers": 0,
+          "snapshot": "cbe7cddff068212a3c9a90d37553572fc281499554bceb407a0df7b4ee88b386",
+          "state": "FUELED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "advancedrocketrycommunity:moon",
+          "entity": "67e98164-a97e-4d33-a560-4d43e53b98b6",
+          "fuel": 628,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            8,
+            80,
+            8
+          ],
+          "passengers": 0,
+          "snapshot": "c2c309599c5dfee0ac77dc5ceb0b866bde47860abbec4f8393d358ecb96ec301",
+          "state": "LANDED",
+          "transfer": "none"
+        },
+        {
+          "blocks": 5,
+          "capacity": 1000,
+          "dimension": "minecraft:overworld",
+          "entity": "e4dc68f6-0054-46f0-bcd6-c8224d0dc3cd",
+          "fuel": 256,
+          "logical": "26647900-6e67-460d-a60a-a80366ddbac8",
+          "origin": [
+            0,
+            66,
+            32
+          ],
+          "passengers": 0,
+          "snapshot": "651aaab601ea045eeafc65f863489f4247dcc56a322d9211be91bf94953298f4",
+          "state": "LANDED",
+          "transfer": "none"
+        }
+      ],
+      "result": "PASS",
+      "started_at": "2026-09-26T16:32:49.400424+00:00",
+      "status_mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "warnings": [
+        "2026-09-27 00:32:51,101 main WARN Advanced terminal features are not available in this environment",
+        "[00:32:51] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:51] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:51] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:51] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+        "[00:32:59] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+        "[00:32:59] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+        "[00:33:01] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+        "[00:33:01] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+        "[00:33:01] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+        "[00:33:01] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+      ]
+    }
+  ],
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "port": 57526,
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "one round trip, four clean processes, one initial fill, no passengers",
+  "server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-flight-corrected-cb65df26cfb34e3ca448c0979a5e6196\\server",
+  "world": {
+    "identity": "8f05a429dd896e022a8cb7fe657b7bf359510a716845e358bcdd4c064b29b0cd",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "897dd44af0f52f945c1964fa6e0640f830c534d3a9352cf456ee94999ca22272",
+    "level_dat_after_restart_sha256": "0612054fdc79aaa5d915ef833abd0a20648e7369335f92d21d5e429fb3f322c7",
+    "level_dat_after_restart_size": 37914,
+    "level_dat_before_restart_sha256": "ca40b3004e285f8a55909ab85f937fa0c6149c11d1074dc59a92b55f56aa5274",
+    "level_dat_before_restart_size": 37914,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "3ac8c9160c3847df2c0a061c4dc0de987e096e6e2f9a97bac34ba87ddd5cb891"
+  }
+}
