@@ -304,6 +304,7 @@ tasks.named('test', Test) {
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
+            artifactId = mod_artifact_id
             artifact jar
             artifact sourcesJar
             artifact apiJar
