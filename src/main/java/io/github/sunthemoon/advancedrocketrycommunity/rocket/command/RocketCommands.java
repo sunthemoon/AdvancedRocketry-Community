@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -97,9 +98,14 @@ public final class RocketCommands {
                                     .executes(this::reportFlight)))
                     .then(Commands.literal("disassemble")
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
-                                    .executes(this::disassembleFlight))));
+                                    .executes(context -> disassembleFlight(context, -1L))
+                                    .then(Commands.literal("discard-fuel")
+                                            .then(Commands.argument("expected-units", LongArgumentType.longArg(0L))
+                                                    .executes(context -> disassembleFlight(context,
+                                                            LongArgumentType.getLong(context, "expected-units"))))))));
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
+        RocketDisassemblyCommands.register(event.getDispatcher(), rockets);
     }
 
     private int queue(CommandContext<CommandSourceStack> context, boolean assemble) {
@@ -361,10 +367,10 @@ public final class RocketCommands {
         return 1;
     }
 
-    private int disassembleFlight(CommandContext<CommandSourceStack> context)
+    private int disassembleFlight(CommandContext<CommandSourceStack> context, long expectedDiscardFuel)
             throws CommandSyntaxException {
         RocketEntity rocket = releaseTestRocket(context);
-        RocketValidationCode code = rockets.disassembleForReleaseTest(rocket);
+        RocketValidationCode code = rockets.disassembleForReleaseTest(rocket, expectedDiscardFuel);
         if (code != RocketValidationCode.SUCCESS) {
             context.getSource().sendFailure(Component.literal(
                     "Release-test disassembly failed: " + code

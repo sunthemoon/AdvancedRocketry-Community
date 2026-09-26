@@ -98,6 +98,10 @@ public final class RocketManager implements RocketOperationService {
         disassembly.requestDisassembly(player, rocket);
     }
 
+    public boolean confirmDisassembly(ServerPlayer player, UUID confirmation) {
+        return disassembly.confirmDisassembly(player, confirmation);
+    }
+
     @Override
     public void openFlightMenu(ServerPlayer player, RocketEntity rocket) {
         flights.openMenu(player, rocket);
@@ -198,6 +202,7 @@ public final class RocketManager implements RocketOperationService {
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             flights.onPlayerLoggedOut(player.getUUID());
+            disassembly.onLogout(player.getUUID());
         }
     }
 
@@ -218,6 +223,7 @@ public final class RocketManager implements RocketOperationService {
         assemblerScans.clear();
         transactions.clear();
         flights.clear();
+        disassembly.clear();
         flightLifecycle.clear();
     }
 
@@ -240,8 +246,12 @@ public final class RocketManager implements RocketOperationService {
 
     /** Uses the production transaction against a landed test rocket without a fake player. */
     public RocketValidationCode disassembleForReleaseTest(RocketEntity rocket) {
+        return disassembleForReleaseTest(rocket, -1L);
+    }
+
+    public RocketValidationCode disassembleForReleaseTest(RocketEntity rocket, long expectedDiscardFuel) {
         flightLifecycle.requireReleaseTestHooks();
-        return disassembly.disassembleForReleaseTest(rocket);
+        return disassembly.disassembleForReleaseTest(rocket, expectedDiscardFuel);
     }
 
     public int pendingScans() {

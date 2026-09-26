@@ -119,14 +119,20 @@ public final class RocketPassengerContinuedUseGameTests {
     @GameTest(template = "rocket_test", batch = "passenger_refueled_disassembly", timeoutTicks = 400)
     public static void refueledArrivalDisassemblyReleasesTransferRecord(GameTestHelper helper) {
         afterLanding(helper, rocket -> {
-            var player = new TrackingPlayer((ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
+            var player = new RocketDisassemblyGameTests.ConsentPlayer(
+                    (ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
             player.setPos(rocket.position());
             var landed = rocket.flightData().orElseThrow();
             rocket.updateFlightData(landed.withFuel(landed.fuel().fill(1000).state(), rocket.level().getGameTime())
                     .withPassengers(landed.passengers().remove(player.getUUID())));
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                     "Fixture did not refuel");
-            new RocketManager().requestDisassembly(player, rocket);
+            var manager = new RocketManager();
+            manager.requestDisassembly(player, rocket);
+            helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().fuel().amount() == 1000,
+                    "Implicit fueled teardown changed arrival authority");
+            helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 1
+                    && player.discarded == 1000, "Explicit arrival disposal did not report its exact amount");
             helper.assertTrue(rocket.isRemoved(), "Refueled arrival did not disassemble");
             var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
             helper.assertTrue(journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).isEmpty(),

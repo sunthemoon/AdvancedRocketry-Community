@@ -40,7 +40,8 @@ public enum RocketValidationCode {
     ENTITY_STATE_INVALID,
     REQUEST_REPLAYED,
     OUT_OF_RANGE,
-    UNAUTHORIZED;
+    UNAUTHORIZED,
+    FUEL_DISPOSAL_REQUIRED;
 
     public String translationKey() {
         return "validation.advancedrocketrycommunity.rocket."

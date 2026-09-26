@@ -49,7 +49,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.AABB;
 
-/** One owned four-block rocket and a local, controllable container adapter. */
+/** One owned rocket with an optional fuel tank and a local, controllable container adapter. */
 final class RocketAdapterFailureFixture implements AutoCloseable {
     static final ResourceLocation ADAPTER_ID = ModIdentity.id("test_container_failure_v1");
     static final ResourceLocation OTHER_ID = ModIdentity.id("test_container_other_v1");
@@ -77,19 +77,33 @@ final class RocketAdapterFailureFixture implements AutoCloseable {
     }
 
     RocketAdapterFailureFixture(GameTestHelper helper, BlockPos relativeOrigin, ResourceLocation adapterId) {
+        this(helper, relativeOrigin, adapterId, false);
+    }
+
+    RocketAdapterFailureFixture(GameTestHelper helper, boolean fuelTank) {
+        this(helper, ORIGIN, ADAPTER_ID, fuelTank);
+    }
+
+    private RocketAdapterFailureFixture(GameTestHelper helper, BlockPos relativeOrigin,
+                                       ResourceLocation adapterId, boolean fuelTank) {
         this.helper = helper;
         level = helper.getLevel();
         data = RocketTransactionSavedData.get(level.getServer());
         helper.assertTrue(data.operational(), "Fixture requires an operational transaction journal");
         BlockPos origin = helper.absolutePos(relativeOrigin);
         chestPosition = origin.east();
-        positions = List.of(origin, origin.above(), origin.above(2), chestPosition);
-        bounds = new AABB(origin).expandTowards(1.0D, 2.0D, 0.0D).inflate(0.5D);
+        positions = fuelTank ? List.of(origin.west(), origin, origin.above(), origin.above(2), chestPosition)
+                : List.of(origin, origin.above(), origin.above(2), chestPosition);
+        bounds = new AABB(origin).expandTowards(1.0D, 2.0D, 0.0D)
+                .expandTowards(fuelTank ? -1.0D : 0.0D, 0.0D, 0.0D).inflate(0.5D);
         level.getEntitiesOfClass(ItemEntity.class, bounds).forEach(item -> initialDrops.add(item.getUUID()));
         helper.setBlock(relativeOrigin, ModBlocks.ROCKET_MOTOR.get());
         helper.setBlock(relativeOrigin.above(), ModBlocks.ROCKET_SEAT.get());
         helper.setBlock(relativeOrigin.above(2), ModBlocks.GUIDANCE_COMPUTER.get());
         helper.setBlock(relativeOrigin.east(), Blocks.CHEST);
+        if (fuelTank) {
+            helper.setBlock(relativeOrigin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
+        }
         chest().setItem(0, new ItemStack(Items.DIAMOND, 17));
         chest().setItem(26, new ItemStack(Items.IRON_INGOT, 3));
         adapter = new FaultAdapter(adapterId, chestPosition);
@@ -99,9 +113,9 @@ final class RocketAdapterFailureFixture implements AutoCloseable {
                 position(origin), UUID.randomUUID(), level.getGameTime());
         RocketScanResult result = scan.step(RocketLimits.MAX_SCAN_INSPECTIONS_PER_TICK);
         helper.assertTrue(result.status() == RocketScanResult.Status.SUCCESS,
-                "Four-block fixture did not scan successfully: " + result.issues());
+                "Rocket fixture did not scan successfully: " + result.issues());
         snapshot = result.snapshot().orElseThrow();
-        helper.assertTrue(snapshot.blocks().size() == 4, "Fixture unexpectedly included neighboring blocks");
+        helper.assertTrue(snapshot.blocks().size() == (fuelTank ? 5 : 4), "Fixture unexpectedly included neighboring blocks");
         helper.assertTrue(level.areEntitiesLoaded(ChunkPos.asLong(origin.getX() >> 4, origin.getZ() >> 4)),
                 "Fixture entity chunk is not ready for recovery");
     }

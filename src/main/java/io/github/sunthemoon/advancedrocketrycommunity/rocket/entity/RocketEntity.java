@@ -340,7 +340,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
         }
         if (player instanceof ServerPlayer serverPlayer) {
             if (player.isShiftKeyDown()) {
-                RocketRuntime.requestDisassembly(serverPlayer, this);
+                if (hand == InteractionHand.MAIN_HAND) {
+                    RocketRuntime.requestDisassembly(serverPlayer, this);
+                }
             } else {
                 RocketRuntime.openFlightMenu(serverPlayer, this);
             }
