@@ -61,6 +61,7 @@ PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
           "provider-reinstalled", "container-restart")
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
 MISSING_MAPPING_ERROR = "There are unidentified mappings in this world - we are going to attempt to process anyway"
+MISSING_BLOCK_ERROR = "Unidentified mapping from registry minecraft:block"
 
 
 def write_json(path: Path, value: object) -> None:
@@ -158,11 +159,25 @@ def validate_registration(lines: list[str], phase: str) -> None:
 
 
 def audit_log(lines: list[str], phase: str) -> list[str]:
+    registry_logger = re.compile(r"\[(?:ne\.mi\.re\.|net\.minecraftforge\.registries\.)GameData/REGISTRIES\]")
+    known_mapping_lines = set()
+    if phase == "mod-uninstalled":
+        for index, line in enumerate(lines):
+            if (server_smoke.ERROR_LINE.search(line) and registry_logger.search(line)
+                    and line.rstrip().endswith(MISSING_BLOCK_ERROR)):
+                entries = []
+                for following in lines[index + 1:]:
+                    if not following.strip():
+                        break
+                    entries.append(following.strip())
+                if len(entries) != 1 or not re.fullmatch(re.escape(CARGO) + r": [0-9]+", entries[0]):
+                    raise SmokeError("Missing-block diagnostic contains unexpected registry entries")
+                known_mapping_lines.add(line.rstrip())
     accepted = []
     for finding in server_smoke.scan_log(lines):
         if (phase == "mod-uninstalled" and server_smoke.ERROR_LINE.search(finding)
-                and re.search(r"\[(?:ne\.mi\.re\.|net\.minecraftforge\.registries\.)GameData/REGISTRIES\]", finding)
-                and finding.rstrip().endswith(MISSING_MAPPING_ERROR)):
+                and registry_logger.search(finding)
+                and (finding.rstrip().endswith(MISSING_MAPPING_ERROR) or finding in known_mapping_lines)):
             accepted.append(finding)
         else:
             raise SmokeError(f"Blocking log finding: {finding}")
@@ -395,9 +410,10 @@ class RecoveryRun:
             validate_registration(process.lines, phase)
             if phase == "assemble":
                 for command_text in ("gamerule doMobSpawning false", "gamerule randomTickSpeed 0",
-                                     "scoreboard objectives add arce_v130 dummy", "forceload add 256 256"):
+                                     "scoreboard objectives add arce_v130 dummy", "forceload add 255 255 258 257"):
                     self.send(process, command_text)
-                wait_condition(process, "execute if loaded 256 101 256", "V130_FIXTURE_LOADED", 30.0)
+                wait_condition(process, "execute if loaded 255 101 255 if loaded 258 101 255 "
+                               "if loaded 255 101 257 if loaded 258 101 257", "V130_FIXTURE_LOADED", 30.0)
                 # A small air shell prevents random terrain joining this four-block scan.
                 self.send(process, "fill 255 100 255 258 104 257 minecraft:air")
                 for position, name in POSITIONS.items():

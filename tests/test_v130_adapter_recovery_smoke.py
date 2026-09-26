@@ -223,6 +223,20 @@ class RecoveryParsingTests(unittest.TestCase):
             with self.subTest(bad=bad, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log([bad], phase)
 
+    def test_missing_block_diagnostic_requires_only_the_fixture_id(self):
+        header = "[main/ERROR] [ne.mi.re.GameData/REGISTRIES]: " + runner.MISSING_BLOCK_ERROR
+        body = "\t" + runner.CARGO + ": 1022"
+        self.assertEqual([header], runner.audit_log([header, body, ""], "mod-uninstalled"))
+        for lines, phase in (([header, body, ""], "provider-skipped"),
+                             ([header, ""], "mod-uninstalled"),
+                             ([header, body, body, ""], "mod-uninstalled"),
+                             ([header, body.replace(runner.CARGO, "other:container"), ""], "mod-uninstalled"),
+                             ([header.replace("minecraft:block", "minecraft:item"), body, ""], "mod-uninstalled"),
+                             ([header.replace("GameData", "Other"), body, ""], "mod-uninstalled"),
+                             ([header, body, "[main/ERROR] [example]: broken"], "mod-uninstalled")):
+            with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
+                runner.audit_log(lines, phase)
+
 
 class RecoverySafetyTests(unittest.TestCase):
     def setUp(self):
@@ -314,6 +328,31 @@ class RecoverySafetyTests(unittest.TestCase):
         self.assertEqual("FAIL", report["result"])
         self.assertEqual(-15, report["exit_code"])
         self.assertTrue((self.evidence / "assemble/commands.json").is_file())
+
+    def test_air_shell_loads_and_waits_for_all_four_chunks_before_fill(self):
+        self.evidence.mkdir()
+        run = runner.RecoveryRun(self.server, self.evidence, [{"version": "1.20.1-1.3.0-dev"}], "unused-java", 12345, 1)
+        process = Mock()
+        process.lines = [runner.REGISTERED]
+        process.process.poll.return_value = -15
+        observed = []
+        process.command.side_effect = observed.append
+        condition = ("execute if loaded 255 101 255 if loaded 258 101 255 "
+                     "if loaded 255 101 257 if loaded 258 101 257")
+        with patch.object(run, "mods", return_value={}), \
+                patch.object(runner.server_smoke, "CapturedProcess", return_value=process), \
+                patch.object(runner.server_smoke, "wait_for_status", return_value={}), \
+                patch.object(runner, "validate_status", return_value={}), \
+                patch.object(runner, "wait_condition", side_effect=lambda *args: observed.append(args[1])) as wait, \
+                patch.object(run, "query", side_effect=runner.SmokeError("stop before assembly")):
+            with self.assertRaisesRegex(runner.SmokeError, "stop before assembly"):
+                run.run_phase("assemble")
+        wait.assert_called_once_with(process, condition, "V130_FIXTURE_LOADED", 30.0)
+        forced = observed.index("forceload add 255 255 258 257")
+        loaded = observed.index(condition)
+        cleared = observed.index("fill 255 100 255 258 104 257 minecraft:air")
+        self.assertLess(forced, loaded)
+        self.assertLess(loaded, cleared)
 
 
 if __name__ == "__main__":
