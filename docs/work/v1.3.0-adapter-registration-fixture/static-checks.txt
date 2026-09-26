@@ -1,0 +1,12 @@
+Initial ad-hoc Python source-boundary check:
+AssertionError: src/adapterTest/java/io/github/sunthemoon/arceadaptertest/AdapterRegistrationGameTests.java
+Cause: the regular expression matched a documentation comment naming RocketRuntime.
+
+Corrected check (comments excluded), exit 0:
+PASS: 5 Java files, only public host API imports, no direct host runtime/manager use, ASCII source
+PASS: TOML/JSON/mcmeta parse; exact additive movable tag; two GameTests
+Public host API imports: io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent, io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RocketBlockEntityAdapter
+
+git diff --check: exit 0
+git diff --cached --check: exit 0
+Compilation/GameTest/server execution: NOT_RUN (integration-owned)
