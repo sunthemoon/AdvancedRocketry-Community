@@ -1,0 +1,5 @@
+# Raw tool output retains CRLF and formatter whitespace, matching adjacent evidence records.
+*.txt -text -whitespace
+*.json -text -whitespace
+*.zip -text
+SHA256SUMS text eol=lf

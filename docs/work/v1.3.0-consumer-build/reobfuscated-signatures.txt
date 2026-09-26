@@ -1,0 +1,18 @@
+Compiled from "FixtureContainerBlockEntity.java"
+final class io.github.sunthemoon.arceadaptertest.FixtureContainerBlockEntity extends net.minecraft.world.level.block.entity.BlockEntity implements net.minecraft.world.Container {
+  private static final int SLOT_COUNT;
+  private final net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> inventory;
+  io.github.sunthemoon.arceadaptertest.FixtureContainerBlockEntity(net.minecraft.core.BlockPos, net.minecraft.world.level.block.state.BlockState);
+  net.minecraft.nbt.CompoundTag captureInventory();
+  boolean restoreInventory(net.minecraft.nbt.CompoundTag);
+  protected void m_183515_(net.minecraft.nbt.CompoundTag);
+  public void m_142466_(net.minecraft.nbt.CompoundTag);
+  public int m_6643_();
+  public boolean m_7983_();
+  public net.minecraft.world.item.ItemStack m_8020_(int);
+  public net.minecraft.world.item.ItemStack m_7407_(int, int);
+  public net.minecraft.world.item.ItemStack m_8016_(int);
+  public void m_6836_(int, net.minecraft.world.item.ItemStack);
+  public boolean m_6542_(net.minecraft.world.entity.player.Player);
+  public void m_6211_();
+}
