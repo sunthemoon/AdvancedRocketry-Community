@@ -1,0 +1,26 @@
+usage: run_v130_adapter_recovery_smoke.py [-h] --host-jar HOST_JAR
+                                          --fixture-jar FIXTURE_JAR
+                                          --evidence-dir EVIDENCE_DIR
+                                          --java JAVA
+                                          [--expected-version EXPECTED_VERSION]
+                                          [--startup-timeout STARTUP_TIMEOUT]
+                                          --accept-eula
+                                          server_dir
+
+Run six bounded packaged-server cycles for opaque external rocket cargo
+recovery. Requires an unused disposable server containing only an installed
+libraries tree. This uses a synthetic pre-commit journal, not a crash or
+power-loss checkpoint.
+
+positional arguments:
+  server_dir
+
+options:
+  -h, --help            show this help message and exit
+  --host-jar HOST_JAR
+  --fixture-jar FIXTURE_JAR
+  --evidence-dir EVIDENCE_DIR
+  --java JAVA
+  --expected-version EXPECTED_VERSION
+  --startup-timeout STARTUP_TIMEOUT
+  --accept-eula

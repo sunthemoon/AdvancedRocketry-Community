@@ -1,0 +1,2 @@
+# Keep raw command captures byte-preserving, including native line endings.
+*.txt -text -whitespace
