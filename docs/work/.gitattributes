@@ -9,7 +9,7 @@ v1.2.0-migration/rolling-restart/** -text -whitespace
 v1.2.0-migration/fixtures/electrolyzer-beta/** -text -whitespace
 v1.2.0-migration/fixtures/rolling/** -text -whitespace
 v1.2.0-migration/verification/** -text -whitespace
-v1.2.0-jei-integration/native/** -text -whitespace
+v1.2.0-jei-integration/native/observations/** -text -whitespace
 v1.2.0-rolling-test-fixtures/*.txt -text -whitespace
 v1.2.0-rolling-test-fixtures/*.log -text -whitespace
 v1.2.0-rolling-test-fixtures/*.json -text -whitespace
