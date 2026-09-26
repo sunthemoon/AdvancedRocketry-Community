@@ -432,11 +432,8 @@ class FlightRun(recovery.RecoveryRun):
                 if phase == PHASES[1]:
                     self.launch(process, EARTH)  # Deliberately no refuel here.
                 elif phase == PHASES[2]:
-                    last = self.reports[-1]
-                    match = self.query(process, flight._in_dimension(EARTH,
-                        f"arce rocket release-test disassemble {last['entity']}"), flight.DISASSEMBLY_LOG, 45)
-                    require(match.groups() == (last["entity"], last["logical"], "SUCCESS", "5", "0"), "Disassembly receipt differs")
-                    process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={self.legs[-1]['transfer']} .*event=landed_reservation_released "), 30)
+                    self.disassemble(process)
+                    document["explicit_fuel_disposal"] = self.reports[-1]["fuel"]
             self.load_sites(process)
             self.check_live(process, restored, "FIRST")
             tick = int(self.query(process, "time query gametime", re.compile(r"The time is (\d+)")).group(1))
@@ -499,6 +496,25 @@ class FlightRun(recovery.RecoveryRun):
             self.saved_transfer = state["transfers"]["transfers"][0]
         document.update(reports=list(self.reports), legs=list(self.legs), disk_evidence=state["files"])
         return document
+
+    def disassemble(self, process) -> None:
+        last = self.reports[-1]
+        command = f"arce rocket release-test disassemble {last['entity']}"
+        self.query(process, flight._in_dimension(EARTH, command),
+                   re.compile("Release-test disassembly failed: FUEL_DISPOSAL_REQUIRED"))
+        self.query(process, flight._in_dimension(EARTH, command + f" discard-fuel {last['fuel'] + 1}"),
+                   re.compile("Release-test disassembly failed: WORLD_CHANGED"))
+        require(self.entity_snbt(process, last) == self.saved_snbt, "Rejected disposal mutated rocket data")
+        self.inspect_saved_transfer(process)
+        self.check_live(process, False, "DISPOSAL_REJECTED")
+        start = len(process.lines)
+        match = self.query(process, flight._in_dimension(EARTH, command + f" discard-fuel {last['fuel']}"),
+                           flight.DISASSEMBLY_LOG, 45)
+        require(match.groups() == (last["entity"], last["logical"], "SUCCESS", "5", "0"), "Disassembly receipt differs")
+        process.wait_for(re.compile(rf"ARCE_ROCKET_FUEL_DISCARDED entity={last['entity']} logical={last['logical']} "
+                                    rf"amount={last['fuel']} reason=confirmed_disassembly$"), 30, start_at=start)
+        process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={self.legs[-1]['transfer']} .*event=landed_reservation_released "),
+                         30, start_at=start)
 
 
 def parse_args():

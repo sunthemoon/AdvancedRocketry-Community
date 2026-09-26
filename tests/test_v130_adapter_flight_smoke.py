@@ -206,6 +206,24 @@ class OracleTests(unittest.TestCase):
 
 
 class BoundsAndDriverTests(unittest.TestCase):
+    def test_disassembly_rejects_implicit_and_wrong_amount_before_explicit_disposal(self):
+        run = runner.FlightRun(Path("unused"), Path("unused"), [], "unused", 1, 1)
+        run.reports = reports()
+        run.legs = [{"transfer": uid(31)}]
+        run.saved_snbt = "unchanged"
+        process = Mock()
+        process.lines = []
+        receipt = Mock()
+        receipt.groups.return_value = (uid(12), uid(1), "SUCCESS", "5", "0")
+        with patch.object(run, "query", return_value=receipt) as query, \
+                patch.object(run, "entity_snbt", return_value="unchanged"), \
+                patch.object(run, "inspect_saved_transfer"), patch.object(run, "check_live"):
+            run.disassemble(process)
+        commands = [call.args[1] for call in query.call_args_list]
+        base = f"execute in {runner.EARTH} run arce rocket release-test disassemble {uid(12)}"
+        self.assertEqual([base, base + " discard-fuel 257", base + " discard-fuel 256"], commands)
+        self.assertIn("amount=256 reason=confirmed_disassembly", process.wait_for.call_args_list[0].args[0].pattern)
+
     def test_only_the_validated_generated_properties_timestamp_may_change(self):
         original = (b"#Minecraft server properties\r\n#Sun Sep 27 00:24:52 CST 2026\r\n"
                     b"server-ip=127.0.0.1\r\nserver-port=50046\r\nunknown-setting=value\r\n")

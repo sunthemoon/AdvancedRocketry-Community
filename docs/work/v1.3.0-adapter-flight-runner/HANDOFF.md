@@ -42,6 +42,13 @@ One fuel fill supplies both legs, with 628 and 256 remaining at the respective
 landings. Final cargo restoration and restart are separate from the known absence
 of a fuel export/refund when the fueled entity is disassembled.
 
+With ROCKET-04 hosts, the disassembly phase also rejects implicit disposal and
+an incorrect expected amount, checks unchanged entity/transfer/cargo authority,
+then supplies `discard-fuel 256` explicitly. The exact disposal receipt is checked;
+this remains intentional disposal, not fuel conservation or player-click coverage.
+Older host artifacts predate this command contract; use their matching historical
+runner when reproducing their archived evidence.
+
 ## Focused checks
 
 ```powershell
