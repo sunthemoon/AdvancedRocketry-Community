@@ -1,15 +1,15 @@
 # ADR-020 — v1.3 development baseline exception
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-09-26
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.3.0
-accepted_by: ""
-accepted_at: ""
-accepted_baseline: ""
-acceptance_ready: false
+accepted_by: sunthemoon
+accepted_at: 2026-09-26
+accepted_baseline: a66f7187b6483dad746010c8648814e0f4548f91
+acceptance_ready: true
 expires: before v1.3.0 release-candidate freeze
 recovery_condition: complete or explicitly disposition every inherited Required Gate before freezing a v1.3.0 candidate
 supersedes: ""
@@ -25,16 +25,18 @@ complete integrated test campaign, but does not itself change development order.
 The [v1.3 plan](../versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md) still requires
 v1.1/v1.2 acceptance and a public API policy. This proposal makes the next
 development decision explicit without requiring early execution of the deferred
-full campaign. It is not accepted and does not authorize production work.
+full campaign. On 2026-09-26 the owner authorized following the recommended
+solutions. This accepts the recommended development exception and, separately,
+the first-slice policy in ADR-021. It is not release approval.
 
 The proposal branch starts at `3dbe6884e6d8bff3c676c4f7cebee0824b507602`.
 That commit does not contain all of the later uncommitted v1.2 implementation.
 It is a documentation checkout identity only, not the proposed development baseline.
 
-## Proposed decision
+## Decision
 
-After a maintainer selects and records the full immutable v1.2 implementation
-commit, allow scoped v1.3 production work from that commit or its descendants
+Use `a66f7187b6483dad746010c8648814e0f4548f91`, containing the reviewed v1.2
+implementation and evidence, and allow scoped v1.3 production work from it or its descendants
 before inherited versions are formally `PASSED`. The public contracts used by
 each slice must separately be accepted before implementation.
 
@@ -69,9 +71,9 @@ every inherited and v1.3 Required Gate must have actual evidence or a separately
 approved precise disposition with owner, expiry and recovery condition. Development
 progress alone is not candidate approval. If rejected, v1.3 remains planning-only.
 
-## Required acceptance record
+## Acceptance record
 
-Before this proposal can become `ACCEPTED`, record all of:
+Acceptance prerequisites:
 
 1. A real full 40-character commit containing the reviewed v1.2 implementation,
    including the approved persistence changes and their evidence.
@@ -79,6 +81,10 @@ Before this proposal can become `ACCEPTED`, record all of:
 3. Confirmation that the baseline is not merely this older proposal checkout.
 4. Separate acceptance of the contract used by the first production slice.
 
-Until then, `accepted_baseline` remains empty and `acceptance_ready` remains false.
-The baseline preparation and approval are tracked in the
+The selected baseline contains the Precision implementation, representative
+migration fixtures, Rolling test extraction, native JEI evidence, consolidated
+documentation and byte-preserving archive attributes. It is not the older
+proposal checkout. Prior artifact evidence keeps its original identity;
+committing does not imply a candidate rebuild. This baseline was merged into
+the isolated v1.3 worktree. Preparation and approval are tracked in the
 [v1.3 implementation log](../work/v1.3.0-implementation-log.md).

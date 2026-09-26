@@ -1,33 +1,34 @@
 # ADR-021 — Minimal public API version policy
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-09-26
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.3.0
-accepted_by: ""
-accepted_at: ""
+accepted_by: sunthemoon
+accepted_at: 2026-09-26
 initial_api_version: "1.0"
 ```
 
 ## Context and boundary
 
-There is no project-owned exported API package or independent API artifact in
+At the accepted v1.2 baseline there is no exported API package or API artifact in
 the inspected [Java tree](../../src/main/java/io/github/sunthemoon/advancedrocketrycommunity/)
 and [build](../../build.gradle). Existing Java `public` classes are internal
 implementation types, not a stable compatibility promise. The first slice
 needs an explicit small boundary before external registration hooks are added.
 
-This policy is proposed, not frozen. It does not authorize implementation without
-the separately approved development baseline, and it does not freeze later
-adapter/provider signatures or commit to unimplemented gameplay.
+The owner authorized following the recommended solutions on 2026-09-26. This
+freezes the recommended first-slice policy alongside the separately accepted
+ADR-020 baseline. Later adapter/provider signatures and unimplemented gameplay
+are not frozen by this decision.
 
-## Proposed first exported surface
+## First exported surface
 
 Only the following types in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version` are exported by the
-first slice; these names are proposed and do not exist yet:
+first slice:
 
 | Type/member | Contract |
 |---|---|
@@ -72,7 +73,7 @@ Java visibility, existing test use or inclusion in the main JAR.
 
 ## Packaging and first-slice verification
 
-Propose an `api` classifier JAR containing only the explicit exported types.
+Provide an `api` classifier JAR containing only the explicit exported types.
 The normal mod JAR contains the same classes for runtime. Consumers use the API
 artifact as compile-only input and must not bundle/shade those classes or install
 the classifier as a separate mod. No Minecraft/Forge/client classes are required
