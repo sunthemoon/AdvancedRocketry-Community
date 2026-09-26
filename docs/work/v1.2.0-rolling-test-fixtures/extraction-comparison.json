@@ -1,0 +1,72 @@
+{
+  "baseline_commit": "3dbe6884e6d8bff3c676c4f7cebee0824b507602",
+  "original_file": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RollingMachineGameTests.java",
+  "original_sha256_lf": "24b9905ecc8b806324f7fc21c923e7df9a4dab7dd5fbda113fd36b12ed09e536",
+  "test_methods_identical": true,
+  "helpers_identical_except_visibility": true,
+  "constants_identical_except_visibility": true,
+  "class_annotations_identical": true,
+  "fixture_has_no_registration": true,
+  "line_counts": {
+    "before": 819,
+    "after": 763,
+    "fixture": 85
+  },
+  "cases": [
+    {
+      "name": "registeredMachineFormsBreaksAndRebuildsThroughBlockLifecycle",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 40)",
+      "sha256_lf": "13e938a5783c2a32b58f8751edb4bef6c7580348c26dee914e6d128aaf8562dc"
+    },
+    {
+      "name": "futureControllerAndBindingRootsArePreservedAndBlocked",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 20)",
+      "sha256_lf": "7a72edf542548e581b8e4f13ff08f4a819125ca9e9834855310f473f81875e92"
+    },
+    {
+      "name": "malformedCurrentControllerAndBindingRootsArePreservedAndBlocked",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 20)",
+      "sha256_lf": "30097986d79b0f5c3cd791a126f2235252cb98a2bdb2ef2eafcfe2343ae347aa"
+    },
+    {
+      "name": "typedCapabilitiesRequireFormationAndRetainResourcesAcrossRebuild",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 40)",
+      "sha256_lf": "8138a6e8fff1bd171416c52e684314db8e7f80ec23cfbca2462d201a38aec5fe"
+    },
+    {
+      "name": "futurePortResourceRootIsPreservedAndBlocksFormation",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 20)",
+      "sha256_lf": "cfb9c5e7fe3de7b6fe56c6b6b934438b2a65fd75268c5f3d4d596c5f309cbea5"
+    },
+    {
+      "name": "itemPortDropsItsStoredStackWhenRemoved",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 30)",
+      "sha256_lf": "89ef489ce64ede681c8e2bd8acde4322845155e768d0170e8266ffcc837057f1"
+    },
+    {
+      "name": "rollingRecipeConsumesEnergyAndCommitsResourcesExactlyOnce",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 150)",
+      "sha256_lf": "76207c53258733e905682ff38162a9e8a558b4ae9f0aed8df7baa42365581942"
+    },
+    {
+      "name": "futureProcessRootIsPreservedAndHidesAllPortCapabilities",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 30)",
+      "sha256_lf": "41d9fb9da449189d760a20603b4762a647b51ac08e9e4de7fb932fc93375df49"
+    },
+    {
+      "name": "activeRollingProgressResumesAfterNbtReload",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 150)",
+      "sha256_lf": "f8ffac9b8e2a5c7eaa313cb34582735e0231fdffd4113b34e464ba6e8378a40b"
+    },
+    {
+      "name": "completedProgressWithoutJournalFailsClosed",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 30)",
+      "sha256_lf": "6af977676d708d73b3d94697b42c98e42334abae0ac9af812712042784da94c0"
+    },
+    {
+      "name": "rollingMenuUsesBoundPortsAndLocatesFirstStructureDiagnostic",
+      "annotation": "@GameTest(template = \"empty\", timeoutTicks = 40)",
+      "sha256_lf": "9222d491366f7f4036201220379b91d0e9d7e8b5b2465a69abc9f5c10635cf7e"
+    }
+  ]
+}

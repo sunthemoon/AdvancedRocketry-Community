@@ -1,0 +1,16 @@
+{
+  "root_gradle_exit": 0,
+  "independent_gametest_exit": 0,
+  "resource_validator_exit": 0,
+  "planning_validator_exit": 0,
+  "repository_validator_exit": 0,
+  "repository_passed": 45,
+  "diff_check_exit": 0,
+  "diff_exit": 1,
+  "generated_diff_exit": 1,
+  "local_links": {
+    "documents": 4,
+    "checked": 106,
+    "missing": 0
+  }
+}
