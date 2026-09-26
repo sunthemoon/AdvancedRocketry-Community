@@ -1,0 +1,7 @@
+# Keep original execution captures and archives byte-identical.
+*.txt -text -whitespace
+*.json -text whitespace=cr-at-eol
+consumer-reports/*.json -text -whitespace
+independent-review/** -text -whitespace
+*.zip -text
+SHA256SUMS text eol=lf

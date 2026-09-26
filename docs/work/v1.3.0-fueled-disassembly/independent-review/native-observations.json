@@ -1,0 +1,342 @@
+{
+  "committed_transfers": [
+    "773dfa27-dfc6-4bdb-a426-9556e3c67ba1",
+    "b5cf91a2-d46f-4e8c-a8bc-f8abacdebc20"
+  ],
+  "final_fuel_before_disassembly": 256,
+  "launches": [
+    "[01:12:55] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_LAUNCH request=773dfa27-dfc6-4bdb-a426-9556e3c67ba1 entity=e74e0621-52d7-46cd-a286-abddbc962bb3 logical=dd7dce09-6e22-458b-887c-31202ec0654e source=minecraft:overworld destination=advancedrocketrycommunity:moon checkpoint=none code=SUCCESS required_fuel=372 fuel_before=1000",
+    "[01:13:35] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_LAUNCH request=b5cf91a2-d46f-4e8c-a8bc-f8abacdebc20 entity=083c4f32-99c5-4712-9376-1626970dd685 logical=dd7dce09-6e22-458b-887c-31202ec0654e source=advancedrocketrycommunity:moon destination=minecraft:overworld checkpoint=none code=SUCCESS required_fuel=372 fuel_before=628"
+  ],
+  "phases": [
+    {
+      "assembly_journal_count": 0,
+      "cargo_be_count": 0,
+      "exit": 0,
+      "loaded_sources": [
+        "[27Sep2026 01:12:25.857] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[27Sep2026 01:12:25.856] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 25
+          },
+          "name": "stdout.txt",
+          "sha256": "0cc041acca98d4f39e200a55faba26493696ccca246e5edb453b1bb0ce8da5f4"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 25
+          },
+          "name": "debug.log",
+          "sha256": "1f513705b7e1ce3ebee083cd3c777b92425b233ec7562613f7cd5eb6a1609775"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 25
+          },
+          "name": "latest.log",
+          "sha256": "ed66c83a9fc502d747198eec452e32241b5d51f50665aaef4587c50ecd883f71"
+        }
+      ],
+      "phase": "moon-landing",
+      "rocket_count": 1,
+      "ticks": 22,
+      "transfer_count": 1,
+      "watched_chunks": [
+        [
+          "advancedrocketrycommunity:moon",
+          0,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          16,
+          16
+        ]
+      ]
+    },
+    {
+      "assembly_journal_count": 0,
+      "cargo_be_count": 0,
+      "exit": 0,
+      "loaded_sources": [
+        "[27Sep2026 01:13:14.646] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[27Sep2026 01:13:14.644] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "stdout.txt",
+          "sha256": "bc3f965803e0b48749015925e393830d871ba8b4e80a39643bd0f1ad18bed759"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "debug.log",
+          "sha256": "17955a064d49465ffa5720c53f1181520d9b94e2342a2d7f0ead8b8e2dd9fcc7"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "latest.log",
+          "sha256": "4b4c29474c591bf352e40d0ae73ef8b9f57ca51357499ea27a137008ac7c0d99"
+        }
+      ],
+      "phase": "earth-landing",
+      "rocket_count": 1,
+      "ticks": 22,
+      "transfer_count": 1,
+      "watched_chunks": [
+        [
+          "advancedrocketrycommunity:moon",
+          0,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          3,
+          -1
+        ],
+        [
+          "minecraft:overworld",
+          3,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          4,
+          -1
+        ],
+        [
+          "minecraft:overworld",
+          4,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          16,
+          16
+        ]
+      ]
+    },
+    {
+      "assembly_journal_count": 0,
+      "cargo_be_count": 1,
+      "exit": 0,
+      "loaded_sources": [
+        "[27Sep2026 01:13:53.437] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[27Sep2026 01:13:53.436] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "stdout.txt",
+          "sha256": "a7c71a0c6ee544e7e393e8cad2e6960f3a534749d141ac20e393bb6bcca2bb38"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "debug.log",
+          "sha256": "dc4701fc63773d82428f535c5c98eb5837c93981f4cd807bdb1ea17096de6741"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "latest.log",
+          "sha256": "aba8c4205e2e5280c91340fa757d9e3cef08771173843c7b88450a8df5a35398"
+        }
+      ],
+      "phase": "disassembly",
+      "rocket_count": 0,
+      "ticks": 21,
+      "transfer_count": 0,
+      "watched_chunks": [
+        [
+          "advancedrocketrycommunity:moon",
+          0,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          3,
+          -1
+        ],
+        [
+          "minecraft:overworld",
+          3,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          4,
+          -1
+        ],
+        [
+          "minecraft:overworld",
+          4,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          16,
+          16
+        ]
+      ]
+    },
+    {
+      "assembly_journal_count": 0,
+      "cargo_be_count": 1,
+      "exit": 0,
+      "loaded_sources": [
+        "[27Sep2026 01:14:16.107] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[27Sep2026 01:14:16.107] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "stdout.txt",
+          "sha256": "083cb3d2d7a8e15c13a44be0196e84ce35fade71610d74f6621f6b04adb1e28e"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "debug.log",
+          "sha256": "464586bb78307ef921bb1db5bb61e6d27d8e824f8abe1c0c49c3da6e5bc06c51"
+        },
+        {
+          "counts": {
+            "client_linkage_failure_count": 0,
+            "error_count": 0,
+            "fatal_count": 0,
+            "project_error_count": 0,
+            "project_fatal_count": 0,
+            "project_warning_count": 0,
+            "warning_count": 10
+          },
+          "name": "latest.log",
+          "sha256": "b47630ac49e82457c2f4da965a277ce91a8ea5ea79a8254fd44a0292f0eca761"
+        }
+      ],
+      "phase": "container-restart",
+      "rocket_count": 0,
+      "ticks": 21,
+      "transfer_count": 0,
+      "watched_chunks": [
+        [
+          "advancedrocketrycommunity:moon",
+          0,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          3,
+          -1
+        ],
+        [
+          "minecraft:overworld",
+          3,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          4,
+          -1
+        ],
+        [
+          "minecraft:overworld",
+          4,
+          0
+        ],
+        [
+          "minecraft:overworld",
+          16,
+          16
+        ]
+      ]
+    }
+  ],
+  "port_closed": 60631,
+  "refuels": [
+    "[01:12:55] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_REFUEL entity=e74e0621-52d7-46cd-a286-abddbc962bb3 logical=dd7dce09-6e22-458b-887c-31202ec0654e dimension=minecraft:overworld state_before=ASSEMBLED state_after=FUELED amount=1000 capacity=1000"
+  ],
+  "scope": "One round trip, four clean processes, bounded touched chunks; no passengers or soak"
+}

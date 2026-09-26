@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-09-26T17:13:41" hostname="DESKTOP-8J2KSNF" time="0.06">
+  <properties/>
+  <testcase name="everyRequiredAssemblyFailurePointRollsBackWithoutDuplicationOrLoss()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.022"/>
+  <testcase name="replayAndSecondFreshRequestCannotCreateASecondRocket()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.002"/>
+  <testcase name="entityRemovalFailureRollsBackDisassembly()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.003"/>
+  <testcase name="successfulAssemblyAndDisassemblyPreserveEveryBlockAndContainerByte()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="rollbackFailureRemainsDurablyVisibleAndNeverClaimsSuccess()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="occupiedOrUnloadedDisassemblyNeverOverwritesTheWorld()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="journalWriteFailureAfterMutationTriggersFullRollback()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="interruptedDisassemblyRemovesPartialBlocksAndKeepsTheEntity()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="oneHundredCyclesMaintainAnExactMaterialAndInventoryLedger()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.014"/>
+  <testcase name="spawnAndMidExtractionWorldFailuresRestoreTheOriginalStructure()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.002"/>
+  <testcase name="regionsUseInclusiveDimensionScopedOverlap()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.0"/>
+  <testcase name="activeLedgerCapacityFailsClosedWithoutEvictingInflightWork()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="overlappingRegionLockAllowsOnlyOneTransaction()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.001"/>
+  <testcase name="terminalJournalCleanupFailureDoesNotUndoACommittedWorld()" classname="io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

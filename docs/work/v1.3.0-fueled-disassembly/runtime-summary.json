@@ -1,0 +1,97 @@
+{
+  "source_commit": "094705e31e82f0e0ed3c886aeb1c311fa1566428",
+  "raw_manifest_files": 81,
+  "archive_entries": 92,
+  "archive_sha256": "18abc0efff03e92f8dd7cbc679afa381ff55de4a50b2e6d2566110bb20f41f6d",
+  "result": "PASS",
+  "runtime_base": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341",
+  "artifacts": [
+    {
+      "bytes": 2193986,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "65af2c91dc8ed3e4174c5ee58e6d1b8fbcde5ae127f308fee1cc009cf695663b",
+      "version": "1.20.1-1.3.0-dev"
+    },
+    {
+      "bytes": 19417,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "8144ded5d03764cdd6b1eda8ff5e778f7dd87c564ebde3e5dfe20d382629085f",
+      "version": "1.0.0"
+    }
+  ],
+  "cycles": [
+    {
+      "completed_at": "2026-09-26T17:13:11.746218+00:00",
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 25
+      },
+      "observation_ticks": 22,
+      "phase": "moon-landing",
+      "result": "PASS",
+      "started_at": "2026-09-26T17:12:23.526281+00:00"
+    },
+    {
+      "completed_at": "2026-09-26T17:13:50.932227+00:00",
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 22,
+      "phase": "earth-landing",
+      "result": "PASS",
+      "started_at": "2026-09-26T17:13:11.758340+00:00"
+    },
+    {
+      "completed_at": "2026-09-26T17:14:13.772602+00:00",
+      "exit_code": 0,
+      "explicit_fuel_disposal": 256,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 21,
+      "phase": "disassembly",
+      "result": "PASS",
+      "started_at": "2026-09-26T17:13:50.936538+00:00"
+    },
+    {
+      "completed_at": "2026-09-26T17:14:34.911072+00:00",
+      "exit_code": 0,
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "observation_ticks": 21,
+      "phase": "container-restart",
+      "result": "PASS",
+      "started_at": "2026-09-26T17:14:13.779067+00:00"
+    }
+  ]
+}

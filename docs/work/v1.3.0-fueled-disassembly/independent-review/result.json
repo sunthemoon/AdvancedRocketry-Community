@@ -1,0 +1,50 @@
+{
+  "command": ".\\gradlew.bat test --tests *RocketDisassemblyConfirmationsTest --tests *RocketDisassemblyLanguageTest --tests *RocketIntentRateLimiterTest --tests *RocketTransactionsTest --tests *RocketTransactionExceptionTest --rerun-tasks --offline --no-daemon --no-build-cache",
+  "JAVA_HOME": "C:\\Program Files\\Java\\jdk-17.0.7",
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+  "exit_code": 0,
+  "elapsed_seconds": 42.855556,
+  "suites": [
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketDisassemblyConfirmationsTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.213
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketDisassemblyLanguageTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.025
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.006
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionExceptionTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.022
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.06
+    }
+  ],
+  "log_sha256": "a39a26d53999293b1a852e1c78aa52a5bad1b04cc8a9aa89675068b41db92c92"
+}

@@ -1,0 +1,58 @@
+{
+  "result": "PASS",
+  "runtime_base": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-fueled-disassembly-1790442426341",
+  "reviewed_commit": "094705e31e82f0e0ed3c886aeb1c311fa1566428",
+  "prior_helper_sha256": "c64b0e2817a77c03169c496690eea621b6f248306f21a22bd605f9024e40059e",
+  "adapted_helper_sha256": "51a73be42942931997da8c2a4c8f76b30c829ce0e67446ad737932bdffa16744",
+  "manifest_files_verified": 81,
+  "manifest_sha256": "00e38adc23feeedb14a67b82a7eaa40f8dc8f0e8ab57134336d29f48fd43173c",
+  "artifacts": {
+    "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar": "695e5d91cd9a1ffc883163e96d0d8cc581e7ed72827d185231f56273205be5c3",
+    "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar": "c72cb3d2738fa4b7e7c02976ea71052a0a4dc84d1f9e3d979504206be337fca0",
+    "advancedrocketry-community-1.20.1-1.3.0-dev.jar": "65af2c91dc8ed3e4174c5ee58e6d1b8fbcde5ae127f308fee1cc009cf695663b",
+    "arce-adapter-compat-test-1.0.0.jar": "8144ded5d03764cdd6b1eda8ff5e778f7dd87c564ebde3e5dfe20d382629085f"
+  },
+  "notice_only_refresh_verified": {
+    "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar": [
+      "META-INF/THIRD-PARTY-NOTICES.md"
+    ],
+    "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar": [
+      "META-INF/THIRD-PARTY-NOTICES.md"
+    ],
+    "advancedrocketry-community-1.20.1-1.3.0-dev.jar": [
+      "META-INF/THIRD-PARTY-NOTICES.md"
+    ]
+  },
+  "phases": [
+    {
+      "phase": "moon-landing",
+      "exit_code": 0,
+      "observation_ticks": 22
+    },
+    {
+      "phase": "earth-landing",
+      "exit_code": 0,
+      "observation_ticks": 22
+    },
+    {
+      "phase": "disassembly",
+      "exit_code": 0,
+      "observation_ticks": 21
+    },
+    {
+      "phase": "container-restart",
+      "exit_code": 0,
+      "observation_ticks": 21
+    }
+  ],
+  "logical": "dd7dce09-6e22-458b-887c-31202ec0654e",
+  "final_entity": "db1a36d3-ca6b-4936-9f60-15a055621384",
+  "return_transfer": "b5cf91a2-d46f-4e8c-a8bc-f8abacdebc20",
+  "implicit_refusal": "[01:14:09] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test disassembly failed: FUEL_DISPOSAL_REQUIRED",
+  "wrong_amount_refusal": "[01:14:09] [Server thread/INFO] [minecraft/MinecraftServer]: Release-test disassembly failed: WORLD_CHANGED",
+  "exact_disposal": "[01:14:10] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_FUEL_DISCARDED entity=db1a36d3-ca6b-4936-9f60-15a055621384 logical=dd7dce09-6e22-458b-887c-31202ec0654e amount=256 reason=confirmed_disassembly",
+  "successful_disassembly": "[01:14:10] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_RELEASE_TEST_DISASSEMBLY entity=db1a36d3-ca6b-4936-9f60-15a055621384 logical=dd7dce09-6e22-458b-887c-31202ec0654e code=SUCCESS blocks=5 rolled_back=0",
+  "rejection_entity_snbt_unchanged": true,
+  "rejection_transfer_inspection_unchanged": true,
+  "scope": "One operator-hook round trip and explicit fuel disposal; no real-player confirmation/V1/V2 or arbitrary-crash proof"
+}

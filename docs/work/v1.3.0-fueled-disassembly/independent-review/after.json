@@ -1,0 +1,107 @@
+{
+  "commit": "094705e31e82f0e0ed3c886aeb1c311fa1566428",
+  "status": [
+    "?? AdvancedRocketry-Community-v1plus-Development-Docs/",
+    "?? docs/work/v1.3.0-fueled-disassembly/"
+  ],
+  "source": [
+    {
+      "path": "build.gradle",
+      "sha256": "4772a591bae234b3f2c99148005cedcdd758a11f69035543c161ac91836d884e"
+    },
+    {
+      "path": "scripts/run_v130_adapter_flight_smoke.py",
+      "sha256": "8327537ad992a27dff028ac4ebb857ce546f6a077b5ee271410059979ce33dec"
+    },
+    {
+      "path": "src/generated/v1.3/resources/assets/advancedrocketrycommunity_v130/lang/en_us.json",
+      "sha256": "94b0c9e1d38b20d0b1844ed6e331291f572b868fbbe333c37f60eff9b6b85b85"
+    },
+    {
+      "path": "src/generated/v1.3/resources/assets/advancedrocketrycommunity_v130/lang/zh_cn.json",
+      "sha256": "6031918884118cbe6ecf1f59b1ad0460022b520ebec5b232081761dfd2c994c9"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "ce61e5b137a74295993004d7cfa72d0d56668918f86dc16b14bf2ae9c25aece9"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/RocketLanguageProvider.java",
+      "sha256": "c28873b02b91ecc3afc8539c3f4e8ec31be30e16a09364873bc349f991827cef"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V130RocketLanguageProvider.java",
+      "sha256": "36bc3afebdea17b3142dc52af69775d3a5865c3892ad267d6d76644f05d53209"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketAdapterFailureFixture.java",
+      "sha256": "abfc5d823bb8d55e90349c63e0c46c36a6a3cbb51c9e9c11c2dbc64919b2bbc5"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketDisassemblyGameTests.java",
+      "sha256": "9588dfb291a5ff03058abf29f87ab70800e29470d22b5742c0603d91f4044a6b"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketPassengerContinuedUseGameTests.java",
+      "sha256": "e1ceea153f7241ecc2be33a429b54d31baf8ba1eb0e6d6e58416e97dba749864"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/command/RocketCommands.java",
+      "sha256": "5c13829341b801e180c023d0257ac5242eb268b8fc288dbd29fa875b39237685"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/command/RocketDisassemblyCommands.java",
+      "sha256": "b000d487619ad1b6a94c94191a4dbe287a0fc2dd9568697b6120761caea0512a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.java",
+      "sha256": "f450bfeb03a85500992ed1a3bbbb427c0f38fdba00c3c4149a2cacd9a4aca727"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketDisassemblyConfirmations.java",
+      "sha256": "46c111ba059f18d8726b5a7c95b3c68894e24f388d5455450dcd8a6d2170d34c"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketDisassemblyService.java",
+      "sha256": "2a15232de82b486e893a529f91159f78d90fb49428e1d9d8d2f821e2c0f82ae8"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+      "sha256": "50b53aa90cbf120b112c17dbef3947ddf62c65bca46a152099d6379918682731"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/validation/RocketValidationCode.java",
+      "sha256": "5f6f51e7743ba50fca1acaefdceec134144b809666d5706008ae9d62715ad06e"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketDisassemblyConfirmationsTest.java",
+      "sha256": "a7f6082d6c82f857f1eb6680394d4b255dcbd86989b935535195092a544a2024"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketDisassemblyLanguageTest.java",
+      "sha256": "c2b820076c0ca7312049330317bdaa766533384127664ded6f4a56c5d7f60256"
+    },
+    {
+      "path": "tests/test_v130_adapter_flight_smoke.py",
+      "sha256": "d466d005f2a2326b94c972c4818f72600e215b964f945cf46d05b01ddfc8da04"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+      "sha256": "695e5d91cd9a1ffc883163e96d0d8cc581e7ed72827d185231f56273205be5c3"
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+      "sha256": "c72cb3d2738fa4b7e7c02976ea71052a0a4dc84d1f9e3d979504206be337fca0"
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "65af2c91dc8ed3e4174c5ee58e6d1b8fbcde5ae127f308fee1cc009cf695663b"
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\compat-test-mod\\build\\libs\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "8144ded5d03764cdd6b1eda8ff5e778f7dd87c564ebde3e5dfe20d382629085f"
+    }
+  ]
+}
