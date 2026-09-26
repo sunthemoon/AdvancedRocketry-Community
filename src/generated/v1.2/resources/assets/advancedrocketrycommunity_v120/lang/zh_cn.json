@@ -11,6 +11,7 @@
   "jei.advancedrocketrycommunity.process_cost": "耗时 %s 刻 / %s FE/刻",
   "menu.advancedrocketrycommunity.precision_assembler": "精密装配机控制台",
   "menu.advancedrocketrycommunity.rolling_machine": "轧制机控制台",
+  "message.advancedrocketrycommunity.precision_assembler.removal_blocked": "资源归属尚未确认，暂不能拆除。请加载并修复整台精密装配机，等待迁移完成；不支持的存档需先恢复兼容版本。",
   "message.advancedrocketrycommunity.rolling_machine.formation": "轧制机：%s | 世代 %s",
   "message.advancedrocketrycommunity.rolling_machine.port": "%s 端口：%s",
   "screen.advancedrocketrycommunity.precision_assembler.diagnostic_location": "方块 %s, %s, %s（局部 %s, %s, %s）",

@@ -1,0 +1,9 @@
+PASS: 9 machine blocks, recipes, loot, models, tags and bilingual keys
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+Scope: planning validation only; no release Gate or human approval asserted.
+----------------------------------------------------------------------
+Ran 40 tests in 0.503s
+
+OK
+git diff --check: PASS
+Changed-document Markdown link check: PASS; 5 documents / 78 links

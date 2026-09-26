@@ -1,0 +1,62 @@
+# pre-fix retry regression
+# source: .gradle/prec04b-save-retry-before-clean-20260926/prec04b-save-retry-red.log
+# sha256: 2ec866a63e6801354e5e3a29e181f9cb2ada5fff08f96c63de2db6b9f47eec65
+[15:47:36] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[15:47:36] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=159, y=36, z=159} in minecraft:overworld: BlockPos{x=160, y=36, z=159}: arce_precision_port_migration differs (expected hash=-441292558, saved hash=0)
+[15:47:36] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=159, y=36, z=159} in minecraft:overworld: BlockPos{x=160, y=36, z=159}: arce_precision_port_migration differs (expected hash=-441292558, saved hash=0)
+[15:47:36] [Server thread/ERROR] [minecraft/LogTestReporter]: portmarkersavefailurecanretrywithoutunrelatedchunkchanges failed! Explicit retry did not recover after the transient save failure
+[15:47:43] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[15:47:43] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=223, y=20, z=159} in minecraft:overworld: BlockPos{x=223, y=20, z=159}: arce_precision_resources differs (expected hash=-1579483410, saved hash=0)
+[15:47:43] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=223, y=20, z=159} in minecraft:overworld: BlockPos{x=223, y=20, z=159}: arce_precision_resources differs (expected hash=-1579483410, saved hash=0)
+[15:47:43] [Server thread/ERROR] [minecraft/LogTestReporter]: controllersavefailurecanretrywithoutunrelatedchunkchanges failed! Explicit retry did not recover after the transient save failure
+[15:47:44] [Server thread/INFO] [minecraft/GameTestServer]: 2 required tests failed :(
+BUILD FAILED in 1m 41s
+
+# shared-chunk fixture precondition
+# source: .gradle/prec04b-save-retry-final-check.log
+# sha256: 399407bc3504ef9d581b5ae529a8e51864b6387f84ae8e78dcd370923651654a
+[15:50:05] [main/INFO] [minecraft/HashCache]: Caching: total files: 61, old count: 61, new count: 62, removed stale: 0, written: 0
+[15:51:33] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[15:51:33] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=159, y=36, z=159} in minecraft:overworld: BlockPos{x=160, y=36, z=159}: arce_precision_port_migration differs (expected hash=-932127454, saved hash=0)
+[15:51:40] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[15:51:40] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=223, y=20, z=159} in minecraft:overworld: BlockPos{x=223, y=20, z=159}: arce_precision_resources differs (expected hash=1571121708, saved hash=0)
+[15:51:41] [Server thread/ERROR] [minecraft/LogTestReporter]: controllersavefailurecanretrywithoutunrelatedchunkchanges failed! Retry fixture must retain the save failure's cleared dirty flag
+[15:51:42] [Server thread/INFO] [minecraft/GameTestServer]: 1 required tests failed :(
+BUILD FAILED in 2m 36s
+
+# inter-tick save fixture precondition
+# source: .gradle/prec04b-save-retry-isolated-check.log
+# sha256: c7351771e9b08b5426908563f995e20cf3c941ee2044c2270d530b71886fd106
+[15:56:10] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[15:56:10] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512159, y=36, z=512159} in minecraft:overworld: BlockPos{x=512160, y=36, z=512159}: arce_precision_port_migration differs (expected hash=981970214, saved hash=0)
+[15:56:10] [Server thread/ERROR] [minecraft/LogTestReporter]: portmarkersavefailurecanretrywithoutunrelatedchunkchanges failed! An unrelated save repaired the target chunk before explicit retry
+[15:56:18] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[15:56:18] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512223, y=20, z=512159} in minecraft:overworld: BlockPos{x=512223, y=20, z=512159}: arce_precision_resources differs (expected hash=-83680422, saved hash=0)
+[15:56:20] [Server thread/INFO] [minecraft/GameTestServer]: 1 required tests failed :(
+BUILD FAILED in 2m 6s
+
+# synchronous manager retry verification
+# source: .gradle/prec04b-save-retry-synchronous-check.log
+# sha256: 0799c3398cce2859987327ec8f0d23bfe55bfe8067c54678d8b527e99978d27d
+[16:01:48] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[16:01:48] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512159, y=36, z=512159} in minecraft:overworld: BlockPos{x=512160, y=36, z=512159}: arce_precision_port_migration differs (expected hash=-1831534790, saved hash=0)
+[16:01:57] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+java.lang.IllegalStateException: Intentional one-shot Precision migration save failure
+[16:01:57] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512223, y=20, z=512159} in minecraft:overworld: BlockPos{x=512223, y=20, z=512159}: arce_precision_resources differs (expected hash=160189253, saved hash=0)
+[16:01:58] [Server thread/INFO] [minecraft/GameTestServer]: All 102 required tests passed :)
+BUILD SUCCESSFUL in 2m 11s

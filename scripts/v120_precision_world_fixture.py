@@ -76,6 +76,8 @@ def _summary(path: Path) -> tuple[dict[str, object], str]:
 
 
 def _region_chunk(region: bytes, x: int, z: int) -> bytes:
+    if len(region) < 8192:
+        raise FixtureError("Region header is truncated")
     index = 4 * ((x & 31) + 32 * (z & 31))
     sector = int.from_bytes(region[index:index + 3], "big")
     sector_count = region[index + 3]

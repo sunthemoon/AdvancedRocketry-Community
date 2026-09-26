@@ -1,0 +1,15 @@
+# Raw, checksummed v1.2 verification captures retain their original bytes.
+# Whitespace inside tool output is evidence, not hand-authored source style.
+v1.2.0-precision-assembler/energy-binding-recovery/** -text -whitespace
+v1.2.0-precision-assembler/transaction-recovery/** -text -whitespace
+v1.2.0-precision-assembler/unload-lifecycle/** -text -whitespace
+v1.2.0-precision-assembler/packaged-restart/prec04b/** -text -whitespace
+v1.2.0-migration/electrolyzer-beta-restart/** -text -whitespace
+v1.2.0-migration/rolling-restart/** -text -whitespace
+v1.2.0-migration/fixtures/electrolyzer-beta/** -text -whitespace
+v1.2.0-migration/fixtures/rolling/** -text -whitespace
+v1.2.0-migration/verification/** -text -whitespace
+v1.2.0-jei-integration/native/** -text -whitespace
+v1.2.0-rolling-test-fixtures/*.txt -text -whitespace
+v1.2.0-rolling-test-fixtures/*.log -text -whitespace
+v1.2.0-rolling-test-fixtures/*.json -text -whitespace

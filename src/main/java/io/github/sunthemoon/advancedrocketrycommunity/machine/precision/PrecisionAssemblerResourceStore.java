@@ -152,7 +152,7 @@ final class PrecisionAssemblerResourceStore implements ProcessResourceStore {
         }
     }
 
-    /** Replays a persisted journal only when every physical slot is before or after that batch. */
+    /** Replays a persisted journal only when every Item slot is before or after that batch. */
     boolean reconcileJournal(ProcessTransactionJournal journal) {
         requireUsablePorts();
         ProcessResourceSnapshot actual = snapshot();
@@ -187,6 +187,12 @@ final class PrecisionAssemblerResourceStore implements ProcessResourceStore {
             }
         }
 
+        // Recovery has the same write ordering as a normal commit. Keeping
+        // PREPARED while advancing resources would make our own next replay
+        // reject the changed revision or applied marker.
+        if (journal.phase() == ProcessJournalPhase.PREPARED) {
+            process.save(journal.advance(ProcessJournalPhase.APPLYING));
+        }
         List<ItemStack> oldInputs = inputStacks();
         List<ItemStack> oldOutputs = outputStacks();
         long oldRevision = process.resourceRevision();

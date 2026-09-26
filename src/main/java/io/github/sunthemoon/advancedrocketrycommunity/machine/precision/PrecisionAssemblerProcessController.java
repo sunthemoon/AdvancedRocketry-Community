@@ -29,7 +29,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 
-/** Server-only process state and journal owner; resources stay in the eight ports. */
+/** Server-only process and journal owner; Item resources share its controller chunk. */
 final class PrecisionAssemblerProcessController implements ProcessJournalStore {
     private final Runnable changed;
     private final PrecisionAssemblerRecipeResolver recipes = new PrecisionAssemblerRecipeResolver();

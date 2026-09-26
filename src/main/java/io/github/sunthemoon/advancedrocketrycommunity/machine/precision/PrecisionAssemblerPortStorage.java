@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import net.minecraft.world.item.ItemStack;
@@ -42,6 +43,61 @@ final class PrecisionAssemblerItemStorage extends ItemStackHandler {
 
     void replaceStored(ItemStack stack) {
         loadStored(stack);
+        changed.run();
+    }
+
+    @Override
+    protected void onContentsChanged(int slot) {
+        changed.run();
+    }
+}
+
+/** Controller-owned Item slots; physical ports expose one channel each. */
+final class PrecisionAssemblerItemBank extends ItemStackHandler {
+    private final Runnable changed;
+
+    PrecisionAssemblerItemBank(Runnable changed) {
+        super(PrecisionAssemblerResourcePersistence.ITEM_COUNT);
+        this.changed = Objects.requireNonNull(changed, "changed");
+    }
+
+    @Override
+    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        validateSlotIndex(slot);
+        return PrecisionAssemblerPortPersistence.acceptsItem(stack);
+    }
+
+    @Override
+    public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+        if (!PrecisionAssemblerPortPersistence.acceptsItem(stack)) {
+            throw new IllegalArgumentException("Precision Assembler controller rejected invalid Item data");
+        }
+        super.setStackInSlot(slot, stack.copy());
+    }
+
+    ItemStack storedCopy(int slot) {
+        return getStackInSlot(slot).copy();
+    }
+
+    List<ItemStack> storedCopies() {
+        return java.util.stream.IntStream.range(0, getSlots()).mapToObj(this::storedCopy).toList();
+    }
+
+    void loadStored(List<ItemStack> items) {
+        if (items.size() != getSlots() || items.stream().anyMatch(
+                item -> !PrecisionAssemblerPortPersistence.acceptsItem(item))) {
+            throw new IllegalArgumentException("Precision Assembler controller rejected loaded Item data");
+        }
+        for (int slot = 0; slot < getSlots(); slot++) {
+            stacks.set(slot, items.get(slot).copy());
+        }
+    }
+
+    void replaceStored(int slot, ItemStack item) {
+        if (!PrecisionAssemblerPortPersistence.acceptsItem(item)) {
+            throw new IllegalArgumentException("Precision Assembler controller rejected Item replacement");
+        }
+        stacks.set(slot, item.copy());
         changed.run();
     }
 

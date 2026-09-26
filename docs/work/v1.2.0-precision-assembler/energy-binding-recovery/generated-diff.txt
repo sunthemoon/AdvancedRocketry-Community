@@ -1,0 +1,24 @@
+diff --git a/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/en_us.json b/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/en_us.json
+index ddf224d..53d8e78 100644
+--- a/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/en_us.json
++++ b/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/en_us.json
+@@ -11,6 +11,7 @@
+   "jei.advancedrocketrycommunity.process_cost": "%s t / %s FE/t",
+   "menu.advancedrocketrycommunity.precision_assembler": "Precision Assembler Console",
+   "menu.advancedrocketrycommunity.rolling_machine": "Rolling Machine Console",
++  "message.advancedrocketrycommunity.precision_assembler.removal_blocked": "Removal paused: resource ownership is unresolved. Load and repair the full assembler to finish migration; unsupported saves need a compatible version.",
+   "message.advancedrocketrycommunity.rolling_machine.formation": "Rolling Machine: %s | generation %s",
+   "message.advancedrocketrycommunity.rolling_machine.port": "%s port: %s",
+   "screen.advancedrocketrycommunity.precision_assembler.diagnostic_location": "Block %s, %s, %s (local %s, %s, %s)",
+diff --git a/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/zh_cn.json b/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/zh_cn.json
+index 342bc31..c80244f 100644
+--- a/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/zh_cn.json
++++ b/src/generated/v1.2/resources/assets/advancedrocketrycommunity_v120/lang/zh_cn.json
+@@ -11,6 +11,7 @@
+   "jei.advancedrocketrycommunity.process_cost": "耗时 %s 刻 / %s FE/刻",
+   "menu.advancedrocketrycommunity.precision_assembler": "精密装配机控制台",
+   "menu.advancedrocketrycommunity.rolling_machine": "轧制机控制台",
++  "message.advancedrocketrycommunity.precision_assembler.removal_blocked": "资源归属尚未确认，暂不能拆除。请加载并修复整台精密装配机，等待迁移完成；不支持的存档需先恢复兼容版本。",
+   "message.advancedrocketrycommunity.rolling_machine.formation": "轧制机：%s | 世代 %s",
+   "message.advancedrocketrycommunity.rolling_machine.port": "%s 端口：%s",
+   "screen.advancedrocketrycommunity.precision_assembler.diagnostic_location": "方块 %s, %s, %s（局部 %s, %s, %s）",

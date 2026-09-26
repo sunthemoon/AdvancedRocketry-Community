@@ -1,0 +1,26 @@
+=== prec04b-removal-check.log SHA256 dcf376f265ff2fa524153b32e47bcac0d88daca12861c261df0f2add8236d231 ===
+[16:32:18] [main/INFO] [minecraft/HashCache]: Caching: total files: 61, old count: 61, new count: 62, removed stale: 0, written: 0
+[16:33:28] [Server thread/INFO] [minecraft/GameTestServer]: ========= 109 GAME TESTS COMPLETE ======================
+[16:33:28] [Server thread/INFO] [minecraft/GameTestServer]: All 109 required tests passed :)
+BUILD SUCCESSFUL in 1m 57s
+
+=== prec04b-removal-recovery-check.log SHA256 6ec7ae31b0cbaa3185f2a7c15e93a8a0dca0652299e58bae474e439463426fb4 ===
+[16:39:10] [Server thread/ERROR] [minecraft/LogTestReporter]: preparedsnapshotrepairsmissingandoldersameownerbindings failed! Protected removal spawned resource or block-item drops
+[16:39:10] [Server thread/ERROR] [minecraft/LogTestReporter]: pendingmigrationrejectssurvivalandcreativeateverymarkercut failed! Protected removal spawned resource or block-item drops
+[16:39:11] [Server thread/INFO] [minecraft/GameTestServer]: ========= 112 GAME TESTS COMPLETE ======================
+[16:39:11] [Server thread/INFO] [minecraft/GameTestServer]: 2 required tests failed :(
+BUILD FAILED in 1m 39s
+
+=== prec04b-removal-final-check.log SHA256 caf9294d5c6e4ed577cbc467849e05ec9b679afc02fb709b4d47ecfe409fde9e ===
+[16:42:02] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision removal fixture retained 1 pre-existing Item entities unchanged at BlockPos{x=2, y=-59, z=176}
+[16:42:02] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision removal fixture retained 2 pre-existing Item entities unchanged at BlockPos{x=7, y=-59, z=176}
+[16:42:03] [Server thread/INFO] [minecraft/GameTestServer]: ========= 112 GAME TESTS COMPLETE ======================
+[16:42:03] [Server thread/INFO] [minecraft/GameTestServer]: All 112 required tests passed :)
+BUILD SUCCESSFUL in 1m 39s
+
+=== prec04b-removal-ledger-check.log SHA256 691bd3386f567d5ff84644739ecab2c133bac24f99ad523f8115c971fefccd3a ===
+[16:44:33] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision removal fixture retained 1 pre-existing Item entities unchanged at BlockPos{x=2, y=-59, z=176}
+[16:44:33] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Precision removal fixture retained 2 pre-existing Item entities unchanged at BlockPos{x=7, y=-59, z=176}
+[16:44:34] [Server thread/INFO] [minecraft/GameTestServer]: ========= 112 GAME TESTS COMPLETE ======================
+[16:44:34] [Server thread/INFO] [minecraft/GameTestServer]: All 112 required tests passed :)
+BUILD SUCCESSFUL in 1m 43s
