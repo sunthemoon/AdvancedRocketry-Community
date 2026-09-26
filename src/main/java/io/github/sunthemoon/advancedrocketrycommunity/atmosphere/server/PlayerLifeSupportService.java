@@ -1,7 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
-import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
-import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygen;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportDecision;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngine;
@@ -14,8 +14,6 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModDamageTypes;
@@ -26,11 +24,19 @@ public final class PlayerLifeSupportService {
 
     private final AtmosphereManager atmosphere;
     private final SnapshotSink snapshotSink;
+    private final SuitEquipmentService equipment;
     private final Map<UUID, PlayerState> players = new HashMap<>();
+    private boolean ticking;
 
     public PlayerLifeSupportService(AtmosphereManager atmosphere, SnapshotSink snapshotSink) {
+        this(atmosphere, snapshotSink, new SuitEquipmentService(SuitEquipmentCatalog.empty()));
+    }
+
+    public PlayerLifeSupportService(AtmosphereManager atmosphere, SnapshotSink snapshotSink,
+                                    SuitEquipmentService equipment) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
         this.snapshotSink = Objects.requireNonNull(snapshotSink, "snapshotSink");
+        this.equipment = Objects.requireNonNull(equipment, "equipment");
     }
 
     public void onLivingTick(LivingEvent.LivingTickEvent event) {
@@ -40,13 +46,22 @@ public final class PlayerLifeSupportService {
     }
 
     public PlayerLifeSupportSnapshot tickPlayer(ServerPlayer player) {
+        if (ticking || !player.serverLevel().getServer().isSameThread()) {
+            throw new IllegalStateException("Life support requires the non-reentrant logical server thread");
+        }
+        ticking = true;
+        try {
+            return applyTick(player);
+        } finally {
+            ticking = false;
+        }
+    }
+
+    private PlayerLifeSupportSnapshot applyTick(ServerPlayer player) {
         PlayerState state = players.computeIfAbsent(player.getUUID(), ignored -> new PlayerState());
-        int suitPieces = SpaceSuitArmorItem.countEquippedPieces(player);
-        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        SpaceSuitOxygen.ReadResult oxygenData = SpaceSuitOxygen.read(chest);
-        int oxygen = oxygenData.status() == SpaceSuitOxygen.DataStatus.VALID
-                ? oxygenData.oxygenUnits()
-                : 0;
+        SuitEquipmentService.Reading oxygenData = equipment.readOxygen(player);
+        int suitPieces = equipment.countPieces(player);
+        int oxygen = oxygenData.oxygenUnits();
         BlockPos eyePosition = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ());
         BreathabilityState breathability = atmosphere.breathabilityAt(
                 player.serverLevel(),
@@ -72,12 +87,13 @@ public final class PlayerLifeSupportService {
                             state.vacuumPhase
                     )
             );
-            state.vacuumPhase = decision.vacuumPhase();
-            if (decision.oxygenUnits() != oxygen
-                    && oxygenData.status() == SpaceSuitOxygen.DataStatus.VALID
-                    && !SpaceSuitOxygen.set(chest, decision.oxygenUnits())) {
-                throw new IllegalStateException("Validated server suit oxygen could not be updated");
+            if (decision.oxygenUnits() != oxygen && !equipment.setOxygen(player, oxygenData, decision.oxygenUnits())) {
+                suitPieces = equipment.countPieces(player);
+                decision = PlayerLifeSupportEngine.tick(new PlayerLifeSupportInput(
+                        atmosphere.baseAtmosphereBreathable(player.serverLevel()), breathability,
+                        suitPieces, 0, state.vacuumPhase));
             }
+            state.vacuumPhase = decision.vacuumPhase();
             if (decision.damage() > 0.0F) {
                 player.hurt(ModDamageTypes.vacuum(player.serverLevel()), decision.damage());
             }
@@ -102,6 +118,10 @@ public final class PlayerLifeSupportService {
     }
 
     public void clear() {
+        if (ticking) {
+            throw new IllegalStateException("Cannot clear active life support");
+        }
+        equipment.clear();
         players.clear();
     }
 

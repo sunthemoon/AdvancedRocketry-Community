@@ -1,8 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransferResult;
-import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.SuitEquipmentRuntime;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -21,8 +22,7 @@ public final class OxygenCanisterItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        if (!(chest.getItem() instanceof SpaceSuitArmorItem armor)
-                || armor.getType() != net.minecraft.world.item.ArmorItem.Type.CHESTPLATE) {
+        if (!held.is(this) || !SuitEquipmentRuntime.isChest(chest)) {
             if (!level.isClientSide) {
                 player.displayClientMessage(Component.translatable(
                         "message.advancedrocketrycommunity.oxygen.requires_chestplate"
@@ -34,19 +34,15 @@ public final class OxygenCanisterItem extends Item {
             return InteractionResultHolder.success(held);
         }
 
-        OxygenTransferResult transfer = SpaceSuitOxygen.fillOneCanister(chest);
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResultHolder.fail(held);
+        }
+        OxygenTransferResult transfer = SuitEquipmentRuntime.fillOneCanister(serverPlayer, hand);
         if (!transfer.accepted()) {
             player.displayClientMessage(Component.translatable(
                     "message.advancedrocketrycommunity.oxygen.no_capacity"
             ), true);
             return InteractionResultHolder.fail(held);
-        }
-        if (!player.getAbilities().instabuild) {
-            held.shrink(1);
-            ItemStack empty = new ItemStack(ModItems.EMPTY_CANISTER.get());
-            if (!player.getInventory().add(empty)) {
-                player.drop(empty, false);
-            }
         }
         player.displayClientMessage(Component.translatable(
                 "message.advancedrocketrycommunity.oxygen.suit_refilled",

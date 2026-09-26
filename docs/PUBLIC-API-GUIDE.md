@@ -1,7 +1,7 @@
-# Public API: versioning, rocket containers and atmosphere boundaries
+# Public API: versioning, rocket containers, atmosphere and equipment
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.2**. Version metadata remains JDK-only in
+types. The API version is **1.3**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -14,8 +14,8 @@ types. The API version is **1.2**. Version metadata remains JDK-only in
 `RocketAdapterRegistrar` and `RegisterRocketAdaptersEvent`, requiring the
 Minecraft 1.20.1 / Forge platform. Other project packages are implementation
 details, even when their Java types are `public`. `api.atmosphere` exports the four
-state-boundary types described below. Equipment, fuel and satellite extension APIs
-are not yet exported.
+state-boundary and three equipment types described below. Fuel, environment and
+satellite extension APIs are not yet exported.
 
 ## Compile and run
 
@@ -168,6 +168,90 @@ restart; removing its blocks also invokes normal Forge missing-registry behavior
 The API adds no saved payload or packet. Position-dependent/BlockEntity rules and
 equipment oxygen mutation are not part of this interface. See
 [the boundary contract](decisions/ADR-024-STATE-BASED-ATMOSPHERE-BOUNDARIES.md).
+
+## Register suit equipment and oxygen
+
+Equipment integrations require at least `new ApiVersion(1, 3)`. Register a
+`RegisterSuitEquipmentEvent` listener on the integrating mod's MOD bus during
+construction. The owner-bound `SuitEquipmentRegistrar` accepts:
+
+```java
+event.register(ResourceLocation.tryParse("yourmod:pressure_suit"), Map.of(
+        ResourceLocation.tryParse("yourmod:helmet"), EquipmentSlot.HEAD,
+        ResourceLocation.tryParse("yourmod:chestplate"), EquipmentSlot.CHEST,
+        ResourceLocation.tryParse("yourmod:leggings"), EquipmentSlot.LEGS,
+        ResourceLocation.tryParse("yourmod:boots"), EquipmentSlot.FEET),
+        1, new SuitOxygenProvider() {
+            public OptionalInt readOxygen(CompoundTag data) {
+                if (data.isEmpty()) return OptionalInt.of(0);
+                if (!data.contains("oxygen", Tag.TAG_INT)) return OptionalInt.empty();
+                int units = data.getInt("oxygen");
+                return units >= 0 && units <= 2000
+                        ? OptionalInt.of(units) : OptionalInt.empty();
+            }
+
+            public CompoundTag writeOxygen(CompoundTag data, int units) {
+                data.putInt("oxygen", units);
+                return data;
+            }
+        });
+```
+
+Import the event/provider from `api.atmosphere`, `Map`/`OptionalInt` from the JDK,
+and the remaining types from Minecraft. Item IDs may belong to another mod, but
+the provider ID must use the listening mod's namespace. Items must exist and be
+unstackable; ArmorItem slots must match. Other items need their own ordinary
+equipping behavior. Built-in space suits cannot be replaced. Limits are 256
+providers, 64 items per registration, 1,024 items total and IDs up to 255 characters.
+Duplicate item/provider claims reject loading atomically. Common-setup dispatch
+runs once per mod on both physical sides; retain neither event nor registrar.
+
+All four worn armor slots must be recognized; mixed external/built-in suits work.
+Only the worn chest supplies oxygen. Capacity remains 2,000 units, consumption is
+one unit per twenty vacuum ticks, and the existing oxygen canister transfers
+1,000 units only when the whole amount fits. Creative/spectator and breathable
+players do not debit oxygen. The existing server-authoritative HUD displays the
+same units/status; this API does not change the packet format or add a custom HUD.
+
+Providers receive **detached owned NBT only**, on the logical server thread. Reads
+must be pure; writes return exactly the requested amount and preserve other owned
+fields. Do not read world/time/external mutable state, retain mutable arguments,
+access files/networks/capabilities or reenter host services. `OptionalInt.empty()`
+means this item's data is invalid/unsupported: it cannot supply oxygen or be
+refilled, but other valid items still work. Null, present out-of-range values,
+throwing callbacks, changed read arguments, invalid writes or failed readback
+disable the provider (including its armor mappings) until server restart. A bounded
+diagnostic identifies the provider, without exposing its payload/exception text.
+
+Each callback has a 5 ms returned-time budget. The host bounds input/output before
+copying, rejects malformed/future data without replacing it, and commits only after
+the actual chest and held refill canister still match. Failed debits do not grant
+free protection; rejected refills neither spend a canister nor create an empty
+shell. These checks cannot interrupt hung code, sandbox arbitrary same-JVM side
+effects or prevent a provider allocating too much memory before returning.
+
+### Keep owned oxygen data recoverable
+
+Only external chest pieces use the new ItemStack tag `arce_suit_provider`:
+
+```text
+{schema_version: 1, provider: "yourmod:pressure_suit", payload_version: 1,
+ data: {oxygen: 1000}}
+```
+
+The complete envelope is capped at 16,384 uncompressed NBT bytes, depth 16 and
+256 tag nodes. A missing tag supplies an empty compound that must read as zero;
+the first successful refill creates the envelope. The payload version is a positive
+exact match, not a migration instruction. Keep IDs/formats stable or define a
+migration before changing them. Unknown/mismatched/future data stays untouched
+and unusable until compatible code returns. Removing registration is not removing
+an item's mod: Forge missing-item handling and binary compatibility are separate.
+Old hosts can retain this tag only when the item/integration mod still loads there.
+
+The old `arce_space_suit_oxygen` format is unchanged. This API supports a provider's
+single authoritative NBT tank, not a synchronized copy of another tank or arbitrary
+capability/energy/fluid storage. No inventory-wide tank search, variable capacity or
+automated migration is promised. See [the equipment contract](decisions/ADR-025-SUIT-OXYGEN-PROVIDERS.md).
 
 ## Compatibility policy
 

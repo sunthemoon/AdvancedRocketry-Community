@@ -25,7 +25,9 @@ def exportedClasses = [
         'api/version/ApiVersions.class', 'api/rocket/RocketBlockEntityAdapter.class',
         'api/rocket/RocketAdapterRegistrar.class', 'api/rocket/RegisterRocketAdaptersEvent.class',
         'api/atmosphere/AtmosphereBoundary.class', 'api/atmosphere/AtmosphereBoundaryProvider.class',
-        'api/atmosphere/AtmosphereBoundaryRegistrar.class', 'api/atmosphere/RegisterAtmosphereBoundariesEvent.class'
+        'api/atmosphere/AtmosphereBoundaryRegistrar.class', 'api/atmosphere/RegisterAtmosphereBoundariesEvent.class',
+        'api/atmosphere/SuitOxygenProvider.class', 'api/atmosphere/SuitEquipmentRegistrar.class',
+        'api/atmosphere/RegisterSuitEquipmentEvent.class'
 ].collect { hostPrefix + it }.toSet()
 
 repositories {

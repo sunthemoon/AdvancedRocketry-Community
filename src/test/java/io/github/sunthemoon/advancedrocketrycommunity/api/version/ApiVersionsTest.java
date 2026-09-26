@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ApiVersionsTest {
     @Test
-    void currentVersionIncludesTheFrozenAtmosphereBoundaryContract() {
-        assertEquals(new ApiVersion(1, 2), ApiVersions.current());
+    void currentVersionIncludesTheFrozenSuitEquipmentContract() {
+        assertEquals(new ApiVersion(1, 3), ApiVersions.current());
     }
 
     @Test
@@ -20,8 +20,10 @@ class ApiVersionsTest {
                 ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 1)));
         assertEquals(ApiCompatibility.COMPATIBLE,
                 ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 2)));
-        assertEquals(ApiCompatibility.MINOR_TOO_OLD,
+        assertEquals(ApiCompatibility.COMPATIBLE,
                 ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 3)));
+        assertEquals(ApiCompatibility.MINOR_TOO_OLD,
+                ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 4)));
     }
 
     @Test

@@ -36,6 +36,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketA
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterSuitEquipmentEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentService;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.SuitEquipmentRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualNetwork;
@@ -209,7 +213,9 @@ public final class AdvancedRocketryCommunity {
                     registry.forOwner(container.getModId())));
             atmosphereManager = new AtmosphereManager(environments, registry.freeze());
             AtmosphereRuntime.install(atmosphereManager);
-            playerLifeSupport = new PlayerLifeSupportService(atmosphereManager, lifeSupportNetwork::send);
+            SuitEquipmentService equipment = initializeSuitEquipment();
+            SuitEquipmentRuntime.install(equipment);
+            playerLifeSupport = new PlayerLifeSupportService(atmosphereManager, lifeSupportNetwork::send, equipment);
             AtmosphereServerEvents events = new AtmosphereServerEvents(atmosphereManager);
             MinecraftForge.EVENT_BUS.addListener(events::onServerTick);
             MinecraftForge.EVENT_BUS.addListener(events::onBlockBroken);
@@ -223,6 +229,15 @@ public final class AdvancedRocketryCommunity {
             MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onLivingTick);
             MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onPlayerLoggedOut);
             MinecraftForge.EVENT_BUS.addListener(new AtmosphereCommands(atmosphereManager)::register);
+        }
+    }
+
+    private SuitEquipmentService initializeSuitEquipment() {
+        try (SuitEquipmentRegistry registry = new SuitEquipmentRegistry(id ->
+                ForgeRegistries.ITEMS.containsKey(id) ? ForgeRegistries.ITEMS.getValue(id) : null)) {
+            ModLoader.get().runEventGenerator(container -> new RegisterSuitEquipmentEvent(
+                    registry.forOwner(container.getModId())));
+            return new SuitEquipmentService(registry.freeze());
         }
     }
 

@@ -142,7 +142,8 @@ Independent review reruns applicable key tests. This is not V1/V2, forced power
 loss, arbitrary foreign capability compatibility or the deferred full campaign.
 
 Old hosts ignore the new root and do not recognize external suits, but retain item
-NBT while the item mod remains installed. Restore the matching host/provider to
+NBT only if the item/integration mod can still load on that older host. API 1.3
+binary dependencies may prevent startup on an older API. Restore the matching host/provider to
 resume. No existing save migration or historical Gate approval is implied.
 
 ## Authorization and review

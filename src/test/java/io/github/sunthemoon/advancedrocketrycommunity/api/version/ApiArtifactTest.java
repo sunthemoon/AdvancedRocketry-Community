@@ -42,7 +42,10 @@ class ApiArtifactTest {
             API_PACKAGE + "atmosphere/AtmosphereBoundary.class",
             API_PACKAGE + "atmosphere/AtmosphereBoundaryProvider.class",
             API_PACKAGE + "atmosphere/AtmosphereBoundaryRegistrar.class",
-            API_PACKAGE + "atmosphere/RegisterAtmosphereBoundariesEvent.class")).collect(Collectors.toUnmodifiableSet());
+            API_PACKAGE + "atmosphere/RegisterAtmosphereBoundariesEvent.class",
+            API_PACKAGE + "atmosphere/SuitOxygenProvider.class",
+            API_PACKAGE + "atmosphere/SuitEquipmentRegistrar.class",
+            API_PACKAGE + "atmosphere/RegisterSuitEquipmentEvent.class")).collect(Collectors.toUnmodifiableSet());
     private static final Set<String> METADATA = Set.of("META-INF/MANIFEST.MF", "META-INF/LICENSE",
             "META-INF/NOTICE.md", "META-INF/THIRD-PARTY-NOTICES.md",
             "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
@@ -140,6 +143,12 @@ class ApiArtifactTest {
     @Test
     void atmosphereConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
         Compilation result = compile("AtmosphereApiConsumer", platformConsumerClasspath());
+        assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void suitConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
+        Compilation result = compile("SuitApiConsumer", platformConsumerClasspath());
         assertTrue(result.success(), result.diagnostics().toString());
     }
 

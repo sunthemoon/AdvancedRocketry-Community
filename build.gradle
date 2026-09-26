@@ -290,7 +290,8 @@ def rocketApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/rocke
 def exportedRocketApiTypes = ['RocketBlockEntityAdapter', 'RocketAdapterRegistrar', 'RegisterRocketAdaptersEvent']
 def atmosphereApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere'
 def exportedAtmosphereApiTypes = ['AtmosphereBoundary', 'AtmosphereBoundaryProvider',
-                                  'AtmosphereBoundaryRegistrar', 'RegisterAtmosphereBoundariesEvent']
+                                  'AtmosphereBoundaryRegistrar', 'RegisterAtmosphereBoundariesEvent',
+                                  'SuitOxygenProvider', 'SuitEquipmentRegistrar', 'RegisterSuitEquipmentEvent']
 def exportedApiClasses = exportedApiTypes.collect { "${apiPackage}/${it}.class" } +
         exportedRocketApiTypes.collect { "${rocketApiPackage}/${it}.class" } +
         exportedAtmosphereApiTypes.collect { "${atmosphereApiPackage}/${it}.class" }
