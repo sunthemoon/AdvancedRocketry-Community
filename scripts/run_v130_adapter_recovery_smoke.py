@@ -43,6 +43,7 @@ SmokeError = server_smoke.SmokeError
 HOST = "advancedrocketrycommunity"
 FIXTURE = "arce_adapter_test"
 CARGO = FIXTURE + ":cargo_container"
+BOUNDARY = FIXTURE + ":state_boundary"
 ADAPTER = FIXTURE + ":cargo_inventory"
 ROCKET = HOST + ":rocket"
 ORIGIN = (256, 101, 256)
@@ -55,8 +56,8 @@ INVENTORY = {"Items": [
      "tag": {"display": {"Name": '{"text":"Public adapter cargo"}'}}},
     {"Slot": 1, "id": "minecraft:iron_ingot", "Count": 64},
 ]}
-REGISTERED = "Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.1, event 1)"
-SKIPPED = "Skipped rocket adapter arce_adapter_test:cargo_inventory (API 1.1, event 1)"
+REGISTERED = "Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.2, event 1)"
+SKIPPED = "Skipped rocket adapter arce_adapter_test:cargo_inventory (API 1.2, event 1)"
 PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
           "provider-reinstalled", "container-restart")
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
@@ -170,7 +171,9 @@ def audit_log(lines: list[str], phase: str) -> list[str]:
                     if not following.strip():
                         break
                     entries.append(following.strip())
-                if len(entries) != 1 or not re.fullmatch(re.escape(CARGO) + r": [0-9]+", entries[0]):
+                mappings = [re.fullmatch(r"([a-z0-9_.-]+:[a-z0-9/._-]+): [0-9]+", entry) for entry in entries]
+                if (len(mappings) != 2 or any(match is None for match in mappings)
+                        or {match.group(1) for match in mappings} != {CARGO, BOUNDARY}):
                     raise SmokeError("Missing-block diagnostic contains unexpected registry entries")
                 known_mapping_lines.add(line.rstrip())
     accepted = []

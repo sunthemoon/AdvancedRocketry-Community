@@ -201,7 +201,7 @@ class RecoveryParsingTests(unittest.TestCase):
         with self.assertRaises(runner.SmokeError):
             runner.validate_registration([runner.SKIPPED], "mod-uninstalled")
         with self.assertRaises(runner.SmokeError):
-            runner.validate_registration([runner.REGISTERED.replace("API 1.1", "API 1.0")], "assemble")
+            runner.validate_registration([runner.REGISTERED.replace("API 1.2", "API 1.0")], "assemble")
 
     def test_actual_status_checks_mod_set_version_and_no_players(self):
         mods = {runner.HOST: "1.20.1-1.3.0-dev", runner.FIXTURE: "1.0.0", "forge": "", "minecraft": "1.20.1"}
@@ -223,16 +223,18 @@ class RecoveryParsingTests(unittest.TestCase):
             with self.subTest(bad=bad, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log([bad], phase)
 
-    def test_missing_block_diagnostic_requires_only_the_fixture_id(self):
+    def test_missing_block_diagnostic_requires_exactly_the_fixture_block_ids(self):
         header = "[main/ERROR] [ne.mi.re.GameData/REGISTRIES]: " + runner.MISSING_BLOCK_ERROR
         body = "\t" + runner.CARGO + ": 1022"
-        self.assertEqual([header], runner.audit_log([header, body, ""], "mod-uninstalled"))
+        boundary = "\t" + runner.BOUNDARY + ": 1023"
+        self.assertEqual([header], runner.audit_log([header, body, boundary, ""], "mod-uninstalled"))
         for lines, phase in (([header, body, ""], "provider-skipped"),
+                             ([header, body, ""], "mod-uninstalled"),
                              ([header, ""], "mod-uninstalled"),
                              ([header, body, body, ""], "mod-uninstalled"),
-                             ([header, body.replace(runner.CARGO, "other:container"), ""], "mod-uninstalled"),
-                             ([header.replace("minecraft:block", "minecraft:item"), body, ""], "mod-uninstalled"),
-                             ([header.replace("GameData", "Other"), body, ""], "mod-uninstalled"),
+                             ([header, body.replace(runner.CARGO, "other:container"), boundary, ""], "mod-uninstalled"),
+                             ([header.replace("minecraft:block", "minecraft:item"), body, boundary, ""], "mod-uninstalled"),
+                             ([header.replace("GameData", "Other"), body, boundary, ""], "mod-uninstalled"),
                              ([header, body, "[main/ERROR] [example]: broken"], "mod-uninstalled")):
             with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log(lines, phase)
