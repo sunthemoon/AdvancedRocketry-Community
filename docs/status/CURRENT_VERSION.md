@@ -20,3 +20,21 @@ in [v0.9.0 GATE-STATUS](../releases/v0.9.0/GATE-STATUS.md). v1.0 stabilizes that
 core without implementing v1.1+ features. Development-tree checks are not a
 frozen release-candidate commit or stable approval. See the
 [implementation log](../work/v1.0.0-implementation-log.md).
+
+## Active development checkout
+
+The acceptance cursor above remains at the earliest unfinished release Gate;
+it is not the active feature-development branch. Under accepted
+[ADR-020](../decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md), scoped
+v1.3 development proceeds from the immutable v1.2 baseline while inherited
+acceptance remains open:
+
+```yaml
+active_development_version: v1.3.0
+active_development_branch: codex/v1.3.0-public-api
+accepted_development_baseline: 163e713206d1b89eca8b3e369b4503ab0a5a4ceb
+development_log: docs/work/v1.3.0-implementation-log.md
+```
+
+Use the [v1.3 implementation log](../work/v1.3.0-implementation-log.md) for active
+tasks. This pointer does not approve any candidate or change `GATE_STATUS.md`.

@@ -1,0 +1,22 @@
+[
+  {
+    "path": "docs/work/v1.0.0-cancel-diagnostic/verification/gametest-native.log",
+    "bytes": 126160,
+    "sha256": "4669e268390c3c738852d0c66c2283b476a4fbfd887ead131ed36dc1c818504d"
+  },
+  {
+    "path": "docs/work/v1.0.0-console-presentation/verification/gametest-native.log",
+    "bytes": 124331,
+    "sha256": "25d7f24d5a15d643762a3890e91473055c4063ba2676fe626203f3fb451a48d1"
+  },
+  {
+    "path": "docs/work/v1.0.0-late-frame/verification/gametest-native.log",
+    "bytes": 126142,
+    "sha256": "f072aecaff95f3b49958908ea7f30f021284eb2e471b8ff7cd067a2110e7405b"
+  },
+  {
+    "path": "docs/work/v1.0.0-station-duo/verification/attempt-1/server-latest.log",
+    "bytes": 32038,
+    "sha256": "ebacc627f62c97bec03220fd46ad56ad3ad4acf59f7c41fef4b0a94bdc5b6648"
+  }
+]

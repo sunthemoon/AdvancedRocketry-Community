@@ -8,7 +8,7 @@ owner: sunthemoon
 target_version: v1.3.0
 accepted_by: sunthemoon
 accepted_at: 2026-09-26
-accepted_baseline: a66f7187b6483dad746010c8648814e0f4548f91
+accepted_baseline: 163e713206d1b89eca8b3e369b4503ab0a5a4ceb
 acceptance_ready: true
 expires: before v1.3.0 release-candidate freeze
 recovery_condition: complete or explicitly disposition every inherited Required Gate before freezing a v1.3.0 candidate
@@ -35,7 +35,7 @@ It is a documentation checkout identity only, not the proposed development basel
 
 ## Decision
 
-Use `a66f7187b6483dad746010c8648814e0f4548f91`, containing the reviewed v1.2
+Use `163e713206d1b89eca8b3e369b4503ab0a5a4ceb`, containing the reviewed v1.2
 implementation and evidence, and allow scoped v1.3 production work from it or its descendants
 before inherited versions are formally `PASSED`. The public contracts used by
 each slice must separately be accepted before implementation.
@@ -88,3 +88,8 @@ proposal checkout. Prior artifact evidence keeps its original identity;
 committing does not imply a candidate rebuild. This baseline was merged into
 the isolated v1.3 worktree. Preparation and approval are tracked in the
 [v1.3 implementation log](../work/v1.3.0-implementation-log.md).
+
+The initially recorded `a66f718` baseline had 25 raw captures normalized from
+CRLF to LF during staging. Its descendant `163e713` restores the original
+checksummed bytes, with no production changes or checksum-value edits. The
+baseline reference is corrected to that evidence-preserving commit.

@@ -1,0 +1,15 @@
+{
+  "baseline_jar_sha256": "709f157c49f25b006b09f1c52908a42c0ef6c4bbdaa215e68451ce6f906a27c2",
+  "runtime_jar_sha256": "8822d0e20442a2f95bfcf9a33e743d03edb4ecbb6f49fcdbde32bf642be9bc4f",
+  "api_jar_sha256": "8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5",
+  "added": [
+    "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiCompatibility.class",
+    "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersion.class",
+    "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersions.class"
+  ],
+  "removed": [],
+  "changed": [
+    "META-INF/MANIFEST.MF",
+    "META-INF/mods.toml"
+  ]
+}

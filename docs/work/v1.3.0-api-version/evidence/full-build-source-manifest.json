@@ -1,0 +1,15 @@
+{
+  "implementation_commit": "f6796f285bd5238ae88b8ed63b794dde04879e38",
+  "files": {
+    "build.gradle": "7a1347c2e54d6e9d79fbb031ad6003b7514eab4c7e6b4b1f5d80fb93dd7d3074",
+    "gradle.properties": "076450809e0dc00a38028e07de3deaada54009f43042f9d087f1ee2511e2bdaf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiCompatibility.java": "05cf989e83335f046a8243c8be2a535e2d0da139a282c903d473a3a83475963d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersion.java": "293a1999a0c1ed9e1bf0d0612707630f77fd3c77f88604a2705fad246205bfd3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersions.java": "d31cf6dc2d7bb0a576e844d59c6837b02f9dc8cd09f7b700b2ef836cd7dd229b",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java": "51a99e4f791b7ed0c866282d3094ba9cb2b11cb82c3803b995ec2015532215c9",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiArtifactTest.java": "767657ae1f020d779fd28c5af230c92922e96a502c2133bd3d64fd877a0ebff6",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersionsTest.java": "b64fc6462ac54b9c84969d075dca2d9dae30add2e81c0b225f4531c5b7428a10",
+    "src/test/resources/api-consumer/ApiConsumer.java": "b46c7c7046dda2002e57a12b6df19925d80e2ae35f19a838ed942ed54802506e",
+    "src/test/resources/api-consumer/InternalConsumer.java": "5e81fad1d83f89672ab69a75668b10562fda29637b8a07c287cd27915fd416bd"
+  }
+}

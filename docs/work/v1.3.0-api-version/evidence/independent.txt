@@ -1,0 +1,208 @@
+Independent V130-API-01 verification
+UTC_START=2026-09-26T13:35:33.5702277Z
+HEAD=f6796f285bd5238ae88b8ed63b794dde04879e38
+JAVA_HOME=C:\Program Files\Java\jdk-17.0.7
+BEFORE_SHA256=8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5 D:\GitHub\arce-v130-contract-proposals\build\libs\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar
+BEFORE_SHA256=c2c7e8d680a7dcf7f784ec5593752edeff941c3d3fa0ab692067a438bef68279 D:\GitHub\arce-v130-contract-proposals\build\libs\advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar
+BEFORE_SHA256=8822d0e20442a2f95bfcf9a33e743d03edb4ecbb6f49fcdbde32bf642be9bc4f D:\GitHub\arce-v130-contract-proposals\build\libs\advancedrocketry-community-1.20.1-1.3.0-dev.jar
+COMMAND=gradlew.bat test --tests *ApiVersionsTest --tests *ApiArtifactTest --offline --no-daemon --no-build-cache
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileApiJava UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :apiJar UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+> Task :test
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 18s
+12 actionable tasks: 4 executed, 8 up-to-date
+TEST_EXIT=0 TEST_SECONDS=18.4735659
+COMMAND=gradlew.bat publishMavenJavaPublicationToLocalProjectRepository --offline --no-daemon --no-build-cache
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileApiJava UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :apiJar UP-TO-DATE
+> Task :generatePomFileForMavenJavaPublication
+> Task :sourcesJar UP-TO-DATE
+> Task :publishMavenJavaPublicationToLocalProjectRepositoryRepository
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 12s
+12 actionable tasks: 5 executed, 7 up-to-date
+PUBLISH_EXIT=0 PUBLISH_SECONDS=12.603122
+AFTER_SHA256=8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5 D:\GitHub\arce-v130-contract-proposals\build\libs\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar
+AFTER_SHA256=c2c7e8d680a7dcf7f784ec5593752edeff941c3d3fa0ab692067a438bef68279 D:\GitHub\arce-v130-contract-proposals\build\libs\advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar
+AFTER_SHA256=8822d0e20442a2f95bfcf9a33e743d03edb4ecbb6f49fcdbde32bf642be9bc4f D:\GitHub\arce-v130-contract-proposals\build\libs\advancedrocketry-community-1.20.1-1.3.0-dev.jar
+UTC_END=2026-09-26T13:36:04.8700487Z
+{
+  "junit_suites": [
+    {
+      "file": "build\\test-results\\test\\TEST-io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiArtifactTest.xml",
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiArtifactTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.557",
+      "sha256": "293380536248cf49d477e9a2cc516c621f4c5304024365952dd3ba0ee9c42d7e",
+      "system_out": "InternalConsumer: JDK 17.0.7+8-LTS-224, options=[--release, 17, -encoding, UTF-8, -proc:none, -classpath, D:\\GitHub\\arce-v130-contract-proposals\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar, -sourcepath, C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\junit13915835875834903845\\InternalConsumer-empty-source, -d, C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\junit13915835875834903845\\InternalConsumer-classes], success=false, diagnostics=[C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\junit13915835875834903845\\InternalConsumer.java:4: error: package io.github.sunthemoon.advancedrocketrycommunity.atmosphere does not exist\nimport io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;\n                                                                ^, C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\junit13915835875834903845\\InternalConsumer.java:7: error: cannot find symbol\n    private AtmosphereLimits internal;\n            ^\n  symbol:   class AtmosphereLimits\n  location: class consumer.InternalConsumer]\nApiConsumer: JDK 17.0.7+8-LTS-224, options=[--release, 17, -encoding, UTF-8, -proc:none, -classpath, D:\\GitHub\\arce-v130-contract-proposals\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar, -sourcepath, C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\junit10318154061426982202\\ApiConsumer-empty-source, -d, C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\junit10318154061426982202\\ApiConsumer-classes], success=true, diagnostics=[]\n"
+    },
+    {
+      "file": "build\\test-results\\test\\TEST-io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersionsTest.xml",
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersionsTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "0.022",
+      "sha256": "1953b69593aff4e27adf8d977361e279d499ad21cd8ad41d6dbc08436a159911",
+      "system_out": ""
+    }
+  ],
+  "junit_totals": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "publication_coordinate": {
+    "groupId": "io.github.sunthemoon.advancedrocketrycommunity",
+    "artifactId": "AdvancedRocketry-Community",
+    "version": "1.20.1-1.3.0-dev"
+  },
+  "local_repository": "D:\\GitHub\\arce-v130-contract-proposals\\build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\AdvancedRocketry-Community\\1.20.1-1.3.0-dev",
+  "published_artifacts": [
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\AdvancedRocketry-Community\\1.20.1-1.3.0-dev\\AdvancedRocketry-Community-1.20.1-1.3.0-dev-api.jar",
+      "bytes": 26149,
+      "sha256": "8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5"
+    },
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\AdvancedRocketry-Community\\1.20.1-1.3.0-dev\\AdvancedRocketry-Community-1.20.1-1.3.0-dev-sources.jar",
+      "bytes": 976175,
+      "sha256": "c2c7e8d680a7dcf7f784ec5593752edeff941c3d3fa0ab692067a438bef68279"
+    },
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\AdvancedRocketry-Community\\1.20.1-1.3.0-dev\\AdvancedRocketry-Community-1.20.1-1.3.0-dev.jar",
+      "bytes": 2140206,
+      "sha256": "8822d0e20442a2f95bfcf9a33e743d03edb4ecbb6f49fcdbde32bf642be9bc4f"
+    },
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\AdvancedRocketry-Community\\1.20.1-1.3.0-dev\\AdvancedRocketry-Community-1.20.1-1.3.0-dev.pom",
+      "bytes": 465,
+      "sha256": "1caa9824ee075a0b0c2f0f898a1d6003971ebbbe2198dbd18f6013b1fa0d0404"
+    }
+  ],
+  "api_classes_identical_to_runtime": {
+    "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiCompatibility.class": true,
+    "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersion.class": true,
+    "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersions.class": true
+  },
+  "duplicate_api_entries": false
+}
+PUBLICATION_CORRECTION_UTC_START=2026-09-26T13:38:38.7733468Z
+HEAD=e7db5d29ce6b9b441c5111165b00599b2e5c98ba
+COMMAND=gradlew.bat publishMavenJavaPublicationToLocalProjectRepository --offline --no-daemon --no-build-cache
+BUILD_REPO_PREEXISTS=False
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileApiJava UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :apiJar UP-TO-DATE
+> Task :generatePomFileForMavenJavaPublication
+> Task :sourcesJar UP-TO-DATE
+> Task :publishMavenJavaPublicationToLocalProjectRepositoryRepository
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 14s
+12 actionable tasks: 5 executed, 7 up-to-date
+CORRECTED_PUBLISH_EXIT=0 CORRECTED_PUBLISH_SECONDS=14.3970218
+PUBLICATION_CORRECTION_UTC_END=2026-09-26T13:38:53.3769903Z
+VERIFIER_NOTE: The first post-publication read-only check reached its final directory assertion and failed because Path.exists() treats AdvancedRocketry-Community and advancedrocketry-community as the same path on Windows. Coordinate/POM, three artifact hashes and class-byte comparisons had already passed. The corrected check below compares actual directory-entry spelling; no production change or Gradle rerun was performed for this verifier correction.
+{
+  "correction_verification": "PASS",
+  "exact_coordinate": {
+    "groupId": "io.github.sunthemoon.advancedrocketrycommunity",
+    "artifactId": "advancedrocketry-community",
+    "version": "1.20.1-1.3.0-dev"
+  },
+  "actual_artifact_directory_names": [
+    "advancedrocketry-community"
+  ],
+  "published_artifacts": [
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\advancedrocketry-community\\1.20.1-1.3.0-dev\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "8822d0e20442a2f95bfcf9a33e743d03edb4ecbb6f49fcdbde32bf642be9bc4f",
+      "bytes": 2140206,
+      "matches_build_libs_and_prior_run": true
+    },
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\advancedrocketry-community\\1.20.1-1.3.0-dev\\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+      "sha256": "8602715a614476a1c2faa428187cebbb14daa3939ee8d9c69ae1fe1aaf722df5",
+      "bytes": 26149,
+      "matches_build_libs_and_prior_run": true
+    },
+    {
+      "file": "build\\repo\\io\\github\\sunthemoon\\advancedrocketrycommunity\\advancedrocketry-community\\1.20.1-1.3.0-dev\\advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+      "sha256": "c2c7e8d680a7dcf7f784ec5593752edeff941c3d3fa0ab692067a438bef68279",
+      "bytes": 976175,
+      "matches_build_libs_and_prior_run": true
+    }
+  ],
+  "published_pom_sha256": "85967d0fe0c847f8bb294691bde77a514ea911cfb269c0f41b061f11ee1e3b7c",
+  "api_class_count": 3,
+  "api_runtime_class_bytes_identical": true
+}
+CORRECTED_ARTIFACT_VERIFIER_EXIT=0
