@@ -1,0 +1,1 @@
+PASS: six raw-disk authority/inventory/journal checks, actual JAR sources, full log audit, artifact hashes and closed port

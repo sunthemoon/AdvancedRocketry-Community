@@ -1,0 +1,215 @@
+{
+  "local_links_checked": 46,
+  "documents": 7,
+  "links": [
+    {
+      "source": "compat-test-mod/README.md",
+      "target": "../src/adapterTest/"
+    },
+    {
+      "source": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "source": "docs/PUBLIC-API-GUIDE.md",
+      "target": "../src/adapterTest/"
+    },
+    {
+      "source": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "source": "docs/PUBLIC-API-GUIDE.md",
+      "target": "../compat-test-mod/README.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../06-RELEASE-AND-ACCEPTANCE-GATES.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../work/v1.3.0-implementation-log.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../work/v1.3.0-api-version/VERIFICATION.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../work/v1.3.0-rocket-failure-containment/VERIFICATION.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../work/v1.3.0-adapter-registration/VERIFICATION.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../work/v1.3.0-consumer-packaging/VERIFICATION.md"
+    },
+    {
+      "source": "docs/versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md",
+      "target": "../work/v1.3.0-external-recovery/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "../versions/V1.3.0-PUBLIC-API-COMPATIBILITY.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "../decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "../decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "v1.3.0-api-version/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "v1.3.0-external-recovery/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "v1.3.0-consumer-packaging/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "../decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "v1.3.0-adapter-registration/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-implementation-log.md",
+      "target": "v1.3.0-rocket-failure-containment/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "python-integration.txt"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "host-integration.txt"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "gametest-native.txt"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "junit-full.zip"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "consumer-integration.txt"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "consumer-reports/"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "independent/"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-initial/FAILED_ATTEMPT.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-initial/failure.json"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-initial/postcheck.json"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-initial.zip"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "python-corrected.txt"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "independent-corrected/"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "independent-initial-final/"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-final/launch-command.txt"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-final/VERIFICATION.md"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-final/independent-observations.json"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-final.zip"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-final/summary.json"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "runtime-final-archive.json"
+    },
+    {
+      "source": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+      "target": "independent-native/readback.json"
+    }
+  ],
+  "commands": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "src/generated"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "scope": "Local links and whitespace/generated diff only; no Gate approval."
+}

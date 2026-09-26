@@ -1,0 +1,7 @@
+# Preserve command captures and archived evidence bytes.
+*.txt -text -whitespace
+*.json -text whitespace=cr-at-eol
+consumer-reports/*.json -text -whitespace
+*.zip -text
+*.dat -text
+SHA256SUMS text eol=lf

@@ -114,6 +114,14 @@ support or define an explicit migration before changing an installed format.
 Failed world cleanup may require recovery/operator inspection; the API does not
 promise arbitrary-world or cross-chunk power-loss atomicity.
 
+This preservation applies to data already captured in rocket snapshots and
+transaction journals, not ordinary third-party blocks left in the world or item
+types removed from the registry. Keep a world backup before changing installed
+mods. If recovery is waiting on an absent integration, retain the rocket and
+journal and restore the matching mod, block/BlockEntity registrations, movable
+tags and payload version; do not delete recovery records to clear the condition.
+Forge's missing-registry handling is separate from ARCE's opaque snapshot policy.
+
 ## Compatibility policy
 
 Supported API additions increment the minor version. Existing signatures and

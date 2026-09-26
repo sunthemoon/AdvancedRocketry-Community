@@ -1,0 +1,277 @@
+{
+  "phases": [
+    {
+      "blocks": {
+        "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+        "(256, 101, 256)": "minecraft:air",
+        "(256, 102, 256)": "minecraft:air",
+        "(256, 103, 256)": "minecraft:air",
+        "(257, 101, 256)": "minecraft:air"
+      },
+      "cargo_block_entity_count": 0,
+      "exit_code": 0,
+      "journal_count": 0,
+      "loaded_sources": [
+        "[26Sep2026 23:53:47.294] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[26Sep2026 23:53:47.293] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "errors": [],
+          "file": "stdout.txt",
+          "sha256": "9d29c9b06f89466eff5b2b46f6deb0b4415e7259d4ad57c3a0ac43b33397f2a5",
+          "warning_count": 25
+        },
+        {
+          "errors": [],
+          "file": "debug.log",
+          "sha256": "6946d9c11db57d9b1bc8c51913b12c6266c8f61b220b8e303833f4a383e282d1",
+          "warning_count": 25
+        },
+        {
+          "errors": [],
+          "file": "latest.log",
+          "sha256": "2d956f6b95f0cb176e242bc91f9fa38b2b00342111547a313207e281c65aeb20",
+          "warning_count": 25
+        }
+      ],
+      "mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "phase": "assemble",
+      "rocket_count": 1
+    },
+    {
+      "blocks": {
+        "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+        "(256, 101, 256)": "minecraft:air",
+        "(256, 102, 256)": "minecraft:air",
+        "(256, 103, 256)": "minecraft:air",
+        "(257, 101, 256)": "minecraft:air"
+      },
+      "cargo_block_entity_count": 0,
+      "exit_code": 0,
+      "journal_count": 0,
+      "loaded_sources": [
+        "[26Sep2026 23:54:18.268] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[26Sep2026 23:54:18.267] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "errors": [],
+          "file": "stdout.txt",
+          "sha256": "2bd42e2f83e4db0c39a8d0459aa333ff163d28ce340108df8363b1300653a98f",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "debug.log",
+          "sha256": "ab5cb64a93aab5889cb045761bc7d6a1448382586f7b6209c736e20da8f7ab50",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "latest.log",
+          "sha256": "982452f675a45007ffd99ce56ae18248a10463e1826c381b12972589f88b6334",
+          "warning_count": 10
+        }
+      ],
+      "mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "phase": "entity-restart",
+      "rocket_count": 1
+    },
+    {
+      "blocks": {
+        "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+        "(256, 101, 256)": "minecraft:air",
+        "(256, 102, 256)": "minecraft:air",
+        "(256, 103, 256)": "minecraft:air",
+        "(257, 101, 256)": "minecraft:air"
+      },
+      "cargo_block_entity_count": 0,
+      "exit_code": 0,
+      "journal_count": 1,
+      "loaded_sources": [
+        "[26Sep2026 23:54:35.613] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[26Sep2026 23:54:35.612] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "errors": [],
+          "file": "stdout.txt",
+          "sha256": "ac0fa571a5b4d61b7d05aa035498e528c712d931b0374a3b5f2e2f8e87be7154",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "debug.log",
+          "sha256": "a62bb31f109b5608b16440109a2b68dacf55ff99776d96d88e3ab5390f6e5872",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "latest.log",
+          "sha256": "3cea30bb4431b60ff90869b168da5e7deddadb9541beb9237d71043b9439a2a1",
+          "warning_count": 10
+        }
+      ],
+      "mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "phase": "provider-skipped",
+      "rocket_count": 1
+    },
+    {
+      "blocks": {
+        "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+        "(256, 101, 256)": "minecraft:air",
+        "(256, 102, 256)": "minecraft:air",
+        "(256, 103, 256)": "minecraft:air",
+        "(257, 101, 256)": "minecraft:air"
+      },
+      "cargo_block_entity_count": 0,
+      "exit_code": 0,
+      "journal_count": 1,
+      "loaded_sources": [
+        "[26Sep2026 23:54:53.168] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "errors": [
+            "[23:54:59] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: Unidentified mapping from registry minecraft:block",
+            "[23:54:59] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: There are unidentified mappings in this world - we are going to attempt to process anyway"
+          ],
+          "file": "stdout.txt",
+          "sha256": "93df1446c83078d73f46b0a88a50627cacd3eeeba893b54eeef05d217a47e252",
+          "warning_count": 14
+        },
+        {
+          "errors": [
+            "[26Sep2026 23:54:59.732] [main/ERROR] [net.minecraftforge.registries.GameData/REGISTRIES]: Unidentified mapping from registry minecraft:block",
+            "[26Sep2026 23:54:59.735] [main/ERROR] [net.minecraftforge.registries.GameData/REGISTRIES]: There are unidentified mappings in this world - we are going to attempt to process anyway"
+          ],
+          "file": "debug.log",
+          "sha256": "916ad3b63eb1d24865e54296eecc9bb1471a982b1f243311adc61748f0c5deb0",
+          "warning_count": 14
+        },
+        {
+          "errors": [
+            "[26Sep2026 23:54:59.732] [main/ERROR] [net.minecraftforge.registries.GameData/REGISTRIES]: Unidentified mapping from registry minecraft:block",
+            "[26Sep2026 23:54:59.735] [main/ERROR] [net.minecraftforge.registries.GameData/REGISTRIES]: There are unidentified mappings in this world - we are going to attempt to process anyway"
+          ],
+          "file": "latest.log",
+          "sha256": "22ef539dd7eb493b3233f179eb303d844b3fef3330e094731459a1dea74b859b",
+          "warning_count": 14
+        }
+      ],
+      "mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "phase": "mod-uninstalled",
+      "rocket_count": 1
+    },
+    {
+      "blocks": {
+        "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+        "(256, 101, 256)": "advancedrocketrycommunity:rocket_motor",
+        "(256, 102, 256)": "advancedrocketrycommunity:rocket_seat",
+        "(256, 103, 256)": "advancedrocketrycommunity:guidance_computer",
+        "(257, 101, 256)": "arce_adapter_test:cargo_container"
+      },
+      "cargo_block_entity_count": 1,
+      "exit_code": 0,
+      "journal_count": 0,
+      "loaded_sources": [
+        "[26Sep2026 23:55:11.290] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[26Sep2026 23:55:11.289] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "errors": [],
+          "file": "stdout.txt",
+          "sha256": "a2015fe809f5e80f1beb522aefc1db4302780b00ee717d427fe80a1ef6f5fd1e",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "debug.log",
+          "sha256": "a08b024e5507aed1a390b4458a3ceec57c3d08c0171d948522df7002cf902063",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "latest.log",
+          "sha256": "1bdce608db0f9b4a6711471d2f25f6317d440030c3153e93bcfa9a51b0a96449",
+          "warning_count": 10
+        }
+      ],
+      "mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "phase": "provider-reinstalled",
+      "rocket_count": 0
+    },
+    {
+      "blocks": {
+        "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+        "(256, 101, 256)": "advancedrocketrycommunity:rocket_motor",
+        "(256, 102, 256)": "advancedrocketrycommunity:rocket_seat",
+        "(256, 103, 256)": "advancedrocketrycommunity:guidance_computer",
+        "(257, 101, 256)": "arce_adapter_test:cargo_container"
+      },
+      "cargo_block_entity_count": 1,
+      "exit_code": 0,
+      "journal_count": 0,
+      "loaded_sources": [
+        "[26Sep2026 23:55:28.667] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\advancedrocketry-community-1.20.1-1.3.0-dev.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]",
+        "[26Sep2026 23:55:28.666] [main/DEBUG] [net.minecraftforge.fml.loading.moddiscovery.ModFile/LOADING]: Loading mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f\\server\\mods\\arce-adapter-compat-test-1.0.0.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[47,)]]"
+      ],
+      "logs": [
+        {
+          "errors": [],
+          "file": "stdout.txt",
+          "sha256": "5f6da3d1423d786f3776d73db412f97acd467a1a4281107b62a1a8507be110ef",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "debug.log",
+          "sha256": "ac7a6c8a26613382a4e7761751586791d096c45e9063a2f53006cdeadb0fe84c",
+          "warning_count": 10
+        },
+        {
+          "errors": [],
+          "file": "latest.log",
+          "sha256": "761cceff8d16ca311dd0ea05c9bc6517be83b27a742eeeb881396ea00a2d06df",
+          "warning_count": 10
+        }
+      ],
+      "mods": {
+        "advancedrocketrycommunity": "1.20.1-1.3.0-dev",
+        "arce_adapter_test": "1.0.0",
+        "forge": "",
+        "minecraft": "1.20.1"
+      },
+      "phase": "container-restart",
+      "rocket_count": 0
+    }
+  ],
+  "port_closed": 63541,
+  "scope": "Six short clean processes; synthetic staged journal, no forced crash"
+}

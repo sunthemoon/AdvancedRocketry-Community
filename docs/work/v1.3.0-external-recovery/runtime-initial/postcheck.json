@@ -1,0 +1,373 @@
+{
+  "blocks": {
+    "(256, 100, 256)": "advancedrocketrycommunity:rocket_assembler",
+    "(256, 101, 256)": "minecraft:air",
+    "(256, 102, 256)": "minecraft:air",
+    "(256, 103, 256)": "minecraft:air",
+    "(257, 101, 256)": "minecraft:air"
+  },
+  "entity_count": 1,
+  "entity_uuid": "e6609ba3-6fb8-45df-9757-edad34924cc2",
+  "files": [
+    {
+      "bytes": 5398528,
+      "path": "world/region/r.0.0.mca",
+      "sha256": "23b825c95842f8a3002526bcbeba0c8003da441e7a09dffdfe7a9cfbf447f7fb"
+    },
+    {
+      "bytes": 126976,
+      "path": "world/entities/r.0.0.mca",
+      "sha256": "f86a88d0037019981e2364fc3151d11f491fc0c4b8f2e44beac1d673be289a2d"
+    },
+    {
+      "bytes": 896,
+      "path": "world/data/advancedrocketrycommunity_rocket_transactions.dat",
+      "sha256": "5fd44b57b20c070c2ee8778a36c0d1b3ab555ad73c06b68b1ba9dd4039612375"
+    },
+    {
+      "bytes": 37844,
+      "path": "world/level.dat",
+      "sha256": "22e1b34f53da8f8304d11cf73c211b3d5bb0f4782f98f5c49b7448a60d687ec1"
+    },
+    {
+      "bytes": 1351,
+      "path": "server.properties",
+      "sha256": "ffe4d603848d7a024dd2a0f59ab7ea9258287cb8debf46483b571a9dcba5b343"
+    },
+    {
+      "bytes": 410,
+      "path": "config/advancedrocketrycommunity-common.toml",
+      "sha256": "1dbfaa49cc674a0200521976f8d08c467d4dca9ed792ad911d0fe4d6c0d07cf8"
+    },
+    {
+      "bytes": 1146,
+      "path": "config/fml.toml",
+      "sha256": "dbdc3e29cbc30d5cf65a67dfb693c95f73383147088829d54ae3661371018b4b"
+    }
+  ],
+  "journal": {
+    "format_epoch": "v0.9.0-beta",
+    "schema_version": 2,
+    "transactions": [
+      {
+        "content_hash": "2218b1eda790356d630b63c931c261d77a22b76d57b298832ad44c0ba6d45d56",
+        "dimension": "minecraft:overworld",
+        "maximum": [
+          257,
+          103,
+          256
+        ],
+        "minimum": [
+          256,
+          101,
+          256
+        ],
+        "owner_id": [
+          0,
+          0,
+          0,
+          5
+        ],
+        "phase": "EXTRACTING",
+        "progress": 4,
+        "rocket_entity_id": [
+          -429876317,
+          1874347487,
+          -1755845203,
+          882003138
+        ],
+        "snapshot": {
+          "block_palette": [
+            {
+              "id": "advancedrocketrycommunity:guidance_computer",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_motor",
+              "properties": {}
+            },
+            {
+              "id": "advancedrocketrycommunity:rocket_seat",
+              "properties": {}
+            },
+            {
+              "id": "arce_adapter_test:cargo_container",
+              "properties": {}
+            }
+          ],
+          "bounding_box": [
+            0,
+            0,
+            0,
+            1,
+            2,
+            0
+          ],
+          "content_hash": "2218b1eda790356d630b63c931c261d77a22b76d57b298832ad44c0ba6d45d56",
+          "created_at_game_time": 32,
+          "mass_inputs": {
+            "block_count": 4,
+            "block_entity_count": 1,
+            "engine_count": 1,
+            "fuel_capacity": 0,
+            "guidance_count": 1,
+            "mass": 160,
+            "seat_count": 1,
+            "thrust": 1000
+          },
+          "passenger_anchors": [
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "relative_blocks": [
+            {
+              "palette": 1,
+              "position": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "palette": 2,
+              "position": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "palette": 0,
+              "position": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "block_entity": {
+                "adapter": "arce_adapter_test:cargo_inventory",
+                "data": {
+                  "data": {
+                    "Items": [
+                      {
+                        "Count": 17,
+                        "Slot": 0,
+                        "id": "minecraft:diamond",
+                        "tag": {
+                          "display": {
+                            "Name": "{\"text\":\"Public adapter cargo\"}"
+                          }
+                        }
+                      },
+                      {
+                        "Count": 64,
+                        "Slot": 1,
+                        "id": "minecraft:iron_ingot"
+                      }
+                    ]
+                  },
+                  "payload_version": 1
+                }
+              },
+              "palette": 3,
+              "position": [
+                1,
+                0,
+                0
+              ]
+            }
+          ],
+          "schema_version": 1,
+          "snapshot_id": "395df655-956b-4bb0-b6d6-3e16238c7743",
+          "source_dimension": "minecraft:overworld",
+          "source_origin": [
+            256,
+            101,
+            256
+          ]
+        },
+        "snapshot_id": [
+          962459221,
+          -1788130384,
+          -1227473386,
+          596408131
+        ],
+        "transaction_id": [
+          -1833334646,
+          -1846522388,
+          -1563462478,
+          178228741
+        ],
+        "type": "ASSEMBLY"
+      }
+    ]
+  },
+  "journal_count": 1,
+  "observed_port_closed": 62854,
+  "rocket_entity_data": {
+    "assembly_transaction_id": [
+      -1833334646,
+      -1846522388,
+      -1563462478,
+      178228741
+    ],
+    "flight_data": {
+      "current_body": "advancedrocketrycommunity:earth",
+      "current_dimension": "minecraft:overworld",
+      "current_origin": [
+        256,
+        101,
+        256
+      ],
+      "current_target": {
+        "body_id": "advancedrocketrycommunity:earth",
+        "schema_version": 1,
+        "type": "advancedrocketrycommunity:body_surface"
+      },
+      "fuel": {
+        "amount": 0,
+        "capacity": 0,
+        "committed_debits": []
+      },
+      "logical_rocket_id": [
+        -1833334646,
+        -1846522388,
+        -1563462478,
+        178228741
+      ],
+      "passengers": {
+        "assignments": [],
+        "seat_capacity": 1
+      },
+      "schema_version": 2,
+      "state": "ASSEMBLED",
+      "state_started_game_time": 32
+    },
+    "owner_id": [
+      0,
+      0,
+      0,
+      5
+    ],
+    "schema_version": 2,
+    "snapshot": {
+      "block_palette": [
+        {
+          "id": "advancedrocketrycommunity:guidance_computer",
+          "properties": {}
+        },
+        {
+          "id": "advancedrocketrycommunity:rocket_motor",
+          "properties": {}
+        },
+        {
+          "id": "advancedrocketrycommunity:rocket_seat",
+          "properties": {}
+        },
+        {
+          "id": "arce_adapter_test:cargo_container",
+          "properties": {}
+        }
+      ],
+      "bounding_box": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        0
+      ],
+      "content_hash": "2218b1eda790356d630b63c931c261d77a22b76d57b298832ad44c0ba6d45d56",
+      "created_at_game_time": 32,
+      "mass_inputs": {
+        "block_count": 4,
+        "block_entity_count": 1,
+        "engine_count": 1,
+        "fuel_capacity": 0,
+        "guidance_count": 1,
+        "mass": 160,
+        "seat_count": 1,
+        "thrust": 1000
+      },
+      "passenger_anchors": [
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "relative_blocks": [
+        {
+          "palette": 1,
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "palette": 2,
+          "position": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "palette": 0,
+          "position": [
+            0,
+            2,
+            0
+          ]
+        },
+        {
+          "block_entity": {
+            "adapter": "arce_adapter_test:cargo_inventory",
+            "data": {
+              "data": {
+                "Items": [
+                  {
+                    "Count": 17,
+                    "Slot": 0,
+                    "id": "minecraft:diamond",
+                    "tag": {
+                      "display": {
+                        "Name": "{\"text\":\"Public adapter cargo\"}"
+                      }
+                    }
+                  },
+                  {
+                    "Count": 64,
+                    "Slot": 1,
+                    "id": "minecraft:iron_ingot"
+                  }
+                ]
+              },
+              "payload_version": 1
+            }
+          },
+          "palette": 3,
+          "position": [
+            1,
+            0,
+            0
+          ]
+        }
+      ],
+      "schema_version": 1,
+      "snapshot_id": "395df655-956b-4bb0-b6d6-3e16238c7743",
+      "source_dimension": "minecraft:overworld",
+      "source_origin": [
+        256,
+        101,
+        256
+      ]
+    }
+  },
+  "scope": "Read-only post-failure observation; not a six-phase pass"
+}

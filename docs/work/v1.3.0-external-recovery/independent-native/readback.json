@@ -1,0 +1,86 @@
+{
+  "result": "PASS",
+  "scope": "Independent native readback, not independent six-process execution/full Gate",
+  "runtime_base": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-adapter-recovery-corrected-725c77ab81e044348b9c150030feae8f",
+  "runner_commit": "959c1f7a44e7a7a07979d2fab185c08647b459f9",
+  "runner_sha256": "d6f69534c9d2f2907b5513158c8cd214a8f013ec2a3595ecb68b684d019845d6",
+  "manifest_files_verified": 91,
+  "manifest_sha256": "93f0a3595dc84ff3a9a7fd6ea4de9266c6d380a0ae5c78e881a7d13a3e9eb3d5",
+  "summary_sha256": "f66fd68ad0346bd01128c853f5aeec56ee6a9a3be28c9deac36bc6dad8a47f6f",
+  "artifact_hashes": {
+    "advancedrocketrycommunity": "3f8be1e0adce70b1c25fc1eeeffeac5b7f398016abf6670af11b42c52c84c200",
+    "arce_adapter_test": "8144ded5d03764cdd6b1eda8ff5e778f7dd87c564ebde3e5dfe20d382629085f"
+  },
+  "entity_uuid": "661210d6-d752-4853-832c-7b803f0591ed",
+  "snapshot_hash": "2218b1eda790356d630b63c931c261d77a22b76d57b298832ad44c0ba6d45d56",
+  "full_entity_root_equal_across_first_four": true,
+  "full_journal_equal_across_absence": true,
+  "restored_be_equal_after_restart": true,
+  "distinct_recorded_java_pids": 6,
+  "phases": [
+    {
+      "phase": "assemble",
+      "jvm_exit": 0,
+      "ticks": 22,
+      "rocket_count": 1,
+      "cargo_be_count": 0,
+      "journal_count": 0,
+      "accepted_errors": 0,
+      "conflict_lines": 0
+    },
+    {
+      "phase": "entity-restart",
+      "jvm_exit": 0,
+      "ticks": 22,
+      "rocket_count": 1,
+      "cargo_be_count": 0,
+      "journal_count": 0,
+      "accepted_errors": 0,
+      "conflict_lines": 0
+    },
+    {
+      "phase": "provider-skipped",
+      "jvm_exit": 0,
+      "ticks": 22,
+      "rocket_count": 1,
+      "cargo_be_count": 0,
+      "journal_count": 1,
+      "accepted_errors": 0,
+      "conflict_lines": 0
+    },
+    {
+      "phase": "mod-uninstalled",
+      "jvm_exit": 0,
+      "ticks": 22,
+      "rocket_count": 1,
+      "cargo_be_count": 0,
+      "journal_count": 1,
+      "accepted_errors": 2,
+      "conflict_lines": 29
+    },
+    {
+      "phase": "provider-reinstalled",
+      "jvm_exit": 0,
+      "ticks": 22,
+      "rocket_count": 0,
+      "cargo_be_count": 1,
+      "journal_count": 0,
+      "accepted_errors": 0,
+      "conflict_lines": 0
+    },
+    {
+      "phase": "container-restart",
+      "jvm_exit": 0,
+      "ticks": 28,
+      "rocket_count": 0,
+      "cargo_be_count": 1,
+      "journal_count": 0,
+      "accepted_errors": 0,
+      "conflict_lines": 0
+    }
+  ],
+  "review_execution_notes": [
+    "Initial reviewer check reached final process-ledger assertion after native/log checks; first process is in separate JSON, remaining five in JSONL. Combining the existing records satisfies six distinct processes.",
+    "Second reviewer check used reported 22 ticks for every phase; actual last phase is 28. Report uses measured counts and unchanged runner acceptance >=20 ticks. No runtime rerun."
+  ]
+}

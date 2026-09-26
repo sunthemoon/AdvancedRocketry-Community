@@ -1,0 +1,7 @@
+{
+  "command": "python -B -m unittest tests.test_v130_adapter_recovery_smoke -v",
+  "exit_code": 0,
+  "elapsed_seconds": 0.8669381,
+  "working_directory": "D:\\GitHub\\AdvancedRocketry-Community",
+  "source_hashes_unchanged": true
+}

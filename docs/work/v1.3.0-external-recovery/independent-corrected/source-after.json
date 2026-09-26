@@ -1,0 +1,10 @@
+[
+  {
+    "path": "scripts/run_v130_adapter_recovery_smoke.py",
+    "sha256": "d6f69534c9d2f2907b5513158c8cd214a8f013ec2a3595ecb68b684d019845d6"
+  },
+  {
+    "path": "tests/test_v130_adapter_recovery_smoke.py",
+    "sha256": "ff707280c5b18a1961febc3fcbb56f583f9609b2cb689cd935046ca0d8f46a45"
+  }
+]

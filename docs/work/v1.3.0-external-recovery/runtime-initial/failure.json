@@ -1,0 +1,4 @@
+{
+  "error": "Blocking log finding: [23:48:39] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: Unidentified mapping from registry minecraft:block",
+  "type": "SmokeError"
+}

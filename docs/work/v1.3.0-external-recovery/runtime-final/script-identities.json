@@ -1,0 +1,32 @@
+{
+  "runner_ready_commit": "959c1f7",
+  "python": "D:/python/pyenv/pyenv-win/shims/python.bat",
+  "commit": "959c1f7a44e7a7a07979d2fab185c08647b459f9",
+  "scripts": [
+    {
+      "sha256": "d6f69534c9d2f2907b5513158c8cd214a8f013ec2a3595ecb68b684d019845d6",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\run_v130_adapter_recovery_smoke.py"
+    },
+    {
+      "sha256": "6503c3d03594abb92d8d48bfb20c6c6245707dda98963e6f77a78bdd423b2f7d",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\run_dedicated_server_smoke.py"
+    },
+    {
+      "sha256": "e975edc5a7d8b5ca9b8a4a2f9f38bc26602a42e3abcd693b8b750d2f33eabff2",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\run_v050_rocket_server_smoke.py"
+    },
+    {
+      "sha256": "f36f5fedb0c357a3f14bc12e1a6c774fd131169424cf27b9af9eb09f9b0df425",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\v120_precision_world_fixture.py"
+    },
+    {
+      "sha256": "eedeea707cebac78f0e52e106a0eca6051b5c1a9f8eeba929dd175c11ff2dd71",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\inspect_celestial_saved_data.py"
+    },
+    {
+      "sha256": "c2d13ed9250d931b7fca399568811a6841fb72f77da466aa44b99b45828cd6a9",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\run_v100_transaction_forced_stop.py"
+    }
+  ],
+  "java": "C:/Program Files/Java/jdk-17.0.7/bin/java.exe"
+}
