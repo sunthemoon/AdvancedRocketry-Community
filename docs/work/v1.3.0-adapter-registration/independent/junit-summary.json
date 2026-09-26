@@ -1,0 +1,56 @@
+{
+  "commit": "5466fd61824da969e62c493a588aa812a47e3d44",
+  "suite_count": 5,
+  "tests": 52.0,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 0.0,
+  "artifacts_unchanged": true,
+  "suites": [
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiArtifactTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 2.699,
+      "timestamp": "2026-09-26T14:54:33"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersionsTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.033,
+      "timestamp": "2026-09-26T14:54:36"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapterBudgetTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.833,
+      "timestamp": "2026-09-26T14:54:36"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterPayloadsTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.048,
+      "timestamp": "2026-09-26T14:54:37"
+    },
+    {
+      "name": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistryTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.076,
+      "timestamp": "2026-09-26T14:54:37"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
-# Public API: version metadata
+# Public API: versioning and rocket containers
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The initial API version is **1.0**. It exposes only
+types. The API version is **1.1**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -10,9 +10,11 @@ types. The initial API version is **1.0**. It exposes only
 | `ApiCompatibility` | Compatible, major mismatch, or minor too old |
 | `ApiVersions` | Host version and pure compatibility checks |
 
-Other project packages are implementation details, even when their Java types
-are `public`. Container/provider registration and gameplay extension APIs are
-not available through this metadata package.
+`api.rocket` additionally exports `RocketBlockEntityAdapter`,
+`RocketAdapterRegistrar` and `RegisterRocketAdaptersEvent`, requiring the
+Minecraft 1.20.1 / Forge platform. Other project packages are implementation
+details, even when their Java types are `public`. Atmosphere, equipment, fuel
+and satellite extension APIs are not yet exported.
 
 ## Compile and run
 
@@ -23,9 +25,11 @@ Build with Java 17:
 ```
 
 The resulting `build/libs/*-api.jar` is a **compile-only** dependency. Add that
-file to the consumer's Gradle `compileOnly` configuration. The Maven publication
-also exposes classifier `api` under the main artifact's group/name/version;
-the repository does not imply an already published remote package.
+classifier through ForgeGradle's `fg.deobf` dependency handling, for example
+`compileOnly fg.deobf("io.github.sunthemoon.advancedrocketrycommunity:advancedrocketry-community:${arceVersion}:api")`.
+Supply an actual Maven or local artifact repository; this project does not imply
+an already published remote package. The consumer also declares its Forge
+platform dependency. See [ForgeGradle dependency handling](https://docs.minecraftforge.net/en/fg-6.x/dependencies/).
 
 Install the normal ARCE mod JAR in the game at runtime. Do not install the API
 classifier as a mod, or shade/bundle its classes into an integration. The normal
@@ -53,6 +57,62 @@ These methods are JDK-only, thread-safe, side-independent and do not access a
 world, network, file or mod loader. They do not validate third-party behavior.
 API versions are independent of mod versions, packet protocols and save schemas.
 Call `current()` instead of embedding a host-version constant.
+Rocket adapter integrations require at least `new ApiVersion(1, 1)`.
+
+## Register a container adapter
+
+During the integrating mod's constructor, register a listener on its **MOD bus**:
+
+```java
+modBus.addListener((RegisterRocketAdaptersEvent event) -> event.register(
+        ResourceLocation.tryParse("yourmod:cargo_inventory"),
+        Set.of(ResourceLocation.tryParse("yourmod:cargo_container")),
+        1,
+        new CargoAdapter()));
+```
+
+`CargoAdapter` implements the three methods of `api.rocket.RocketBlockEntityAdapter`:
+
+- `canMove(BlockEntity)`: read-only eligibility for this source inventory.
+- `capture(BlockEntity)`: return only the inventory/data owned by this provider.
+- `restore(BlockEntity, CompoundTag)`: restore that data into the host-created
+  target; return false to reject. The host verifies a matching capture afterward.
+
+The adapter ID must use the listening mod's namespace. The type set contains
+registered **BlockEntity type IDs**, not block IDs (even when their names happen
+to match). Registration does not override `rocket_movable`/`rocket_forbidden`
+tags. Add supported block IDs to the movable tag through a data pack.
+
+The event is dispatched during queued common-setup work, once per mod. Use it
+synchronously; do not retain it, register asynchronously or wait for a server
+event. The catalog freezes before the production rocket service is installed.
+Duplicate IDs/types, absent types, nonpositive versions and invalid ownership
+fail loading. Limits are 256 external adapters, 64 types per adapter and 1024
+total external type mappings. Vanilla Chest/Barrel support, including existing
+subclass matching, takes precedence and is not replaceable through this API.
+
+Callbacks run on the logical server thread for loaded blocks. They must not
+load chunks, schedule mutations or modify other blocks/entities/files. `canMove`
+and `capture` must be read-only; `restore` may change only the new target's owned
+state. Each callback has a 5 ms returned-time budget: a late result is rejected
+and warned, but a non-returning callback cannot be preempted. Runtime exceptions
+are contained; arbitrary same-JVM side effects, Java Errors and memory exhaustion
+are not sandboxed.
+
+## Preserve saved inventories
+
+Use a stable adapter ID and positive payload version. The host wraps new external
+data as `{payload_version, data}` without changing the old vanilla payload format.
+Provider data must not contain root `x`, `y`, `z` or `id`; the entire envelope is
+limited to 262144 bytes and also counts against the snapshot's 1048576-byte limit.
+These are post-return size checks, not allocation limits on provider code.
+
+Missing providers and mismatched versions preserve opaque saved data and prevent
+destructive restoration. Reinstall the matching provider/version to retry.
+Increasing a payload version alone does **not** migrate old data. Keep backward
+support or define an explicit migration before changing an installed format.
+Failed world cleanup may require recovery/operator inspection; the API does not
+promise arbitrary-world or cross-chunk power-loss atomicity.
 
 ## Compatibility policy
 
@@ -67,4 +127,10 @@ a replacement and migration notes. See [the version policy](decisions/ADR-021-PU
 identity, version semantics, and isolated consumer compilation. The positive
 fixture also runs with only JDK and classifier classes; the negative fixture
 must fail specifically because an internal package is unavailable. These are
-metadata checks, not a complete third-party Forge compatibility test mod.
+metadata checks. Platform-facing positive/negative fixtures additionally compile
+with only the classifier and platform libraries. The development-only
+[adapter test mod](../src/adapterTest/) exercises a registered inventory through
+production commands and entity interaction; it is not shipped in the main JAR.
+Full external-provider uninstall/restart and other integration systems remain
+separate compatibility coverage. Contract details are in
+[ADR-022](decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md).

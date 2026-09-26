@@ -1,0 +1,32 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileApiJava UP-TO-DATE
+> Task :compileRocketApiJava UP-TO-DATE
+
+> Task :compileAdapterTestJava
+D:\GitHub\AdvancedRocketry-Community\src\adapterTest\java\io\github\sunthemoon\arceadaptertest\AdapterRegistrationGameTests.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation ROCKET_TYPE = new ResourceLocation(HOST_ID, "rocket");
+                                                        ^
+D:\GitHub\AdvancedRocketry-Community\src\adapterTest\java\io\github\sunthemoon\arceadaptertest\AdapterRegistrationGameTests.java:48: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                    Set.of(new ResourceLocation("minecraft", "furnace")),
+                           ^
+D:\GitHub\AdvancedRocketry-Community\src\adapterTest\java\io\github\sunthemoon\arceadaptertest\AdapterRegistrationGameTests.java:183: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        ResourceLocation id = new ResourceLocation(HOST_ID, path);
+                              ^
+D:\GitHub\AdvancedRocketry-Community\src\adapterTest\java\io\github\sunthemoon\arceadaptertest\AdapterTestMod.java:60: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation(MOD_ID, path);
+               ^
+4 warnings
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 14s
+3 actionable tasks: 1 executed, 2 up-to-date

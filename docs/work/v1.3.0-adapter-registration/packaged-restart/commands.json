@@ -1,0 +1,53 @@
+[
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\local_runner.py",
+      "prepare"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\local_runner.py",
+      "baseline"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "D:\\GitHub\\AdvancedRocketry-Community\\scripts\\run_v050_rocket_server_smoke.py",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\server",
+      "--baseline-summary",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\baseline-evidence\\summary.json",
+      "--evidence-dir",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\rocket-evidence",
+      "--java",
+      "C:/Program Files/Java/jdk-17.0.7/bin/java.exe",
+      "--expected-version",
+      "1.20.1-1.3.0-dev"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\local_runner.py",
+      "postcheck"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "D:/python/pyenv/pyenv-win/shims/python.bat",
+      "-B",
+      "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-registration-restart-ddbc229d61ca44caa9b6d26afcb536f6\\audit_logs.py"
+    ],
+    "exit_code": 0
+  }
+]

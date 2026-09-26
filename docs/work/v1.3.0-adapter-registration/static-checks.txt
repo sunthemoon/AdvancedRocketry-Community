@@ -1,0 +1,8 @@
+V130-ROCKET-02 final static checks; production 5466fd61824da969e62c493a588aa812a47e3d44
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+Scope: planning validation only; no release Gate or human approval asserted.
+Focused Markdown target check:
+[PASS] Markdown relative links resolve (1197 checked)
+Summary: 1 passed, 0 pending, 0 warnings, 0 failed
+git diff --exit-code -- src/generated: exit 0
+git diff --check and git diff --cached --check: exit 0

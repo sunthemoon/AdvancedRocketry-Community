@@ -1,0 +1,63 @@
+{
+  "artifact_sha256": "3f8be1e0adce70b1c25fc1eeeffeac5b7f398016abf6670af11b42c52c84c200",
+  "artifact_version": "1.20.1-1.3.0-dev",
+  "assembled": {
+    "completed_at": "2026-09-26T14:54:53.358653+00:00",
+    "entity_data": "{schema_version: 2, flight_data: {schema_version: 2, logical_rocket_id: [I; 1801050891, 705971908, -1691216382, 1664814014], passengers: {assignments: [], seat_capacity: 1}, state_started_game_time: 7L, current_target: {schema_version: 1, type: \"advancedrocketrycommunity:body_surface\", body_id: \"advancedrocketrycommunity:earth\"}, fuel: {amount: 0L, committed_debits: [], capacity: 0L}, current_dimension: \"minecraft:overworld\", current_origin: [I; 256, 101, 256], state: \"ASSEMBLED\", current_body: \"advancedrocketrycommunity:earth\"}, assembly_transaction_id: [I; 1801050891, 705971908, -1691216382, 1664814014], owner_id: [I; 0, 0, 0, 5], snapshot: {schema_version: 1, source_origin: [I; 256, 101, 256], passenger_anchors: [[I; 0, 1, 0]], bounding_box: [I; 0, 0, 0, 1, 2, 0], snapshot_id: \"2ea2972d-1c3b-4745-9874-bf9126584a40\", relative_blocks: [{palette: 1, position: [I; 0, 0, 0]}, {palette: 2, position: [I; 0, 1, 0]}, {palette: 0, position: [I; 0, 2, 0]}, {block_entity: {adapter: \"advancedrocketrycommunity:vanilla_container_v1\", data: {Items: [{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]}}, palette: 3, position: [I; 1, 0, 0]}], source_dimension: \"minecraft:overworld\", content_hash: \"feec1e1eddc6fb1978645ce389faed0b66de17cb8b85acbbd15afb24ada09a4c\", mass_inputs: {engine_count: 1, guidance_count: 1, seat_count: 1, block_entity_count: 1, fuel_capacity: 0L, mass: 160L, thrust: 1000L, block_count: 4}, block_palette: [{id: \"advancedrocketrycommunity:guidance_computer\", properties: {}}, {id: \"advancedrocketrycommunity:rocket_motor\", properties: {}}, {id: \"advancedrocketrycommunity:rocket_seat\", properties: {}}, {id: \"minecraft:chest\", properties: {waterlogged: \"false\", facing: \"north\", type: \"single\"}}], created_at_game_time: 7L}}",
+    "exit_code": 0,
+    "full_log_file": "v050-rocket-assembled-full.txt",
+    "full_log_sha256": "b030574ed8fe0f75bdf11e50512d45afb4c7eeefbd60ebe9cd447355cd865e9d",
+    "name": "v050-rocket-assembled",
+    "phase": "assemble",
+    "restored_chest_data": null,
+    "rocket_id": "5a9ad04d-905e-4fe2-a932-aee31cb7756c",
+    "snapshot_hash": "feec1e1eddc6fb1978645ce389faed0b66de17cb8b85acbbd15afb24ada09a4c",
+    "started_at": "2026-09-26T14:54:29.173465+00:00",
+    "transaction_id": null
+  },
+  "baseline_session_id": "v002-4d1db58a9c5ef95695b7ee40",
+  "completed_at": "2026-09-26T14:55:32.472911+00:00",
+  "container_items_conserved": true,
+  "coordinates": {
+    "assembler": "256 100 256",
+    "rocket_origin": "256 101 256"
+  },
+  "durable_journal_cleared": true,
+  "entity_nbt_restart_byte_equal": true,
+  "java": "17.0.7",
+  "persisted": {
+    "completed_at": "2026-09-26T14:55:12.613837+00:00",
+    "entity_data": "{schema_version: 2, flight_data: {schema_version: 2, logical_rocket_id: [I; 1801050891, 705971908, -1691216382, 1664814014], passengers: {assignments: [], seat_capacity: 1}, state_started_game_time: 7L, current_target: {schema_version: 1, type: \"advancedrocketrycommunity:body_surface\", body_id: \"advancedrocketrycommunity:earth\"}, fuel: {amount: 0L, committed_debits: [], capacity: 0L}, current_dimension: \"minecraft:overworld\", current_origin: [I; 256, 101, 256], state: \"ASSEMBLED\", current_body: \"advancedrocketrycommunity:earth\"}, assembly_transaction_id: [I; 1801050891, 705971908, -1691216382, 1664814014], owner_id: [I; 0, 0, 0, 5], snapshot: {schema_version: 1, source_origin: [I; 256, 101, 256], passenger_anchors: [[I; 0, 1, 0]], bounding_box: [I; 0, 0, 0, 1, 2, 0], snapshot_id: \"2ea2972d-1c3b-4745-9874-bf9126584a40\", relative_blocks: [{palette: 1, position: [I; 0, 0, 0]}, {palette: 2, position: [I; 0, 1, 0]}, {palette: 0, position: [I; 0, 2, 0]}, {block_entity: {adapter: \"advancedrocketrycommunity:vanilla_container_v1\", data: {Items: [{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]}}, palette: 3, position: [I; 1, 0, 0]}], source_dimension: \"minecraft:overworld\", content_hash: \"feec1e1eddc6fb1978645ce389faed0b66de17cb8b85acbbd15afb24ada09a4c\", mass_inputs: {engine_count: 1, guidance_count: 1, seat_count: 1, block_entity_count: 1, fuel_capacity: 0L, mass: 160L, thrust: 1000L, block_count: 4}, block_palette: [{id: \"advancedrocketrycommunity:guidance_computer\", properties: {}}, {id: \"advancedrocketrycommunity:rocket_motor\", properties: {}}, {id: \"advancedrocketrycommunity:rocket_seat\", properties: {}}, {id: \"minecraft:chest\", properties: {waterlogged: \"false\", facing: \"north\", type: \"single\"}}], created_at_game_time: 7L}}",
+    "exit_code": 0,
+    "full_log_file": "v050-rocket-persisted-full.txt",
+    "full_log_sha256": "53b5156a2d28c35c2b13d2dc8e63c445f136175d79a04c1873e2a3d625890497",
+    "name": "v050-rocket-persisted",
+    "phase": "persist",
+    "restored_chest_data": null,
+    "rocket_id": "5a9ad04d-905e-4fe2-a932-aee31cb7756c",
+    "snapshot_hash": "feec1e1eddc6fb1978645ce389faed0b66de17cb8b85acbbd15afb24ada09a4c",
+    "started_at": "2026-09-26T14:54:53.359728+00:00",
+    "transaction_id": "6b59db0b-2a14-46c4-9b32-1602633b0bbe"
+  },
+  "port": 65240,
+  "recovered": {
+    "completed_at": "2026-09-26T14:55:32.472044+00:00",
+    "entity_data": null,
+    "exit_code": 0,
+    "full_log_file": "v050-rocket-recovered-full.txt",
+    "full_log_sha256": "d8017659f51f30ab6c38be4ac0e609dadd35c0a6bd3dd164d0b0640a7aeeb0c4",
+    "name": "v050-rocket-recovered",
+    "phase": "recover",
+    "restored_chest_data": "[{Slot: 0b, id: \"minecraft:diamond\", Count: 17b}, {Slot: 26b, id: \"minecraft:iron_ingot\", Count: 64b}]",
+    "rocket_id": "5a9ad04d-905e-4fe2-a932-aee31cb7756c",
+    "snapshot_hash": null,
+    "started_at": "2026-09-26T14:55:12.614796+00:00",
+    "transaction_id": null
+  },
+  "rocket_id": "5a9ad04d-905e-4fe2-a932-aee31cb7756c",
+  "same_world_verified": true,
+  "schema_version": 1,
+  "snapshot_hash": "feec1e1eddc6fb1978645ce389faed0b66de17cb8b85acbbd15afb24ada09a4c",
+  "stale_transaction_recovered": true,
+  "transaction_id": "6b59db0b-2a14-46c4-9b32-1602633b0bbe"
+}
