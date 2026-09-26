@@ -49,11 +49,17 @@ public final class AdapterTestMod {
     }
 
     private void registerRocketAdapters(RegisterRocketAdaptersEvent event) {
-        event.register(ADAPTER_ID, Set.of(CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         registrationEvents++;
         // Intentionally retained only to exercise the host's closed registration window.
         receivedEvent = event;
         ApiVersion version = ApiVersions.current();
+        // Startup-only fault control; the block, BlockEntity and tags remain installed.
+        if (Boolean.getBoolean("arce_adapter_test.skipRocketAdapter")) {
+            LogUtils.getLogger().info("Skipped rocket adapter {} (API {}.{}, event {})",
+                    ADAPTER_ID, version.major(), version.minor(), registrationEvents);
+            return;
+        }
+        event.register(ADAPTER_ID, Set.of(CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         LogUtils.getLogger().info("Registered rocket adapter {} (payload {}, API {}.{}, event {})",
                 ADAPTER_ID, PAYLOAD_VERSION, version.major(), version.minor(), registrationEvents);
     }

@@ -66,3 +66,15 @@ UI or client assets. The build and boundary checks above do not launch Minecraft
 Successful compilation/reobfuscation is not startup, gameplay, restart,
 uninstall/reinstall or cross-dimension evidence. Those require separately
 recorded runtime tests with the exact fixture and host artifact hashes.
+
+## Missing-provider control
+
+On disposable test servers, add `-Darce_adapter_test.skipRocketAdapter=true` to
+the Java startup arguments to leave the fixture's block, BlockEntity and movable
+tag installed while omitting its rocket adapter registration. The fixture logs
+the delivered registration event as skipped. Omit the property to restore normal
+registration on the next process start; there is no runtime unregister operation.
+
+This control isolates missing-provider behavior from missing block registrations.
+It is not equivalent to uninstalling the fixture JAR, and should not be set for
+the normal GameTest run, whose round-trip cases require the provider.
