@@ -38,7 +38,11 @@ class ApiArtifactTest {
     private static final Set<String> CLASSES = Stream.concat(VERSION_CLASSES.stream(), Stream.of(
             API_PACKAGE + "rocket/RocketBlockEntityAdapter.class",
             API_PACKAGE + "rocket/RocketAdapterRegistrar.class",
-            API_PACKAGE + "rocket/RegisterRocketAdaptersEvent.class")).collect(Collectors.toUnmodifiableSet());
+            API_PACKAGE + "rocket/RegisterRocketAdaptersEvent.class",
+            API_PACKAGE + "atmosphere/AtmosphereBoundary.class",
+            API_PACKAGE + "atmosphere/AtmosphereBoundaryProvider.class",
+            API_PACKAGE + "atmosphere/AtmosphereBoundaryRegistrar.class",
+            API_PACKAGE + "atmosphere/RegisterAtmosphereBoundariesEvent.class")).collect(Collectors.toUnmodifiableSet());
     private static final Set<String> METADATA = Set.of("META-INF/MANIFEST.MF", "META-INF/LICENSE",
             "META-INF/NOTICE.md", "META-INF/THIRD-PARTY-NOTICES.md",
             "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
@@ -131,6 +135,26 @@ class ApiArtifactTest {
     void rocketConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
         Compilation result = compile("RocketApiConsumer", platformConsumerClasspath());
         assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void atmosphereConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
+        Compilation result = compile("AtmosphereApiConsumer", platformConsumerClasspath());
+        assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void platformConsumerCannotImportTheAtmosphereRegistry() throws IOException {
+        try (ZipFile runtime = new ZipFile(Path.of(System.getProperty("arce.runtimeJar")).toFile())) {
+            assertNotNull(runtime.getEntry(HOST_PACKAGE + "compat/atmosphere/AtmosphereBoundaryRegistry.class"));
+        }
+        Compilation result = compile("AtmosphereInternalConsumer", platformConsumerClasspath());
+        assertFalse(result.success(), "The platform must not expose the host's mutable registry");
+        assertTrue(result.diagnostics().stream().anyMatch(diagnostic ->
+                diagnostic.getKind() == Diagnostic.Kind.ERROR
+                        && diagnostic.getCode().equals("compiler.err.doesnt.exist")
+                        && diagnostic.getMessage(Locale.ROOT).contains("compat.atmosphere")),
+                result.diagnostics().toString());
     }
 
     @Test

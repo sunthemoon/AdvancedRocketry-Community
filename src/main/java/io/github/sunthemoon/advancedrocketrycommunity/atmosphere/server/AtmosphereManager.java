@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryCatalog;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,14 +16,21 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /** Server-owned lifecycle boundary; no state survives {@link #clear()}. */
 public final class AtmosphereManager {
     private final CelestialEnvironmentService environments;
+    private final AtmosphereBoundaryCatalog boundaries;
     private final Map<ResourceKey<Level>, AtmosphereLevelService> levels = new HashMap<>();
 
     public AtmosphereManager(CelestialEnvironmentService environments) {
+        this(environments, AtmosphereBoundaryCatalog.empty());
+    }
+
+    public AtmosphereManager(CelestialEnvironmentService environments, AtmosphereBoundaryCatalog boundaries) {
         this.environments = Objects.requireNonNull(environments, "environments");
+        this.boundaries = Objects.requireNonNull(boundaries, "boundaries");
     }
 
     public void observeVent(ServerLevel level, OxygenVentBlockEntity vent) {
@@ -38,6 +46,18 @@ public final class AtmosphereManager {
 
     public void markDirty(ServerLevel level, BlockPos position) {
         service(level).markDirty(position);
+    }
+
+    public boolean hasBoundaryProviders() {
+        return !boundaries.isEmpty();
+    }
+
+    public boolean isRegisteredBoundary(BlockState state) {
+        return boundaries.isRegistered(state);
+    }
+
+    public void invalidateBoundaries() {
+        levels.values().forEach(AtmosphereLevelService::invalidateBoundaries);
     }
 
     public void onChunkUnload(ServerLevel level, int chunkX, int chunkZ) {
@@ -95,7 +115,8 @@ public final class AtmosphereManager {
                         state.breathable(),
                         state.vacuum(),
                         CommonConfig.MAX_ATMOSPHERE_VOLUME.get(),
-                        CommonConfig.MAX_ATMOSPHERE_INSPECTIONS_PER_TICK.get()
+                        CommonConfig.MAX_ATMOSPHERE_INSPECTIONS_PER_TICK.get(),
+                        boundaries
                 )
         );
         service.updateEnvironment(state.breathable(), state.vacuum());

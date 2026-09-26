@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -49,7 +50,11 @@ public final class AtmosphereServerEvents {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
-        if (isDoorLike(level.getBlockState(event.getPos()))) {
+        if (!level.hasChunkAt(event.getPos())) {
+            return;
+        }
+        BlockState state = level.getBlockState(event.getPos());
+        if (isDoorLike(state) || atmosphere.isRegisteredBoundary(state)) {
             atmosphere.markDirty(level, event.getPos());
         }
     }
@@ -58,7 +63,8 @@ public final class AtmosphereServerEvents {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
-        if (isDoorLike(event.getState())) {
+        // The old registered block can already have been replaced with air.
+        if (atmosphere.hasBoundaryProviders() || isDoorLike(event.getState())) {
             atmosphere.markDirty(level, event.getPos());
         }
         for (net.minecraft.core.Direction direction : event.getNotifiedSides()) {
@@ -76,6 +82,12 @@ public final class AtmosphereServerEvents {
                     event.getChunk().getPos().x,
                     event.getChunk().getPos().z
             );
+        }
+    }
+
+    public void onDatapackSync(OnDatapackSyncEvent event) {
+        if (event.getPlayer() == null) {
+            event.getPlayerList().getServer().execute(atmosphere::invalidateBoundaries);
         }
     }
 

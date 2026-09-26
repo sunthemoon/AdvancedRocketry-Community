@@ -16,6 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePosi
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinator;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanOutcome;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryCatalog;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,6 +43,7 @@ public final class AtmosphereLevelService {
 
     private final ServerLevel level;
     private final int inspectionBudget;
+    private final AtmosphereBoundaryCatalog boundaries;
     private final VolumeScanCoordinator coordinator;
     private final VolumeIndex index = new VolumeIndex();
     private final Map<BlockPos, VentState> vents = new LinkedHashMap<>();
@@ -64,7 +66,15 @@ public final class AtmosphereLevelService {
             int maxVolumeCells,
             int inspectionBudget
     ) {
+        this(level, baseAtmosphereBreathable, exposedSkyIsOpen, maxVolumeCells,
+                inspectionBudget, AtmosphereBoundaryCatalog.empty());
+    }
+
+    public AtmosphereLevelService(ServerLevel level, boolean baseAtmosphereBreathable,
+                                  boolean exposedSkyIsOpen, int maxVolumeCells,
+                                  int inspectionBudget, AtmosphereBoundaryCatalog boundaries) {
         this.level = Objects.requireNonNull(level, "level");
+        this.boundaries = Objects.requireNonNull(boundaries, "boundaries");
         if (inspectionBudget <= 0
                 || inspectionBudget > AtmosphereLimits.MAX_LEVEL_INSPECTIONS_PER_TICK) {
             throw new IllegalArgumentException("Invalid atmosphere inspection budget");
@@ -114,6 +124,8 @@ public final class AtmosphereLevelService {
     /** Invalidate authority synchronously, then queue bounded scan repair. */
     public void markDirty(BlockPos position) {
         Set<VolumePosition> affected = positionAndNeighbors(position);
+        // Do not let an already-observed wall remain authoritative behind a dirty backlog.
+        resetSeeds(coordinator.cancelAround(affected));
         Set<VolumeId> invalidated = index.invalidateAround(affected);
         resetVolumes(invalidated);
         for (VentState state : vents.values()) {
@@ -189,7 +201,7 @@ public final class AtmosphereLevelService {
 
         scheduleRequiredScans();
         CoordinatorTickReport report = coordinator.tick(
-                new ServerLevelVolumeWorldView(level, exposedSkyIsOpen),
+                new ServerLevelVolumeWorldView(level, exposedSkyIsOpen, boundaries),
                 inspectionBudget
         );
         lastTickInspections = report.inspections();
@@ -257,6 +269,13 @@ public final class AtmosphereLevelService {
         lastTickInspections = 0;
         lastPendingTasks = 0;
         completedServiceTicks = 0L;
+    }
+
+    /** Reload changes classification, not vent identity or stored oxygen. */
+    public void invalidateBoundaries() {
+        dirtyQueue.clear();
+        dirtySet.clear();
+        resetAllForRescan();
     }
 
     private void pruneUnobservedVents() {

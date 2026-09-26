@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.AtmosphereBoundary;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.CellObservation;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePosition;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeWorldView;
@@ -21,10 +23,17 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class ServerLevelVolumeWorldView implements VolumeWorldView {
     private final ServerLevel level;
     private final boolean exposedSkyIsOpen;
+    private final AtmosphereBoundaryCatalog boundaries;
 
     public ServerLevelVolumeWorldView(ServerLevel level, boolean exposedSkyIsOpen) {
+        this(level, exposedSkyIsOpen, AtmosphereBoundaryCatalog.empty());
+    }
+
+    public ServerLevelVolumeWorldView(ServerLevel level, boolean exposedSkyIsOpen,
+                                     AtmosphereBoundaryCatalog boundaries) {
         this.level = Objects.requireNonNull(level, "level");
         this.exposedSkyIsOpen = exposedSkyIsOpen;
+        this.boundaries = Objects.requireNonNull(boundaries, "boundaries");
     }
 
     @Override
@@ -48,6 +57,11 @@ public final class ServerLevelVolumeWorldView implements VolumeWorldView {
         }
         if (state.is(ModBlockTags.ATMOSPHERE_PERMEABLE)) {
             return CellObservation.TRAVERSABLE;
+        }
+        AtmosphereBoundary boundary = boundaries.classify(state);
+        if (boundary != AtmosphereBoundary.DEFAULT) {
+            return boundary == AtmosphereBoundary.SEALED
+                    ? CellObservation.SEALED : CellObservation.TRAVERSABLE;
         }
 
         FluidState fluid = state.getFluidState();

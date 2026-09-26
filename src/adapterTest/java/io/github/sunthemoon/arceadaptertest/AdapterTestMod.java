@@ -2,6 +2,8 @@ package io.github.sunthemoon.arceadaptertest;
 
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.AtmosphereBoundary;
 import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiCompatibility;
 import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersion;
 import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersions;
@@ -22,6 +24,7 @@ public final class AdapterTestMod {
     public static final String MOD_ID = "arce_adapter_test";
     static final ResourceLocation CONTAINER_ID = id("cargo_container");
     static final ResourceLocation ADAPTER_ID = id("cargo_inventory");
+    static final ResourceLocation BOUNDARY_ID = id("state_boundary");
     static final int PAYLOAD_VERSION = 1;
 
     private static final DeferredRegister<Block> BLOCKS =
@@ -31,21 +34,26 @@ public final class AdapterTestMod {
 
     static final RegistryObject<Block> CONTAINER =
             BLOCKS.register(CONTAINER_ID.getPath(), FixtureContainerBlock::new);
+    static final RegistryObject<Block> BOUNDARY =
+            BLOCKS.register(BOUNDARY_ID.getPath(), FixtureBoundaryBlock::new);
     static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> CONTAINER_TYPE =
             BLOCK_ENTITIES.register(CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
                     FixtureContainerBlockEntity::new, CONTAINER.get()).build(null));
 
     private static volatile int registrationEvents;
     private static volatile RegisterRocketAdaptersEvent receivedEvent;
+    static volatile int boundaryEvents;
+    static volatile RegisterAtmosphereBoundariesEvent boundaryEvent;
 
     public AdapterTestMod(FMLJavaModLoadingContext context) {
-        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 1)) != ApiCompatibility.COMPATIBLE) {
-            throw new IllegalStateException("Rocket adapter fixture requires ARCE API 1.1");
+        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 2)) != ApiCompatibility.COMPATIBLE) {
+            throw new IllegalStateException("Adapter fixture requires ARCE API 1.2");
         }
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         modBus.addListener(this::registerRocketAdapters);
+        modBus.addListener(this::registerAtmosphereBoundaries);
     }
 
     private void registerRocketAdapters(RegisterRocketAdaptersEvent event) {
@@ -66,6 +74,24 @@ public final class AdapterTestMod {
 
     static int registrationEvents() {
         return registrationEvents;
+    }
+
+    private void registerAtmosphereBoundaries(RegisterAtmosphereBoundariesEvent event) {
+        boundaryEvents++;
+        boundaryEvent = event;
+        if (Boolean.getBoolean("arce_adapter_test.skipAtmosphereBoundary")) {
+            LogUtils.getLogger().info("Skipped atmosphere boundary {} (event {})", BOUNDARY_ID, boundaryEvents);
+            return;
+        }
+        boolean failCompilation = Boolean.getBoolean("arce_adapter_test.failAtmosphereBoundary");
+        event.register(BOUNDARY_ID, Set.of(BOUNDARY_ID), state -> {
+            if (failCompilation) {
+                throw new IllegalStateException("Fixture registration fault");
+            }
+            return state.getValue(FixtureBoundaryBlock.OPEN) ? AtmosphereBoundary.PERMEABLE : AtmosphereBoundary.SEALED;
+        });
+        LogUtils.getLogger().info("Registered atmosphere boundary {} (API {}.{}, event {})",
+                BOUNDARY_ID, ApiVersions.current().major(), ApiVersions.current().minor(), boundaryEvents);
     }
 
     static RegisterRocketAdaptersEvent receivedEvent() {

@@ -1,10 +1,11 @@
-# Independent rocket adapter compatibility fixture
+# Independent adapter compatibility fixture
 
 This standalone ForgeGradle project builds the existing
 [`src/adapterTest`](../src/adapterTest/) fixture into a separate, reobfuscated
 mod JAR. It consumes the published ARCE **API classifier**, not the host project,
 main JAR or compiled output. Its platform is Java 17, Minecraft 1.20.1 and
-Forge 47.4.10; rocket registration requires API 1.1.
+Forge 47.4.10. This fixture requires API 1.2 for atmosphere boundaries as well as
+the rocket registration API introduced in 1.1.
 
 ## Build
 
@@ -45,7 +46,7 @@ directory, not a remote repository URL.
 
 - `verifyApiClasspath` records requested/resolved coordinates, raw publication
   and remapped API hashes, the complete compiler classpath, and fixture source
-  hashes. It requires the six exported API 1.1 types and rejects host internals,
+  hashes. It requires the ten exported API 1.2 types and rejects host internals,
   project output directories or additional host artifacts.
 - `verifyConsumerBoundary` compiles an intentional internal import against that
   same classpath, requires the missing internal-package diagnostic, and checks
@@ -68,6 +69,29 @@ uninstall/reinstall or cross-dimension evidence. Those require separately
 recorded runtime tests with the exact fixture and host artifact hashes.
 
 ## Missing-provider control
+
+The `arce_adapter_test:state_boundary` block has an `open` state but keeps a full
+collision cube. Its API rule alone makes the open state permeable. For disposable
+atmosphere checks, `-Darce_adapter_test.skipAtmosphereBoundary=true` leaves the
+block installed but skips its rule; `-Darce_adapter_test.failAtmosphereBoundary=true`
+instead throws during compilation to check startup rejection. Both are startup-only
+controls; do not use them for the normal GameTest run.
+
+The finite atmosphere runner accepts the same fresh libraries-only server and
+explicit JAR arguments described below:
+
+```powershell
+python -B scripts/run_v130_atmosphere_boundary_smoke.py C:/Temp/arce-atmosphere-server `
+  --host-jar build/libs/advancedrocketry-community-1.20.1-1.3.0-dev.jar `
+  --fixture-jar compat-test-mod/build/libs/arce-adapter-compat-test-1.0.0.jar `
+  --evidence-dir C:/Temp/arce-atmosphere-evidence --java C:/Java/jdk-17/bin/java.exe --accept-eula
+```
+
+It prepares one Moon room using native operator commands and runs four clean
+processes: state transitions/two live tag reloads, unchanged open-room restart,
+omitted-provider fallback, and provider restoration. It checks native Anvil state,
+vent resources and actual installed JAR identities. This is not equipment, player,
+graphics, crash/power-loss or long-load acceptance.
 
 On disposable test servers, add `-Darce_adapter_test.skipRocketAdapter=true` to
 the Java startup arguments to leave the fixture's block, BlockEntity and movable

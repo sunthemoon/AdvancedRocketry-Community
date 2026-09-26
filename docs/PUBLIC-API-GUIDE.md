@@ -1,7 +1,7 @@
-# Public API: versioning and rocket containers
+# Public API: versioning, rocket containers and atmosphere boundaries
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.1**. Version metadata remains JDK-only in
+types. The API version is **1.2**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -13,8 +13,9 @@ types. The API version is **1.1**. Version metadata remains JDK-only in
 `api.rocket` additionally exports `RocketBlockEntityAdapter`,
 `RocketAdapterRegistrar` and `RegisterRocketAdaptersEvent`, requiring the
 Minecraft 1.20.1 / Forge platform. Other project packages are implementation
-details, even when their Java types are `public`. Atmosphere, equipment, fuel
-and satellite extension APIs are not yet exported.
+details, even when their Java types are `public`. `api.atmosphere` exports the four
+state-boundary types described below. Equipment, fuel and satellite extension APIs
+are not yet exported.
 
 ## Compile and run
 
@@ -121,6 +122,52 @@ mods. If recovery is waiting on an absent integration, retain the rocket and
 journal and restore the matching mod, block/BlockEntity registrations, movable
 tags and payload version; do not delete recovery records to clear the condition.
 Forge's missing-registry handling is separate from ARCE's opaque snapshot policy.
+
+## Register an atmosphere boundary
+
+State-boundary integrations require at least `new ApiVersion(1, 2)`. Subscribe to
+`api.atmosphere.RegisterAtmosphereBoundariesEvent` on the integrating mod's MOD bus
+during construction:
+
+```java
+modBus.addListener((RegisterAtmosphereBoundariesEvent event) -> event.register(
+        ResourceLocation.tryParse("yourmod:airlock_rule"),
+        Set.of(ResourceLocation.tryParse("yourmod:airlock")),
+        state -> state.getValue(AirlockBlock.OPEN)
+                ? AtmosphereBoundary.PERMEABLE : AtmosphereBoundary.SEALED));
+```
+
+The listener's owner-bound `AtmosphereBoundaryRegistrar` accepts a provider ID,
+registered **block IDs**, and an `AtmosphereBoundaryProvider`. The provider ID must
+use the listening mod's namespace. Duplicate IDs and overlapping block claims are
+loading errors, including claims from the same owner. Do not retain the event/handle
+or register asynchronously or reentrantly.
+
+The host compiles **all possible states** once during queued common setup on both
+physical sides. Rules must depend only on immutable block state: no world or block
+entity lookups, time, mutable external state, files, networks or tag queries.
+Tags are not bound at this loading phase and remain dynamic runtime rules. The host
+retains immutable results, not callbacks; scans and reloads never invoke providers.
+
+`AtmosphereBoundary.DEFAULT` uses the host's fluid/air/collision fallback;
+`SEALED` stops traversal; `PERMEABLE` permits it even through a full collision cube.
+The host's unloaded/build-height guards, sealing tag, built-in door/trapdoor/gate
+state and permeable tag remain higher priority. For dynamic boundaries, encode
+airtightness in BlockState and issue ordinary neighbor notifications when changing
+the state or replacing the block. Silent changes without notifications are unsupported.
+
+Limits: 256 providers, 64 blocks per provider, 1,024 blocks total, 4,096 states per
+registration, 16,384 states total, IDs at most 255 characters. Each callback must
+return a non-null value within 5 ms; accumulated callback time is capped at 1 second
+per registration. A failure rejects the entire registration. Returned-time checks
+cannot interrupt a hung callback or sandbox arbitrary same-JVM mod side effects.
+
+Tag reload revokes cached room authority and pending scans, then rescans under the
+existing budgets. Removing only the provider restores legacy classification after
+restart; removing its blocks also invokes normal Forge missing-registry behavior.
+The API adds no saved payload or packet. Position-dependent/BlockEntity rules and
+equipment oxygen mutation are not part of this interface. See
+[the boundary contract](decisions/ADR-024-STATE-BASED-ATMOSPHERE-BOUNDARIES.md).
 
 ## Compatibility policy
 

@@ -10,6 +10,18 @@ import org.junit.jupiter.api.Test;
 
 class VolumeScanCoordinatorTest {
     @Test
+    void invalidationAlsoRevokesUnconsumedCompletedResults() {
+        VolumeScanCoordinator coordinator = new VolumeScanCoordinator(4, 16);
+        VolumePosition seed = new VolumePosition(0, 0, 0);
+        coordinator.schedule(seed);
+        coordinator.tick(position -> position.equals(seed)
+                ? CellObservation.TRAVERSABLE : CellObservation.SEALED, 16);
+        assertEquals(0, coordinator.activeTaskCount());
+        assertEquals(java.util.Set.of(seed), coordinator.cancelAround(java.util.Set.of(seed)));
+        assertTrue(coordinator.drainCompleted().isEmpty());
+    }
+
+    @Test
     void connectedSeedsMergeIntoOneStableVolume() {
         VolumeScanCoordinator coordinator = new VolumeScanCoordinator(8, 64);
         VolumePosition first = new VolumePosition(0, 0, 0);

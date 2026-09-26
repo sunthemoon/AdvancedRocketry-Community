@@ -177,7 +177,16 @@ public final class VolumeScanCoordinator {
                 taskIds.add(cellOwner);
             }
         }
-        return cancelTasks(taskIds);
+        Set<VolumePosition> cancelled = new LinkedHashSet<>(cancelTasks(taskIds));
+        completed.removeIf(scan -> {
+            boolean affected = positions.stream().anyMatch(position -> scan.seeds().contains(position)
+                    || scan.result().bounds().map(bounds -> bounds.contains(position)).orElse(false));
+            if (affected) {
+                cancelled.addAll(scan.seeds());
+            }
+            return affected;
+        });
+        return Set.copyOf(cancelled);
     }
 
     public Set<VolumePosition> cancelWhere(Predicate<VolumePosition> predicate) {

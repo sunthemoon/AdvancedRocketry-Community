@@ -79,6 +79,8 @@ synchronously before bounded rescanning, including affected in-flight scans and
 unconsumed completed results, even with a dirty-queue backlog or after a registered
 block has been replaced. Registered-block interaction also invalidates that position.
 Datapack/tag reload revokes cached classifications and all pending scan results;
+the host uses the reload-wide server datapack-sync notification on the owning
+server thread, not client packet tag updates or individual player login sync.
 startup/restart rebuilds
 the same table from the installed providers. Invalidation does not scan the world
 or create chunk tickets. Existing dirty-queue, vent and inspection caps are retained.

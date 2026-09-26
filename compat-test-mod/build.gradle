@@ -23,7 +23,9 @@ def hostPrefix = 'io/github/sunthemoon/advancedrocketrycommunity/'
 def exportedClasses = [
         'api/version/ApiVersion.class', 'api/version/ApiCompatibility.class',
         'api/version/ApiVersions.class', 'api/rocket/RocketBlockEntityAdapter.class',
-        'api/rocket/RocketAdapterRegistrar.class', 'api/rocket/RegisterRocketAdaptersEvent.class'
+        'api/rocket/RocketAdapterRegistrar.class', 'api/rocket/RegisterRocketAdaptersEvent.class',
+        'api/atmosphere/AtmosphereBoundary.class', 'api/atmosphere/AtmosphereBoundaryProvider.class',
+        'api/atmosphere/AtmosphereBoundaryRegistrar.class', 'api/atmosphere/RegisterAtmosphereBoundariesEvent.class'
 ].collect { hostPrefix + it }.toSet()
 
 repositories {

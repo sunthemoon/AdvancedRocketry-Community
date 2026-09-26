@@ -34,6 +34,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualNetwork;
@@ -74,8 +76,10 @@ public final class AdvancedRocketryCommunity {
             new MultiblockPatternCatalogManager();
     private final RollingMachineManager rollingMachines = new RollingMachineManager(multiblockPatterns);
     private final PrecisionAssemblerManager precisionAssemblers = new PrecisionAssemblerManager(multiblockPatterns);
-    private final AtmosphereManager atmosphereManager;
-    private final PlayerLifeSupportService playerLifeSupport;
+    private final CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
+    private final LifeSupportNetwork lifeSupportNetwork;
+    private AtmosphereManager atmosphereManager;
+    private PlayerLifeSupportService playerLifeSupport;
     private RocketManager rocketManager;
     private final StationManager stationManager;
     private final SatelliteManager satelliteManager;
@@ -115,9 +119,6 @@ public final class AdvancedRocketryCommunity {
         CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
-        CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
-        atmosphereManager = new AtmosphereManager(environments);
-        AtmosphereRuntime.install(atmosphereManager);
         stationManager = new StationManager(celestialCatalogs);
         StationRuntime.install(stationManager);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
@@ -128,20 +129,7 @@ public final class AdvancedRocketryCommunity {
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
         MinecraftForge.EVENT_BUS.addListener(rocketVisualSynchronizer::onStartTracking);
-        LifeSupportNetwork lifeSupportNetwork = new LifeSupportNetwork();
-        playerLifeSupport = new PlayerLifeSupportService(atmosphereManager, lifeSupportNetwork::send);
-        AtmosphereServerEvents atmosphereEvents = new AtmosphereServerEvents(atmosphereManager);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onServerTick);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onBlockBroken);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onBlockPlaced);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onFluidPlaced);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onRightClickBlock);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onNeighborNotify);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onChunkLoad);
-        MinecraftForge.EVENT_BUS.addListener(atmosphereEvents::onChunkUnload);
-        MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onLivingTick);
-        MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onPlayerLoggedOut);
-        MinecraftForge.EVENT_BUS.addListener(new AtmosphereCommands(atmosphereManager)::register);
+        lifeSupportNetwork = new LifeSupportNetwork();
         CelestialGravityController gravityController = new CelestialGravityController(environments);
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
         CelestialCommands celestialCommands = new CelestialCommands(
@@ -168,6 +156,7 @@ public final class AdvancedRocketryCommunity {
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(this::initializeRocketAdapters);
+        event.enqueueWork(this::initializeAtmosphereBoundaries);
         String version = ModList.get()
                 .getModContainerById(MOD_ID)
                 .map(container -> container.getModInfo().getVersion().toString())
@@ -210,9 +199,40 @@ public final class AdvancedRocketryCommunity {
         event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
     }
 
+    private void initializeAtmosphereBoundaries() {
+        if (atmosphereManager != null) {
+            throw new IllegalStateException("Atmosphere services were already initialized");
+        }
+        try (AtmosphereBoundaryRegistry registry = new AtmosphereBoundaryRegistry(id ->
+                ForgeRegistries.BLOCKS.containsKey(id) ? ForgeRegistries.BLOCKS.getValue(id) : null)) {
+            ModLoader.get().runEventGenerator(container -> new RegisterAtmosphereBoundariesEvent(
+                    registry.forOwner(container.getModId())));
+            atmosphereManager = new AtmosphereManager(environments, registry.freeze());
+            AtmosphereRuntime.install(atmosphereManager);
+            playerLifeSupport = new PlayerLifeSupportService(atmosphereManager, lifeSupportNetwork::send);
+            AtmosphereServerEvents events = new AtmosphereServerEvents(atmosphereManager);
+            MinecraftForge.EVENT_BUS.addListener(events::onServerTick);
+            MinecraftForge.EVENT_BUS.addListener(events::onBlockBroken);
+            MinecraftForge.EVENT_BUS.addListener(events::onBlockPlaced);
+            MinecraftForge.EVENT_BUS.addListener(events::onFluidPlaced);
+            MinecraftForge.EVENT_BUS.addListener(events::onRightClickBlock);
+            MinecraftForge.EVENT_BUS.addListener(events::onNeighborNotify);
+            MinecraftForge.EVENT_BUS.addListener(events::onChunkLoad);
+            MinecraftForge.EVENT_BUS.addListener(events::onChunkUnload);
+            MinecraftForge.EVENT_BUS.addListener(events::onDatapackSync);
+            MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onLivingTick);
+            MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onPlayerLoggedOut);
+            MinecraftForge.EVENT_BUS.addListener(new AtmosphereCommands(atmosphereManager)::register);
+        }
+    }
+
     private void onServerStopped(ServerStoppedEvent event) {
-        playerLifeSupport.clear();
-        atmosphereManager.clear();
+        if (playerLifeSupport != null) {
+            playerLifeSupport.clear();
+        }
+        if (atmosphereManager != null) {
+            atmosphereManager.clear();
+        }
         if (rocketManager != null) {
             rocketManager.clear();
         }
