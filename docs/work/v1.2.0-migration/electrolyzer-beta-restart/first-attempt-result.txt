@@ -1,0 +1,1 @@
+[FAIL] Packaged flight server has a blocking log finding: [17:27:55] [main/ERROR] [minecraft/ServerFunctionLibrary]: Failed to load function arce_v100_upgrade:capture

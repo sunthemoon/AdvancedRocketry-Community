@@ -1,0 +1,44 @@
+{
+  "artifact": "advancedrocketry-community-1.20.1-1.1.1-dev.jar",
+  "artifact_sha256": "6077fd10695ef387edfda8de6543e51cc4b9deb94d0005fe398dc23ad8ada63a",
+  "completed_at": "2026-09-26T09:26:06.125136+00:00",
+  "cycles": [
+    {
+      "exit_code": 0,
+      "full_log_file": "first-start-full.txt",
+      "full_log_sha256": "03b6aa6afba0a36602f1aaa784a1e8bafb0182f73a6066ebe8cd897a3d53c8e6",
+      "mod_marker": "1.20.1-1.1.1-dev",
+      "name": "first-start"
+    },
+    {
+      "exit_code": 0,
+      "full_log_file": "restart-full.txt",
+      "full_log_sha256": "94932e5b2c77be2cc5d0e074b820f8f1df87772ec46199c63b57aa7cf70dbb07",
+      "mod_marker": "1.20.1-1.1.1-dev",
+      "name": "restart"
+    }
+  ],
+  "installer_executed": false,
+  "java": "17.0.7",
+  "mod_version": "1.20.1-1.1.1-dev",
+  "offline_mode": true,
+  "runtime_source": "prec04b-removal-legacy-20260926/libraries",
+  "scenario": "fresh_world_from_existing_local_forge_runtime",
+  "schema_version": 2,
+  "server_bind": "127.0.0.1",
+  "server_port": 56062,
+  "session_id": "v002-06c33decae49a7253d7b064a",
+  "started_at": "2026-09-26T09:25:23.894161+00:00",
+  "world": {
+    "identity": "7226a5a0b236e96c56564bb5f554dd537c59e0d1d330fdfc0540773ee9f6dd77",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "345cf0556e974ce241e92f6d6d9255d71de023a2953ca37b2a1f83bb5fae162c",
+    "level_dat_after_restart_sha256": "2f3e31e898b99dafbf89021eccf9ac0f6889cc8f825ae51017c868a096afb893",
+    "level_dat_after_restart_size": 37843,
+    "level_dat_before_restart_sha256": "1755a6c86fa90635d41c2848260875366ddb88b93b6daf970c46c286c7711900",
+    "level_dat_before_restart_size": 37844,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "f08fba9f0eb3baad944251e50ef99dbeedb8b47a8d18245ab9f754fcbcf87ff4"
+  }
+}

@@ -1,0 +1,4 @@
+[PASS] Three machine fixtures and replay provenance agree; same actual worktree artifact: 6077fd10695ef387edfda8de6543e51cc4b9deb94d0005fe398dc23ad8ada63a
+[PASS] Rolling archive SHA256SUMS: 11 files
+[PASS] Electrolyzer full process logs: 2 files
+[PASS] Original Beta archive unchanged

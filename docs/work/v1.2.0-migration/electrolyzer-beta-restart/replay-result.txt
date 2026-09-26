@@ -1,0 +1,4 @@
+[PASS] Real Beta world copy: paused progress and four-batch resources conserved
+[PASS] Same-world restart retained exact machine/process/transaction roots
+[PASS] Artifact SHA-256: 6077fd10695ef387edfda8de6543e51cc4b9deb94d0005fe398dc23ad8ada63a
+[PASS] Evidence: D:\GitHub\AdvancedRocketry-Community\docs\work\v1.2.0-migration\electrolyzer-beta-restart

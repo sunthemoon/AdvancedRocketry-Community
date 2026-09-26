@@ -1,0 +1,14 @@
+{
+  "chunks": {
+    "c.0.0.nbt.zlib": "f7a92f8f4d8656d5d6058c4cbc29e51d1f8d5eea7703a2d48806bc8ab247113c"
+  },
+  "schema_version": 1,
+  "source_archive_bytes": 8403030,
+  "source_archive_sha256": "9022b2fdf4537168bc33f1db06f96c8d5ce150c221177cd4e0890b037f9bed1c",
+  "source_artifact_sha256": "fbddf66938000cba369a83d4a22ff36b5ff1c9c635a0abd14f672b454e3946ad",
+  "source_region_bytes": 4554752,
+  "source_region_sha256": "5879aeeeb33acf50bc584c07eccab56362a7420fff22fcf85a81efb00ea8fb0d",
+  "source_state_sha256": "dab6306a19583bca8b8fd5b76f0379d9e03286769c68ced2fa97f6562976e27d",
+  "source_summary_sha256": "c6629cba5544403a676d69e6bdda1f4caae2506247dcc704679a603cdba30966",
+  "source_version": "1.20.1-0.9.0-beta.1"
+}

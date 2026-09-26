@@ -1,0 +1,10 @@
+[17:29:14] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.078s)! For help, type "help"
+[17:29:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=083e7fa5-6958-46f7-84c6-216c23e7f74f phase=COMMITTED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED
+[17:29:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=cad2349f-f840-4d70-a25e-1272a15d960c operational=true snapshot=95dc76f9b2dce3d9654433ba11a2a2b5691c0e7c91a211b365208c7e85b3f322 flight_state=FUELED fuel=1000
+[17:29:15] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_ENTITY_ACTIVE entity=756ac38c-d6c5-48e9-b01a-1fb9d40ce360 operational=true snapshot=a3a7654ac7ffe66ddad69b7d264a7a95a616c245765d1e8c5aa0f5294081e6b9 flight_state=LANDED fuel=628
+[17:29:23] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_SCHEDULER completed=1 inspected=1 remaining=0
+[17:29:33] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] ARCE_V120_BETA_ELECTROLYZER_COMPLETE
+[17:29:33] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
+[17:29:48] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.111s)! For help, type "help"
+[17:29:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Not Secure] [Server] ARCE_V120_BETA_ELECTROLYZER_COMPLETE
+[17:29:50] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game
