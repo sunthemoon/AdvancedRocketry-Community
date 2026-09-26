@@ -1,0 +1,2 @@
+# Preserve exact bytes of baseline command and native GameTest captures.
+baseline-*.txt -text -whitespace
