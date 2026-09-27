@@ -1,6 +1,7 @@
 import copy
 import gzip
 import json
+import re
 import tempfile
 import unittest
 import zipfile
@@ -77,6 +78,48 @@ class CelestialSchemaSmokeTest(unittest.TestCase):
             result = json.loads((root / "restart/observations.json").read_text(encoding="utf-8"))
             self.assertEqual("FAIL", result["result"])
             self.assertIsNone(result["exit_code"])
+
+    def test_route_fixture_only_changes_distance(self):
+        project = Path(__file__).resolve().parents[1]
+        original = json.loads((project / "src/main/resources/data" / runner.HOST /
+                               "travel_routes/earth_moon.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / runner.PACK).mkdir(parents=True)
+            artifact = root / "fixture.zip"
+            with zipfile.ZipFile(artifact, "w") as archive:
+                archive.writestr(f"data/{runner.HOST}/travel_routes/earth_moon.json", json.dumps(original))
+            before = artifact.read_bytes()
+            route = runner.install_route(root, artifact, 123)
+            self.assertEqual(dict(original, distance_units=123), route)
+            self.assertEqual(route, json.loads((root / runner.PACK / "travel_routes/earth_moon.json").read_text()))
+            self.assertEqual(before, artifact.read_bytes())
+
+    def test_rejection_cases_are_finite_and_use_declared_limits(self):
+        fixtures = runner.rejection_fixtures()
+        self.assertEqual(6, len(fixtures))
+        self.assertEqual(6, len({entry[0] for entry in fixtures}))
+        cases = {label: payload for label, _, payload, _ in fixtures}
+        self.assertEqual(4097, len(cases["route-bytes"].encode("utf-8")))
+        self.assertEqual(17, cases["depth"].count("["))
+        self.assertEqual(runner.HOST + ":missing", json.loads(cases["missing-body"])["to"]["body_id"])
+
+    def test_fault_log_whitelist_is_exact_not_a_general_error_filter(self):
+        expected = "[12:00:00] [Server thread/ERROR] [advancedrocketrycommunity/]: Rejected planetary catalog: fixture"
+        info = "[12:00:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game"
+        runner.validate_log([expected, info], [expected])
+        for lines in ([info], [expected, expected], [expected.replace("fixture", "unrelated")],
+                      [expected, "[12:00:02] [Server thread/FATAL] [other/]: unrelated"]):
+            with self.assertRaises(runner.SmokeError):
+                runner.validate_log(lines, [expected])
+
+    def test_route_receipt_requires_exact_generation_and_value(self):
+        text = (f"Planetary route generation=2 id={runner.HOST}:earth_moon "
+                f"from={runner.HOST}:body_surface/{runner.HOST}:earth "
+                f"to={runner.HOST}:body_surface/{runner.HOST}:moon distance=123 bidirectional=true")
+        self.assertIsNotNone(re.search(runner.route_marker(2, 123), text))
+        for wrong in (text.replace("generation=2", "generation=3"), text.replace("distance=123", "distance=50")):
+            self.assertIsNone(re.search(runner.route_marker(2, 123), wrong))
 
 
 if __name__ == "__main__":

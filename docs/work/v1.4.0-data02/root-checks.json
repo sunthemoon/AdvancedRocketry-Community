@@ -1,0 +1,21 @@
+{
+  "base": "4db8b1bc573b6f9f20a20bd2a5a13a0836e055f2",
+  "command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --console=plain",
+  "datagen_written": 0,
+  "exit_code": 0,
+  "failures_retained": [
+    "raw-json-2.log: 7 tests / 1 control-character rejection failure",
+    "native-1.log: harness expected 3 routes instead of the actual packaged 4"
+  ],
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 148,
+    "tests": 815
+  },
+  "qualification": "Production Java is final; final fixture inventory correction is checked separately.",
+  "required_gametests_passed": 213,
+  "scope": "Development checks, no full acceptance or Gate PASS",
+  "seconds": 150
+}

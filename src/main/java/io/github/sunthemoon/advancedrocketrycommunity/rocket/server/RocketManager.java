@@ -16,7 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,30 +52,33 @@ public final class RocketManager implements RocketOperationService {
         this(RocketBlockEntityAdapters.defaults(), Objects.requireNonNull(celestialCatalogs, "celestialCatalogs"), null);
     }
 
-    public RocketManager(CelestialCatalogManager celestialCatalogs, RouteCatalogManager routeCatalogs) {
+    public RocketManager(CelestialCatalogManager celestialCatalogs, PlanetaryCatalogManager planetaryCatalogs) {
         this(
                 RocketBlockEntityAdapters.defaults(),
                 Objects.requireNonNull(celestialCatalogs, "celestialCatalogs"),
-                Objects.requireNonNull(routeCatalogs, "routeCatalogs")
+                Objects.requireNonNull(planetaryCatalogs, "planetaryCatalogs")
         );
     }
 
     public RocketManager(
             RocketBlockEntityAdapters adapters,
             CelestialCatalogManager celestialCatalogs,
-            RouteCatalogManager routeCatalogs
+            PlanetaryCatalogManager planetaryCatalogs
     ) {
-        this(adapters, celestialCatalogs, routeCatalogs, RocketComponentCatalog.empty());
+        this(adapters, celestialCatalogs, planetaryCatalogs, RocketComponentCatalog.empty());
     }
 
     public RocketManager(
             RocketBlockEntityAdapters adapters,
             CelestialCatalogManager celestialCatalogs,
-            RouteCatalogManager routeCatalogs,
+            PlanetaryCatalogManager planetaryCatalogs,
             RocketComponentCatalog components
     ) {
         RocketBlockEntityAdapters requiredAdapters = Objects.requireNonNull(adapters, "adapters");
-        flights = new RocketFlightService(celestialCatalogs, routeCatalogs);
+        if (planetaryCatalogs != null && celestialCatalogs != planetaryCatalogs.celestialView()) {
+            throw new IllegalArgumentException("Rocket context and flight planning must share one planetary catalog owner");
+        }
+        flights = new RocketFlightService(celestialCatalogs, planetaryCatalogs);
         transactions = new RocketTransactionExecutor(requiredAdapters);
         assemblerScans = new RocketAssemblerScanService(transactions, components);
         disassembly = new RocketDisassemblyService(transactions, flights);

@@ -18,7 +18,8 @@ public final class CelestialSnapshotSynchronizer {
     }
 
     public void onDatapackSync(OnDatapackSyncEvent event) {
-        CelestialCatalog catalog = catalogs.current().orElse(null);
+        var captured = catalogs.snapshot();
+        CelestialCatalog catalog = captured.catalog();
         if (catalog == null) {
             AdvancedRocketryCommunity.LOGGER.error("Skipped celestial snapshot sync because no valid catalog is active");
             return;
@@ -26,7 +27,7 @@ public final class CelestialSnapshotSynchronizer {
 
         DataResult<CelestialSnapshotPacket> encoded = CelestialSnapshotPacket.fromCatalog(
                 catalog,
-                catalogs.status().generation()
+                captured.status().generation()
         );
         if (encoded.error().isPresent()) {
             AdvancedRocketryCommunity.LOGGER.error(
@@ -48,13 +49,14 @@ public final class CelestialSnapshotSynchronizer {
 
     /** Re-sends the bounded snapshot after server-side discovery changes. */
     public void sendAll(MinecraftServer server) {
-        CelestialCatalog catalog = catalogs.current().orElse(null);
+        var captured = catalogs.snapshot();
+        CelestialCatalog catalog = captured.catalog();
         if (catalog == null) {
             return;
         }
         DataResult<CelestialSnapshotPacket> encoded = CelestialSnapshotPacket.fromCatalog(
                 catalog,
-                catalogs.status().generation()
+                captured.status().generation()
         );
         encoded.result().ifPresent(packet -> server.getPlayerList().getPlayers()
                 .forEach(player -> network.send(player, packet)));

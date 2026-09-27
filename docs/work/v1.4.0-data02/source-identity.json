@@ -1,0 +1,128 @@
+{
+  "base_commit": "4db8b1bc573b6f9f20a20bd2a5a13a0836e055f2",
+  "files": [
+    {
+      "bytes": 17636,
+      "git_blob": "bcd1262834cef8b09101d26b0c82e278c8463189",
+      "path": "scripts/run_v140_celestial_schema_smoke.py",
+      "sha256": "a28cbd37fff623e0f2525725b8139c6f475f5dbfc63880278b3ea6fc7509e2b9"
+    },
+    {
+      "bytes": 20208,
+      "git_blob": "ed8185b3beba8bc1f684f644312cad4541dc9ec7",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "a10fd8101935daff262e1087f144e171fad0165db77af5ef94427058a63021e9"
+    },
+    {
+      "bytes": 2696,
+      "git_blob": "36450c8476e8e5886b6a91e24146806610be9429",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/command/PlanetaryRouteCommands.java",
+      "sha256": "431f0bc2827d9ab4ecc5abc46ef7fa0cd3325a2a2c4aacaf39bd0c5bd2444ac1"
+    },
+    {
+      "bytes": 5292,
+      "git_blob": "3d9abd79f3ce9b412a6585a401c85753904c8505",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/BoundedDefinitionJson.java",
+      "sha256": "c25c70d11c7734ad4c56ef71302f279c59de186d33f89a50d240bbd37e1b0cf0"
+    },
+    {
+      "bytes": 2053,
+      "git_blob": "8fca20a4b16c228cd3f66d02d1285e9e41ef6ec6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryCatalog.java",
+      "sha256": "016ad9bec1b2196d4bdebcf46fe6aa3ea23883381bac6bf752763884445ae537"
+    },
+    {
+      "bytes": 2846,
+      "git_blob": "138d7d933aa74c9118d9928014129c9944ddd0b6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryCatalogManager.java",
+      "sha256": "46c7af6ef0189721829f93a500873b399c04706e09abaf0096a0d67ab5ebf08a"
+    },
+    {
+      "bytes": 5556,
+      "git_blob": "b28858d7ca8fda81ebe582ac02b89553851c995e",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryDefinitionReloadListener.java",
+      "sha256": "36c462e6aa16483572f8eb7653e51193834379450852625f7bdd78a6c948227b"
+    },
+    {
+      "bytes": 942,
+      "git_blob": "566cc83e3a50b0b8729db3ddf2d76664020fca94",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/ReloadDiagnostics.java",
+      "sha256": "7de3b11d3d49e62b0867a737e40a418fbf452f7376e7bffb19e66f06f9b2dd60"
+    },
+    {
+      "bytes": 2708,
+      "git_blob": "3895a5727f984b1c78ab3da3ffcad5fa97b1ea50",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshotSynchronizer.java",
+      "sha256": "6db5e69af1192116532ac8c8b2983087a0f409ba41910e2aaa4703a3f00da7e9"
+    },
+    {
+      "bytes": 3417,
+      "git_blob": "db7ad6a26898afc8b5d13d32b08fbf0d374e1d60",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalogManager.java",
+      "sha256": "061e16ffbe4550c563f3aa8d9faa3966ea4d4081c6224f38b2e7dcb15c0ad8f8"
+    },
+    {
+      "base_blob": "7cd5dded9ee731a2acd5636b0f950fd93f89d962",
+      "deleted": true,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialDefinitionReloadListener.java"
+    },
+    {
+      "bytes": 1947,
+      "git_blob": "681623755ea147775573329cc542161eaa5f4fa6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/CelestialDefinitionProvider.java",
+      "sha256": "efb48b55623652d22db3d54da72bdb1ec3a6f1dbf1db4be7987883e91bde0f12"
+    },
+    {
+      "bytes": 17312,
+      "git_blob": "ec4991723bf707647657776a79afdd91e60d0193",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java",
+      "sha256": "dcf706f4ac89506d0301e018a17f7a19dce62fa81bc5152e3918b6cbf554319f"
+    },
+    {
+      "bytes": 26212,
+      "git_blob": "82c7a3552f8621071623c3d055484e2bd8edf816",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java",
+      "sha256": "4881cb334ee5f4d4a27b42ff8684bf3884838278ff081c2ec1d014e079130814"
+    },
+    {
+      "bytes": 11163,
+      "git_blob": "4d41feac3216daae521c8e584af30ce5ad93c7c6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+      "sha256": "546dea16a94bf9df076717d5dc6d39d5dafbccea130dcf4812819c0e82f6d1fd"
+    },
+    {
+      "base_blob": "85cb56a69330e4e9809c5cbaed59586d0e067bf8",
+      "deleted": true,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/route/service/RouteCatalogManager.java"
+    },
+    {
+      "base_blob": "935106f2c3a72e48593ecf2137d6df2ffa56864d",
+      "deleted": true,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/route/service/RouteDefinitionReloadListener.java"
+    },
+    {
+      "bytes": 4449,
+      "git_blob": "1b7e38fef541203b9551b0ada6c4c28fcdab3a5e",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/BoundedDefinitionJsonTest.java",
+      "sha256": "f87a9077fc9aa20d4af6224fe216593a2809e74479a7418c7a6b799d39d8b430"
+    },
+    {
+      "bytes": 19314,
+      "git_blob": "ffba21ce6f01afae0859e206faf4e270bf247f4e",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryReloadTest.java",
+      "sha256": "65a896e440d2fa855713c1111bc4970c60d50c87ca9c48dfd1caf0136f5e8115"
+    },
+    {
+      "bytes": 6009,
+      "git_blob": "009f226276953b418bee6388e8682b3b8b200f5d",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/travel/route/RouteCatalogDecoderTest.java",
+      "sha256": "8cb34ade33850099de1a79a92b6e0436d8bf70144ea1eb90ff0c0071dc303c7c"
+    },
+    {
+      "bytes": 7288,
+      "git_blob": "405538a9a888d54d5c330ad0f5980b5c6df98d84",
+      "path": "tests/test_v140_celestial_schema_smoke.py",
+      "sha256": "ac145e3d678e135c94ecca6d77ecfe9ec6bade0b5846d7ba34158147d0a3e739"
+    }
+  ]
+}

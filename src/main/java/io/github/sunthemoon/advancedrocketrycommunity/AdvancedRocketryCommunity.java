@@ -3,9 +3,11 @@ package io.github.sunthemoon.advancedrocketrycommunity;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.CelestialCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.PlanetaryRouteCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialDefinitionReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
@@ -63,8 +65,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteDefinitionReloadListener;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -84,9 +84,9 @@ public final class AdvancedRocketryCommunity {
     public static final String MOD_ID = ModIdentity.MOD_ID;
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private final CelestialCatalogManager celestialCatalogs = new CelestialCatalogManager();
+    private final PlanetaryCatalogManager planetaryCatalogs = new PlanetaryCatalogManager();
+    private final CelestialCatalogManager celestialCatalogs = planetaryCatalogs.celestialView();
     private final SatelliteCatalogManager satelliteCatalogs = new SatelliteCatalogManager();
-    private final RouteCatalogManager routeCatalogs = new RouteCatalogManager();
     private final MultiblockPatternCatalogManager multiblockPatterns =
             new MultiblockPatternCatalogManager();
     private final RollingMachineManager rollingMachines = new RollingMachineManager(multiblockPatterns);
@@ -156,6 +156,7 @@ public final class AdvancedRocketryCommunity {
                 new SafeCelestialTravel()
         );
         MinecraftForge.EVENT_BUS.addListener(celestialCommands::register);
+        MinecraftForge.EVENT_BUS.addListener(new PlanetaryRouteCommands(planetaryCatalogs)::register);
         CelestialNetwork celestialNetwork = new CelestialNetwork();
         CelestialSnapshotSynchronizer snapshotSynchronizer = new CelestialSnapshotSynchronizer(
                 celestialCatalogs,
@@ -203,7 +204,7 @@ public final class AdvancedRocketryCommunity {
                 ForgeRegistries.BLOCK_ENTITY_TYPES::containsKey)) {
             ModLoader.get().runEventGenerator(container -> new RegisterRocketAdaptersEvent(
                     registry.forOwner(container.getModId())));
-            RocketManager manager = new RocketManager(registry.freeze(), celestialCatalogs, routeCatalogs,
+            RocketManager manager = new RocketManager(registry.freeze(), celestialCatalogs, planetaryCatalogs,
                     initializeRocketComponents());
             RocketRuntime.install(manager);
             MinecraftForge.EVENT_BUS.addListener(manager::onServerTick);
@@ -233,8 +234,7 @@ public final class AdvancedRocketryCommunity {
     }
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(new CelestialDefinitionReloadListener(celestialCatalogs));
-        event.addListener(new RouteDefinitionReloadListener(routeCatalogs, celestialCatalogs));
+        event.addListener(new PlanetaryDefinitionReloadListener(planetaryCatalogs));
         event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs));
         event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
     }
@@ -298,7 +298,6 @@ public final class AdvancedRocketryCommunity {
         }
         stationManager.clear();
         satelliteManager.clear();
-        routeCatalogs.clear();
         rollingMachines.clear();
         RollingMachineRuntime.clear();
         precisionAssemblers.clear();
@@ -306,6 +305,6 @@ public final class AdvancedRocketryCommunity {
         multiblockPatterns.clear();
         StationRuntime.clear();
         SatelliteRuntime.clear();
-        celestialCatalogs.clear();
+        planetaryCatalogs.clear();
     }
 }

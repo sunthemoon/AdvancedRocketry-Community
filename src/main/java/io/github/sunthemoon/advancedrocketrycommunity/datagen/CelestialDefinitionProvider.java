@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialDefinitionReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -17,7 +17,7 @@ public final class CelestialDefinitionProvider implements DataProvider {
     public CelestialDefinitionProvider(PackOutput output) {
         paths = output.createPathProvider(
                 PackOutput.Target.DATA_PACK,
-                CelestialDefinitionReloadListener.DIRECTORY
+                PlanetaryDefinitionReloadListener.BODY_DIRECTORY
         );
     }
 

@@ -69,13 +69,34 @@ their required Level, unchanged original values, solar intensity 1, radiation
 Do not add schema-2 fields to a legacy document without changing its version.
 Loading does not rewrite the pack or change world/save schema versions.
 
-Operators can inspect the active definitions using `/arce celestial validate`
-and `/arce celestial list`. The current development reload implementation does
-not yet publish celestial definitions and routes atomically; malformed raw JSON
-may also be skipped before definition validation. A successful definition check
-is therefore not a complete pack/route acceptance check. Test edited packs on a
-disposable world; full bounded raw-resource and paired reload support is still
-in development.
+## Reload and diagnostics
+
+Celestial definitions and travel routes are prepared together and published as
+one validated generation. A malformed file, invalid graph or missing endpoint
+rejects the whole candidate; both previous catalogs and their route-plan cache
+remain active. Initial loading fails when there is no valid pair to retain.
+This transaction does not roll back unrelated Forge reload listeners, recipes
+or assets.
+
+Raw resources must be valid UTF-8 JSON: at most **32768 bytes per body**,
+**4096 bytes per route**, and **16 nested containers**. Whitespace and multibyte
+characters count toward the byte limit. Duplicate keys (including equivalent
+escaped names), comments, raw string controls, invalid escapes and trailing
+input are rejected. Limits remain 128 bodies and 512 routes; diagnostics contain
+at most eight details and 2048 characters. Older packs that relied on ignored
+malformed files or excessive padding must be repaired before retrying.
+
+A surface route endpoint needs an existing mapped, non-gas body; an orbit
+endpoint needs an existing body. Closing `landable`/`orbitable` does not remove
+departure/reverse edges. New arrivals and station creation still apply their
+separate capability and authority checks.
+
+Inspect active data using `/arce celestial validate` and `/arce celestial list`.
+Operators can use `/arce celestial route <route_id>` to inspect one active route
+and its generation without loading terrain. After a rejected `/reload`, repair
+the reported pack file and retry; do not delete world or station data. When
+removing a body, remove its route references in the same edit. Test pack changes
+on a disposable world before using an existing save.
 
 The [implementation log](work/v1.4.0-implementation-log.md) records development
 verification and remaining scope; it is not a release approval.

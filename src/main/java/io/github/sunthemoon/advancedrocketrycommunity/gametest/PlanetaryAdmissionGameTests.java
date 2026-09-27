@@ -8,7 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialCapabilities;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -25,7 +26,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.model.RouteAnchor;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.model.RouteDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalog;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -58,7 +58,7 @@ public final class PlanetaryAdmissionGameTests {
     public static void closedDestinationsRejectWithoutChangingFuelOrSavedAuthority(GameTestHelper helper) {
         helper.runAtTickTime(1, () -> {
             var catalogs = catalogs(true, false, false);
-            var manager = new RocketManager(catalogs, routes(catalogs));
+            var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var player = player(helper.getLevel(), UUID.randomUUID());
             var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID());
             player.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
@@ -84,7 +84,7 @@ public final class PlanetaryAdmissionGameTests {
                     helper.assertTrue(rocket.flightData().orElseThrow().equals(flightBefore), "Denied arrival changed flight/fuel");
                     helper.assertTrue(journal.save(new CompoundTag()).equals(journalBefore), "Denied arrival changed journal");
                 }
-                var stationManager = new StationManager(catalogs);
+                var stationManager = new StationManager(catalogs.celestialView());
                 helper.assertTrue(stationManager.createForPlayer(player).code() == StationCreationCode.UNKNOWN_ORBIT_BODY,
                         "Closed orbit accepted player station creation");
                 helper.assertTrue(stationManager.createForOperator(server, player.getUUID(), "Denied", CelestialIds.EARTH_ID)
@@ -111,7 +111,7 @@ public final class PlanetaryAdmissionGameTests {
     public static void closedMappedSourceCanLaunchAndCancelThroughPlayerAuthority(GameTestHelper helper) {
         helper.runAtTickTime(1, () -> {
             var catalogs = catalogs(false, true, true);
-            var manager = new RocketManager(catalogs, routes(catalogs));
+            var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var owner = player(helper.getLevel(), UUID.randomUUID());
             var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID());
             try {
@@ -128,7 +128,7 @@ public final class PlanetaryAdmissionGameTests {
     public static void closedOrbitStationCanDepartButStillRequiresLiveMembership(GameTestHelper helper) {
         helper.runAtTickTime(1, () -> {
             var catalogs = catalogs(true, true, false);
-            var manager = new RocketManager(catalogs, routes(catalogs));
+            var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var server = helper.getLevel().getServer();
             var space = server.getLevel(CelestialIds.SPACE_LEVEL);
             helper.assertTrue(space != null, "Space is unavailable");
@@ -246,7 +246,7 @@ public final class PlanetaryAdmissionGameTests {
         return new FakePlayer(level, new GameProfile(id, "PlanetaryFixture"));
     }
 
-    private static CelestialCatalogManager catalogs(boolean earthLandable, boolean moonLandable, boolean earthOrbitable) {
+    private static PlanetaryCatalogManager catalogs(boolean earthLandable, boolean moonLandable, boolean earthOrbitable) {
         var definitions = new ArrayList<>(CelestialDefaults.definitions());
         for (int index = 0; index < 2; index++) {
             var body = definitions.get(index);
@@ -254,23 +254,16 @@ public final class PlanetaryAdmissionGameTests {
                     body.gravityMultiplier(), body.atmosphere(), body.orbit(), body.visualProfile(),
                     new CelestialCapabilities(index == 0 ? earthLandable : moonLandable, index != 0 || earthOrbitable, false), 1, 0));
         }
-        var manager = new CelestialCatalogManager();
-        if (!manager.applyCandidate(CelestialCatalog.create(definitions).flatMap(CelestialCatalog::requireFixedBaseline))) {
-            throw new IllegalStateException("Invalid admission fixture catalog");
-        }
-        return manager;
-    }
-
-    private static RouteCatalogManager routes(CelestialCatalogManager bodies) {
-        var manager = new RouteCatalogManager();
-        var definitions = List.of(
+        var manager = new PlanetaryCatalogManager();
+        var routes = List.of(
                 new RouteDefinition(1, ModIdentity.id("test_surface"), RouteAnchor.bodySurface(CelestialIds.EARTH_ID),
                         RouteAnchor.bodySurface(CelestialIds.MOON_ID), 50, true),
                 new RouteDefinition(1, ModIdentity.id("test_orbit"), RouteAnchor.bodySurface(CelestialIds.EARTH_ID),
                         RouteAnchor.orbit(CelestialIds.EARTH_ID), 25, true));
-        if (!manager.applyCandidate(RouteCatalog.create(definitions, bodies.current().orElseThrow().definitions()
-                .stream().map(CelestialBodyDefinition::id).toList()))) {
-            throw new IllegalStateException("Invalid admission fixture routes");
+        if (!manager.applyCandidate(CelestialCatalog.create(definitions).flatMap(CelestialCatalog::requireFixedBaseline)
+                .flatMap(bodies -> RouteCatalog.create(routes, definitions.stream().map(CelestialBodyDefinition::id).toList())
+                        .flatMap(graph -> PlanetaryCatalog.create(bodies, graph))))) {
+            throw new IllegalStateException("Invalid admission fixture catalogs");
         }
         return manager;
     }

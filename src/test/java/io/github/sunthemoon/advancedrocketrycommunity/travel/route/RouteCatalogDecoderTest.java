@@ -13,7 +13,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.model.RouteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogDecoder;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -65,16 +68,17 @@ class RouteCatalogDecoderTest {
 
     @Test
     void rejectedReloadRetainsTheLastValidCatalogAndBoundsDiagnostics() throws IOException {
-        RouteCatalogManager manager = new RouteCatalogManager();
+        PlanetaryCatalogManager manager = new PlanetaryCatalogManager();
         assertTrue(manager.applyCandidate(RouteCatalogDecoder.decode(
                 builtInRoutes(),
                 List.of(ModIdentity.id("earth"), ModIdentity.id("moon"), ModIdentity.id("space"))
-        )));
-        RouteCatalog accepted = manager.current().orElseThrow();
+        ).flatMap(routes -> CelestialCatalog.create(CelestialDefaults.definitions())
+                .flatMap(bodies -> PlanetaryCatalog.create(bodies, routes)))));
+        RouteCatalog accepted = manager.capture().orElseThrow().catalog().routes();
 
         assertFalse(manager.applyCandidate(DataResult.error(() -> "x".repeat(3_000))));
 
-        assertSame(accepted, manager.current().orElseThrow());
+        assertSame(accepted, manager.capture().orElseThrow().catalog().routes());
         assertEquals(1L, manager.status().generation());
         assertFalse(manager.status().lastReloadAccepted());
         assertEquals(RouteLimits.MAX_STATUS_MESSAGE_CHARS, manager.status().message().length());

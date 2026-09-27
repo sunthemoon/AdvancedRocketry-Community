@@ -23,7 +23,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAcc
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
-import io.github.sunthemoon.advancedrocketrycommunity.travel.route.service.RouteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.network.TravelTargetWireCodec;
 import java.util.List;
 import java.util.Objects;
@@ -40,12 +41,12 @@ final class RocketFlightService {
     private final RocketIntentRateLimiter rateLimiter = new RocketIntentRateLimiter();
     private final RocketTransferService transfers = new RocketTransferService();
     private final StationAccessService stationAccess = new StationAccessService();
-    private final CelestialCatalogManager celestialCatalogs;
-    private final RouteCatalogManager routeCatalogs;
+    private final PlanetaryCatalogManager catalogs;
+    private final boolean configuredCatalogs;
 
-    RocketFlightService(CelestialCatalogManager celestialCatalogs, RouteCatalogManager routeCatalogs) {
-        this.celestialCatalogs = celestialCatalogs;
-        this.routeCatalogs = routeCatalogs;
+    RocketFlightService(CelestialCatalogManager celestialCatalogs, PlanetaryCatalogManager catalogs) {
+        this.catalogs = catalogs;
+        this.configuredCatalogs = celestialCatalogs != null || catalogs != null;
     }
 
     void openMenu(ServerPlayer player, RocketEntity requestedRocket) {
@@ -107,10 +108,9 @@ final class RocketFlightService {
         if (flight == null || rocket.snapshot().isEmpty()) {
             return RocketFlightQuotes.empty();
         }
-        if (celestialCatalogs == null || routeCatalogs == null
-                || celestialCatalogs.current().isEmpty()
-                || routeCatalogs.current().isEmpty()) {
-            if (celestialCatalogs != null || routeCatalogs != null) {
+        PlanetaryCatalog pair = captureCatalog();
+        if (pair == null) {
+            if (configuredCatalogs) {
                 return RocketFlightQuotes.empty();
             }
             RocketDestination source = flight.currentTarget()
@@ -129,7 +129,7 @@ final class RocketFlightService {
             return RocketFlightQuotes.empty();
         }
         java.util.ArrayList<TravelTarget> targets = new java.util.ArrayList<>();
-        celestialCatalogs.current().orElseThrow().definitions().stream()
+        pair.celestial().definitions().stream()
                 .filter(definition -> definition.supportsSurfaceArrival())
                 .map(definition -> definition.id())
                 .filter(body -> !body.equals(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds
@@ -141,7 +141,7 @@ final class RocketFlightService {
                 player.getUUID(),
                 player.hasPermissions(2)
         ).stream()
-                .filter(station -> celestialCatalogs.current().orElseThrow().get(station.orbitBody())
+                .filter(station -> pair.celestial().get(station.orbitBody())
                         .filter(body -> body.capabilities().orbitable()).isPresent())
                 .map(StationState::stationId)
                 .map(TravelTarget.Station::new)
@@ -160,7 +160,8 @@ final class RocketFlightService {
                     flight.currentTarget().orElseThrow(),
                     target,
                     stations,
-                    UUID.fromString("123e4567-e89b-42d3-a456-426614174721")
+                    UUID.fromString("123e4567-e89b-42d3-a456-426614174721"),
+                    pair
             );
             quoted.add(new RocketFlightQuotes.TargetQuote(
                     target,
@@ -306,7 +307,8 @@ final class RocketFlightService {
                 source,
                 destination,
                 stationData,
-                requestId
+                requestId,
+                captureCatalog()
         );
         if (!planned.success()) {
             return RocketFlightRequestResult.failure(
@@ -380,25 +382,24 @@ final class RocketFlightService {
             TravelTarget source,
             TravelTarget destination,
             StationRegistrySavedData stations,
-            UUID requestId
+            UUID requestId,
+            PlanetaryCatalog pair
     ) {
-        if (celestialCatalogs != null && routeCatalogs != null
-                && celestialCatalogs.current().isPresent()
-                && routeCatalogs.current().isPresent()) {
+        if (pair != null) {
             return RocketTargetFlightPlanner.plan(
                     rocket.snapshot().orElseThrow().stats(),
                     flight.fuel(),
                     source,
                     flight.currentDimension(),
                     destination,
-                    celestialCatalogs.current().orElseThrow(),
-                    routeCatalogs.current().orElseThrow(),
+                    pair.celestial(),
+                    pair.routes(),
                     stations::find,
                     requestId,
                     rocket.level().getGameTime()
             );
         }
-        if (celestialCatalogs != null || routeCatalogs != null) {
+        if (configuredCatalogs) {
             return RocketFlightPlanResult.failure(
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanCode.UNSUPPORTED_ROUTE,
                     0L
@@ -423,6 +424,10 @@ final class RocketFlightService {
                 requestId,
                 rocket.level().getGameTime()
         );
+    }
+
+    private PlanetaryCatalog captureCatalog() {
+        return catalogs == null ? null : catalogs.capture().map(PlanetaryCatalogManager.Generation::catalog).orElse(null);
     }
 
     private RocketFlightRequestResult board(ServerPlayer player, RocketEntity rocket) {
