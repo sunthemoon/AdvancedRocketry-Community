@@ -361,6 +361,10 @@ public final class SatelliteManager {
         return definition(definitionId).map(SatelliteDefinition::allowedTargets).orElse(List.of());
     }
 
+    public Optional<SatelliteCatalog> catalog() { return satelliteCatalogs.current(); }
+
+    public long catalogGeneration() { return satelliteCatalogs.status().generation(); }
+
     public Optional<SatelliteState> satellite(MinecraftServer server, UUID satelliteId) {
         return SatelliteMissionSavedData.get(server).satellite(satelliteId);
     }

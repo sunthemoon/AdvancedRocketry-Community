@@ -5,12 +5,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
-import java.util.ArrayList;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatellitePayloadRuntime;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,9 +21,9 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     public static final int BUTTON_PREVIOUS = 0;
@@ -40,35 +39,30 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
 
     private final ContainerLevelAccess access;
     private final ContainerData data;
-    private final List<ResourceLocation> targets;
+    private final SatelliteTerminalTargets catalog;
     @Nullable
     private final SatelliteTerminalBlockEntity terminal;
 
     public SatelliteTerminalMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-        this(
-                id,
-                playerInventory,
-                requireTerminal(playerInventory, buffer.readBlockPos()),
+        this(id, playerInventory, new ItemStackHandler(SatelliteTerminalBlockEntity.SLOT_COUNT),
                 new SimpleContainerData(SatelliteTerminalBlockEntity.MENU_DATA_COUNT),
-                readTargets(buffer)
-        );
+                ContainerLevelAccess.NULL, null, readCatalog(buffer));
     }
 
     public SatelliteTerminalMenu(
             int id,
             Inventory playerInventory,
             SatelliteTerminalBlockEntity terminal,
-            ContainerData data,
-            List<ResourceLocation> targets
+            SatelliteTerminalTargets catalog
     ) {
         this(
                 id,
                 playerInventory,
                 terminal.menuInventory(),
-                data,
+                new SatelliteTerminalMenuData(terminal, playerInventory.player.getUUID(), catalog),
                 ContainerLevelAccess.create(terminal.getLevel(), terminal.getBlockPos()),
                 terminal,
-                targets
+                catalog
         );
     }
 
@@ -79,14 +73,14 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
             ContainerData data,
             ContainerLevelAccess access,
             @Nullable SatelliteTerminalBlockEntity terminal,
-            List<ResourceLocation> targets
+            SatelliteTerminalTargets catalog
     ) {
         super(ModMenuTypes.SATELLITE_TERMINAL.get(), id);
         checkContainerDataCount(data, SatelliteTerminalBlockEntity.MENU_DATA_COUNT);
         this.data = data;
         this.access = access;
         this.terminal = terminal;
-        this.targets = List.copyOf(targets);
+        this.catalog = catalog;
 
         addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_CHASSIS, 18, 54));
         addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_SOLAR_MODULE, 44, 54));
@@ -98,24 +92,9 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
         addDataSlots(data);
     }
 
-    private static SatelliteTerminalBlockEntity requireTerminal(Inventory inventory, BlockPos position) {
-        BlockEntity blockEntity = inventory.player.level().getBlockEntity(position);
-        if (blockEntity instanceof SatelliteTerminalBlockEntity terminal) {
-            return terminal;
-        }
-        throw new IllegalStateException("Satellite Terminal menu opened without its block entity at " + position);
-    }
-
-    private static List<ResourceLocation> readTargets(FriendlyByteBuf buffer) {
-        int count = buffer.readVarInt();
-        if (count < 0 || count > SatelliteLimits.MAX_TARGETS_PER_DEFINITION) {
-            throw new IllegalArgumentException("Satellite menu target count exceeds its fixed bound");
-        }
-        List<ResourceLocation> targets = new ArrayList<>(count);
-        for (int index = 0; index < count; index++) {
-            targets.add(buffer.readResourceLocation());
-        }
-        return List.copyOf(targets);
+    private static SatelliteTerminalTargets readCatalog(FriendlyByteBuf buffer) {
+        buffer.readBlockPos(); // Position is display metadata only; no client chunk/BE lookup.
+        return SatelliteTerminalTargets.read(buffer);
     }
 
     private void addPlayerInventory(Inventory inventory) {
@@ -138,12 +117,13 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     public boolean clickMenuButton(Player player, int buttonId) {
         return player instanceof ServerPlayer serverPlayer
                 && terminal != null
+                && stillValid(player)
                 && terminal.handleButton(serverPlayer, buttonId);
     }
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        if (index < 0 || index >= slots.size() || !slots.get(index).hasItem()) {
+        if (!stillValid(player) || index < 0 || index >= slots.size() || !slots.get(index).hasItem()) {
             return ItemStack.EMPTY;
         }
         var sourceSlot = slots.get(index);
@@ -181,7 +161,7 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
         if (stack.is(ModItems.SATELLITE_SOLAR_MODULE.get())) {
             return SatelliteTerminalBlockEntity.SLOT_SOLAR_MODULE;
         }
-        if (stack.is(ModItems.DATA_STORAGE_UNIT.get())) {
+        if (SatellitePayloadRuntime.definitionFor(stack) != null) {
             return SatelliteTerminalBlockEntity.SLOT_DATA_STORAGE;
         }
         if (stack.is(ModItems.SATELLITE_CONTROL_CHIP.get())) {
@@ -195,7 +175,10 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return (terminal == null || terminal.canAccess(player))
+        return (terminal == null || !terminal.isRemoved() && terminal.getLevel() != null
+                && terminal.getLevel().hasChunkAt(terminal.getBlockPos())
+                && terminal.getLevel().getBlockEntity(terminal.getBlockPos()) == terminal
+                && terminal.canAccess(player) && catalog.generation() == SatelliteRuntime.catalogGeneration())
                 && stillValid(access, player, ModBlocks.SATELLITE_TERMINAL.get());
     }
 
@@ -219,11 +202,12 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     }
 
     public List<ResourceLocation> targets() {
-        return targets;
+        return catalog.targets(data.get(11));
     }
 
     public Optional<ResourceLocation> selectedTarget() {
         int index = selectedTargetIndex();
+        List<ResourceLocation> targets = targets();
         return index >= 0 && index < targets.size() ? Optional.of(targets.get(index)) : Optional.empty();
     }
 

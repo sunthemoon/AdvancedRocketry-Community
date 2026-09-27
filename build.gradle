@@ -24,7 +24,8 @@ sourceSets {
     adapterTest {
         compileClasspath = sourceSets.main.compileClasspath + files(
                 layout.buildDirectory.dir('classes/api'), layout.buildDirectory.dir('classes/rocketApi'),
-                layout.buildDirectory.dir('classes/atmosphereApi'), layout.buildDirectory.dir('classes/environmentApi'))
+                layout.buildDirectory.dir('classes/atmosphereApi'), layout.buildDirectory.dir('classes/environmentApi'),
+                layout.buildDirectory.dir('classes/satelliteApi'))
         runtimeClasspath = output + sourceSets.main.runtimeClasspath
     }
 }
@@ -297,10 +298,13 @@ def exportedAtmosphereApiTypes = ['AtmosphereBoundary', 'AtmosphereBoundaryProvi
 def environmentApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/environment'
 def exportedEnvironmentApiTypes = ['AtmosphereProfile', 'EnvironmentSnapshot', 'EnvironmentQueries',
                                    'ServerEnvironmentReadyEvent']
+def satelliteApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/satellite'
+def exportedSatelliteApiTypes = ['SatelliteMissionDefinition', 'SatellitePayloadRegistrar', 'RegisterSatellitePayloadsEvent']
 def exportedApiClasses = exportedApiTypes.collect { "${apiPackage}/${it}.class" } +
         exportedRocketApiTypes.collect { "${rocketApiPackage}/${it}.class" } +
         exportedAtmosphereApiTypes.collect { "${atmosphereApiPackage}/${it}.class" } +
         exportedEnvironmentApiTypes.collect { "${environmentApiPackage}/${it}.class" } +
+        exportedSatelliteApiTypes.collect { "${satelliteApiPackage}/${it}.class" } +
         ["${environmentApiPackage}/EnvironmentSnapshot\$Locus.class"]
 def compileApiJava = tasks.register('compileApiJava', JavaCompile) {
     source exportedApiTypes.collect { "src/main/java/${apiPackage}/${it}.java" }
@@ -346,8 +350,19 @@ def compileEnvironmentApiJava = tasks.register('compileEnvironmentApiJava', Java
     }
 }
 
+def compileSatelliteApiJava = tasks.register('compileSatelliteApiJava', JavaCompile) {
+    source exportedSatelliteApiTypes.collect { "src/main/java/${satelliteApiPackage}/${it}.java" }
+    classpath = sourceSets.main.compileClasspath
+    options.sourcepath = files()
+    options.annotationProcessorPath = files()
+    destinationDirectory = layout.buildDirectory.dir('classes/satelliteApi')
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 tasks.named('compileAdapterTestJava', JavaCompile) {
-    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava
+    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, compileSatelliteApiJava
     options.sourcepath = files()
     options.annotationProcessorPath = files()
 }
@@ -357,7 +372,7 @@ tasks.named('check') {
 }
 
 def apiJar = tasks.register('apiJar', Jar) {
-    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, 'reobfJar'
+    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, compileSatelliteApiJava, 'reobfJar'
     archiveClassifier = 'api'
     // Publish the actual runtime bytes; Forge's remapper can rewrite even JDK-only classes.
     from({ zipTree(tasks.named('jar', Jar).get().archiveFile.get().asFile) }) {

@@ -1,7 +1,7 @@
-# Public API: versioning, rockets, atmosphere, equipment and environment
+# Public API: versioning, rockets, atmosphere, equipment, environment and satellites
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.6**. Version metadata remains JDK-only in
+types. The API version is **1.7**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -17,7 +17,8 @@ types. The API version is **1.6**. Version metadata remains JDK-only in
 Minecraft 1.20.1 / Forge platform. Other project packages are implementation
 details, even when their Java types are `public`. `api.atmosphere` exports the four
 state-boundary and three equipment types described below. `api.environment`
-exports the read-only types described below. Satellite extension APIs are not yet exported.
+exports the read-only types described below. `api.satellite` exports
+`SatelliteMissionDefinition`, `SatellitePayloadRegistrar` and `RegisterSatellitePayloadsEvent`.
 
 ## Compile and run
 
@@ -393,6 +394,76 @@ station gravity to entities. Do not pass this handle to a client or use a query
 result as C2S authority. No save or network migration is needed. Numeric bounds,
 units and lifecycle are specified in
 [ADR-028](decisions/ADR-028-READ-ONLY-ENVIRONMENT-QUERIES.md).
+
+## Register a satellite payload
+
+Require API **1.7**. Subscribe on the integrating mod's **MOD bus** during mod
+construction, using types from `api.satellite`:
+
+```java
+modBus.addListener((RegisterSatellitePayloadsEvent event) -> event.register(
+        ResourceLocation.tryParse("yourmod:research_payload"),
+        ResourceLocation.tryParse("yourmod:scanner_component"),
+        new SatelliteMissionDefinition(400, 137, 11,
+                List.of(ResourceLocation.tryParse("advancedrocketrycommunity:earth"),
+                        ResourceLocation.tryParse("advancedrocketrycommunity:moon")))));
+```
+
+The definition ID must use the receiving mod's namespace. The item must already
+exist; it can belong to another mod, but must not be a built-in terminal component,
+chip, package, redstone or previously claimed payload. Up to 15 external payloads
+are supported, one item per definition. IDs are at most 128 characters. Calls are
+synchronous, atomic and loading-thread-only; do not retain the event or registrar.
+Invalid/conflicting registrations throw `IllegalArgumentException`, nulls throw
+`NullPointerException`, and closed/stale/off-thread/reentrant use throws
+`IllegalStateException`. A failed registration does not reserve its ID or item.
+
+The immutable mission record specifies **duration ticks, research yield, discovery
+cost and allowed body IDs**, in that order. Duration is 20..72,000 ticks; yield and
+cost are 1..10,000 with yield >= cost; there are 1..16 distinct targets. Targets
+must exist in the server celestial catalog. There is no custom reward callback.
+Offline players' missions continue while the server ticks; shutdown pauses time.
+
+Players place the registered component in the terminal's data-storage slot along
+with the normal chassis, solar module and blank control chip. Assembly consumes
+one whole, untagged payload and 1,000 FE, producing the host's generic package and
+matching bound chip. Items with serialized tag/capability state cannot be used as
+payloads. Launch, repeat missions and claim use the existing server validation;
+registration does not grant player authority or expose mutable world services.
+The chip/payload selects the displayed target list. Reopen the menu after a
+successful catalog reload. Host and client must use the same menu format.
+
+Server packs can replace registered defaults at
+`data/yourmod/satellite_definitions/research_payload.json`:
+
+```json
+{
+  "schema_version": 1,
+  "id": "yourmod:research_payload",
+  "mission_duration_ticks": 400,
+  "research_yield": 137,
+  "discovery_cost": 11,
+  "allowed_targets": ["advancedrocketrycommunity:earth", "advancedrocketrycommunity:moon"]
+}
+```
+
+The merged catalog supports 16 definitions total, including the required built-in
+data satellite and any unbound datapack definitions. Removing an override restores
+its registered defaults. Invalid reloads retain the last valid catalog; an invalid
+initial catalog prevents startup. Reload never changes a started mission's reward
+or deadline. Removing a definition prevents new missions but already-started
+missions can finish and claim their saved research exactly once. A surviving
+datapack definition can still serve existing chips even without an assembly item.
+
+Removing only the registration leaves a known queued payload item extractable.
+If the item's mod is absent, the terminal preserves and blocks the complete raw
+root rather than decoding that item as air. Restore the mod to recover. Native
+drops that yield the terminal item carry a bounded quarantined root; wrong-tool,
+no-drop, explosion and destructive operator actions are not recovery guarantees.
+Over-budget roots require backup/repair and refuse normal survival removal.
+Existing root schemas are unchanged. See
+[the satellite contract](decisions/ADR-029-SATELLITE-PAYLOAD-MISSIONS.md) for exact
+bounds, menu framing and downgrade limitations.
 
 ## Verify an integration boundary
 

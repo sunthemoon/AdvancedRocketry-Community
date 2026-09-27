@@ -6,10 +6,12 @@ import net.minecraft.world.inventory.ContainerData;
 final class SatelliteTerminalMenuData implements ContainerData {
     private final SatelliteTerminalBlockEntity terminal;
     private final UUID viewerId;
+    private final SatelliteTerminalTargets targets;
 
-    SatelliteTerminalMenuData(SatelliteTerminalBlockEntity terminal, UUID viewerId) {
+    SatelliteTerminalMenuData(SatelliteTerminalBlockEntity terminal, UUID viewerId, SatelliteTerminalTargets targets) {
         this.terminal = terminal;
         this.viewerId = viewerId;
+        this.targets = targets;
     }
 
     @Override
@@ -26,6 +28,7 @@ final class SatelliteTerminalMenuData implements ContainerData {
             case 8 -> terminal.selectedTargetDiscovered();
             case 9 -> terminal.ownedBy(viewerId);
             case 10 -> terminal.researchBalanceHigh(viewerId);
+            case 11 -> targets.indexOf(terminal.selectedDefinition());
             default -> 0;
         };
     }

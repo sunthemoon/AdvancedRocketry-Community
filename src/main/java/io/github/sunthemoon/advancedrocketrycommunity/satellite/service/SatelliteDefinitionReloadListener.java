@@ -42,7 +42,8 @@ public final class SatelliteDefinitionReloadListener extends SimpleJsonResourceR
                 ? DataResult.error(() -> "No valid celestial catalog is active")
                 : SatelliteCatalogDecoder.decode(
                         resources,
-                        celestial.definitions().stream().map(definition -> definition.id()).toList()
+                        celestial.definitions().stream().map(definition -> definition.id()).toList(),
+                        SatellitePayloadRuntime.defaults()
                 );
         if (manager.applyCandidate(candidate)) {
             SatelliteCatalogManager.ReloadStatus status = manager.status();

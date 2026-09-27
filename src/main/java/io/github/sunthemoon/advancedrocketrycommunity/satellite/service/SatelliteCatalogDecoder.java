@@ -22,6 +22,17 @@ public final class SatelliteCatalogDecoder {
             Map<ResourceLocation, JsonElement> resources,
             Collection<ResourceLocation> knownTargets
     ) {
+        return decode(resources, knownTargets, List.of());
+    }
+
+    public static DataResult<SatelliteCatalog> decode(
+            Map<ResourceLocation, JsonElement> resources,
+            Collection<ResourceLocation> knownTargets,
+            Collection<SatelliteDefinition> defaults
+    ) {
+        if (defaults.size() > SatelliteLimits.MAX_DEFINITIONS - 1) {
+            return DataResult.error(() -> "Satellite defaults exceed the external definition limit");
+        }
         if (resources.size() > SatelliteLimits.MAX_DEFINITIONS) {
             return DataResult.error(() -> "Satellite resource count exceeds the definition limit");
         }
@@ -32,6 +43,9 @@ public final class SatelliteCatalogDecoder {
                 .forEach(entry -> decodeEntry(entry.getKey(), entry.getValue(), definitions, errors));
         if (!errors.isEmpty()) {
             return DataResult.error(() -> String.join("; ", errors));
+        }
+        for (SatelliteDefinition definition : defaults) {
+            if (!resources.containsKey(definition.id())) { definitions.add(definition); }
         }
         return SatelliteCatalog.create(definitions, knownTargets);
     }

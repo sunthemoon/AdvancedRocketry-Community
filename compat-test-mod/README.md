@@ -4,7 +4,7 @@ This standalone ForgeGradle project builds the existing
 [`src/adapterTest`](../src/adapterTest/) fixture into a separate, reobfuscated
 mod JAR. It consumes the published ARCE **API classifier**, not the host project,
 main JAR or compiled output. Its platform is Java 17, Minecraft 1.20.1 and
-Forge 47.4.10. This fixture requires API 1.6 for environment queries, in addition to item fuels (1.5), rocket components (1.4),
+Forge 47.4.10. This fixture requires API 1.7 for satellite payload missions, in addition to environment queries (1.6), item fuels (1.5), rocket components (1.4),
 suit equipment (1.3), atmosphere boundaries (1.2) and rocket registration (1.1).
 
 The environment fixture listens for the actual server-ready API event, queries
@@ -173,3 +173,24 @@ retains its world and evidence rather than retrying it automatically.
 Recovery staging is synthetic, not a forced crash. This check covers one fixed
 container with vanilla items; it does not establish cross-dimension behavior,
 arbitrary missing-item/world-block recovery or long-duration stability.
+
+## Check satellite payload missions
+
+The fixture registers `arce_adapter_test:research_payload` using an untagged
+amethyst shard and API 1.7's declarative mission values. Its GameTests use the real
+terminal to manufacture, launch and claim, and check owner restrictions, replay
+and native inventory serialization. No custom reward callback is installed.
+
+For disposable packaged verification, use the same fresh libraries-only server
+layout and explicit artifact arguments with
+[`run_v130_satellite_payload_smoke.py`](../scripts/run_v130_satellite_payload_smoke.py).
+The runner enables the fixture's operator command, performs a real datapack reload,
+then removes and reinstalls only its copied fixture JAR across three clean
+processes. The original task keeps its saved duration and reward after removal;
+the later task uses the new definition. Exact research accounting includes the
+first discovery charge and refuses duplicate claims. Raw SavedData and terminal
+chunk data are retained alongside process and artifact identities.
+
+The actor is a network-free FakePlayer, not a logged-in client. These short checks
+do not establish real-player UI behavior, crash/power-loss atomicity, arbitrary
+missing-item recovery or long-duration stability.

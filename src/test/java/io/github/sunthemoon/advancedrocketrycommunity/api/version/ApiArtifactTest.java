@@ -56,7 +56,10 @@ class ApiArtifactTest {
             API_PACKAGE + "environment/EnvironmentSnapshot.class",
             API_PACKAGE + "environment/EnvironmentSnapshot$Locus.class",
             API_PACKAGE + "environment/EnvironmentQueries.class",
-            API_PACKAGE + "environment/ServerEnvironmentReadyEvent.class")).collect(Collectors.toUnmodifiableSet());
+            API_PACKAGE + "environment/ServerEnvironmentReadyEvent.class",
+            API_PACKAGE + "satellite/SatelliteMissionDefinition.class",
+            API_PACKAGE + "satellite/SatellitePayloadRegistrar.class",
+            API_PACKAGE + "satellite/RegisterSatellitePayloadsEvent.class")).collect(Collectors.toUnmodifiableSet());
     private static final Set<String> METADATA = Set.of("META-INF/MANIFEST.MF", "META-INF/LICENSE",
             "META-INF/NOTICE.md", "META-INF/THIRD-PARTY-NOTICES.md",
             "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
@@ -179,6 +182,26 @@ class ApiArtifactTest {
     void environmentConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
         Compilation result = compile("EnvironmentApiConsumer", platformConsumerClasspath());
         assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void satelliteConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
+        Compilation result = compile("SatelliteApiConsumer", platformConsumerClasspath());
+        assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void platformConsumerCannotImportTheSatelliteRegistry() throws IOException {
+        try (ZipFile runtime = new ZipFile(Path.of(System.getProperty("arce.runtimeJar")).toFile())) {
+            assertNotNull(runtime.getEntry(HOST_PACKAGE + "compat/satellite/SatellitePayloadRegistry.class"));
+        }
+        Compilation result = compile("SatelliteInternalConsumer", platformConsumerClasspath());
+        assertFalse(result.success());
+        assertTrue(result.diagnostics().stream().anyMatch(diagnostic ->
+                diagnostic.getKind() == Diagnostic.Kind.ERROR
+                        && diagnostic.getCode().equals("compiler.err.doesnt.exist")
+                        && diagnostic.getMessage(Locale.ROOT).contains("compat.satellite")),
+                result.diagnostics().toString());
     }
 
     @Test

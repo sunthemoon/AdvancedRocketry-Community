@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +14,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -29,6 +31,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraftforge.network.NetworkHooks;
 
 /** Single bounded ground terminal for assembly, launch, control, and receipt. */
@@ -58,10 +63,44 @@ public final class SatelliteTerminalBlock extends BaseEntityBlock {
             ItemStack stack
     ) {
         super.setPlacedBy(level, position, state, placer, stack);
-        if (!level.isClientSide && placer instanceof Player player
-                && level.getBlockEntity(position) instanceof SatelliteTerminalBlockEntity terminal) {
-            terminal.setOwner(player.getUUID());
+        if (!level.isClientSide && level.getBlockEntity(position) instanceof SatelliteTerminalBlockEntity terminal) {
+            var carried = BlockItem.getBlockEntityData(stack);
+            if (carried != null && carried.contains(SatelliteTerminalBlockEntity.DATA_KEY)) {
+                var raw = carried.get(SatelliteTerminalBlockEntity.DATA_KEY);
+                var parent = new net.minecraft.nbt.CompoundTag();
+                parent.put(SatelliteTerminalBlockEntity.DATA_KEY,
+                        SatelliteTerminalBlockEntity.boundedRoot(raw) ? raw.copy() : raw);
+                terminal.load(parent);
+                terminal.setChanged();
+            }
+            if (placer instanceof Player player) { terminal.setOwner(player.getUUID()); }
         }
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        List<ItemStack> drops = super.getDrops(state, params);
+        if (params.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof SatelliteTerminalBlockEntity terminal
+                && terminal.blocked()) {
+            if (!terminal.canCarryData()) { return List.of(); }
+            for (ItemStack drop : drops) {
+                if (drop.is(asItem())) {
+                    BlockItem.setBlockEntityData(drop, ModBlockEntities.SATELLITE_TERMINAL.get(), terminal.carriedData());
+                }
+            }
+        }
+        return drops;
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos position, Player player,
+                                       boolean willHarvest, FluidState fluid) {
+        if (!player.getAbilities().instabuild
+                && level.getBlockEntity(position) instanceof SatelliteTerminalBlockEntity terminal && !terminal.canCarryData()) {
+            player.displayClientMessage(Component.translatable("status.advancedrocketrycommunity.satellite.unsupported_data"), true);
+            return false;
+        }
+        return super.onDestroyedByPlayer(state, level, position, player, willHarvest, fluid);
     }
 
     @Override
@@ -89,7 +128,7 @@ public final class SatelliteTerminalBlock extends BaseEntityBlock {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos position, BlockState next, boolean moved) {
         if (!level.isClientSide && !state.is(next.getBlock())
-                && level.getBlockEntity(position) instanceof SatelliteTerminalBlockEntity terminal) {
+                && level.getBlockEntity(position) instanceof SatelliteTerminalBlockEntity terminal && !terminal.blocked()) {
             SimpleContainer drops = new SimpleContainer(SatelliteTerminalBlockEntity.SLOT_COUNT);
             terminal.copyInventoryTo(drops);
             Containers.dropContents(level, position, drops);

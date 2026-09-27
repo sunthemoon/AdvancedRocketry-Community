@@ -22,6 +22,25 @@ import org.junit.jupiter.api.Test;
 
 final class SatelliteMissionSavedDataTest {
     @Test
+    void externalMissionSnapshotSurvivesWithoutRegistrationAndClaimsOnceAfterReload() {
+        UUID satellite = UUID.randomUUID(), mission = UUID.randomUUID(), owner = UUID.randomUUID();
+        var external = new SatelliteDefinition(1, net.minecraft.resources.ResourceLocation.tryParse("removed:mission"),
+                400, 137, 11, List.of(ModIdentity.id("earth")));
+        var data = SatelliteMissionSavedData.create(1000);
+        assertTrue(data.launch(satellite, mission, owner, external, ModIdentity.id("earth"), 1000, false).success());
+        var original = data.mission(mission).orElseThrow();
+        var restored = SatelliteMissionSavedData.load(data.save(new CompoundTag()));
+        assertEquals(original, restored.mission(mission).orElseThrow());
+        restored.completeDue(1400);
+        assertEquals(SatelliteOperationCode.UNAUTHORIZED, restored.claim(mission, UUID.randomUUID(), 1400).code());
+        assertTrue(restored.claim(mission, owner, 1400).success());
+        assertEquals(137, restored.account(owner).balance());
+        var claimed = SatelliteMissionSavedData.load(restored.save(new CompoundTag()));
+        assertEquals(SatelliteOperationCode.ALREADY_CLAIMED, claimed.claim(mission, owner, 1401).code());
+        assertEquals(137, claimed.account(owner).balance());
+    }
+
+    @Test
     void activeMissionClockAndAccountRoundTripAcrossRestart() {
         UUID satelliteId = UUID.randomUUID();
         UUID missionId = UUID.randomUUID();

@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ApiVersionsTest {
     @Test
     void currentVersionIncludesTheFrozenEnvironmentQueryContract() {
-        assertEquals(new ApiVersion(1, 6), ApiVersions.current());
+        assertEquals(new ApiVersion(1, 7), ApiVersions.current());
     }
 
     @Test
@@ -23,7 +23,7 @@ class ApiVersionsTest {
         assertEquals(ApiCompatibility.COMPATIBLE,
                 ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 3)));
         assertEquals(ApiCompatibility.MINOR_TOO_OLD,
-                ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 7)));
+                ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 8)));
         assertEquals(ApiCompatibility.COMPATIBLE,
                 ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 6)));
         assertEquals(ApiCompatibility.COMPATIBLE,

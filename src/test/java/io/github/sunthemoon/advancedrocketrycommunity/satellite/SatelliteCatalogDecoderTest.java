@@ -142,6 +142,42 @@ final class SatelliteCatalogDecoderTest {
                 manager.status().message().length());
     }
 
+    @Test
+    void registeredDefaultsAreOverriddenByDatapacksAndRejectedCandidatesKeepPreviousGeneration() {
+        SatelliteDefinition external = definition(ModIdentity.id("external"));
+        var builtin = Map.of(SatelliteIds.DATA_SATELLITE, canonicalJson());
+        var manager = new SatelliteCatalogManager();
+        assertTrue(manager.applyCandidate(SatelliteCatalogDecoder.decode(builtin, TARGETS, List.of(external))));
+        assertEquals(external, manager.current().orElseThrow().get(external.id()).orElseThrow());
+        var override = new SatelliteDefinition(1, external.id(), 40, 200, 11, List.of(TARGETS.get(0)));
+        var resources = new LinkedHashMap<>(builtin);
+        resources.put(external.id(), SatelliteDefinition.CODEC.encodeStart(JsonOps.INSTANCE, override).result().orElseThrow());
+        assertTrue(manager.applyCandidate(SatelliteCatalogDecoder.decode(resources, TARGETS, List.of(external))));
+        assertEquals(override, manager.current().orElseThrow().get(external.id()).orElseThrow());
+        var previous = manager.current().orElseThrow();
+        resources.get(external.id()).getAsJsonObject().addProperty("research_yield", 0);
+        assertFalse(manager.applyCandidate(SatelliteCatalogDecoder.decode(resources, TARGETS, List.of(external))));
+        assertSame(previous, manager.current().orElseThrow()); assertEquals(2, manager.status().generation());
+        assertTrue(manager.applyCandidate(SatelliteCatalogDecoder.decode(builtin, TARGETS, List.of(external))));
+        assertEquals(external, manager.current().orElseThrow().get(external.id()).orElseThrow());
+        assertTrue(manager.applyCandidate(SatelliteCatalogDecoder.decode(builtin, TARGETS, List.of())));
+        assertTrue(manager.current().orElseThrow().get(external.id()).isEmpty());
+    }
+
+    @Test
+    void combinedDefinitionBudgetAndUnresolvedDefaultsFailClosed() {
+        var builtin = Map.of(SatelliteIds.DATA_SATELLITE, canonicalJson());
+        var defaults = java.util.stream.IntStream.range(0, 15).mapToObj(i -> definition(ModIdentity.id("external" + i))).toList();
+        assertEquals(16, SatelliteCatalogDecoder.decode(builtin, TARGETS, defaults).result().orElseThrow().size());
+        var resources = new LinkedHashMap<>(builtin);
+        var extra = definition(ModIdentity.id("datapack_extra"));
+        resources.put(extra.id(), SatelliteDefinition.CODEC.encodeStart(JsonOps.INSTANCE, extra).result().orElseThrow());
+        assertTrue(SatelliteCatalogDecoder.decode(resources, TARGETS, defaults).error().isPresent());
+        var missing = new SatelliteDefinition(1, extra.id(), 20, 1, 1, List.of(ModIdentity.id("missing")));
+        assertTrue(SatelliteCatalogDecoder.decode(builtin, TARGETS, List.of(missing)).error().isPresent());
+        assertTrue(SatelliteCatalogDecoder.decode(builtin, TARGETS, java.util.Collections.nCopies(16, extra)).error().isPresent());
+    }
+
     private static SatelliteDefinition definition(net.minecraft.resources.ResourceLocation id) {
         return new SatelliteDefinition(
                 SatelliteLimits.DEFINITION_SCHEMA_VERSION,

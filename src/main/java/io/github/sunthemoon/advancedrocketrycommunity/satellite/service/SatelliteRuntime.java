@@ -27,6 +27,16 @@ public final class SatelliteRuntime {
         return current == null ? List.of() : current.targets(definitionId);
     }
 
+    public static Optional<SatelliteCatalog> catalog() {
+        SatelliteManager current = manager;
+        return current == null ? Optional.empty() : current.catalog();
+    }
+
+    public static long catalogGeneration() {
+        SatelliteManager current = manager;
+        return current == null ? 0L : current.catalogGeneration();
+    }
+
     public static SatelliteOperationResult launch(
             ServerPlayer player,
             SatelliteIdentity identity,

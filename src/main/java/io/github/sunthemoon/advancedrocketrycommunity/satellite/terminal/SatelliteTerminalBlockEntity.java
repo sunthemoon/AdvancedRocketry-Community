@@ -10,7 +10,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionS
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteNbtSize;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatellitePayloadRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +42,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.ItemStackHandler;
 
 public final class SatelliteTerminalBlockEntity extends BlockEntity implements MenuProvider {
     public static final int SLOT_CHASSIS = 0;
@@ -51,7 +51,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     public static final int SLOT_PACKAGE = 4;
     public static final int SLOT_CHARGE = 5;
     public static final int SLOT_COUNT = 6;
-    public static final int MENU_DATA_COUNT = 11;
+    public static final int MENU_DATA_COUNT = 12;
     public static final int ENERGY_CAPACITY = 10_000;
     public static final int REDSTONE_ENERGY = 2_000;
     public static final int ASSEMBLY_ENERGY = 1_000;
@@ -59,19 +59,9 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
 
     private static final int SCHEMA_VERSION = 1;
     private static final int MAX_TERMINAL_NBT_BYTES = 64 * 1024;
-    private static final String DATA_KEY = "SatelliteTerminal";
+    static final String DATA_KEY = "SatelliteTerminal";
 
-    private final ItemStackHandler inventory = new ItemStackHandler(SLOT_COUNT) {
-        @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            return !blocked() && validItemForSlot(slot, stack);
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
-    };
+    private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(), this::setChanged);
     private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage();
     private LazyOptional<net.minecraftforge.items.IItemHandler> itemCapability = LazyOptional.empty();
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.empty();
@@ -83,7 +73,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     private boolean futureSchemaBlocked;
     private boolean invalidDataBlocked;
     @Nullable
-    private CompoundTag preservedBlockedData;
+    private Tag preservedBlockedData;
 
     public SatelliteTerminalBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.SATELLITE_TERMINAL.get(), position, state);
@@ -105,7 +95,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     }
 
     public void setOwner(UUID owner) {
-        if (ownerId == null && owner != null) {
+        if (!blocked() && ownerId == null && owner != null) {
             ownerId = owner;
             setChanged();
         }
@@ -113,9 +103,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
 
     public void writeMenuOpenData(FriendlyByteBuf buffer) {
         buffer.writeBlockPos(worldPosition);
-        List<ResourceLocation> targets = targets();
-        buffer.writeVarInt(targets.size());
-        targets.forEach(buffer::writeResourceLocation);
+        SatelliteTerminalTargets.current().write(buffer);
     }
 
     public boolean handleButton(ServerPlayer player, int buttonId) {
@@ -176,9 +164,10 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         ItemStack chip = inventory.getStackInSlot(SLOT_CONTROL_CHIP);
-        if (!inventory.getStackInSlot(SLOT_CHASSIS).is(ModItems.SATELLITE_CHASSIS.get())
-                || !inventory.getStackInSlot(SLOT_SOLAR_MODULE).is(ModItems.SATELLITE_SOLAR_MODULE.get())
-                || !inventory.getStackInSlot(SLOT_DATA_STORAGE).is(ModItems.DATA_STORAGE_UNIT.get())
+        ResourceLocation definition = SatellitePayloadRuntime.definitionFor(inventory.getStackInSlot(SLOT_DATA_STORAGE));
+        if (!inventory.isItemValid(SLOT_CHASSIS, inventory.getStackInSlot(SLOT_CHASSIS))
+                || !inventory.isItemValid(SLOT_SOLAR_MODULE, inventory.getStackInSlot(SLOT_SOLAR_MODULE))
+                || definition == null
                 || !chip.is(ModItems.SATELLITE_CONTROL_CHIP.get())
                 || SatelliteItemData.read(chip).status() != SatelliteItemData.DecodeStatus.EMPTY) {
             updateResult(player, SatelliteOperationCode.INVALID_COMPONENTS);
@@ -188,7 +177,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             updateResult(player, SatelliteOperationCode.OUTPUT_BLOCKED);
             return;
         }
-        if (SatelliteRuntime.targets(SatelliteIds.DATA_SATELLITE).isEmpty()) {
+        if (SatelliteRuntime.targets(definition).isEmpty()) {
             updateResult(player, SatelliteOperationCode.CATALOG_UNAVAILABLE);
             return;
         }
@@ -196,7 +185,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         SatelliteIdentity identity = new SatelliteIdentity(
                 UUID.randomUUID(),
                 player.getUUID(),
-                SatelliteIds.DATA_SATELLITE
+                definition
         );
         ItemStack boundChip = new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get());
         SatelliteItemData.write(boundChip, identity);
@@ -335,7 +324,17 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     }
 
     private List<ResourceLocation> targets() {
-        return SatelliteRuntime.targets(SatelliteIds.DATA_SATELLITE);
+        ResourceLocation definition = selectedDefinition();
+        return definition == null ? List.of() : SatelliteRuntime.targets(definition);
+    }
+
+    ResourceLocation selectedDefinition() {
+        ItemStack chip = inventory.getStackInSlot(SLOT_CONTROL_CHIP);
+        var decoded = SatelliteItemData.read(chip);
+        if (decoded.identity().isPresent()) { return decoded.identity().orElseThrow().definitionId(); }
+        if (decoded.status() != SatelliteItemData.DecodeStatus.EMPTY) { return null; }
+        ItemStack payload = inventory.getStackInSlot(SLOT_DATA_STORAGE);
+        return payload.isEmpty() ? SatelliteIds.DATA_SATELLITE : SatellitePayloadRuntime.definitionFor(payload);
     }
 
     @Nullable
@@ -449,20 +448,14 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new SatelliteTerminalMenu(
-                id,
-                playerInventory,
-                this,
-                new SatelliteTerminalMenuData(this, player.getUUID()),
-                targets()
-        );
+        return new SatelliteTerminalMenu(id, playerInventory, this, SatelliteTerminalTargets.current());
     }
 
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);
         if (preservedBlockedData != null) {
-            parent.put(DATA_KEY, preservedBlockedData.copy());
+            parent.put(DATA_KEY, boundedRoot(preservedBlockedData) ? preservedBlockedData.copy() : preservedBlockedData);
             return;
         }
         CompoundTag data = new CompoundTag();
@@ -476,7 +469,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         if (ownerId != null) {
             data.putUUID("owner_id", ownerId);
         }
-        if (SatelliteNbtSize.uncompressedBytes(data) > MAX_TERMINAL_NBT_BYTES) {
+        if (!boundedRoot(data)) {
             throw new IllegalStateException("Satellite terminal exceeds its fixed NBT bound");
         }
         parent.put(DATA_KEY, data);
@@ -489,14 +482,15 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         if (!parent.contains(DATA_KEY)) {
             return;
         }
-        if (!parent.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
+        Tag raw = parent.get(DATA_KEY);
+        if (!boundedRoot(raw) || !(raw instanceof CompoundTag)) {
             invalidDataBlocked = true;
+            preservedBlockedData = boundedRoot(raw) ? raw.copy() : raw;
             lastResult = SatelliteOperationCode.UNSUPPORTED_DATA;
             return;
         }
         CompoundTag data = parent.getCompound(DATA_KEY);
-        if (SatelliteNbtSize.uncompressedBytes(data) > MAX_TERMINAL_NBT_BYTES
-                || !data.contains("schema_version", Tag.TAG_INT)) {
+        if (!data.contains("schema_version", Tag.TAG_INT)) {
             invalidDataBlocked = true;
             preservedBlockedData = data.copy();
             lastResult = SatelliteOperationCode.UNSUPPORTED_DATA;
@@ -511,6 +505,9 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         }
         try {
             if (schema != SCHEMA_VERSION
+                    || !java.util.Set.of("schema_version", "inventory", "energy", "selected_target", "last_result", "owner_id")
+                            .containsAll(data.getAllKeys())
+                    || data.contains("owner_id") && !data.hasUUID("owner_id")
                     || !data.contains("inventory", Tag.TAG_COMPOUND)
                     || !data.contains("energy", Tag.TAG_INT)
                     || !data.contains("selected_target", Tag.TAG_INT)
@@ -525,13 +522,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
                     || result < 0 || result >= SatelliteOperationCode.values().length) {
                 throw new IllegalArgumentException("Satellite terminal scalar is outside fixed bounds");
             }
-            inventory.deserializeNBT(data.getCompound("inventory"));
-            for (int slot = 0; slot < SLOT_COUNT; slot++) {
-                ItemStack stack = inventory.getStackInSlot(slot);
-                if (!stack.isEmpty() && !validItemForSlot(slot, stack)) {
-                    throw new IllegalArgumentException("Satellite terminal contains an invalid item");
-                }
-            }
+            inventory.loadValidated(data.getCompound("inventory"));
             energyStorage.set(energy);
             selectedTargetIndex = target;
             lastResult = SatelliteOperationCode.values()[result];
@@ -560,22 +551,19 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         preservedBlockedData = null;
     }
 
-    private boolean blocked() {
+    boolean blocked() {
         return futureSchemaBlocked || invalidDataBlocked;
     }
 
-    private static boolean validItemForSlot(int slot, ItemStack stack) {
-        return switch (slot) {
-            case SLOT_CHASSIS -> stack.is(ModItems.SATELLITE_CHASSIS.get()) && !stack.hasTag();
-            case SLOT_SOLAR_MODULE -> stack.is(ModItems.SATELLITE_SOLAR_MODULE.get()) && !stack.hasTag();
-            case SLOT_DATA_STORAGE -> stack.is(ModItems.DATA_STORAGE_UNIT.get()) && !stack.hasTag();
-            case SLOT_CONTROL_CHIP -> stack.is(ModItems.SATELLITE_CONTROL_CHIP.get())
-                    && SatelliteItemData.read(stack).status() != SatelliteItemData.DecodeStatus.INVALID;
-            case SLOT_PACKAGE -> stack.is(ModItems.DATA_SATELLITE_PACKAGE.get())
-                    && SatelliteItemData.read(stack).status() == SatelliteItemData.DecodeStatus.VALID;
-            case SLOT_CHARGE -> stack.is(Items.REDSTONE) && !stack.hasTag();
-            default -> false;
-        };
+    static boolean boundedRoot(Tag tag) { return BoundedNbt.fits(tag, MAX_TERMINAL_NBT_BYTES, 20, 2048); }
+
+    boolean canCarryData() { return preservedBlockedData == null || boundedRoot(preservedBlockedData); }
+
+    CompoundTag carriedData() {
+        if (!canCarryData()) { throw new IllegalStateException("Terminal root cannot be carried safely"); }
+        CompoundTag data = new CompoundTag();
+        saveAdditional(data);
+        return data;
     }
 
     @Nonnull

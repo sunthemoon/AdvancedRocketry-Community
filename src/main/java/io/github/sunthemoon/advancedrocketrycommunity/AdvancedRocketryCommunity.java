@@ -56,6 +56,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationMan
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.command.StationCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.command.SatelliteCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.api.satellite.RegisterSatellitePayloadsEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.satellite.SatellitePayloadRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatellitePayloadRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
@@ -173,6 +176,7 @@ public final class AdvancedRocketryCommunity {
     private void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(this::initializeRocketAdapters);
         event.enqueueWork(this::initializeRocketFuels);
+        event.enqueueWork(this::initializeSatellitePayloads);
         event.enqueueWork(this::initializeAtmosphereBoundaries);
         String version = ModList.get()
                 .getModContainerById(MOD_ID)
@@ -233,6 +237,15 @@ public final class AdvancedRocketryCommunity {
         event.addListener(new RouteDefinitionReloadListener(routeCatalogs, celestialCatalogs));
         event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs));
         event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
+    }
+
+    private void initializeSatellitePayloads() {
+        try (SatellitePayloadRegistry registry = new SatellitePayloadRegistry(id ->
+                ForgeRegistries.ITEMS.containsKey(id) ? ForgeRegistries.ITEMS.getValue(id) : null)) {
+            ModLoader.get().runEventGenerator(container -> new RegisterSatellitePayloadsEvent(
+                    registry.forOwner(container.getModId())));
+            SatellitePayloadRuntime.install(registry.freeze());
+        }
     }
 
     private void initializeAtmosphereBoundaries() {
