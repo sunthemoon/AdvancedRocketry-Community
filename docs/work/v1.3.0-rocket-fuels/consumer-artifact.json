@@ -1,0 +1,31 @@
+{
+  "file": "D:\\GitHub\\AdvancedRocketry-Community\\compat-test-mod\\build\\libs\\arce-adapter-compat-test-1.0.0.jar",
+  "bytes": 53349,
+  "sha256": "5142035900b559d61ac1fe50ac7047b0ca165a9ec149b7b987fbf050b8c449a5",
+  "entries": [
+    "META-INF/LICENSE",
+    "META-INF/MANIFEST.MF",
+    "META-INF/NOTICE.md",
+    "META-INF/mods.toml",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_engines.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_movable.json",
+    "data/advancedrocketrycommunity/tags/blocks/rocket_seats.json",
+    "io/github/sunthemoon/arceadaptertest/AdapterRegistrationGameTests.class",
+    "io/github/sunthemoon/arceadaptertest/AdapterTestMod.class",
+    "io/github/sunthemoon/arceadaptertest/AtmosphereBoundaryGameTests.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureBoundaryBlock.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureContainerBlock.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureContainerBlockEntity.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureInventoryAdapter.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureRocketComponents.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureRocketFuels.class",
+    "io/github/sunthemoon/arceadaptertest/FixtureSuitOxygen.class",
+    "io/github/sunthemoon/arceadaptertest/RocketComponentGameTests.class",
+    "io/github/sunthemoon/arceadaptertest/RocketFuelGameTests.class",
+    "io/github/sunthemoon/arceadaptertest/SuitEquipmentFixture$1.class",
+    "io/github/sunthemoon/arceadaptertest/SuitEquipmentFixture.class",
+    "io/github/sunthemoon/arceadaptertest/SuitEquipmentGameTests.class",
+    "pack.mcmeta"
+  ],
+  "reobfuscated": true
+}
