@@ -8,6 +8,10 @@ matched: the celestial display channel and snapshot format now use version 2.
 
 ## An unmapped body
 
+Client resource-pack sky customization is described in
+[Planetary sky profiles](PLANETARY-SKY-GUIDE.md). `visual_profile` is presentation
+only; neither a resource pack nor a missing profile changes environmental rules.
+
 For example, `data/example/celestial_bodies/gas_giant.json`:
 
 ```json

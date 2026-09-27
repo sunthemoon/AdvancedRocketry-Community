@@ -1,0 +1,328 @@
+{
+  "base_commit": "251de231612049f62721f8911a4f402a4f1157d0",
+  "files": [
+    {
+      "bytes": 18644,
+      "git_blob": "3127270b280dd8b0a0e3d3f65cde1435640edfa9",
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "d039e35984724b48d2ae815031c78334004cd6a269f9e4b97e7e703ffa8da297",
+      "working_sha256": "d039e35984724b48d2ae815031c78334004cd6a269f9e4b97e7e703ffa8da297"
+    },
+    {
+      "bytes": 17377,
+      "git_blob": "f0058f2f674cea68757493c7cd133342d0b6be12",
+      "path": "build.gradle",
+      "sha256": "a049e05c94811eea853469df072b794eee22852779ddc37a75335841da5dcb1a",
+      "working_sha256": "a049e05c94811eea853469df072b794eee22852779ddc37a75335841da5dcb1a"
+    },
+    {
+      "bytes": 14151,
+      "git_blob": "934ddd57cef1cf446997b64d125550586d7e14ea",
+      "path": "docs/CELESTIAL-DATA-GUIDE.md",
+      "sha256": "84da3ced537d7e6f0981ce5b3a65e2c747bc43560357f54e1844bce683ba0d69",
+      "working_sha256": "84da3ced537d7e6f0981ce5b3a65e2c747bc43560357f54e1844bce683ba0d69"
+    },
+    {
+      "bytes": 4729,
+      "git_blob": "4bc341767d255d489ac7346493a45b67bb79647a",
+      "path": "docs/PLANETARY-SKY-GUIDE.md",
+      "sha256": "41603e48c5483d4317e8081f679c8c100d0f90b9b258d374ec3bdf491c7766db",
+      "working_sha256": "41603e48c5483d4317e8081f679c8c100d0f90b9b258d374ec3bdf491c7766db"
+    },
+    {
+      "bytes": 6340,
+      "git_blob": "9ebbbdc837c6f03dcd4e586798843341cdef3e15",
+      "path": "docs/decisions/ADR-036-PLANETARY-SKY-PROFILES.md",
+      "sha256": "01c421d0ee3b8f60c8454d5431b9911d7fa75b74a9d8b6e1c1c1166310acb680",
+      "working_sha256": "01c421d0ee3b8f60c8454d5431b9911d7fa75b74a9d8b6e1c1c1166310acb680"
+    },
+    {
+      "bytes": 4866,
+      "git_blob": "70b810db1bb29a40d966641ac9b206910a0504d7",
+      "path": "docs/provenance/v1.4.0-development-metadata.md",
+      "sha256": "213e0baa68dba0949fbae43ed59c41266cb3aae3e5e39ae5b7c3fd0a27e16bdb",
+      "working_sha256": "213e0baa68dba0949fbae43ed59c41266cb3aae3e5e39ae5b7c3fd0a27e16bdb"
+    },
+    {
+      "bytes": 3406,
+      "git_blob": "ebaf74663caf347058e6c42dbfcb803d0dfd49fa",
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "635a18f7fc8942484ddbab8519440da3fd26a66fc154571fd7f5bc395a7131f6",
+      "working_sha256": "635a18f7fc8942484ddbab8519440da3fd26a66fc154571fd7f5bc395a7131f6"
+    },
+    {
+      "bytes": 13310,
+      "git_blob": "39ee8929d5ef83932280313f53609fc21ed76463",
+      "path": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "sha256": "8f595a8b2c404cf92f2c3201adf1407ae4b037668a9e58a10170043d44269b74",
+      "working_sha256": "8f595a8b2c404cf92f2c3201adf1407ae4b037668a9e58a10170043d44269b74"
+    },
+    {
+      "bytes": 33810,
+      "git_blob": "97b804ca8700ec8eb4dc44b28d38017076f2ec5e",
+      "path": "docs/work/v1.4.0-implementation-log.md",
+      "sha256": "3f100c3cd2dc780b58716e6f06fcb220bb8522f823486bdc0f92182abf3523e2",
+      "working_sha256": "3f100c3cd2dc780b58716e6f06fcb220bb8522f823486bdc0f92182abf3523e2"
+    },
+    {
+      "bytes": 324,
+      "git_blob": "7299b574ddb9a946e1665e482f26a0a1681d2dda",
+      "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/mars.json",
+      "sha256": "8c322e5c0bdbfb92652d5f8b090cf02ca51206fa493885b596dbef445140fe70",
+      "working_sha256": "8c322e5c0bdbfb92652d5f8b090cf02ca51206fa493885b596dbef445140fe70"
+    },
+    {
+      "bytes": 251,
+      "git_blob": "d9283d65ef557d404edf96c06edbb07c874c303c",
+      "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/moon.json",
+      "sha256": "d6477e3845207c157152e552a6c6e1b5428564f41186f85cb66271bec5bee730",
+      "working_sha256": "d6477e3845207c157152e552a6c6e1b5428564f41186f85cb66271bec5bee730"
+    },
+    {
+      "bytes": 252,
+      "git_blob": "bb021d947fa3fca8ae3012b725dff6b82d28f779",
+      "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/space.json",
+      "sha256": "7afb2ad8d638d950fea98ea1bb4be9d4fef26f2a742af1299d902de99e9b0884",
+      "working_sha256": "7afb2ad8d638d950fea98ea1bb4be9d4fef26f2a742af1299d902de99e9b0884"
+    },
+    {
+      "bytes": 320,
+      "git_blob": "4911d627daa99a4730dee33c2d17f4c635dc6148",
+      "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/venus.json",
+      "sha256": "8bba67b940d0d6f9d0eb899942dd01855fb4f3063ff410693641319a904de74d",
+      "working_sha256": "8bba67b940d0d6f9d0eb899942dd01855fb4f3063ff410693641319a904de74d"
+    },
+    {
+      "bytes": 476,
+      "git_blob": "095620fe290137a56e00998b063268eff562b266",
+      "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/mars.json",
+      "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab",
+      "working_sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+    },
+    {
+      "bytes": 499,
+      "git_blob": "dc09521701506441b815af8134ed24e2f435df23",
+      "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/moon.json",
+      "sha256": "bcdc5a91099613d4ac0a4cafeac52170f05b24e678a3da411ef959ed849a14cf",
+      "working_sha256": "bcdc5a91099613d4ac0a4cafeac52170f05b24e678a3da411ef959ed849a14cf"
+    },
+    {
+      "bytes": 506,
+      "git_blob": "230a9e86b3adaae4e88a6c88572e2006cfa92027",
+      "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/space.json",
+      "sha256": "e68d8206cc98057f9fd698269e0d8e36a45cbaa43f597f292d6698eea7a51402",
+      "working_sha256": "e68d8206cc98057f9fd698269e0d8e36a45cbaa43f597f292d6698eea7a51402"
+    },
+    {
+      "bytes": 476,
+      "git_blob": "095620fe290137a56e00998b063268eff562b266",
+      "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/venus.json",
+      "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab",
+      "working_sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+    },
+    {
+      "bytes": 561,
+      "git_blob": "b01570377716b64fb920a0bf4d10268a162efa40",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/AmbientCadence.java",
+      "sha256": "07eb049f7a586dc4716844b47a54cc3baef844186da3bd58a5410950968cd779",
+      "working_sha256": "07eb049f7a586dc4716844b47a54cc3baef844186da3bd58a5410950968cd779"
+    },
+    {
+      "bytes": 1226,
+      "git_blob": "5dd7da33886516f7d5ab089a9fb20510779dc432",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/AmbientController.java",
+      "sha256": "2abf642cdfc67aeec43b6d9dc698a3058f9f6a3d2422d4680747e45d4ab0a2da",
+      "working_sha256": "2abf642cdfc67aeec43b6d9dc698a3058f9f6a3d2422d4680747e45d4ab0a2da"
+    },
+    {
+      "bytes": 4200,
+      "git_blob": "63bf66b81e54ba648869ea431c30784a50c4b8cc",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyGeometry.java",
+      "sha256": "4224ee63e9dd480b5485ad81a4b22c3cd37ecf9d683a20a190e49129c6112fef",
+      "working_sha256": "4224ee63e9dd480b5485ad81a4b22c3cd37ecf9d683a20a190e49129c6112fef"
+    },
+    {
+      "bytes": 1694,
+      "git_blob": "92105448aeb987f82f5125ee27c7d3df8b964976",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMath.java",
+      "sha256": "309c47a5a13e3066bf02f43960ae6a1060052448f354805939bc3c7b63d28681",
+      "working_sha256": "309c47a5a13e3066bf02f43960ae6a1060052448f354805939bc3c7b63d28681"
+    },
+    {
+      "bytes": 4615,
+      "git_blob": "2dca1341870da39b1e7f707ae44e615ca66c9736",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfile.java",
+      "sha256": "1a2f86823cd58fac863e5df8e354ab30126c23fb7fa1cf7437edfbfb70c5e565",
+      "working_sha256": "1a2f86823cd58fac863e5df8e354ab30126c23fb7fa1cf7437edfbfb70c5e565"
+    },
+    {
+      "bytes": 1532,
+      "git_blob": "ef382727589c2e81f720a63102012ee181591056",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfiles.java",
+      "sha256": "d74b1828d6603355a3d199befb6c92126c9d0c6c150b858574ffbd41f1d4d917",
+      "working_sha256": "d74b1828d6603355a3d199befb6c92126c9d0c6c150b858574ffbd41f1d4d917"
+    },
+    {
+      "bytes": 2058,
+      "git_blob": "45af17cdbc0ee7998d148e0ae2ee33b40e577cec",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelection.java",
+      "sha256": "6c6cb0e2c8528795525ac67f58cff70cc387b7ce41dea7625451e610d809e308",
+      "working_sha256": "6c6cb0e2c8528795525ac67f58cff70cc387b7ce41dea7625451e610d809e308"
+    },
+    {
+      "bytes": 4057,
+      "git_blob": "bd86d43ec75f212f4525943d4d754eecae7397d6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "sha256": "a66c013cf575aa466d20af661bcc511ed5d04e2279766a0ebe5d51a4d4316555",
+      "working_sha256": "a66c013cf575aa466d20af661bcc511ed5d04e2279766a0ebe5d51a4d4316555"
+    },
+    {
+      "bytes": 2808,
+      "git_blob": "fdd44220e5ca992a644ec69a612cf053ec83a6e8",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/ClientSkyEvents.java",
+      "sha256": "7823aa339d9ec2b97f3f615cf2051513f4de0a5d3d40ae34e65afbc5b1e09414",
+      "working_sha256": "7823aa339d9ec2b97f3f615cf2051513f4de0a5d3d40ae34e65afbc5b1e09414"
+    },
+    {
+      "bytes": 1583,
+      "git_blob": "0651bd1b1cb00b39a1c37d89d7b80264c67274df",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryAmbience.java",
+      "sha256": "12d7557442146b1efd246a84a06c91d59e36e1fb0498ae726ebb02b19137f422",
+      "working_sha256": "12d7557442146b1efd246a84a06c91d59e36e1fb0498ae726ebb02b19137f422"
+    },
+    {
+      "bytes": 2241,
+      "git_blob": "81ff11d99bb4551138aef5e65faa0d1f0d5f040e",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryDimensionEffects.java",
+      "sha256": "77e52cceca4027d1a684de6c4be0a64dba56149d21342576a3b6f38f0aebacfc",
+      "working_sha256": "77e52cceca4027d1a684de6c4be0a64dba56149d21342576a3b6f38f0aebacfc"
+    },
+    {
+      "bytes": 3551,
+      "git_blob": "c4269da7df3c9073356f2a361c85eaeef3cff33e",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyClient.java",
+      "sha256": "b3d77ee85d9a67ce1ca2c7b5cc0cea6e1feecfa1ebea6d50841f444445408079",
+      "working_sha256": "b3d77ee85d9a67ce1ca2c7b5cc0cea6e1feecfa1ebea6d50841f444445408079"
+    },
+    {
+      "bytes": 5980,
+      "git_blob": "f277c1df58ebec363e370de4e03fc730bc838044",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyRenderer.java",
+      "sha256": "f2b9d3816fbca794d13dfa4e56df3180c3e8db2b4114169b45bb4a5d4f0c9055",
+      "working_sha256": "f2b9d3816fbca794d13dfa4e56df3180c3e8db2b4114169b45bb4a5d4f0c9055"
+    },
+    {
+      "bytes": 4097,
+      "git_blob": "98a6bf8ccf124b83c2f6097c76e5193ec4ac2316",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyProfileReloadListener.java",
+      "sha256": "cf808c719bfa4535f32b05422aa036c4745378e0aa622f60fab2e3254552b84e",
+      "working_sha256": "cf808c719bfa4535f32b05422aa036c4745378e0aa622f60fab2e3254552b84e"
+    },
+    {
+      "bytes": 2797,
+      "git_blob": "1b6037f705487e214e429df6969bcc326c89dfa6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyRenderState.java",
+      "sha256": "766ea348a3f1fb7803b6f50a66b390aa7c4c18236c4086623831a16a3eb1adea",
+      "working_sha256": "766ea348a3f1fb7803b6f50a66b390aa7c4c18236c4086623831a16a3eb1adea"
+    },
+    {
+      "bytes": 1685,
+      "git_blob": "f1c5e5e7a4a2132b26ca40947dae8f53c458686b",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "e455a5947374f86f72a460ad43dc51a50e4ff36eb2a92bee04f88c8875431b54",
+      "working_sha256": "e455a5947374f86f72a460ad43dc51a50e4ff36eb2a92bee04f88c8875431b54"
+    },
+    {
+      "bytes": 4539,
+      "git_blob": "8abf61114f008970f569f0be56b4e0e2b3c99129",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/FixedDimensionProvider.java",
+      "sha256": "09dcd00da79d95f43318c64e5b414dc6766b3844e187fee96a10ef0998916f56",
+      "working_sha256": "09dcd00da79d95f43318c64e5b414dc6766b3844e187fee96a10ef0998916f56"
+    },
+    {
+      "bytes": 2097,
+      "git_blob": "5b6f44ef24748aee802342b4237b676ab9e3d7a3",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/PlanetarySkyProvider.java",
+      "sha256": "204e28204b99709514e8706e3fef00202d6f0bd3d4466d94a2a63390c37a2230",
+      "working_sha256": "204e28204b99709514e8706e3fef00202d6f0bd3d4466d94a2a63390c37a2230"
+    },
+    {
+      "bytes": 6351,
+      "git_blob": "df5304ae7a59999a8f784cb2acea8a72ac98d064",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/PlanetaryWorldgen.java",
+      "sha256": "a024afccda41a4f34cbdefe337ee95c715d9461edf3dd49dbe79736f8d10a25c",
+      "working_sha256": "a024afccda41a4f34cbdefe337ee95c715d9461edf3dd49dbe79736f8d10a25c"
+    },
+    {
+      "bytes": 7329,
+      "git_blob": "7675bc846b0ccb7bbffe89b965d44413ea3adab9",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/EarthReturnPadFixture.java",
+      "sha256": "51e6ca544d3523a5e9c42968f1e6ce132c22d80e816c37462e598dd9284d99dd",
+      "working_sha256": "51e6ca544d3523a5e9c42968f1e6ce132c22d80e816c37462e598dd9284d99dd"
+    },
+    {
+      "bytes": 12470,
+      "git_blob": "a0edbddc3853c2ad167f7f794f84d62ba819ee8b",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryWorldGameTests.java",
+      "sha256": "457bba313cc5fdf04c578c48480115cf7266c8e28e2c3ca97e777a97367d3e31",
+      "working_sha256": "457bba313cc5fdf04c578c48480115cf7266c8e28e2c3ca97e777a97367d3e31"
+    },
+    {
+      "bytes": 3497,
+      "git_blob": "b59c68c7e32407584bae3fd863f87fbf14e8fd30",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/AmbientControllerTest.java",
+      "sha256": "92f40c0396335ba202c29874cc0e078ef4a167f7a8c4b2d0f18fa316fcee2b0e",
+      "working_sha256": "92f40c0396335ba202c29874cc0e078ef4a167f7a8c4b2d0f18fa316fcee2b0e"
+    },
+    {
+      "bytes": 3472,
+      "git_blob": "d0fa0d1b28cc5ae5e52667e86ee3ebe3fdaa8974",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMathTest.java",
+      "sha256": "62ef607b504e6d4465656db5fb405aa410599d6fd71b1461d0707b9500680ebd",
+      "working_sha256": "62ef607b504e6d4465656db5fb405aa410599d6fd71b1461d0707b9500680ebd"
+    },
+    {
+      "bytes": 3149,
+      "git_blob": "f01cbfa462d83018c7f26198835fb36a6b426786",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfileTest.java",
+      "sha256": "016ccd3c7769455dc84fbf5ab5007463c26c84ac43454f99329e5e97e67db294",
+      "working_sha256": "016ccd3c7769455dc84fbf5ab5007463c26c84ac43454f99329e5e97e67db294"
+    },
+    {
+      "bytes": 2504,
+      "git_blob": "e86a7f2aabe833a7581233f3bfabb4bcb4649137",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyResourcesTest.java",
+      "sha256": "0efce2a07e9aeb75afa86a791271e485003a97167e5cfb55aafa95db099f8736",
+      "working_sha256": "0efce2a07e9aeb75afa86a791271e485003a97167e5cfb55aafa95db099f8736"
+    },
+    {
+      "bytes": 4450,
+      "git_blob": "7ef96a2192035dd1ae8177d0e9c94891f9f82721",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelectionTest.java",
+      "sha256": "d9ed1b58e668b931a868f5226dffea33184a0432f47221e7723c9d3c546cc4da",
+      "working_sha256": "d9ed1b58e668b931a868f5226dffea33184a0432f47221e7723c9d3c546cc4da"
+    },
+    {
+      "bytes": 2719,
+      "git_blob": "41e8f0bd6445acd20ef3e21505a2920050229f5f",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryEffectsTest.java",
+      "sha256": "3abb33fed3c6ec402f033342fbbcb8db317af8095f1bfa3ca1608be19a413b28",
+      "working_sha256": "3abb33fed3c6ec402f033342fbbcb8db317af8095f1bfa3ca1608be19a413b28"
+    },
+    {
+      "bytes": 7932,
+      "git_blob": "f1a4d78279e3223c4bacaeb425fd9316e27d78eb",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyProfileReloadTest.java",
+      "sha256": "1557db1e446bdf0aae653341cf79747bf6af944002d5481d53e5a758fc00b05c",
+      "working_sha256": "1557db1e446bdf0aae653341cf79747bf6af944002d5481d53e5a758fc00b05c"
+    },
+    {
+      "bytes": 1655,
+      "git_blob": "f1b4e22e60ce8c620930c64f084442cb487b24a0",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyRenderStateTest.java",
+      "sha256": "a9412c7aeecb3907d33a8f6d8cc24c6602dd5a48c4a35a75100c16d84faceb14",
+      "working_sha256": "a9412c7aeecb3907d33a8f6d8cc24c6602dd5a48c4a35a75100c16d84faceb14"
+    }
+  ],
+  "scope": "Changed staged inputs outside evidence; raw worktree digests identify executed inputs"
+}

@@ -1,0 +1,13 @@
+{
+  "day_color": 66315,
+  "fog_color": 132107,
+  "fog_end": 512.0,
+  "fog_start": 0.95,
+  "night_color": 66315,
+  "schema_version": 1,
+  "sound_volume": 0.0,
+  "star_brightness": 1.0,
+  "sun_color": 16774365,
+  "sun_opacity": 1.0,
+  "sun_radius": 3.0
+}

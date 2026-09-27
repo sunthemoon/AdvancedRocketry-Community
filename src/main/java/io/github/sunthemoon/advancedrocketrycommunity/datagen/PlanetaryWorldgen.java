@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfiles;
 import java.util.List;
 import java.util.OptionalLong;
 import net.minecraft.core.Registry;
@@ -46,7 +47,7 @@ public final class PlanetaryWorldgen {
                 .add(Registries.DIMENSION_TYPE, context -> SURFACES.forEach(id -> context.register(
                         key(Registries.DIMENSION_TYPE, id), new DimensionType(OptionalLong.empty(),
                                 true, false, false, false, 1, true, false, 0, 256, 256,
-                                BlockTags.INFINIBURN_OVERWORLD, new ResourceLocation("minecraft", "overworld"),
+                                BlockTags.INFINIBURN_OVERWORLD, SkyProfiles.SURFACE_EFFECTS,
                                 0, new DimensionType.MonsterSettings(false, false, ConstantInt.of(0), 0)))))
                 .add(Registries.NOISE_SETTINGS, context -> SURFACES.forEach(id -> context.register(
                         key(Registries.NOISE_SETTINGS, id), terrain(context, id))))

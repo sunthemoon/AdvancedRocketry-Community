@@ -9,6 +9,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfiles;
+import io.github.sunthemoon.advancedrocketrycommunity.client.sky.PlanetaryDimensionEffects;
+import io.github.sunthemoon.advancedrocketrycommunity.client.sky.PlanetarySkyClient;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -71,5 +77,16 @@ public final class ClientBootstrap {
     @SubscribeEvent
     public static void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ROCKET.get(), RocketEntityRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
+        event.register(SkyProfiles.SURFACE_EFFECTS, new PlanetaryDimensionEffects(new DimensionSpecialEffects.OverworldEffects()));
+        event.register(SkyProfiles.SPACE_EFFECTS, new PlanetaryDimensionEffects(new DimensionSpecialEffects.EndEffects()));
+    }
+
+    @SubscribeEvent
+    public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(PlanetarySkyClient.RESOURCES);
     }
 }

@@ -1,0 +1,67 @@
+{
+  "base_commit": "251de231612049f62721f8911a4f402a4f1157d0",
+  "command": "gradlew.bat clean build runData runGameTestServer --console=plain",
+  "duration": "3m 1s",
+  "exit_code": 0,
+  "failed_world": {
+    "archive": "failed-world.zip",
+    "command_log": "clean-all-02.log",
+    "exit_code": 1,
+    "failed": 4,
+    "required_gametests": 233,
+    "seed": 5912724636835073799
+  },
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 163,
+    "tests": 891
+  },
+  "prior_junit_attempts": {
+    "clean-all-01-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 162,
+      "tests": 890
+    },
+    "clean-all-02-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 163,
+      "tests": 891
+    },
+    "fixture-reused-world-01-xml": {
+      "errors": 0,
+      "failures": 1,
+      "skipped": 0,
+      "suites": 163,
+      "tests": 891
+    },
+    "fixture-reused-world-02-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 163,
+      "tests": 891
+    },
+    "targeted-01-xml": {
+      "errors": 0,
+      "failures": 2,
+      "skipped": 0,
+      "suites": 7,
+      "tests": 24
+    },
+    "targeted-02-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 7,
+      "tests": 24
+    }
+  },
+  "required_gametests_passed": 234,
+  "scope": "Short development checks, not real-client/GPU/load/release acceptance"
+}

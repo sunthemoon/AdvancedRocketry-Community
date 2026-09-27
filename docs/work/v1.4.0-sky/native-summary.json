@@ -1,0 +1,129 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2412477,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-map01-1790499004940\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "9fc582f1b83599526627b065d72b9995fbb7a69e04065a135dce7aa8697b1acf",
+      "version": "1.20.1-1.4.0-dev"
+    },
+    {
+      "bytes": 2594614,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-sky-8bdcd66a68c54fefadc350434c25b4fb\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "676f4c0421a80f7b3dd8a732c77186306799fee4d8f88750d1bc30fb2bf26aea",
+      "version": "1.20.1-1.4.0-dev"
+    }
+  ],
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "legs": [
+    {
+      "fuel_after": 1552,
+      "fuel_before": 2000,
+      "required": 448,
+      "transfer": "982db5d0-6a9e-4ee7-9be9-9ac983bea9fa"
+    },
+    {
+      "fuel_after": 1019,
+      "fuel_before": 1552,
+      "required": 533,
+      "transfer": "3244622e-1686-4e00-98af-4f1e357078ff"
+    },
+    {
+      "fuel_after": 504,
+      "fuel_before": 1019,
+      "required": 515,
+      "transfer": "f2b0f79a-1816-4cf3-bff2-74dfb4591d4b"
+    }
+  ],
+  "port": 59345,
+  "reports": [
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "minecraft:overworld",
+      "entity": "8c111b33-cc03-40f7-b6f5-f6f9eb5f5786",
+      "fuel": 2000,
+      "logical": "3b1678bf-8015-458d-b928-34f989dcfb92",
+      "origin": [
+        264,
+        101,
+        264
+      ],
+      "passengers": 0,
+      "snapshot": "cd8af474e8d7f76ebe6d659d552360b1b9d2c8b74c025b1b7ee9c00bbb498fe5",
+      "state": "FUELED",
+      "transfer": "none"
+    },
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "advancedrocketrycommunity:mars",
+      "entity": "2daf4006-fb59-4033-aaeb-cb56ae2d2627",
+      "fuel": 1552,
+      "logical": "3b1678bf-8015-458d-b928-34f989dcfb92",
+      "origin": [
+        0,
+        61,
+        0
+      ],
+      "passengers": 0,
+      "snapshot": "0e000f03ecd06cda0a79723248d83c1a926d9c3b5da535fb68f35e8d013d7b40",
+      "state": "LANDED",
+      "transfer": "none"
+    },
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "advancedrocketrycommunity:venus",
+      "entity": "e325a649-d16f-43e6-b4fb-4f3c3091637a",
+      "fuel": 1019,
+      "logical": "3b1678bf-8015-458d-b928-34f989dcfb92",
+      "origin": [
+        0,
+        103,
+        0
+      ],
+      "passengers": 0,
+      "snapshot": "e650a0b69fb00a4e58c1006ce00d3be6c785d98595f6f312607b2fa149cf5bc0",
+      "state": "LANDED",
+      "transfer": "none"
+    },
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "minecraft:overworld",
+      "entity": "ef37f5a1-fd9b-4aa4-8ee0-2d1937deca74",
+      "fuel": 504,
+      "logical": "3b1678bf-8015-458d-b928-34f989dcfb92",
+      "origin": [
+        240,
+        67,
+        512
+      ],
+      "passengers": 0,
+      "snapshot": "1ddfef2530c83fd63d91a0d6de56b6dfeb0f883ac95ce1beb45b6fdac1709761",
+      "state": "LANDED",
+      "transfer": "none"
+    }
+  ],
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "pre-planet upgrade, three surface legs, native restart; no clients/load campaign",
+  "server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-sky-8bdcd66a68c54fefadc350434c25b4fb\\server-native",
+  "world": {
+    "identity": "8ad96e9d49e226f9970e6acb156ffb75c11a321e12155ce8ee7d5372ba921cb2",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "210a4e57915902ef56e0bf1c09e3173b4d71cd9ce9f87fbe988ee92e84335beb",
+    "level_dat_after_restart_sha256": "b4574c757e739c08a710a2a45d4032a949dd07707a5c7a62c3dffce35e9f4fa5",
+    "level_dat_after_restart_size": 37903,
+    "level_dat_before_restart_sha256": "193a58bf8cad51887d21c11d811b2fc321791313cda5dd17605a229b7752aa01",
+    "level_dat_before_restart_size": 37851,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "90d1e871e33457da5440c9c2538344a9ec124b4fda37dd62c52b9b09b9d991eb"
+  }
+}

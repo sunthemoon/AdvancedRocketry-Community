@@ -19,6 +19,7 @@
 | `docs/03-TARGET-ARCHITECTURE.md` | 1.20.1 包结构和系统拆分 |
 | `docs/04-VERSION-ROADMAP.md` | v0.0.1–v2.0.0 里程碑和集成/验收顺序 |
 | `docs/PORTING_MATRIX.md` | 旧系统到新模块/版本/测试的映射 |
+| [行星天空资源包](docs/PLANETARY-SKY-GUIDE.md) | 天空、太阳、星空、雾与环境音配置及兼容边界 |
 | `docs/11-RISK-REGISTER.md` | 核心风险、触发与缓解 |
 | [并行与 worktree](docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md) | 任务 DAG、所有权、契约与独立审核 |
 | [远程 Linux 开发](docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md) | Debian 12、tmux、专服、V0/V1/V2 证据边界 |

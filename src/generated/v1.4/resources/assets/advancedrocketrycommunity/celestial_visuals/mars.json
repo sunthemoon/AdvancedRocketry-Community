@@ -1,0 +1,14 @@
+{
+  "ambient_sound": "minecraft:ambient.basalt_deltas.additions",
+  "day_color": 11304048,
+  "fog_color": 12487796,
+  "fog_end": 192.0,
+  "fog_start": 0.4,
+  "night_color": 592668,
+  "schema_version": 1,
+  "sound_volume": 0.18,
+  "star_brightness": 0.85,
+  "sun_color": 15460863,
+  "sun_opacity": 0.95,
+  "sun_radius": 3.0
+}

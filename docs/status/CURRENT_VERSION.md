@@ -52,7 +52,10 @@ sunlight effects, passive equipment and supplied climate-room protection; see
 [environment evidence](../work/v1.4.0-env/VERIFICATION.md). NAV implements the
 interactive console star map, dynamic station choices and generation-coherent
 server navigation; see [navigation evidence](../work/v1.4.0-nav/VERIFICATION.md).
-Real-client navigation acceptance, discovery, custom skies and remaining
+SKY implements bounded resource-pack sky/fog/sun/stars and lifecycle-bound
+ambience for Moon/Mars/Venus/shared Space; see
+[presentation evidence](../work/v1.4.0-sky/VERIFICATION.md).
+Real-client navigation/presentation acceptance, discovery and remaining
 migration/acceptance are still pending.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding

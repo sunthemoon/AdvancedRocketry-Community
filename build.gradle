@@ -130,6 +130,11 @@ def currentSupersededHistoricalBlockTags = [
         'data/minecraft/tags/blocks/needs_iron_tool.json'
 ] as Set
 
+def currentSupersededV030Types = [
+        'data/advancedrocketrycommunity/dimension_type/moon.json',
+        'data/advancedrocketrycommunity/dimension_type/space.json'
+] as Set
+
 tasks.named('processResources') {
     eachFile { details ->
         boolean isHistoricalCopy = details.file.toPath().startsWith(
@@ -138,6 +143,10 @@ tasks.named('processResources') {
                 file('src/generated/v0.8/resources').toPath()
         )
         if (isHistoricalCopy && currentSupersededHistoricalBlockTags.contains(details.path)) {
+            details.exclude()
+        }
+        if (details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
+                && currentSupersededV030Types.contains(details.path)) {
             details.exclude()
         }
     }
@@ -151,6 +160,10 @@ tasks.named('sourcesJar') {
                 file('src/generated/v0.8/resources').toPath()
         )
         if (isHistoricalCopy && currentSupersededHistoricalBlockTags.contains(details.path)) {
+            details.exclude()
+        }
+        if (details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
+                && currentSupersededV030Types.contains(details.path)) {
             details.exclude()
         }
     }

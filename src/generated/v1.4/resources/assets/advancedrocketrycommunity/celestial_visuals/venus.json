@@ -1,0 +1,14 @@
+{
+  "ambient_sound": "minecraft:ambient.nether_wastes.mood",
+  "day_color": 13017935,
+  "fog_color": 12430695,
+  "fog_end": 48.0,
+  "fog_start": 0.1,
+  "night_color": 3155737,
+  "schema_version": 1,
+  "sound_volume": 0.12,
+  "star_brightness": 0.025,
+  "sun_color": 16771498,
+  "sun_opacity": 0.18,
+  "sun_radius": 4.0
+}

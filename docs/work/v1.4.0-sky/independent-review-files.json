@@ -1,0 +1,687 @@
+[
+  {
+    "bytes": 4888,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/ADR-036-initial.md",
+    "sha256": "927eb42179d9e41be6515361e512cd72cd33fc136f26f637f9d73d819a8c0cbf"
+  },
+  {
+    "bytes": 6340,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/ADR-036-revised.md",
+    "sha256": "01c421d0ee3b8f60c8454d5431b9911d7fa75b74a9d8b6e1c1c1166310acb680"
+  },
+  {
+    "bytes": 2963,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/IForgeDimensionSpecialEffects.java",
+    "sha256": "256f89bff2df64b65cfe0a740230656d4afb987cc959661e7f877471aac4b406"
+  },
+  {
+    "bytes": 9860,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/REVIEW-CONTRACT.md",
+    "sha256": "4e892e0015d93aab4d4cf8225627c16d05ffb51d4d766854247fa4ce4686fbb9"
+  },
+  {
+    "bytes": 1915,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/RegisterClientReloadListenersEvent.java",
+    "sha256": "d32d991d41714cf53161facf030d32f26eccf6909f573eda581b38e271061bf3"
+  },
+  {
+    "bytes": 1543,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/RegisterDimensionSpecialEffectsEvent.java",
+    "sha256": "3423734d942c39c27c26f755c12622f705e5409754ec8e32b3fbbce01e29125a"
+  },
+  {
+    "bytes": 2027,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/SHA256SUMS",
+    "sha256": "442e15a28fe0990735ddb2361fd89a73ac5137b0416393292a70c12fab4e4e8e"
+  },
+  {
+    "bytes": 11275,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/ViewportEvent.java",
+    "sha256": "183a6ed0e4ee195e0f604fb01bace410ee66f366fbd16e299f24189231da3f72"
+  },
+  {
+    "bytes": 940,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/contract-platform-identities.json",
+    "sha256": "c06ef5e20fa40d14a9e1410fd163c49d6717d97168742b63f52c8b6f99a9a2d1"
+  },
+  {
+    "bytes": 42,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/head.txt",
+    "sha256": "406e8f22f971ef3c85b7278abecd239d854b8b7967141fd8f3ad4406ec36a71a"
+  },
+  {
+    "bytes": 1368,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.client.renderer.DimensionSpecialEffects$EndEffects.javap.txt",
+    "sha256": "cea34970d491c7731f666f68ef7212f2482e30d56a8c2614779a227815a7ac59"
+  },
+  {
+    "bytes": 1810,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.client.renderer.DimensionSpecialEffects$OverworldEffects.javap.txt",
+    "sha256": "4916c106a8b2b3dfa39188e67c057dfbd92015c934575ae85816e3ba5dab81fd"
+  },
+  {
+    "bytes": 9233,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.client.renderer.DimensionSpecialEffects.javap.txt",
+    "sha256": "a2abf5fec50442a2fd3b3206dcf1401fb387e55e42307447edb2c832bd83319c"
+  },
+  {
+    "bytes": 46869,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.client.renderer.FogRenderer.javap.txt",
+    "sha256": "b94354f63820880a9f961e98b1fb5d1f1bf229e0814c5bf7af39e36f384a0af9"
+  },
+  {
+    "bytes": 759411,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.client.renderer.LevelRenderer.javap.txt",
+    "sha256": "0c1e38fd52c127bb890506b04c73afb02cad437956935c0293a9f63edd163c7f"
+  },
+  {
+    "bytes": 31814,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.client.renderer.LightTexture.javap.txt",
+    "sha256": "f3ef22e036577b1f6fa81df8517650315111ede8b9b4c7a8030c100d2fcf744e"
+  },
+  {
+    "bytes": 3643,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/net.minecraft.server.packs.resources.SimplePreparableReloadListener.javap.txt",
+    "sha256": "2ceb9afa195863132af12f7d1c0938fb0c05a275c020858b2708aedb8678d3e4"
+  },
+  {
+    "bytes": 2158,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/source-identities.json",
+    "sha256": "731a326f419eb20d2eebefebdd7816af91fda15b4aa91f51ac886e2d0cfbab77"
+  },
+  {
+    "bytes": 32421,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/worklog-initial.md",
+    "sha256": "1508370b6ea3fb12f8d772b8916c8ab96bfcfa58b2f6c6e23ac3872505c9ddbc"
+  },
+  {
+    "bytes": 32421,
+    "path": "arce-v140-sky-contract-review-dd364697f56745d5a0035f87f432b758/worklog-revised.md",
+    "sha256": "1508370b6ea3fb12f8d772b8916c8ab96bfcfa58b2f6c6e23ac3872505c9ddbc"
+  },
+  {
+    "bytes": 8406,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/REVIEW-FAILURE-01-original.md",
+    "sha256": "700551ab4543f6be4a2fdad76e03a65aa4f1c47f2130a1335aa85e8d686c8242"
+  },
+  {
+    "bytes": 11217,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/REVIEW-FAILURE-02-prior-location.md",
+    "sha256": "2dec17278759e68eb8997d94a3065348585d76e7486af25ef5c38742fd5b5527"
+  },
+  {
+    "bytes": 13457,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/REVIEW-FAILURE.md",
+    "sha256": "ef5330e8e708e23d29af8087ea43c4a34872256243cca4877529e75b5c7386a9"
+  },
+  {
+    "bytes": 2354,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/SHA256SUMS",
+    "sha256": "f9b8fd12ac49eaf750baf684d36cc90717df5d96fee28c59417871c506b77a89"
+  },
+  {
+    "bytes": 342512,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/clean-all-02-original.log",
+    "sha256": "a3f93e9601b3a67b3e60a3070610b68b45d2006f56f5cf8c7cc0e83a9feb4663"
+  },
+  {
+    "bytes": 2045,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/fixture-reused-world-01-original.log",
+    "sha256": "56f995060033c4d3030110b2206dfa5ce7e04fe6c9f8bf16c5e2dca6c6c5c229"
+  },
+  {
+    "bytes": 361,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/fixture-source-identities.json",
+    "sha256": "4d8252752684b9cd012bb29aba0dbef0eaa095b725cd4a4465dca0a56e191648"
+  },
+  {
+    "bytes": 7329,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/fixture-source/EarthReturnPadFixture.java",
+    "sha256": "51e6ca544d3523a5e9c42968f1e6ce132c22d80e816c37462e598dd9284d99dd"
+  },
+  {
+    "bytes": 21699,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/fixture-source/RocketFlightGameTests.java",
+    "sha256": "9db41812a209406e8f3b861e873682a418391edb8fba8e1d35435b8fc30cb897"
+  },
+  {
+    "bytes": 0,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/flight-test-incremental.patch",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 3125,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/inspect_archived_pads.py",
+    "sha256": "98cd7ca23286c44a5e5b41e53335dd4d3327746622aeeeaca201a0ceb1dfaa08"
+  },
+  {
+    "bytes": 3425,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/net.minecraft.gametest.framework.GameTestBatch.txt",
+    "sha256": "1e16b41e2786e01f11da0a9ab4e158ad0666288404807d7c71c165c165c08ab6"
+  },
+  {
+    "bytes": 3082,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/net.minecraft.gametest.framework.GameTestBatchRunner$1.txt",
+    "sha256": "ed16c0a696a58243262492feaa65c497c02cdd002de5fb0c0118f9a3597e0991"
+  },
+  {
+    "bytes": 18618,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/net.minecraft.gametest.framework.GameTestBatchRunner.txt",
+    "sha256": "ce77d78f28af61e3296bc4c31b271079d7747712679e6123e241dfd5726af5e0"
+  },
+  {
+    "bytes": 26386,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/net.minecraft.gametest.framework.GameTestRegistry.txt",
+    "sha256": "3f43078d5632772a01cede8749ae96ff2254bfc662da89e546786338ae12d339"
+  },
+  {
+    "bytes": 13919,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/net.minecraft.gametest.framework.MultipleTestTracker.txt",
+    "sha256": "872075fcbd6ee76025822b210df41ddaca3202262e9d07ce5496c6962f0702f6"
+  },
+  {
+    "bytes": 22456,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/pad-observations.json",
+    "sha256": "d48f75e06a7abe64f1df978703ed820ce8150e0d6d8af7f9ee97d062ce33b05a"
+  },
+  {
+    "bytes": 924,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/source-identities.json",
+    "sha256": "f5579d92a3b85e13e2443f6891d24dd0c879d03e6f8a7dba0c879baf36ed4460"
+  },
+  {
+    "bytes": 17636,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/source/gametest/PlanetaryAdmissionGameTests.java",
+    "sha256": "93736de44e168c9ff6aab916f6256498abbe3d750dd3bd1a77519c163afb10f9"
+  },
+  {
+    "bytes": 12470,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/source/gametest/PlanetaryWorldGameTests.java",
+    "sha256": "457bba313cc5fdf04c578c48480115cf7266c8e28e2c3ca97e777a97367d3e31"
+  },
+  {
+    "bytes": 8913,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/source/gametest/RocketFlightGameTestFixtures.java",
+    "sha256": "0cc2c3e1df8a398e4d6927b9308f884e8ec6392e21fab5cd25a04d2b7703f085"
+  },
+  {
+    "bytes": 23543,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/source/gametest/RocketFlightGameTests.java",
+    "sha256": "e6826a5ea359dd6b000f3f3936c37509b97ee4af0862a5eebe7eed8392b34d5f"
+  },
+  {
+    "bytes": 16624,
+    "path": "arce-v140-sky-failure-review-28e14b78e0e5494cbf7e10c229dc4d3a/source/rocket/transfer/RocketLandingPadSelector.java",
+    "sha256": "be07328c34d2f9cf279228c460a830b0c94ef7c3ba551afb08a0039d0f2cb480"
+  },
+  {
+    "bytes": 12561,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/REVIEW-FINAL.md",
+    "sha256": "a4d83e5cc47c164ff5072dda4494003e8d788076cbe54603e90101f654035501"
+  },
+  {
+    "bytes": 3929,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/SHA256SUMS",
+    "sha256": "32c13ca3dd6c11a5bb65590f48b6e7ab50b9a8bba5d13e9b67cd3a23dcfd7878"
+  },
+  {
+    "bytes": 14695,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/artifact-audit.json",
+    "sha256": "69a8c6b6dbef933778cee6f5d02ee39dd84f5008cb71b72a4f155eab3405b9d7"
+  },
+  {
+    "bytes": 3835,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/artifact-audit.log",
+    "sha256": "d782ce4c45fdfc6083132a0995e464a9e5bfb8db23678523d124668793dea28f"
+  },
+  {
+    "bytes": 381,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/artifacts-after.json",
+    "sha256": "e40856b3a3a690ed59c98f842106b8416126b68745c35d20d3a395c9a7a9ecdb"
+  },
+  {
+    "bytes": 8383,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/audit-native-01.py",
+    "sha256": "8061967f759851ba135d3f077d614932cc33775859fb17fa716d0c15d4df4c74"
+  },
+  {
+    "bytes": 8713,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/audit-native-02-schema-error.py",
+    "sha256": "70ae5a18ef4ff402c59b6e700399c7d88749cc9f62371f7a90dbcaadd07ab2d8"
+  },
+  {
+    "bytes": 8808,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/audit-native.py",
+    "sha256": "73571379ea2491b7c41b1371be04472b01460b44acc1485163af1055e5925599"
+  },
+  {
+    "bytes": 4081,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/audit_artifacts.py",
+    "sha256": "5357a71284d6605cc1fc1a1eeb0cb7ac9985b5acccbf47a98090d896f58b0467"
+  },
+  {
+    "bytes": 482,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/datagen-gametest-receipt.json",
+    "sha256": "1a5b262b290fdfcc551bd9213d96acc0b778c9f3be3ed242637524fa591dd2ee"
+  },
+  {
+    "bytes": 356809,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/datagen-gametest.log",
+    "sha256": "d6cd1ee6a740d63a7079223434969ce6391bfe5874cb19454a6dc8361524d040"
+  },
+  {
+    "bytes": 1749,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-counts.json",
+    "sha256": "b2e61676855cf36addfd81f20de005f95e4a94da037bf5befb44fc6603f5593f"
+  },
+  {
+    "bytes": 755,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-junit-receipt.json",
+    "sha256": "577eccbeafadbe28d0b9d7adad48bc697745b5b8b6f32aa36ab7b23fb3b352a8"
+  },
+  {
+    "bytes": 6327,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-junit.log",
+    "sha256": "8602186c6788af359320f364b04fddfbc5030916d641307a86dc17a0abcfa883"
+  },
+  {
+    "bytes": 953,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.AmbientControllerTest.xml",
+    "sha256": "710ab04769f42d4c0b2b898c6d3227d7625b029d63c9ade7695ebcc6c929cfca"
+  },
+  {
+    "bytes": 912,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyMathTest.xml",
+    "sha256": "44285e2be962efb242627d88116922185a23cc1a4e4646b50465962a00f6c5fa"
+  },
+  {
+    "bytes": 1066,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfileTest.xml",
+    "sha256": "f4258c3718195c1d68cd88800eaa408df9f927cd1c4d0e9131d5764279f8bff2"
+  },
+  {
+    "bytes": 860,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyResourcesTest.xml",
+    "sha256": "28561540405d5f8badaa271f448fa2f6ef5d45170d9bab259b6efcf3c086d982"
+  },
+  {
+    "bytes": 1133,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelectionTest.xml",
+    "sha256": "7a7988fedc994882e3f736584ebf1d996337bb1ef4ba69c171210d5f318979bc"
+  },
+  {
+    "bytes": 744,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.sky.PlanetaryEffectsTest.xml",
+    "sha256": "70e1eeebd02c55bba281883f2bdc5134c670dc7aa7e6237495db449633a91b61"
+  },
+  {
+    "bytes": 1478,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.sky.SkyProfileReloadTest.xml",
+    "sha256": "1b5dd387ed574be04225e34b92f63f786271c933df44658bcffaccb6c16f7f4b"
+  },
+  {
+    "bytes": 553,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/focused-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.sky.SkyRenderStateTest.xml",
+    "sha256": "d73d830d17846b429125e51cbce824aa472b582a7f90328bf8e3ef6c6513b1ea"
+  },
+  {
+    "bytes": 29693,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/gametest-logs/2026-09-27-1.log.gz",
+    "sha256": "9ca2f83c82e557893e109e70ed6b41de9d774b41fe178026864a0cfa41fbda24"
+  },
+  {
+    "bytes": 41083,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/gametest-logs/debug-1.log.gz",
+    "sha256": "8aa58f5a9e28ee451940791c0988971c054dac36eaf76f77937babbf8b49e1fa"
+  },
+  {
+    "bytes": 505044,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/gametest-logs/debug.log",
+    "sha256": "43b1177c9a32fae95ab3eac971d893eaf9f9b409dc7c32444ac0bf3677356680"
+  },
+  {
+    "bytes": 393040,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/gametest-logs/latest.log",
+    "sha256": "41c75556c66b73d541ff66ddd79aed221b9f5608f987b55808fc8ae8c521c5ef"
+  },
+  {
+    "bytes": 1306,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/generated-resource-diff.patch",
+    "sha256": "3426d5e7d80f1a3ed855bff926bd3cd50867821ebddd9c693ec6ce551d68d470"
+  },
+  {
+    "bytes": 208256,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/inputs-after.json",
+    "sha256": "4e42c85268d2a8cf39207fad3ccc74eb9c0bfb534f183e9550d9d544134435d5"
+  },
+  {
+    "bytes": 208256,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/inputs-before.json",
+    "sha256": "4e42c85268d2a8cf39207fad3ccc74eb9c0bfb534f183e9550d9d544134435d5"
+  },
+  {
+    "bytes": 14023,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/native-audit-01.json",
+    "sha256": "c09c0f3ad995750b83f82b353b0b6457cd605ae9c066bb138231a121618c1f19"
+  },
+  {
+    "bytes": 198,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/native-audit-01.log",
+    "sha256": "963546d94a373b8bb7dea71328e92d7c9e21aada9b3c54f2a2056605d1ecdfbb"
+  },
+  {
+    "bytes": 359,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/native-audit-02-schema-error.log",
+    "sha256": "4598333fbbe4dab9caa9a222e809f568c54ddd30d86e9f83621ea512493a6bb2"
+  },
+  {
+    "bytes": 14023,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/native-audit.json",
+    "sha256": "c09c0f3ad995750b83f82b353b0b6457cd605ae9c066bb138231a121618c1f19"
+  },
+  {
+    "bytes": 198,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/native-audit.log",
+    "sha256": "963546d94a373b8bb7dea71328e92d7c9e21aada9b3c54f2a2056605d1ecdfbb"
+  },
+  {
+    "bytes": 642,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/postcheck.json",
+    "sha256": "e488d81ad8589254fd6880eb79ce34977d170c17260ae912783849757a7db947"
+  },
+  {
+    "bytes": 1014,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/prior-reviews.json",
+    "sha256": "2929e50fb78a2dfb6b969f8bf161abb3df49289e128135f27f6e37ad22175dc1"
+  },
+  {
+    "bytes": 41,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/reviewed-head.txt",
+    "sha256": "d1172e8ce6628097e98c3cf22bec76b18f6875e0c5e9a644cc9d9d4c7a16d9bb"
+  },
+  {
+    "bytes": 18496,
+    "path": "arce-v140-sky-final-review-e93fef8f25e4438b83b603f91e61348a/tracked-diff-before.patch",
+    "sha256": "6d8c35b8a6a18bcec1d189e62bbb9b97c4efbaab84d493b083d2b1e4f7494998"
+  },
+  {
+    "bytes": 5418,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/REVIEW-INCREMENTAL.md",
+    "sha256": "7b8f5ccb5cad1a97e0d79734d8d059c52ee764c5d62a6a7073f73c83398cd043"
+  },
+  {
+    "bytes": 1418,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/SHA256SUMS",
+    "sha256": "acf759cedd2bda9d506f4ab36236580347e856fc0d8b14b37179314b29243d20"
+  },
+  {
+    "bytes": 78901,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/com.mojang.blaze3d.platform.GlStateManager.txt",
+    "sha256": "7ed37939904eaf5099a4532b7ea90bf937ac9635355b82027fcbc78511b7c42a"
+  },
+  {
+    "bytes": 15100,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/com.mojang.blaze3d.shaders.BlendMode.txt",
+    "sha256": "9d3ffc781f86283fdad1680d863c81c61b88c79462def7f1da15cf50c28dcd56"
+  },
+  {
+    "bytes": 5115,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/com.mojang.blaze3d.shaders.ProgramManager.txt",
+    "sha256": "1c70b1c8aa314999bad6b32b266866f09df3536fac8f77c0accb72ca9741e79e"
+  },
+  {
+    "bytes": 25747,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/com.mojang.blaze3d.vertex.VertexBuffer.txt",
+    "sha256": "a1dcb91894f33ac0626301b4df7c6b709040729644609be9002e84bc3fcadb48"
+  },
+  {
+    "bytes": 63969,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/net.minecraft.client.renderer.ShaderInstance.txt",
+    "sha256": "7159239f7e3a03f062965f30972d6d832297b0988914f4b9bf2a73bd6266e295"
+  },
+  {
+    "bytes": 849,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/source-identities.json",
+    "sha256": "bd7f9192640d7041d84bf8ab4ca80545c4b50a0c6f7ff388b9be441ccc90391b"
+  },
+  {
+    "bytes": 3551,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyClient.java",
+    "sha256": "b3d77ee85d9a67ce1ca2c7b5cc0cea6e1feecfa1ebea6d50841f444445408079"
+  },
+  {
+    "bytes": 5980,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyRenderer.java",
+    "sha256": "f2b9d3816fbca794d13dfa4e56df3180c3e8db2b4114169b45bb4a5d4f0c9055"
+  },
+  {
+    "bytes": 2797,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyRenderState.java",
+    "sha256": "766ea348a3f1fb7803b6f50a66b390aa7c4c18236c4086623831a16a3eb1adea"
+  },
+  {
+    "bytes": 1655,
+    "path": "arce-v140-sky-incremental-review-89eacc975f8b4b24a4307a3b437bb220/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyRenderStateTest.java",
+    "sha256": "a9412c7aeecb3907d33a8f6d8cc24c6602dd5a48c4a35a75100c16d84faceb14"
+  },
+  {
+    "bytes": 6935,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/REVIEW-SOURCE-01.md",
+    "sha256": "8d5848cf6c1434f5a97667767fcebce523b12800fb3155315bf1b0433ff122b5"
+  },
+  {
+    "bytes": 6653,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/SHA256SUMS",
+    "sha256": "53bd2d4a98e75b2570f05cb1441950e6544a7c671f5c35376a42877e76c18510"
+  },
+  {
+    "bytes": 8517,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source-identities.json",
+    "sha256": "5b7916b78cfb5297171f35eb2ece8736816328a1ec74cbfc9dcfd83c7484c506"
+  },
+  {
+    "bytes": 17377,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/build.gradle",
+    "sha256": "a049e05c94811eea853469df072b794eee22852779ddc37a75335841da5dcb1a"
+  },
+  {
+    "bytes": 14151,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/docs/CELESTIAL-DATA-GUIDE.md",
+    "sha256": "84da3ced537d7e6f0981ce5b3a65e2c747bc43560357f54e1844bce683ba0d69"
+  },
+  {
+    "bytes": 4729,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/docs/PLANETARY-SKY-GUIDE.md",
+    "sha256": "41603e48c5483d4317e8081f679c8c100d0f90b9b258d374ec3bdf491c7766db"
+  },
+  {
+    "bytes": 6340,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/docs/decisions/ADR-036-PLANETARY-SKY-PROFILES.md",
+    "sha256": "01c421d0ee3b8f60c8454d5431b9911d7fa75b74a9d8b6e1c1c1166310acb680"
+  },
+  {
+    "bytes": 4738,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/docs/provenance/v1.4.0-development-metadata.md",
+    "sha256": "b0a824321e5482bcab251803cf6874f0231575205c1c8f736a2f504ee8b4968a"
+  },
+  {
+    "bytes": 32827,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/docs/work/v1.4.0-implementation-log.md",
+    "sha256": "153f9c34ab96d843da4639ebbd90b142e036d70f9defee1fdfc9083dab283431"
+  },
+  {
+    "bytes": 324,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/mars.json",
+    "sha256": "8c322e5c0bdbfb92652d5f8b090cf02ca51206fa493885b596dbef445140fe70"
+  },
+  {
+    "bytes": 251,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/moon.json",
+    "sha256": "d6477e3845207c157152e552a6c6e1b5428564f41186f85cb66271bec5bee730"
+  },
+  {
+    "bytes": 252,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/space.json",
+    "sha256": "7afb2ad8d638d950fea98ea1bb4be9d4fef26f2a742af1299d902de99e9b0884"
+  },
+  {
+    "bytes": 320,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/venus.json",
+    "sha256": "8bba67b940d0d6f9d0eb899942dd01855fb4f3063ff410693641319a904de74d"
+  },
+  {
+    "bytes": 476,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/mars.json",
+    "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+  },
+  {
+    "bytes": 499,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/moon.json",
+    "sha256": "bcdc5a91099613d4ac0a4cafeac52170f05b24e678a3da411ef959ed849a14cf"
+  },
+  {
+    "bytes": 506,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/space.json",
+    "sha256": "e68d8206cc98057f9fd698269e0d8e36a45cbaa43f597f292d6698eea7a51402"
+  },
+  {
+    "bytes": 476,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/venus.json",
+    "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+  },
+  {
+    "bytes": 561,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/AmbientCadence.java",
+    "sha256": "07eb049f7a586dc4716844b47a54cc3baef844186da3bd58a5410950968cd779"
+  },
+  {
+    "bytes": 1226,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/AmbientController.java",
+    "sha256": "2abf642cdfc67aeec43b6d9dc698a3058f9f6a3d2422d4680747e45d4ab0a2da"
+  },
+  {
+    "bytes": 4200,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyGeometry.java",
+    "sha256": "4224ee63e9dd480b5485ad81a4b22c3cd37ecf9d683a20a190e49129c6112fef"
+  },
+  {
+    "bytes": 1694,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMath.java",
+    "sha256": "309c47a5a13e3066bf02f43960ae6a1060052448f354805939bc3c7b63d28681"
+  },
+  {
+    "bytes": 4615,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfile.java",
+    "sha256": "1a2f86823cd58fac863e5df8e354ab30126c23fb7fa1cf7437edfbfb70c5e565"
+  },
+  {
+    "bytes": 1532,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfiles.java",
+    "sha256": "d74b1828d6603355a3d199befb6c92126c9d0c6c150b858574ffbd41f1d4d917"
+  },
+  {
+    "bytes": 2058,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelection.java",
+    "sha256": "6c6cb0e2c8528795525ac67f58cff70cc387b7ce41dea7625451e610d809e308"
+  },
+  {
+    "bytes": 4057,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+    "sha256": "a66c013cf575aa466d20af661bcc511ed5d04e2279766a0ebe5d51a4d4316555"
+  },
+  {
+    "bytes": 2808,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/ClientSkyEvents.java",
+    "sha256": "7823aa339d9ec2b97f3f615cf2051513f4de0a5d3d40ae34e65afbc5b1e09414"
+  },
+  {
+    "bytes": 1583,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryAmbience.java",
+    "sha256": "12d7557442146b1efd246a84a06c91d59e36e1fb0498ae726ebb02b19137f422"
+  },
+  {
+    "bytes": 2241,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryDimensionEffects.java",
+    "sha256": "77e52cceca4027d1a684de6c4be0a64dba56149d21342576a3b6f38f0aebacfc"
+  },
+  {
+    "bytes": 3421,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyClient.java",
+    "sha256": "18862fa230ab3bb3730202fe1ae9e00122a6926aac15078906ee2fa193521fb1"
+  },
+  {
+    "bytes": 5626,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyRenderer.java",
+    "sha256": "de5aab9bda29fe0f9722cd944ab54ac3b8d725757f832902709bd30ef615d549"
+  },
+  {
+    "bytes": 4097,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyProfileReloadListener.java",
+    "sha256": "cf808c719bfa4535f32b05422aa036c4745378e0aa622f60fab2e3254552b84e"
+  },
+  {
+    "bytes": 1685,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+    "sha256": "e455a5947374f86f72a460ad43dc51a50e4ff36eb2a92bee04f88c8875431b54"
+  },
+  {
+    "bytes": 4539,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/FixedDimensionProvider.java",
+    "sha256": "09dcd00da79d95f43318c64e5b414dc6766b3844e187fee96a10ef0998916f56"
+  },
+  {
+    "bytes": 2097,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/PlanetarySkyProvider.java",
+    "sha256": "204e28204b99709514e8706e3fef00202d6f0bd3d4466d94a2a63390c37a2230"
+  },
+  {
+    "bytes": 6351,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/PlanetaryWorldgen.java",
+    "sha256": "a024afccda41a4f34cbdefe337ee95c715d9461edf3dd49dbe79736f8d10a25c"
+  },
+  {
+    "bytes": 12470,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryWorldGameTests.java",
+    "sha256": "457bba313cc5fdf04c578c48480115cf7266c8e28e2c3ca97e777a97367d3e31"
+  },
+  {
+    "bytes": 3497,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/AmbientControllerTest.java",
+    "sha256": "92f40c0396335ba202c29874cc0e078ef4a167f7a8c4b2d0f18fa316fcee2b0e"
+  },
+  {
+    "bytes": 3472,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMathTest.java",
+    "sha256": "62ef607b504e6d4465656db5fb405aa410599d6fd71b1461d0707b9500680ebd"
+  },
+  {
+    "bytes": 3149,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfileTest.java",
+    "sha256": "016ccd3c7769455dc84fbf5ab5007463c26c84ac43454f99329e5e97e67db294"
+  },
+  {
+    "bytes": 2504,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyResourcesTest.java",
+    "sha256": "0efce2a07e9aeb75afa86a791271e485003a97167e5cfb55aafa95db099f8736"
+  },
+  {
+    "bytes": 4450,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelectionTest.java",
+    "sha256": "d9ed1b58e668b931a868f5226dffea33184a0432f47221e7723c9d3c546cc4da"
+  },
+  {
+    "bytes": 2719,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryEffectsTest.java",
+    "sha256": "3abb33fed3c6ec402f033342fbbcb8db317af8095f1bfa3ca1608be19a413b28"
+  },
+  {
+    "bytes": 7932,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyProfileReloadTest.java",
+    "sha256": "1557db1e446bdf0aae653341cf79747bf6af944002d5481d53e5a758fc00b05c"
+  },
+  {
+    "bytes": 18003,
+    "path": "arce-v140-sky-source-review-589df13352214b97990bbd2cead56b1c/tracked-diff.patch",
+    "sha256": "bf0026b74d17884f5a7e8edc937e65f5a47599107bb769aefa33d8aa65b6636c"
+  }
+]

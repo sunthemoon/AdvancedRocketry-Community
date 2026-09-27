@@ -36,6 +36,26 @@ public final class PlanetaryWorldGameTests {
     private PlanetaryWorldGameTests() {
     }
 
+    @GameTest(template = "rocket_test", batch = "planetary_terrain", timeoutTicks = 40)
+    public static void planetaryEffectsLoadOnDedicatedServerWithoutChangingWorldSettings(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var surface = io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfiles.SURFACE_EFFECTS;
+        var space = io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfiles.SPACE_EFFECTS;
+        for (var id : List.of(PlanetaryContent.MARS, PlanetaryContent.VENUS, CelestialIds.MOON_ID, CelestialIds.SPACE_ID)) {
+            var level = server.getLevel(PlanetaryContent.level(id));
+            helper.assertTrue(level != null, "Missing sky fixture Level " + id);
+            var type = level.dimensionType();
+            boolean orbital = id.equals(CelestialIds.SPACE_ID);
+            helper.assertTrue(type.effectsLocation().equals(orbital ? space : surface), "Incorrect effects ID " + id);
+            helper.assertTrue(type.minY() == 0 && type.height() == 256 && type.logicalHeight() == 256,
+                    "Presentation changed world height");
+            helper.assertTrue(type.hasSkyLight() != orbital && !type.hasCeiling(), "Presentation changed skylight/ceiling");
+        }
+        helper.assertTrue(server.overworld().dimensionType().effectsLocation().toString().equals("minecraft:overworld"),
+                "Earth effects changed");
+        helper.succeed();
+    }
+
     @GameTest(template = "rocket_test", batch = "planetary_terrain", timeoutTicks = 100)
     public static void startupWorldsHaveContrastingGeneratedTerrainAndNoGasLevel(GameTestHelper helper) {
         var server = helper.getLevel().getServer();

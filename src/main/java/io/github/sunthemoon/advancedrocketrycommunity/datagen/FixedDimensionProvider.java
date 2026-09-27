@@ -49,7 +49,7 @@ public final class FixedDimensionProvider implements DataProvider {
         return "ARCE v0.3 fixed Moon and Space dimensions";
     }
 
-    private static JsonObject dimensionType(boolean skylight, double ambientLight, String effects) {
+    static JsonObject dimensionType(boolean skylight, double ambientLight, String effects) {
         JsonObject type = new JsonObject();
         type.addProperty("ultrawarm", false);
         type.addProperty("natural", false);
