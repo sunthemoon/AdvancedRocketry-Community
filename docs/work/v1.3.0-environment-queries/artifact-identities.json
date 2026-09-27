@@ -1,0 +1,22 @@
+[
+  {
+    "name": "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+    "sha256": "2ff1bc18015a897bc72cd7dbd283481f010a9b3490ec8d6c03e80d21ab4f7780",
+    "bytes": 45016
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+    "sha256": "c550009cc2b16f2eba75c800b1961669577192e49705e1f2f20b3566abc4f444",
+    "bytes": 1060763
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+    "sha256": "048260a309a5ecb474dc69e81b3b5e403537f84dbdd156ebf534b56a4606374f",
+    "bytes": 2322845
+  },
+  {
+    "name": "arce-adapter-compat-test-1.0.0.jar",
+    "sha256": "873aeda38ef4d585f4eb6e32de77c3a82aabcb3cc52575b095659b4aec3f0435",
+    "bytes": 61673
+  }
+]
