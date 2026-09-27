@@ -1,0 +1,22 @@
+{
+  "base_commit": "a9143c2b62d5daab412cefedcee198f1fd032588",
+  "gametests_executed": 236,
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 167,
+    "tests": 922
+  },
+  "junit_execution": "FROM-CACHE",
+  "native_manifest_counts": {
+    "native": 141,
+    "native-final": 269
+  },
+  "python_executed": 43,
+  "review_manifest_counts": {
+    "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf": 8,
+    "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a": 46
+  },
+  "scope": "Short development checks, not Required Gate approval"
+}

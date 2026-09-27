@@ -1,0 +1,85 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2352333,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "d1f9f564ed1dcd1df7ac0648b4091a07dfa9a02f63b36b827f36aad591224475",
+      "version": "1.20.1-1.3.0-dev"
+    },
+    {
+      "bytes": 72583,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "e58de48ff038ff42fa1173bfd210d9e8321cfcfa66849ba1c13a0e31c1c02a47",
+      "version": "1.0.0"
+    },
+    {
+      "bytes": 2624223,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475",
+      "version": "1.20.1-1.4.0-dev"
+    }
+  ],
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "port": 49601,
+  "reports": [
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "minecraft:overworld",
+      "entity": "aad40ec8-f39d-4c00-9a0d-e07861618da0",
+      "fuel": 2000,
+      "logical": "edff1e56-3c2c-4645-b2dd-aa7f392965d5",
+      "origin": [
+        520,
+        101,
+        520
+      ],
+      "passengers": 0,
+      "snapshot": "fae62f2629e99509432f7a3cdca004110029d4ee81b9c80037e7c9844a08bbb3",
+      "state": "FUELED",
+      "transfer": "none"
+    }
+  ],
+  "research": [
+    {
+      "body": "advancedrocketrycommunity:mars",
+      "deadline": 830,
+      "mission": "fb29c20b-10de-3ac7-8e79-2f250787e2bb",
+      "owner": "00000000-0000-0000-0000-000000000005",
+      "satellite": "368e3a71-34e3-4945-bc11-22262bbb3bc5"
+    },
+    {
+      "body": "advancedrocketrycommunity:venus",
+      "deadline": 830,
+      "mission": "d9eb451a-ace2-38c3-8658-042b83ea5d43",
+      "owner": "00000000-0000-0000-0000-000000000005",
+      "satellite": "f7dab365-6551-42fc-8e3d-baeb0f9625f4"
+    }
+  ],
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "Copied authentic v1.3 fixture; four clean processes, content removal/restoration; no clients or forced interruption",
+  "server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\server-final",
+  "source_unchanged": true,
+  "station_requests": [
+    {
+      "name": "Legacy copy witness",
+      "orbit_body": "advancedrocketrycommunity:moon",
+      "owner_id": "2947eae7-c1cb-415c-88df-236ec4c297e7",
+      "station_id": "30499d22-70c4-43d8-bdfc-2f400eeea04e"
+    },
+    {
+      "name": "Removed orbit witness",
+      "orbit_body": "advancedrocketrycommunity:mars",
+      "owner_id": "e6a72319-9686-4879-b462-df4deda0653b",
+      "station_id": "bca68d47-9961-4f2d-b798-26ffab48a74e"
+    }
+  ]
+}

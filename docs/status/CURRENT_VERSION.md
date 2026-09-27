@@ -60,9 +60,11 @@ private satellite research, with locked star-map feedback and flight protocol 8;
 see [discovery evidence](../work/v1.4.0-discovery/VERIFICATION.md).
 MIG-01 implements ordered durable research/discovery writes, historical paid
 receipt repair and bounded runtime replay; see
-[recovery evidence](../work/v1.4.0-mig-claims/VERIFICATION.md). Actual v1.3-world
-upgrade, coherent content removal/restoration and packaged forced interruptions
-remain MIG-02/03; normal restart and deterministic file cuts do not replace them.
+[recovery evidence](../work/v1.4.0-mig-claims/VERIFICATION.md). MIG-02 verifies an
+authentic v1.3 development-world copy and coherent removal/restoration through
+four clean processes; see [migration evidence](../work/v1.4.0-mig-worlds/VERIFICATION.md).
+Packaged forced interruptions remain MIG-03; normal restart and deterministic
+file cuts do not replace that check.
 Real-client navigation/presentation/discovery acceptance and remaining
 migration/acceptance are still pending.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)

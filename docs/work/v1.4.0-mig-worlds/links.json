@@ -1,0 +1,322 @@
+{
+  "links": [
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-nav/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-sky/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-discovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-mig-claims/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-mig-worlds/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../06-RELEASE-AND-ACCEPTANCE-GATES.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-033-PLANETARY-WORLDS-AND-SURFACE-ADMISSION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-035-ROCKET-STAR-MAP-AND-NAVIGATION-SYNC.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-nav/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-036-PLANETARY-SKY-PROFILES.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-sky/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-037-PLANETARY-DISCOVERY-AND-RESEARCH.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../PLANETARY-DISCOVERY-GUIDE.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-discovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../decisions/ADR-038-ORDERED-PLANETARY-DISCOVERY-RECOVERY.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-mig-claims/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "target": "../work/v1.4.0-mig-worlds/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../versions/V1.4.0-PLANETARY-EXPANSION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-038-ORDERED-PLANETARY-DISCOVERY-RECOVERY.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-mig-claims/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-mig-worlds/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-037-PLANETARY-DISCOVERY-AND-RESEARCH.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-discovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-036-PLANETARY-SKY-PROFILES.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-sky/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-sky/MANUAL-CASES.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../CELESTIAL-DATA-GUIDE.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "../decisions/ADR-035-ROCKET-STAR-MAP-AND-NAVIGATION-SYNC.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-nav/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "target": "v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "development-artifacts.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "root-checks.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "root-checks.zip"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "root-checks-files.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "native-summary.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "native-migration.zip"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "native-migration-files.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "independent-review.zip"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "independent-review-files.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "source-identity.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "links.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-mig-worlds/VERIFICATION.md",
+      "target": "SHA256SUMS.txt"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

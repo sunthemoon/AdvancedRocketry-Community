@@ -1,0 +1,282 @@
+[
+  {
+    "bytes": 12680,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/REVIEW-MIG02-EXPLORATION.md",
+    "sha256": "abc864f08e950e8a73d776b898b8bfc6da3c2511da484d29ebafcc35876a4a4e"
+  },
+  {
+    "bytes": 707,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/SHA256SUMS",
+    "sha256": "7856d05e744c8925b4ef44f668c055d02d1db8d2acebf4e34809943a2df47d78"
+  },
+  {
+    "bytes": 5957,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/fixture-inspection.log",
+    "sha256": "349add414c56cb0f51ca79e8fddd80105562681173a146929ac8a4c09c3685f7"
+  },
+  {
+    "bytes": 18756,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/fixtures.json",
+    "sha256": "ec1d924576cf923e52f8c1a796e804ba42b8de21cb842aa241cb90921b77847f"
+  },
+  {
+    "bytes": 2889,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/inspect_fixtures.py",
+    "sha256": "ae2e4ea9669412ba14f943a411e23fa9580ebfbf52402b5f4c5b41560a66c8bb"
+  },
+  {
+    "bytes": 1100,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/inspect_terminal.py",
+    "sha256": "fb10f9d32125c099c65b67c38426c333c23c55e301c9370cbb95fa71d7b3d548"
+  },
+  {
+    "bytes": 3244,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/sat-full-world-SHA256SUMS",
+    "sha256": "2327b1e7418b99f0041033a8ddf4631d368505f3524d9a316c0133c7c4dab266"
+  },
+  {
+    "bytes": 1441,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/terminal-and-world.json",
+    "sha256": "959f11b898f9ec07370b5a99bef1133fd6b4cb739208d4e68f4a07795750f894"
+  },
+  {
+    "bytes": 1443,
+    "path": "arce-v140-mig02-fixture-review-2aad456d8336465f9de97d1f511a4fdf/terminal-inspection.log",
+    "sha256": "2786001fa583541f96dca2c20c8391a6bdf4342cab3a49e5991603745f00aea7"
+  },
+  {
+    "bytes": 13962,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/REVIEW-MIG02-FINAL.md",
+    "sha256": "b8fe1bcc1cb19496153acdb72e5f9bcc31324d6796bfe96e1c710b73450f3475"
+  },
+  {
+    "bytes": 4914,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/SHA256SUMS",
+    "sha256": "a9ec882560a8edf72ce1399228de78da29a3834aa6211ec3af7d15bd51d13a6f"
+  },
+  {
+    "bytes": 636,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/active-region-inspection.log",
+    "sha256": "e50a8d1c8f3be7d80af9a9bd3e9ef235d7084ee462bd2c678e3636fe58e4e651"
+  },
+  {
+    "bytes": 634,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/active-region-observation.json",
+    "sha256": "aed15af7978b2e00eb62f25edcdd4f2d473fe9445e5af068531cba1911cca996"
+  },
+  {
+    "bytes": 16470,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/audit-native-final-attempt01.py",
+    "sha256": "652891e1cad40efb19e86b11f74feddb12e25f11e8e5a775c4a07d1a363038f5"
+  },
+  {
+    "bytes": 16516,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/audit_native_final.py",
+    "sha256": "b5676f3396ab902906da4ac632e551e4beee355ed2a7ef4601f74ab5fe25f4fe"
+  },
+  {
+    "bytes": 4451,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/final-imported-input-identities.json",
+    "sha256": "d1cb956428fc4bae241fc2370d61706afde167c2365e412f1eaabee7ed09305d"
+  },
+  {
+    "bytes": 437,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/final-inputs-after.json",
+    "sha256": "808149a441cd6431362e508eb2d1ec67925904eccc722eab99f59772deef1e6e"
+  },
+  {
+    "bytes": 437,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/final-inputs-before.json",
+    "sha256": "808149a441cd6431362e508eb2d1ec67925904eccc722eab99f59772deef1e6e"
+  },
+  {
+    "bytes": 1545,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/inspect_active_region.py",
+    "sha256": "4d6a8587f9d85addf86ba9654a64beeeae28056ff1cb0eae99b6b9e560697d84"
+  },
+  {
+    "bytes": 356,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/native-final-audit-attempt01.log",
+    "sha256": "ff2252e227b5c08e8afffbbddbcc5dbe2fe9789ae832ad3b1112d1921647ccfa"
+  },
+  {
+    "bytes": 4929,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/native-final-audit.log",
+    "sha256": "ba8aecf4a5609ca9a8fe3a555bcb5760adad984d289e6c6c5b215cb639e25551"
+  },
+  {
+    "bytes": 12155,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/native-final-observations.json",
+    "sha256": "cda106ce77fc8950137190aa5e143f1791004cdf0c744e4707e1a6e910344e8e"
+  },
+  {
+    "bytes": 82,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/old-probe-02/world/datapacks/migration_probe/pack.mcmeta",
+    "sha256": "9c3e2ffd7a3b323ad4fdd2cf319dde6011835e1bb9a36f17e151fb272d5c8ac6"
+  },
+  {
+    "bytes": 82,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/old-probe/world/datapacks/migration_probe/pack.mcmeta",
+    "sha256": "9c3e2ffd7a3b323ad4fdd2cf319dde6011835e1bb9a36f17e151fb272d5c8ac6"
+  },
+  {
+    "bytes": 10264,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/orphan-resources-02.zip",
+    "sha256": "82a4abd5edc55eca59d4bf9fd37db2c9f981f296a7f87f3a5c5035f0e013481c"
+  },
+  {
+    "bytes": 10264,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/orphan-resources.zip",
+    "sha256": "557768445d243cbdfdb17cbeff6c8fdcee032b4ba44f3811b4e8e912cca0f0e4"
+  },
+  {
+    "bytes": 2008,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/probe-results.json",
+    "sha256": "cd8ef7f182d6bd72c1fb853e6be05dfe7d776179a9abe38308217afaf3764d76"
+  },
+  {
+    "bytes": 2010,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/probe-static-02.log",
+    "sha256": "10377ed36fa87d38f2ed18c448637fc93fae78ff61202a81c96b82e7418808a8"
+  },
+  {
+    "bytes": 453,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/probe-static-attempt01.log",
+    "sha256": "5ad71fc61ec4bbb4fe98d11d751f8f181be70f74ed0b3342dbef2f1d7bd47c69"
+  },
+  {
+    "bytes": 453,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/probe-static.log",
+    "sha256": "5ad71fc61ec4bbb4fe98d11d751f8f181be70f74ed0b3342dbef2f1d7bd47c69"
+  },
+  {
+    "bytes": 2759,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/probe_static-attempt01.py",
+    "sha256": "6b477e0a417a640611d0808b3da2dc6d77a499e08cc2567c1b3acaa9aace2b72"
+  },
+  {
+    "bytes": 2771,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/probe_static.py",
+    "sha256": "f63102b5aa70ae56699788139620656db2e1e264b69d25d7e0ec0c52388ce899"
+  },
+  {
+    "bytes": 7953,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/python-final-independent.log",
+    "sha256": "b131cb0ddec8f7a3c23d622e5709150fb662ac061cea4d0845de7ff5b384cdcf"
+  },
+  {
+    "bytes": 237,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/python-final-result.json",
+    "sha256": "22929bc3bd1343fad2a1b84d5184b15e43ccc99be9b0e93d2a5685b498c4deaf"
+  },
+  {
+    "bytes": 7354,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/python-independent.log",
+    "sha256": "63ddb0a7e66c2e8ac92a8b25b7a0fe6253b9288e7774db55720818a6e6b864a8"
+  },
+  {
+    "bytes": 267,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/python-result.json",
+    "sha256": "5ce20a2ceb921baaab7ef9cb6f0bcf141205fa62754f82607be49d9c113711bd"
+  },
+  {
+    "bytes": 404,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe-02/world/datapacks/migration_probe/data/advancedrocketrycommunity/celestial_bodies/earth.json",
+    "sha256": "6f511da6bef7f4a3ab7827bdb58704e6b6f7f8013e6bdd01b04acbeda596013b"
+  },
+  {
+    "bytes": 477,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe-02/world/datapacks/migration_probe/data/advancedrocketrycommunity/celestial_bodies/moon.json",
+    "sha256": "d01c28163a2b3f4b360acd71174f6b0d7b6299cf748bc875a12ab4a9090478c6"
+  },
+  {
+    "bytes": 463,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe-02/world/datapacks/migration_probe/data/advancedrocketrycommunity/celestial_bodies/space.json",
+    "sha256": "18e197a179a1cec3d2a984aca1098b95a8aa13d62574c32fe844ff0ab198cd21"
+  },
+  {
+    "bytes": 82,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe-02/world/datapacks/migration_probe/pack.mcmeta",
+    "sha256": "9c3e2ffd7a3b323ad4fdd2cf319dde6011835e1bb9a36f17e151fb272d5c8ac6"
+  },
+  {
+    "bytes": 404,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe/world/datapacks/migration_probe/data/advancedrocketrycommunity/celestial_bodies/earth.json",
+    "sha256": "6f511da6bef7f4a3ab7827bdb58704e6b6f7f8013e6bdd01b04acbeda596013b"
+  },
+  {
+    "bytes": 477,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe/world/datapacks/migration_probe/data/advancedrocketrycommunity/celestial_bodies/moon.json",
+    "sha256": "d01c28163a2b3f4b360acd71174f6b0d7b6299cf748bc875a12ab4a9090478c6"
+  },
+  {
+    "bytes": 463,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe/world/datapacks/migration_probe/data/advancedrocketrycommunity/celestial_bodies/space.json",
+    "sha256": "18e197a179a1cec3d2a984aca1098b95a8aa13d62574c32fe844ff0ab198cd21"
+  },
+  {
+    "bytes": 82,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/revised-probe/world/datapacks/migration_probe/pack.mcmeta",
+    "sha256": "9c3e2ffd7a3b323ad4fdd2cf319dde6011835e1bb9a36f17e151fb272d5c8ac6"
+  },
+  {
+    "bytes": 9715,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/root-verification-reviewed.md",
+    "sha256": "8ac918f955ef120378e5a4511ecfac210cf83d76084bc20ec68404e2b1ab9c7b"
+  },
+  {
+    "bytes": 5194,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/run_v140_migration_smoke-final.delta",
+    "sha256": "340f8378d4ee462ef5954d7ed6271e74b2fa49133bbce098b562de625a7d326c"
+  },
+  {
+    "bytes": 19982,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/run_v140_migration_smoke-final.py",
+    "sha256": "0bcb639eb1e809a1aa563cb5895637735a2323c9873d53bd3e352ae8af520d66"
+  },
+  {
+    "bytes": 19664,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/run_v140_migration_smoke-reviewed02.py",
+    "sha256": "040458475d8dc23e5e81e6bf95e7d536ac46a805676747cb8a20989d49c47784"
+  },
+  {
+    "bytes": 19285,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/run_v140_migration_smoke.py",
+    "sha256": "bb611204945483a2a7ef4d7f99950fa72ec412012c96dacebd9d1f78c6bace6a"
+  },
+  {
+    "bytes": 5017,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/test_v140_migration_smoke-final.delta",
+    "sha256": "f461aab15c8f847075c89000f36ebf9bb32c0b291ddd0f22bb3ecfc4c8bac5e7"
+  },
+  {
+    "bytes": 17433,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/test_v140_migration_smoke-final.py",
+    "sha256": "5cd5da0929363f65eec7438b7d57d5e7941bc467928770c28fc473358cc36303"
+  },
+  {
+    "bytes": 13778,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/test_v140_migration_smoke-reviewed02.py",
+    "sha256": "bbb6deb8f1616f2354e2be75175661dd55466b161263126c76b1040dc81be556"
+  },
+  {
+    "bytes": 5050,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/v140_migration_fixture-final.delta",
+    "sha256": "ac3193adac977184818336d3391f721d1359486ee538147fea985a941aecf6cc"
+  },
+  {
+    "bytes": 14045,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/v140_migration_fixture-final.py",
+    "sha256": "3b3eb7d9f31eaaf224917f953e21919724fdff6d2b8b827bc0a363588d4cbe88"
+  },
+  {
+    "bytes": 13654,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/v140_migration_fixture-reviewed02.py",
+    "sha256": "b6738f0df64b4c79d179bab2226230052c88c2da97b357b4635d7e0d46ae4372"
+  },
+  {
+    "bytes": 13650,
+    "path": "arce-v140-mig02-script-review-1b048a93afbb497496a2545b8e78d23a/v140_migration_fixture.py",
+    "sha256": "1abbc8793e09110aeff9974ee54b48a06eeab6d16b711c9f36ddbc1fc9593683"
+  }
+]
