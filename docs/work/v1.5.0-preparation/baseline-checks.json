@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "development_baseline": "6f530ac7db4bf0e06be6d6aaef35e6ca31a5651b",
+  "candidate_commit": null,
+  "scope": "Unchanged v1.4 runtime checks during v1.5 preparation; not v1.5 runtime evidence",
+  "command": {
+    "started_at": "2026-09-28T01:57:54.0085383+08:00",
+    "exit_code": 0,
+    "command": "./gradlew.bat clean build test runData runGameTestServer --offline --no-daemon --console=plain",
+    "finished_at": "2026-09-28T02:00:25.7674275+08:00",
+    "java_home": "C:/Program Files/Java/jdk-17.0.7"
+  },
+  "duration_seconds_reported_by_gradle": 151,
+  "tasks": {
+    "executed": 17,
+    "from_cache": 9,
+    "up_to_date": 1
+  },
+  "build_log_sha256": "2809dc1bc0ad99c6ddd93c90ce617289d1151ac1d50d0d69fbbfeeeb451094c6",
+  "required_gametests_passed": 236,
+  "junit": {
+    "suites": 167,
+    "tests": 922,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "execution": "FROM-CACHE, not newly executed"
+  },
+  "datagen_written": 0,
+  "tracked_generated_directory": "src/generated/v1.4/resources",
+  "tracked_generated_entries": 34,
+  "git_checks": {
+    "production-diff": 0,
+    "datagen-diff": 0,
+    "whitespace": 0
+  },
+  "api_class_count": 27,
+  "artifacts": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev-api.jar",
+      "bytes": 48469,
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev-sources.jar",
+      "bytes": 1193936,
+      "sha256": "afc83ef63e3054657831bfb6e170cbc4a6cbffe3029738ec3a6bb562474dc8db"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "bytes": 2624223,
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475"
+    }
+  ],
+  "log_diagnostics": {
+    "error_lines": 15,
+    "fatal_lines": 0,
+    "lag_warnings": [
+      "[01:58:57] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2656ms or 53 ticks behind"
+    ]
+  },
+  "new_runtime_implementation": false,
+  "native_restart_run": false
+}

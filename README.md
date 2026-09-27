@@ -41,7 +41,7 @@ The [v1.0 development evidence handoff](docs/releases/v1.0.0/RELEASE-EVIDENCE.md
 maps tested artifacts to their results and lists outstanding release criteria;
 it is not a release approval or a stable download.
 
-Active feature development has reached **v1.4 Planetary Expansion**: explorable
+Implemented development features include **v1.4 Planetary Expansion**: explorable
 Mars/Venus worlds, a non-landable gas giant, environmental protection, a console
 star map, planetary sky profiles and shared discovery through private research.
 The [v1.4 development handoff](docs/releases/v1.4.0/RELEASE-EVIDENCE.md) lists
@@ -51,6 +51,12 @@ with the [discovery guide](docs/PLANETARY-DISCOVERY-GUIDE.md) or
 [v1.3 API kernel](docs/releases/v1.3.0/RELEASE-EVIDENCE.md) remains available.
 This is a development build, not a new stable release or complete classic-content
 port; the release-acceptance cursor above remains unchanged.
+
+**v1.5 Orbital/Station/Warp is in preparation.** The
+[implementation log](docs/work/v1.5.0-implementation-log.md) tracks station
+upgrades, orbital environment and recoverable multi-star travel. These planned
+features are not available merely because the development branch exists; the
+runtime build remains `1.20.1-1.4.0-dev` until implementation begins.
 
 ## What this project is
 

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/prec04b_readback_review",
+  "base_commit": "6f530ac7db4bf0e06be6d6aaef35e6ca31a5651b",
+  "archive": {
+    "name": "independent-review.zip",
+    "bytes": 345324,
+    "sha256": "9e812d3d9fae181cc174828d5baed28e9d490f877d703c0a3edb68cd54e30ba1",
+    "members": 162,
+    "manifest": "MEMBER-SHA256SUMS.txt",
+    "source_directories": [
+      {
+        "prefix": "inventory",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-preparation-review-9400df81fbaa4aef805e1c3458937a99"
+      },
+      {
+        "prefix": "contract",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-contract-review-5c6b168c90aa4fdbbf686ff935970c90"
+      }
+    ],
+    "excluded_output_names": []
+  },
+  "reports": [
+    {
+      "member": "inventory/V150-PREPARATION-REVIEW.md",
+      "bytes": 16562,
+      "sha256": "6594cb5c9b3529a388530fcfc028496b8eda4e4507136ad7340696f996c267f5"
+    },
+    {
+      "member": "contract/FINAL-SUBSTANTIVE-REVIEW.md",
+      "bytes": 9186,
+      "sha256": "061d5c5b2f0c039e3d88b448867cf125e0a65b5141c37cf6d6b4922f2da25f41"
+    },
+    {
+      "member": "contract/INITIAL-DRAFT-REVIEW.md",
+      "bytes": 5833,
+      "sha256": "511236c82221d50504f01c9859cffc42d1bc2077d8110ec826c0f96ce6c825f2"
+    },
+    {
+      "member": "contract/REVISED-CORE-REVIEW.md",
+      "bytes": 6597,
+      "sha256": "8d362153d85ff55279cec8f79a5bc6cf35ebfb2907db3d3d0327983a45cd408c"
+    }
+  ],
+  "scope": "Read-only source/draft/test/pointer review and short Python/Git checks; no JVM/native/remote commands or maintainer/Gate approval",
+  "assembly_review": {
+    "archive": "assembly-review.zip",
+    "reports": [
+      {
+        "member": "assembly/FINAL-ASSEMBLY-REVIEW.md",
+        "bytes": 8200,
+        "sha256": "f0f97e8a48ba3931ec748af64538257cf70e6f60e315211debd1105360fffbc8"
+      }
+    ]
+  }
+}

@@ -29,8 +29,11 @@ class PlanningValidationTests(unittest.TestCase):
                 if not target.exists():
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(ROOT / relative, target)
-        # Root README links refer to these non-Markdown files.
-        shutil.copyfile(ROOT / "LICENSE", self.root / "LICENSE")
+        # Entry points also link outside the canonical document directories.
+        for relative in ("LICENSE", "compat-test-mod/README.md"):
+            target = self.root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / relative, target)
         (self.root / "scripts/validate_v1plus_planning.py").touch()
         # Mutations below use a synthetic draft, independent of the active milestone.
         version = self.root / "docs/versions" / VERSION_DOCS[0]
@@ -85,6 +88,11 @@ class PlanningValidationTests(unittest.TestCase):
         with (self.root / "README.md").open("a", encoding="utf-8") as stream:
             stream.write("\n[Missing](docs/not-present.md)\n")
         self.assertTrue(any("broken local link" in error for error in validate(self.root)))
+
+    def test_missing_linked_compatibility_guide_is_rejected(self) -> None:
+        (self.root / "compat-test-mod/README.md").unlink()
+        self.assertTrue(any("broken local link compat-test-mod/README.md" in error
+                            for error in validate(self.root)))
 
     def test_unclosed_fence(self) -> None:
         with (self.root / "README.md").open("a", encoding="utf-8") as stream:

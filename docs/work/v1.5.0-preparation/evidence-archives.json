@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "scope": "v1.5 documentation/contract preparation, unchanged v1.4 runtime",
+  "archives": [
+    {
+      "name": "root-checks.zip",
+      "bytes": 227472,
+      "sha256": "ccbd9754bd4b2df118f6bdbcf9377b350e5d5cfa73dec7646eca4dec2a4cd986",
+      "members": 191,
+      "manifest": "MEMBER-SHA256SUMS.txt",
+      "source_directories": [
+        {
+          "prefix": "root",
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-preparation-7720764c55474a98a7f714aa4d7ffb9d"
+        }
+      ],
+      "excluded_output_names": [
+        "package-evidence.log",
+        "final-readback.log",
+        "final-readback.json",
+        "push-verification.log"
+      ]
+    },
+    {
+      "name": "independent-review.zip",
+      "bytes": 345324,
+      "sha256": "9e812d3d9fae181cc174828d5baed28e9d490f877d703c0a3edb68cd54e30ba1",
+      "members": 162,
+      "manifest": "MEMBER-SHA256SUMS.txt",
+      "source_directories": [
+        {
+          "prefix": "inventory",
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-preparation-review-9400df81fbaa4aef805e1c3458937a99"
+        },
+        {
+          "prefix": "contract",
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-contract-review-5c6b168c90aa4fdbbf686ff935970c90"
+        }
+      ],
+      "excluded_output_names": []
+    },
+    {
+      "name": "assembly-review.zip",
+      "bytes": 1166900,
+      "sha256": "e535b6779df3ac3cc41dae481d62f4312623248e9937ed8bcd4c21bb1e381914",
+      "members": 93,
+      "manifest": "MEMBER-SHA256SUMS.txt",
+      "source_directories": [
+        {
+          "prefix": "assembly",
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-assembly-review-0c6369fe8bcb4cab942995c8f096152b"
+        }
+      ],
+      "scope": "Independent pre-attachment packet readback; root appended this immutable report and reran final checks"
+    }
+  ]
+}

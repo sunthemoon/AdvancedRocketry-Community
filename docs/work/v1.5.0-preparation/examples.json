@@ -1,0 +1,40 @@
+{
+  "purpose": "Documentation-only normalized station projections; not NBT or an authentic world fixture",
+  "baseline": {
+    "schema_version": 2,
+    "format_epoch": "v0.9.0-beta",
+    "stations": [{
+      "schema_version": 1,
+      "station_id": "15000000-0000-0000-0000-000000000001",
+      "owner_id": "15000000-0000-0000-0000-000000000002",
+      "name": "Example Station",
+      "cell_x": -1,
+      "cell_z": 1,
+      "region": [-1280, 768, -769, 1279],
+      "landing_pad": [-1024, 128, 1024],
+      "orbit_body": "example:unavailable_body",
+      "created_at_game_time": 100,
+      "environment": {"gravity_milli": 10000, "vacuum": true, "solar_angle_milli_degrees": 270000},
+      "members": ["15000000-0000-0000-0000-000000000003"],
+      "invitations": ["15000000-0000-0000-0000-000000000004"],
+      "example_extra_tag": {"preserve_during_migration": 1}
+    }],
+    "reservations": [{
+      "schema_version": 1,
+      "station_id": "15000000-0000-0000-0000-000000000005",
+      "owner_id": "15000000-0000-0000-0000-000000000006",
+      "name": "Example Reservation",
+      "cell_x": 0,
+      "cell_z": 0,
+      "orbit_body": "example:body",
+      "created_at_game_time": 101
+    }],
+    "example_root_extra_tag": "preserve during version migration"
+  },
+  "geometry": [
+    {"cell": [0, 0], "width": 512, "region": [-256, -256, 255, 255]},
+    {"cell": [0, 0], "width": 768, "region": [-384, -384, 383, 383]},
+    {"cell": [-1, 1], "width": 768, "region": [-1408, 640, -641, 1407]},
+    {"cell": [1000000, -1000000], "width": 768, "region": [1023999616, -1024000384, 1024000383, -1023999617]}
+  ]
+}
