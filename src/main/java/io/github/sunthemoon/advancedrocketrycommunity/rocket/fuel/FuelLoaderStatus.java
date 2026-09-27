@@ -6,6 +6,7 @@ public enum FuelLoaderStatus {
     WAITING_FOR_ROCKET("waiting_for_rocket"),
     TRANSFERRING("transferring"),
     OUTPUT_READY("output_ready"),
+    UNSUPPORTED_FUEL("unsupported_fuel"),
     UNSUPPORTED_DATA("unsupported_data"),
     INVALID_DATA("invalid_data");
 

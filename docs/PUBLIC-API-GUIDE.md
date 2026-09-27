@@ -1,7 +1,7 @@
-# Public API: versioning, rocket containers/components, atmosphere and equipment
+# Public API: versioning, rockets, item fuels, atmosphere and equipment
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.4**. Version metadata remains JDK-only in
+types. The API version is **1.5**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -12,10 +12,11 @@ types. The API version is **1.4**. Version metadata remains JDK-only in
 
 `api.rocket` additionally exports `RocketBlockEntityAdapter`,
 `RocketAdapterRegistrar`, `RegisterRocketAdaptersEvent`, `RocketComponentDefinition`,
-`RocketComponentRegistrar` and `RegisterRocketComponentsEvent`, requiring the
+`RocketComponentRegistrar`, `RegisterRocketComponentsEvent`, `RocketFuelDefinition`,
+`RocketFuelRegistrar` and `RegisterRocketFuelsEvent`, requiring the
 Minecraft 1.20.1 / Forge platform. Other project packages are implementation
 details, even when their Java types are `public`. `api.atmosphere` exports the four
-state-boundary and three equipment types described below. Fuel, environment and
+state-boundary and three equipment types described below. Environment and
 satellite extension APIs are not yet exported.
 
 ## Compile and run
@@ -299,8 +300,51 @@ still prevent unsafe restoration under the existing recovery policy. No new save
 schema is introduced; API/loader compatibility still applies on downgrade.
 
 Names/icons remain those of the registered blocks. There is no separate component
-item, fuel-kind registry or custom propellant support in this API. Details and
+item or fluid propellant API. Details and
 limits are frozen in [ADR-026](decisions/ADR-026-ROCKET-COMPONENT-DEFINITIONS.md).
+
+## Register whole-item rocket fuels
+
+Require API **1.5** and subscribe to `RegisterRocketFuelsEvent` on the mod event
+bus during construction. The synchronous queued-common-setup event accepts a
+definition ID in the receiving mod's namespace and 1..64 known non-air input item
+IDs. Foreign items are allowed; the built-in rocket fuel cell remains reserved.
+
+```java
+void registerFuels(RegisterRocketFuelsEvent event) {
+    event.register(ResourceLocation.tryParse("example:charcoal_fuel"),
+            Set.of(ResourceLocation.tryParse("minecraft:charcoal")),
+            new RocketFuelDefinition(73,
+                    Optional.of(ResourceLocation.tryParse("minecraft:stick"))));
+}
+```
+
+One whole input supplies 1..2,048,000 existing abstract fuel units regardless of
+its metadata. An empty remainder Optional produces nothing; otherwise the host
+constructs one item with `new ItemStack(item, 1)`. Inputs retain their full native
+metadata while queued, but consumption deliberately consumes the whole item;
+this is not a capability drain or an NBT-dependent fuel callback. Registration
+allows 256 definitions and 1,024 total inputs, excluding the fixed built-in fuel.
+IDs are limited to 255 characters. Duplicate/overlapping/unknown claims reject
+atomically; do not retain the event or use it asynchronously.
+
+Fuel Loaders remain owner-bound, one-slot, within six blocks of loaded eligible
+rockets, at 25 units/tick. A consumed batch captures its units and remainder;
+changed/missing definitions cannot change unfinished work. Unconsumed known items
+with no fuel definition remain recoverable by the owner or automation. Outputs
+are distinct from inputs, even when a remainder itself is a registered fuel.
+
+Loader schema 2 explicitly migrates all valid schema-1 items/buffers. Normal
+loader item drops carry queued/output items, buffered work and ownership; placing
+them restores that state. This does not cover explosions/no-drop destruction or
+cross-file loader/rocket power-loss atomicity. Back up before upgrade; reverting
+to an old binary and breaking new-format loaders is unsupported.
+
+Native single-item data is limited to 4 KiB/depth 16/256 nodes; loader roots to
+16 KiB/depth 20/1,024 nodes. Future, malformed, unresolved or lossy native data is
+preserved and blocked, not turned into empty slots. Already oversized world data
+requires backup/offline repair and refuses survival removal. See the complete
+[fuel and migration contract](decisions/ADR-027-ROCKET-ITEM-FUELS.md).
 
 ## Verify an integration boundary
 

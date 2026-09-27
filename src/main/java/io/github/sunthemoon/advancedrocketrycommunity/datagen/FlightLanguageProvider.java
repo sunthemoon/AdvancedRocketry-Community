@@ -51,6 +51,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
         add("screen.advancedrocketrycommunity.rocket.board", chinese ? "登乘" : "BOARD");
         add("screen.advancedrocketrycommunity.rocket.leave", chinese ? "离开座位" : "LEAVE SEAT");
         for (FuelLoaderStatus status : FuelLoaderStatus.values()) {
+            if (status == FuelLoaderStatus.UNSUPPORTED_FUEL) { continue; } // Added by the v1.3 provider.
             add(
                     "status.advancedrocketrycommunity.fuel_loader." + status.diagnosticKey(),
                     chinese ? chinese(status) : english(status)
@@ -77,6 +78,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case OUTPUT_READY -> "empty canister ready";
             case UNSUPPORTED_DATA -> "unsupported saved data";
             case INVALID_DATA -> "invalid saved data";
+            case UNSUPPORTED_FUEL -> "unregistered fuel";
         };
     }
 
@@ -89,6 +91,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case OUTPUT_READY -> "空罐可取回";
             case UNSUPPORTED_DATA -> "不支持的存档数据";
             case INVALID_DATA -> "无效的存档数据";
+            case UNSUPPORTED_FUEL -> "未注册的燃料";
         };
     }
 

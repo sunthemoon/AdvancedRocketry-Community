@@ -19,6 +19,15 @@ public final class V130RocketLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("message.advancedrocketrycommunity.fuel_loader.fuel_inserted", chinese ? "已插入一个燃料物品" : "Inserted one fuel item");
+        add("message.advancedrocketrycommunity.fuel_loader.fuel_rejected", chinese ? "燃料物品无法插入" : "The fuel item cannot be inserted");
+        add("message.advancedrocketrycommunity.fuel_loader.item_returned", chinese ? "已取回物品" : "Returned the item");
+        add("message.advancedrocketrycommunity.fuel_loader.repair_required", chinese
+                ? "装载机存档超出支持范围；请备份世界并离线修复，暂时不能拆除。"
+                : "Loader data exceeds supported limits; back up the world and repair it offline before removal.");
+        add("status.advancedrocketrycommunity.fuel_loader.unsupported_fuel", chinese
+                ? "未注册的燃料，可取回物品" : "unregistered fuel; the item can be recovered");
+        add("status.advancedrocketrycommunity.fuel_loader.item_ready", chinese ? "产物可取回" : "output ready");
         add("message.advancedrocketrycommunity.rocket.disassembly_fuel_warning", chinese
                 ? "火箭仍有 %s 单位燃料。拆解将丢弃这些燃料且无法回收。确认在 %s 秒后过期；不确认则保留火箭。"
                 : "Rocket has %s fuel units. Disassembly will discard them without refund. Confirmation expires in %s seconds; do nothing to keep the rocket.");

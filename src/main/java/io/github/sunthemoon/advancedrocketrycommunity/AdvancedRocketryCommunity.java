@@ -34,6 +34,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketComponentsEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketFuelsEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.fuel.RocketFuelRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFuelRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
@@ -163,6 +166,7 @@ public final class AdvancedRocketryCommunity {
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(this::initializeRocketAdapters);
+        event.enqueueWork(this::initializeRocketFuels);
         event.enqueueWork(this::initializeAtmosphereBoundaries);
         String version = ModList.get()
                 .getModContainerById(MOD_ID)
@@ -206,6 +210,15 @@ public final class AdvancedRocketryCommunity {
             ModLoader.get().runEventGenerator(container -> new RegisterRocketComponentsEvent(
                     registry.forOwner(container.getModId())));
             return registry.freeze();
+        }
+    }
+
+    private void initializeRocketFuels() {
+        try (RocketFuelRegistry registry = new RocketFuelRegistry(id ->
+                ForgeRegistries.ITEMS.containsKey(id) ? ForgeRegistries.ITEMS.getValue(id) : null)) {
+            ModLoader.get().runEventGenerator(container -> new RegisterRocketFuelsEvent(
+                    registry.forOwner(container.getModId())));
+            RocketFuelRuntime.install(registry.freeze());
         }
     }
 

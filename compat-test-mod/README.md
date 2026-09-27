@@ -4,7 +4,7 @@ This standalone ForgeGradle project builds the existing
 [`src/adapterTest`](../src/adapterTest/) fixture into a separate, reobfuscated
 mod JAR. It consumes the published ARCE **API classifier**, not the host project,
 main JAR or compiled output. Its platform is Java 17, Minecraft 1.20.1 and
-Forge 47.4.10. This fixture requires API 1.4 for rocket components, in addition to
+Forge 47.4.10. This fixture requires API 1.5 for item fuels, in addition to rocket components (1.4),
 suit equipment (1.3), atmosphere boundaries (1.2) and rocket registration (1.1).
 
 ## Build

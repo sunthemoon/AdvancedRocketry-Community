@@ -1,11 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
-import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelMutation;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,10 +11,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -29,149 +26,121 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.registries.ForgeRegistries;
 
-/** One-slot, owner-bound loader that never searches or loads chunks outside a fixed local box. */
+/** One-slot, owner-bound loader with a frozen consumed batch and native queued/output items. */
 public final class FuelLoaderBlockEntity extends BlockEntity {
     public static final int SLOT = 0;
     public static final int SLOT_COUNT = 1;
     public static final double MAX_RANGE = 6.0D;
 
-    private final LoaderInventory inventory = new LoaderInventory();
     private LazyOptional<IItemHandler> itemCapability;
-
+    private LoaderInventory inventory;
+    private CompoundTag item = new CompoundTag();
+    private FuelLoaderData.Role role = FuelLoaderData.Role.EMPTY;
+    private FuelLoaderData.Batch batch;
     private long bufferedUnits;
     private UUID ownerId;
     private UUID targetRocketId;
     private FuelLoaderStatus status = FuelLoaderStatus.UNCLAIMED;
-    private boolean futureSchemaBlocked;
-    private boolean invalidDataBlocked;
-    private CompoundTag preservedBlockedData;
+    private Tag preservedBlockedData;
+    private boolean quarantined;
+    private boolean future;
 
     public FuelLoaderBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.FUEL_LOADER.get(), position, state);
         createCapabilityView();
     }
 
-    public static void serverTick(
-            Level level,
-            BlockPos position,
-            BlockState state,
-            FuelLoaderBlockEntity loader
-    ) {
-        if (level instanceof ServerLevel serverLevel) {
-            loader.tickServer(serverLevel);
-        }
+    public static void serverTick(Level level, BlockPos position, BlockState state, FuelLoaderBlockEntity loader) {
+        if (level instanceof ServerLevel serverLevel && !loader.isRemoved()) { loader.tickServer(serverLevel); }
     }
 
     private void tickServer(ServerLevel level) {
-        if (futureSchemaBlocked) {
-            setStatus(FuelLoaderStatus.UNSUPPORTED_DATA);
+        if (preservedBlockedData != null) {
+            setStatus(future ? FuelLoaderStatus.UNSUPPORTED_DATA : FuelLoaderStatus.INVALID_DATA);
             return;
         }
-        if (invalidDataBlocked) {
-            setStatus(FuelLoaderStatus.INVALID_DATA);
-            return;
-        }
-        if (ownerId == null) {
-            setStatus(FuelLoaderStatus.UNCLAIMED);
-            return;
-        }
+        if (ownerId == null) { setStatus(FuelLoaderStatus.UNCLAIMED); return; }
         if (bufferedUnits == 0L) {
-            ItemStack held = inventory.getStackInSlot(SLOT);
-            if (held.isEmpty()) {
-                targetRocketId = null;
-                setStatus(FuelLoaderStatus.IDLE);
+            if (role != FuelLoaderData.Role.INPUT) {
+                setStatus(role == FuelLoaderData.Role.OUTPUT ? FuelLoaderStatus.OUTPUT_READY : FuelLoaderStatus.IDLE);
                 return;
             }
-            if (held.is(ModItems.EMPTY_CANISTER.get())) {
-                targetRocketId = null;
-                setStatus(FuelLoaderStatus.OUTPUT_READY);
-                return;
-            }
+            var definition = RocketFuelRuntime.find(ForgeRegistries.ITEMS.getValue(
+                    ResourceLocation.tryParse(item.getString("id"))));
+            if (definition == null) { setStatus(FuelLoaderStatus.UNSUPPORTED_FUEL); return; }
             Optional<RocketEntity> target = findTarget(level);
-            if (target.isEmpty()) {
-                setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET);
+            if (target.isEmpty()) { setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET); return; }
+            // Prepare and validate everything before consuming the queued item.
+            FuelLoaderData.Batch prepared;
+            try {
+                CompoundTag remainder = definition.remainder().isPresent()
+                        ? FuelItemPayloads.captureOne(new ItemStack(definition.remainder().get(), 1)) : new CompoundTag();
+                prepared = new FuelLoaderData.Batch(definition.id().toString(), definition.units(), remainder);
+            } catch (RuntimeException exception) {
+                setStatus(FuelLoaderStatus.INVALID_DATA);
                 return;
             }
-            inventory.setInternal(ItemStack.EMPTY);
-            bufferedUnits = RocketFlightLimits.FUEL_CELL_UNITS;
+            item = new CompoundTag();
+            role = FuelLoaderData.Role.EMPTY;
+            batch = prepared;
+            bufferedUnits = prepared.totalUnits();
             targetRocketId = target.get().getUUID();
             setChanged();
         }
-
         Optional<RocketEntity> selected = target(level).or(() -> findTarget(level));
         if (selected.isEmpty()) {
-            targetRocketId = null;
+            if (targetRocketId != null) { targetRocketId = null; setChanged(); }
             setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET);
             return;
         }
         RocketEntity rocket = selected.get();
-        targetRocketId = rocket.getUUID();
-        RocketFlightData flightData = rocket.flightData().orElseThrow();
-        long requested = Math.min(RocketFlightLimits.FUEL_TRANSFER_PER_TICK, bufferedUnits);
-        RocketFuelMutation mutation = flightData.fuel().fill(requested);
-        if (!mutation.success()) {
-            targetRocketId = null;
-            setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET);
-            return;
-        }
+        var flightData = rocket.flightData().orElseThrow();
+        var mutation = flightData.fuel().fill(Math.min(RocketFlightLimits.FUEL_TRANSFER_PER_TICK, bufferedUnits));
+        if (!mutation.success()) { setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET); return; }
         rocket.updateFlightData(flightData.withFuel(mutation.state(), level.getGameTime()));
+        targetRocketId = rocket.getUUID();
         bufferedUnits -= mutation.unitsChanged();
         if (bufferedUnits == 0L) {
+            item = batch.remainder();
+            role = item.isEmpty() ? FuelLoaderData.Role.EMPTY : FuelLoaderData.Role.OUTPUT;
+            batch = null;
             targetRocketId = null;
-            inventory.setInternal(new ItemStack(ModItems.EMPTY_CANISTER.get()));
-            setStatus(FuelLoaderStatus.OUTPUT_READY);
-        } else {
-            setStatus(FuelLoaderStatus.TRANSFERRING);
-        }
+            setStatus(item.isEmpty() ? FuelLoaderStatus.IDLE : FuelLoaderStatus.OUTPUT_READY);
+        } else { setStatus(FuelLoaderStatus.TRANSFERRING); }
         setChanged();
     }
 
     private Optional<RocketEntity> target(ServerLevel level) {
-        if (targetRocketId == null) {
-            return Optional.empty();
-        }
-        Entity entity = level.getEntity(targetRocketId);
-        if (!(entity instanceof RocketEntity rocket) || !eligible(rocket)) {
-            return Optional.empty();
-        }
-        return Optional.of(rocket);
+        Entity entity = targetRocketId == null ? null : level.getEntity(targetRocketId);
+        return entity instanceof RocketEntity rocket && eligible(rocket) ? Optional.of(rocket) : Optional.empty();
     }
 
     private Optional<RocketEntity> findTarget(ServerLevel level) {
-        AABB search = new AABB(worldPosition).inflate(MAX_RANGE);
-        Comparator<RocketEntity> nearest = Comparator
-                .comparingDouble((RocketEntity rocket) -> rocket.distanceToSqr(
-                        worldPosition.getX() + 0.5D,
-                        worldPosition.getY() + 0.5D,
-                        worldPosition.getZ() + 0.5D
-                ))
+        Comparator<RocketEntity> nearest = Comparator.comparingDouble((RocketEntity rocket) -> rocket.distanceToSqr(
+                worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D))
                 .thenComparing(RocketEntity::getUUID);
-        return level.getEntitiesOfClass(RocketEntity.class, search, this::eligible)
-                .stream()
-                .min(nearest);
+        return level.getEntitiesOfClass(RocketEntity.class, new AABB(worldPosition).inflate(MAX_RANGE), this::eligible)
+                .stream().min(nearest);
     }
 
     private boolean eligible(RocketEntity rocket) {
-        if (!rocket.operational()
-                || rocket.distanceToSqr(
-                        worldPosition.getX() + 0.5D,
-                        worldPosition.getY() + 0.5D,
-                        worldPosition.getZ() + 0.5D
-                ) > MAX_RANGE * MAX_RANGE
-                || rocket.ownerId().filter(ownerId::equals).isEmpty()) {
-            return false;
-        }
-        return rocket.flightData()
-                .filter(data -> data.state().acceptsFuel())
-                .filter(data -> data.fuel().remainingCapacity() > 0L)
-                .isPresent();
+        return rocket.operational() && ownerId != null && rocket.ownerId().filter(ownerId::equals).isPresent()
+                && rocket.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                        worldPosition.getZ() + 0.5D) <= MAX_RANGE * MAX_RANGE
+                && rocket.flightData().filter(data -> data.state().acceptsFuel())
+                        .filter(data -> data.fuel().remainingCapacity() > 0L).isPresent();
     }
 
-    public void assignOwner(UUID ownerId) {
-        if (this.ownerId == null) {
-            this.ownerId = java.util.Objects.requireNonNull(ownerId, "ownerId");
+    private boolean mutable() {
+        return !isRemoved() && preservedBlockedData == null && level instanceof ServerLevel server
+                && server.getServer().isSameThread();
+    }
+
+    public void assignOwner(UUID id) {
+        if (mutable() && ownerId == null) {
+            ownerId = java.util.Objects.requireNonNull(id, "ownerId");
             setStatus(FuelLoaderStatus.IDLE);
             setChanged();
         }
@@ -181,216 +150,151 @@ public final class FuelLoaderBlockEntity extends BlockEntity {
         return ownerId == null || ownerId.equals(player.getUUID()) || player.hasPermissions(2);
     }
 
+    private boolean usableBy(Player player) {
+        return mutable() && player.level() == level && player.isAlive() && !player.isSpectator() && authorized(player)
+                && player.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                        worldPosition.getZ() + 0.5D) <= 64D;
+    }
+
     public boolean insertFuelFromPlayer(Player player, InteractionHand hand) {
-        if (futureSchemaBlocked || invalidDataBlocked || bufferedUnits > 0L || !authorized(player)) {
-            return false;
-        }
-        assignOwner(player.getUUID());
+        if (!usableBy(player)) { return false; }
         ItemStack held = player.getItemInHand(hand);
-        if (!held.is(ModItems.ROCKET_FUEL_CELL.get()) || !inventory.getStackInSlot(SLOT).isEmpty()) {
-            return false;
-        }
-        inventory.setInternal(new ItemStack(ModItems.ROCKET_FUEL_CELL.get()));
-        if (!player.getAbilities().instabuild) {
-            held.shrink(1);
-        }
+        if (!canInsert(held)) { return false; }
+        CompoundTag prepared;
+        try { prepared = FuelItemPayloads.captureOne(held); }
+        catch (RuntimeException exception) { return false; }
+        assignOwner(player.getUUID());
+        item = prepared;
+        role = FuelLoaderData.Role.INPUT;
+        if (!player.getAbilities().instabuild) { held.shrink(1); }
         setChanged();
         return true;
     }
 
+    /** Inputs can also be recovered, including when their loading definition is absent. */
     public boolean takeOutput(Player player) {
-        if (!authorized(player) || !inventory.getStackInSlot(SLOT).is(ModItems.EMPTY_CANISTER.get())) {
-            return false;
-        }
-        ItemStack output = inventory.extractInternal();
-        if (!player.getInventory().add(output)) {
-            player.drop(output, false);
-        }
+        if (!usableBy(player) || bufferedUnits > 0L || item.isEmpty()) { return false; }
+        ItemStack output;
+        try { output = FuelItemPayloads.decode(item); }
+        catch (RuntimeException exception) { return false; }
+        item = new CompoundTag();
+        role = FuelLoaderData.Role.EMPTY;
+        if (!player.getInventory().add(output)) { player.drop(output, false); }
         setChanged();
         return true;
     }
 
-    public void copyInventoryTo(Container target) {
-        if (target.getContainerSize() > 0) {
-            target.setItem(0, inventory.getStackInSlot(SLOT).copy());
-        }
+    private boolean canInsert(ItemStack stack) {
+        return bufferedUnits == 0L && item.isEmpty() && !stack.isEmpty() && RocketFuelRuntime.find(stack.getItem()) != null;
     }
 
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);
-        if ((futureSchemaBlocked || invalidDataBlocked) && preservedBlockedData != null) {
-            parent.put(FuelLoaderPersistence.DATA_KEY, preservedBlockedData.copy());
-            return;
+        parent.put(FuelLoaderStorage.DATA_KEY, savedRoot());
+    }
+
+    private Tag savedRoot() {
+        if (preservedBlockedData != null) {
+            // Do not throw here: native chunk saving would omit this block entity.
+            return quarantined ? preservedBlockedData : preservedBlockedData.copy();
         }
-        parent.put(FuelLoaderPersistence.DATA_KEY, FuelLoaderPersistence.encode(
-                itemState(),
-                bufferedUnits,
-                ownerId,
-                targetRocketId
-        ));
+        return FuelLoaderStorage.encode(new FuelLoaderData(role, item, bufferedUnits, ownerId, targetRocketId, batch));
+    }
+
+    public boolean canCarryData() { return !quarantined; }
+
+    /** Caller uses only a real loader drop. Ownership is preserved even when empty. */
+    public CompoundTag carriedData() {
+        if (quarantined) { throw new IllegalStateException("Quarantined loader requires offline repair"); }
+        CompoundTag parent = new CompoundTag();
+        parent.put(FuelLoaderStorage.DATA_KEY, savedRoot());
+        return parent;
     }
 
     @Override
     public void load(CompoundTag parent) {
         super.load(parent);
-        resetLoadedState();
-        FuelLoaderPersistence.DecodeResult decoded = FuelLoaderPersistence.decode(parent);
-        if (decoded.status() != FuelLoaderPersistence.DecodeStatus.VALID) {
-            futureSchemaBlocked = decoded.status() == FuelLoaderPersistence.DecodeStatus.FUTURE;
-            invalidDataBlocked = decoded.status() == FuelLoaderPersistence.DecodeStatus.INVALID;
-            preservedBlockedData = decoded.preservedData();
-            status = futureSchemaBlocked
-                    ? FuelLoaderStatus.UNSUPPORTED_DATA
-                    : FuelLoaderStatus.INVALID_DATA;
-            return;
+        item = new CompoundTag(); role = FuelLoaderData.Role.EMPTY; batch = null;
+        bufferedUnits = 0L; ownerId = null; targetRocketId = null; preservedBlockedData = null;
+        var decoded = FuelLoaderStorage.decode(parent);
+        future = decoded.future(); quarantined = decoded.quarantined();
+        if (!decoded.valid()) {
+            preservedBlockedData = decoded.preserved();
+        } else {
+            var data = decoded.data();
+            try {
+                FuelItemPayloads.decode(data.item());
+                if (data.batch() != null) { FuelItemPayloads.decode(data.batch().remainder()); }
+                item = data.item(); role = data.role(); batch = data.batch(); bufferedUnits = data.bufferedUnits();
+                ownerId = data.ownerId(); targetRocketId = data.targetRocketId();
+            } catch (RuntimeException exception) {
+                Tag raw = parent.get(FuelLoaderStorage.DATA_KEY);
+                preservedBlockedData = raw == null ? FuelLoaderStorage.encode(data) : raw.copy();
+            }
         }
-        inventory.setInternal(stackFor(decoded.itemState()));
-        bufferedUnits = decoded.bufferedUnits();
-        ownerId = decoded.ownerId();
-        targetRocketId = decoded.targetRocketId();
-        status = ownerId == null ? FuelLoaderStatus.UNCLAIMED : FuelLoaderStatus.IDLE;
+        status = preservedBlockedData != null ? (future ? FuelLoaderStatus.UNSUPPORTED_DATA : FuelLoaderStatus.INVALID_DATA)
+                : ownerId == null ? FuelLoaderStatus.UNCLAIMED : FuelLoaderStatus.IDLE;
     }
 
-    private void resetLoadedState() {
-        inventory.setInternal(ItemStack.EMPTY);
-        bufferedUnits = 0L;
-        ownerId = null;
-        targetRocketId = null;
-        status = FuelLoaderStatus.UNCLAIMED;
-        futureSchemaBlocked = false;
-        invalidDataBlocked = false;
-        preservedBlockedData = null;
+    private void setStatus(FuelLoaderStatus value) {
+        if (status != value) { status = value; setChanged(); }
     }
 
-    private FuelLoaderPersistence.ItemState itemState() {
-        ItemStack stack = inventory.getStackInSlot(SLOT);
-        if (stack.isEmpty()) {
-            return FuelLoaderPersistence.ItemState.EMPTY;
-        }
-        return stack.is(ModItems.ROCKET_FUEL_CELL.get())
-                ? FuelLoaderPersistence.ItemState.FUEL_CELL
-                : FuelLoaderPersistence.ItemState.EMPTY_CANISTER;
-    }
-
-    private static ItemStack stackFor(FuelLoaderPersistence.ItemState state) {
-        return switch (state) {
-            case EMPTY -> ItemStack.EMPTY;
-            case FUEL_CELL -> new ItemStack(ModItems.ROCKET_FUEL_CELL.get());
-            case EMPTY_CANISTER -> new ItemStack(ModItems.EMPTY_CANISTER.get());
-        };
-    }
-
-    private void setStatus(FuelLoaderStatus newStatus) {
-        if (status != newStatus) {
-            status = newStatus;
-            setChanged();
-        }
-    }
-
-    @Nonnull
-    @Override
+    @Nonnull @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side) {
-        if (capability == ForgeCapabilities.ITEM_HANDLER) {
-            return itemCapability.cast();
-        }
-        return super.getCapability(capability, side);
+        return capability == ForgeCapabilities.ITEM_HANDLER ? itemCapability.cast() : super.getCapability(capability, side);
     }
 
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        itemCapability.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        createCapabilityView();
-    }
-
+    @Override public void invalidateCaps() { super.invalidateCaps(); inventory.active = false; itemCapability.invalidate(); }
+    @Override public void reviveCaps() { super.reviveCaps(); createCapabilityView(); }
     private void createCapabilityView() {
-        itemCapability = LazyOptional.of(() -> inventory);
+        if (inventory != null) { inventory.active = false; }
+        inventory = new LoaderInventory();
+        LoaderInventory view = inventory;
+        itemCapability = LazyOptional.of(() -> view);
     }
 
-    public IItemHandler itemHandler() {
-        return inventory;
-    }
+    public IItemHandler itemHandler() { return inventory; }
+    public long bufferedUnits() { return bufferedUnits; }
+    public Optional<UUID> ownerId() { return Optional.ofNullable(ownerId); }
+    public Optional<UUID> targetRocketId() { return Optional.ofNullable(targetRocketId); }
+    public FuelLoaderStatus status() { return status; }
 
-    public long bufferedUnits() {
-        return bufferedUnits;
-    }
-
-    public Optional<UUID> ownerId() {
-        return Optional.ofNullable(ownerId);
-    }
-
-    public Optional<UUID> targetRocketId() {
-        return Optional.ofNullable(targetRocketId);
-    }
-
-    public FuelLoaderStatus status() {
-        return status;
-    }
-
-    private final class LoaderInventory extends ItemStackHandler {
-        private boolean internal;
-
-        private LoaderInventory() {
-            super(SLOT_COUNT);
+    private final class LoaderInventory implements IItemHandler {
+        private boolean active = true;
+        private void check(int slot) { if (slot != SLOT) { throw new IllegalArgumentException("Unknown loader slot"); } }
+        @Override public int getSlots() { return SLOT_COUNT; }
+        @Override public int getSlotLimit(int slot) { check(slot); return 1; }
+        @Override public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+            check(slot);
+            return active && mutable() && canInsert(stack);
         }
-
-        @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-            return slot == SLOT
-                    && bufferedUnits == 0L
-                    && stack.is(ModItems.ROCKET_FUEL_CELL.get());
+        @Nonnull @Override public ItemStack getStackInSlot(int slot) {
+            check(slot);
+            if (!active || !mutable()) { return ItemStack.EMPTY; }
+            try { return FuelItemPayloads.decode(item); }
+            catch (RuntimeException exception) { return ItemStack.EMPTY; }
         }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return 1;
+        @Nonnull @Override public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+            check(slot);
+            if (!isItemValid(slot, stack) || ownerId == null) { return stack; }
+            CompoundTag prepared;
+            try { prepared = FuelItemPayloads.captureOne(stack); }
+            catch (RuntimeException exception) { return stack; }
+            ItemStack remainder = stack.copy();
+            remainder.shrink(1);
+            if (!simulate) { item = prepared; role = FuelLoaderData.Role.INPUT; setChanged(); }
+            return remainder;
         }
-
-        @Nonnull
-        @Override
-        public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-            if (!internal && (futureSchemaBlocked || invalidDataBlocked || ownerId == null)) {
-                return stack;
-            }
-            return super.insertItem(slot, stack, simulate);
-        }
-
-        @Nonnull
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (!internal && bufferedUnits > 0L) {
-                return ItemStack.EMPTY;
-            }
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            FuelLoaderBlockEntity.this.setChanged();
-        }
-
-        private void setInternal(ItemStack stack) {
-            internal = true;
-            try {
-                setStackInSlot(SLOT, stack);
-            } finally {
-                internal = false;
-            }
-        }
-
-        private ItemStack extractInternal() {
-            internal = true;
-            try {
-                return extractItem(SLOT, 1, false);
-            } finally {
-                internal = false;
-            }
+        @Nonnull @Override public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            check(slot);
+            if (!active || !mutable() || bufferedUnits > 0L || amount <= 0 || item.isEmpty()) { return ItemStack.EMPTY; }
+            ItemStack result;
+            try { result = FuelItemPayloads.decode(item); }
+            catch (RuntimeException exception) { return ItemStack.EMPTY; }
+            if (!simulate) { item = new CompoundTag(); role = FuelLoaderData.Role.EMPTY; setChanged(); }
+            return result;
         }
     }
 }

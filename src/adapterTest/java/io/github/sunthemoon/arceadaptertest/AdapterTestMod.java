@@ -3,6 +3,7 @@ package io.github.sunthemoon.arceadaptertest;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketComponentsEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketFuelsEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.AtmosphereBoundary;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterSuitEquipmentEvent;
@@ -50,10 +51,12 @@ public final class AdapterTestMod {
     static volatile RegisterSuitEquipmentEvent suitEvent;
     static volatile int componentEvents;
     static volatile RegisterRocketComponentsEvent componentEvent;
+    static volatile int fuelEvents;
+    static volatile RegisterRocketFuelsEvent fuelEvent;
 
     public AdapterTestMod(FMLJavaModLoadingContext context) {
-        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 4)) != ApiCompatibility.COMPATIBLE) {
-            throw new IllegalStateException("Adapter fixture requires ARCE API 1.4");
+        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 5)) != ApiCompatibility.COMPATIBLE) {
+            throw new IllegalStateException("Adapter fixture requires ARCE API 1.5");
         }
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
@@ -62,6 +65,7 @@ public final class AdapterTestMod {
         modBus.addListener(this::registerAtmosphereBoundaries);
         modBus.addListener(this::registerSuitEquipment);
         modBus.addListener(this::registerRocketComponents);
+        modBus.addListener(this::registerRocketFuels);
         if (Boolean.getBoolean("arce_adapter_test.suitSmoke")) {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(SuitEquipmentFixture::registerCommands);
         }
@@ -135,5 +139,17 @@ public final class AdapterTestMod {
         FixtureRocketComponents.register(event);
         LogUtils.getLogger().info("Registered rocket components (variant {}, API {}.{}, event {})",
                 FixtureRocketComponents.variant(), ApiVersions.current().major(), ApiVersions.current().minor(), componentEvents);
+    }
+
+    private void registerRocketFuels(RegisterRocketFuelsEvent event) {
+        fuelEvents++;
+        fuelEvent = event;
+        if (Boolean.getBoolean("arce_adapter_test.skipRocketFuels")) {
+            LogUtils.getLogger().info("Skipped rocket fuels (event {})", fuelEvents);
+            return;
+        }
+        FixtureRocketFuels.register(event);
+        LogUtils.getLogger().info("Registered rocket fuels (variant {}, API {}.{}, event {})",
+                FixtureRocketFuels.variant(), ApiVersions.current().major(), ApiVersions.current().minor(), fuelEvents);
     }
 }

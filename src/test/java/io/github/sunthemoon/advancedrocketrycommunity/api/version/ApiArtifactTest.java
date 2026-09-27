@@ -42,6 +42,9 @@ class ApiArtifactTest {
             API_PACKAGE + "rocket/RocketComponentDefinition.class",
             API_PACKAGE + "rocket/RocketComponentRegistrar.class",
             API_PACKAGE + "rocket/RegisterRocketComponentsEvent.class",
+            API_PACKAGE + "rocket/RocketFuelDefinition.class",
+            API_PACKAGE + "rocket/RocketFuelRegistrar.class",
+            API_PACKAGE + "rocket/RegisterRocketFuelsEvent.class",
             API_PACKAGE + "atmosphere/AtmosphereBoundary.class",
             API_PACKAGE + "atmosphere/AtmosphereBoundaryProvider.class",
             API_PACKAGE + "atmosphere/AtmosphereBoundaryRegistrar.class",
@@ -158,6 +161,12 @@ class ApiArtifactTest {
     @Test
     void componentConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
         Compilation result = compile("ComponentApiConsumer", platformConsumerClasspath());
+        assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void fuelConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
+        Compilation result = compile("FuelApiConsumer", platformConsumerClasspath());
         assertTrue(result.success(), result.diagnostics().toString());
     }
 
