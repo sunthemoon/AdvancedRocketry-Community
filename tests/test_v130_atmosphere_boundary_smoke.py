@@ -17,7 +17,7 @@ class AtmosphereBoundarySmokeTests(unittest.TestCase):
         for lines, skipped in (([], False), ([runner.REGISTERED] * 2, False),
                                ([runner.REGISTERED, runner.SKIPPED], False),
                                ([runner.SKIPPED], False), ([runner.REGISTERED], True),
-                               ([runner.REGISTERED.replace("1.5", "1.1")], False)):
+                               ([runner.REGISTERED.replace("1.6", "1.1")], False)):
             with self.subTest(lines=lines, skipped=skipped), self.assertRaises(runner.SmokeError):
                 runner.validate_registration(lines, skipped)
 
