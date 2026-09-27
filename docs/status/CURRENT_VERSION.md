@@ -47,7 +47,9 @@ see [binding evidence](../work/v1.4.0-map01/VERIFICATION.md), including its
 prospective-adoption limitation. MAP-02 implements actual Mars/Venus worlds,
 an unmapped gas giant, physical travel/landing and planetary station creation;
 see [world evidence](../work/v1.4.0-map02/VERIFICATION.md). Its reverse-binding
-diagnostic follow-up is corrected. Environmental response/protection, navigation,
+diagnostic follow-up is corrected. ENV implements opt-in temperature/pressure/
+sunlight effects, passive equipment and supplied climate-room protection; see
+[environment evidence](../work/v1.4.0-env/VERIFICATION.md). Navigation,
 discovery, custom skies and remaining migration/acceptance are still pending.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding

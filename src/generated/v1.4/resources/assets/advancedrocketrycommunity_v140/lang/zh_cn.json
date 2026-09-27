@@ -3,5 +3,18 @@
   "biome.advancedrocketrycommunity.venus": "灼热高地",
   "body.advancedrocketrycommunity.gas_giant": "气态巨行星",
   "body.advancedrocketrycommunity.mars": "火星",
-  "body.advancedrocketrycommunity.venus": "金星"
+  "body.advancedrocketrycommunity.venus": "金星",
+  "death.attack.advancedrocketrycommunity.planetary_cold": "%1$s 未能抵御严寒",
+  "death.attack.advancedrocketrycommunity.planetary_cold.player": "%1$s 未能抵御严寒，此前曾与 %2$s 战斗",
+  "death.attack.advancedrocketrycommunity.planetary_heat": "%1$s 未能抵御酷热",
+  "death.attack.advancedrocketrycommunity.planetary_heat.player": "%1$s 未能抵御酷热，此前曾与 %2$s 战斗",
+  "death.attack.advancedrocketrycommunity.planetary_pressure": "%1$s 未能抵御高压",
+  "death.attack.advancedrocketrycommunity.planetary_pressure.player": "%1$s 未能抵御高压，此前曾与 %2$s 战斗",
+  "death.attack.advancedrocketrycommunity.planetary_solar": "%1$s 未能抵御强烈日照",
+  "death.attack.advancedrocketrycommunity.planetary_solar.player": "%1$s 未能抵御强烈日照，此前曾与 %2$s 战斗",
+  "environment.advancedrocketrycommunity.cold": "低温",
+  "environment.advancedrocketrycommunity.exposed": "环境危险：%s",
+  "environment.advancedrocketrycommunity.heat": "高温",
+  "environment.advancedrocketrycommunity.pressure": "高压",
+  "environment.advancedrocketrycommunity.solar": "强日照"
 }

@@ -11,6 +11,7 @@
     "landable": true,
     "orbitable": true
   },
+  "environment_effects": true,
   "gravity_multiplier": 0.38,
   "id": "advancedrocketrycommunity:mars",
   "level": "advancedrocketrycommunity:mars",

@@ -53,6 +53,7 @@ public final class AtmosphereLevelService {
 
     private boolean baseAtmosphereBreathable;
     private boolean exposedSkyIsOpen;
+    private boolean climateControlRequired;
     private int lastTickInspections;
     private int lastPendingTasks;
     private long totalInspections;
@@ -89,11 +90,17 @@ public final class AtmosphereLevelService {
     }
 
     public void updateEnvironment(boolean breathable, boolean skyIsOpen) {
-        if (baseAtmosphereBreathable == breathable && exposedSkyIsOpen == skyIsOpen) {
+        updateEnvironment(breathable, skyIsOpen, false);
+    }
+
+    public void updateEnvironment(boolean breathable, boolean skyIsOpen, boolean climateRequired) {
+        if (baseAtmosphereBreathable == breathable && exposedSkyIsOpen == skyIsOpen
+                && climateControlRequired == climateRequired) {
             return;
         }
         baseAtmosphereBreathable = breathable;
         exposedSkyIsOpen = skyIsOpen;
+        climateControlRequired = climateRequired;
         resetAllForRescan();
     }
 
@@ -183,7 +190,7 @@ public final class AtmosphereLevelService {
         processDirtyQueue();
         breathableProviders.clear();
 
-        if (baseAtmosphereBreathable) {
+        if (baseAtmosphereBreathable && !climateControlRequired) {
             coordinator.clear();
             index.clear();
             for (VentState state : vents.values()) {
@@ -201,7 +208,7 @@ public final class AtmosphereLevelService {
 
         scheduleRequiredScans();
         CoordinatorTickReport report = coordinator.tick(
-                new ServerLevelVolumeWorldView(level, exposedSkyIsOpen, boundaries),
+                new ServerLevelVolumeWorldView(level, exposedSkyIsOpen || climateControlRequired, boundaries),
                 inspectionBudget
         );
         lastTickInspections = report.inspections();
@@ -214,8 +221,16 @@ public final class AtmosphereLevelService {
     }
 
     public BreathabilityState breathabilityAt(BlockPos position) {
-        if (baseAtmosphereBreathable) {
+        if (baseAtmosphereBreathable || controlledAt(position)) {
             return BreathabilityState.BREATHABLE;
+        }
+        return coordinator.isScanningPosition(fromBlockPos(position))
+                ? BreathabilityState.PENDING : BreathabilityState.VACUUM;
+    }
+
+    public boolean controlledAt(BlockPos position) {
+        if (!level.hasChunkAt(position)) {
+            return false;
         }
         VolumePosition cell = fromBlockPos(position);
         Optional<AtmosphereVolume> volume = index.find(cell);
@@ -227,12 +242,10 @@ public final class AtmosphereLevelService {
             if (provider != null
                     && provider.status() == VentOperatingStatus.ACTIVE
                     && provider.canSupplyAtmosphere()) {
-                return BreathabilityState.BREATHABLE;
+                return true;
             }
         }
-        return coordinator.isScanningPosition(cell)
-                ? BreathabilityState.PENDING
-                : BreathabilityState.VACUUM;
+        return false;
     }
 
     public boolean baseAtmosphereBreathable() {

@@ -1,0 +1,17 @@
+[
+  {
+    "bytes": 48469,
+    "name": "advancedrocketry-community-1.20.1-1.4.0-dev-api.jar",
+    "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+  },
+  {
+    "bytes": 1138211,
+    "name": "advancedrocketry-community-1.20.1-1.4.0-dev-sources.jar",
+    "sha256": "485d5b790929e2da457135c0bac8b4e895bac8fd12b3cc4f9fc459073a836915"
+  },
+  {
+    "bytes": 2496740,
+    "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+    "sha256": "0ac84a92b01ef193ea10f534145dff79983b65660d5b4a225f1333c6c7d47252"
+  }
+]

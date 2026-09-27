@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalConditions;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
@@ -82,6 +83,14 @@ public final class AtmosphereManager {
         return service(level).baseAtmosphereBreathable();
     }
 
+    public EnvironmentalConditions surfaceExposure(ServerLevel level) {
+        return environments.surfaceExposure(level.dimension());
+    }
+
+    public boolean controlledAt(ServerLevel level, BlockPos position) {
+        return service(level).controlledAt(position);
+    }
+
     public Optional<AtmosphereLevelMetrics> metrics(ResourceKey<Level> levelKey) {
         return Optional.ofNullable(levels.get(levelKey)).map(AtmosphereLevelService::metrics);
     }
@@ -119,7 +128,7 @@ public final class AtmosphereManager {
                         boundaries
                 )
         );
-        service.updateEnvironment(state.breathable(), state.vacuum());
+        service.updateEnvironment(state.breathable(), state.vacuum(), surfaceExposure(level).requiresClimateControl());
         return service;
     }
 

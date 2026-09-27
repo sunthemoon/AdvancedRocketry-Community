@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalExposure;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageSource;
@@ -14,6 +15,12 @@ public final class ModDamageTypes {
     );
 
     private ModDamageTypes() {
+    }
+
+    public static DamageSource environmental(Level level, int hazards) {
+        ResourceKey<DamageType> key = ResourceKey.create(Registries.DAMAGE_TYPE,
+                ModIdentity.id("planetary_" + EnvironmentalExposure.primary(hazards)));
+        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(key));
     }
 
     public static DamageSource vacuum(Level level) {

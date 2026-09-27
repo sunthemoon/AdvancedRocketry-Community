@@ -35,8 +35,8 @@ For example, `data/example/celestial_bodies/gas_giant.json`:
 ```
 
 These are illustrative configured values and profile IDs, not physical
-astronomy or bundled visual assets. Solar intensity and radiation are metadata;
-this build does not apply new temperature, solar or radiation gameplay effects.
+astronomy or bundled visual assets. Radiation is metadata only. Temperature,
+pressure and solar exposure require the explicit opt-in described below.
 
 ## Mapping and admission
 
@@ -62,8 +62,9 @@ The development build adds `advancedrocketrycommunity:mars` and
 red-sand/red-sandstone rolling terrain; Venus has yellow-terracotta surfaces
 over basalt highlands. These use original generation rules and existing vanilla
 blocks. Their configured environments are gameplay analogues, not a scientific
-simulation. Custom skies, temperature protection and discovery progression are
-not supplied by these world definitions.
+simulation. Mars and Venus enable environmental exposure; bring a complete
+oxygen-filled space suit or maintain a supplied, sealed vent room. Custom skies
+and discovery progression are not supplied by these world definitions.
 
 `advancedrocketrycommunity:gas_giant` is an unmapped, orbitable body. It has no
 surface Level or landing position. A committed permitted station may orbit it;
@@ -93,11 +94,57 @@ its worlds. Prefer your own namespace for custom content. Generator changes
 affect newly generated chunks only; rollback requires the complete pre-upgrade
 backup, not deleting a dimension directory or binding entry.
 
+## Survival environment and protection
+
+Schema-2 definitions can set `"environment_effects": true`. Omitted means
+false, preserving older packs. This flag enables additional survival effects
+only on an unambiguously mapped surface; a station never acquires its orbiting
+planet's surface heat or pressure. Existing gravity and oxygen rules apply
+independently, even when the new flag is false. A pre-exposure development build
+will reject the new field; use the matching older pack when rolling back.
+
+| Exposure | Unprotected condition |
+|---|---|
+| Cold | Temperature below 240 K |
+| Heat | Temperature above 330 K |
+| High pressure | Pressure above 2 |
+| Intense sunlight | Solar intensity above 1.5, daytime and direct sky visibility |
+
+Exposed survival players receive one damage attempt of 2 health points every
+20 ticks, not one per simultaneous hazard. Pressure takes precedence over heat,
+cold and sunlight. A simultaneous suffocation attempt is not duplicated.
+Normal armor, resistance, spawn immunity and damage-cancelling mods can reduce
+or reject damage. Creative and spectator players are exempt. These are gameplay
+thresholds, not a physics model. Radiation remains a placeholder without damage.
+
+An active oxygen vent in a sealed room provides climate protection while its
+oxygen and power last. This also works when outdoor air is breathable but hot
+or highly pressurized; breathable air alone is not climate control. Broken
+seals, pending scans, unloaded providers and exhausted supplies grant no room
+protection. Climate operation uses the vent's existing finite consumption.
+
+Passive equipment protection requires four correctly slotted armor items, each
+with count one and each included in the relevant server item tag:
+`advancedrocketrycommunity:thermal_protection`,
+`advancedrocketrycommunity:pressure_protection`, or
+`advancedrocketrycommunity:solar_protection`. The built-in suit belongs to all three. Packs can add other
+`ArmorItem` equipment to these tags; forced non-armor items do not count. Tags
+do not provide oxygen or register an oxygen adapter. An empty suit still
+suffocates, even though its passive insulation remains effective.
+
+Localized action-bar warnings identify remaining exposure. The existing oxygen
+HUD still describes oxygen protection, not total environmental safety. Cover
+blocks direct sunlight, but ordinary outdoor cover alone does not cool hot air
+or lower pressure. Returning to safety resets exposure; there is no persistent
+or offline exposure debt.
+
 ## Validation and legacy data
 
 Schema 2 requires all three capability booleans, solar intensity (finite
 0..16), radiation (finite 0..1), gravity (0..4), atmosphere and orbit fields.
 Pressure is 0..10, temperature 0..2000 K, and breathable vacuum is invalid.
+The optional `environment_effects` field accepts only a literal boolean, not
+null, numeric or string values. It is not accepted in legacy definitions.
 IDs are limited to 128 characters and the catalog to 128 bodies. Integer
 schema/orbit values cannot be fractional or strings. Unknown schema-2 fields,
 explicit nulls, missing parents, self-parenting and cycles are rejected.

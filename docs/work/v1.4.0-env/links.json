@@ -1,0 +1,526 @@
+{
+  "links": [
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/18-V1PLUS-SOURCES.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/MACHINE-KERNEL-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.0.0-planning-integration/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/provenance/v1.0.0-v1plus-planning.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-machine-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-contract-draft.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-test-design.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-audit/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-process-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-port-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-pattern-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.2.0-lifecycle-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "codex-prompts/05-v1.0-release-validation.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "codex-prompts/06-implement-post-1.0-version.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "codex-prompts/07-audit-post-1.0-version.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "codex-prompts/08-remote-linux-environment-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/releases/v1.0.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "scripts/check-debian12-dev-host.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "scripts/tmux-arce-layout.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "scripts/start-xvfb-visual-smoke.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "scripts/validate_v1plus_planning.py"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/PUBLIC-API-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "compat-test-mod/README.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.3.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-033-PLANETARY-WORLDS-AND-SURFACE-ADMISSION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "exists": true,
+      "target": "docs/decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "document": "docs/CELESTIAL-DATA-GUIDE.md",
+      "exists": true,
+      "target": "work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/provenance/v1.4.0-development-metadata.md",
+      "exists": true,
+      "target": "v0.0.2-forge-mdk-and-gradle-wrapper.md"
+    },
+    {
+      "document": "docs/provenance/v1.4.0-development-metadata.md",
+      "exists": true,
+      "target": "../../THIRD-PARTY-NOTICES.md"
+    },
+    {
+      "document": "docs/provenance/v1.4.0-development-metadata.md",
+      "exists": true,
+      "target": "../work/v1.4.0-map02/generated-resources.json"
+    },
+    {
+      "document": "docs/provenance/v1.4.0-development-metadata.md",
+      "exists": true,
+      "target": "../work/v1.4.0-env/generated-resources.json"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "exists": true,
+      "target": "../releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../06-RELEASE-AND-ACCEPTANCE-GATES.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../decisions/ADR-033-PLANETARY-WORLDS-AND-SURFACE-ADMISSION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "exists": true,
+      "target": "../work/v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "../../decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "source-identity.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "development-artifacts.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "generated-resources.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "root-checks.zip"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "root-checks.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "native-restart.zip"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "native-summary.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "independent-review.zip"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "SHA256SUMS.txt"
+    },
+    {
+      "document": "docs/work/v1.4.0-env/VERIFICATION.md",
+      "exists": true,
+      "target": "links.json"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "../versions/V1.4.0-PLANETARY-EXPANSION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "../decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "../CELESTIAL-DATA-GUIDE.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-data01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-data02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "../decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-map01/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "../decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.4.0-implementation-log.md",
+      "exists": true,
+      "target": "v1.4.0-data01/VERIFICATION.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only, not URLs/anchors"
+}

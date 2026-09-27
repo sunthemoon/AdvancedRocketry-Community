@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentService;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.PlayerEnvironmentalService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportDecision;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngine;
@@ -25,6 +26,7 @@ public final class PlayerLifeSupportService {
     private final AtmosphereManager atmosphere;
     private final SnapshotSink snapshotSink;
     private final SuitEquipmentService equipment;
+    private final PlayerEnvironmentalService environment;
     private final Map<UUID, PlayerState> players = new HashMap<>();
     private boolean ticking;
 
@@ -37,6 +39,7 @@ public final class PlayerLifeSupportService {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
         this.snapshotSink = Objects.requireNonNull(snapshotSink, "snapshotSink");
         this.equipment = Objects.requireNonNull(equipment, "equipment");
+        environment = new PlayerEnvironmentalService(atmosphere, (player, message) -> player.displayClientMessage(message, true));
     }
 
     public void onLivingTick(LivingEvent.LivingTickEvent event) {
@@ -69,6 +72,7 @@ public final class PlayerLifeSupportService {
         );
 
         PlayerLifeSupportSnapshot snapshot;
+        boolean suffocationAttempt = false;
         if (player.isCreative() || player.isSpectator()) {
             state.vacuumPhase = 0;
             snapshot = new PlayerLifeSupportSnapshot(
@@ -95,6 +99,7 @@ public final class PlayerLifeSupportService {
             }
             state.vacuumPhase = decision.vacuumPhase();
             if (decision.damage() > 0.0F) {
+                suffocationAttempt = true;
                 player.hurt(ModDamageTypes.vacuum(player.serverLevel()), decision.damage());
             }
             snapshot = new PlayerLifeSupportSnapshot(
@@ -104,12 +109,14 @@ public final class PlayerLifeSupportService {
                     decision.oxygenUnits()
             );
         }
+        environment.tick(player, suffocationAttempt);
         synchronize(player, state, snapshot);
         return snapshot;
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         players.remove(event.getEntity().getUUID());
+        environment.remove(event.getEntity().getUUID());
     }
 
     public Optional<PlayerLifeSupportSnapshot> snapshot(UUID playerId) {
@@ -122,6 +129,7 @@ public final class PlayerLifeSupportService {
             throw new IllegalStateException("Cannot clear active life support");
         }
         equipment.clear();
+        environment.clear();
         players.clear();
     }
 

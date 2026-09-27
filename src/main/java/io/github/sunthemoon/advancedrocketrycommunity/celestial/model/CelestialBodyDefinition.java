@@ -21,7 +21,8 @@ public record CelestialBodyDefinition(
         ResourceLocation visualProfile,
         CelestialCapabilities capabilities,
         double solarIntensity,
-        double radiation
+        double radiation,
+        boolean environmentEffects
 ) {
     public static final int SCHEMA_VERSION = 2;
     public static final double MAX_GRAVITY_MULTIPLIER = 4.0D;
@@ -64,6 +65,15 @@ public record CelestialBodyDefinition(
     ) {
         this(id, parentId, Optional.of(levelKey), gravityMultiplier, atmosphere, orbit, visualProfile,
                 CelestialCapabilities.legacy(levelKey), 1.0D, 0.0D);
+    }
+
+    /** Existing authoring callers preserve their pre-exposure gameplay behavior. */
+    public CelestialBodyDefinition(ResourceLocation id, Optional<ResourceLocation> parentId,
+            Optional<ResourceKey<Level>> levelKey, double gravityMultiplier, AtmosphereDefinition atmosphere,
+            OrbitDefinition orbit, ResourceLocation visualProfile, CelestialCapabilities capabilities,
+            double solarIntensity, double radiation) {
+        this(id, parentId, levelKey, gravityMultiplier, atmosphere, orbit, visualProfile,
+                capabilities, solarIntensity, radiation, false);
     }
 
     public boolean isRoot() {

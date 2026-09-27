@@ -42,7 +42,7 @@ public final class PlanetaryContent {
                 surface ? Optional.of(level(id)) : Optional.empty(), gravity,
                 new AtmosphereDefinition(pressure, false, temperature, id),
                 new OrbitDefinition(distance, period, 0), id,
-                new CelestialCapabilities(surface, true, !surface), solar, radiation);
+                new CelestialCapabilities(surface, true, !surface), solar, radiation, surface);
     }
 
     public static List<RouteDefinition> routes() {

@@ -3,5 +3,18 @@
   "biome.advancedrocketrycommunity.venus": "Scorched Highlands",
   "body.advancedrocketrycommunity.gas_giant": "Gas Giant",
   "body.advancedrocketrycommunity.mars": "Mars",
-  "body.advancedrocketrycommunity.venus": "Venus"
+  "body.advancedrocketrycommunity.venus": "Venus",
+  "death.attack.advancedrocketrycommunity.planetary_cold": "%1$s succumbed to the planetary cold",
+  "death.attack.advancedrocketrycommunity.planetary_cold.player": "%1$s succumbed to the planetary cold while fighting %2$s",
+  "death.attack.advancedrocketrycommunity.planetary_heat": "%1$s succumbed to the planetary heat",
+  "death.attack.advancedrocketrycommunity.planetary_heat.player": "%1$s succumbed to the planetary heat while fighting %2$s",
+  "death.attack.advancedrocketrycommunity.planetary_pressure": "%1$s succumbed to atmospheric pressure",
+  "death.attack.advancedrocketrycommunity.planetary_pressure.player": "%1$s succumbed to atmospheric pressure while fighting %2$s",
+  "death.attack.advancedrocketrycommunity.planetary_solar": "%1$s succumbed to intense sunlight",
+  "death.attack.advancedrocketrycommunity.planetary_solar.player": "%1$s succumbed to intense sunlight while fighting %2$s",
+  "environment.advancedrocketrycommunity.cold": "Cold",
+  "environment.advancedrocketrycommunity.exposed": "Environmental exposure: %s",
+  "environment.advancedrocketrycommunity.heat": "Heat",
+  "environment.advancedrocketrycommunity.pressure": "High pressure",
+  "environment.advancedrocketrycommunity.solar": "Intense sunlight"
 }
