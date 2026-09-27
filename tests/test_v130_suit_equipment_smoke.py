@@ -14,7 +14,7 @@ class SuitEquipmentSmokeTests(unittest.TestCase):
         runner.validate_registration([runner.SKIPPED], True)
         for lines, skipped in (([], False), ([runner.REGISTERED] * 2, False),
                                ([runner.REGISTERED, runner.SKIPPED], False), ([runner.REGISTERED], True),
-                               ([runner.SKIPPED], False), ([runner.REGISTERED.replace("1.4", "1.2")], False)):
+                               ([runner.SKIPPED], False), ([runner.REGISTERED.replace("1.5", "1.2")], False)):
             with self.subTest(lines=lines), self.assertRaises(runner.SmokeError):
                 runner.validate_registration(lines, skipped)
 
