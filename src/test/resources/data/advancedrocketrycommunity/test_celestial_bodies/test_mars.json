@@ -1,7 +1,7 @@
 {
   "id": "advancedrocketrycommunity:test_mars",
   "parent": "advancedrocketrycommunity:earth",
-  "level": "advancedrocketrycommunity:space",
+  "level": "advancedrocketrycommunity:test_mars",
   "gravity_multiplier": 0.38,
   "atmosphere": {
     "pressure": 0.006,

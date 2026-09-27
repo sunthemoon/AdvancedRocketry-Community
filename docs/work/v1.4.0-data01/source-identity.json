@@ -1,0 +1,205 @@
+{
+  "base_commit": "8947fac9641dc11ce2dce1ed8a3877984be044ab",
+  "branch": "codex/v1.4.0-planetary-expansion",
+  "files": [
+    {
+      "bytes": 12268,
+      "git_blob": "046a0b52d877c1a00bb4aebf30067631757c5399",
+      "path": "compat-test-mod/build.gradle",
+      "working_sha256": "bf35642232a80be19ed4ea8c2e860b4f1cf70d8b7a61527ac2b934d0cd640fa1"
+    },
+    {
+      "bytes": 1569,
+      "git_blob": "fdb93d82b63f81e02990f6fa016b1fafed1d0ce6",
+      "path": "gradle.properties",
+      "working_sha256": "be56b0721c08f5f7a0fc51e9dbba1f383d2a2cda74861e30b4b472c38301c739"
+    },
+    {
+      "bytes": 12813,
+      "git_blob": "5989c7ae1d9b402c228283d7d71c022cf27575fa",
+      "path": "scripts/run_v140_celestial_schema_smoke.py",
+      "working_sha256": "574287d75203e914b279d0a15cea367805c9f1f1468286518ea2e3baeb395627"
+    },
+    {
+      "bytes": 8080,
+      "git_blob": "064d6073c01cbcbcd7a929b816b628a44eaedbf6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/command/CelestialCommands.java",
+      "working_sha256": "e252101e8c872cf366e8bfbfbda6ef3b99dee4f9aca27b7794543b5b2c3b41ae"
+    },
+    {
+      "bytes": 11677,
+      "git_blob": "5722a6943b970bac2d25854300872b0cb257dbb9",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyCelestialImporter.java",
+      "working_sha256": "fc9800cd1b22119b503aa81e03803ddf0bb9c3502e98c2e89a523e4228c14b51"
+    },
+    {
+      "bytes": 1971,
+      "git_blob": "0de91eb83c6877ca4079a9a75cf308b48cf8a703",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/AtmosphereDefinition.java",
+      "working_sha256": "0afe6350b3b3f1522ac034937d5d7ff026e1937fdeda8a74314f3b6c91614536"
+    },
+    {
+      "bytes": 5897,
+      "git_blob": "763beb423d21ca807d6395a6d3d5f0e240997336",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/BoundedCelestialCodecs.java",
+      "working_sha256": "60f95412dde55d9bc63437b5f50e0e55f6e638c743706664f378b0399a92a7df"
+    },
+    {
+      "bytes": 4003,
+      "git_blob": "7939e8f5cbc95cd25cf9677b8a6aac6c968ee04d",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/CelestialBodyDefinition.java",
+      "working_sha256": "9cef4c0edc063b0c2544039be007b27855549ba0a36fe281cbeded862e9313fa"
+    },
+    {
+      "bytes": 770,
+      "git_blob": "1124460283d0c56903683d468d00f243e66c7851",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/CelestialCapabilities.java",
+      "working_sha256": "686f73f2117ecdc6746ed299802f2e218485cf0b170fbaff2afbfbe546c6166c"
+    },
+    {
+      "bytes": 8590,
+      "git_blob": "7e4f22b10bf2b7a0b22527e28c1642d1ddbeba06",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/CelestialDefinitionCodec.java",
+      "working_sha256": "6938ae6abd49dd1d81f5e9fb5c8e73e63da90d02809e8d07ee2938b9adbd843b"
+    },
+    {
+      "bytes": 2556,
+      "git_blob": "5f3b8d21f2f6fdd0f9ada6fb10e7708686ae6f21",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/OrbitDefinition.java",
+      "working_sha256": "b569b0460f32b730a9b3628225e73ce0738e9a037babca9daedcc4bd50e543e8"
+    },
+    {
+      "bytes": 1547,
+      "git_blob": "3d2ed8789e8798b466162c141fe13f6c756f07b2",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialNetwork.java",
+      "working_sha256": "217ed9f5cf3ac8a98d6d9a1c2982c93e76bc83dc82d391e169b02950301daa86"
+    },
+    {
+      "bytes": 2798,
+      "git_blob": "ee3dab7d6099b7bd1c6b786f367f233f995de40e",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshot.java",
+      "working_sha256": "46e01857351f7654e9dc1b39edb498a0c1deaaa1a91b0cea753487f172302f6a"
+    },
+    {
+      "bytes": 8354,
+      "git_blob": "e4dd68aa4bede6fc6a57f3329ae99e0c3a676a21",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshotCodec.java",
+      "working_sha256": "e8706112d17973eb282d28bc99e720c138cae3693d77b3169884f03764062a90"
+    },
+    {
+      "bytes": 2649,
+      "git_blob": "34651b11b2083735f45e84569644b99e57126df3",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialSnapshotPacket.java",
+      "working_sha256": "2fe058dd336ad90e389e77285beb39fcc01741c1d6527b363d608c95430591be"
+    },
+    {
+      "bytes": 6845,
+      "git_blob": "7d4ca06433eb517f1c4b109713adb363c1f16d78",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalog.java",
+      "working_sha256": "2b4656e12c1a5aee714196282c48afd6bc861652f5b5d65bcba38e5ac65b79db"
+    },
+    {
+      "bytes": 1945,
+      "git_blob": "34161562ffe441cd362040073e8199473e84c34a",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/CelestialDefinitionProvider.java",
+      "working_sha256": "bfd136062d3881fe2241d4ba6151d856106395d5f572fa3ae010ea3c7b62c414"
+    },
+    {
+      "bytes": 17516,
+      "git_blob": "0accccc030c25d3227aa626b65670a576066c24d",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java",
+      "working_sha256": "ae62153cc43028ef29c3f562679904d0637b2b648843e3b57132a2ae3295bdc5"
+    },
+    {
+      "bytes": 7246,
+      "git_blob": "57a0253dd2ace9d3af01d9fe3db5cccc29f6510d",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTargetFlightPlanner.java",
+      "working_sha256": "9fb02af4c377ce2d2dcf16cad6aa563c04ade512ce573c79d0bd9a8be7cb4d62"
+    },
+    {
+      "bytes": 26265,
+      "git_blob": "ff32cbe5f5fa6e0d82be67826bb41b963045e9ec",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java",
+      "working_sha256": "417ddd2c8f6d78627db35f6c081fc21e97770068f237bba4a4c8b9f0ecc3d5af"
+    },
+    {
+      "bytes": 16145,
+      "git_blob": "a46d265887473854cb3789ac436faa33b8ef5477",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java",
+      "working_sha256": "f7bb685928e52f9b66850dce79d818d257dcee236cb50c7979fc2db5462d3c5c"
+    },
+    {
+      "bytes": 5221,
+      "git_blob": "abf9d8d692cdf7a176d9189b6ffd8e8cd6dd486b",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/migration/LegacyFlightTargetMigrator.java",
+      "working_sha256": "0032a18ea0174e295a1c4e2d0aa9c2d52ddff373dfd760b0af977e669fd10023"
+    },
+    {
+      "bytes": 1740,
+      "git_blob": "84ec2cbe3758ec2e5d2ca58f8ded2899896bc07f",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java",
+      "working_sha256": "2f6750342792f11530897c4c3be5366fe749037e4c800c199efd283eea37f480"
+    },
+    {
+      "bytes": 4661,
+      "git_blob": "8912a24372bd864edb569ca7facb3de1e6632adf",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialCatalogTest.java",
+      "working_sha256": "0f1dd9acd91125f65a857ccccaaf156f373e1c19aa3b843e33312842f3a228b4"
+    },
+    {
+      "bytes": 13875,
+      "git_blob": "c9eb793072346da3f12d5bdb51c898c5fcee9fb9",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSchemaV2Test.java",
+      "working_sha256": "2ac3b0532b91abd9a1f2a379e92da41a6218dce1997e5dd699167c1d7b58ff32"
+    },
+    {
+      "bytes": 5215,
+      "git_blob": "b0a507d4d9bcd2e541c99b74c1ec9bfcba210686",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotTest.java",
+      "working_sha256": "dfee73b6bb8c01021c845fb8467b390b018f28d7533fa341f79a4da34380777a"
+    },
+    {
+      "bytes": 9287,
+      "git_blob": "084714beb57182a654fe330ffdd3c9139cf2ed72",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotV2Test.java",
+      "working_sha256": "0901f6d67ef22490bb8b62717614391aeda7f5aff61bb2e3a165c78a6aa8f8bd"
+    },
+    {
+      "bytes": 9876,
+      "git_blob": "7e9c6380b99118fc6e6d314075d32bd579e12c80",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/legacy/LegacyCelestialImporterTest.java",
+      "working_sha256": "66c55c783244ece520092083d5ab488d2517c6136e99d53cb07892dd48a7955e"
+    },
+    {
+      "bytes": 12930,
+      "git_blob": "d7103417f9c2a9ee901eae5c171884c3fa38edd8",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/compat/environment/ServerEnvironmentQueriesTest.java",
+      "working_sha256": "62848679c41c9e6ea6376a7dcd627f33c96ed2ca6b96fd5ee1dbe353e5161161"
+    },
+    {
+      "bytes": 7083,
+      "git_blob": "b856baf43e7382ee5412778f418b3e2015d6dabb",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/PlanetaryFlightAdmissionTest.java",
+      "working_sha256": "bfe8463df2ed0b916c574b4e3521b525321c354a33a82e201b21026f3ae2e324"
+    },
+    {
+      "bytes": 10221,
+      "git_blob": "3c9092ab1dc33454d32fb0b4af9a787adfb42677",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTargetFlightPlannerTest.java",
+      "working_sha256": "fa3421502ae83187ae4f36e4d6e083d5129902d37b9c2f5a7a01401cfbb58c13"
+    },
+    {
+      "bytes": 510,
+      "git_blob": "24a44000f67e64b55c0b0b310206228b6b1e3283",
+      "path": "src/test/resources/data/advancedrocketrycommunity/test_celestial_bodies/test_mars.json",
+      "working_sha256": "bd6115f75e548f7466dd9e2170e931a81f525fcdac56177d2ca29eed03eb33ce"
+    },
+    {
+      "bytes": 4517,
+      "git_blob": "05e058e7dfe72871fa05440c2b8a6477d4393220",
+      "path": "tests/test_v140_celestial_schema_smoke.py",
+      "working_sha256": "9b329c13fb1a267965f1f28fe0332e71e9bac8e1a8239117cf9a9899767a09e9"
+    }
+  ],
+  "scope": "Actual implementation/test/metadata inputs; not a candidate"
+}

@@ -138,6 +138,7 @@ class RocketTargetFlightPlannerTest {
 
     @Test
     void testMarsDataDrivesTheTypedPlannerWithoutAProductionEnumBranch() throws IOException {
+        // This test-only Level key proves data-driven planning, not physical world admission.
         JsonElement marsJson = resource(
                 "data/advancedrocketrycommunity/test_celestial_bodies/test_mars.json"
         );

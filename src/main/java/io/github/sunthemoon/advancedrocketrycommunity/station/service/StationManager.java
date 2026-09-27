@@ -47,6 +47,7 @@ public final class StationManager implements StationOperationService {
                 platforms,
                 bodyId -> celestialCatalogs.current()
                         .flatMap(catalog -> catalog.get(bodyId))
+                        .filter(body -> body.capabilities().orbitable())
                         .isPresent()
         );
     }

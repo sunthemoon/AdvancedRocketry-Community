@@ -1,12 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.celestial.model;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Objects;
 import net.minecraft.resources.ResourceLocation;
 
-/** Immutable environment profile data; damage and life support begin in v0.4.0. */
+/** Immutable configured environment, with the same invariants for code and data input. */
 public record AtmosphereDefinition(
         double pressure,
         boolean breathable,
@@ -17,11 +15,11 @@ public record AtmosphereDefinition(
     public static final double MAX_TEMPERATURE_KELVIN = 2_000.0D;
 
     private static final Codec<AtmosphereDefinition> RAW_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.doubleRange(0.0D, MAX_PRESSURE)
+            BoundedCelestialCodecs.finiteDouble(0.0D, MAX_PRESSURE)
                     .fieldOf("pressure")
                     .forGetter(AtmosphereDefinition::pressure),
-            Codec.BOOL.fieldOf("breathable").forGetter(AtmosphereDefinition::breathable),
-            Codec.doubleRange(0.0D, MAX_TEMPERATURE_KELVIN)
+            BoundedCelestialCodecs.BOOLEAN.fieldOf("breathable").forGetter(AtmosphereDefinition::breathable),
+            BoundedCelestialCodecs.finiteDouble(0.0D, MAX_TEMPERATURE_KELVIN)
                     .fieldOf("temperature_kelvin")
                     .forGetter(AtmosphereDefinition::temperatureKelvin),
             BoundedCelestialCodecs.RESOURCE_LOCATION
@@ -29,22 +27,14 @@ public record AtmosphereDefinition(
                     .forGetter(AtmosphereDefinition::profile)
     ).apply(instance, AtmosphereDefinition::new));
 
-    public static final Codec<AtmosphereDefinition> CODEC = BoundedCelestialCodecs.validated(
-            RAW_CODEC,
-            AtmosphereDefinition::validate
-    );
+    public static final Codec<AtmosphereDefinition> CODEC = BoundedCelestialCodecs.guarded(RAW_CODEC);
 
     public AtmosphereDefinition {
-        Objects.requireNonNull(profile, "profile");
-    }
-
-    private static DataResult<AtmosphereDefinition> validate(AtmosphereDefinition value) {
-        if (!Double.isFinite(value.pressure) || !Double.isFinite(value.temperatureKelvin)) {
-            return DataResult.error(() -> "Atmosphere values must be finite");
+        BoundedCelestialCodecs.requireId(profile, "atmosphere profile");
+        BoundedCelestialCodecs.requireRange(pressure, 0, MAX_PRESSURE, "pressure");
+        BoundedCelestialCodecs.requireRange(temperatureKelvin, 0, MAX_TEMPERATURE_KELVIN, "temperature");
+        if (breathable && pressure <= 0.0D) {
+            throw new IllegalArgumentException("A breathable atmosphere must have positive pressure");
         }
-        if (value.breathable && value.pressure <= 0.0D) {
-            return DataResult.error(() -> "A breathable atmosphere must have positive pressure");
-        }
-        return DataResult.success(value);
     }
 }

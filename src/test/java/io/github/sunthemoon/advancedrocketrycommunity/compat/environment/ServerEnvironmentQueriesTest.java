@@ -170,7 +170,7 @@ class ServerEnvironmentQueriesTest {
         var definitions = new ArrayList<>(CelestialDefaults.definitions());
         var earth = definitions.get(0);
         definitions.add(new CelestialBodyDefinition(new ResourceLocation("test", "alias"), earth.parentId(),
-                earth.levelKey(), earth.gravityMultiplier(), earth.atmosphere(), earth.orbit(), earth.visualProfile()));
+                earth.levelKey().orElseThrow(), earth.gravityMultiplier(), earth.atmosphere(), earth.orbit(), earth.visualProfile()));
         assertTrue(catalogs.applyCandidate(CelestialCatalog.create(definitions)));
         try (var queries = queries(catalogs, new StationRegistrySavedData())) {
             assertTrue(queries.at(Level.OVERWORLD, BlockPos.ZERO).isEmpty());
@@ -242,7 +242,7 @@ class ServerEnvironmentQueriesTest {
 
     private static List<CelestialBodyDefinition> changedMoon(double gravity) {
         return CelestialDefaults.definitions().stream().map(body -> body.id().equals(CelestialIds.MOON_ID)
-                ? new CelestialBodyDefinition(body.id(), body.parentId(), body.levelKey(), gravity,
+                ? new CelestialBodyDefinition(body.id(), body.parentId(), body.levelKey().orElseThrow(), gravity,
                         body.atmosphere(), body.orbit(), body.visualProfile()) : body).toList();
     }
 }

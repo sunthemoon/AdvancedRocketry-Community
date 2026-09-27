@@ -83,7 +83,8 @@ public final class LegacyFlightTargetMigrator {
         Optional<CelestialBodyDefinition> definition = catalogs.current()
                 .flatMap(catalog -> catalog.get(legacyBody));
         if (definition.isEmpty()
-                || !definition.orElseThrow().levelKey().location().equals(legacyDimension)) {
+                || definition.orElseThrow().levelKey()
+                        .filter(level -> level.location().equals(legacyDimension)).isEmpty()) {
             return TravelTargetMigrationResult.blocked(
                     TravelTargetMigrationCode.UNKNOWN_DESTINATION_BODY
             );

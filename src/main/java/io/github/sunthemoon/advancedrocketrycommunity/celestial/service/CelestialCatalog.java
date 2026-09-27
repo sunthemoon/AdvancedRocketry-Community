@@ -25,9 +25,8 @@ public final class CelestialCatalog {
     private CelestialCatalog(Map<ResourceLocation, CelestialBodyDefinition> definitions) {
         this.definitions = Collections.unmodifiableMap(new LinkedHashMap<>(definitions));
         Map<ResourceKey<Level>, List<CelestialBodyDefinition>> byLevel = new LinkedHashMap<>();
-        definitions.values().forEach(definition -> byLevel
-                .computeIfAbsent(definition.levelKey(), ignored -> new ArrayList<>())
-                .add(definition));
+        definitions.values().forEach(definition -> definition.levelKey().ifPresent(level -> byLevel
+                .computeIfAbsent(level, ignored -> new ArrayList<>()).add(definition)));
         Map<ResourceKey<Level>, List<CelestialBodyDefinition>> immutableByLevel = new LinkedHashMap<>();
         byLevel.forEach((level, candidates) -> immutableByLevel.put(level, List.copyOf(candidates)));
         this.definitionsByLevel = Collections.unmodifiableMap(immutableByLevel);
@@ -70,15 +69,15 @@ public final class CelestialCatalog {
         if (earth == null || moon == null || space == null) {
             return DataResult.error(() -> "Catalog must define Earth, Moon, and Space");
         }
-        if (!earth.isRoot() || !earth.levelKey().equals(Level.OVERWORLD)) {
+        if (!earth.isRoot() || !earth.levelKey().filter(Level.OVERWORLD::equals).isPresent()) {
             return DataResult.error(() -> "Earth must be a root mapped to minecraft:overworld");
         }
         if (!moon.parentId().filter(CelestialIds.EARTH_ID::equals).isPresent()
-                || !moon.levelKey().equals(CelestialIds.MOON_LEVEL)) {
+                || !moon.levelKey().filter(CelestialIds.MOON_LEVEL::equals).isPresent()) {
             return DataResult.error(() -> "Moon must orbit Earth and map to the fixed Moon Level");
         }
         if (!space.parentId().filter(CelestialIds.EARTH_ID::equals).isPresent()
-                || !space.levelKey().equals(CelestialIds.SPACE_LEVEL)) {
+                || !space.levelKey().filter(CelestialIds.SPACE_LEVEL::equals).isPresent()) {
             return DataResult.error(() -> "Space must map to the fixed Space Level under Earth");
         }
         return DataResult.success(this);

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.celestial.network;
 import com.mojang.serialization.DataResult;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.BoundedCelestialCodecs;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialCapabilities;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,14 +19,14 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Hard-bounded binary codec for the display-only celestial snapshot payload. */
 public final class CelestialSnapshotCodec {
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
     public static final int MAX_PACKET_BYTES = 96 * 1_024;
 
     private CelestialSnapshotCodec() {
     }
 
     public static DataResult<byte[]> encode(CelestialCatalog catalog) {
-        ByteBuf backing = Unpooled.buffer();
+        ByteBuf backing = Unpooled.buffer(256, MAX_PACKET_BYTES);
         try {
             FriendlyByteBuf buffer = new FriendlyByteBuf(backing);
             List<CelestialBodyDefinition> definitions = catalog.definitions();
@@ -34,12 +35,19 @@ public final class CelestialSnapshotCodec {
                 writeId(buffer, definition.id());
                 buffer.writeBoolean(definition.parentId().isPresent());
                 definition.parentId().ifPresent(parent -> writeId(buffer, parent));
-                writeId(buffer, definition.levelKey().location());
+                buffer.writeBoolean(definition.levelKey().isPresent());
+                definition.levelKey().ifPresent(level -> writeId(buffer, level.location()));
                 buffer.writeDouble(definition.gravityMultiplier());
-                buffer.writeBoolean(definition.atmosphere().pressure() == 0.0D);
+                buffer.writeDouble(definition.atmosphere().pressure());
                 buffer.writeBoolean(definition.atmosphere().breathable());
+                buffer.writeDouble(definition.atmosphere().temperatureKelvin());
                 writeId(buffer, definition.atmosphere().profile());
                 writeId(buffer, definition.visualProfile());
+                buffer.writeBoolean(definition.capabilities().landable());
+                buffer.writeBoolean(definition.capabilities().orbitable());
+                buffer.writeBoolean(definition.capabilities().gasGiant());
+                buffer.writeDouble(definition.solarIntensity());
+                buffer.writeDouble(definition.radiation());
             }
             if (buffer.readableBytes() > MAX_PACKET_BYTES) {
                 return DataResult.error(() -> "Celestial snapshot exceeds " + MAX_PACKET_BYTES + " bytes");
@@ -69,32 +77,34 @@ public final class CelestialSnapshotCodec {
             List<CelestialSnapshot.Entry> entries = new ArrayList<>(count);
             for (int index = 0; index < count; index++) {
                 ResourceLocation bodyId = readId(buffer, "body id");
-                Optional<ResourceLocation> parentId = buffer.readBoolean()
+                Optional<ResourceLocation> parentId = readFlag(buffer)
                         ? Optional.of(readId(buffer, "parent id"))
                         : Optional.empty();
-                ResourceLocation levelId = readId(buffer, "level id");
+                Optional<ResourceLocation> levelId = readFlag(buffer)
+                        ? Optional.of(readId(buffer, "level id")) : Optional.empty();
                 double gravity = buffer.readDouble();
-                boolean vacuum = buffer.readBoolean();
-                boolean breathable = buffer.readBoolean();
+                double pressure = buffer.readDouble();
+                boolean breathable = readFlag(buffer);
+                double temperature = buffer.readDouble();
                 ResourceLocation atmosphereProfile = readId(buffer, "atmosphere profile");
                 ResourceLocation visualProfile = readId(buffer, "visual profile");
-                if (!Double.isFinite(gravity)
-                        || gravity < 0.0D
-                        || gravity > CelestialBodyDefinition.MAX_GRAVITY_MULTIPLIER) {
-                    return DataResult.error(() -> "Celestial snapshot gravity is out of bounds: " + bodyId);
-                }
-                if (vacuum && breathable) {
-                    return DataResult.error(() -> "Celestial snapshot marks vacuum as breathable: " + bodyId);
-                }
+                CelestialCapabilities capabilities = new CelestialCapabilities(
+                        readFlag(buffer), readFlag(buffer), readFlag(buffer));
+                double solar = buffer.readDouble();
+                double radiation = buffer.readDouble();
                 entries.add(new CelestialSnapshot.Entry(
                         bodyId,
                         parentId,
                         levelId,
                         gravity,
-                        vacuum,
+                        pressure,
                         breathable,
+                        temperature,
                         atmosphereProfile,
-                        visualProfile
+                        visualProfile,
+                        capabilities,
+                        solar,
+                        radiation
                 ));
             }
             if (buffer.isReadable()) {
@@ -143,12 +153,21 @@ public final class CelestialSnapshotCodec {
         buffer.writeUtf(id.toString(), BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS);
     }
 
+    private static boolean readFlag(FriendlyByteBuf buffer) {
+        int value = buffer.readUnsignedByte();
+        if (value > 1) {
+            throw new IllegalArgumentException("Snapshot boolean must be zero or one");
+        }
+        return value == 1;
+    }
+
     private static ResourceLocation readId(FriendlyByteBuf buffer, String field) {
         String raw = buffer.readUtf(BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS);
         ResourceLocation id = ResourceLocation.tryParse(raw);
         if (id == null) {
             throw new IllegalArgumentException("Invalid " + field + ": " + raw);
         }
+        BoundedCelestialCodecs.requireId(id, field);
         return id;
     }
 }

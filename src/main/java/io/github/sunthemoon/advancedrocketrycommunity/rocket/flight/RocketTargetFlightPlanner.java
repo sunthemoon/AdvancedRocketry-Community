@@ -46,8 +46,8 @@ public final class RocketTargetFlightPlanner {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.SAME_DESTINATION, 0L);
         }
 
-        ResolvedTarget resolvedSource = resolve(source, celestial, stations).orElse(null);
-        ResolvedTarget resolvedDestination = resolve(destination, celestial, stations).orElse(null);
+        ResolvedTarget resolvedSource = resolve(source, celestial, stations, false).orElse(null);
+        ResolvedTarget resolvedDestination = resolve(destination, celestial, stations, true).orElse(null);
         if (resolvedSource == null
                 || resolvedDestination == null
                 || !resolvedSource.dimensionId().equals(sourceDimension)) {
@@ -108,18 +108,25 @@ public final class RocketTargetFlightPlanner {
     private static Optional<ResolvedTarget> resolve(
             TravelTarget target,
             CelestialCatalog celestial,
-            Function<UUID, Optional<StationState>> stations
+            Function<UUID, Optional<StationState>> stations,
+            boolean arrival
     ) {
         if (target instanceof TravelTarget.BodySurface surface) {
-            return celestial.get(surface.bodyId()).map(body -> new ResolvedTarget(
+            return celestial.get(surface.bodyId())
+                    .filter(body -> !arrival || body.supportsSurfaceArrival())
+                    .flatMap(body -> body.levelKey()
+                            .filter(level -> !level.equals(CelestialIds.SPACE_LEVEL))
+                            .map(level -> new ResolvedTarget(
                     RouteAnchor.bodySurface(body.id()),
                     body.id(),
-                    body.levelKey().location(),
+                    level.location(),
                     gravityMilli(body)
-            ));
+            )));
         }
         if (target instanceof TravelTarget.Orbit orbit) {
-            return celestial.get(orbit.bodyId()).map(body -> new ResolvedTarget(
+            return celestial.get(orbit.bodyId())
+                    .filter(body -> !arrival || body.capabilities().orbitable())
+                    .map(body -> new ResolvedTarget(
                     RouteAnchor.orbit(body.id()),
                     body.id(),
                     CelestialIds.SPACE_LEVEL.location(),
@@ -128,7 +135,9 @@ public final class RocketTargetFlightPlanner {
         }
         if (target instanceof TravelTarget.Station station) {
             return stations.apply(station.instanceId())
-                    .flatMap(state -> celestial.get(state.orbitBody()).map(body -> new ResolvedTarget(
+                    .flatMap(state -> celestial.get(state.orbitBody())
+                            .filter(body -> !arrival || body.capabilities().orbitable())
+                            .map(body -> new ResolvedTarget(
                             RouteAnchor.orbit(body.id()),
                             body.id(),
                             CelestialIds.SPACE_LEVEL.location(),

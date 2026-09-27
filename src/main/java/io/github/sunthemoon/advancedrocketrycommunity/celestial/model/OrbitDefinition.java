@@ -29,28 +29,25 @@ public record OrbitDefinition(
             PERIOD_CODEC
                     .fieldOf("period_ticks")
                     .forGetter(OrbitDefinition::periodTicks),
-            Codec.doubleRange(-180.0D, 180.0D)
+            BoundedCelestialCodecs.finiteDouble(-180.0D, 180.0D)
                     .fieldOf("inclination_degrees")
                     .forGetter(OrbitDefinition::inclinationDegrees)
     ).apply(instance, OrbitDefinition::new));
 
-    public static final Codec<OrbitDefinition> CODEC = BoundedCelestialCodecs.validated(
-            RAW_CODEC,
-            OrbitDefinition::validate
-    );
+    public static final Codec<OrbitDefinition> CODEC = BoundedCelestialCodecs.guarded(RAW_CODEC);
 
-    private static DataResult<OrbitDefinition> validate(OrbitDefinition value) {
-        if (!Double.isFinite(value.inclinationDegrees)) {
-            return DataResult.error(() -> "Orbit inclination must be finite");
+    public OrbitDefinition {
+        if (distance < 0 || distance > MAX_DISTANCE || periodTicks < 0 || periodTicks > MAX_PERIOD_TICKS) {
+            throw new IllegalArgumentException("Orbit distance or period is out of bounds");
         }
-        if ((value.distance == 0L) != (value.periodTicks == 0L)) {
-            return DataResult.error(() -> "Root orbit distance and period must both be zero");
+        BoundedCelestialCodecs.requireRange(inclinationDegrees, -180, 180, "inclination");
+        if ((distance == 0L) != (periodTicks == 0L)) {
+            throw new IllegalArgumentException("Root orbit distance and period must both be zero");
         }
-        return DataResult.success(value);
     }
 
     private static Codec<Long> boundedLong(String name, long maximum) {
-        return Codec.LONG.flatXmap(
+        return BoundedCelestialCodecs.EXACT_LONG.flatXmap(
                 value -> validateLong(name, maximum, value),
                 value -> validateLong(name, maximum, value)
         );

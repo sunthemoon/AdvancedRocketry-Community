@@ -95,9 +95,15 @@ public final class CelestialCommands {
         for (CelestialBodyDefinition definition : catalog.definitions()) {
             context.getSource().sendSuccess(
                     () -> Component.literal(
-                            definition.id() + " -> " + definition.levelKey().location()
+                            definition.id() + " -> " + definition.levelKey()
+                                    .map(level -> level.location().toString()).orElse("unmapped")
                                     + " gravity=" + definition.gravityMultiplier()
                                     + " atmosphere=" + definition.atmosphere().profile()
+                                    + " landable=" + definition.capabilities().landable()
+                                    + " orbitable=" + definition.capabilities().orbitable()
+                                    + " gas_giant=" + definition.capabilities().gasGiant()
+                                    + " solar=" + definition.solarIntensity()
+                                    + " radiation=" + definition.radiation()
                     ),
                     false
             );
@@ -126,9 +132,10 @@ public final class CelestialCommands {
             return 0;
         }
 
-        ServerLevel target = source.getServer().getLevel(definition.orElseThrow().levelKey());
+        ServerLevel target = definition.orElseThrow().levelKey()
+                .map(source.getServer()::getLevel).orElse(null);
         if (target == null) {
-            source.sendFailure(Component.literal("Target Level is not loaded: " + definition.orElseThrow().levelKey().location()));
+            source.sendFailure(Component.literal("Target has no loaded Level: " + bodyId));
             return 0;
         }
 

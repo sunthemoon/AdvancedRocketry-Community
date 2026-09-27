@@ -57,7 +57,7 @@ class CelestialCatalogTest {
         CelestialBodyDefinition earthWithMoonParent = new CelestialBodyDefinition(
                 earth.id(),
                 Optional.of(moon.id()),
-                earth.levelKey(),
+                earth.levelKey().orElseThrow(),
                 earth.gravityMultiplier(),
                 earth.atmosphere(),
                 new io.github.sunthemoon.advancedrocketrycommunity.celestial.model.OrbitDefinition(1L, 1L, 0.0D),

@@ -64,11 +64,11 @@ class LegacyCelestialImporterTest {
                 .orElseThrow();
 
         assertEquals(CelestialIds.EARTH_ID, alpha.parentId().orElseThrow());
-        assertEquals(CelestialIds.SPACE_LEVEL, alpha.levelKey());
+        assertEquals(CelestialIds.SPACE_LEVEL, alpha.levelKey().orElseThrow());
         assertEquals(0.8D, alpha.gravityMultiplier());
         assertTrue(alpha.atmosphere().breathable());
         assertEquals(alpha.id(), moon.parentId().orElseThrow());
-        assertEquals(CelestialIds.MOON_LEVEL, moon.levelKey());
+        assertEquals(CelestialIds.MOON_LEVEL, moon.levelKey().orElseThrow());
         assertEquals(2, result.numericDimensions().size());
         assertTrue(result.issues().stream().anyMatch(issue -> issue.code().equals("NUMERIC_DIMENSION_ID_IGNORED")));
     }

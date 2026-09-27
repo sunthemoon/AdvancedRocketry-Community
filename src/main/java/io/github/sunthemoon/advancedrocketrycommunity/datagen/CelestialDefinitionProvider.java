@@ -39,7 +39,8 @@ public final class CelestialDefinitionProvider implements DataProvider {
     }
 
     private static JsonElement encode(CelestialBodyDefinition definition) {
-        return CelestialBodyDefinition.CODEC.encodeStart(JsonOps.INSTANCE, definition)
+        // Preserve the audited v0.3 resource identities; new authoring uses schema 2.
+        return definition.encodeLegacy(JsonOps.INSTANCE)
                 .getOrThrow(false, message -> {
                     throw new IllegalStateException(message);
                 });

@@ -102,7 +102,7 @@ class CelestialSnapshotTest {
 
         assertEquals(
                 CelestialClientCache.AcceptResult.INVALID_PAYLOAD,
-                CelestialClientCache.accept(new CelestialSnapshotPacket(1, 6L, payload))
+                CelestialClientCache.accept(new CelestialSnapshotPacket(CelestialSnapshotCodec.SCHEMA_VERSION, 6L, payload))
         );
         assertTrue(previous == CelestialClientCache.snapshot().orElseThrow());
         assertEquals(5L, CelestialClientCache.generation());

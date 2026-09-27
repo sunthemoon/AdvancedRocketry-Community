@@ -7,9 +7,9 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-/** Instance-owned SimpleChannel wrapper for the v0.3 display snapshot. */
+/** Instance-owned, exact-version SimpleChannel for the display snapshot. */
 public final class CelestialNetwork {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
 
     private final SimpleChannel channel;
 

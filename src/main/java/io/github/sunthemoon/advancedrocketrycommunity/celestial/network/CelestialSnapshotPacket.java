@@ -52,6 +52,9 @@ public record CelestialSnapshotPacket(
         int schema = buffer.readVarInt();
         long generation = buffer.readVarLong();
         byte[] payload = buffer.readByteArray(CelestialSnapshotCodec.MAX_PACKET_BYTES);
+        if (buffer.isReadable()) {
+            throw new IllegalArgumentException("Celestial snapshot envelope has trailing bytes");
+        }
         return new CelestialSnapshotPacket(schema, generation, payload);
     }
 

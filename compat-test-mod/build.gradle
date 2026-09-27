@@ -16,7 +16,7 @@ minecraft.mappings channel: 'official', version: '1.20.1'
 
 def hostGroup = 'io.github.sunthemoon.advancedrocketrycommunity'
 def hostArtifact = 'advancedrocketry-community'
-def hostVersion = providers.gradleProperty('arceVersion').getOrElse('1.20.1-1.3.0-dev')
+def hostVersion = providers.gradleProperty('arceVersion').getOrElse('1.20.1-1.4.0-dev')
 def hostCoordinates = "${hostGroup}:${hostArtifact}:${hostVersion}:api"
 def hostRepository = file(providers.gradleProperty('arceRepository').getOrElse('../build/repo'))
 def hostPrefix = 'io/github/sunthemoon/advancedrocketrycommunity/'

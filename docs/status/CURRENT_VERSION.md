@@ -37,7 +37,10 @@ development_log: docs/work/v1.4.0-implementation-log.md
 ```
 
 Use the [v1.4 implementation log](../work/v1.4.0-implementation-log.md) for active
-tasks. Preparation has frozen the first contract; new runtime behavior remains
-unimplemented. The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
+tasks. DATA-01 has implemented and verified schema-2 definitions, optional Level
+mappings, capability-aware consumers and display protocol 2; see
+[slice evidence](../work/v1.4.0-data01/VERIFICATION.md). DATA-02 joint bounded
+reload is next; new planetary worlds remain unimplemented.
+The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding
 acceptance. This pointer does not approve any candidate or change `GATE_STATUS.md`.

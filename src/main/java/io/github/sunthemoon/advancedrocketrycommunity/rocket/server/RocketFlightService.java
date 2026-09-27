@@ -110,6 +110,9 @@ final class RocketFlightService {
         if (celestialCatalogs == null || routeCatalogs == null
                 || celestialCatalogs.current().isEmpty()
                 || routeCatalogs.current().isEmpty()) {
+            if (celestialCatalogs != null || routeCatalogs != null) {
+                return RocketFlightQuotes.empty();
+            }
             RocketDestination source = flight.currentTarget()
                     .flatMap(LegacyTravelTargetAdapter::toLegacy)
                     .map(LegacyTravelTargetAdapter.LegacyDestination::destination)
@@ -127,6 +130,7 @@ final class RocketFlightService {
         }
         java.util.ArrayList<TravelTarget> targets = new java.util.ArrayList<>();
         celestialCatalogs.current().orElseThrow().definitions().stream()
+                .filter(definition -> definition.supportsSurfaceArrival())
                 .map(definition -> definition.id())
                 .filter(body -> !body.equals(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds
                         .SPACE_ID))
@@ -137,6 +141,8 @@ final class RocketFlightService {
                 player.getUUID(),
                 player.hasPermissions(2)
         ).stream()
+                .filter(station -> celestialCatalogs.current().orElseThrow().get(station.orbitBody())
+                        .filter(body -> body.capabilities().orbitable()).isPresent())
                 .map(StationState::stationId)
                 .map(TravelTarget.Station::new)
                 .forEach(targets::add);
@@ -390,6 +396,12 @@ final class RocketFlightService {
                     stations::find,
                     requestId,
                     rocket.level().getGameTime()
+            );
+        }
+        if (celestialCatalogs != null || routeCatalogs != null) {
+            return RocketFlightPlanResult.failure(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanCode.UNSUPPORTED_ROUTE,
+                    0L
             );
         }
         Optional<LegacyTravelTargetAdapter.LegacyDestination> legacySource =

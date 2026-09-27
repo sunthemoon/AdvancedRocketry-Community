@@ -149,22 +149,27 @@ public final class LegacyCelestialImporter {
                 .map(LegacyCelestialImporter::slug)
                 .map(icon -> ModIdentity.id("legacy_icon/" + icon))
                 .orElseGet(() -> ModIdentity.id(depth == 0 ? "legacy/planet" : "legacy/moon"));
-        AtmosphereDefinition atmosphere = new AtmosphereDefinition(
-                pressure,
-                oxygen,
-                pressure == 0.0D ? 3.0D : 288.0D,
-                ModIdentity.id(pressure == 0.0D ? "vacuum" : "legacy_atmosphere")
-        );
-        CelestialBodyDefinition definition = new CelestialBodyDefinition(
-                bodyId,
-                Optional.of(parentId),
-                level,
-                gravityPercent / 100.0D,
-                atmosphere,
-                new OrbitDefinition(distance, period, 0.0D),
-                visualProfile
-        );
-        definitions.add(definition);
+        try {
+            AtmosphereDefinition atmosphere = new AtmosphereDefinition(
+                    pressure,
+                    oxygen,
+                    pressure == 0.0D ? 3.0D : 288.0D,
+                    ModIdentity.id(pressure == 0.0D ? "vacuum" : "legacy_atmosphere")
+            );
+            CelestialBodyDefinition definition = new CelestialBodyDefinition(
+                    bodyId,
+                    Optional.of(parentId),
+                    level,
+                    gravityPercent / 100.0D,
+                    atmosphere,
+                    new OrbitDefinition(distance, period, 0.0D),
+                    visualProfile
+            );
+            definitions.add(definition);
+        } catch (IllegalArgumentException exception) {
+            issues.add(error("CANONICAL_DEFINITION_INVALID", legacy.sourcePath(), exception.getMessage()));
+            return;
+        }
 
         issues.add(warning(
                 "FIXED_LEVEL_MAPPING",

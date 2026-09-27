@@ -1,0 +1,37 @@
+{
+  "base_commit": "8947fac9641dc11ce2dce1ed8a3877984be044ab",
+  "build_command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --console=plain",
+  "candidate_commit": null,
+  "datagen_written": 0,
+  "exit_code": 0,
+  "failures_retained": [
+    {
+      "log": "targeted-tests.log",
+      "result": "167 JUnit / 1 failure: legacy test_mars Space placeholder"
+    },
+    {
+      "log": "clean-build-data-gametest.log",
+      "result": "Fixture compile error: used planner code in request-code assertion"
+    },
+    {
+      "log": "clean-build-data-gametest-2.log",
+      "result": "792 JUnit passed; 213 GameTests / 1 failure: Space fixture entity not visible"
+    }
+  ],
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 146,
+    "tests": 792
+  },
+  "junit_execution": "executed, not restored from cache",
+  "planning_checks": "11 plans / 33 inputs",
+  "python_command": "python -B -m unittest tests.test_v140_celestial_schema_smoke -v",
+  "python_tests": 5,
+  "qualification": "Root pass precedes independent-review fixture cleanup fix; final-source rerun is in independent evidence.",
+  "repository_checks": "45 passed / 0 pending, warnings, failures",
+  "required_gametests_passed": 213,
+  "scope": "Bounded development checks, not full acceptance",
+  "seconds": 141
+}
