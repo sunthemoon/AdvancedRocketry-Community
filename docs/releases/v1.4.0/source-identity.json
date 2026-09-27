@@ -1,0 +1,41 @@
+{
+  "development_commit": "d33552a5374272b3b0669090ec4466075662ee4c",
+  "files": [
+    {
+      "bytes": 20271,
+      "path": "CHANGELOG.md",
+      "sha256": "bc99a2817895d37e0409ac1e67a0791bfe74ae4beaf2d525bfcdda9111c67575"
+    },
+    {
+      "bytes": 18821,
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "ad1bfed58378f0daeb824cfecdf0e41372e28773755c053d84ab38fb86c0fa7d"
+    },
+    {
+      "bytes": 8249,
+      "path": "README.md",
+      "sha256": "8780e4191cd9da77bcd0e689851370fa96ca578d35f794700ab03ca91140fbc7"
+    },
+    {
+      "bytes": 5522,
+      "path": "docs/provenance/v1.4.0-development-metadata.md",
+      "sha256": "89c9d91e0f7f4c6a44daaf92dd0fffab700c350a3a0cfcf6655dc58a3d58acd4"
+    },
+    {
+      "bytes": 4903,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "bf8c73bc59d39a59d5910c9ea0848d0a5da94e2c98cb81da1281d154aa7c1064"
+    },
+    {
+      "bytes": 16869,
+      "path": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "sha256": "3f2e1ac87cfd9d1f609f5ce210294059786472bae54cdf57a3c29873f1e66d4f"
+    },
+    {
+      "bytes": 51666,
+      "path": "docs/work/v1.4.0-implementation-log.md",
+      "sha256": "e7a6915784570e22d94d1d172bcc92b3eef223e218cd3b069609d94f5457a06c"
+    }
+  ],
+  "production_commit": "a9143c2b62d5daab412cefedcee198f1fd032588"
+}

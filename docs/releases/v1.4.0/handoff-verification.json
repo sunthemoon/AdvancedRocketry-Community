@@ -1,0 +1,32 @@
+{
+  "api_classes": 27,
+  "bootstrap_provenance_exit_code": 0,
+  "build_log_sha256": "82c7bec2cb1fdf75dae9551058420d1132b13562394fb495b4ec242a1a11684d",
+  "candidate_commit": null,
+  "command": "gradlew.bat clean build test runData runGameTestServer --offline --no-daemon --console=plain",
+  "datagen_written": 0,
+  "development_commit": "d33552a5374272b3b0669090ec4466075662ee4c",
+  "duration": "2m 34s",
+  "error_lines": 15,
+  "exit_code": 0,
+  "fatal_lines": 0,
+  "game_test_world": "Disposable world under build/gametest after clean, not an authentic migration fixture",
+  "generated_packaged_files_checked": 34,
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 167,
+    "tests": 922
+  },
+  "junit_execution": "FROM-CACHE",
+  "lag_warnings": [
+    "[01:11:42] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2560ms or 51 ticks behind"
+  ],
+  "native_execution_repeated": false,
+  "planning_scope": "11 plans / 33 inputs",
+  "python_tests_executed": 57,
+  "repository_checks_passed": 45,
+  "required_gametests_executed": 236,
+  "schema_version": 1
+}

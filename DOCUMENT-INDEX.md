@@ -210,6 +210,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [v1.3 开发交接](docs/releases/v1.3.0/RELEASE-EVIDENCE.md)：已实现能力、制品身份、迁移/网络边界与未完成验收，不代表发布批准。
 - [v1.3 开发基线例外](docs/decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md)。
 - [v1.4 实施日志](docs/work/v1.4.0-implementation-log.md)：行星扩展任务、依赖与实际验证范围。
+- [v1.4 开发交接](docs/releases/v1.4.0/RELEASE-EVIDENCE.md)：已实现行星能力、精确制品、短测与恢复边界、尚未完成的 G0–G9；不是发布批准。
 - [v1.4 准备验证](docs/work/v1.4.0-preparation/VERIFICATION.md)：数据样例、独立契约审核及未改动运行时的检查。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。

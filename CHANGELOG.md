@@ -4,6 +4,42 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.4.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.4.0-dev`.
+No candidate or release approval is assigned. The
+[development handoff](docs/releases/v1.4.0/RELEASE-EVIDENCE.md) distinguishes
+implemented features, finite verification and outstanding acceptance.
+
+- Add fixed Mars and Venus worlds, contrasting terrain and bounded physical
+  landing checks. Gas giants can be logical/orbit subjects, never fake surfaces.
+- Introduce strict schema-2 celestial definitions with explicit capabilities,
+  sunlight and reserved radiation metadata; legacy definitions keep defaults.
+- Publish celestial definitions and routes together on successful reload;
+  invalid data retains the previous pair. Persist body/Level reservations
+  across removal and restart without deleting worlds or reassigning identities.
+- Add opt-in cold, heat, pressure and sunlight exposure with passive equipment
+  and supplied sealed-room protection. Climate protection does not provide oxygen.
+- Add a schematic console star map with server-filtered destinations, station
+  selection, environment information and explicit locked/unavailable reasons.
+- Add bounded resource-pack sky, sun, stars, fog and ambience profiles. Shared
+  Space uses a generic sky, not a station-specific view of its orbit body.
+- Unlock eligible planetary arrivals through world-shared discovery and private
+  satellite research. Concurrent missions retain their captured fees; repeated
+  claims never intentionally repay research. Discovery does not grant station access.
+- Order research receipts, discovery and completion writes for retryable process
+  recovery. Retain removed-body progress and replay paid claims after restoration;
+  a full 128-ID discovery history waits instead of evicting existing entries.
+- Require matching client/server builds with flight protocol 8 and celestial
+  display protocol 2. API 1.7 and existing SavedData schemas remain unchanged;
+  the new body/Level ledger has its own schema 1.
+
+Use complete pre-upgrade backups for downgrade; older strict schema-2 readers
+do not accept new optional fields. Finite actual v1.3-copy upgrade and four
+two-store interruption checks are not universal power-loss, whole-world,
+real-GPU, multiplayer or long-load acceptance. No full terraforming, multi-star
+warp or complete classic-content parity is included.
+
 ## v1.3.0 — in development
 
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.3.0-dev`.

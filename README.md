@@ -41,10 +41,14 @@ The [v1.0 development evidence handoff](docs/releases/v1.0.0/RELEASE-EVIDENCE.md
 maps tested artifacts to their results and lists outstanding release criteria;
 it is not a release approval or a stable download.
 
-Active feature development has reached the **v1.3 public API kernel**: versioned
-inventory, atmosphere, equipment, component, fuel and satellite extensions plus
-read-only environment queries. The [v1.3 development handoff](docs/releases/v1.3.0/RELEASE-EVIDENCE.md)
-lists exact tested artifacts, save/network boundaries and remaining acceptance.
+Active feature development has reached **v1.4 Planetary Expansion**: explorable
+Mars/Venus worlds, a non-landable gas giant, environmental protection, a console
+star map, planetary sky profiles and shared discovery through private research.
+The [v1.4 development handoff](docs/releases/v1.4.0/RELEASE-EVIDENCE.md) lists
+tested artifacts, migration/recovery coverage and remaining acceptance. Start
+with the [discovery guide](docs/PLANETARY-DISCOVERY-GUIDE.md) or
+[sky-profile guide](docs/PLANETARY-SKY-GUIDE.md); the
+[v1.3 API kernel](docs/releases/v1.3.0/RELEASE-EVIDENCE.md) remains available.
 This is a development build, not a new stable release or complete classic-content
 port; the release-acceptance cursor above remains unchanged.
 
@@ -129,9 +133,13 @@ The published Beta's runtime, world-upgrade, optional-mod, server-scale and
 report scope is defined in [the Beta support policy](docs/BETA-SUPPORT-POLICY.md).
 Development builds are not stable releases:
 
-- use copies of backed-up worlds for `1.0.0-dev` testing;
-- use matching development builds on clients and servers: the flight-console
-  synchronization uses flight protocol `4`, which rejects earlier flight protocols;
+- use copies of backed-up worlds for development testing;
+- use matching development builds on clients and servers: v1.4 requires flight
+  protocol `8` and celestial display protocol `2`; API, channel, menu and save
+  versions are separate contracts, not a guarantee of mixed-build compatibility;
+- read the [v1.4 migration boundaries](docs/releases/v1.4.0/MIGRATION-REPORT.md)
+  before upgrading or restoring a world; Forge `47.4.23` is not certified for
+  this development artifact;
 - the intended v1.0 upgrade source is the accepted `v0.9.0-beta.1` world format;
   representative-world acceptance is still in progress;
 - direct 1.12.2 world loading and downgrading an upgraded world are unsupported;

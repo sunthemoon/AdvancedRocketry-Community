@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "scope": "V140-ACC-01 documentation and evidence handoff, not final candidate audit",
+  "status": "scoped development handoff verified; release acceptance open",
+  "candidate_commit": null,
+  "development_commit": "d33552a5374272b3b0669090ec4466075662ee4c",
+  "production_commit": "a9143c2b62d5daab412cefedcee198f1fd032588",
+  "initial_inventory": {
+    "directory": "arce-v140-acc-review-14448b22904b490cb7526bb5f19a3297",
+    "report": "INITIAL-INVENTORY.md",
+    "sha256": "90dc3de0152db1fa2d459aeaea98e02a28ede976400f43cba9df3fb7a8153026"
+  },
+  "substantive_review": {
+    "directory": "arce-v140-acc-final-review-8e8e6f2565734b6e871e99bca74c3d72",
+    "report": "REVIEW-V140-ACC01.md",
+    "sha256": "06905d277e56e85561fd8e0aacb30e18abff419f44fed466a4a20a386944ced2",
+    "manifest": "SHA256SUMS",
+    "manifest_sha256": "353469ad28e9c85138a4582ccb3ad01b1edfccea7c830c02be7e39ea1e602f24",
+    "manifest_members": 55,
+    "resolved_p3_documentation_findings": 2,
+    "unresolved_substantive_findings": 0,
+    "handoff_zip_snapshot_members": 179,
+    "local_file_targets_checked": 1870,
+    "missing_local_file_targets": 0
+  },
+  "final_delta_review": {
+    "directory": "arce-v140-acc-delta-review-a80b49b43e354ce690712b8320a5627a",
+    "report": "REVIEW-V140-ACC01-DELTA.md",
+    "sha256": "bd249bffc1accbdcf98a53cfd80a34a52334a3766f049181b9692397bfe587c5",
+    "manifest": "SHA256SUMS",
+    "manifest_sha256": "0da7e1ae4718d55049b56998d6018da2f3ce218476c684bf3b8be325e4cd2391",
+    "manifest_members": 10,
+    "reviewed_root_zip_members": 184,
+    "reviewed_independent_zip_members": 60,
+    "reviewed_handoff_checksums": 20,
+    "local_file_targets_checked": 1872,
+    "missing_local_file_targets": 0,
+    "unresolved_findings": 0,
+    "later_packaging_scope": "Appending this immutable report and final leaf/review metadata requires root hash checks; no recursive review claim"
+  },
+  "independent_jvm_execution": false,
+  "release_gate_approval": false
+}

@@ -34,6 +34,8 @@ active_development_version: v1.4.0
 active_development_branch: codex/v1.4.0-planetary-expansion
 accepted_development_baseline: 1a192b4b9b9a90372c11643e086f7b0fbdcd1860
 development_log: docs/work/v1.4.0-implementation-log.md
+development_handoff: docs/releases/v1.4.0/RELEASE-EVIDENCE.md
+development_checkpoint: d33552a5374272b3b0669090ec4466075662ee4c
 ```
 
 Use the [v1.4 implementation log](../work/v1.4.0-implementation-log.md) for active
@@ -69,8 +71,11 @@ same-world restart, with independent native readback; see
 unpaid, paid receipts recover automatically and repeated claims do not repay.
 This does not certify arbitrary hardware power loss or unrelated subsystem cuts.
 Real-client navigation/presentation/discovery acceptance and remaining
-migration/acceptance are still pending. The next development task is the v1.4
-handoff with explicit deferred acceptance, not a release tag or Gate approval.
+migration/acceptance are still pending. The [v1.4 development handoff](../releases/v1.4.0/RELEASE-EVIDENCE.md)
+maps implemented capabilities, matching-artifact recovery evidence and deferred
+G0-G9 acceptance. It is not a release tag or Gate approval. The next content
+milestone is v1.5 Orbital/Station/Warp; production implementation needs its own
+development-order decision and frozen contracts, not an implied ADR-030 extension.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding
 acceptance. This pointer does not approve any candidate or change `GATE_STATUS.md`.
