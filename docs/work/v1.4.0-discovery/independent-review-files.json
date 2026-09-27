@@ -1,0 +1,332 @@
+[
+  {
+    "bytes": 6759,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/ADR-037-proposed-initial.md",
+    "sha256": "8a50e9393084c0ea699f854bb6875c78419be5ccb116c4ba83467f2d7cf3d914"
+  },
+  {
+    "bytes": 6900,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/ADR-037-reviewed-final.md",
+    "sha256": "2db9be8745139b3d8ab8303aa3af0e58f7a4eae1d3b8f4b49ff8d62c466e4cdc"
+  },
+  {
+    "bytes": 14138,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/REVIEW-CONTRACT.md",
+    "sha256": "bb90098afb2e84a51a99de1da4d2817232aff78eb4ca67bc01f1af498fcdc3ba"
+  },
+  {
+    "bytes": 743,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/SHA256SUMS",
+    "sha256": "b4467c01c3d99c67e6cd00acd2a357567bb42def0863c6615c1a1e3053ef6b4b"
+  },
+  {
+    "bytes": 42,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/head.txt",
+    "sha256": "1dc84d993ce2394a0bc05dc0c31f49bfc770101c2b76a51d8e0fb069953a229f"
+  },
+  {
+    "bytes": 35685,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/implementation-log-initial.md",
+    "sha256": "ba946cb28904a3a8fe1c894a27c0ac45546cc07145434ac0aa580a036222ee3f"
+  },
+  {
+    "bytes": 35816,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/implementation-log-reviewed-final.md",
+    "sha256": "b3a256dfc0f322015226b80626deb8c3084c4b5e3b0022f412a36c68d331a1ed"
+  },
+  {
+    "bytes": 3325,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/reviewed-inputs-initial.sha256",
+    "sha256": "bf0316a8b8b521da3c3e7dda6ee960da4ec91139abe149cf5bca9318792d129e"
+  },
+  {
+    "bytes": 43,
+    "path": "arce-v140-disc-contract-review-9f6ee1e5fdeb4973a9de00c92d65b887/tracked-status-initial.txt",
+    "sha256": "cffbe2cf845a411d1f1935a754d7319db5d48390f4313b6bcc473d53aceff9c8"
+  },
+  {
+    "bytes": 11557,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/REVIEW-FINAL.md",
+    "sha256": "cba4a54690b7c64fe37cab33bc226becb45a6834f7610c87f39cb67b2206e541"
+  },
+  {
+    "bytes": 4246,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/SHA256SUMS",
+    "sha256": "3e70efc6bf35405b554937e2720ecc48e31a9a9877919377325afeb3ca64a1f0"
+  },
+  {
+    "bytes": 106,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/after-comparison.json",
+    "sha256": "35bf7f73f0edd9ae27d1cc672d961102a46e45d6749e01c8eecae51400e682e6"
+  },
+  {
+    "bytes": 555,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/artifacts-after.json",
+    "sha256": "726d0869a5cff650748aa7089b716200393f187504aee0bc6001608d71adf146"
+  },
+  {
+    "bytes": 555,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/artifacts-before.json",
+    "sha256": "726d0869a5cff650748aa7089b716200393f187504aee0bc6001608d71adf146"
+  },
+  {
+    "bytes": 14365,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/audit_native.py",
+    "sha256": "4a974b92250b3dc2b10df1a5b26cde4ef78528ec14a55bd9eb69db92cbf168d8"
+  },
+  {
+    "bytes": 385,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/datagen-gametest-result.json",
+    "sha256": "068db3e414b4fba0a06948a62ecdba93afd035accbe6db891895f659d0de02a7"
+  },
+  {
+    "bytes": 369173,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/datagen-gametest.log",
+    "sha256": "abb855263fb489822b14a4e49bcd6296884f60300ed03a45286a3822c7b8425a"
+  },
+  {
+    "bytes": 156,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/environment-before.json",
+    "sha256": "5640cfecb5264eb5041356e42b9c16e5abde149ea7b7d1e80232d10e71140082"
+  },
+  {
+    "bytes": 892,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-result.json",
+    "sha256": "d21ae81d16c651fabf99ff430a1bf7cd0e5ba2685c306b55b1ea7f7610fca5fe"
+  },
+  {
+    "bytes": 1305,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest.xml",
+    "sha256": "413854f9f844d3511a0ec1aad4f71cb6c0c0de3c397af88dd583846cddafe3c4"
+  },
+  {
+    "bytes": 1251,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSavedDataTest.xml",
+    "sha256": "505cc18914860ddf447fcca129a9ae0d19f8d354f241b16d7c4cc304b99c1e2b"
+  },
+  {
+    "bytes": 2610,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSchemaV2Test.xml",
+    "sha256": "9ba5a4647a3ab504712c4d961bb45fe961cf5bcbb75c4637b2bb8d1a02643507"
+  },
+  {
+    "bytes": 1494,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.PlanetaryDiscoveryTest.xml",
+    "sha256": "386db0ac4ffec6b1de0ec4815be3e8abfaab32b42dfbc82720dad8afc6683cf4"
+  },
+  {
+    "bytes": 981,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTargetFlightPlannerTest.xml",
+    "sha256": "594b12fe280e96e83be77c5ec338921da767af4e10cde32c7052b985bd757721"
+  },
+  {
+    "bytes": 1088,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationTest.xml",
+    "sha256": "16647ddcaa94e31c3a9e5df1ac7e692b5e11dd2f196401de7ed19ca090ce9d82"
+  },
+  {
+    "bytes": 2109,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest.xml",
+    "sha256": "dc3c34fa6404d0ad5fc41a4a0e98d60a4c564987f5d708fcdaff1b619df3acc8"
+  },
+  {
+    "bytes": 1164,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMaintenanceStructureTest.xml",
+    "sha256": "4c5ec2ef4d0164e4ccdd1b75b3dba93891683cddc0d55b2778094b4fd0e48736"
+  },
+  {
+    "bytes": 1127,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest.xml",
+    "sha256": "b9140ee5162fe70b3965a7a4371b3358fa335bd7eab85d9d18cc2df7608fa748"
+  },
+  {
+    "bytes": 1397,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedDataTest.xml",
+    "sha256": "091065c8bbd0e09672ccec186d436aea2e7e9497ca337a8ebbcb035e3e7dda45"
+  },
+  {
+    "bytes": 111,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/binary/output.bin",
+    "sha256": "84551e9f24e22ff6b6631290416b36d9746a331edb1a4138bee68e71fb2da670"
+  },
+  {
+    "bytes": 36,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/binary/output.bin.idx",
+    "sha256": "9cb6e0087a4ded786b3dc5ad4f3b1e9f29ef2e3a57cf248a624081ee48907cc3"
+  },
+  {
+    "bytes": 8105,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit-xml/binary/results.bin",
+    "sha256": "dbb289f2ade77bf9cc5cecf32492f9c15818354e3aabedf13c7537c105ece76c"
+  },
+  {
+    "bytes": 6327,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/focused-junit.log",
+    "sha256": "1117b3f854cc67c80f739176a7da9168d2315b62a80119b3ff48f365f415b1d3"
+  },
+  {
+    "bytes": 515011,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/gametest-logs/debug.log",
+    "sha256": "0a88632e688af8bbf0f116c7f6d8eab975b370c0b5a34da9e6f8e1948a28b5a2"
+  },
+  {
+    "bytes": 407179,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/gametest-logs/latest.log",
+    "sha256": "7bb6bf287e8670e3bf439813182f393d4fe0ef14303b877d031c050a512527a3"
+  },
+  {
+    "bytes": 4436,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/generated-after.patch",
+    "sha256": "38a0298898c225e2cb527f00dfd66b66ab7abd32d4fd8f7469c2ef025fad58d9"
+  },
+  {
+    "bytes": 4436,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/generated-before.patch",
+    "sha256": "38a0298898c225e2cb527f00dfd66b66ab7abd32d4fd8f7469c2ef025fad58d9"
+  },
+  {
+    "bytes": 42,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/head-after.txt",
+    "sha256": "1dc84d993ce2394a0bc05dc0c31f49bfc770101c2b76a51d8e0fb069953a229f"
+  },
+  {
+    "bytes": 42,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/head-before.txt",
+    "sha256": "1dc84d993ce2394a0bc05dc0c31f49bfc770101c2b76a51d8e0fb069953a229f"
+  },
+  {
+    "bytes": 273629,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/inputs-after.json",
+    "sha256": "f73ecf8dafa1044bfe783f50517896330b61651d54cb42c370812e520a941ef9"
+  },
+  {
+    "bytes": 273629,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/inputs-before.json",
+    "sha256": "f73ecf8dafa1044bfe783f50517896330b61651d54cb42c370812e520a941ef9"
+  },
+  {
+    "bytes": 7305,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/native-artifact-audit.json",
+    "sha256": "2b3e3a3662375d9c8c1239b59bd1c114cf9ef538de6df444eac3a7154f961068"
+  },
+  {
+    "bytes": 7307,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/native-artifact-audit.log",
+    "sha256": "a766e4f27288b823b47c0e30f606e40a2b7494140fe3df49868612cfc5dff701"
+  },
+  {
+    "bytes": 1490,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/native-log-audit.json",
+    "sha256": "2a06225d64fed672ca04f026429db947faf4f37d72cdd8b8dbf312f36f897b95"
+  },
+  {
+    "bytes": 388,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/python-result.json",
+    "sha256": "f78c6182d5517a10e87660f5ff3f777a45511468f9b9a136a43b30e0daca3715"
+  },
+  {
+    "bytes": 5090,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/python-tests.log",
+    "sha256": "565907175949b798814daa3c82c276360edaadb98c8f2350cc0efed228ae51c8"
+  },
+  {
+    "bytes": 2443,
+    "path": "arce-v140-disc-final-review-941e61441246407d947d23d37d04c0ef/tracked-status-before.txt",
+    "sha256": "55e1263f4c1b0c3c8669612348d254ba70d2ac61194619524ef78ff25770e907"
+  },
+  {
+    "bytes": 6900,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/ADR-037-PLANETARY-DISCOVERY-AND-RESEARCH.md",
+    "sha256": "2db9be8745139b3d8ab8303aa3af0e58f7a4eae1d3b8f4b49ff8d62c466e4cdc"
+  },
+  {
+    "bytes": 3888,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/DiscoveryProgressFixture.java",
+    "sha256": "299be32caef62af30e1c43c10789814e74a7e503ab0dbce8908d395d931ece20"
+  },
+  {
+    "bytes": 12971,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/PlanetaryDiscoveryGameTests.java",
+    "sha256": "b2089731c21c696769460682f2a755e4d90386bec58464f29d0b5ab4b8b22d3d"
+  },
+  {
+    "bytes": 730,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/PlanetaryDiscoveryPolicy.java",
+    "sha256": "119ea33d814f10ca5a74336df8e90fa7f6f8ef1990322f6e64d1dd4bf004f3bb"
+  },
+  {
+    "bytes": 9266,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/PlanetaryDiscoveryTest.java",
+    "sha256": "eb3bf1eaf5fb61fb23905ee919e97d36c78bc83b9ee729206bae8bda5b1681b6"
+  },
+  {
+    "bytes": 9203,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/REVIEW-SOURCE-01.md",
+    "sha256": "2c78b480131c9030c331dd09a40039c39b1e31f6e0f7914acfc03bd2c3800705"
+  },
+  {
+    "bytes": 4598,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/REVIEW-SOURCE-02.md",
+    "sha256": "fdd6f91bd978bff4d772af7c955cdf3aa9645ccb1a0fecb9ce133d4214dcafef"
+  },
+  {
+    "bytes": 1769,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/SHA256SUMS",
+    "sha256": "39a37d89ab8007d68cf98e5baf7e9f6393e61114fb8f53e7b30a536c12d5a25c"
+  },
+  {
+    "bytes": 423,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/data_satellite.json",
+    "sha256": "f93ae04f6b0858aa4e0ed77f16481a91789429ca0cb8b6cc5af2ad989f7f9fd7"
+  },
+  {
+    "bytes": 42,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/head.txt",
+    "sha256": "1dc84d993ce2394a0bc05dc0c31f49bfc770101c2b76a51d8e0fb069953a229f"
+  },
+  {
+    "bytes": 4302,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/revision-02-DiscoveryProgressFixture.java",
+    "sha256": "91091e91d47d76d962d27efcc3b3fa94e8c26f9d60bff5aa20cb47c5adf6df9b"
+  },
+  {
+    "bytes": 13536,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/revision-02-PlanetaryDiscoveryGameTests.java",
+    "sha256": "0f7b9b02a8b6341738479c91a2eebd3a0b2389f1eb00847857609cec6bd56f9d"
+  },
+  {
+    "bytes": 35689,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/revision-02-run_v140_planetary_worlds_smoke.py",
+    "sha256": "0217696e279506b9a0455d24fd148ac191b80912590f68589226a454e2f0ea74"
+  },
+  {
+    "bytes": 17322,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/revision-02-test_v140_planetary_worlds_smoke.py",
+    "sha256": "3a716ec3a4f6ac13807b4e910bf466bc8bed32ebd25b6967249a88db887d5880"
+  },
+  {
+    "bytes": 35689,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/run_v140_planetary_worlds_smoke.py",
+    "sha256": "0217696e279506b9a0455d24fd148ac191b80912590f68589226a454e2f0ea74"
+  },
+  {
+    "bytes": 1193,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/snapshot-inputs-01.sha256",
+    "sha256": "01aedac835d0847ecbe91fef42027ff8217d2d0f456ed8ad44515591edc98ded"
+  },
+  {
+    "bytes": 556,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/snapshot-inputs-02.sha256",
+    "sha256": "26bf3785237d4b232c261ce8532e28721170a905538fa62e2f74a23add47f630"
+  },
+  {
+    "bytes": 17322,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/test_v140_planetary_worlds_smoke.py",
+    "sha256": "3a716ec3a4f6ac13807b4e910bf466bc8bed32ebd25b6967249a88db887d5880"
+  },
+  {
+    "bytes": 49260,
+    "path": "arce-v140-disc-source-review-125f78863a4c4f22ac9684c5b11b1ba3/tracked-source-01.patch",
+    "sha256": "13e46a3253acb94bfa1e76b42926af2d01944412b0161edc70ee46e7a3398896"
+  }
+]

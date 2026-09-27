@@ -55,7 +55,10 @@ server navigation; see [navigation evidence](../work/v1.4.0-nav/VERIFICATION.md)
 SKY implements bounded resource-pack sky/fog/sun/stars and lifecycle-bound
 ambience for Moon/Mars/Venus/shared Space; see
 [presentation evidence](../work/v1.4.0-sky/VERIFICATION.md).
-Real-client navigation/presentation acceptance, discovery and remaining
+DISC connects opt-in destination permission to shared celestial discoveries and
+private satellite research, with locked star-map feedback and flight protocol 8;
+see [discovery evidence](../work/v1.4.0-discovery/VERIFICATION.md).
+Real-client navigation/presentation/discovery acceptance and remaining
 migration/acceptance are still pending.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding

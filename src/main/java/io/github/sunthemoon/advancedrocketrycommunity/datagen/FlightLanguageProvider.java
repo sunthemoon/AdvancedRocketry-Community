@@ -137,6 +137,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case INSUFFICIENT_CAPACITY -> "Fuel capacity is below the required %s units";
             case INSUFFICIENT_FUEL -> "Not enough fuel; route requires %s units";
             case ARITHMETIC_OVERFLOW -> "Route calculation exceeded its fixed bounds";
+            case DISCOVERY_REQUIRED -> "Discover this body with a Data Satellite first";
         };
     }
 
@@ -164,6 +165,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case INSUFFICIENT_CAPACITY -> "燃料容量低于航程所需的 %s 单位";
             case INSUFFICIENT_FUEL -> "燃料不足；航程需要 %s 单位";
             case ARITHMETIC_OVERFLOW -> "航程计算超出固定边界";
+            case DISCOVERY_REQUIRED -> "请先通过数据卫星发现此天体";
         };
     }
 }

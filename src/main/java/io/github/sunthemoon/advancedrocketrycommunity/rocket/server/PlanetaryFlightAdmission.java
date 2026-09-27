@@ -1,6 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.PlanetaryDiscoveryPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.PlanetarySurfaceResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -12,6 +14,17 @@ import net.minecraft.server.level.ServerLevel;
 /** Metadata-only admission for quotes and new launches; committed recovery is separate. */
 final class PlanetaryFlightAdmission {
     private PlanetaryFlightAdmission() {
+    }
+
+    static boolean discovered(ServerLevel level, TravelTarget destination, CelestialCatalog catalog,
+            StationRegistrySavedData stations) {
+        var id = destination instanceof TravelTarget.BodySurface surface ? surface.bodyId()
+                : destination instanceof TravelTarget.Station station
+                ? stations.find(station.instanceId()).map(value -> value.orbitBody()).orElse(null) : null;
+        return PlanetaryDiscoveryPolicy.allows(id == null ? null : catalog.get(id).orElse(null), body -> {
+            var progress = CelestialSavedData.get(level.getServer());
+            return progress.isWritableSchema() && progress.get(body).isPresent();
+        });
     }
 
     static boolean allows(RocketEntity rocket, RocketFlightData flight, TravelTarget source,

@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.List;
 import java.util.Locale;
@@ -122,7 +123,9 @@ public final class RocketStarMap {
             }
             for (var node : layout.nodes()) {
                 int nx = sx(node), ny = sy(node);
-                int color = node.id().equals(selectedBody) ? 0xFFE59D3B : 0xFF5BC7A8;
+                boolean locked = coherent(menu) && menu.quotes().forTarget(new TravelTarget.BodySurface(node.id()))
+                        .status() == RocketNavigationStatus.DISCOVERY_REQUIRED;
+                int color = node.id().equals(selectedBody) ? 0xFFE59D3B : locked ? 0xFF87939A : 0xFF5BC7A8;
                 graphics.fill(nx - 3, ny - 3, nx + 4, ny + 4, color);
                 if (node.id().equals(selectedBody)) { graphics.renderOutline(nx - 6, ny - 6, 13, 13, color); }
                 line(graphics, font, bodyLabel(node.id()), nx + 8, ny - 4, 88, color);
@@ -147,6 +150,9 @@ public final class RocketStarMap {
 
     private Component quoteLabel(TravelTarget target) {
         var quote = menu.quotes().forTarget(target);
+        if (quote.status() == RocketNavigationStatus.DISCOVERY_REQUIRED) {
+            return Component.translatable(quote.status().translationKey());
+        }
         return Component.translatable("starmap.advancedrocketrycommunity.quote",
                 Component.translatable(quote.status().translationKey()), quote.requiredFuel());
     }

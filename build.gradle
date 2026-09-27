@@ -135,8 +135,14 @@ def currentSupersededV030Types = [
         'data/advancedrocketrycommunity/dimension_type/space.json'
 ] as Set
 
+def currentSatelliteDefinition = 'data/advancedrocketrycommunity/satellite_definitions/data_satellite.json'
+
 tasks.named('processResources') {
     eachFile { details ->
+        if (details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
+                && details.path == currentSatelliteDefinition) {
+            details.exclude()
+        }
         boolean isHistoricalCopy = details.file.toPath().startsWith(
                 file('src/generated/resources').toPath()
         ) || details.file.toPath().startsWith(
@@ -154,6 +160,10 @@ tasks.named('processResources') {
 
 tasks.named('sourcesJar') {
     eachFile { details ->
+        if (details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
+                && details.path == currentSatelliteDefinition) {
+            details.exclude()
+        }
         boolean isHistoricalCopy = details.file.toPath().startsWith(
                 file('src/generated/resources').toPath()
         ) || details.file.toPath().startsWith(

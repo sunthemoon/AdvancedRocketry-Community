@@ -19,14 +19,14 @@ class RocketNavigationTest {
     void explicitStatusIdsAndAllPlannerResultsHaveFixedMeaning() {
         String[] meanings = {"READY", "CURRENT", "NO_ROUTE", "MISSING_COMPONENTS", "INSUFFICIENT_THRUST",
                 "FUEL_STATE_MISMATCH", "INSUFFICIENT_CAPACITY", "INSUFFICIENT_FUEL", "INVALID_STATE",
-                "UNAUTHORIZED", "UNAVAILABLE", "ARITHMETIC_OVERFLOW"};
+                "UNAUTHORIZED", "UNAVAILABLE", "ARITHMETIC_OVERFLOW", "DISCOVERY_REQUIRED"};
         for (int index = 0; index < meanings.length; index++) {
             var status = RocketNavigationStatus.fromWire(index);
             assertEquals(meanings[index], status.name());
             assertEquals(index, status.wireId());
         }
         assertThrows(IllegalArgumentException.class, () -> RocketNavigationStatus.fromWire(-1));
-        assertThrows(IllegalArgumentException.class, () -> RocketNavigationStatus.fromWire(12));
+        assertThrows(IllegalArgumentException.class, () -> RocketNavigationStatus.fromWire(13));
         for (var code : RocketFlightPlanCode.values()) {
             var status = RocketNavigationStatus.resolve(code, true, true);
             String expected = switch (code) {

@@ -22,7 +22,8 @@ public record CelestialBodyDefinition(
         CelestialCapabilities capabilities,
         double solarIntensity,
         double radiation,
-        boolean environmentEffects
+        boolean environmentEffects,
+        boolean discoveryRequired
 ) {
     public static final int SCHEMA_VERSION = 2;
     public static final double MAX_GRAVITY_MULTIPLIER = 4.0D;
@@ -74,6 +75,15 @@ public record CelestialBodyDefinition(
             double solarIntensity, double radiation) {
         this(id, parentId, levelKey, gravityMultiplier, atmosphere, orbit, visualProfile,
                 capabilities, solarIntensity, radiation, false);
+    }
+
+    /** Existing authoring callers preserve their pre-discovery arrival policy. */
+    public CelestialBodyDefinition(ResourceLocation id, Optional<ResourceLocation> parentId,
+            Optional<ResourceKey<Level>> levelKey, double gravityMultiplier, AtmosphereDefinition atmosphere,
+            OrbitDefinition orbit, ResourceLocation visualProfile, CelestialCapabilities capabilities,
+            double solarIntensity, double radiation, boolean environmentEffects) {
+        this(id, parentId, levelKey, gravityMultiplier, atmosphere, orbit, visualProfile,
+                capabilities, solarIntensity, radiation, environmentEffects, false);
     }
 
     public boolean isRoot() {

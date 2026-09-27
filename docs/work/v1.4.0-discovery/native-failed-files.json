@@ -1,0 +1,602 @@
+[
+  {
+    "bytes": 7888,
+    "path": "evidence/SHA256SUMS",
+    "sha256": "dcd61d708fa30b7918be395fb3aa4d730fbb19e53a3c66cdd13a153638c772f4"
+  },
+  {
+    "bytes": 284,
+    "path": "evidence/baseline/bindings.json",
+    "sha256": "9751665a28ecea1cf826c68c57852d0484fd14466568b0850957e4b5a82a7544"
+  },
+  {
+    "bytes": 2376,
+    "path": "evidence/baseline/commands.json",
+    "sha256": "d7a4030f0109b6327c3c137ff80c00ca7467335e185cc17a1282753dd0fddf98"
+  },
+  {
+    "bytes": 95362,
+    "path": "evidence/baseline/debug.log",
+    "sha256": "c8b072926896ab1e60546437312d5e0706a55a0649d89a568ce31a28f9b1c933"
+  },
+  {
+    "bytes": 47,
+    "path": "evidence/baseline/inputs/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 1351,
+    "path": "evidence/baseline/inputs/server.properties",
+    "sha256": "4a36b5759fc9448e4c631e0e9bef550d233995ecd73e9fd57b31d0e0f42c88ca"
+  },
+  {
+    "bytes": 330,
+    "path": "evidence/baseline/inputs/server.properties.v002-startup",
+    "sha256": "91634c102ed7e9710014f9aafc21c11046c5dccaeedf9e795204a28ede2599fe"
+  },
+  {
+    "bytes": 37851,
+    "path": "evidence/baseline/inputs/world/level.dat",
+    "sha256": "b589bc54e86562cd2cac18ba6a62dacc023395d4a42671954c34b4c181ae8402"
+  },
+  {
+    "bytes": 26041,
+    "path": "evidence/baseline/latest.log",
+    "sha256": "f1f909326cb05c53f48088e41f19f45bf67b57a5f453f25d7e1286c2ae7361f8"
+  },
+  {
+    "bytes": 839,
+    "path": "evidence/baseline/launch.json",
+    "sha256": "dfcbbce4302f1219b9066a24975cd144d74d8141023bb464c965192f431b39df"
+  },
+  {
+    "bytes": 4872,
+    "path": "evidence/baseline/native/entity-regions.json",
+    "sha256": "668f3f24cf06d6671866c184b28b456aafa8a31b386e51cf95c4e0d9c98ba97f"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/native/world/dimensions/advancedrocketrycommunity/space/entities/r.-1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/native/world/dimensions/advancedrocketrycommunity/space/entities/r.-1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/native/world/dimensions/advancedrocketrycommunity/space/entities/r.0.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/native/world/dimensions/advancedrocketrycommunity/space/entities/r.0.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 110592,
+    "path": "evidence/baseline/native/world/entities/r.0.-1.mca",
+    "sha256": "68f253396f0b01a9f1500f8a517c2479a8304daad5b0593506356e45180b293a"
+  },
+  {
+    "bytes": 24576,
+    "path": "evidence/baseline/native/world/entities/r.0.0.mca",
+    "sha256": "9a19c2a593a3edc608cb4c1ea0178ad86d2c54e91c70948627c53b3882ea4a91"
+  },
+  {
+    "bytes": 1110,
+    "path": "evidence/baseline/observations.json",
+    "sha256": "d051e0f72e961294ebc5db27ee8b12d06f070d40844c3b98e191bd82d49b17c5"
+  },
+  {
+    "bytes": 1962,
+    "path": "evidence/baseline/rocket-entity.snbt",
+    "sha256": "149613873cb5d29b7a642b8bc05836db57f663f0a8310c9f1b45442378be346c"
+  },
+  {
+    "bytes": 378,
+    "path": "evidence/baseline/stations.dat",
+    "sha256": "4f2487959a03d8569f61d07f5e962d73951f0f981817d9a2ee594c39b569e610"
+  },
+  {
+    "bytes": 994,
+    "path": "evidence/baseline/status.json",
+    "sha256": "1df5bb62a914be84e22e3791c6e0b3f6a1a10d46e46d441ce03eba582f8fa565"
+  },
+  {
+    "bytes": 21312,
+    "path": "evidence/baseline/stdout.txt",
+    "sha256": "0b351289a60a78f5940a5d7b6939e8763226b4435d8d5a2fdc8f01311b50ca34"
+  },
+  {
+    "bytes": 48,
+    "path": "evidence/baseline/world-backup/DIM-1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "evidence/baseline/world-backup/DIM-1/data/raids.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 48,
+    "path": "evidence/baseline/world-backup/DIM1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "evidence/baseline/world-backup/DIM1/data/raids_end.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 284,
+    "path": "evidence/baseline/world-backup/data/advancedrocketrycommunity_planetary_bindings.json",
+    "sha256": "9751665a28ecea1cf826c68c57852d0484fd14466568b0850957e4b5a82a7544"
+  },
+  {
+    "bytes": 108,
+    "path": "evidence/baseline/world-backup/data/advancedrocketrycommunity_rocket_transactions.dat",
+    "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+  },
+  {
+    "bytes": 167,
+    "path": "evidence/baseline/world-backup/data/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "9d79322bb2b0e5a244d4f7236ebfda0e3cbcde5cd58dcd8bc7388deda09769e1"
+  },
+  {
+    "bytes": 378,
+    "path": "evidence/baseline/world-backup/data/advancedrocketrycommunity_stations.dat",
+    "sha256": "4f2487959a03d8569f61d07f5e962d73951f0f981817d9a2ee594c39b569e610"
+  },
+  {
+    "bytes": 48,
+    "path": "evidence/baseline/world-backup/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 65,
+    "path": "evidence/baseline/world-backup/data/chunks.dat",
+    "sha256": "085a64c666efa89271db6e8e750cab92cde8be1d62a6439f649b436956d6493a"
+  },
+  {
+    "bytes": 89,
+    "path": "evidence/baseline/world-backup/data/raids.dat",
+    "sha256": "ee01e5ab997f56d3ce0289016c59a052532c3f65029ea828667c7e640e69d69e"
+  },
+  {
+    "bytes": 194,
+    "path": "evidence/baseline/world-backup/data/scoreboard.dat",
+    "sha256": "c0b09edc8f06fdbc902187c2bc7f2a9fa3269e20b4faf0050a8c938526b2ab0c"
+  },
+  {
+    "bytes": 48,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/moon/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/moon/data/raids.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 48,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/data/raids.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/entities/r.-1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/entities/r.-1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/entities/r.0.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/entities/r.0.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 598016,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/region/r.-1.-1.mca",
+    "sha256": "57ed0f738b762a9f3b665d651f4f2df9d36a0780bde71f19e4e4dbd9c9e4d400"
+  },
+  {
+    "bytes": 598016,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/region/r.-1.0.mca",
+    "sha256": "2520fdc69b2644e3a7b7706f088f4bf2eeff68e0030d127a586b042571c6c2fb"
+  },
+  {
+    "bytes": 598016,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/region/r.0.-1.mca",
+    "sha256": "0c6931be8efc1cd385e8e3d44e8469a3fa621255ab0a4357bfa58629f79c85b0"
+  },
+  {
+    "bytes": 598016,
+    "path": "evidence/baseline/world-backup/dimensions/advancedrocketrycommunity/space/region/r.0.0.mca",
+    "sha256": "1f6988b1d2ecc91e5640efeefba3d6f760933cd1618ce67ef2a04cd38169c9e7"
+  },
+  {
+    "bytes": 110592,
+    "path": "evidence/baseline/world-backup/entities/r.0.-1.mca",
+    "sha256": "68f253396f0b01a9f1500f8a517c2479a8304daad5b0593506356e45180b293a"
+  },
+  {
+    "bytes": 24576,
+    "path": "evidence/baseline/world-backup/entities/r.0.0.mca",
+    "sha256": "9a19c2a593a3edc608cb4c1ea0178ad86d2c54e91c70948627c53b3882ea4a91"
+  },
+  {
+    "bytes": 37851,
+    "path": "evidence/baseline/world-backup/level.dat",
+    "sha256": "b589bc54e86562cd2cac18ba6a62dacc023395d4a42671954c34b4c181ae8402"
+  },
+  {
+    "bytes": 37853,
+    "path": "evidence/baseline/world-backup/level.dat_old",
+    "sha256": "8f8e3a95a7fbfbeac9d1a9a64b76c92adeafb22f88480afa95249046a91a79f0"
+  },
+  {
+    "bytes": 401408,
+    "path": "evidence/baseline/world-backup/region/r.-1.-1.mca",
+    "sha256": "42b8a270751776d4813a6a11b4da3351ff26ef875f56fbfe53b8ebaa256563c3"
+  },
+  {
+    "bytes": 20480,
+    "path": "evidence/baseline/world-backup/region/r.-1.-2.mca",
+    "sha256": "ffce31ce17400ea6230b6ec32df331bff5e33a6fffa6a9eaf405614970f15d89"
+  },
+  {
+    "bytes": 155648,
+    "path": "evidence/baseline/world-backup/region/r.-1.0.mca",
+    "sha256": "fad4c089ac7ab58c4217df74201541be7ea0e7912196fbd06d83fee1baa4897d"
+  },
+  {
+    "bytes": 6615040,
+    "path": "evidence/baseline/world-backup/region/r.0.-1.mca",
+    "sha256": "be5dbb34cb055f27b4896f85bb288380d8a4e152a9ac5c682209e4c292c8308a"
+  },
+  {
+    "bytes": 139264,
+    "path": "evidence/baseline/world-backup/region/r.0.-2.mca",
+    "sha256": "d995de234736d13740e8c8f3f55ef55a6037f8c051888b0a9201b8104d95786e"
+  },
+  {
+    "bytes": 4276224,
+    "path": "evidence/baseline/world-backup/region/r.0.0.mca",
+    "sha256": "0bf894fddabe19562559f5fa1b5bcb395f20b2e5aef441f6eb1eac328d9fab71"
+  },
+  {
+    "bytes": 1343488,
+    "path": "evidence/baseline/world-backup/region/r.1.-1.mca",
+    "sha256": "33e9eb094e0d6532133b2ac933141c756ad65a370579f5025a772b0e769bd4de"
+  },
+  {
+    "bytes": 49152,
+    "path": "evidence/baseline/world-backup/region/r.1.-2.mca",
+    "sha256": "608e9f60e853ffd79591db01b9ede06c1e210060c1f6a7d7a8e889bd911a6ee4"
+  },
+  {
+    "bytes": 499712,
+    "path": "evidence/baseline/world-backup/region/r.1.0.mca",
+    "sha256": "0def0ea2e0397163f6e93669b0f534a66853384e985cd569cfa3e4fe457fc110"
+  },
+  {
+    "bytes": 1787,
+    "path": "evidence/baseline/world-backup/serverconfig/forge-server.toml",
+    "sha256": "e2c32c27453033ef3910d5b6a24ae1a8c1fd224c2ac0a97388d5aa27a6a00ad1"
+  },
+  {
+    "bytes": 3,
+    "path": "evidence/baseline/world-backup/session.lock",
+    "sha256": "51643361c79ecaef25a8de802de24f570ba25d9c2df1d22d94fade11b4f466cc"
+  },
+  {
+    "bytes": 488,
+    "path": "evidence/baseline/world-identity.json",
+    "sha256": "abab5194d83e456907c9525f12a489e848dbc89da07b7c4c831230c94728abd1"
+  },
+  {
+    "bytes": 226,
+    "path": "evidence/failure.json",
+    "sha256": "1da7fd65e8ae243de8fb78c1a3283bfe4ff460f8c9874075bd98a19d129c5367"
+  },
+  {
+    "bytes": 1301,
+    "path": "evidence/summary.json",
+    "sha256": "b83d6a459ac489cee2e0f332991e0a3276b9f5d719e9f5db55924461e8f3e257"
+  },
+  {
+    "bytes": 800,
+    "path": "evidence/upgrade/commands.json",
+    "sha256": "a788d2e8d19759e59f6369e0d8cf46718f75b00b7c7450caa07c4134c56f3131"
+  },
+  {
+    "bytes": 79321,
+    "path": "evidence/upgrade/debug.log",
+    "sha256": "dfa0833d42823afeaaa2963fbe05fd46163e634191086fcb519e1e00de2a7491"
+  },
+  {
+    "bytes": 13828,
+    "path": "evidence/upgrade/latest.log",
+    "sha256": "018f2a14863fc658c9d5d2c8abb128f3c67569e073d3e77388a48705e8726b40"
+  },
+  {
+    "bytes": 868,
+    "path": "evidence/upgrade/launch.json",
+    "sha256": "f43606a0415c039f082d18e8db4dfb6b38f0610d9a6368f34913ca7ff8abab15"
+  },
+  {
+    "bytes": 274,
+    "path": "evidence/upgrade/observations.json",
+    "sha256": "ff839b50725e2c4eda3d08e25f8e71a933da6f7e154d0fc42bcce4e988b5f3b2"
+  },
+  {
+    "bytes": 994,
+    "path": "evidence/upgrade/status.json",
+    "sha256": "1e41842270f396f0ac563a3eb9b42ef4e61b790c95606e6acee5d31fb87d5481"
+  },
+  {
+    "bytes": 11665,
+    "path": "evidence/upgrade/stdout.txt",
+    "sha256": "1b798c06ec30765f1c5346b8bb397a1611d5ff74aff40bd0e27c99771c099011"
+  },
+  {
+    "bytes": 324,
+    "path": "world/.v002-smoke-world-identity.json",
+    "sha256": "164a1daa7c4c16407acdb8b2db3e71d29f1a88dbde8e30aaee608b27bf8dc127"
+  },
+  {
+    "bytes": 48,
+    "path": "world/DIM-1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "world/DIM-1/data/raids.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 48,
+    "path": "world/DIM1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "world/DIM1/data/raids_end.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 508,
+    "path": "world/data/advancedrocketrycommunity_planetary_bindings.json",
+    "sha256": "46415acea29b2804e9ed00e860ccdc115eb29bea8457e21ecd9119e0c894108b"
+  },
+  {
+    "bytes": 108,
+    "path": "world/data/advancedrocketrycommunity_rocket_transactions.dat",
+    "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+  },
+  {
+    "bytes": 167,
+    "path": "world/data/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "9d79322bb2b0e5a244d4f7236ebfda0e3cbcde5cd58dcd8bc7388deda09769e1"
+  },
+  {
+    "bytes": 378,
+    "path": "world/data/advancedrocketrycommunity_stations.dat",
+    "sha256": "4f2487959a03d8569f61d07f5e962d73951f0f981817d9a2ee594c39b569e610"
+  },
+  {
+    "bytes": 48,
+    "path": "world/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 65,
+    "path": "world/data/chunks.dat",
+    "sha256": "085a64c666efa89271db6e8e750cab92cde8be1d62a6439f649b436956d6493a"
+  },
+  {
+    "bytes": 89,
+    "path": "world/data/raids.dat",
+    "sha256": "ee01e5ab997f56d3ce0289016c59a052532c3f65029ea828667c7e640e69d69e"
+  },
+  {
+    "bytes": 194,
+    "path": "world/data/scoreboard.dat",
+    "sha256": "c0b09edc8f06fdbc902187c2bc7f2a9fa3269e20b4faf0050a8c938526b2ab0c"
+  },
+  {
+    "bytes": 48,
+    "path": "world/dimensions/advancedrocketrycommunity/moon/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "world/dimensions/advancedrocketrycommunity/moon/data/raids.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 48,
+    "path": "world/dimensions/advancedrocketrycommunity/space/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "world/dimensions/advancedrocketrycommunity/space/data/raids.dat",
+    "sha256": "85d3eecf8959c97d8a6d87cf52091318c71b1dbe0cb5bf21621312328020099c"
+  },
+  {
+    "bytes": 0,
+    "path": "world/dimensions/advancedrocketrycommunity/space/entities/r.-1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/dimensions/advancedrocketrycommunity/space/entities/r.-1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/dimensions/advancedrocketrycommunity/space/entities/r.0.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/dimensions/advancedrocketrycommunity/space/entities/r.0.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 598016,
+    "path": "world/dimensions/advancedrocketrycommunity/space/region/r.-1.-1.mca",
+    "sha256": "57ed0f738b762a9f3b665d651f4f2df9d36a0780bde71f19e4e4dbd9c9e4d400"
+  },
+  {
+    "bytes": 598016,
+    "path": "world/dimensions/advancedrocketrycommunity/space/region/r.-1.0.mca",
+    "sha256": "2520fdc69b2644e3a7b7706f088f4bf2eeff68e0030d127a586b042571c6c2fb"
+  },
+  {
+    "bytes": 598016,
+    "path": "world/dimensions/advancedrocketrycommunity/space/region/r.0.-1.mca",
+    "sha256": "0c6931be8efc1cd385e8e3d44e8469a3fa621255ab0a4357bfa58629f79c85b0"
+  },
+  {
+    "bytes": 598016,
+    "path": "world/dimensions/advancedrocketrycommunity/space/region/r.0.0.mca",
+    "sha256": "1f6988b1d2ecc91e5640efeefba3d6f760933cd1618ce67ef2a04cd38169c9e7"
+  },
+  {
+    "bytes": 110592,
+    "path": "world/entities/r.0.-1.mca",
+    "sha256": "68f253396f0b01a9f1500f8a517c2479a8304daad5b0593506356e45180b293a"
+  },
+  {
+    "bytes": 24576,
+    "path": "world/entities/r.0.0.mca",
+    "sha256": "9a19c2a593a3edc608cb4c1ea0178ad86d2c54e91c70948627c53b3882ea4a91"
+  },
+  {
+    "bytes": 37905,
+    "path": "world/level.dat",
+    "sha256": "69b3d3bd0c958048ea61f983f59a77d4962f4f151edfd44beece8e7124a5d611"
+  },
+  {
+    "bytes": 37851,
+    "path": "world/level.dat_old",
+    "sha256": "b589bc54e86562cd2cac18ba6a62dacc023395d4a42671954c34b4c181ae8402"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.-1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.-1.-2.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.-1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.0.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.0.-2.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.0.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.1.-2.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "world/poi/r.1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 401408,
+    "path": "world/region/r.-1.-1.mca",
+    "sha256": "42b8a270751776d4813a6a11b4da3351ff26ef875f56fbfe53b8ebaa256563c3"
+  },
+  {
+    "bytes": 20480,
+    "path": "world/region/r.-1.-2.mca",
+    "sha256": "ffce31ce17400ea6230b6ec32df331bff5e33a6fffa6a9eaf405614970f15d89"
+  },
+  {
+    "bytes": 155648,
+    "path": "world/region/r.-1.0.mca",
+    "sha256": "fad4c089ac7ab58c4217df74201541be7ea0e7912196fbd06d83fee1baa4897d"
+  },
+  {
+    "bytes": 6676874,
+    "path": "world/region/r.0.-1.mca",
+    "sha256": "a6c2d60faad09df2e82597bc54744df757613ee1305414761f26fbd406b63cc4"
+  },
+  {
+    "bytes": 139264,
+    "path": "world/region/r.0.-2.mca",
+    "sha256": "d995de234736d13740e8c8f3f55ef55a6037f8c051888b0a9201b8104d95786e"
+  },
+  {
+    "bytes": 4298157,
+    "path": "world/region/r.0.0.mca",
+    "sha256": "5bfdf30cccc772cca1774e424187903c8347e9b975471d57835fb437398e2f0e"
+  },
+  {
+    "bytes": 1343488,
+    "path": "world/region/r.1.-1.mca",
+    "sha256": "33e9eb094e0d6532133b2ac933141c756ad65a370579f5025a772b0e769bd4de"
+  },
+  {
+    "bytes": 49152,
+    "path": "world/region/r.1.-2.mca",
+    "sha256": "608e9f60e853ffd79591db01b9ede06c1e210060c1f6a7d7a8e889bd911a6ee4"
+  },
+  {
+    "bytes": 499712,
+    "path": "world/region/r.1.0.mca",
+    "sha256": "0def0ea2e0397163f6e93669b0f534a66853384e985cd569cfa3e4fe457fc110"
+  },
+  {
+    "bytes": 1787,
+    "path": "world/serverconfig/forge-server.toml",
+    "sha256": "e2c32c27453033ef3910d5b6a24ae1a8c1fd224c2ac0a97388d5aa27a6a00ad1"
+  },
+  {
+    "bytes": 3,
+    "path": "world/session.lock",
+    "sha256": "51643361c79ecaef25a8de802de24f570ba25d9c2df1d22d94fade11b4f466cc"
+  }
+]

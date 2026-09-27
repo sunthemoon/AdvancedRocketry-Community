@@ -45,10 +45,16 @@ public final class EarthReturnPadFixture {
     public static void afterStation(ServerLevel level) { restore(level); }
 
     @BeforeBatch(batch = "planetary_surface_flight")
-    public static void beforePlanetary(ServerLevel level) { install(level); }
+    public static void beforePlanetary(ServerLevel level) {
+        install(level);
+        try { DiscoveryProgressFixture.install(level, true); }
+        catch (RuntimeException | Error failure) { restore(level); throw failure; }
+    }
 
     @AfterBatch(batch = "planetary_surface_flight")
-    public static void afterPlanetary(ServerLevel level) { restore(level); }
+    public static void afterPlanetary(ServerLevel level) {
+        try { DiscoveryProgressFixture.restore(level); } finally { restore(level); }
+    }
 
     @BeforeBatch(batch = "planetary_admission")
     public static void beforeAdmission(ServerLevel level) { install(level); }

@@ -1,0 +1,206 @@
+[
+  {
+    "bytes": 324,
+    "jar_entry": "assets/advancedrocketrycommunity/celestial_visuals/mars.json",
+    "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/mars.json",
+    "sha256": "8c322e5c0bdbfb92652d5f8b090cf02ca51206fa493885b596dbef445140fe70"
+  },
+  {
+    "bytes": 251,
+    "jar_entry": "assets/advancedrocketrycommunity/celestial_visuals/moon.json",
+    "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/moon.json",
+    "sha256": "d6477e3845207c157152e552a6c6e1b5428564f41186f85cb66271bec5bee730"
+  },
+  {
+    "bytes": 252,
+    "jar_entry": "assets/advancedrocketrycommunity/celestial_visuals/space.json",
+    "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/space.json",
+    "sha256": "7afb2ad8d638d950fea98ea1bb4be9d4fef26f2a742af1299d902de99e9b0884"
+  },
+  {
+    "bytes": 320,
+    "jar_entry": "assets/advancedrocketrycommunity/celestial_visuals/venus.json",
+    "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity/celestial_visuals/venus.json",
+    "sha256": "8bba67b940d0d6f9d0eb899942dd01855fb4f3063ff410693641319a904de74d"
+  },
+  {
+    "bytes": 4035,
+    "jar_entry": "assets/advancedrocketrycommunity_v140/lang/en_us.json",
+    "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity_v140/lang/en_us.json",
+    "sha256": "3cf9762f19dfde11438db4fd4c45c9a48fce02fffdfc4b938868e2a4b9caff7d"
+  },
+  {
+    "bytes": 3910,
+    "jar_entry": "assets/advancedrocketrycommunity_v140/lang/zh_cn.json",
+    "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity_v140/lang/zh_cn.json",
+    "sha256": "2c20e22f12d103421710b18e348d23f639827628bb7b88a6cdc934b0eeaba6ab"
+  },
+  {
+    "bytes": 672,
+    "jar_entry": "data/advancedrocketrycommunity/celestial_bodies/gas_giant.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/celestial_bodies/gas_giant.json",
+    "sha256": "bb8e0d6863f0fcdd2b4f110f1edae16e5728a8f6426ac52adef461bafc30be2a"
+  },
+  {
+    "bytes": 702,
+    "jar_entry": "data/advancedrocketrycommunity/celestial_bodies/mars.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/celestial_bodies/mars.json",
+    "sha256": "1fa7018d8eb7062bccfbb8d0c8cee2b7c590f1935b33ed5703ad61753336a0cd"
+  },
+  {
+    "bytes": 702,
+    "jar_entry": "data/advancedrocketrycommunity/celestial_bodies/venus.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/celestial_bodies/venus.json",
+    "sha256": "f441c3bef005a8592a1b08e3869e0f02b5d259b1ef7eebc925d13c51ee2dd1cd"
+  },
+  {
+    "bytes": 124,
+    "jar_entry": "data/advancedrocketrycommunity/damage_type/planetary_cold.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/damage_type/planetary_cold.json",
+    "sha256": "23c5a7b38ab674c59eb20e4e4a10d329cdc7fc18bac673e20910e8e8a5f109cc"
+  },
+  {
+    "bytes": 124,
+    "jar_entry": "data/advancedrocketrycommunity/damage_type/planetary_heat.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/damage_type/planetary_heat.json",
+    "sha256": "88b96e82c53ab3181e5a2c473c5603d746b6da8e9e322e9734383bf4baceeacd"
+  },
+  {
+    "bytes": 128,
+    "jar_entry": "data/advancedrocketrycommunity/damage_type/planetary_pressure.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/damage_type/planetary_pressure.json",
+    "sha256": "d2c47e1270b85e4bd506ff0cdf8d7e14f14839ecf85f2d154e19465f944da422"
+  },
+  {
+    "bytes": 125,
+    "jar_entry": "data/advancedrocketrycommunity/damage_type/planetary_solar.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/damage_type/planetary_solar.json",
+    "sha256": "b2f9ed88a0f3c2b8d392abc100edc2886188260fa75c58e045b80baf047999b0"
+  },
+  {
+    "bytes": 258,
+    "jar_entry": "data/advancedrocketrycommunity/dimension/mars.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension/mars.json",
+    "sha256": "6dce04d4073cf7c32c8e887465b2a40f34197dba99a5b734be9b799b39698d80"
+  },
+  {
+    "bytes": 261,
+    "jar_entry": "data/advancedrocketrycommunity/dimension/venus.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension/venus.json",
+    "sha256": "123d95575c13eecd6acee6ae0695e4334b3cb0048e6223f1ba544c5eacfc9c8b"
+  },
+  {
+    "bytes": 476,
+    "jar_entry": "data/advancedrocketrycommunity/dimension_type/mars.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/mars.json",
+    "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+  },
+  {
+    "bytes": 499,
+    "jar_entry": "data/advancedrocketrycommunity/dimension_type/moon.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/moon.json",
+    "sha256": "bcdc5a91099613d4ac0a4cafeac52170f05b24e678a3da411ef959ed849a14cf"
+  },
+  {
+    "bytes": 506,
+    "jar_entry": "data/advancedrocketrycommunity/dimension_type/space.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/space.json",
+    "sha256": "e68d8206cc98057f9fd698269e0d8e36a45cbaa43f597f292d6698eea7a51402"
+  },
+  {
+    "bytes": 476,
+    "jar_entry": "data/advancedrocketrycommunity/dimension_type/venus.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/dimension_type/venus.json",
+    "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+  },
+  {
+    "bytes": 423,
+    "jar_entry": "data/advancedrocketrycommunity/satellite_definitions/data_satellite.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/satellite_definitions/data_satellite.json",
+    "sha256": "f93ae04f6b0858aa4e0ed77f16481a91789429ca0cb8b6cc5af2ad989f7f9fd7"
+  },
+  {
+    "bytes": 249,
+    "jar_entry": "data/advancedrocketrycommunity/tags/items/pressure_protection.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/tags/items/pressure_protection.json",
+    "sha256": "f5f834b99d4c3742f4c5b756be5aed01c5f6df9537da63e01cadd89ef644e6ac"
+  },
+  {
+    "bytes": 249,
+    "jar_entry": "data/advancedrocketrycommunity/tags/items/solar_protection.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/tags/items/solar_protection.json",
+    "sha256": "f5f834b99d4c3742f4c5b756be5aed01c5f6df9537da63e01cadd89ef644e6ac"
+  },
+  {
+    "bytes": 249,
+    "jar_entry": "data/advancedrocketrycommunity/tags/items/thermal_protection.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/tags/items/thermal_protection.json",
+    "sha256": "f5f834b99d4c3742f4c5b756be5aed01c5f6df9537da63e01cadd89ef644e6ac"
+  },
+  {
+    "bytes": 363,
+    "jar_entry": "data/advancedrocketrycommunity/travel_routes/earth_gas_orbit.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/travel_routes/earth_gas_orbit.json",
+    "sha256": "f144909dd922cdac1bf7f1fb21e7857a3d4facda9d3df6a126cb59f826551cca"
+  },
+  {
+    "bytes": 359,
+    "jar_entry": "data/advancedrocketrycommunity/travel_routes/earth_mars.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/travel_routes/earth_mars.json",
+    "sha256": "d2c628a184180716dbef916a66e2fb0b328b5c156b1fedb8771e3ecba598da48"
+  },
+  {
+    "bytes": 361,
+    "jar_entry": "data/advancedrocketrycommunity/travel_routes/earth_venus.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/travel_routes/earth_venus.json",
+    "sha256": "dce8b96474e40d71ec1e5197525a2a4c2d1fda6e0bba88260961c87dccfc98c6"
+  },
+  {
+    "bytes": 359,
+    "jar_entry": "data/advancedrocketrycommunity/travel_routes/mars_surface_orbit.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/travel_routes/mars_surface_orbit.json",
+    "sha256": "2951fd24027ec465c5f23e2c678e9b3468edce585fd9614dfc40b551c48cacbc"
+  },
+  {
+    "bytes": 362,
+    "jar_entry": "data/advancedrocketrycommunity/travel_routes/venus_surface_orbit.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/travel_routes/venus_surface_orbit.json",
+    "sha256": "67b6378bfce7d0a71b7a981fdd23a889af7f80399801c8e2f84d171b50c28a70"
+  },
+  {
+    "bytes": 465,
+    "jar_entry": "data/advancedrocketrycommunity/worldgen/biome/mars.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/worldgen/biome/mars.json",
+    "sha256": "f41814470e2925d0f0fc336d221977bdb287d8922a39ad2e419c8fe64854ad2b"
+  },
+  {
+    "bytes": 465,
+    "jar_entry": "data/advancedrocketrycommunity/worldgen/biome/venus.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/worldgen/biome/venus.json",
+    "sha256": "c4c405adea34e862de6c1185c31b5f32751274acc411d000c14aa199ae50b506"
+  },
+  {
+    "bytes": 63,
+    "jar_entry": "data/advancedrocketrycommunity/worldgen/noise/mars_terrain.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/worldgen/noise/mars_terrain.json",
+    "sha256": "65a81fa01baad19118071ad007bacb756a9d925a56a650bcbd95dcd648c64fc4"
+  },
+  {
+    "bytes": 73,
+    "jar_entry": "data/advancedrocketrycommunity/worldgen/noise/venus_terrain.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/worldgen/noise/venus_terrain.json",
+    "sha256": "aee6f3c8ca62515d3c1bbd29e829a0c1f728338209ffe281bcac200788935a1f"
+  },
+  {
+    "bytes": 2979,
+    "jar_entry": "data/advancedrocketrycommunity/worldgen/noise_settings/mars.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/worldgen/noise_settings/mars.json",
+    "sha256": "ab94abfa409b12960abfa552ab49087694a68026f503af5474433ed8f056eee9"
+  },
+  {
+    "bytes": 3246,
+    "jar_entry": "data/advancedrocketrycommunity/worldgen/noise_settings/venus.json",
+    "path": "src/generated/v1.4/resources/data/advancedrocketrycommunity/worldgen/noise_settings/venus.json",
+    "sha256": "6b9dc915c006ecf0390894207be1078ed1482bac5ff51d4b7a528d2244ce3bdb"
+  }
+]

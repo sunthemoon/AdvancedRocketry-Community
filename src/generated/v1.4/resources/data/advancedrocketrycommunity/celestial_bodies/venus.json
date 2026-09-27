@@ -11,6 +11,7 @@
     "landable": true,
     "orbitable": true
   },
+  "discovery_required": true,
   "environment_effects": true,
   "gravity_multiplier": 0.9,
   "id": "advancedrocketrycommunity:venus",

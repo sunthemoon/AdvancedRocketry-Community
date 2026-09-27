@@ -67,8 +67,9 @@ red-sand/red-sandstone rolling terrain; Venus has yellow-terracotta surfaces
 over basalt highlands. These use original generation rules and existing vanilla
 blocks. Their configured environments are gameplay analogues, not a scientific
 simulation. Mars and Venus enable environmental exposure; bring a complete
-oxygen-filled space suit or maintain a supplied, sealed vent room. Custom skies
-and discovery progression are not supplied by these world definitions.
+oxygen-filled space suit or maintain a supplied, sealed vent room. Presentation
+uses the [sky profiles](PLANETARY-SKY-GUIDE.md); new arrivals require the
+[shared satellite discovery](PLANETARY-DISCOVERY-GUIDE.md).
 
 `advancedrocketrycommunity:gas_giant` is an unmapped, orbitable body. It has no
 surface Level or landing position. A committed permitted station may orbit it;
@@ -166,9 +167,15 @@ station is not silently replaced with another selected destination.
 During navigation synchronization, launch is disabled until the catalog and quote
 generations agree. The open console retries automatically; an active countdown
 can still be cancelled from the console. Install matching client/server builds:
-the navigation update uses flight protocol **7**, with celestial display schema
+the navigation/discovery update uses flight protocol **8**, with celestial display schema
 and protocol **2** unchanged. The diagram uses the existing public body metadata;
 it does not create routes, permissions or discovery unlocks.
+
+Optional `discovery_required` is a strict schema-2 boolean, default false. The
+built-in Mars/Venus/gas giant opt in; legacy Earth/Moon/Space do not. Discovery
+is world-shared, while satellite research and claim permissions are individual.
+See the [discovery guide](PLANETARY-DISCOVERY-GUIDE.md) for mission workflow,
+custom-body targeting, historical progress capacity and rollback limitations.
 
 ## Validation and legacy data
 

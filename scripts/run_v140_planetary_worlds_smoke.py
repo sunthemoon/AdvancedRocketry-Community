@@ -185,11 +185,14 @@ def capture_rocket(root: Path, output: Path, report: dict, baseline: dict | None
 
 
 class Harness:
-    def __init__(self, root: Path, output: Path, java: str, port: int):
+    def __init__(self, root: Path, output: Path, java: str, port: int, research_unlocks: bool = False):
         self.root, self.output, self.java, self.port = root, output, java, port
         self.reports, self.legs, self.commands = [], [], []
         self.previous_snbt = self.original = self.stations = self.bindings = None
         self.station_requests, self.configuration = [], None
+        self.research_unlocks = research_unlocks
+        self.research = []
+        self.research_saved = None
 
     def query(self, process, command: str, marker, timeout: float = 30):
         regex = re.compile(marker) if isinstance(marker, str) else marker
@@ -200,6 +203,76 @@ class Harness:
 
     def condition(self, process, condition: str, label: str):
         return self.query(process, f"execute {condition} run say ARCE_MAP02_{label}", rf"\[Server\] ARCE_MAP02_{label}\s*$")
+
+    def unlock_planets(self, process):
+        before = self.reports[-1]
+        self.query(process, f"arce rocket release-test launch-surface {before['entity']} {HOST}:mars",
+                   "Release-test surface launch failed: DISCOVERY_REQUIRED")
+        require(flight.FlightHarness.report(process, before["dimension"], before["entity"]) == before,
+                "Undiscovered launch changed rocket or fuel")
+        start = len(process.lines)
+        for body in BODIES:
+            owner = native.OWNER if body != "gas_giant" else str(uuid.uuid4())
+            receipt = self.query(process, f"arce satellite release-test launch {owner} {body}",
+                                 r"ARCE_RELEASE_TEST_SATELLITE_LAUNCH satellite=([0-9a-f-]{36}) "
+                                 r"mission=([0-9a-f-]{36}) owner=(\S+) target=(\S+) code=SUCCESS deadline=(\d+)")
+            satellite, mission, observed_owner, target, deadline = receipt.groups()
+            require(observed_owner == owner and target == HOST + ":" + body, "Research launch identity differs")
+            self.research.append({"satellite": satellite, "mission": mission, "owner": owner, "body": target})
+        process.wait_for(re.compile(r"ARCE_SATELLITE_SCHEDULER completed=\d+ inspected=\d+ remaining=0"), 30, start_at=start)
+        for mission in self.research:
+            self.claim_research(process, mission, "SUCCESS")
+            self.claim_research(process, mission, "ALREADY_CLAIMED")
+
+    def claim_research(self, process, mission: dict, code: str):
+        receipt = self.query(process, "arce satellite release-test claim " + mission["mission"],
+                             r"ARCE_RELEASE_TEST_SATELLITE_CLAIM mission=(\S+) owner=(\S+) target=(\S+) "
+                             r"code=(\S+) status=(\S+) research=(\d+) discovered=(\S+)")
+        observed_id, owner, body, observed_code, status, balance, discovered = receipt.groups()
+        require((observed_id, owner, body, observed_code, status, discovered)
+                == (mission["mission"], mission["owner"], mission["body"], code, "CLAIMED", "true"),
+                "Research claim identity/status/discovery differs")
+
+    def capture_research(self, directory: Path, phase: str):
+        decoded = {}
+        for name in ("celestial", "satellite_missions"):
+            source = self.root / "world/data" / (HOST + "_" + name + ".dat")
+            shutil.copyfile(source, directory / source.name)
+            decoded[name] = schema.read_nbt(directory / source.name)["data"]
+        progress, missions = decoded["celestial"], decoded["satellite_missions"]
+        require(progress["schema_version"] == missions["schema_version"] == 2, "Research persistence schema changed")
+        require(len(progress["bodies"]) == 3
+                and {entry["id"] for entry in progress["bodies"]} == {mission["body"] for mission in self.research},
+                "Native discoveries differ")
+        require(len(missions["missions"]) == len(missions["satellites"]) == 3, "Native mission/satellite count differs")
+        by_mission = {support.uuid_from_nbt(entry["mission_id"]): entry for entry in missions["missions"]}
+        by_satellite = {support.uuid_from_nbt(entry["satellite_id"]): entry for entry in missions["satellites"]}
+        require(set(by_mission) == {entry["mission"] for entry in self.research}
+                and set(by_satellite) == {entry["satellite"] for entry in self.research}, "Native research IDs differ")
+        expected_accounts = {}
+        for mission in self.research:
+            expected_accounts[mission["owner"]] = expected_accounts.get(mission["owner"], 0) + 1
+            saved, satellite = by_mission[mission["mission"]], by_satellite[mission["satellite"]]
+            require(saved["schema_version"] == satellite["schema_version"] == 1
+                    and saved["definition_id"] == satellite["definition_id"] == HOST + ":data_satellite"
+                    and saved["completes_at"] - saved["started_at"] == 200
+                    and saved["status"] == "claimed" and saved["target_body_id"] == mission["body"]
+                    and support.uuid_from_nbt(saved["owner_id"]) == mission["owner"]
+                    and support.uuid_from_nbt(saved["satellite_id"]) == mission["satellite"]
+                    and (saved["research_yield"], saved["discovery_cost"], saved["discovery_required"]) == (120, 100, 1),
+                    "Native claimed mission differs")
+            require(satellite["status"] == "operational" and "current_mission_id" not in satellite
+                    and support.uuid_from_nbt(satellite["owner_id"]) == mission["owner"], "Native satellite owner/current mission differs")
+        accounts = {support.uuid_from_nbt(entry["owner_id"]): entry for entry in missions["research_accounts"]}
+        require(len(accounts) == len(missions["research_accounts"]) and set(accounts) == set(expected_accounts), "Unexpected research owner")
+        for owner, count in expected_accounts.items():
+            require(accounts[owner]["schema_version"] == 1
+                    and (accounts[owner]["balance"], accounts[owner]["lifetime_earned"], accounts[owner]["lifetime_spent"])
+                    == (20 * count, 120 * count, 100 * count), "Research claim/replay changed private totals")
+        authority = {"progress": progress, **{key: missions[key] for key in ("missions", "satellites", "research_accounts")}}
+        require(phase != "restart" or authority == self.research_saved, "Restart/replay changed research authority")
+        self.research_saved = authority
+        write_json(directory / "research.json", authority)
 
     def snbt(self, process) -> str:
         last = self.reports[-1]
@@ -307,6 +380,8 @@ class Harness:
                 self.query(process, f"execute in {dimension} run time query gametime",
                            re.escape(f"Unknown dimension '{dimension}'") if missing else r"The time is (\d+)")
             if phase == "upgrade":
+                if self.research_unlocks:
+                    self.unlock_planets(process)
                 for body in ("mars", "gas_giant"):
                     self.create_station(process, body, "Planetary " + body)
                 before = self.reports[-1]
@@ -315,6 +390,9 @@ class Harness:
                 require(flight.FlightHarness.report(process, before["dimension"], before["entity"]) == before, "Gas surface denial changed rocket")
                 for body in ("mars", "venus", "earth"):
                     self.launch(process, body)
+            if phase == "restart" and self.research_unlocks:
+                for mission in self.research:
+                    self.claim_research(process, mission, "ALREADY_CLAIMED")
             self.live_conservation(process)
             self.previous_snbt = self.snbt(process)
             (directory / "rocket-entity.snbt").write_text(self.previous_snbt, encoding="utf-8")
@@ -322,6 +400,8 @@ class Harness:
             process.command("stop")
             require(process.finish() == 0, "Dedicated process did not exit cleanly")
             schema.validate_log(process.lines, [])
+            if self.research_unlocks and phase != "baseline":
+                self.capture_research(directory, phase)
             bindings = json.loads(schema.capture_bindings(self.root, directory / "bindings.json"))
             if phase == "upgrade":
                 check_bindings(self.bindings, bindings)
@@ -386,6 +466,8 @@ def main() -> int:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--java", required=True)
     parser.add_argument("--accept-eula", action="store_true", required=True)
+    parser.add_argument("--research-unlocks", action="store_true",
+                        help="Exercise discovery denial, private research, shared unlock and replay persistence")
     args, output = parser.parse_args(), None
     try:
         root, evidence, baseline, host = map(support.safe_path, (args.server_dir, args.evidence_dir, args.baseline_jar, args.host_jar))
@@ -409,7 +491,7 @@ def main() -> int:
         summary = {"schema_version": 1, "result": "IN_PROGRESS", "scope": "pre-planet upgrade, three surface legs, native restart; no clients/load campaign",
                    "artifacts": artifacts, "java": version, "server": str(root), "port": port, "forge_args_sha256": server.digest_file(args_file)}
         write_json(output / "summary.json", summary)
-        harness = Harness(root, output, java, port)
+        harness = Harness(root, output, java, port, args.research_unlocks)
         shutil.copyfile(baseline, root / "mods" / artifacts[0]["name"])
         harness.cycle("baseline", artifacts[0])
         identity = server.establish_world_identity(root, str(uuid.uuid4()), artifacts[0]["sha256"], properties)
@@ -422,7 +504,8 @@ def main() -> int:
         harness.cycle("upgrade", artifacts[1])
         harness.cycle("restart", artifacts[1])
         require(all(server.digest_file(Path(artifact["path"])) == artifact["sha256"] for artifact in artifacts), "Input artifact changed")
-        summary.update(result="PASS", world=server.complete_world_identity(root, identity), reports=harness.reports, legs=harness.legs)
+        summary.update(result="PASS", world=server.complete_world_identity(root, identity), reports=harness.reports,
+                       legs=harness.legs, research=harness.research, research_unlocks=args.research_unlocks)
         write_json(output / "summary.json", summary)
         print(f"[PASS] Three bounded planetary-world processes; evidence: {output}")
         return 0

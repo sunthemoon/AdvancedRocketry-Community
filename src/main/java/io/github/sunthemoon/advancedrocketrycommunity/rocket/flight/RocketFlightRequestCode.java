@@ -24,7 +24,8 @@ public enum RocketFlightRequestCode {
     FUEL_STATE_MISMATCH,
     INSUFFICIENT_CAPACITY,
     INSUFFICIENT_FUEL,
-    ARITHMETIC_OVERFLOW;
+    ARITHMETIC_OVERFLOW,
+    DISCOVERY_REQUIRED;
 
     public String translationKey() {
         return "flight.advancedrocketrycommunity.request."
@@ -41,6 +42,7 @@ public enum RocketFlightRequestCode {
             case INSUFFICIENT_CAPACITY -> INSUFFICIENT_CAPACITY;
             case INSUFFICIENT_FUEL -> INSUFFICIENT_FUEL;
             case ARITHMETIC_OVERFLOW -> ARITHMETIC_OVERFLOW;
+            case DISCOVERY_REQUIRED -> DISCOVERY_REQUIRED;
         };
     }
 }

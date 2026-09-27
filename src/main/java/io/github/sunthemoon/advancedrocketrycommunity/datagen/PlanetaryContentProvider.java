@@ -10,7 +10,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Generates only new v1.4 bodies/routes; previous resources remain authoritative. */
+/** Generates v1.4 bodies/routes and the current data-satellite target definition. */
 public final class PlanetaryContentProvider implements DataProvider {
     private final PackOutput output;
 
@@ -23,6 +23,11 @@ public final class PlanetaryContentProvider implements DataProvider {
         var writes = new ArrayList<CompletableFuture<?>>();
         var bodies = output.createPathProvider(PackOutput.Target.DATA_PACK, "celestial_bodies");
         var routes = output.createPathProvider(PackOutput.Target.DATA_PACK, "travel_routes");
+        var satellites = output.createPathProvider(PackOutput.Target.DATA_PACK, "satellite_definitions");
+        var survey = PlanetaryContent.surveySatellite();
+        writes.add(DataProvider.saveStable(cache,
+                io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition.CODEC
+                        .encodeStart(JsonOps.INSTANCE, survey).getOrThrow(false, message -> {}), satellites.json(survey.id())));
         for (var body : PlanetaryContent.definitions()) {
             writes.add(DataProvider.saveStable(cache, CelestialBodyDefinition.CODEC
                     .encodeStart(JsonOps.INSTANCE, body).getOrThrow(false, message -> {}), bodies.json(body.id())));

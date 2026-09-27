@@ -51,6 +51,20 @@ class RocketFlightPlanPacketTest {
     }
 
     @Test
+    void discoveryRefusalRoundTripsWithoutLaunchPermissionOrFuelQuote() {
+        withBuffer(buffer -> {
+            var status = io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus.DISCOVERY_REQUIRED;
+            var packet = new RocketFlightPlanPacket(7, 42, RocketFlightPlanSnapshot.empty(),
+                    new RocketFlightQuotes(List.of(new RocketFlightQuotes.TargetQuote(MOON, new RocketFlightQuotes.Quote(0, status)))));
+            RocketFlightPlanPacket.encode(packet, buffer);
+            var decoded = RocketFlightPlanPacket.decode(buffer);
+            assertEquals(packet, decoded);
+            assertEquals(12, decoded.quotes().forTarget(MOON).status().wireId());
+            assertFalse(decoded.quotes().forTarget(MOON).canLaunch());
+        });
+    }
+
+    @Test
     void everyTruncatedFrameIsRejected() {
         withBuffer(buffer -> {
             RocketFlightPlanPacket.encode(new RocketFlightPlanPacket(
@@ -110,7 +124,7 @@ class RocketFlightPlanPacketTest {
 
     @Test
     void protocolRevisionCarriesTypedTargetsAndVariableQuoteCounts() {
-        assertEquals("7", RocketFlightNetwork.protocolVersion());
+        assertEquals("8", RocketFlightNetwork.protocolVersion());
         withBuffer(buffer -> {
             var empty = new RocketFlightPlanPacket(
                     Integer.MAX_VALUE,

@@ -42,7 +42,14 @@ public final class PlanetaryContent {
                 surface ? Optional.of(level(id)) : Optional.empty(), gravity,
                 new AtmosphereDefinition(pressure, false, temperature, id),
                 new OrbitDefinition(distance, period, 0), id,
-                new CelestialCapabilities(surface, true, !surface), solar, radiation, surface);
+                new CelestialCapabilities(surface, true, !surface), solar, radiation, surface, true);
+    }
+
+    public static io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition surveySatellite() {
+        return new io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition(1,
+                io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds.DATA_SATELLITE,
+                200, 120, 100, List.of(CelestialIds.EARTH_ID, CelestialIds.MOON_ID, CelestialIds.SPACE_ID,
+                MARS, VENUS, GAS_GIANT));
     }
 
     public static List<RouteDefinition> routes() {

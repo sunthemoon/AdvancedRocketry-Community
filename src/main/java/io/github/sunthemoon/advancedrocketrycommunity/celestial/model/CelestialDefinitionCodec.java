@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 final class CelestialDefinitionCodec {
     private static final Set<String> BODY_FIELDS = Set.of("schema_version", "id", "parent", "level",
             "gravity_multiplier", "atmosphere", "orbit", "visual_profile", "capabilities",
-            "solar_intensity", "radiation", "environment_effects");
+            "solar_intensity", "radiation", "environment_effects", "discovery_required");
     private static final Set<String> CAPABILITY_FIELDS = Set.of("landable", "orbitable", "gas_giant");
     private static final Set<String> ATMOSPHERE_FIELDS = Set.of("pressure", "breathable", "temperature_kelvin", "profile");
     private static final Set<String> ORBIT_FIELDS = Set.of("distance", "period_ticks", "inclination_degrees");
@@ -49,6 +49,7 @@ final class CelestialDefinitionCodec {
                     .add("solar_intensity", ops.createDouble(input.solarIntensity()))
                     .add("radiation", ops.createDouble(input.radiation()))
                     .add("environment_effects", ops.createBoolean(input.environmentEffects()))
+                    .add("discovery_required", ops.createBoolean(input.discoveryRequired()))
                     .build(prefix);
         }
     };
@@ -59,7 +60,8 @@ final class CelestialDefinitionCodec {
     static <T> DataResult<T> encodeLegacy(CelestialBodyDefinition value, DynamicOps<T> ops) {
         if (value.levelKey().isEmpty()
                 || !value.capabilities().equals(CelestialCapabilities.legacy(value.levelKey().orElseThrow()))
-                || value.solarIntensity() != 1.0D || value.radiation() != 0.0D || value.environmentEffects()) {
+                || value.solarIntensity() != 1.0D || value.radiation() != 0.0D || value.environmentEffects()
+                || value.discoveryRequired()) {
             return DataResult.error(() -> "Legacy encoding would lose schema-2 celestial metadata");
         }
         return fields(value, ops).build(ops.empty());
@@ -86,7 +88,7 @@ final class CelestialDefinitionCodec {
         boolean legacy = schema == 1;
         if (legacy) {
             if (fields.has("capabilities") || fields.has("solar_intensity") || fields.has("radiation")
-                    || fields.has("environment_effects")) {
+                    || fields.has("environment_effects") || fields.has("discovery_required")) {
                 throw new IllegalArgumentException("New celestial fields require schema_version 2");
             }
         } else {
@@ -117,7 +119,8 @@ final class CelestialDefinitionCodec {
                 fields.read("visual_profile", BoundedCelestialCodecs.RESOURCE_LOCATION),
                 capabilities, legacy ? 1.0D : fields.read("solar_intensity", SOLAR),
                 legacy ? 0.0D : fields.read("radiation", RADIATION),
-                !legacy && fields.optional("environment_effects", BoundedCelestialCodecs.BOOLEAN).orElse(false));
+                !legacy && fields.optional("environment_effects", BoundedCelestialCodecs.BOOLEAN).orElse(false),
+                !legacy && fields.optional("discovery_required", BoundedCelestialCodecs.BOOLEAN).orElse(false));
     }
 
     /** Small strict field adapter; errors never echo an unbounded input object. */

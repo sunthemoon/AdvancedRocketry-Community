@@ -44,6 +44,9 @@ public final class V140PlanetaryLanguageProvider extends LanguageProvider {
         navigation("unauthorized", "没有控制或访问权限", "Control or access denied");
         navigation("unavailable", "目的地不可用", "Destination unavailable");
         navigation("arithmetic_overflow", "航线数值超出限制", "Route values exceed limits");
+        navigation("discovery_required", "尚未发现：在卫星终端领取研究成果", "Undiscovered: claim research at a Satellite Terminal");
+        add("flight.advancedrocketrycommunity.request.discovery_required",
+                chinese ? "请先通过数据卫星发现此天体" : "Discover this body with a Data Satellite first");
         map("open", "星图", "Star map");
         map("title", "航行星图", "Navigation map");
         map("back", "控制台", "Console");

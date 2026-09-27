@@ -211,6 +211,80 @@ class PlanetaryWorldsSmokeTest(unittest.TestCase):
             self.assertEqual("FAIL", observed["result"])
             self.assertEqual(17, observed["exit_code"])
 
+    def test_research_capture_checks_private_totals_identity_and_restart_replay(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "world/data").mkdir(parents=True)
+            for name in ("celestial", "satellite_missions"):
+                (root / "world/data" / (runner.HOST + "_" + name + ".dat")).write_bytes(b"fixture")
+            output = root / "output"
+            output.mkdir()
+            harness = runner.Harness(root, output, "java", 1, True)
+            owners = [str(uuid.uuid4()), str(uuid.uuid4())]
+            harness.research = [{"satellite": str(uuid.uuid4()), "mission": str(uuid.uuid4()),
+                                 "owner": owners[0 if i < 2 else 1], "body": runner.HOST + ":" + body}
+                                for i, body in enumerate(runner.BODIES)]
+            progress = {"schema_version": 2, "bodies": [{"id": m["body"], "discovered_at": 20} for m in harness.research]}
+            missions = {"schema_version": 2, "missions": [], "satellites": [], "research_accounts": []}
+            for m in harness.research:
+                missions["missions"].append({"mission_id": self.nbt_uuid(m["mission"]), "satellite_id": self.nbt_uuid(m["satellite"]),
+                    "owner_id": self.nbt_uuid(m["owner"]), "target_body_id": m["body"], "status": "claimed",
+                    "research_yield": 120, "discovery_cost": 100, "discovery_required": 1,
+                    "schema_version": 1, "definition_id": runner.HOST + ":data_satellite", "started_at": 0, "completes_at": 200})
+                missions["satellites"].append({"satellite_id": self.nbt_uuid(m["satellite"]),
+                    "owner_id": self.nbt_uuid(m["owner"]), "status": "operational",
+                    "schema_version": 1, "definition_id": runner.HOST + ":data_satellite"})
+            for owner, count in zip(owners, (2, 1)):
+                missions["research_accounts"].append({"schema_version": 1, "owner_id": self.nbt_uuid(owner), "balance": 20 * count,
+                                                     "lifetime_earned": 120 * count, "lifetime_spent": 100 * count})
+            def reader(path):
+                return {"data": copy.deepcopy(missions if "satellite_missions" in path.name else progress)}
+            with patch.object(runner.schema, "read_nbt", side_effect=reader):
+                harness.capture_research(output, "upgrade")
+                harness.capture_research(output, "restart")
+                for field in ("balance", "lifetime_earned", "lifetime_spent"):
+                    missions["research_accounts"][0][field] += 1
+                    with self.assertRaises(runner.SmokeError):
+                        harness.capture_research(output, "restart")
+                    missions["research_accounts"][0][field] -= 1
+                missions["missions"][0]["status"] = "ready"
+                with self.assertRaises(runner.SmokeError):
+                    harness.capture_research(output, "restart")
+                missions["missions"][0]["status"] = "claimed"
+                for collection, field, replacement in (("missions", "definition_id", "test:other"),
+                        ("satellites", "definition_id", "test:other"), ("missions", "completes_at", 201),
+                        ("missions", "schema_version", 2), ("satellites", "schema_version", 2), ("research_accounts", "schema_version", 2)):
+                    original = missions[collection][0][field]
+                    missions[collection][0][field] = replacement
+                    with self.assertRaises(runner.SmokeError):
+                        harness.capture_research(output, "upgrade")
+                    missions[collection][0][field] = original
+                missions["research_accounts"].append(copy.deepcopy(missions["research_accounts"][0]))
+                with self.assertRaises(runner.SmokeError):
+                    harness.capture_research(output, "restart")
+
+    def test_research_launch_uses_the_commands_bounded_word_argument(self):
+        harness = runner.Harness(Path("unused"), Path("unused-output"), "java", 1, True)
+        before = {"entity": str(uuid.uuid4()), "dimension": runner.EARTH, "fuel": 2000}
+        harness.reports = [before]
+        other_owner = uuid.uuid4()
+        receipts = [Mock()]
+        for i, body in enumerate(runner.BODIES):
+            owner = runner.native.OWNER if i < 2 else str(other_owner)
+            receipts.append(Mock(groups=Mock(return_value=(str(uuid.uuid4()), str(uuid.uuid4()), owner,
+                                                           runner.HOST + ":" + body, "200"))))
+        harness.query = Mock(side_effect=receipts)
+        harness.claim_research = Mock()
+        process = Mock(lines=[])
+        with patch.object(runner.flight.FlightHarness, "report", return_value=before), \
+                patch.object(runner.uuid, "uuid4", return_value=other_owner):
+            harness.unlock_planets(process)
+        for call, body in zip(harness.query.call_args_list[1:], runner.BODIES):
+            command = call.args[1]
+            self.assertEqual(body, command.split()[-1])
+            self.assertNotIn(":", command)
+        self.assertEqual(6, harness.claim_research.call_count)
+
 
 if __name__ == "__main__":
     unittest.main()

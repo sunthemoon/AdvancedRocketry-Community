@@ -347,6 +347,11 @@ final class RocketFlightService {
                 return RocketFlightPlanResult.failure(
                         io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanCode.UNSUPPORTED_ROUTE, 0L);
             }
+            if (!source.equals(destination) && !PlanetaryFlightAdmission.discovered(
+                    (ServerLevel) rocket.level(), destination, pair.celestial(), stations)) {
+                return RocketFlightPlanResult.failure(
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanCode.DISCOVERY_REQUIRED, 0L);
+            }
             return RocketTargetFlightPlanner.plan(
                     rocket.snapshot().orElseThrow().stats(),
                     flight.fuel(),

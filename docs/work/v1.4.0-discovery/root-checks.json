@@ -1,0 +1,56 @@
+{
+  "all_junit_attempts": {
+    "all-reused-04-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 164,
+      "tests": 898
+    },
+    "clean-all-03-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 164,
+      "tests": 898
+    },
+    "clean-build-02-xml": {
+      "errors": 0,
+      "failures": 1,
+      "skipped": 0,
+      "suites": 164,
+      "tests": 898
+    },
+    "clean-final-05-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 164,
+      "tests": 898
+    }
+  },
+  "base_commit": "e810fb390dd30dbaa4506a59bffee00b1c78083b",
+  "command": "gradlew.bat build runData runGameTestServer --console=plain",
+  "duration": "2m 40s",
+  "exit_code": 0,
+  "failed_gametest_attempt": {
+    "archive": "failed-world.zip",
+    "failed": 3,
+    "log": "clean-all-03.log",
+    "required": 235
+  },
+  "final_clean_build": {
+    "exit_code": 0,
+    "log": "clean-final-05.log",
+    "unit_execution": "FROM-CACHE"
+  },
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 164,
+    "tests": 898
+  },
+  "required_gametests_passed": 235,
+  "scope": "Short development checks, not real-client/GPU/load/release acceptance"
+}
