@@ -1,0 +1,14 @@
+{
+  "bidirectional": true,
+  "distance_units": 150,
+  "from": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:earth"
+  },
+  "id": "advancedrocketrycommunity:earth_gas_orbit",
+  "schema_version": 1,
+  "to": {
+    "type": "advancedrocketrycommunity:orbit",
+    "body_id": "advancedrocketrycommunity:gas_giant"
+  }
+}

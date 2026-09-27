@@ -1,0 +1,130 @@
+{
+  "archive_sha256": "066c971e6d2fa59dd5802ce82e1949ea43044cddb33ff42d9367ac114098ce65",
+  "entries": [
+    {
+      "bytes": 1474,
+      "member": "native-a/SHA256SUMS",
+      "sha256": "92c93a1d14bb34467e103dd61a5ca8760e49cb7b9328a8bbbe65bf67cf23226d"
+    },
+    {
+      "bytes": 284,
+      "member": "native-a/baseline/bindings.json",
+      "sha256": "9751665a28ecea1cf826c68c57852d0484fd14466568b0850957e4b5a82a7544"
+    },
+    {
+      "bytes": 2376,
+      "member": "native-a/baseline/commands.json",
+      "sha256": "5cf2c05dcd4ccbf674423b8c536c290dff88648321a58b86044d8d3556a24e84"
+    },
+    {
+      "bytes": 94765,
+      "member": "native-a/baseline/debug.log",
+      "sha256": "6ddcf03e6fb682c66b6aaa8e7c99f63bfe8f63263c79670f2f237f2a28eed13c"
+    },
+    {
+      "bytes": 26158,
+      "member": "native-a/baseline/latest.log",
+      "sha256": "acb2cb30d1aa37dfabb82ea050bc9ca3b4a18dc35bae23f174ad20cd82315344"
+    },
+    {
+      "bytes": 837,
+      "member": "native-a/baseline/launch.json",
+      "sha256": "58dfad700c54ed65f6ad601d16b0dbfc86f0afd7843615b8dbec3f3fc0d3b547"
+    },
+    {
+      "bytes": 20480,
+      "member": "native-a/baseline/native/world/entities/r.-1.-1.mca",
+      "sha256": "fa93c1bb5476d2b930175481c208d740873bc253a0ca2c99d2d578cc4f59c276"
+    },
+    {
+      "bytes": 20480,
+      "member": "native-a/baseline/native/world/entities/r.-1.0.mca",
+      "sha256": "b79f31a681b596625aeaf002ded59fc7c75a18b974f88355ec3646855abf0feb"
+    },
+    {
+      "bytes": 61440,
+      "member": "native-a/baseline/native/world/entities/r.0.-1.mca",
+      "sha256": "257bfeedd2fc4e96e3288a8df9d137db6337a8b59db1af80d3047179b8310d92"
+    },
+    {
+      "bytes": 45056,
+      "member": "native-a/baseline/native/world/entities/r.0.0.mca",
+      "sha256": "a754cf85edd721f7b98128563b79283ffb6343024202c32bd9743c02ad13e587"
+    },
+    {
+      "bytes": 114,
+      "member": "native-a/baseline/observations.json",
+      "sha256": "bf536d88098f72faa8ca298efcae4f5e5ad0525c9ac71aa7bc9ea6257a4dd844"
+    },
+    {
+      "bytes": 1956,
+      "member": "native-a/baseline/rocket-entity.snbt",
+      "sha256": "de41f4f35b9c7a1f5a0fc524614952505f423aee2a3012d877ca48ceaa17498a"
+    },
+    {
+      "bytes": 372,
+      "member": "native-a/baseline/stations.dat",
+      "sha256": "8c296e50feb1a658ccc7866939418d722d71ab12431379a8c8bdb8d380954c01"
+    },
+    {
+      "bytes": 994,
+      "member": "native-a/baseline/status.json",
+      "sha256": "1df5bb62a914be84e22e3791c6e0b3f6a1a10d46e46d441ce03eba582f8fa565"
+    },
+    {
+      "bytes": 21387,
+      "member": "native-a/baseline/stdout.txt",
+      "sha256": "7786b9f2226fd779c9de4b256cd3c7ed63ec7efd092e22b5e332463d04dd0601"
+    },
+    {
+      "bytes": 65,
+      "member": "native-a/failure.json",
+      "sha256": "88f2052d4c927295b09df480ad8bd7621653ba69eedde3bb5db81744d8df2d21"
+    },
+    {
+      "bytes": 1289,
+      "member": "native-a/summary.json",
+      "sha256": "dcf01a8adadce804f80a400b10d6a11a1d7b5c108d3bbf8c768076301305ba75"
+    },
+    {
+      "bytes": 0,
+      "member": "retained-inputs/world/dimensions/advancedrocketrycommunity/space/entities/r.-1.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "member": "retained-inputs/world/dimensions/advancedrocketrycommunity/space/entities/r.-1.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "member": "retained-inputs/world/dimensions/advancedrocketrycommunity/space/entities/r.0.-1.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "member": "retained-inputs/world/dimensions/advancedrocketrycommunity/space/entities/r.0.0.mca",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 20480,
+      "member": "retained-inputs/world/entities/r.-1.-1.mca",
+      "sha256": "fa93c1bb5476d2b930175481c208d740873bc253a0ca2c99d2d578cc4f59c276"
+    },
+    {
+      "bytes": 20480,
+      "member": "retained-inputs/world/entities/r.-1.0.mca",
+      "sha256": "b79f31a681b596625aeaf002ded59fc7c75a18b974f88355ec3646855abf0feb"
+    },
+    {
+      "bytes": 61440,
+      "member": "retained-inputs/world/entities/r.0.-1.mca",
+      "sha256": "257bfeedd2fc4e96e3288a8df9d137db6337a8b59db1af80d3047179b8310d92"
+    },
+    {
+      "bytes": 45056,
+      "member": "retained-inputs/world/entities/r.0.0.mca",
+      "sha256": "a754cf85edd721f7b98128563b79283ffb6343024202c32bd9743c02ad13e587"
+    }
+  ]
+}

@@ -30,7 +30,8 @@ public final class PlanetaryBindings {
             binding.level().ifPresent(level -> {
                 ResourceLocation owner = owners.putIfAbsent(level, binding.bodyId());
                 if (owner != null) {
-                    throw new IllegalArgumentException("Level " + level + " is reserved by " + owner);
+                    throw new IllegalArgumentException("Level " + level + " has conflicting body bindings: "
+                            + owner + " and " + binding.bodyId());
                 }
             });
         }

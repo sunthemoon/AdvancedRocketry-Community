@@ -92,7 +92,8 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 Objects.requireNonNull(assemblyTransactionId, "assemblyTransactionId"),
                 snapshot.stats().fuelCapacity(),
                 boundedSeats(snapshot),
-                bodyForDimension(dimension),
+                currentTarget instanceof io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.BodySurface surface
+                        ? surface.bodyId() : bodyForDimension(dimension),
                 dimension,
                 origin,
                 level().getGameTime(),

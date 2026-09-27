@@ -213,6 +213,8 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。
+- [行星世界与物理准入](docs/decisions/ADR-033-PLANETARY-WORLDS-AND-SURFACE-ADMISSION.md)：火星/金星固定世界、不可着陆气态天体、地面支撑与站点来源。
+- [行星世界开发证据](docs/work/v1.4.0-map02/VERIFICATION.md)：实际地形、旅行、上一切片存档升级和短程重启的独立验证范围。
 - [公共 API 版本政策](docs/decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md)。
 - [火箭适配器注册契约](docs/decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md)。
 

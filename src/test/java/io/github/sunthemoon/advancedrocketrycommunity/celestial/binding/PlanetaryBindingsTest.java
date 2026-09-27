@@ -74,6 +74,16 @@ class PlanetaryBindingsTest {
         assertThrows(IllegalArgumentException.class, () -> first.reconcile(catalog(body("gas", "gas"))));
     }
 
+    @Test void reverseConflictNamesBothBodiesWithoutInventingHistoricalPrecedence() {
+        var first = PlanetaryBindings.adopt(catalog(body("retained", "planet")));
+        var retired = first.reconcile(catalog());
+        var failure = assertThrows(IllegalArgumentException.class,
+                () -> retired.reconcile(catalog(body("alias", "planet"))));
+        assertEquals("Level advancedrocketrycommunity:planet has conflicting body bindings: "
+                + "advancedrocketrycommunity:alias and advancedrocketrycommunity:retained", failure.getMessage());
+        assertEquals(first.entries(), retired.entries());
+    }
+
     @Test void lifetimeCapacityIncludesRemovedBodiesAndRejectsWholeDelta() {
         var bodies = new ArrayList<CelestialBodyDefinition>();
         for (int i = 0; i < 125; i++) { bodies.add(body("test_" + i, "test_" + i)); }

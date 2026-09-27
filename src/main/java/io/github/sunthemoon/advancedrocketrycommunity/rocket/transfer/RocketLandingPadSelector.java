@@ -18,13 +18,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
-/** Selects only one of eight deterministic server-owned Earth/Moon pads. */
+/** Selects one of eight server-owned surface pads after catalog/Level admission. */
 public final class RocketLandingPadSelector {
     private static final int PAD_SPACING = 64;
     private static final int[][] OFFSETS = {
@@ -49,12 +50,12 @@ public final class RocketLandingPadSelector {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(transferId, "transferId");
         Objects.requireNonNull(reservations, "reservations");
-        if (!isFlightDimension(target)) {
-            return RocketLandingPadSelection.failure(0, 0, "target is not Earth or Moon");
+        if (target.dimension().equals(CelestialIds.SPACE_LEVEL)) {
+            return RocketLandingPadSelection.failure(0, 0, "shared Space requires a committed station pad");
         }
         BlockPos base = target.dimension() == Level.OVERWORLD
                 ? target.getSharedSpawnPos()
-                : SafeCelestialTravel.FIXED_FEET_POSITION;
+                : target.dimension().equals(CelestialIds.MOON_LEVEL) ? SafeCelestialTravel.FIXED_FEET_POSITION : BlockPos.ZERO;
         int candidates = 0;
         int chunksLoaded = 0;
         for (int index = 0; index < OFFSETS.length
@@ -174,7 +175,8 @@ public final class RocketLandingPadSelector {
             return false;
         }
         if (region.minimum().y() < target.getMinBuildHeight()
-                || region.maximum().y() >= target.getMaxBuildHeight()) {
+                || region.maximum().y() >= target.getMaxBuildHeight()
+                || !withinBorder(target, region)) {
             return false;
         }
         Set<ChunkPos> chunks = chunks(region);
@@ -206,7 +208,8 @@ public final class RocketLandingPadSelector {
                 (double) region.maximum().y() + 1.0D,
                 (double) region.maximum().z() + 1.0D
         );
-        return target.getEntitiesOfClass(RocketEntity.class, box).stream().allMatch(rocket ->
+        return (legacySurface(target) || target.dimension().equals(CelestialIds.SPACE_LEVEL) || supported(target, destination))
+                && target.getEntitiesOfClass(RocketEntity.class, box).stream().allMatch(rocket ->
                 allowMatchingRocket
                         && allowedRocketId != null
                         && allowedRocketId.equals(rocket.getUUID())
@@ -245,7 +248,7 @@ public final class RocketLandingPadSelector {
                     )
             );
             Set<ChunkPos> chunks = chunks(horizontal);
-            return new Candidate(centerX, centerZ, chunks);
+            return withinBorder(target, horizontal) ? new Candidate(centerX, centerZ, chunks) : null;
         } catch (ArithmeticException exception) {
             return null;
         }
@@ -325,8 +328,34 @@ public final class RocketLandingPadSelector {
         return chunks.size();
     }
 
-    private static boolean isFlightDimension(ServerLevel target) {
+    private static boolean legacySurface(ServerLevel target) {
         return target.dimension() == Level.OVERWORLD || target.dimension().equals(CelestialIds.MOON_LEVEL);
+    }
+
+    private static boolean withinBorder(ServerLevel target, RocketRegion region) {
+        return target.getWorldBorder().isWithinBounds(new BlockPos(region.minimum().x(), 0, region.minimum().z()))
+                && target.getWorldBorder().isWithinBounds(new BlockPos(region.maximum().x(), 0, region.maximum().z()));
+    }
+
+    private static boolean supported(ServerLevel target, RocketStructureSnapshot snapshot) {
+        boolean supported = false;
+        int inspected = 0;
+        for (RocketBlock block : snapshot.blocks()) {
+            if (block.position().y() != snapshot.bounds().minimum().y()) {
+                continue;
+            }
+            if (++inspected > RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
+                return false;
+            }
+            var absolute = snapshot.sourceOrigin().add(block.position());
+            var below = new BlockPos(absolute.x(), absolute.y() - 1, absolute.z());
+            var state = target.getBlockState(below);
+            if (!state.getFluidState().isEmpty()) {
+                return false;
+            }
+            supported |= state.isFaceSturdy(target, below, Direction.UP);
+        }
+        return supported;
     }
 
     private record Candidate(int centerX, int centerZ, Set<ChunkPos> chunks) {

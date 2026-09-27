@@ -12,6 +12,20 @@ from scripts import run_v140_celestial_schema_smoke as runner
 
 
 class CelestialSchemaSmokeTest(unittest.TestCase):
+    def test_catalog_counts_support_additive_planets_without_changing_fault_deltas(self):
+        with tempfile.TemporaryDirectory() as directory:
+            artifact = Path(directory) / "fixture.zip"
+            for bodies, routes in ((3, 4), (6, 9), (2, 4), (127, 9)):
+                with zipfile.ZipFile(artifact, "w") as archive:
+                    for kind, count in (("celestial_bodies", bodies), ("travel_routes", routes)):
+                        for index in range(count):
+                            archive.writestr(f"data/{runner.HOST}/{kind}/{index}.json", "{}")
+                if 3 <= bodies <= 126:
+                    self.assertEqual((bodies, routes), runner.packaged_counts(artifact))
+                else:
+                    with self.assertRaises(runner.SmokeError):
+                        runner.packaged_counts(artifact)
+
     def test_pack_preserves_legacy_moon_values_and_gas_has_no_level(self):
         source = Path(__file__).resolve().parents[1] / (
             "src/generated/v0.3/resources/data/advancedrocketrycommunity/celestial_bodies/moon.json")

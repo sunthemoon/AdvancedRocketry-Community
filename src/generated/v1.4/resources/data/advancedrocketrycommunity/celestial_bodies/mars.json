@@ -1,0 +1,26 @@
+{
+  "parent": "advancedrocketrycommunity:earth",
+  "atmosphere": {
+    "breathable": false,
+    "pressure": 0.006,
+    "profile": "advancedrocketrycommunity:mars",
+    "temperature_kelvin": 210.0
+  },
+  "capabilities": {
+    "gas_giant": false,
+    "landable": true,
+    "orbitable": true
+  },
+  "gravity_multiplier": 0.38,
+  "id": "advancedrocketrycommunity:mars",
+  "level": "advancedrocketrycommunity:mars",
+  "orbit": {
+    "distance": 54600000,
+    "inclination_degrees": 0.0,
+    "period_ticks": 16488000
+  },
+  "radiation": 0.05,
+  "schema_version": 2,
+  "solar_intensity": 0.43,
+  "visual_profile": "advancedrocketrycommunity:mars"
+}

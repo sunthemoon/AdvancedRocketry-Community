@@ -1,0 +1,14 @@
+{
+  "bidirectional": true,
+  "distance_units": 95,
+  "from": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:earth"
+  },
+  "id": "advancedrocketrycommunity:earth_venus",
+  "schema_version": 1,
+  "to": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:venus"
+  }
+}

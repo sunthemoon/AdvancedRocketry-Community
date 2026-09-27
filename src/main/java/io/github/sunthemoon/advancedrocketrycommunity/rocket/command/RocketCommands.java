@@ -29,6 +29,7 @@ import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
@@ -93,6 +94,10 @@ public final class RocketCommands {
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
                                     .then(Commands.argument("station", UuidArgument.uuid())
                                             .executes(this::launchStationFlight))))
+                    .then(Commands.literal("launch-surface")
+                            .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                                    .then(Commands.argument("body", ResourceLocationArgument.id())
+                                            .executes(this::launchSurfaceFlight))))
                     .then(Commands.literal("report")
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
                                     .executes(this::reportFlight)))
@@ -335,6 +340,26 @@ public final class RocketCommands {
                         + " required_fuel=" + result.requiredFuel()),
                 false
         );
+        return 1;
+    }
+
+    private int launchSurfaceFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        RocketEntity rocket = releaseTestRocket(context);
+        var body = ResourceLocationArgument.getId(context, "body");
+        UUID request = UUID.randomUUID();
+        long fuelBefore = rocket.flightData().orElseThrow().fuel().amount();
+        var result = rockets.requestAdminFlight(rocket,
+                new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.BodySurface(body), request);
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST_SURFACE_LAUNCH request={} entity={} logical={} source={} body={} code={} required_fuel={} fuel_before={}",
+                request, rocket.getUUID(), rocket.assemblyTransactionId().orElse(null), rocket.level().dimension().location(),
+                body, result.code(), result.requiredFuel(), fuelBefore);
+        if (!result.success()) {
+            context.getSource().sendFailure(Component.literal("Release-test surface launch failed: " + result.code()));
+            return 0;
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Release-test surface launch " + request
+                + " body=" + body + " required_fuel=" + result.requiredFuel()), false);
         return 1;
     }
 

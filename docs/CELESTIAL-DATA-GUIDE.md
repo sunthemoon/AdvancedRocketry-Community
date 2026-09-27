@@ -43,16 +43,55 @@ this build does not apply new temperature, solar or radiation gameplay effects.
 - Omit `level` for an unmapped body. Do not use `null` or shared Space as a fake
   surface. A gas giant requires no Level and `landable=false`.
 - `landable=true` requires a Level mapping; that alone does not register a
-  dimension, load chunks or permit a flight. Physical surface admission still
-  supports the existing Earth/Moon worlds, not arbitrary custom planets.
+  dimension, load chunks or permit a flight. Surface travel also requires an
+  unambiguous mapping, an actually started Level, a reachable route and a safe
+  server-selected landing site.
 - Setting `landable=false` closes new arrival, not departure from a valid
   still-mapped source. `orbitable=false` closes new station creation/arrival,
   but does not delete committed stations or revoke an authorized departure.
 - Station UUIDs, live ownership/membership and region checks remain required.
   An orbit flag does not add a generic-orbit flight destination.
 - Preserve the fixed Earth/Overworld, Moon/Moon and Space/Space mappings. Do not
-  remap an existing custom body across restarts: durable custom mapping
-  protection and new-world initialization are not provided by this schema.
+  remap an existing custom body across restarts: the world-owned binding history
+  below reserves mapped and unmapped identities independently of this schema.
+
+## Built-in planetary worlds
+
+The development build adds `advancedrocketrycommunity:mars` and
+`advancedrocketrycommunity:venus` as both body and startup Level IDs. Mars has
+red-sand/red-sandstone rolling terrain; Venus has yellow-terracotta surfaces
+over basalt highlands. These use original generation rules and existing vanilla
+blocks. Their configured environments are gameplay analogues, not a scientific
+simulation. Custom skies, temperature protection and discovery progression are
+not supplied by these world definitions.
+
+`advancedrocketrycommunity:gas_giant` is an unmapped, orbitable body. It has no
+surface Level or landing position. A committed permitted station may orbit it;
+surface launch requests are rejected.
+
+Use the existing rocket flight screen and fuel/route checks to reach the new
+surfaces. The operator `/arce celestial goto` utility remains limited to its
+historical fixed destinations; it is not a general planet teleporter. Players
+standing on a mapped orbitable surface can create that body's station through
+the existing station controls, subject to the same ownership limit.
+
+For new surfaces, landing chooses from eight bounded server-owned candidates
+around horizontal origin zero, uses the maximum terrain height under occupied
+columns and requires sturdy nonfluid support under at least one bottom block.
+Air overhangs are permitted; fluid below any bottom block rejects the site.
+The selector does not clear terrain or build a platform. Occupied, out-of-border,
+out-of-height or unsupported candidates are skipped; no safe candidate means
+the launch is denied. If support is lost before destination spawning, the
+existing transfer service returns to the source with its original fuel ledger.
+Earth spawn-based and Moon fixed-height landing behavior remains unchanged.
+
+Back up the complete world before installing added worldgen data. The new
+dimensions are available on startup, not created by `/reload`. Existing binding
+records must agree with the added IDs: a custom pack that previously reserved
+`mars`, `venus` or `gas_giant` differently blocks startup rather than overwriting
+its worlds. Prefer your own namespace for custom content. Generator changes
+affect newly generated chunks only; rollback requires the complete pre-upgrade
+backup, not deleting a dimension directory or binding entry.
 
 ## Validation and legacy data
 

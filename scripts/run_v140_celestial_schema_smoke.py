@@ -36,6 +36,16 @@ BINDINGS = "world/data/advancedrocketrycommunity_planetary_bindings.json"
 BINDING_BODY = HOST + ":binding_probe"
 
 
+def packaged_counts(artifact: Path) -> tuple[int, int]:
+    with zipfile.ZipFile(artifact) as archive:
+        names = archive.namelist()
+        require(len(names) == len(set(names)), "Host JAR has duplicate members")
+        bodies, routes = (sum(name.startswith(f"data/{HOST}/{directory}/") and name.endswith(".json")
+                             for name in names) for directory in ("celestial_bodies", "travel_routes"))
+    require(3 <= bodies <= 126 and 4 <= routes <= 512, "Packaged catalog leaves no room for smoke additions")
+    return bodies, routes
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise SmokeError(message)
@@ -103,6 +113,7 @@ def rejection_fixtures() -> list[tuple[str, str, str, str]]:
 
 
 def verify_joint_rejections(root: Path, output: Path, artifact: Path, query) -> tuple[list[str], list[dict]]:
+    bodies, routes = packaged_counts(artifact)
     moon_path = root / PACK / "celestial_bodies/moon.json"
     moon = json.loads(moon_path.read_text(encoding="utf-8"))
     moon["solar_intensity"] = 0.75
@@ -127,7 +138,7 @@ def verify_joint_rejections(root: Path, output: Path, artifact: Path, query) -> 
         receipts.append({"case": label, "diagnostic": rejected.string.rstrip(),
                          "route": observed_route.string.rstrip(), "moon": observed_moon.string.rstrip()})
         path.unlink()
-    query("reload", r"Accepted planetary catalog generation 3 with 4 bodies, 4 routes", 60)
+    query("reload", rf"Accepted planetary catalog generation 3 with {bodies + 1} bodies, {routes} routes", 60)
     query("arce celestial route earth_moon", route_marker(3, 222))
     return expected_errors, receipts
 
@@ -157,27 +168,28 @@ def capture_bindings(root: Path, destination: Path) -> bytes:
     return raw
 
 
-def verify_binding_reloads(root: Path, output: Path, query) -> list[str]:
+def verify_binding_reloads(root: Path, output: Path, query, counts: tuple[int, int] = (3, 4)) -> list[str]:
+    bodies, routes = counts
     directory = root / PACK / "celestial_bodies"
     body_path = directory / "binding_probe.json"
     body = json.loads((directory / "moon.json").read_text(encoding="utf-8"))
     body.update(id=BINDING_BODY, level=BINDING_BODY)
     write_json(body_path, body)
-    query("reload", r"Accepted planetary catalog generation 3 with 5 bodies, 4 routes", 60)
+    query("reload", rf"Accepted planetary catalog generation 3 with {bodies + 2} bodies, {routes} routes", 60)
     recorded = capture_bindings(root, output / "bindings-added.json")
     require({"body_id": BINDING_BODY, "level": BINDING_BODY} in json.loads(recorded)["bindings"],
             "Actual mapped probe binding was not persisted")
     body_path.unlink()
-    query("reload", r"Accepted planetary catalog generation 4 with 4 bodies, 4 routes", 60)
+    query("reload", rf"Accepted planetary catalog generation 4 with {bodies + 1} bodies, {routes} routes", 60)
     require(capture_bindings(root, output / "bindings-removed.json") == recorded, "Removal released a binding")
     write_json(body_path, body)
-    query("reload", r"Accepted planetary catalog generation 5 with 5 bodies, 4 routes", 60)
+    query("reload", rf"Accepted planetary catalog generation 5 with {bodies + 2} bodies, {routes} routes", 60)
     errors = []
     for label, name, candidate, detail in [
             ("remap", "binding_probe", dict(body, level=HOST + ":binding_changed"),
              f"Body {BINDING_BODY} cannot change its recorded Level binding"),
             ("reuse", "binding_alias", dict(body, id=HOST + ":binding_alias"),
-             f"Level {BINDING_BODY} is reserved by ")]:
+             f"Level {BINDING_BODY} has conflicting body bindings: ")]:
         body_path.unlink(missing_ok=True)
         path = directory / (name + ".json")
         write_json(path, candidate)
@@ -192,7 +204,7 @@ def verify_binding_reloads(root: Path, output: Path, query) -> list[str]:
                 "Rejected candidate changed recorded bindings")
         path.unlink()
     write_json(body_path, body)
-    query("reload", r"Accepted planetary catalog generation 6 with 5 bodies, 4 routes", 60)
+    query("reload", rf"Accepted planetary catalog generation 6 with {bodies + 2} bodies, {routes} routes", 60)
     require(capture_bindings(root, output / "bindings-readded.json") == recorded, "Re-add changed a binding")
     return errors
 
@@ -220,6 +232,7 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
     try:
         process = server.CapturedProcess(command, root, directory / "stdout.txt")
         process.wait_for(server.READY_MARKER, 240)
+        bodies, routes = packaged_counts(Path(artifact["path"]))
         status = server.wait_for_status(port)
         server.validate_status_identity(status, artifact["version"])
         require(set(server.forge_mod_versions(status)) == {HOST, "minecraft", "forge"}, "Unexpected mod set")
@@ -228,7 +241,7 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
         if check_bindings:
             capture_bindings(root, directory / "bindings-at-start.json")
         if phase == "create-reload":
-            query("arce celestial validate", r"Celestial catalog generation 1 is valid with 3 bodies")
+            query("arce celestial validate", rf"Celestial catalog generation 1 is valid with {bodies} bodies")
             if joint_reload:
                 query("arce celestial route earth_moon", route_marker(1, 50))
             created = query(f"arce station admin create {uuid.uuid4()} {HOST}:moon Schema probe",
@@ -245,13 +258,13 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
             observations["definitions"] = install_pack(root, Path(artifact["path"]))
             if joint_reload or check_bindings:
                 observations["route"] = install_route(root, Path(artifact["path"]), 123)
-            query("reload", r"Accepted planetary catalog generation 2 with 4 bodies, 4 routes", 60)
+            query("reload", rf"Accepted planetary catalog generation 2 with {bodies + 1} bodies, {routes} routes", 60)
             if joint_reload:
                 query("arce celestial route earth_moon", route_marker(2, 123))
                 expected_errors, observations["rejections"] = verify_joint_rejections(
                     root, directory, Path(artifact["path"]), query)
             if check_bindings:
-                expected_errors = verify_binding_reloads(root, directory, query)
+                expected_errors = verify_binding_reloads(root, directory, query, (bodies, routes))
         require(station_id is not None and baseline is not None, "Missing native station baseline")
         generation = (3 if joint_reload else 2) if phase == "create-reload" else 1
         if check_bindings:
@@ -260,7 +273,7 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
         solar = 0.75 if joint_reload else 0.5
         if joint_reload:
             query("arce celestial route earth_moon", route_marker(generation, 222))
-        count = 5 if check_bindings else 4
+        count = bodies + (2 if check_bindings else 1)
         query("arce celestial validate", rf"Celestial catalog generation {generation} is valid with {count} bodies")
         start = len(process.lines)
         query("arce celestial list", re.escape(GAS)

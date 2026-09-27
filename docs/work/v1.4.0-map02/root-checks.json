@@ -1,0 +1,40 @@
+{
+  "base": "d41e42fb2118a060a7df4c0480e0887079e0d38e",
+  "command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --console=plain",
+  "datagen_written": 0,
+  "exit_code": 0,
+  "final_indentation_build": {
+    "exit_code": 0,
+    "seconds": 17
+  },
+  "initial_attempts": [
+    {
+      "gametests": 216,
+      "junit": 45,
+      "log": "planetary-test-gametest-1.log",
+      "required_failed": 2
+    },
+    {
+      "gametests": 216,
+      "log": "gametest-diagnostic-2.log",
+      "required_failed": 1
+    },
+    {
+      "gametests": 220,
+      "log": "gametest-support-3.log",
+      "required_failed": 1
+    }
+  ],
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 150,
+    "tests": 840
+  },
+  "python_seconds": 0.449,
+  "python_tests": 24,
+  "qualification": "Final production Java checked; final packaged artifacts follow indentation-only fixture cleanup. No release Gate approval.",
+  "required_gametests_passed": 220,
+  "seconds": 185
+}

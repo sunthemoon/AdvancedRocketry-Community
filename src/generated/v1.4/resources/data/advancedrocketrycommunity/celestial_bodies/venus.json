@@ -1,0 +1,26 @@
+{
+  "parent": "advancedrocketrycommunity:earth",
+  "atmosphere": {
+    "breathable": false,
+    "pressure": 9.2,
+    "profile": "advancedrocketrycommunity:venus",
+    "temperature_kelvin": 737.0
+  },
+  "capabilities": {
+    "gas_giant": false,
+    "landable": true,
+    "orbitable": true
+  },
+  "gravity_multiplier": 0.9,
+  "id": "advancedrocketrycommunity:venus",
+  "level": "advancedrocketrycommunity:venus",
+  "orbit": {
+    "distance": 41400000,
+    "inclination_degrees": 0.0,
+    "period_ticks": 5400000
+  },
+  "radiation": 0.02,
+  "schema_version": 2,
+  "solar_intensity": 1.91,
+  "visual_profile": "advancedrocketrycommunity:venus"
+}

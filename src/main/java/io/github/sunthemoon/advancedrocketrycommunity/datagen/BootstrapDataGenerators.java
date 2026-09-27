@@ -21,7 +21,10 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
 
         // Earlier version outputs remain immutable resource inputs.
-        generator.addProvider(event.includeClient(), new V130RocketLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new V130RocketLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeClient(), new V140PlanetaryLanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new V140PlanetaryLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeServer(), new PlanetaryContentProvider(output));
+        generator.addProvider(event.includeServer(), new net.minecraftforge.common.data.DatapackBuiltinEntriesProvider(
+                output, event.getLookupProvider(), PlanetaryWorldgen.builder(), java.util.Set.of(AdvancedRocketryCommunity.MOD_ID)));
     }
 }

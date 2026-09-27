@@ -1,0 +1,25 @@
+{
+  "parent": "advancedrocketrycommunity:earth",
+  "atmosphere": {
+    "breathable": false,
+    "pressure": 10.0,
+    "profile": "advancedrocketrycommunity:gas_giant",
+    "temperature_kelvin": 165.0
+  },
+  "capabilities": {
+    "gas_giant": true,
+    "landable": false,
+    "orbitable": true
+  },
+  "gravity_multiplier": 2.5,
+  "id": "advancedrocketrycommunity:gas_giant",
+  "orbit": {
+    "distance": 588000000,
+    "inclination_degrees": 0.0,
+    "period_ticks": 103992000
+  },
+  "radiation": 0.5,
+  "schema_version": 2,
+  "solar_intensity": 0.04,
+  "visual_profile": "advancedrocketrycommunity:gas_giant"
+}

@@ -132,8 +132,8 @@ public final class BootstrapGameTests {
                     player.createCommandSourceStack().withPermission(2).withSuppressedOutput()
             );
 
-            helper.assertTrue(validated == 3, "Celestial validate command did not report three bodies");
-            helper.assertTrue(listed == 3, "Celestial list command did not report three bodies");
+            helper.assertTrue(validated == 6, "Celestial validate command did not report the six packaged bodies");
+            helper.assertTrue(listed == 6, "Celestial list command did not report the six packaged bodies");
             helper.assertTrue(moonTravel == 1, "Moon travel command failed");
             helper.assertTrue(
                     CelestialIds.MOON_LEVEL.equals(player.serverLevel().dimension()),

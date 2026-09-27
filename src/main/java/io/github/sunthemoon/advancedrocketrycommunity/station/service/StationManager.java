@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.station.service;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.PlanetarySurfaceResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
@@ -24,7 +25,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.level.BlockEvent;
@@ -59,12 +59,10 @@ public final class StationManager implements StationOperationService {
         if (server == null) {
             return StationCreationResult.failure(StationCreationCode.SERVICE_UNAVAILABLE);
         }
-        ResourceLocation orbitBody;
-        if (player.level().dimension() == Level.OVERWORLD) {
-            orbitBody = CelestialIds.EARTH_ID;
-        } else if (player.level().dimension().equals(CelestialIds.MOON_LEVEL)) {
-            orbitBody = CelestialIds.MOON_ID;
-        } else {
+        ResourceLocation orbitBody = celestialCatalogs.current()
+                .flatMap(catalog -> PlanetarySurfaceResolver.find(catalog, player.level().dimension(), false))
+                .map(body -> body.id()).orElse(null);
+        if (orbitBody == null || server.getLevel(player.level().dimension()) != player.level()) {
             return StationCreationResult.failure(StationCreationCode.INVALID_SOURCE);
         }
         String name = player.getScoreboardName() + " Station";

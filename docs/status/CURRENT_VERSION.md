@@ -44,9 +44,11 @@ and verify joint bounded reload, error retention and packaged restart; see
 [reload evidence](../work/v1.4.0-data02/VERIFICATION.md). MAP-01 adds persistent
 body/Level bindings, removal retention and checked startup/reload publication;
 see [binding evidence](../work/v1.4.0-map01/VERIFICATION.md), including its
-prospective-adoption limitation and low-severity diagnostic follow-up.
-MAP-02's actual worlds, bounded landing and station integration are next;
-new planetary worlds remain unimplemented.
+prospective-adoption limitation. MAP-02 implements actual Mars/Venus worlds,
+an unmapped gas giant, physical travel/landing and planetary station creation;
+see [world evidence](../work/v1.4.0-map02/VERIFICATION.md). Its reverse-binding
+diagnostic follow-up is corrected. Environmental response/protection, navigation,
+discovery, custom skies and remaining migration/acceptance are still pending.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding
 acceptance. This pointer does not approve any candidate or change `GATE_STATUS.md`.

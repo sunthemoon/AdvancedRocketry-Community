@@ -386,6 +386,10 @@ final class RocketFlightService {
             PlanetaryCatalog pair
     ) {
         if (pair != null) {
+            if (!PlanetaryFlightAdmission.allows(rocket, flight, source, destination, pair.celestial(), stations)) {
+                return RocketFlightPlanResult.failure(
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanCode.UNSUPPORTED_ROUTE, 0L);
+            }
             return RocketTargetFlightPlanner.plan(
                     rocket.snapshot().orElseThrow().stats(),
                     flight.fuel(),

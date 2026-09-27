@@ -152,6 +152,14 @@ public final class AdapterFaultGameTests {
     }
 
     private static Fixture create(GameTestHelper helper) {
+        // Structure placement can drop natural cave decorations before this test starts.
+        // Clear only pre-operation items; every later inventory assertion still requires zero drops.
+        for (var item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper))) {
+            LogUtils.getLogger().info("ARCE_ADAPTER_FIXTURE_PREEXISTING_DROP item={} position={} age={}",
+                    item.getItem(), item.position(), item.getAge());
+            item.discard();
+        }
+        noDrops(helper);
         helper.setBlock(ORIGIN.below(), block("rocket_assembler"));
         helper.setBlock(ORIGIN, block("rocket_motor"));
         helper.setBlock(ORIGIN.above(), block("rocket_seat"));
@@ -227,7 +235,9 @@ public final class AdapterFaultGameTests {
 
     private static AABB region(GameTestHelper helper) { return new AABB(helper.absolutePos(ORIGIN)).inflate(3); }
     private static void noDrops(GameTestHelper helper) {
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper)).isEmpty(), "Duplicate inventory drops found");
+        var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper));
+        helper.assertTrue(drops.isEmpty(), "Duplicate inventory drops found: " + drops.stream()
+                .map(item -> item.getItem() + " at " + item.position() + " age=" + item.getAge()).toList());
     }
     private static Block block(String id) { return ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse(HOST + ":" + id)); }
     private record Fixture(FakePlayer owner, FixtureContainerBlockEntity source, CompoundTag inventory) { }
