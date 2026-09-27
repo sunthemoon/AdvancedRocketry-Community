@@ -1,0 +1,23 @@
+{
+  "archive": "independent-review.zip",
+  "archive_sha256": "8c36ed4d1699be83220e40234a88342b6c937faebefb68224d3e3a8f85ac43f3",
+  "development_commit": "884908ebfb936402bcc7a437791f8d9683c27506",
+  "final_archive_and_staged_integrity": "Root-owned check after report attachment",
+  "reports": [
+    {
+      "archived_files": 4,
+      "report_entry": "inventory/REVIEW.md",
+      "report_sha256": "ce15310867c48475c713287aa77ee4317e2c65c5f5231638dc36eeea22e6a578",
+      "scope": "inventory"
+    },
+    {
+      "archived_files": 8,
+      "report_entry": "handoff/REVIEW.md",
+      "report_sha256": "244a5a47f92c13b992b774a0657d8946a8cc64d90e83962cd1c0841c321a5b7a",
+      "scope": "handoff"
+    }
+  ],
+  "runtime_replayed": false,
+  "schema_version": 1,
+  "scope": "Development handoff and historical evidence review; not candidate approval"
+}

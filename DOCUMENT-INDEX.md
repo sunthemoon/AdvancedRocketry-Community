@@ -206,6 +206,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [API 兼容与支持矩阵](docs/API-COMPATIBILITY.md)：公开类型、最低版本、平台边界、移除行为和已验证范围。
 - [独立兼容测试模组](compat-test-mod/README.md)：实际 Maven API 消费者、独立构建与打包边界检查。
 - [v1.3 实施日志](docs/work/v1.3.0-implementation-log.md)：API 切片及其实际验证范围。
+- [v1.3 开发交接](docs/releases/v1.3.0/RELEASE-EVIDENCE.md)：已实现能力、制品身份、迁移/网络边界与未完成验收，不代表发布批准。
 - [v1.3 开发基线例外](docs/decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md)。
 - [公共 API 版本政策](docs/decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md)。
 - [火箭适配器注册契约](docs/decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md)。

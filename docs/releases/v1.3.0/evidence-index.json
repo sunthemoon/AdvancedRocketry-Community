@@ -1,0 +1,440 @@
+{
+  "candidate_commit": null,
+  "development_commit": "884908ebfb936402bcc7a437791f8d9683c27506",
+  "manifest_failures": [],
+  "records": [
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 6009,
+        "path": "docs/work/v1.3.0-adapter-registration/SHA256SUMS",
+        "sha256": "32f072da84813bc52bd263bb9a2132b56cb9926e262192a65db8080c1976089c"
+      },
+      "manifest_files_checked": 56,
+      "metadata": [
+        {
+          "bytes": 1200,
+          "path": "docs/work/v1.3.0-adapter-registration/artifact-check.txt",
+          "sha256": "163ad1e2b26931b77ff794004349381d15bc3d49a665b74bdeb440feadac23f2"
+        }
+      ],
+      "report": {
+        "bytes": 10239,
+        "path": "docs/work/v1.3.0-adapter-registration/VERIFICATION.md",
+        "sha256": "efa1e2649ea745c68eb17a33c86a80d7502ba06f1788b0c73988e260da5c824d"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": null,
+      "manifest_files_checked": 0,
+      "metadata": [],
+      "report": {
+        "bytes": 8536,
+        "path": "docs/work/v1.3.0-api-version/VERIFICATION.md",
+        "sha256": "ea0d7e1957c5aec49203d88e5fe3c45103522f9d738ff98e2b39eb8a96fd3d7b"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": null,
+      "manifest_files_checked": 0,
+      "metadata": [
+        {
+          "bytes": 1285,
+          "path": "docs/work/v1.3.0-atmosphere-boundaries/artifact-identities.json",
+          "sha256": "976fe967eca83443ab61918e45d2d68b447c37484c2a46c972a922b82021d7aa"
+        },
+        {
+          "bytes": 1395,
+          "path": "docs/work/v1.3.0-atmosphere-boundaries/consumer-validation.txt",
+          "sha256": "114a906ed70931f7ccd28645f7866f04da4c1e2cd50172042159d7d3c1b7e95b"
+        },
+        {
+          "bytes": 3348,
+          "path": "docs/work/v1.3.0-atmosphere-boundaries/runtime-disk-states.json",
+          "sha256": "57e15eb253314159a907c96c5fda5416a89a6497fd61f3de95b9f63430a57a04"
+        },
+        {
+          "bytes": 21333,
+          "path": "docs/work/v1.3.0-atmosphere-boundaries/runtime-summary.json",
+          "sha256": "1c9d8da1f0de8c25eb002f2279beeecf9f9dd289cb73b9cc379fddc316717b73"
+        }
+      ],
+      "report": {
+        "bytes": 10465,
+        "path": "docs/work/v1.3.0-atmosphere-boundaries/VERIFICATION.md",
+        "sha256": "3dd8372adecff75e22ef7d0bbcb693bf05eef8cc014a495bcedd6092d64be66e"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 948,
+        "path": "docs/work/v1.3.0-compatibility/SHA256SUMS",
+        "sha256": "be1388178ef4aecd45c67996da9d5755c78b9dd04bb771ee04fd8166cd362e1e"
+      },
+      "manifest_files_checked": 11,
+      "metadata": [
+        {
+          "bytes": 1801,
+          "path": "docs/work/v1.3.0-compatibility/artifact-identities.json",
+          "sha256": "f82642961fab9e48499d74884b15b068cbb927209b8e8b7b4e86f806fa47b7be"
+        },
+        {
+          "bytes": 704,
+          "path": "docs/work/v1.3.0-compatibility/final-fixture-identity.json",
+          "sha256": "011e2ee739895350aa7e52f3f18c40aa9f41bb43051715fdb539b0aedfd6f735"
+        },
+        {
+          "bytes": 84,
+          "path": "docs/work/v1.3.0-compatibility/junit-summary.json",
+          "sha256": "fd0ab7d2d94cdce68617032b7b09a4537ecc64950d9082b7269904d97e1ae777"
+        },
+        {
+          "bytes": 20541,
+          "path": "docs/work/v1.3.0-compatibility/runtime-summary.json",
+          "sha256": "1f5739d9fb764d6e4222fc9fc330edbf8ae0bc8d18e142477f2de56281c3d84f"
+        }
+      ],
+      "report": {
+        "bytes": 10694,
+        "path": "docs/work/v1.3.0-compatibility/VERIFICATION.md",
+        "sha256": "015be51da818f6ca09d5649c4b760dc7b45b46da1f1683649cbde55cbbd87b06"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 5802,
+        "path": "docs/work/v1.3.0-consumer-packaging/SHA256SUMS",
+        "sha256": "6180d733692a5d90907fa4846480294f118008557465f4f5327d963e39fa24dd"
+      },
+      "manifest_files_checked": 58,
+      "metadata": [
+        {
+          "bytes": 1209,
+          "path": "docs/work/v1.3.0-consumer-packaging/consumer-integration.txt",
+          "sha256": "cf3127a7066c948a0755d80a1a8a0d8d7cc7a145bbc9d8aaf08ac91b021e2d2f"
+        },
+        {
+          "bytes": 816,
+          "path": "docs/work/v1.3.0-consumer-packaging/published-artifacts.txt",
+          "sha256": "8f80a185335dab86528bb5819d15c49565a3e0967d4e5b1f7d4357556441a3b3"
+        }
+      ],
+      "report": {
+        "bytes": 10783,
+        "path": "docs/work/v1.3.0-consumer-packaging/VERIFICATION.md",
+        "sha256": "528fc24ef071bdbe17396c2e20d4f4d9faf49cc319e3f26e0ba0a9a53dfc5230"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 770,
+        "path": "docs/work/v1.3.0-environment-queries/SHA256SUMS",
+        "sha256": "b99157a0180fe333531b813dacf11573d8c615872c66201e6ff59e5cc6382add"
+      },
+      "manifest_files_checked": 9,
+      "metadata": [
+        {
+          "bytes": 698,
+          "path": "docs/work/v1.3.0-environment-queries/artifact-identities.json",
+          "sha256": "215fd3fa5c41136ec915e28421091d5cbd67ba40664fd6fac160a75bd5f1fac4"
+        },
+        {
+          "bytes": 84,
+          "path": "docs/work/v1.3.0-environment-queries/junit-summary.json",
+          "sha256": "341677d8832df823491ee42b97d917ef0205f39e04909baed0625792e910d6f4"
+        },
+        {
+          "bytes": 20490,
+          "path": "docs/work/v1.3.0-environment-queries/runtime-summary.json",
+          "sha256": "131fb200c2736161b3795fb62788d083fb4ea4036ae1663bab252fef74685133"
+        }
+      ],
+      "report": {
+        "bytes": 8644,
+        "path": "docs/work/v1.3.0-environment-queries/VERIFICATION.md",
+        "sha256": "fdf16927b7de85ce8fec8dc2579f6b262ef0f65b0d1ff1de1463f35e783bed20"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 2386,
+        "path": "docs/work/v1.3.0-external-flight/SHA256SUMS",
+        "sha256": "afe601edb6c60efa885acc21eb60a8835ac3bf29f2957a279f38ce7f73a675af"
+      },
+      "manifest_files_checked": 26,
+      "metadata": [
+        {
+          "bytes": 1209,
+          "path": "docs/work/v1.3.0-external-flight/consumer-integration.txt",
+          "sha256": "41dc6426c09bd94cb148a40d3a80bc3ab005bdd61168e8a5ef2c5894d31ada51"
+        },
+        {
+          "bytes": 99,
+          "path": "docs/work/v1.3.0-external-flight/junit-summary.json",
+          "sha256": "9a32b3b8e4388b50f3f7ac2f70e2a737be37e079e6942292e883ec350f2f6a0c"
+        },
+        {
+          "bytes": 814,
+          "path": "docs/work/v1.3.0-external-flight/runtime-command.txt",
+          "sha256": "27f885172fbcdffddf1d60db775bcb13a1364301fc4f72a4e979dca0a1a9e123"
+        },
+        {
+          "bytes": 37758,
+          "path": "docs/work/v1.3.0-external-flight/runtime-summary.json",
+          "sha256": "1c509aed85f32295fdc41e0006bb44907b1d359b040494a3124d160c73b16e2a"
+        }
+      ],
+      "report": {
+        "bytes": 11155,
+        "path": "docs/work/v1.3.0-external-flight/VERIFICATION.md",
+        "sha256": "27f08de99940ecfe58ab4a2d69cb34e55c2a40f1c7df888df74d16536823f5c2"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 5143,
+        "path": "docs/work/v1.3.0-external-recovery/SHA256SUMS",
+        "sha256": "9678534835cf315ef8c01598316891353b4aa592ff2332cba8f59fb4b1d7791c"
+      },
+      "manifest_files_checked": 53,
+      "metadata": [
+        {
+          "bytes": 1209,
+          "path": "docs/work/v1.3.0-external-recovery/consumer-integration.txt",
+          "sha256": "1a3d8044fab2faf3265c35c45ab04e56f368825e0cce8fedec5507cd10307bce"
+        },
+        {
+          "bytes": 99,
+          "path": "docs/work/v1.3.0-external-recovery/junit-summary.json",
+          "sha256": "9a32b3b8e4388b50f3f7ac2f70e2a737be37e079e6942292e883ec350f2f6a0c"
+        },
+        {
+          "bytes": 345,
+          "path": "docs/work/v1.3.0-external-recovery/runtime-final-archive.json",
+          "sha256": "9ed4a1edc9c2f6d8db4058431cd359e586be7a32544afae7f3bc18f7a0dad9a9"
+        },
+        {
+          "bytes": 335,
+          "path": "docs/work/v1.3.0-external-recovery/runtime-initial-archive.json",
+          "sha256": "35ecfa7b1c654aba4eba0a0b14c4ae9c031ed04dab6b48789a24b4798f737118"
+        }
+      ],
+      "report": {
+        "bytes": 10222,
+        "path": "docs/work/v1.3.0-external-recovery/VERIFICATION.md",
+        "sha256": "55f839b904f20b7ee79277bd7c83b6734916572a30d0eccc743de9a4966536f5"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 4341,
+        "path": "docs/work/v1.3.0-fueled-disassembly/SHA256SUMS",
+        "sha256": "888e743bc17f4cd918cba39c87feb9ecc5f2318a7c44dc20e4ffff07782b5d24"
+      },
+      "manifest_files_checked": 41,
+      "metadata": [
+        {
+          "bytes": 1342,
+          "path": "docs/work/v1.3.0-fueled-disassembly/artifact-identities.json",
+          "sha256": "d79448b073496d060af73f2120abaadc8b295af4687c2488ab2b92030b953155"
+        },
+        {
+          "bytes": 1209,
+          "path": "docs/work/v1.3.0-fueled-disassembly/consumer-integration.txt",
+          "sha256": "a386d307b2830ad1d629f3c1f337ebf5d67f5e89203e1da72a59e753eff49a6f"
+        },
+        {
+          "bytes": 91,
+          "path": "docs/work/v1.3.0-fueled-disassembly/junit-summary.json",
+          "sha256": "9811f4e15382b3a09f4867d0c767aa43d816bbf897403db186a43863cd11b550"
+        },
+        {
+          "bytes": 672,
+          "path": "docs/work/v1.3.0-fueled-disassembly/runtime-command.txt",
+          "sha256": "56c2db573aafbd2b1f0bdf08422d66bc652905b266bec9b5c845d01723ab8538"
+        },
+        {
+          "bytes": 3308,
+          "path": "docs/work/v1.3.0-fueled-disassembly/runtime-summary.json",
+          "sha256": "0f88c3e9db326f18d417da84399a214c9d320b741e4cebe26b489d9d4e32a3c2"
+        }
+      ],
+      "report": {
+        "bytes": 10831,
+        "path": "docs/work/v1.3.0-fueled-disassembly/VERIFICATION.md",
+        "sha256": "b4408397905f47918330e867de07020d76cdecaaf303c6bd1c2a5ce0bcfc65ff"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 1266,
+        "path": "docs/work/v1.3.0-rocket-components/SHA256SUMS",
+        "sha256": "e83fc52495e83fa2ab9fc67b99d640f733add87b9a209d55a887273ea6fe8721"
+      },
+      "manifest_files_checked": 14,
+      "metadata": [
+        {
+          "bytes": 1178,
+          "path": "docs/work/v1.3.0-rocket-components/artifact-identities.json",
+          "sha256": "9c7c9d240573bf72e13ddaf554594e8797238a9e756b812b7ba0dac4aeaae421"
+        },
+        {
+          "bytes": 25354,
+          "path": "docs/work/v1.3.0-rocket-components/runtime-disk-states.json",
+          "sha256": "fcabedb884ea5a79b03f81dea2e869b12ab52ec23216b695372e5e33ed0a6e61"
+        },
+        {
+          "bytes": 23371,
+          "path": "docs/work/v1.3.0-rocket-components/runtime-summary.json",
+          "sha256": "b953fd9d159afe40ef3463bd8df002c15fd62b7425a2fff46ecc65c0686f1bf7"
+        }
+      ],
+      "report": {
+        "bytes": 11477,
+        "path": "docs/work/v1.3.0-rocket-components/VERIFICATION.md",
+        "sha256": "33ac151853d9c05e053d39a547d2206970deff575e0913346b209f8c5bc5f42c"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 3688,
+        "path": "docs/work/v1.3.0-rocket-failure-containment/SHA256SUMS",
+        "sha256": "2d69deb1accd5bc2de57861ad0d877173f21be22ad532528bfb5977f3ab4ae19"
+      },
+      "manifest_files_checked": 36,
+      "metadata": [
+        {
+          "bytes": 383,
+          "path": "docs/work/v1.3.0-rocket-failure-containment/artifact-hashes.json",
+          "sha256": "ce889c8df2a8a123ec354cbc499d92d30ce53b9b2fbc298dfe2452d0df729c94"
+        },
+        {
+          "bytes": 91,
+          "path": "docs/work/v1.3.0-rocket-failure-containment/junit-summary.json",
+          "sha256": "e5205ce55c4bb75c1a8e46234220dcde3ca905288f481e6e201043ed5faafcf0"
+        }
+      ],
+      "report": {
+        "bytes": 9584,
+        "path": "docs/work/v1.3.0-rocket-failure-containment/VERIFICATION.md",
+        "sha256": "95e21ca4e77ad1b7fc99a4ca54a6ccdc67ab80d347c67485c5d859ce9ac4f794"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 949,
+        "path": "docs/work/v1.3.0-rocket-fuels/SHA256SUMS",
+        "sha256": "a9ab2fae651215309d99318dd7cfc4be4ff5e36fd2f1d7a053bb58f549fe3285"
+      },
+      "manifest_files_checked": 11,
+      "metadata": [
+        {
+          "bytes": 793,
+          "path": "docs/work/v1.3.0-rocket-fuels/artifact-identities.json",
+          "sha256": "f0ad7eb02f87dcd816dc7d89c1c306eec16993c74bf9dddc19fc906c054f9750"
+        },
+        {
+          "bytes": 1683,
+          "path": "docs/work/v1.3.0-rocket-fuels/consumer-artifact.json",
+          "sha256": "be68dd3bbc85ba5ad555639e673cc7d9fe71d5fa97ddc99eded3bd4d7d492121"
+        },
+        {
+          "bytes": 79456,
+          "path": "docs/work/v1.3.0-rocket-fuels/consumer-classpath.json",
+          "sha256": "c1e411861c8f45ea31003fb726f9f92660d9c840a404d9489f50959cdfb9b1ac"
+        },
+        {
+          "bytes": 84,
+          "path": "docs/work/v1.3.0-rocket-fuels/junit-summary.json",
+          "sha256": "13414f18dcf660d7754cdb2648880e2a9c291918691aa29388735979fbebe60c"
+        },
+        {
+          "bytes": 24059,
+          "path": "docs/work/v1.3.0-rocket-fuels/runtime-summary.json",
+          "sha256": "5ee8ff5dab8653460a1918a7124cbc93848905b66b14bc1e7f7cd9c7f4780ff1"
+        }
+      ],
+      "report": {
+        "bytes": 10395,
+        "path": "docs/work/v1.3.0-rocket-fuels/VERIFICATION.md",
+        "sha256": "7c9c468de8cb9e800cd3a5485e14e512a711b4650e39260ceeda0b9879b2c63b"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": {
+        "bytes": 855,
+        "path": "docs/work/v1.3.0-satellite-payloads/SHA256SUMS",
+        "sha256": "073585efd53c56dd8fcfa325887b0aba4bd60e1f5bb7ce407e35e2a02bff15cd"
+      },
+      "manifest_files_checked": 10,
+      "metadata": [
+        {
+          "bytes": 650,
+          "path": "docs/work/v1.3.0-satellite-payloads/artifact-identities.json",
+          "sha256": "35c4189a4be58a7cffb5d8682d3ec14f5e1665017ac51e60c48559c566b11825"
+        },
+        {
+          "bytes": 84,
+          "path": "docs/work/v1.3.0-satellite-payloads/junit-summary.json",
+          "sha256": "9db2c47cdfe635cd9e9a129907af16583bd7fbd80e8d24b30419ae42c7505a74"
+        },
+        {
+          "bytes": 21919,
+          "path": "docs/work/v1.3.0-satellite-payloads/runtime-summary.json",
+          "sha256": "ebf9976d13ecb8b57748dd957e331176eb58562ead5ccd5f40fe3839497c9ff3"
+        }
+      ],
+      "report": {
+        "bytes": 12181,
+        "path": "docs/work/v1.3.0-satellite-payloads/VERIFICATION.md",
+        "sha256": "450fa7e0ace25bbdcc01083faa3f6f9e2205f7773c0c3d5ac56d22e074dc176b"
+      }
+    },
+    {
+      "kind": "historical_development_evidence",
+      "manifest": null,
+      "manifest_files_checked": 0,
+      "metadata": [
+        {
+          "bytes": 1309,
+          "path": "docs/work/v1.3.0-suit-equipment/artifact-identities.json",
+          "sha256": "683a801cdf0c9650a8b32d88efea6efcf32c9ac8cb748d305a9eebadb4da9a1a"
+        },
+        {
+          "bytes": 1289,
+          "path": "docs/work/v1.3.0-suit-equipment/consumer-build.txt",
+          "sha256": "c19b37c9c8620e9f3093592056960a0fa1b24df37097fbe490520f72c95e3437"
+        },
+        {
+          "bytes": 4813,
+          "path": "docs/work/v1.3.0-suit-equipment/runtime-disk-states.json",
+          "sha256": "1c2f14aea905f43bde4efe37093aebc29e044762a5b62ef06e8cbd48a2832b05"
+        },
+        {
+          "bytes": 21447,
+          "path": "docs/work/v1.3.0-suit-equipment/runtime-summary.json",
+          "sha256": "46b628fb45be176a93a335a8dc9dd24959536f20b6463ce253359df582a8f26a"
+        }
+      ],
+      "report": {
+        "bytes": 11692,
+        "path": "docs/work/v1.3.0-suit-equipment/VERIFICATION.md",
+        "sha256": "a6f295e5cf5f15aa354d769691d24704e2e4a85f80b12eae749832619474a8cc"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Original report identities and available outer checksums only; not a runtime rerun or candidate acceptance"
+}

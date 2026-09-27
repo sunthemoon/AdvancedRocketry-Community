@@ -1,0 +1,28 @@
+{
+  "api_classes_byte_identical": 27,
+  "build_log_sha256": "f50430bc3585a64d539340e061f9a58d200e79cf7f33e35dd34ab1654a5da802",
+  "candidate_commit": null,
+  "command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --no-build-cache --console=plain",
+  "datagen_written": 0,
+  "development_commit": "884908ebfb936402bcc7a437791f8d9683c27506",
+  "exit_code": 0,
+  "game_test_world": "disposable world under build/gametest after clean; not an authentic upgrade fixture",
+  "gradle_duration_seconds": 158,
+  "junit": {
+    "errors": 0,
+    "execution": "fresh; no build-cache result",
+    "failures": 0,
+    "skipped": 0,
+    "suites": 143,
+    "tests": 769
+  },
+  "lag_warnings": [
+    "[13:57:13] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2233ms or 44 ticks behind"
+  ],
+  "native_scope": "Reuse explicitly attributed per-slice evidence, not a new packaged run",
+  "required_gametests_passed": 210,
+  "runtime_repeated": false,
+  "schema_version": 1,
+  "tasks_executed": 26,
+  "tasks_up_to_date": 1
+}

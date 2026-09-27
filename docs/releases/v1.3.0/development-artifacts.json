@@ -1,0 +1,32 @@
+{
+  "api_class_count": 27,
+  "artifacts": [
+    {
+      "bytes": 48469,
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+      "scope": "Rebuilt by the handoff required command at the unchanged source checkpoint",
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "bytes": 1075630,
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+      "scope": "Rebuilt by the handoff required command at the unchanged source checkpoint",
+      "sha256": "359a21d3c5bd7217ed39876d1fb88208438976e8baaa3acec4117c59e5bc2b8a"
+    },
+    {
+      "bytes": 2352333,
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "scope": "Rebuilt by the handoff required command at the unchanged source checkpoint",
+      "sha256": "d1f9f564ed1dcd1df7ac0648b4091a07dfa9a02f63b36b827f36aad591224475"
+    },
+    {
+      "bytes": 86554,
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "scope": "Previously independently built COMPAT consumer; not rebuilt in this handoff",
+      "sha256": "759f214daae269964ab78ed771a2b3cf799a480061df1144f6075fd911881ec8"
+    }
+  ],
+  "candidate_commit": null,
+  "development_commit": "884908ebfb936402bcc7a437791f8d9683c27506",
+  "schema_version": 1
+}

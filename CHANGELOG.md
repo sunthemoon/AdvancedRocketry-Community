@@ -4,6 +4,38 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.3.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.3.0-dev`.
+No candidate, stable artifact or release approval is assigned. See the
+[development handoff](docs/releases/v1.3.0/RELEASE-EVIDENCE.md) for exact evidence
+and remaining acceptance; preceding development milestones are not implied released.
+
+- Add API 1.7 with explicit version/deprecation policy, a compile-only classifier,
+  isolated compatibility mod and supported-use documentation.
+- Allow integrations to register owned rocket-container adapters, block-state
+  atmosphere boundaries, suit oxygen equipment, numeric rocket components,
+  whole-item fuels and declarative satellite payload missions.
+- Expose server-lifetime read-only environment/body-context queries without
+  loading chunks or granting world-mutation authority.
+- Preserve captured rocket statistics, fuel batches and satellite mission
+  rewards when definitions change; validate registration ownership and limits.
+- Migrate Fuel Loader schema 1 explicitly to schema 2, retaining pending units,
+  exact remainder and ownership. Eligible loader/terminal drops preserve bounded
+  resources or quarantined roots; arbitrary no-drop destruction is not recovery.
+- Keep unavailable external data rather than silently substituting empty items;
+  restore matching providers/dependencies before retrying blocked recovery.
+- Require explicit consent before disassembling a rocket with remaining fuel;
+  this is disposal, not fuel recovery.
+- Add bounded satellite definition/target menu framing and stale-menu rejection.
+  Install matching host builds on client/server; unchanged channel numbers do
+  not make old/new menu frames compatible.
+- Verify deliberate provider exceptions, oversized data and finite slow returns
+  through actual assembly/disassembly. These checks are not callback preemption,
+  arbitrary mod isolation or cross-file power-loss guarantees.
+
+Full original-content, real-client and reference-load acceptance remains pending.
+
 ## v1.0.0 — in development
 
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.0.0-dev`.

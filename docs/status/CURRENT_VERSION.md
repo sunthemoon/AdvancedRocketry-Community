@@ -37,4 +37,6 @@ development_log: docs/work/v1.3.0-implementation-log.md
 ```
 
 Use the [v1.3 implementation log](../work/v1.3.0-implementation-log.md) for active
-tasks. This pointer does not approve any candidate or change `GATE_STATUS.md`.
+tasks and the [development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md) for
+implemented scope, artifact evidence and outstanding acceptance. This pointer
+does not approve any candidate or change `GATE_STATUS.md`.

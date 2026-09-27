@@ -41,6 +41,13 @@ The [v1.0 development evidence handoff](docs/releases/v1.0.0/RELEASE-EVIDENCE.md
 maps tested artifacts to their results and lists outstanding release criteria;
 it is not a release approval or a stable download.
 
+Active feature development has reached the **v1.3 public API kernel**: versioned
+inventory, atmosphere, equipment, component, fuel and satellite extensions plus
+read-only environment queries. The [v1.3 development handoff](docs/releases/v1.3.0/RELEASE-EVIDENCE.md)
+lists exact tested artifacts, save/network boundaries and remaining acceptance.
+This is a development build, not a new stable release or complete classic-content
+port; the release-acceptance cursor above remains unchanged.
+
 ## What this project is
 
 Advanced Rocketry: Community Edition aims to rebuild the core Advanced Rocketry experience on a maintainable Forge 1.20.1 foundation:
