@@ -58,10 +58,20 @@ pending after its one research award/fee; it does not unlock or evict an old ID.
 Repeated claims cannot fix capacity. Keep a backup and ask the server operator
 to resolve blocked data rather than deleting unknown SavedData files.
 
+Paid discovery claims automatically retry while the server is running. If a
+target definition is removed, restore the same body identity and valid related
+data; the pending discovery can then finish without another claim. On startup,
+completed discovery missions also repair missing discovery records without
+awarding research again or replacing a newer mission on that satellite.
+
 Client/server builds must match **flight protocol 8**. Celestial display protocol
 2 and existing save schemas are unchanged. Use pre-upgrade backups when rolling
 back: older strict schema-2 builds do not understand `discovery_required`.
 
-Normal save/restart and repeat-claim handling do not constitute a guarantee
-against every power-loss point across the separate celestial and mission files.
-Do not restore only one file from a different backup generation.
+Research receipts are saved before their discoveries, and discoveries before
+final claim completion. These two files use checked atomic replacement; failed
+saves retain work for retry rather than reporting completion. This protects
+ordered process recovery, not every disk failure or power-loss point. Keep
+complete backups and do not restore only one file from a different generation.
+An unsupported filesystem or invalid/future data requires operator repair;
+repeated clicking cannot make storage writable.

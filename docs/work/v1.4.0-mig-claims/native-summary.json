@@ -1,0 +1,150 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2412477,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-map01-1790499004940\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "9fc582f1b83599526627b065d72b9995fbb7a69e04065a135dce7aa8697b1acf",
+      "version": "1.20.1-1.4.0-dev"
+    },
+    {
+      "bytes": 2624223,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-claims-7ff01118440047f59bae982f7891efc6\\artifacts-final\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475",
+      "version": "1.20.1-1.4.0-dev"
+    }
+  ],
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "legs": [
+    {
+      "fuel_after": 1552,
+      "fuel_before": 2000,
+      "required": 448,
+      "transfer": "9c1100ba-b52c-4fd6-86c4-da10d74e011f"
+    },
+    {
+      "fuel_after": 1019,
+      "fuel_before": 1552,
+      "required": 533,
+      "transfer": "8a34b80f-2a87-4181-a0f7-7e4d00fa87ab"
+    },
+    {
+      "fuel_after": 504,
+      "fuel_before": 1019,
+      "required": 515,
+      "transfer": "5a02e1df-fdbd-4399-b649-95eac14bc442"
+    }
+  ],
+  "port": 62525,
+  "reports": [
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "minecraft:overworld",
+      "entity": "ec542f4c-d375-4e99-87f3-f3e9896e86b8",
+      "fuel": 2000,
+      "logical": "5bc4fecf-a0a0-4364-8aff-0439608244ba",
+      "origin": [
+        264,
+        101,
+        264
+      ],
+      "passengers": 0,
+      "snapshot": "cd8af474e8d7f76ebe6d659d552360b1b9d2c8b74c025b1b7ee9c00bbb498fe5",
+      "state": "FUELED",
+      "transfer": "none"
+    },
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "advancedrocketrycommunity:mars",
+      "entity": "366f2f85-cb66-4b9e-9902-58ac7fd5ed22",
+      "fuel": 1552,
+      "logical": "5bc4fecf-a0a0-4364-8aff-0439608244ba",
+      "origin": [
+        0,
+        64,
+        0
+      ],
+      "passengers": 0,
+      "snapshot": "86e54dac9cef311b2382f846d467160e10628a4e17e4a4072833024b5e9e466c",
+      "state": "LANDED",
+      "transfer": "none"
+    },
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "advancedrocketrycommunity:venus",
+      "entity": "58a58340-8cd8-46e0-b549-c39c3b91ba50",
+      "fuel": 1019,
+      "logical": "5bc4fecf-a0a0-4364-8aff-0439608244ba",
+      "origin": [
+        0,
+        93,
+        0
+      ],
+      "passengers": 0,
+      "snapshot": "522a0e6fc50577d428fdfdb1ca9bd7750ead837c7e66912fc063c1cf49dd2507",
+      "state": "LANDED",
+      "transfer": "none"
+    },
+    {
+      "blocks": 6,
+      "capacity": 2000,
+      "dimension": "minecraft:overworld",
+      "entity": "a9b089c7-edec-4171-bff4-d94d1bd977c6",
+      "fuel": 504,
+      "logical": "5bc4fecf-a0a0-4364-8aff-0439608244ba",
+      "origin": [
+        16,
+        63,
+        -64
+      ],
+      "passengers": 0,
+      "snapshot": "05e5f7560a7e407ebb3b70c34da6c47843ea80b28d6321d03229ec675407f7df",
+      "state": "LANDED",
+      "transfer": "none"
+    }
+  ],
+  "research": [
+    {
+      "body": "advancedrocketrycommunity:mars",
+      "mission": "b4babfe0-a0d6-3c6c-82ad-632aabb6510c",
+      "owner": "00000000-0000-0000-0000-000000000005",
+      "satellite": "80307534-b29f-4fd5-8a84-5a281e958f36"
+    },
+    {
+      "body": "advancedrocketrycommunity:venus",
+      "mission": "0e71db18-2716-377c-809c-fe457bc55279",
+      "owner": "00000000-0000-0000-0000-000000000005",
+      "satellite": "ed7ba3c8-ca1d-451b-8fd4-51c2a4bd900a"
+    },
+    {
+      "body": "advancedrocketrycommunity:gas_giant",
+      "mission": "f9d2519d-b77d-3773-b82d-590f82f1492b",
+      "owner": "c191ac5f-97e5-4b8f-ab04-bb0a958d28b2",
+      "satellite": "e48c3520-b405-4ed8-a00a-c5edcf3eb0a5"
+    }
+  ],
+  "research_unlocks": true,
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "pre-planet upgrade, three surface legs, native restart; no clients/load campaign",
+  "server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-claims-7ff01118440047f59bae982f7891efc6\\server-native",
+  "world": {
+    "identity": "0baa784656f7b7455a344915870e5a2a23713c003feffd4e649ee33a2bd77020",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "2da30339e338e99e3373428f60e817db29baad32a14627b1e23a8a84b1b5b218",
+    "level_dat_after_restart_sha256": "83f5a107d9a1bbfb0ba703a03a899da940f8582cd75a5e837630d03d26fba770",
+    "level_dat_after_restart_size": 37901,
+    "level_dat_before_restart_sha256": "9a1f6b629e26a9148ddda616da03b636c80bd5f0738b5c0d75ce641c3fa22358",
+    "level_dat_before_restart_size": 37847,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "d5753a050b6a145149f327a8372f29bf50b6343969d56f73cefdf091cff39957"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "base_commit": "cbff561a8e949c25e93d51365a260e0fd061be4d",
+  "junit_runs": {
+    "clean-all-02-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 167,
+      "tests": 921
+    },
+    "clean-build-final-03-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 167,
+      "tests": 922
+    },
+    "clean-build-final-04-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 167,
+      "tests": 922
+    },
+    "unit-first-xml": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 3,
+      "tests": 23
+    }
+  },
+  "native_manifest_count": 150,
+  "review_manifest_counts": {
+    "arce-v140-mig-contract-review-c80a027a3fa143b98ad74e534deead67": 13,
+    "arce-v140-mig-final-review-148b917d52a943339b2114c85f94e0e0": 49,
+    "arce-v140-mig-source-review-99f5dae5ba2140748ef51945b7fb17d7": 14
+  },
+  "root_gametest_log": "clean-all-02.log",
+  "root_required_gametests": 236,
+  "scope": "Development checks; final GameTest additions are independently rerun; no native forced cut/Gate approval"
+}

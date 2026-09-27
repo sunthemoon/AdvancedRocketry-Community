@@ -70,6 +70,10 @@ public final class DiscoveryProgressFixture {
     public static void beforeDiscovery(ServerLevel level) { install(level, false); }
     @AfterBatch(batch = "planetary_discovery")
     public static void afterDiscovery(ServerLevel level) { restore(level); }
+    @BeforeBatch(batch = "planetary_discovery_recovery")
+    public static void beforeRecovery(ServerLevel level) { install(level, false); }
+    @AfterBatch(batch = "planetary_discovery_recovery")
+    public static void afterRecovery(ServerLevel level) { restore(level); }
     @BeforeBatch(batch = "planetary_physical_admission")
     public static void beforePhysical(ServerLevel level) { install(level, true); }
     @AfterBatch(batch = "planetary_physical_admission")

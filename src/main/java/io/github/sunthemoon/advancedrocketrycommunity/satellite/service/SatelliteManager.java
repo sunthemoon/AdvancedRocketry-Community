@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
@@ -15,11 +16,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteL
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,7 +29,6 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 
 /** Server-thread authority joining definitions, missions, research, and discovery. */
 public final class SatelliteManager {
-    private static final int MAX_DISCOVERY_REPLAYS_PER_TICK = 8;
     private static final String INITIAL_MISSION_PREFIX = "arce:data-satellite:first:";
     private static final String RELEASE_TEST_HOOK_PROPERTY =
             "advancedrocketrycommunity.releaseTestHooks";
@@ -36,15 +36,22 @@ public final class SatelliteManager {
 
     private final SatelliteCatalogManager satelliteCatalogs;
     private final CelestialCatalogManager celestialCatalogs;
-    private final CelestialSnapshotSynchronizer snapshots;
-    private final ArrayDeque<UUID> pendingDiscoveryReplay = new ArrayDeque<>();
+    private final Consumer<MinecraftServer> snapshots;
+    private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
     private boolean replayInitialized;
+    private int replayBackoffTicks;
+    private boolean replayFailureReported;
 
     public SatelliteManager(
             SatelliteCatalogManager satelliteCatalogs,
             CelestialCatalogManager celestialCatalogs,
             CelestialSnapshotSynchronizer snapshots
     ) {
+        this(satelliteCatalogs, celestialCatalogs, snapshots::sendAll);
+    }
+
+    SatelliteManager(SatelliteCatalogManager satelliteCatalogs, CelestialCatalogManager celestialCatalogs,
+            Consumer<MinecraftServer> snapshots) {
         this.satelliteCatalogs = Objects.requireNonNull(satelliteCatalogs, "satelliteCatalogs");
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
         this.snapshots = Objects.requireNonNull(snapshots, "snapshots");
@@ -114,7 +121,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
-            if (result.changed()) {
+            if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
             return result;
@@ -153,7 +160,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
-            if (result.changed()) {
+            if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
             return result;
@@ -209,7 +216,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
-            if (result.changed()) {
+            if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
             return result;
@@ -320,7 +327,7 @@ public final class SatelliteManager {
                     operator,
                     server.overworld().getGameTime()
             );
-            if (result.changed()) {
+            if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
             return result;
@@ -343,7 +350,7 @@ public final class SatelliteManager {
                     true,
                     server.overworld().getGameTime()
             );
-            if (result.changed()) {
+            if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
             return result;
@@ -398,6 +405,8 @@ public final class SatelliteManager {
     public void clear() {
         pendingDiscoveryReplay.clear();
         replayInitialized = false;
+        replayBackoffTicks = 0;
+        replayFailureReported = false;
         satelliteCatalogs.clear();
     }
 
@@ -411,52 +420,48 @@ public final class SatelliteManager {
         pendingDiscoveryReplay.clear();
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
         if (data.operational()) {
-            data.pendingDiscoveries().stream()
-                    .limit(SatelliteLimits.MAX_ACTIVE_MISSIONS)
+            CelestialSavedData progress = CelestialSavedData.get(server);
+            data.missions().stream()
+                    .filter(DiscoveryClaimRecovery::paidReceipt)
+                    .filter(mission -> mission.status() == MissionStatus.CLAIM_PENDING_DISCOVERY
+                            || progress.get(mission.targetBodyId()).isEmpty())
                     .map(MissionState::missionId)
-                    .forEach(pendingDiscoveryReplay::addLast);
+                    .forEach(pendingDiscoveryReplay::add);
         }
         replayInitialized = true;
     }
 
     private void replayDiscoveries(MinecraftServer server) {
-        for (int replayed = 0;
-             replayed < MAX_DISCOVERY_REPLAYS_PER_TICK && !pendingDiscoveryReplay.isEmpty();
-             replayed++) {
-            UUID missionId = pendingDiscoveryReplay.removeFirst();
-            SatelliteOperationResult result = applyDiscovery(server, missionId);
-            if (result.code() == SatelliteOperationCode.PENDING_DISCOVERY
-                    || result.code() == SatelliteOperationCode.CATALOG_UNAVAILABLE) {
-                pendingDiscoveryReplay.addLast(missionId);
-                break;
+        if (replayBackoffTicks > 0) { replayBackoffTicks--; return; }
+        try {
+            pendingDiscoveryReplay.drain(id -> !needsDiscoveryRetry(applyDiscovery(server, id)));
+            if (pendingDiscoveryReplay.size() == 0) { replayFailureReported = false; }
+        } catch (RuntimeException exception) {
+            replayBackoffTicks = SatelliteLimits.SCHEDULER_INTERVAL_TICKS;
+            if (!replayFailureReported) {
+                logOperationFailure("discovery recovery (retained for retry)", exception);
+                replayFailureReported = true;
             }
         }
     }
 
     private SatelliteOperationResult applyDiscovery(MinecraftServer server, UUID missionId) {
         SatelliteMissionSavedData missions = SatelliteMissionSavedData.get(server);
-        MissionState mission = missions.mission(missionId).orElse(null);
-        if (mission == null) {
-            return failure(SatelliteOperationCode.MISSION_NOT_FOUND);
-        }
-        if (celestialCatalogs.current().flatMap(catalog -> catalog.get(mission.targetBodyId())).isEmpty()) {
-            return result(SatelliteOperationCode.CATALOG_UNAVAILABLE, false, mission);
-        }
         CelestialSavedData celestial = CelestialSavedData.get(server);
-        CelestialSavedData.MutationResult discovery = celestial.discover(
-                mission.targetBodyId(),
-                server.overworld().getGameTime()
-        );
-        if (discovery == CelestialSavedData.MutationResult.UNSUPPORTED_SCHEMA
-                || discovery == CelestialSavedData.MutationResult.CAPACITY_REACHED) {
-            return result(SatelliteOperationCode.PENDING_DISCOVERY, false, mission);
+        var before = celestial.entries();
+        try {
+            return DiscoveryClaimRecovery.recover(missions, celestial, missionId, server.overworld().getGameTime(),
+                    id -> celestialCatalogs.current().flatMap(catalog -> catalog.get(id)).isPresent(),
+                    data -> data.flush(server), data -> data.flush(server));
+        } finally {
+            // Discovery is already durable even if the final mission acknowledgment fails.
+            if (!before.equals(celestial.entries())) { snapshots.accept(server); }
         }
-        SatelliteOperationResult finished = missions.finishDiscovery(missionId);
-        if (finished.changed() || discovery == CelestialSavedData.MutationResult.CHANGED) {
-            missions.flush(server);
-            snapshots.sendAll(server);
-        }
-        return finished;
+    }
+
+    private static boolean needsDiscoveryRetry(SatelliteOperationResult result) {
+        return result.code() == SatelliteOperationCode.PENDING_DISCOVERY
+                || result.code() == SatelliteOperationCode.CATALOG_UNAVAILABLE;
     }
 
     private SatelliteOperationResult claimMission(
@@ -471,10 +476,14 @@ public final class SatelliteManager {
                     ownerId,
                     server.overworld().getGameTime()
             );
-            if (result.code() == SatelliteOperationCode.PENDING_DISCOVERY) {
+            if (result.code() == SatelliteOperationCode.PENDING_DISCOVERY
+                    || result.code() == SatelliteOperationCode.ALREADY_CLAIMED
+                    && result.mission().filter(DiscoveryClaimRecovery::paidReceipt).isPresent()) {
+                pendingDiscoveryReplay.add(missionId);
                 result = applyDiscovery(server, missionId);
+                if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
             }
-            if (result.changed() || data.isDirty()) {
+            if (data.isDirty()) {
                 data.flush(server);
             }
             return result;
@@ -518,20 +527,6 @@ public final class SatelliteManager {
 
     private static SatelliteOperationResult failure(SatelliteOperationCode code) {
         return new SatelliteOperationResult(code, false, Optional.empty(), Optional.empty(), 0);
-    }
-
-    private SatelliteOperationResult result(
-            SatelliteOperationCode code,
-            boolean changed,
-            MissionState mission
-    ) {
-        return new SatelliteOperationResult(
-                code,
-                changed,
-                Optional.empty(),
-                Optional.of(mission),
-                0
-        );
     }
 
     private static void logOperationFailure(String operation, RuntimeException exception) {

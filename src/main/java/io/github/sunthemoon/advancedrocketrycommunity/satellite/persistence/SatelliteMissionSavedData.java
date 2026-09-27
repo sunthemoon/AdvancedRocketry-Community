@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
@@ -18,16 +19,16 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
 
 /** Overworld-owned mission authority; malformed or future data is preserved fail-closed. */
-public final class SatelliteMissionSavedData extends SavedData {
+public final class SatelliteMissionSavedData extends AtomicSavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_satellite_missions";
 
     private final SatelliteMissionRegistry registry;
     private CompoundTag preservedBlockedData;
 
     private SatelliteMissionSavedData(SatelliteMissionRegistry registry) {
+        super(ManagedSavedDataType.SATELLITE_MISSIONS);
         this.registry = Objects.requireNonNull(registry, "registry");
     }
 
@@ -224,13 +225,6 @@ public final class SatelliteMissionSavedData extends SavedData {
     public long logicalGameTime() {
         requireOperational();
         return registry.logicalGameTime();
-    }
-
-    public void flush(MinecraftServer server) {
-        Objects.requireNonNull(server, "server");
-        if (isDirty()) {
-            server.overworld().getDataStorage().save();
-        }
     }
 
     @Override

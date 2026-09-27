@@ -1,0 +1,118 @@
+{
+  "base_commit": "cbff561a8e949c25e93d51365a260e0fd061be4d",
+  "files": [
+    {
+      "bytes": 4660,
+      "git_blob": "ce9b64b574e76f8a83989ba3126082137b19eef7",
+      "path": "docs/PLANETARY-DISCOVERY-GUIDE.md",
+      "sha256": "2546e5c38680340c3df009fac6a5adfce5f5fb905df49dd0ef3bd8febadd5880",
+      "working_sha256": "2546e5c38680340c3df009fac6a5adfce5f5fb905df49dd0ef3bd8febadd5880"
+    },
+    {
+      "bytes": 6453,
+      "git_blob": "958cfca0dcf8be773d74f9ea199511f90d0b556e",
+      "path": "docs/decisions/ADR-038-ORDERED-PLANETARY-DISCOVERY-RECOVERY.md",
+      "sha256": "039dc0a86f0b7dc22c80963e5f5c58ee1ac01174c55588a81e99bffe00cd093f",
+      "working_sha256": "039dc0a86f0b7dc22c80963e5f5c58ee1ac01174c55588a81e99bffe00cd093f"
+    },
+    {
+      "bytes": 4002,
+      "git_blob": "c7283a2f03a89325268b9019e1b8b54172f76251",
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "53ff49849e2b278621eeb47fb9de29fddf7421e39f7f652670681003f9e19400",
+      "working_sha256": "53ff49849e2b278621eeb47fb9de29fddf7421e39f7f652670681003f9e19400"
+    },
+    {
+      "bytes": 14772,
+      "git_blob": "49139783da7299624742358afb5c48b9a3761075",
+      "path": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "sha256": "f2c53692ad98ea3f628cdcb98350f6c57a0f8f9bb97814faeb2692e18da6a333",
+      "working_sha256": "f2c53692ad98ea3f628cdcb98350f6c57a0f8f9bb97814faeb2692e18da6a333"
+    },
+    {
+      "bytes": 40005,
+      "git_blob": "67b981b87d210469b1a577e0a5bcd522ca38ba74",
+      "path": "docs/work/v1.4.0-implementation-log.md",
+      "sha256": "9b00fc53a3d26b73d376f7cdfadcf8746861550799d48d222eeabe90d0da2ee2",
+      "working_sha256": "9b00fc53a3d26b73d376f7cdfadcf8746861550799d48d222eeabe90d0da2ee2"
+    },
+    {
+      "bytes": 10965,
+      "git_blob": "f5526d48ce89d024a3302cec5ee0c1150a8a1a25",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/persistence/CelestialSavedData.java",
+      "sha256": "74ca6b67b9ce264122e47ea0728396efcd950bc5035dfb3abc4bdb0d9d5e4f65",
+      "working_sha256": "74ca6b67b9ce264122e47ea0728396efcd950bc5035dfb3abc4bdb0d9d5e4f65"
+    },
+    {
+      "bytes": 4575,
+      "git_blob": "3b27a1bf803d11129414c3fab97a3e3d1f7ec5e3",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/DiscoveryProgressFixture.java",
+      "sha256": "89c2fe62db38d3f32c76068eeff75164cd21bd9a9c068c99f005918f0c365d81",
+      "working_sha256": "89c2fe62db38d3f32c76068eeff75164cd21bd9a9c068c99f005918f0c365d81"
+    },
+    {
+      "bytes": 5226,
+      "git_blob": "71caf05ec2dc9e76c90a579a6cad22ec526f06c6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/AtomicSavedData.java",
+      "sha256": "6d23415f02c9fb9ed9c823ce2c1be96e99d2326997d4937dc3395684d5dd203f",
+      "working_sha256": "6d23415f02c9fb9ed9c823ce2c1be96e99d2326997d4937dc3395684d5dd203f"
+    },
+    {
+      "bytes": 11524,
+      "git_blob": "d6aa199f135288262f41a1df467e79508f0d418b",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java",
+      "sha256": "5c9e580e35764c6e232daa34425c15776f53856c14e9f885f5e626f8ca031a74",
+      "working_sha256": "5c9e580e35764c6e232daa34425c15776f53856c14e9f885f5e626f8ca031a74"
+    },
+    {
+      "bytes": 3070,
+      "git_blob": "92290eef4b8b4e84547e6b97bdbc9c403282a94a",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryClaimRecovery.java",
+      "sha256": "e5cef4f451924463c0f3bc08b6a577c31a45d2a84fffa214cb3d4dfb7ac5a906",
+      "working_sha256": "e5cef4f451924463c0f3bc08b6a577c31a45d2a84fffa214cb3d4dfb7ac5a906"
+    },
+    {
+      "bytes": 9417,
+      "git_blob": "97e7c70c375429ec22aa32c6764ee90c53a1a471",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryRecoveryGameTests.java",
+      "sha256": "c302c673d38379e5e5d93ad7f92b1178ef9caf96de62e96a7d9703f9ccd6c64c",
+      "working_sha256": "c302c673d38379e5e5d93ad7f92b1178ef9caf96de62e96a7d9703f9ccd6c64c"
+    },
+    {
+      "bytes": 1372,
+      "git_blob": "e2d3240d786394355b5783b4ae0e5c04ccfc63a1",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryReplayQueue.java",
+      "sha256": "89e4975d26b665e881eae8b732b4f0701d4bff9de5043bfde56c68de3bec63a6",
+      "working_sha256": "89e4975d26b665e881eae8b732b4f0701d4bff9de5043bfde56c68de3bec63a6"
+    },
+    {
+      "bytes": 23927,
+      "git_blob": "7ec96040ef587363c696cb14bc0cdc4e5c461dea",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java",
+      "sha256": "43c6e2dcfa73ad970f5ce4e28b60ef5a7af83bcabd8c306942469abe16d12873",
+      "working_sha256": "43c6e2dcfa73ad970f5ce4e28b60ef5a7af83bcabd8c306942469abe16d12873"
+    },
+    {
+      "bytes": 5597,
+      "git_blob": "59a53d8511c07fd0f3ab7f46f7e2ad616f91caa5",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/AtomicSavedDataTest.java",
+      "sha256": "a9a8641b5fafe87d823da71f7cf213bcbf3381144a21be95931be0c18a1de490",
+      "working_sha256": "a9a8641b5fafe87d823da71f7cf213bcbf3381144a21be95931be0c18a1de490"
+    },
+    {
+      "bytes": 11292,
+      "git_blob": "e29f1234f29fd705f9bdc6c369fddedddb65a0ec",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryClaimRecoveryTest.java",
+      "sha256": "6e92a03ad5a66f7b0821225bd582c88c92cb0c0072ac010f9e0d6d67b30321d7",
+      "working_sha256": "6e92a03ad5a66f7b0821225bd582c88c92cb0c0072ac010f9e0d6d67b30321d7"
+    },
+    {
+      "bytes": 2432,
+      "git_blob": "1655fb850bdeaefa236a81c7903358ea856ee477",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryReplayQueueTest.java",
+      "sha256": "871334cf34ff81c3236ad48ae7df5a8bb82c6432fe11eccb4f258afc183a3663",
+      "working_sha256": "871334cf34ff81c3236ad48ae7df5a8bb82c6432fe11eccb4f258afc183a3663"
+    }
+  ],
+  "scope": "Changed staged inputs outside evidence, including raw executed worktree identities"
+}

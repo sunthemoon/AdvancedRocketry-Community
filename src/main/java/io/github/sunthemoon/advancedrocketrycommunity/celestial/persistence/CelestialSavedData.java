@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.BoundedCelestialCodecs;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,15 +13,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.Consumer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
 
 /** Overworld-owned, schema-versioned discovery and first-visit state. */
-public final class CelestialSavedData extends SavedData {
+public final class CelestialSavedData extends AtomicSavedData {
     public static final int CURRENT_SCHEMA_VERSION = 2;
     public static final String DATA_NAME = "advancedrocketrycommunity_celestial";
 
@@ -40,6 +41,7 @@ public final class CelestialSavedData extends SavedData {
             CompoundTag preservedFuturePayload,
             Map<ResourceLocation, BodyProgress> progress
     ) {
+        super(ManagedSavedDataType.CELESTIAL);
         this.schemaVersion = schemaVersion;
         this.writable = writable;
         this.preservedFuturePayload = preservedFuturePayload;
@@ -138,6 +140,26 @@ public final class CelestialSavedData extends SavedData {
         progress.put(bodyId, new BodyProgress(bodyId, gameTime, OptionalLong.empty()));
         setDirty();
         return MutationResult.CHANGED;
+    }
+
+    /** Publish only after the supplied checked writer acknowledges the complete candidate. */
+    public MutationResult discoverDurably(ResourceLocation bodyId, long gameTime,
+            Consumer<CelestialSavedData> commit) {
+        validateMutationInput(bodyId, gameTime);
+        if (!writable) { return MutationResult.UNSUPPORTED_SCHEMA; }
+        if (!progress.containsKey(bodyId) && progress.size() >= CelestialCatalog.MAX_BODIES) {
+            return MutationResult.CAPACITY_REACHED;
+        }
+        CelestialSavedData candidate = load(save(new CompoundTag()));
+        MutationResult result = candidate.discover(bodyId, gameTime);
+        if (result == MutationResult.UNSUPPORTED_SCHEMA || result == MutationResult.CAPACITY_REACHED) {
+            return result;
+        }
+        commit.accept(candidate);
+        progress.clear();
+        progress.putAll(candidate.progress);
+        setDirty(false);
+        return result;
     }
 
     public MutationResult recordVisit(ResourceLocation bodyId, long gameTime) {

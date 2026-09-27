@@ -58,6 +58,11 @@ ambience for Moon/Mars/Venus/shared Space; see
 DISC connects opt-in destination permission to shared celestial discoveries and
 private satellite research, with locked star-map feedback and flight protocol 8;
 see [discovery evidence](../work/v1.4.0-discovery/VERIFICATION.md).
+MIG-01 implements ordered durable research/discovery writes, historical paid
+receipt repair and bounded runtime replay; see
+[recovery evidence](../work/v1.4.0-mig-claims/VERIFICATION.md). Actual v1.3-world
+upgrade, coherent content removal/restoration and packaged forced interruptions
+remain MIG-02/03; normal restart and deterministic file cuts do not replace them.
 Real-client navigation/presentation/discovery acceptance and remaining
 migration/acceptance are still pending.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)

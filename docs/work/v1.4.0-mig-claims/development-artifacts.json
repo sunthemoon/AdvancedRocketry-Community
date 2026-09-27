@@ -1,0 +1,21 @@
+{
+  "api_version": "1.7",
+  "artifacts": [
+    {
+      "bytes": 48469,
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev-api.jar",
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "bytes": 1193936,
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev-sources.jar",
+      "sha256": "afc83ef63e3054657831bfb6e170cbc4a6cbffe3029738ec3a6bb562474dc8db"
+    },
+    {
+      "bytes": 2624223,
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475"
+    }
+  ],
+  "public_api_unchanged": true
+}
