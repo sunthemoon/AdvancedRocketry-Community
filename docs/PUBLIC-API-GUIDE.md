@@ -4,6 +4,10 @@ Use the API classifier when compiling an integration against supported ARCE
 types. The API version is **1.7**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
+The [compatibility inventory and support policy](API-COMPATIBILITY.md) summarizes
+the minimum API for each feature, platform boundaries, removal behavior and
+artifact-specific evidence. It does not promise arbitrary modpack compatibility.
+
 | Type | Purpose |
 |---|---|
 | `ApiVersion` | Immutable positive major and non-negative minor |

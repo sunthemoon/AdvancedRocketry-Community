@@ -1,0 +1,12 @@
+{
+  "bytes": 86554,
+  "changed_archive_entries": [
+    "io/github/sunthemoon/arceadaptertest/AdapterFaultGameTests$Fixture.class",
+    "io/github/sunthemoon/arceadaptertest/AdapterFaultGameTests.class"
+  ],
+  "name": "arce-adapter-compat-test-1.0.0.jar",
+  "native_executed_sha256": "4207b9b3c686b7230cceaef946062f3dce8318acf587bea2263d0a990509f735",
+  "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-compat-1790486012553\\final-artifacts\\arce-adapter-compat-test-1.0.0.jar",
+  "scope": "Final independent consumer after GameTest diagnostic-format fix; native processes used the earlier explicit hash",
+  "sha256": "759f214daae269964ab78ed771a2b3cf799a480061df1144f6075fd911881ec8"
+}

@@ -53,7 +53,7 @@ directory, not a remote repository URL.
 
 - `verifyApiClasspath` records requested/resolved coordinates, raw publication
   and remapped API hashes, the complete compiler classpath, and fixture source
-  hashes. It requires the sixteen exported API 1.4 types and rejects host internals,
+  hashes. It requires the 27 exported API 1.7 classes and rejects host internals,
   project output directories or additional host artifacts.
 - `verifyConsumerBoundary` compiles an intentional internal import against that
   same classpath, requires the missing internal-package diagnostic, and checks
@@ -63,6 +63,45 @@ directory, not a remote repository URL.
 
 Reports are written to `compat-test-mod/build/reports/consumer/`. The resulting
 mod is `compat-test-mod/build/libs/arce-adapter-compat-test-1.0.0.jar`.
+
+## Choose a finite check
+
+The [API compatibility inventory](../docs/API-COMPATIBILITY.md) describes the
+supported surface and its limits. From the repository root, `./gradlew runGameTestServer`
+loads the development source-set fixture; the separate consumer build above proves
+that the same source compiles without host internals. Packaged runners instead
+install the separately reobfuscated JAR and require a fresh libraries-only server,
+new evidence directory, explicit Java/JAR arguments and EULA acceptance.
+
+| Concern | Fixture / packaged runner |
+|---|---|
+| Registration and cargo | `AdapterRegistrationGameTests`; [recovery](../scripts/run_v130_adapter_recovery_smoke.py) |
+| Callback failures and returned-time budget | `AdapterFaultGameTests` through the production scanner/transactions |
+| Actual Earth-Moon-Earth cargo | [Flight runner](../scripts/run_v130_adapter_flight_smoke.py) |
+| Block-state atmosphere boundaries | [Atmosphere runner](../scripts/run_v130_atmosphere_boundary_smoke.py) |
+| Equipment and owned oxygen | [Suit runner](../scripts/run_v130_suit_equipment_smoke.py) |
+| Declarative rocket components | [Component runner](../scripts/run_v130_component_smoke.py) |
+| Item fuels, remainders and loader migration | [Fuel runner](../scripts/run_v130_fuel_smoke.py) |
+| Configured environment and handle lifetime | [Environment runner](../scripts/run_v130_environment_smoke.py) |
+| Payload missions and research | [Satellite runner](../scripts/run_v130_satellite_payload_smoke.py) |
+
+These are separate bounded scenarios, not a command to run a full load campaign.
+Each runner's actual evidence states its scope and artifact hashes. A source-set
+GameTest pass is not a claim that the same fault ran in a packaged player server.
+
+The adapter fixture deliberately attempts and catches two invalid registrations
+on its actual MOD bus: a duplicate owned adapter ID with a different valid type,
+and a new owned ID claiming an already registered type. It refuses startup if
+either succeeds. The original normal registration and inventory path remain in
+use. This is two registrations from one fixture mod, not two unrelated mod authors.
+
+Fault GameTests use instance-local source probes and a synchronous restore scope
+cleared in `finally`. They inject exceptions, oversized payloads, false/mismatched
+restore results, and finite 20 ms delays in each callback phase. Restoration faults
+occur after the new target's inventory is written; tests check cleanup, unchanged
+rocket authority, exact cargo, no drops and a healthy retry. Fault controls contain
+no saved world state, do not change the payload version, and are inactive during
+ordinary fixture operations. The slow-return checks do not test callback preemption.
 
 ## Runtime limits
 

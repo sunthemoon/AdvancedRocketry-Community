@@ -102,6 +102,11 @@ Do not report Community Edition bugs to the original Advanced Rocketry maintaine
 
 ## Contributing
 
+Integration authors can start with the [public API guide](docs/PUBLIC-API-GUIDE.md),
+[compatibility and support inventory](docs/API-COMPATIBILITY.md), and
+[independent consumer build](compat-test-mod/README.md). These describe development
+capabilities and bounded evidence, not stable certification of arbitrary modpacks.
+
 Read:
 
 1. [`CONTRIBUTING.md`](CONTRIBUTING.md)

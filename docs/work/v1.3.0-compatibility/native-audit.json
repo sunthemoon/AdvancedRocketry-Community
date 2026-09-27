@@ -1,0 +1,45 @@
+{
+  "cycles": [
+    {
+      "conflict_receipts": 1,
+      "elapsed_seconds": 31.011751,
+      "exit_code": 0,
+      "fault_receipts": 0,
+      "lag_warnings": [
+        "[13:30:28] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2553ms or 51 ticks behind"
+      ],
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 26
+      },
+      "phase": "create",
+      "probes": 8
+    },
+    {
+      "conflict_receipts": 1,
+      "elapsed_seconds": 19.781553,
+      "exit_code": 0,
+      "fault_receipts": 0,
+      "lag_warnings": [],
+      "log_counts": {
+        "client_linkage_failure_count": 0,
+        "error_count": 0,
+        "fatal_count": 0,
+        "project_error_count": 0,
+        "project_fatal_count": 0,
+        "project_warning_count": 0,
+        "warning_count": 10
+      },
+      "phase": "restart",
+      "probes": 6
+    }
+  ],
+  "elapsed_seconds": 50.793304,
+  "manifest_files": 31,
+  "probes": 14
+}
