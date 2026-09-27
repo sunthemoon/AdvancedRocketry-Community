@@ -41,8 +41,12 @@ tasks. DATA-01 has implemented and verified schema-2 definitions, optional Level
 mappings, capability-aware consumers and display protocol 2; see
 [slice evidence](../work/v1.4.0-data01/VERIFICATION.md). DATA-02/03 now implement
 and verify joint bounded reload, error retention and packaged restart; see
-[reload evidence](../work/v1.4.0-data02/VERIFICATION.md). MAP-01's cross-restart
-body/Level binding contract is next; new planetary worlds remain unimplemented.
+[reload evidence](../work/v1.4.0-data02/VERIFICATION.md). MAP-01 adds persistent
+body/Level bindings, removal retention and checked startup/reload publication;
+see [binding evidence](../work/v1.4.0-map01/VERIFICATION.md), including its
+prospective-adoption limitation and low-severity diagnostic follow-up.
+MAP-02's actual worlds, bounded landing and station integration are next;
+new planetary worlds remain unimplemented.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding
 acceptance. This pointer does not approve any candidate or change `GATE_STATUS.md`.

@@ -1,0 +1,32 @@
+{
+  "artifact": {
+    "bytes": 2412477,
+    "mod_id": "advancedrocketrycommunity",
+    "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+    "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-map01-1790499004940\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+    "sha256": "9fc582f1b83599526627b065d72b9995fbb7a69e04065a135dce7aa8697b1acf",
+    "version": "1.20.1-1.4.0-dev"
+  },
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "joint_reload": false,
+  "persistent_bindings": true,
+  "port": 62551,
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "schema data and native station restart; no clients or load campaign",
+  "server": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-map01-1790499004940\\server",
+  "station_id": "5f902884-429e-4bb9-a845-2f6e7f98e42a",
+  "world": {
+    "identity": "80d13f08af8b7b14f57bcfc49bf5654f2e5745bc0d9244c8b7d366c50746e013",
+    "identity_marker": "world/.v002-smoke-world-identity.json",
+    "identity_marker_sha256": "4bcfe531abc695b6a32d162e7929bbf2ede2654d84e88a511fefc1b1bcdd992c",
+    "level_dat_after_restart_sha256": "7f814eb940e46164fd9cddc768b2739162a6773e816be6f74cc8bb0c20cb793c",
+    "level_dat_after_restart_size": 37868,
+    "level_dat_before_restart_sha256": "511c3831cd98cfa8e4ebabb54311927b385281de19ce98573f7512743610b95a",
+    "level_dat_before_restart_size": 37867,
+    "level_name": "world",
+    "same_world_verified": true,
+    "server_properties_sha256": "921cdde3f9e0e387f951accf63de7b239da5fdf04de295fea4f7db8dee080c51"
+  }
+}

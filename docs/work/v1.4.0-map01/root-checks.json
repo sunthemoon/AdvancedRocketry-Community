@@ -1,0 +1,21 @@
+{
+  "base": "eee45f5010e1332c69c6eb18f127fc468cfea5df",
+  "command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --console=plain",
+  "datagen_written": 0,
+  "exit_code": 0,
+  "failures_retained": [
+    "Separate intentional offline-remap startup refusal; not a clean startup",
+    "Independent initial source finding and supplemental audit failure retained in review archive"
+  ],
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 149,
+    "tests": 832
+  },
+  "qualification": "Final production Java and all 17 new binding tests executed.",
+  "required_gametests_passed": 213,
+  "scope": "Development checks, no full acceptance or Gate PASS",
+  "seconds": 177
+}

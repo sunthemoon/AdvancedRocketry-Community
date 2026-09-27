@@ -1,0 +1,22 @@
+{
+  "body_restored_sha256": "09993e8c03fcf4d2f24a73bd6809a46d11583c51bdf18f377bb78a6694ef0aab",
+  "exit_code": 0,
+  "log_counts": {
+    "client_linkage_failure_count": 0,
+    "error_count": 4,
+    "fatal_count": 1,
+    "project_error_count": 0,
+    "project_fatal_count": 0,
+    "project_warning_count": 0,
+    "warning_count": 10
+  },
+  "log_findings": [
+    "[17:07:21] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Planetary bindings blocked startup; preserve the world and its data packs",
+    "[17:07:21] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception",
+    "[17:07:21] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID 8bcfd786-a863-4b70-b0a0-fde78fcb49a9",
+    "[17:07:21] [Server thread/ERROR] [minecraft/MinecraftServer]: This crash report has been saved to: C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-map01-1790499004940\\server\\.\\crash-reports\\crash-2026-09-27_17.07.21-server.txt",
+    "[17:07:21] [Server thread/ERROR] [minecraft/MinecraftServer]: Exception stopping the server"
+  ],
+  "result": "OBSERVED_REJECTION",
+  "scope": "Expected pre-Level startup refusal, not a clean server cycle"
+}

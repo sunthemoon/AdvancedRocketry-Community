@@ -121,6 +121,32 @@ class CelestialSchemaSmokeTest(unittest.TestCase):
         for wrong in (text.replace("generation=2", "generation=3"), text.replace("distance=123", "distance=50")):
             self.assertIsNone(re.search(runner.route_marker(2, 123), wrong))
 
+    def test_binding_capture_preserves_exact_bytes_and_unmapped_entry(self):
+        baseline = {"schema_version": 1, "bindings": [
+            {"body_id": runner.HOST + ":earth", "level": "minecraft:overworld"},
+            {"body_id": runner.HOST + ":moon", "level": runner.HOST + ":moon"},
+            {"body_id": runner.HOST + ":space", "level": runner.HOST + ":space"},
+            {"body_id": runner.GAS}]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / runner.BINDINGS
+            source.parent.mkdir(parents=True)
+            raw = (json.dumps(baseline, indent=2) + "\n").encode()
+            source.write_bytes(raw)
+            self.assertEqual(raw, runner.capture_bindings(root, root / "capture.json"))
+            self.assertEqual(raw, source.read_bytes())
+            self.assertEqual(raw, (root / "capture.json").read_bytes())
+            for bad in (dict(baseline, schema_version=2), dict(baseline, bindings=[]),
+                        dict(baseline, bindings=baseline["bindings"] + [baseline["bindings"][0]]),
+                        dict(baseline, bindings=baseline["bindings"] + [{"body_id": "test:x", "level": "minecraft:overworld"}]),
+                        dict(baseline, bindings=baseline["bindings"] + [{"body_id": "test:x", "level": None}])):
+                source.write_text(json.dumps(bad), encoding="utf-8")
+                before = source.read_bytes()
+                with self.assertRaises(runner.SmokeError):
+                    runner.capture_bindings(root, root / "rejected.json")
+                self.assertEqual(before, source.read_bytes())
+                self.assertFalse((root / "rejected.json").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

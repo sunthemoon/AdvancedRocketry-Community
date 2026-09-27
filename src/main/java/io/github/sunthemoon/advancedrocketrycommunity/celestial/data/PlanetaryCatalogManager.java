@@ -1,13 +1,17 @@
 package io.github.sunthemoon.advancedrocketrycommunity.celestial.data;
 
 import com.mojang.serialization.DataResult;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.binding.PlanetaryBindingStore;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Server-lifetime owner: a single publication point for definitions, routes and generation. */
 public final class PlanetaryCatalogManager {
     private final AtomicReference<State> state = new AtomicReference<>(State.empty());
+    private PlanetaryBindingStore bindings;
     private final CelestialCatalogManager celestialView = CelestialCatalogManager.readOnly(() -> {
         State captured = state.get();
         var pair = captured.catalog();
@@ -41,11 +45,38 @@ public final class PlanetaryCatalogManager {
                     ReloadDiagnostics.bound(candidate.error().orElseThrow().message())));
             return false;
         }
-        state.set(new State(candidate.result().orElseThrow(), Math.incrementExact(previous.generation()), true, "accepted"));
+        PlanetaryCatalog next = candidate.result().orElseThrow();
+        long generation = Math.incrementExact(previous.generation());
+        try {
+            if (bindings != null) {
+                bindings.accept(next.celestial());
+            }
+        } catch (IOException | IllegalArgumentException exception) {
+            state.set(new State(previous.catalog(), previous.generation(), false,
+                    ReloadDiagnostics.bound("Planetary binding rejection: " + exception.getMessage())));
+            return false;
+        }
+        state.set(new State(next, generation, true, "accepted"));
         return true;
     }
 
+    public synchronized int bindWorld(Path worldRoot) throws IOException {
+        if (bindings != null) {
+            throw new IllegalStateException("Planetary bindings already belong to a world");
+        }
+        PlanetaryCatalog initial = capture().orElseThrow(() ->
+                new IllegalStateException("Planetary resources must load before world binding")).catalog();
+        try {
+            bindings = PlanetaryBindingStore.open(worldRoot, initial.celestial());
+            return bindings.current().entries().size();
+        } catch (IOException | IllegalArgumentException exception) {
+            state.set(new State(null, 0, false, ReloadDiagnostics.bound(exception.getMessage())));
+            throw exception;
+        }
+    }
+
     public synchronized void clear() {
+        bindings = null;
         state.set(State.empty());
     }
 

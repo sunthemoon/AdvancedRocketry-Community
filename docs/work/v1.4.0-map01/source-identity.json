@@ -1,0 +1,59 @@
+{
+  "base_commit": "eee45f5010e1332c69c6eb18f127fc468cfea5df",
+  "files": [
+    {
+      "bytes": 22591,
+      "git_blob": "f109adc28c622484dc2bd735091418ef449811b6",
+      "path": "scripts/run_v140_celestial_schema_smoke.py",
+      "sha256": "46b3cfb059d6a7eba645e545d3bfcb1384ae3dcda4a416469b97fb673ba4328b"
+    },
+    {
+      "bytes": 20425,
+      "git_blob": "7057d9762b587e497a1ee62842a61cb0e49dc77d",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "1c5f2de91d238055b9bfaa977f463b81f4de7e91e7400a18c70905f4e4fd763b"
+    },
+    {
+      "bytes": 1216,
+      "git_blob": "2c4abc76e80e8e232ec302af940a041220bf5ca6",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/binding/PlanetaryBindingLifecycle.java",
+      "sha256": "c3d676e618435000092a4847ec591963144c29736c31e7c4bd512ede310d300a"
+    },
+    {
+      "bytes": 6643,
+      "git_blob": "16fd95b92b07f517725a4159447e282f7a6194f5",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/binding/PlanetaryBindingStore.java",
+      "sha256": "785b705f9d959cdfb404d705ab58b4edd79f466487e69118192b2567e59a8993"
+    },
+    {
+      "bytes": 4262,
+      "git_blob": "2336226b6f319dd2e971ef83cca5067bfebae23a",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/binding/PlanetaryBindings.java",
+      "sha256": "0af390ddd91e77072573cb0877b8e8a395102d0a3af8a050c519baee52f1aa0f"
+    },
+    {
+      "bytes": 4634,
+      "git_blob": "716ae02d9f3a4e43c17bc11a56ee52dabd271a48",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/binding/PlanetaryBindingsCodec.java",
+      "sha256": "6e7df558da9dcda1eb6acfda3a5c4ca87ebea49b04240abacc23d8f39628eab3"
+    },
+    {
+      "bytes": 4296,
+      "git_blob": "048fa0dc09c14dd5372c7ca4d4aa414de4ac1a9a",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryCatalogManager.java",
+      "sha256": "db9b56c4706b711b05d05863c7d5970c8cb07dd8c544087014df5812320152fb"
+    },
+    {
+      "bytes": 17571,
+      "git_blob": "2495e9d29c6cce199ae8eb03c9eb5a03f1175790",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/binding/PlanetaryBindingsTest.java",
+      "sha256": "bdcb12f1d16a4a825d9836beaf60eec2f95c61c7ed02f09eeb98d421df431e44"
+    },
+    {
+      "bytes": 9007,
+      "git_blob": "da013a3175b56125476d64c1e33a6635ba809447",
+      "path": "tests/test_v140_celestial_schema_smoke.py",
+      "sha256": "dadf320aa5a94a4827700ad27ff47f0355d9617ae783a20d92224c98b065f388"
+    }
+  ]
+}

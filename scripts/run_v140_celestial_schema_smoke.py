@@ -32,6 +32,8 @@ HOST = support.HOST
 STATIONS = "world/data/advancedrocketrycommunity_stations.dat"
 GAS = HOST + ":schema_probe_gas"
 PACK = "world/datapacks/schema_probe/data/" + HOST
+BINDINGS = "world/data/advancedrocketrycommunity_planetary_bindings.json"
+BINDING_BODY = HOST + ":binding_probe"
 
 
 def require(condition: bool, message: str) -> None:
@@ -135,8 +137,69 @@ def validate_log(lines: list[str], expected_errors: list[str]) -> None:
             "Blocking log findings differ from the exact observed fault-injection rejections")
 
 
+def capture_bindings(root: Path, destination: Path) -> bytes:
+    raw = support.regular(root / BINDINGS, 32768)
+    value = json.loads(raw)
+    require(set(value) == {"schema_version", "bindings"} and value["schema_version"] == 1,
+            "Native binding schema differs")
+    records = value["bindings"]
+    require(3 <= len(records) <= 128 and len({entry["body_id"] for entry in records}) == len(records),
+            "Native binding count or identity differs")
+    require(all(set(entry) in ({"body_id"}, {"body_id", "level"})
+                and all(isinstance(value, str) and 0 < len(value) <= 128 and ":" in value
+                        for value in entry.values()) for entry in records), "Native binding fields differ")
+    levels = [entry["level"] for entry in records if "level" in entry]
+    require(len(set(levels)) == len(levels), "Native binding Levels alias")
+    require(all({"body_id": HOST + ":" + body, "level": level} in records for body, level in
+                (("earth", "minecraft:overworld"), ("moon", HOST + ":moon"), ("space", HOST + ":space"))),
+            "Native fixed bindings differ")
+    destination.write_bytes(raw)
+    return raw
+
+
+def verify_binding_reloads(root: Path, output: Path, query) -> list[str]:
+    directory = root / PACK / "celestial_bodies"
+    body_path = directory / "binding_probe.json"
+    body = json.loads((directory / "moon.json").read_text(encoding="utf-8"))
+    body.update(id=BINDING_BODY, level=BINDING_BODY)
+    write_json(body_path, body)
+    query("reload", r"Accepted planetary catalog generation 3 with 5 bodies, 4 routes", 60)
+    recorded = capture_bindings(root, output / "bindings-added.json")
+    require({"body_id": BINDING_BODY, "level": BINDING_BODY} in json.loads(recorded)["bindings"],
+            "Actual mapped probe binding was not persisted")
+    body_path.unlink()
+    query("reload", r"Accepted planetary catalog generation 4 with 4 bodies, 4 routes", 60)
+    require(capture_bindings(root, output / "bindings-removed.json") == recorded, "Removal released a binding")
+    write_json(body_path, body)
+    query("reload", r"Accepted planetary catalog generation 5 with 5 bodies, 4 routes", 60)
+    errors = []
+    for label, name, candidate, detail in [
+            ("remap", "binding_probe", dict(body, level=HOST + ":binding_changed"),
+             f"Body {BINDING_BODY} cannot change its recorded Level binding"),
+            ("reuse", "binding_alias", dict(body, id=HOST + ":binding_alias"),
+             f"Level {BINDING_BODY} is reserved by ")]:
+        body_path.unlink(missing_ok=True)
+        path = directory / (name + ".json")
+        write_json(path, candidate)
+        write_json(output / (label + "-input.json"), candidate)
+        rejected = query("reload", r"Rejected planetary catalog; last valid generation remains active: "
+                         + re.escape("Planetary binding rejection: " + detail), 60)
+        errors.append(rejected.string.rstrip())
+        query("arce celestial validate", r"Celestial catalog generation 5 retained after rejected reload")
+        query("arce celestial route earth_moon", route_marker(5, 123))
+        query("arce celestial list", re.escape(BINDING_BODY + " -> " + BINDING_BODY) + r" gravity=")
+        require(capture_bindings(root, output / (label + "-bindings.json")) == recorded,
+                "Rejected candidate changed recorded bindings")
+        path.unlink()
+    write_json(body_path, body)
+    query("reload", r"Accepted planetary catalog generation 6 with 5 bodies, 4 routes", 60)
+    require(capture_bindings(root, output / "bindings-readded.json") == recorded, "Re-add changed a binding")
+    return errors
+
+
 def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, phase: str,
-              station_id: str | None, baseline: dict | None, joint_reload: bool = False) -> tuple[str, dict]:
+              station_id: str | None, baseline: dict | None, joint_reload: bool = False,
+              check_bindings: bool = False) -> tuple[str, dict]:
     directory = output / phase
     directory.mkdir()
     command = support.rocket_smoke._server_command(java)
@@ -162,6 +225,8 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
         require(set(server.forge_mod_versions(status)) == {HOST, "minecraft", "forge"}, "Unexpected mod set")
         require(status.get("players", {}).get("online") == 0, "Smoke requires an empty server")
         write_json(directory / "status.json", status)
+        if check_bindings:
+            capture_bindings(root, directory / "bindings-at-start.json")
         if phase == "create-reload":
             query("arce celestial validate", r"Celestial catalog generation 1 is valid with 3 bodies")
             if joint_reload:
@@ -178,19 +243,25 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
             require(support.uuid_from_nbt(station["station_id"]) == station_id
                     and station["orbit_body"] == HOST + ":moon", "Native station differs from creation receipt")
             observations["definitions"] = install_pack(root, Path(artifact["path"]))
-            if joint_reload:
+            if joint_reload or check_bindings:
                 observations["route"] = install_route(root, Path(artifact["path"]), 123)
             query("reload", r"Accepted planetary catalog generation 2 with 4 bodies, 4 routes", 60)
             if joint_reload:
                 query("arce celestial route earth_moon", route_marker(2, 123))
                 expected_errors, observations["rejections"] = verify_joint_rejections(
                     root, directory, Path(artifact["path"]), query)
+            if check_bindings:
+                expected_errors = verify_binding_reloads(root, directory, query)
         require(station_id is not None and baseline is not None, "Missing native station baseline")
         generation = (3 if joint_reload else 2) if phase == "create-reload" else 1
+        if check_bindings:
+            generation = 6 if phase == "create-reload" else 1
+            query("arce celestial route earth_moon", route_marker(generation, 123))
         solar = 0.75 if joint_reload else 0.5
         if joint_reload:
             query("arce celestial route earth_moon", route_marker(generation, 222))
-        query("arce celestial validate", rf"Celestial catalog generation {generation} is valid with 4 bodies")
+        count = 5 if check_bindings else 4
+        query("arce celestial validate", rf"Celestial catalog generation {generation} is valid with {count} bodies")
         start = len(process.lines)
         query("arce celestial list", re.escape(GAS)
               + r" -> unmapped gravity=2.5 atmosphere=" + re.escape(GAS)
@@ -220,6 +291,8 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
         process.command("stop")
         require(process.finish() == 0, "Dedicated process did not exit cleanly")
         validate_log(process.lines, expected_errors)
+        if check_bindings:
+            capture_bindings(root, directory / "bindings-at-stop.json")
         require(server.digest_file(root / "mods" / artifact["name"]) == artifact["sha256"], "Installed JAR changed")
         support.regular(root / STATIONS, 4 * 1024**2)
         shutil.copyfile(root / STATIONS, directory / "stations.dat")
@@ -254,7 +327,9 @@ def main() -> int:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--java", required=True)
     parser.add_argument("--expected-version", default="1.20.1-1.4.0-dev")
-    parser.add_argument("--check-joint-reload", action="store_true", help="Exercise six bounded rejected candidates and recovery")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check-joint-reload", action="store_true", help="Exercise six bounded rejected candidates and recovery")
+    mode.add_argument("--check-bindings", action="store_true", help="Exercise persistent removal/re-add, remap and reverse-Level rejection")
     parser.add_argument("--accept-eula", action="store_true", required=True)
     args, output = parser.parse_args(), None
     try:
@@ -280,13 +355,19 @@ def main() -> int:
         shutil.copyfile(host, root / "mods" / artifact["name"])
         summary = {"schema_version": 1, "scope": "schema data and native station restart; no clients or load campaign",
                    "joint_reload": args.check_joint_reload,
+                   "persistent_bindings": args.check_bindings,
                    "artifact": artifact, "java": version, "port": port, "server": str(root),
                    "forge_args_sha256": server.digest_file(args_file), "result": "IN_PROGRESS"}
         write_json(output / "summary.json", summary)
-        station, baseline = run_cycle(root, output, artifact, java, port, "create-reload", None, None, args.check_joint_reload)
+        station, baseline = run_cycle(root, output, artifact, java, port, "create-reload", None, None,
+                                      args.check_joint_reload, args.check_bindings)
         identity = server.establish_world_identity(root, str(uuid.uuid4()), artifact["sha256"], properties)
         server.complete_world_identity(root, identity)
-        run_cycle(root, output, artifact, java, port, "restart", station, baseline, args.check_joint_reload)
+        run_cycle(root, output, artifact, java, port, "restart", station, baseline,
+                  args.check_joint_reload, args.check_bindings)
+        if args.check_bindings:
+            require((output / "create-reload/bindings-at-stop.json").read_bytes()
+                    == (output / "restart/bindings-at-stop.json").read_bytes(), "Restart changed binding authority")
         require(server.digest_file(host) == artifact["sha256"], "Input JAR changed")
         summary.update(result="PASS", station_id=station, world=server.complete_world_identity(root, identity))
         write_json(output / "summary.json", summary)

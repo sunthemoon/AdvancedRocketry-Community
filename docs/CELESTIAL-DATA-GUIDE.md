@@ -98,5 +98,40 @@ the reported pack file and retry; do not delete world or station data. When
 removing a body, remove its route references in the same edit. Test pack changes
 on a disposable world before using an existing save.
 
+## World binding persistence
+
+Before the first start with persistent planetary bindings, back up the complete
+world and keep its last working data packs. First startup records the validated
+catalog's body/Level assignments; it cannot reconstruct assignments used before
+this feature existed. A missing binding file is not proof of a fresh world.
+
+The world owns `data/advancedrocketrycommunity_planetary_bindings.json`, an
+independent schema-1 file. After adoption, a body cannot change its Level or
+switch between mapped and unmapped. Removing a body from the pack retains its
+record and reserves its Level; restoring the same definition restores eligibility
+subject to ordinary capability, actual-Level and travel checks. A new body ID
+cannot take a retired body's Level. Packs assigning two bodies to one Level are
+rejected rather than selecting one. Shared-Space station regions retain their
+separate existing authority.
+
+There are at most **128 lifetime bindings**, including retired bodies, and
+**32768 UTF-8 bytes** of stored binding data. Long IDs can reach the byte limit
+before the entry limit. Reload never evicts old bindings to accept new ones.
+Metadata and route changes do not rewrite the binding file when identities stay
+the same, but its integrity is still checked before publication.
+
+Binding errors reject a runtime reload and retain the previous catalog. An
+incompatible, unreadable or interrupted binding file blocks startup before world
+loading. Keep the server stopped, preserve the diagnostics, and compare the
+packs and binding files against a complete backup. An interrupted `.json.pending`
+file is retained for recovery, not automatically adopted. Do not clear binding
+history to bypass a conflict; restore a known complete backup instead. The
+underlying server can emit a crash report and even return exit code zero on a
+rejected pre-Level startup, so check readiness and the explicit error, not only
+the process exit code.
+
+These records do not create dimensions, load chunks, establish historical-world
+migration correctness or open new flight destinations by themselves.
+
 The [implementation log](work/v1.4.0-implementation-log.md) records development
 verification and remaining scope; it is not a release approval.

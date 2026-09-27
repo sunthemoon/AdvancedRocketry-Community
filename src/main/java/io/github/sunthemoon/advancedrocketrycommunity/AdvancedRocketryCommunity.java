@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.binding.PlanetaryBindingLifecycle;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnosticId;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents;
@@ -108,6 +109,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
         MinecraftForge.EVENT_BUS.addListener(new BetaWorldMigrationEvents()::onServerAboutToStart);
+        MinecraftForge.EVENT_BUS.addListener(new PlanetaryBindingLifecycle(planetaryCatalogs)::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(new BetaDataCommands()::register);
         RollingMachineRuntime.install(rollingMachines);
         RollingMachineServerEvents rollingEvents = new RollingMachineServerEvents(rollingMachines);
