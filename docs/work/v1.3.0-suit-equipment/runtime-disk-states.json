@@ -1,0 +1,193 @@
+{
+  "restart": {
+    "block": {
+      "Name": "minecraft:chest",
+      "Properties": {
+        "facing": "north",
+        "type": "single",
+        "waterlogged": "false"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 3244032,
+        "sha256": "97139e874d7d35e379bcc67ba9e4e1f2c654a2878c1114550c72dc22fe2f1f97"
+      },
+      "world/level.dat": {
+        "bytes": 37923,
+        "sha256": "3f07001e8f9fa2fa04b88d99b00153b37a553c73d1251e6c5ee927d46199bb41"
+      }
+    },
+    "items": [
+      {
+        "Count": 1,
+        "Slot": 0,
+        "id": "minecraft:leather_chestplate",
+        "tag": {
+          "Damage": 0,
+          "arce_suit_provider": {
+            "data": {
+              "oxygen": 998
+            },
+            "payload_version": 1,
+            "provider": "arce_adapter_test:suit_oxygen",
+            "schema_version": 1
+          },
+          "fixture_marker": "persist-exactly"
+        }
+      },
+      {
+        "Count": 1,
+        "Slot": 1,
+        "id": "advancedrocketrycommunity:oxygen_canister"
+      },
+      {
+        "Count": 1,
+        "Slot": 2,
+        "id": "advancedrocketrycommunity:empty_canister"
+      }
+    ]
+  },
+  "restored": {
+    "block": {
+      "Name": "minecraft:chest",
+      "Properties": {
+        "facing": "north",
+        "type": "single",
+        "waterlogged": "false"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 3256320,
+        "sha256": "e870a21ae303e3c636f28ca8ca6d6d7b34c3fe5736d6fa11a340ab6b9c7fb352"
+      },
+      "world/level.dat": {
+        "bytes": 37925,
+        "sha256": "9ea38c02aaaee660ce84d7706a17d7108159ae31ce5b8ea6541cc94250fd1980"
+      }
+    },
+    "items": [
+      {
+        "Count": 1,
+        "Slot": 0,
+        "id": "minecraft:leather_chestplate",
+        "tag": {
+          "Damage": 0,
+          "arce_suit_provider": {
+            "data": {
+              "oxygen": 1997
+            },
+            "payload_version": 1,
+            "provider": "arce_adapter_test:suit_oxygen",
+            "schema_version": 1
+          },
+          "fixture_marker": "persist-exactly"
+        }
+      },
+      {
+        "Count": 2,
+        "Slot": 2,
+        "id": "advancedrocketrycommunity:empty_canister"
+      }
+    ]
+  },
+  "setup": {
+    "block": {
+      "Name": "minecraft:chest",
+      "Properties": {
+        "facing": "north",
+        "type": "single",
+        "waterlogged": "false"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 3239936,
+        "sha256": "eddc0adff6d2bb95af7f138325e8591fc2de9b1c810513cebe7097caa899945d"
+      },
+      "world/level.dat": {
+        "bytes": 37923,
+        "sha256": "14b0291777f0b1d59d0b7d388fecadba09d23711f267843b7f0ed8b57d68f227"
+      }
+    },
+    "items": [
+      {
+        "Count": 1,
+        "Slot": 0,
+        "id": "minecraft:leather_chestplate",
+        "tag": {
+          "Damage": 0,
+          "arce_suit_provider": {
+            "data": {
+              "oxygen": 999
+            },
+            "payload_version": 1,
+            "provider": "arce_adapter_test:suit_oxygen",
+            "schema_version": 1
+          },
+          "fixture_marker": "persist-exactly"
+        }
+      },
+      {
+        "Count": 1,
+        "Slot": 1,
+        "id": "advancedrocketrycommunity:oxygen_canister"
+      },
+      {
+        "Count": 1,
+        "Slot": 2,
+        "id": "advancedrocketrycommunity:empty_canister"
+      }
+    ]
+  },
+  "skipped": {
+    "block": {
+      "Name": "minecraft:chest",
+      "Properties": {
+        "facing": "north",
+        "type": "single",
+        "waterlogged": "false"
+      }
+    },
+    "files": {
+      "world/dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca": {
+        "bytes": 3244032,
+        "sha256": "96649554e022aaffd282fbaa42beebd789097eda218051e8e4aa62c2c80d14be"
+      },
+      "world/level.dat": {
+        "bytes": 37925,
+        "sha256": "7bc5a4eac6994f5d1b27648fe24578c1dbc11c1c6c8a8a8646ae2120227f9e72"
+      }
+    },
+    "items": [
+      {
+        "Count": 1,
+        "Slot": 0,
+        "id": "minecraft:leather_chestplate",
+        "tag": {
+          "Damage": 0,
+          "arce_suit_provider": {
+            "data": {
+              "oxygen": 998
+            },
+            "payload_version": 1,
+            "provider": "arce_adapter_test:suit_oxygen",
+            "schema_version": 1
+          },
+          "fixture_marker": "persist-exactly"
+        }
+      },
+      {
+        "Count": 1,
+        "Slot": 1,
+        "id": "advancedrocketrycommunity:oxygen_canister"
+      },
+      {
+        "Count": 1,
+        "Slot": 2,
+        "id": "advancedrocketrycommunity:empty_canister"
+      }
+    ]
+  }
+}

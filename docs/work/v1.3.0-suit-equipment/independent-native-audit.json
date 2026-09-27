@@ -1,0 +1,240 @@
+{
+  "result": "PASS",
+  "manifest_files": 53,
+  "manifest_sha256": "d8b84352a6305c43a37b66207bfdc6828c2bb11140452bed008e4b95a769564a",
+  "consumer_fixture_sources_checked": 13,
+  "reused_parser": "Low-level NbtReader and bounded Anvil decode only; expectations/log checks independently coded.",
+  "artifact_hashes": {
+    "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar": "346c9d776ec50d74e89fafbc44e470bbd75f88d0e28d5df9bcf6ff8c7b974668",
+    "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar": "4da9cee0ffd9c2f45a6632c087287758e680b00c0024cb7d92f5d1f8177eff95",
+    "advancedrocketry-community-1.20.1-1.3.0-dev.jar": "bcc24106952dd520e040208ee14a1174359689824ca22f14becb48a4ee4c0da5",
+    "arce-adapter-compat-test-1.0.0.jar": "2e6aae7a916f2cae2f0b92ff6b1a5ea57030de320bd22c7e7424c7e851c8669a"
+  },
+  "source_files_unchanged": 1173,
+  "phases": [
+    {
+      "phase": "setup",
+      "oxygen": 999,
+      "full": 1,
+      "empty": 1,
+      "cumulative_consumed": 1,
+      "native_items": [
+        {
+          "Slot": 0,
+          "id": "minecraft:leather_chestplate",
+          "Count": 1,
+          "tag": {
+            "arce_suit_provider": {
+              "schema_version": 1,
+              "payload_version": 1,
+              "data": {
+                "oxygen": 999
+              },
+              "provider": "arce_adapter_test:suit_oxygen"
+            },
+            "Damage": 0,
+            "fixture_marker": "persist-exactly"
+          }
+        },
+        {
+          "Slot": 1,
+          "id": "advancedrocketrycommunity:oxygen_canister",
+          "Count": 1
+        },
+        {
+          "Slot": 2,
+          "id": "advancedrocketrycommunity:empty_canister",
+          "Count": 1
+        }
+      ],
+      "level_time": 47,
+      "seed": 6957600196533924981,
+      "observation_ticks": 21,
+      "recorded_exit": 0,
+      "logs": {
+        "stdout.txt": {
+          "errors": 0,
+          "structured_warnings": 25,
+          "sha256": "2aab7bfcf90b6712c043c3123a70b5ca52e188713c5dab26dae99fe18a748b3f"
+        },
+        "latest.log": {
+          "errors": 0,
+          "structured_warnings": 25,
+          "sha256": "24f0b6f6d31a35d9cc7afee1df244de610df6da26224b877712975b9e3baf5a6"
+        },
+        "debug.log": {
+          "errors": 0,
+          "structured_warnings": 25,
+          "sha256": "df724285f21a6831f0ed7e0f219b1d4a5fd002195b866b29ec53da06bb45f6ca"
+        }
+      }
+    },
+    {
+      "phase": "restart",
+      "oxygen": 998,
+      "full": 1,
+      "empty": 1,
+      "cumulative_consumed": 2,
+      "native_items": [
+        {
+          "Slot": 0,
+          "id": "minecraft:leather_chestplate",
+          "Count": 1,
+          "tag": {
+            "arce_suit_provider": {
+              "schema_version": 1,
+              "payload_version": 1,
+              "data": {
+                "oxygen": 998
+              },
+              "provider": "arce_adapter_test:suit_oxygen"
+            },
+            "Damage": 0,
+            "fixture_marker": "persist-exactly"
+          }
+        },
+        {
+          "Slot": 1,
+          "id": "advancedrocketrycommunity:oxygen_canister",
+          "Count": 1
+        },
+        {
+          "Slot": 2,
+          "id": "advancedrocketrycommunity:empty_canister",
+          "Count": 1
+        }
+      ],
+      "level_time": 94,
+      "seed": 6957600196533924981,
+      "observation_ticks": 21,
+      "recorded_exit": 0,
+      "logs": {
+        "stdout.txt": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "2dfb87cfda097c8ce8aecc639f3ce7618f6666aa9d62bed26041c7bd4f9afc08"
+        },
+        "latest.log": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "395661159b5303cb3127d7151b51779a8ccd9e93e2476164f2df362cf11a1614"
+        },
+        "debug.log": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "fd3b6818386b1cbed19d6d07e932ba7b62172ef8795502eaf16149da4fa254a1"
+        }
+      }
+    },
+    {
+      "phase": "skipped",
+      "oxygen": 998,
+      "full": 1,
+      "empty": 1,
+      "cumulative_consumed": 2,
+      "native_items": [
+        {
+          "Slot": 0,
+          "id": "minecraft:leather_chestplate",
+          "Count": 1,
+          "tag": {
+            "arce_suit_provider": {
+              "schema_version": 1,
+              "payload_version": 1,
+              "data": {
+                "oxygen": 998
+              },
+              "provider": "arce_adapter_test:suit_oxygen"
+            },
+            "Damage": 0,
+            "fixture_marker": "persist-exactly"
+          }
+        },
+        {
+          "Slot": 1,
+          "id": "advancedrocketrycommunity:oxygen_canister",
+          "Count": 1
+        },
+        {
+          "Slot": 2,
+          "id": "advancedrocketrycommunity:empty_canister",
+          "Count": 1
+        }
+      ],
+      "level_time": 142,
+      "seed": 6957600196533924981,
+      "observation_ticks": 23,
+      "recorded_exit": 0,
+      "logs": {
+        "stdout.txt": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "873dc6cc3ca122a619021af5b03da4a5bdf3384d1704df576ae2074f6eb86413"
+        },
+        "latest.log": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "84d1049a7ee1e351e3a5cd2838a85a92c1cb5ecb36e9de6efb66f910ce775608"
+        },
+        "debug.log": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "fe3279002175e29fd08b78dfe6efa8af30f10b3e0afd65cfef9459a0ade67125"
+        }
+      }
+    },
+    {
+      "phase": "restored",
+      "oxygen": 1997,
+      "full": 0,
+      "empty": 2,
+      "cumulative_consumed": 3,
+      "native_items": [
+        {
+          "Slot": 0,
+          "id": "minecraft:leather_chestplate",
+          "Count": 1,
+          "tag": {
+            "arce_suit_provider": {
+              "schema_version": 1,
+              "payload_version": 1,
+              "data": {
+                "oxygen": 1997
+              },
+              "provider": "arce_adapter_test:suit_oxygen"
+            },
+            "Damage": 0,
+            "fixture_marker": "persist-exactly"
+          }
+        },
+        {
+          "Slot": 2,
+          "id": "advancedrocketrycommunity:empty_canister",
+          "Count": 2
+        }
+      ],
+      "level_time": 192,
+      "seed": 6957600196533924981,
+      "observation_ticks": 24,
+      "recorded_exit": 0,
+      "logs": {
+        "stdout.txt": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "e01c96c9c912442783046f4d0a202e2bc62a91394668b666b81d9f004f69288f"
+        },
+        "latest.log": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "4906d5502eb0acd38350280180fb8e0a6172cf54e4fd3850d22ca8c8507aeaf9"
+        },
+        "debug.log": {
+          "errors": 0,
+          "structured_warnings": 10,
+          "sha256": "a702f2cb9a74fd190c7c9c0590028fdd5adea942d5333430c772bf3b37a536da"
+        }
+      }
+    }
+  ],
+  "boundaries": "Native chest stack + full/empty quantities; three auxiliary armor pieces recreated; 20 manually dispatched FakePlayer events/phase, not real-time player or player save/login."
+}

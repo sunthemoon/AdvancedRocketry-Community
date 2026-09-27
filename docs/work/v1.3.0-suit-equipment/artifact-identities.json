@@ -1,0 +1,26 @@
+[
+  {
+    "name": "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+    "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm02-1790447854009\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+    "bytes": 33323,
+    "sha256": "346c9d776ec50d74e89fafbc44e470bbd75f88d0e28d5df9bcf6ff8c7b974668"
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+    "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm02-1790447854009\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+    "bytes": 1026471,
+    "sha256": "4da9cee0ffd9c2f45a6632c087287758e680b00c0024cb7d92f5d1f8177eff95"
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+    "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm02-1790447854009\\artifacts\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+    "bytes": 2250609,
+    "sha256": "bcc24106952dd520e040208ee14a1174359689824ca22f14becb48a4ee4c0da5"
+  },
+  {
+    "name": "arce-adapter-compat-test-1.0.0.jar",
+    "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-atm02-1790447854009\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+    "bytes": 37888,
+    "sha256": "2e6aae7a916f2cae2f0b92ff6b1a5ea57030de320bd22c7e7424c7e851c8669a"
+  }
+]
