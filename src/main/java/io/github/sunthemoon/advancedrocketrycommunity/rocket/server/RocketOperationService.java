@@ -48,6 +48,15 @@ public interface RocketOperationService {
         return RocketFlightQuotes.empty();
     }
 
+    default io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation navigation(ServerPlayer player, RocketEntity rocket) {
+        return io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation.empty();
+    }
+
+    default Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotPacket> navigationCatalog(
+            ServerPlayer player, RocketEntity rocket) {
+        return Optional.empty();
+    }
+
     void requestFlightIntent(
             ServerPlayer player,
             int rocketEntityId,

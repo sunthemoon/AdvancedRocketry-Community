@@ -138,6 +138,34 @@ blocks direct sunlight, but ordinary outdoor cover alone does not cool hot air
 or lower pressure. Returning to safety resets exposure; there is no persistent
 or offline exposure debt.
 
+## Using the flight star map
+
+Open a rocket's flight console, then select **Star map**. The diagram shows
+parent relationships, not physical orbital distances. Drag the viewport to pan,
+scroll to zoom, or use **< / >** to focus each body. Selecting a node displays
+gravity, temperature, atmosphere, sunlight and radiation metadata; this display
+does not promise survival, oxygen supply or enabled environmental damage.
+
+**Use surface** returns the chosen body to the console. Around a selected body,
+**Station n/m** cycles through stations the server permits visiting; hover it to
+see the name and route status, then choose **Use station**. A gas giant has no
+surface arrival, but can have accessible orbit stations. Selection never starts
+a flight: use the console's separate **Launch** button. Boarding, leaving and
+cancelling an active countdown remain in the console.
+
+The server explains control/access denial, unavailable routes, missing components,
+thrust, fuel capacity and fuel shortages. Quotes do not reserve a landing pad or
+guarantee terrain readiness; launch validates the actual situation again. Station
+membership and catalog changes refresh while the console stays open. A removed
+station is not silently replaced with another selected destination.
+
+During navigation synchronization, launch is disabled until the catalog and quote
+generations agree. The open console retries automatically; an active countdown
+can still be cancelled from the console. Install matching client/server builds:
+the navigation update uses flight protocol **7**, with celestial display schema
+and protocol **2** unchanged. The diagram uses the existing public body metadata;
+it does not create routes, permissions or discovery unlocks.
+
 ## Validation and legacy data
 
 Schema 2 requires all three capability booleans, solar intensity (finite

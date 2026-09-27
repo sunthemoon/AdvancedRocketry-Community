@@ -40,11 +40,11 @@ class RocketMaintenanceStructureTest {
     }
 
     @Test
-    void maintenanceReleaseDoesNotChangeV11PersistenceOrNetworkContracts() {
+    void saveSchemasRemainStableAndFlightChannelUsesNavigationRevision() {
         assertEquals(2, RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION);
         assertEquals(3, RocketFlightPlan.SCHEMA_VERSION);
         assertEquals(2, RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION);
-        assertEquals("6", RocketFlightNetwork.protocolVersion());
+        assertEquals("7", RocketFlightNetwork.protocolVersion());
     }
 
     @Test

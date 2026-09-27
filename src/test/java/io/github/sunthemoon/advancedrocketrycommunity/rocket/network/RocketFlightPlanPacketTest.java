@@ -73,13 +73,17 @@ class RocketFlightPlanPacketTest {
         withBuffer(buffer -> {
             buffer.writeInt(7).writeInt(42).writeBoolean(false);
             buffer.writeVarInt(RocketFlightQuotes.MAX_QUOTES + 1);
+            buffer.writeLong(1);
+            buffer.writeVarInt(0);
             assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
         });
         withBuffer(buffer -> {
             buffer.writeInt(7).writeInt(42).writeBoolean(false);
             buffer.writeVarInt(1);
             TravelTargetWireCodec.encode(buffer, EARTH);
-            buffer.writeInt(10).writeByte(2);
+            buffer.writeInt(10).writeByte(255);
+            buffer.writeLong(1);
+            buffer.writeVarInt(0);
             assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
         });
         withBuffer(buffer -> {
@@ -106,7 +110,7 @@ class RocketFlightPlanPacketTest {
 
     @Test
     void protocolRevisionCarriesTypedTargetsAndVariableQuoteCounts() {
-        assertEquals("6", RocketFlightNetwork.protocolVersion());
+        assertEquals("7", RocketFlightNetwork.protocolVersion());
         withBuffer(buffer -> {
             var empty = new RocketFlightPlanPacket(
                     Integer.MAX_VALUE,
@@ -129,6 +133,79 @@ class RocketFlightPlanPacketTest {
                 target,
                 new RocketFlightQuotes.Quote(fuel, launchable)
         );
+    }
+
+    @Test
+    void navigationRejectsNegativeGenerationNoncanonicalCountsDuplicatesAndInvalidStations() {
+        for (int count : List.of(-1, 33)) {
+            withBuffer(buffer -> {
+                emptyNavigationHeader(buffer, 1);
+                buffer.writeVarInt(count);
+                assertThrows(RuntimeException.class, () -> RocketFlightPlanPacket.decode(buffer));
+            });
+        }
+        withBuffer(buffer -> {
+            emptyNavigationHeader(buffer, -1);
+            buffer.writeVarInt(0);
+            assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
+        });
+        withBuffer(buffer -> {
+            emptyNavigationHeader(buffer, 1);
+            buffer.writeByte(0x80).writeByte(0);
+            assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
+        });
+        for (String name : List.of("", " trimmed ", "x".repeat(49))) {
+            withBuffer(buffer -> {
+                emptyNavigationHeader(buffer, 1);
+                buffer.writeVarInt(1);
+                station(buffer, name, "test:body");
+                assertThrows(RuntimeException.class, () -> RocketFlightPlanPacket.decode(buffer));
+            });
+        }
+        for (String body : List.of("body", "Bad:body", "test:" + "x".repeat(124))) {
+            withBuffer(buffer -> {
+                emptyNavigationHeader(buffer, 1);
+                buffer.writeVarInt(1);
+                station(buffer, "Name", body);
+                assertThrows(RuntimeException.class, () -> RocketFlightPlanPacket.decode(buffer));
+            });
+        }
+        withBuffer(buffer -> {
+            emptyNavigationHeader(buffer, 1);
+            buffer.writeVarInt(2);
+            station(buffer, "First", "test:body");
+            station(buffer, "Second", "test:body");
+            assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
+        });
+    }
+
+    @Test
+    void everyTruncationIncludingStationStringsAndStrictPlanFlagsRejects() {
+        withBuffer(buffer -> {
+            emptyNavigationHeader(buffer, 1);
+            buffer.writeVarInt(1);
+            station(buffer, "Station", "test:body");
+            int size = buffer.writerIndex();
+            for (int length = 0; length < size; length++) {
+                var truncated = new FriendlyByteBuf(buffer.copy(0, length));
+                try { assertThrows(RuntimeException.class, () -> RocketFlightPlanPacket.decode(truncated)); }
+                finally { truncated.release(); }
+            }
+            buffer.setByte(8, 2);
+            assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
+        });
+    }
+
+    private static void emptyNavigationHeader(FriendlyByteBuf buffer, long generation) {
+        buffer.writeInt(7).writeInt(42).writeByte(0);
+        buffer.writeVarInt(0);
+        buffer.writeLong(generation);
+    }
+
+    private static void station(FriendlyByteBuf buffer, String name, String body) {
+        buffer.writeUUID(STATION);
+        buffer.writeUtf(name);
+        buffer.writeUtf(body);
     }
 
     private static void roundTrip(RocketFlightPlanSnapshot snapshot) {

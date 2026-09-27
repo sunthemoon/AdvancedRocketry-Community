@@ -194,10 +194,27 @@ public final class PlanetaryExposureGameTests {
             cleanup.run();
             throw failure;
         }
-        // Sky light is queued; inspect after the ordinary lighting lifecycle, not in the placement callback.
-        helper.runAfterDelay(2, () -> {
+        // Lighting is asynchronous, not guaranteed to publish after a fixed two ticks.
+        // Observe the loaded column within the existing 40-tick test deadline.
+        awaitRoofLighting(helper, level, eye, roof, original, cleanup);
+    }
+
+    private static void awaitRoofLighting(GameTestHelper helper, ServerLevel level, BlockPos eye, BlockPos roof,
+            net.minecraft.world.level.block.state.BlockState original, Runnable cleanup) {
+        helper.runAfterDelay(1, () -> {
+            boolean pending = false;
             try {
-                helper.assertTrue(!PlayerEnvironmentalService.directSunlight(level, eye), "Opaque roof did not shelter sunlight");
+                if (level.canSeeSky(eye) && helper.getTick() < 30) {
+                    awaitRoofLighting(helper, level, eye, roof, original, cleanup);
+                    pending = true;
+                    return;
+                }
+                helper.assertTrue(level.getBlockState(roof).is(net.minecraft.world.level.block.Blocks.STONE)
+                        && !level.canSeeSky(eye) && !PlayerEnvironmentalService.directSunlight(level, eye),
+                        "Opaque roof did not shelter sunlight within the existing deadline");
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_SUNLIGHT_FIXTURE roof_observed_tick={} sky_light={}", helper.getTick(),
+                        level.getBrightness(net.minecraft.world.level.LightLayer.SKY, eye));
                 level.setBlockAndUpdate(roof, original);
                 level.setDayTime(18000); level.updateSkyBrightness();
                 helper.assertTrue(!PlayerEnvironmentalService.directSunlight(level, eye), "Night counted as direct sunlight");
@@ -207,7 +224,7 @@ public final class PlanetaryExposureGameTests {
                 helper.assertTrue(!level.hasChunkAt(far) && !PlayerEnvironmentalService.directSunlight(level, far)
                         && !level.hasChunkAt(far) && chunks == level.getChunkSource().getLoadedChunksCount(), "Sunlight query loaded a far column");
                 helper.succeed();
-            } finally { cleanup.run(); }
+            } finally { if (!pending) { cleanup.run(); } }
         });
     }
 

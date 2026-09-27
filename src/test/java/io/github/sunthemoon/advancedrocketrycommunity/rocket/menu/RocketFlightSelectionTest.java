@@ -76,6 +76,27 @@ class RocketFlightSelectionTest {
     }
 
     @Test
+    void dynamicStationsFollowIdsAcrossReorderAndRevocationWithoutChangingCancellation() {
+        var selection = selection();
+        var target = new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.Station(SECOND);
+        selection.select(target);
+        assertEquals(1, selection.stationIndex());
+        selection.updateStations(List.of(new StationDestinationSummary(SECOND, "Renamed"), new StationDestinationSummary(FIRST, "First")));
+        assertEquals(target, selection.selectedTarget());
+        assertEquals(0, selection.stationIndex());
+        var active = new RocketFlightPlanSnapshot(target);
+        selection.updateStations(List.of(new StationDestinationSummary(FIRST, "First")));
+        assertNull(selection.selectedTarget());
+        assertEquals(active, selection.target(RocketFlightAction.CANCEL, active));
+        selection.selectNextStation();
+        assertEquals(FIRST, selection.stationId());
+        selection.updateStations(List.of());
+        assertNull(selection.stationId());
+        assertNull(selection.selectedTarget());
+        assertEquals(active, selection.target(RocketFlightAction.CANCEL, active));
+    }
+
+    @Test
     void countdownBodyMarkersIgnoreTheEditableStationChoice() {
         for (var body : List.of(RocketDestination.EARTH, RocketDestination.MOON)) {
             var selection = selection();

@@ -144,6 +144,17 @@ public final class RocketManager implements RocketOperationService {
     }
 
     @Override
+    public io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation navigation(ServerPlayer player, RocketEntity rocket) {
+        return flights.navigation(player, rocket);
+    }
+
+    @Override
+    public Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotPacket> navigationCatalog(
+            ServerPlayer player, RocketEntity rocket) {
+        return flights.navigationCatalog(player, rocket);
+    }
+
+    @Override
     public void requestFlightIntent(
             ServerPlayer player,
             int rocketEntityId,

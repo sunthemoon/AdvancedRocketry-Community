@@ -177,6 +177,9 @@ public final class PlanetaryAdmissionGameTests {
                     stations.removeMember(stationId, ownerId);
                     var before = RocketTransferSavedData.get(server).save(new CompoundTag());
                     var flightBefore = rocket.flightData().orElseThrow();
+                    helper.assertTrue(manager.navigation(owner, rocket).quotes().forTarget(EARTH).status()
+                            == io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus.UNAUTHORIZED,
+                            "Source station access denial advertised a ready departure");
                     manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, EARTH, UUID.randomUUID());
                     helper.assertTrue(rocket.flightData().orElseThrow().equals(flightBefore), "Station access denial changed flight");
                     helper.assertTrue(RocketTransferSavedData.get(server).save(new CompoundTag()).equals(before),

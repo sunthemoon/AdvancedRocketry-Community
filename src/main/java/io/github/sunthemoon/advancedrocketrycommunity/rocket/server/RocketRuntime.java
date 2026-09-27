@@ -105,6 +105,18 @@ public final class RocketRuntime {
         return current == null ? RocketFlightQuotes.empty() : current.flightQuotes(player, rocket);
     }
 
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation navigation(ServerPlayer player, RocketEntity rocket) {
+        RocketOperationService current = service;
+        return current == null ? io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation.empty()
+                : current.navigation(player, rocket);
+    }
+
+    public static Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotPacket> navigationCatalog(
+            ServerPlayer player, RocketEntity rocket) {
+        RocketOperationService current = service;
+        return current == null ? Optional.empty() : current.navigationCatalog(player, rocket);
+    }
+
     public static void requestFlightIntent(
             ServerPlayer player,
             int rocketEntityId,

@@ -43,10 +43,12 @@ final class RocketFlightService {
     private final StationAccessService stationAccess = new StationAccessService();
     private final PlanetaryCatalogManager catalogs;
     private final boolean configuredCatalogs;
+    private final RocketNavigationService navigation;
 
     RocketFlightService(CelestialCatalogManager celestialCatalogs, PlanetaryCatalogManager catalogs) {
         this.catalogs = catalogs;
         this.configuredCatalogs = celestialCatalogs != null || catalogs != null;
+        this.navigation = new RocketNavigationService(catalogs, configuredCatalogs, this::plan);
     }
 
     void openMenu(ServerPlayer player, RocketEntity requestedRocket) {
@@ -102,76 +104,31 @@ final class RocketFlightService {
     }
 
     RocketFlightQuotes quotes(ServerPlayer player, RocketEntity rocket) {
-        Objects.requireNonNull(player, "player");
-        Objects.requireNonNull(rocket, "rocket");
-        RocketFlightData flight = rocket.flightData().orElse(null);
-        if (flight == null || rocket.snapshot().isEmpty()) {
-            return RocketFlightQuotes.empty();
-        }
-        PlanetaryCatalog pair = captureCatalog();
-        if (pair == null) {
-            if (configuredCatalogs) {
-                return RocketFlightQuotes.empty();
-            }
-            RocketDestination source = flight.currentTarget()
-                    .flatMap(LegacyTravelTargetAdapter::toLegacy)
-                    .map(LegacyTravelTargetAdapter.LegacyDestination::destination)
-                    .orElse(null);
-            return RocketFlightQuotes.compute(
-                    rocket.snapshot().orElseThrow().stats(),
-                    flight.fuel(),
-                    source,
-                    flight.state()
-            );
-        }
-        StationRegistrySavedData stations = StationRegistrySavedData.get(player.getServer());
-        if (!stations.operational()) {
-            return RocketFlightQuotes.empty();
-        }
-        java.util.ArrayList<TravelTarget> targets = new java.util.ArrayList<>();
-        pair.celestial().definitions().stream()
-                .filter(definition -> definition.supportsSurfaceArrival())
-                .map(definition -> definition.id())
-                .filter(body -> !body.equals(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds
-                        .SPACE_ID))
-                .map(TravelTarget.BodySurface::new)
-                .forEach(targets::add);
-        stationAccess.accessibleDestinations(
-                stations.stations(),
-                player.getUUID(),
-                player.hasPermissions(2)
-        ).stream()
-                .filter(station -> pair.celestial().get(station.orbitBody())
-                        .filter(body -> body.capabilities().orbitable()).isPresent())
-                .map(StationState::stationId)
-                .map(TravelTarget.Station::new)
-                .forEach(targets::add);
-        if (targets.size() > RocketFlightQuotes.MAX_QUOTES) {
-            return RocketFlightQuotes.empty();
-        }
+        return navigation(player, rocket).quotes();
+    }
 
-        boolean launchableState = flight.state() == RocketFlightState.FUELED
-                || (flight.state() == RocketFlightState.LANDED && flight.fuel().amount() > 0L);
-        java.util.ArrayList<RocketFlightQuotes.TargetQuote> quoted = new java.util.ArrayList<>(targets.size());
-        for (TravelTarget target : targets) {
-            RocketFlightPlanResult result = plan(
-                    rocket,
-                    flight,
-                    flight.currentTarget().orElseThrow(),
-                    target,
-                    stations,
-                    UUID.fromString("123e4567-e89b-42d3-a456-426614174721"),
-                    pair
-            );
-            quoted.add(new RocketFlightQuotes.TargetQuote(
-                    target,
-                    new RocketFlightQuotes.Quote(
-                            Math.toIntExact(result.requiredFuel()),
-                            launchableState && result.success()
-                    )
-            ));
+    io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation navigation(ServerPlayer player, RocketEntity rocket) {
+        if (!player.serverLevel().getServer().isSameThread()) {
+            throw new IllegalStateException("Navigation requires the logical server thread");
         }
-        return new RocketFlightQuotes(quoted);
+        Access checked = access(player, rocket.getId());
+        return checked.success() && checked.rocket() == rocket
+                ? navigation.snapshot(player, rocket, authorized(player, rocket))
+                : io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation.empty();
+    }
+
+    Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotPacket> navigationCatalog(
+            ServerPlayer player, RocketEntity rocket) {
+        if (!player.serverLevel().getServer().isSameThread()) {
+            throw new IllegalStateException("Navigation refresh requires the logical server thread");
+        }
+        Access checked = access(player, rocket.getId());
+        if (!checked.success() || checked.rocket() != rocket
+                || !(player.containerMenu instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu menu)
+                || menu.rocketEntityId() != rocket.getId() || !menu.stillValid(player)) {
+            return Optional.empty();
+        }
+        return navigation.catalog(player);
     }
 
     RocketFlightRequestResult request(
@@ -535,6 +492,7 @@ final class RocketFlightService {
         requests.clear();
         rateLimiter.clear();
         transfers.clear();
+        navigation.clear();
     }
 
     void tick(net.minecraft.server.MinecraftServer server) {
@@ -547,6 +505,7 @@ final class RocketFlightService {
 
     void onPlayerLoggedOut(UUID playerId) {
         transfers.onPlayerLoggedOut(playerId);
+        navigation.remove(playerId);
     }
 
     int activeTransferCount(net.minecraft.server.MinecraftServer server) {

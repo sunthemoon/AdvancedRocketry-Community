@@ -122,7 +122,8 @@ public final class RocketFlightQuotes {
                 0L
         );
         boolean launchableState = state == RocketFlightState.FUELED || state == RocketFlightState.LANDED;
-        return new Quote(Math.toIntExact(result.requiredFuel()), launchableState && result.success());
+        return new Quote(Math.toIntExact(result.requiredFuel()),
+                RocketNavigationStatus.resolve(result.code(), launchableState, true));
     }
 
     @Override
@@ -147,10 +148,19 @@ public final class RocketFlightQuotes {
         }
     }
 
-    public record Quote(int requiredFuel, boolean canLaunch) {
+    public record Quote(int requiredFuel, boolean canLaunch, RocketNavigationStatus status) {
+        public Quote(int requiredFuel, boolean canLaunch) {
+            this(requiredFuel, canLaunch, canLaunch ? RocketNavigationStatus.READY : RocketNavigationStatus.UNAVAILABLE);
+        }
+
+        public Quote(int requiredFuel, RocketNavigationStatus status) {
+            this(requiredFuel, status == RocketNavigationStatus.READY, status);
+        }
+
         public Quote {
+            Objects.requireNonNull(status, "status");
             if (requiredFuel < 0 || requiredFuel > RocketFlightLimits.MAX_TRAVEL_FUEL
-                    || (canLaunch && requiredFuel == 0)) {
+                    || (canLaunch && requiredFuel == 0) || canLaunch != (status == RocketNavigationStatus.READY)) {
                 throw new IllegalArgumentException("Invalid bounded rocket fuel quote");
             }
         }

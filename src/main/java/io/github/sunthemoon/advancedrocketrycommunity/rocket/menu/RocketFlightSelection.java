@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /** Menu-local editable typed choice, independent of the server's active flight plan. */
 public final class RocketFlightSelection {
-    private final List<StationDestinationSummary> stations;
+    private List<StationDestinationSummary> stations;
     private TravelTarget selectedTarget;
     private int stationIndex;
     private boolean initialized;
@@ -61,6 +61,20 @@ public final class RocketFlightSelection {
 
     public void select(TravelTarget target) {
         selectedTarget = target;
+        updateStations(stations);
+    }
+
+    public void updateStations(List<StationDestinationSummary> updated) {
+        UUID previous = selectedTarget instanceof TravelTarget.Station station ? station.instanceId() : stationId();
+        stations = List.copyOf(updated);
+        stationIndex = 0;
+        for (int index = 0; index < stations.size(); index++) {
+            if (stations.get(index).stationId().equals(previous)) {
+                stationIndex = index;
+                return;
+            }
+        }
+        if (selectedTarget instanceof TravelTarget.Station) { selectedTarget = null; }
     }
 
     public void selectNextStation() {
@@ -130,6 +144,6 @@ public final class RocketFlightSelection {
                 .map(destination -> destination == RocketDestination.EARTH
                         ? LegacyTravelTargetAdapter.fromLegacy(RocketDestination.MOON, null)
                         : LegacyTravelTargetAdapter.fromLegacy(RocketDestination.EARTH, null))
-                .orElse(null);
+                .orElseGet(() -> LegacyTravelTargetAdapter.fromLegacy(RocketDestination.EARTH, null));
     }
 }

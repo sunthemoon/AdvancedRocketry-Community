@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.network;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapter;
@@ -13,7 +14,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class RocketFlightNetwork {
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "7";
     private static SimpleChannel channel;
 
     public RocketFlightNetwork() {
@@ -36,6 +37,11 @@ public final class RocketFlightNetwork {
                 .decoder(RocketFlightPlanPacket::decode)
                 .consumerMainThread(RocketFlightPlanPacket::handle)
                 .add();
+        created.messageBuilder(CelestialSnapshotPacket.class, 2, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(CelestialSnapshotPacket::encode)
+                .decoder(CelestialSnapshotPacket::decode)
+                .consumerMainThread(CelestialSnapshotPacket::handle)
+                .add();
         channel = created;
     }
 
@@ -47,6 +53,11 @@ public final class RocketFlightNetwork {
         if (channel == null) {
             throw new IllegalStateException("Rocket flight channel is not initialized");
         }
+        channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    public static void sendCatalog(ServerPlayer player, CelestialSnapshotPacket packet) {
+        if (channel == null) { throw new IllegalStateException("Rocket flight channel is not initialized"); }
         channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
 

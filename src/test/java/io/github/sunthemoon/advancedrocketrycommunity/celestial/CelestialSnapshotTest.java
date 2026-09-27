@@ -108,6 +108,21 @@ class CelestialSnapshotTest {
         assertEquals(5L, CelestialClientCache.generation());
     }
 
+    @Test
+    void oldGenerationsCannotReplaceOrInvalidateANewerDisplay() {
+        var current = CelestialSnapshotPacket.fromCatalog(canonicalCatalog(), 7).result().orElseThrow();
+        assertEquals(CelestialClientCache.AcceptResult.ACCEPTED, CelestialClientCache.accept(current));
+        var before = CelestialClientCache.snapshot().orElseThrow();
+        assertEquals(CelestialClientCache.AcceptResult.STALE_GENERATION,
+                CelestialClientCache.accept(new CelestialSnapshotPacket(99, 6, new byte[]{1})));
+        assertTrue(before == CelestialClientCache.snapshot().orElseThrow());
+        assertEquals(7, CelestialClientCache.generation());
+        assertEquals(CelestialClientCache.AcceptResult.ACCEPTED, CelestialClientCache.lastResult());
+        CelestialClientCache.clear();
+        assertEquals(CelestialClientCache.AcceptResult.ACCEPTED,
+                CelestialClientCache.accept(CelestialSnapshotPacket.fromCatalog(canonicalCatalog(), 1).result().orElseThrow()));
+    }
+
     private static CelestialCatalog canonicalCatalog() {
         return CelestialCatalog.create(CelestialDefaults.definitions())
                 .flatMap(CelestialCatalog::requireFixedBaseline)

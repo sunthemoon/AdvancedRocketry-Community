@@ -1,0 +1,286 @@
+{
+  "base_commit": "bd8b9a827f3cf961ee7d658f54ac2b6547716fcc",
+  "files": [
+    {
+      "bytes": 13931,
+      "git_blob": "1fa22ae5041246dc043e9c0252de926ee8c5dd08",
+      "path": "docs/CELESTIAL-DATA-GUIDE.md",
+      "sha256": "6a48225b8e13cdbea6adf622644305c95d5d035b597936656319226373b5a91a",
+      "working_sha256": "6a48225b8e13cdbea6adf622644305c95d5d035b597936656319226373b5a91a"
+    },
+    {
+      "bytes": 7672,
+      "git_blob": "7879adfdbff9e03566ee4d84a1d6112896c46224",
+      "path": "docs/decisions/ADR-035-ROCKET-STAR-MAP-AND-NAVIGATION-SYNC.md",
+      "sha256": "927850d00f0a1324f76811feeee74d7352b886359d6c056775942d054e062fa1",
+      "working_sha256": "927850d00f0a1324f76811feeee74d7352b886359d6c056775942d054e062fa1"
+    },
+    {
+      "bytes": 3028,
+      "git_blob": "436a3d501c7a3ada1e264f25c8f13e5e9a2f0dc0",
+      "path": "docs/provenance/v1.4.0-development-metadata.md",
+      "sha256": "ee8900b43770ec541aecd6137bb5dd2f08c221ced7c19d9bc75f93af8cf1d273",
+      "working_sha256": "ee8900b43770ec541aecd6137bb5dd2f08c221ced7c19d9bc75f93af8cf1d273"
+    },
+    {
+      "bytes": 3224,
+      "git_blob": "01ef4079507c8b087ed893e8814fa1f2596ff7b3",
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "0eafc630766e0579db312e61730cf1fa44e73ac2a6ae1b1ca83ca6cf7611f3ae",
+      "working_sha256": "0eafc630766e0579db312e61730cf1fa44e73ac2a6ae1b1ca83ca6cf7611f3ae"
+    },
+    {
+      "bytes": 12680,
+      "git_blob": "aa2326b7fb3ae28a6911c89be08b8612c9333b75",
+      "path": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "sha256": "96a22fff8ac748a6390921ae3eb8092cecc3fb354462c07142af52bcc54b9483",
+      "working_sha256": "96a22fff8ac748a6390921ae3eb8092cecc3fb354462c07142af52bcc54b9483"
+    },
+    {
+      "bytes": 29911,
+      "git_blob": "03b71bd4d8690deb8b6e744d77d39d066a823862",
+      "path": "docs/work/v1.4.0-implementation-log.md",
+      "sha256": "d63f0a615dc7662c5df521e599221829d6499d1d0a893935e5aca1ffbc8ad49a",
+      "working_sha256": "d63f0a615dc7662c5df521e599221829d6499d1d0a893935e5aca1ffbc8ad49a"
+    },
+    {
+      "bytes": 3803,
+      "git_blob": "9146b12150be5c20f465e9e0ca92cab60ac5b8c0",
+      "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity_v140/lang/en_us.json",
+      "sha256": "1fa400ea8789aaf164beff2b4e63c5fcd311662ef8d6fd5df41dcaccf6675868",
+      "working_sha256": "1fa400ea8789aaf164beff2b4e63c5fcd311662ef8d6fd5df41dcaccf6675868"
+    },
+    {
+      "bytes": 3689,
+      "git_blob": "5748acdaf733bb1d9db3a8b86dbca661dd6f6f0a",
+      "path": "src/generated/v1.4/resources/assets/advancedrocketrycommunity_v140/lang/zh_cn.json",
+      "sha256": "840204b5c5250efe223aa71dfee677695e1cd1621357a7afff49b133eb2e42ef",
+      "working_sha256": "840204b5c5250efe223aa71dfee677695e1cd1621357a7afff49b133eb2e42ef"
+    },
+    {
+      "bytes": 2759,
+      "git_blob": "03c88989fb484ecbc31f02dde49ed26c58e40c8a",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialClientCache.java",
+      "sha256": "a2d8ae43cc08ac4d1cfee571aec09010baba813ab3f3617628ee11dd522f85dc",
+      "working_sha256": "a2d8ae43cc08ac4d1cfee571aec09010baba813ab3f3617628ee11dd522f85dc"
+    },
+    {
+      "bytes": 821,
+      "git_blob": "f5e9a7f3a094e3e599a492ba4a010567257dc691",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightPlanHandler.java",
+      "sha256": "984954b3eba43fa339d59b853eb0d7deda1b74b79e13909ebbb2a02056e1ac69",
+      "working_sha256": "984954b3eba43fa339d59b853eb0d7deda1b74b79e13909ebbb2a02056e1ac69"
+    },
+    {
+      "bytes": 19476,
+      "git_blob": "48b551a0bfe86c8354971d472d894388c0ee6bac",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightScreen.java",
+      "sha256": "186cb1b8c16216d5d5c0c9786c713479ea9182f8fc49096ad900e03e5d278b97",
+      "working_sha256": "186cb1b8c16216d5d5c0c9786c713479ea9182f8fc49096ad900e03e5d278b97"
+    },
+    {
+      "bytes": 12516,
+      "git_blob": "18645454cb044a84f5e019d21d0ab757eb3ca995",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/RocketStarMap.java",
+      "sha256": "57f32041550d30fd8c6ee051ac9b955ecfc13ba5a8900f12b5ebd02504145ca5",
+      "working_sha256": "57f32041550d30fd8c6ee051ac9b955ecfc13ba5a8900f12b5ebd02504145ca5"
+    },
+    {
+      "bytes": 462,
+      "git_blob": "8cf99bd7e8a5859f8c614e8018c2a51e4059d7a1",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapInput.java",
+      "sha256": "1de61f774d832d1328499a7a2a345e3cfb3a3a8682b374540e32e52205409d3a",
+      "working_sha256": "1de61f774d832d1328499a7a2a345e3cfb3a3a8682b374540e32e52205409d3a"
+    },
+    {
+      "bytes": 2966,
+      "git_blob": "23aa710c272a8d2812c6acae2e41bc1a6ac1412c",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapLayout.java",
+      "sha256": "17cfafb6f4e2528d9c991a002066dd6846fcc35ea6c7c1abad5869008f3a0a76",
+      "working_sha256": "17cfafb6f4e2528d9c991a002066dd6846fcc35ea6c7c1abad5869008f3a0a76"
+    },
+    {
+      "bytes": 2065,
+      "git_blob": "e23bd7dda36f170540bb8d800f65eecdfbf99528",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapViewport.java",
+      "sha256": "439b61535d601320bcb1eb0b47232dd0bed26e67382f591765937c734bb3007d",
+      "working_sha256": "439b61535d601320bcb1eb0b47232dd0bed26e67382f591765937c734bb3007d"
+    },
+    {
+      "bytes": 5226,
+      "git_blob": "a941c9589cc457ca7ce5d99671aa6adb8fac1d96",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V140PlanetaryLanguageProvider.java",
+      "sha256": "6af8cfe1f1f940b3a2b5638306fccf27e7bdeda7f856cd79dcd2aedb1ce74f02",
+      "working_sha256": "6af8cfe1f1f940b3a2b5638306fccf27e7bdeda7f856cd79dcd2aedb1ce74f02"
+    },
+    {
+      "bytes": 17636,
+      "git_blob": "e9a224f2830b63001b51c3dd7a97a9850ffe6f38",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java",
+      "sha256": "93736de44e168c9ff6aab916f6256498abbe3d750dd3bd1a77519c163afb10f9",
+      "working_sha256": "93736de44e168c9ff6aab916f6256498abbe3d750dd3bd1a77519c163afb10f9"
+    },
+    {
+      "bytes": 18733,
+      "git_blob": "2b85d7a975142f9af22f474990d4bcaff1b55ef5",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryExposureGameTests.java",
+      "sha256": "560715b89aa1bae85f999ebde51fc0adaef685bd7995d5fd4c9e9541737f83f1",
+      "working_sha256": "560715b89aa1bae85f999ebde51fc0adaef685bd7995d5fd4c9e9541737f83f1"
+    },
+    {
+      "bytes": 15086,
+      "git_blob": "6059a6049cb08d816566c061326b83aa3d5e90f8",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketNavigationGameTests.java",
+      "sha256": "1ba49694a663188bd941ac73cb8a1e616b9ec20d9d7a5e05440fea94a8e64455",
+      "working_sha256": "1ba49694a663188bd941ac73cb8a1e616b9ec20d9d7a5e05440fea94a8e64455"
+    },
+    {
+      "bytes": 819,
+      "git_blob": "ca45837125abc0551120c5b9297be863b810d2b3",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketCatalogSync.java",
+      "sha256": "5a9d973432cd49033ed292738c4d3a2fa2e18cc2c8f831fe4db8c52fe54a3df7",
+      "working_sha256": "5a9d973432cd49033ed292738c4d3a2fa2e18cc2c8f831fe4db8c52fe54a3df7"
+    },
+    {
+      "bytes": 11853,
+      "git_blob": "e1dd1507c85cb783c1f028b67e0e60a3afc1ea45",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightMenu.java",
+      "sha256": "cf7c22249b66efd24937086f1dcd93f5d21aafb92092389ebd2b40130da28b5e",
+      "working_sha256": "cf7c22249b66efd24937086f1dcd93f5d21aafb92092389ebd2b40130da28b5e"
+    },
+    {
+      "bytes": 6595,
+      "git_blob": "3695f544e9e1d571f170152edfcb752628d8d6cc",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightQuotes.java",
+      "sha256": "3747eb7020a1c006966031484867b43176e54e4e3a093e48663e92d7707568de",
+      "working_sha256": "3747eb7020a1c006966031484867b43176e54e4e3a093e48663e92d7707568de"
+    },
+    {
+      "bytes": 6170,
+      "git_blob": "4da2e933f2fa4765d938c8561f3d28769ceeecc7",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightSelection.java",
+      "sha256": "950610c709099439c2a490c73dca554c368ff8a3c15e19250dd344635812ca12",
+      "working_sha256": "950610c709099439c2a490c73dca554c368ff8a3c15e19250dd344635812ca12"
+    },
+    {
+      "bytes": 2566,
+      "git_blob": "bf17eaab6d97f783fffc94bd2a4a131aace5d0fa",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigation.java",
+      "sha256": "fa379d08ba3fc74e5ae10433ad0c95bab266626f1fbf32d633db47920ca374ee",
+      "working_sha256": "fa379d08ba3fc74e5ae10433ad0c95bab266626f1fbf32d633db47920ca374ee"
+    },
+    {
+      "bytes": 1839,
+      "git_blob": "815fed433b12a6e73057f164c2a8786b2f8e9755",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationStatus.java",
+      "sha256": "1dd237ac76bf757f55fef0132e48f0dd712418698bad8012c6b158c3826f972c",
+      "working_sha256": "1dd237ac76bf757f55fef0132e48f0dd712418698bad8012c6b158c3826f972c"
+    },
+    {
+      "bytes": 4223,
+      "git_blob": "b964b72b9fd72afa2d6fa4b870921c6c390d9218",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightNetwork.java",
+      "sha256": "2dd77d8321b5baed4748024d5dc1a688325a6fc9af6f0f55180f24f386ee5a6a",
+      "working_sha256": "2dd77d8321b5baed4748024d5dc1a688325a6fc9af6f0f55180f24f386ee5a6a"
+    },
+    {
+      "bytes": 7118,
+      "git_blob": "fa91d8165cb1e265bc40bd3ce2136726e0d8c582",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacket.java",
+      "sha256": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf",
+      "working_sha256": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf"
+    },
+    {
+      "bytes": 1290,
+      "git_blob": "e4389744b7e539dd7bd2d1bec82a60e30908c0b9",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketCatalogRefreshLimiter.java",
+      "sha256": "e329fc6807842c4f4431404dd3af473260a4f8feac994e826cefb692fc4ecec7",
+      "working_sha256": "e329fc6807842c4f4431404dd3af473260a4f8feac994e826cefb692fc4ecec7"
+    },
+    {
+      "bytes": 24944,
+      "git_blob": "ccea35b92cf3be9d9550dda687eb95df7a0260bd",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java",
+      "sha256": "d3fcfa36445a0eb9a879f91854e93689f81dcfb731dbeb395118aad9b13fb1fd",
+      "working_sha256": "d3fcfa36445a0eb9a879f91854e93689f81dcfb731dbeb395118aad9b13fb1fd"
+    },
+    {
+      "bytes": 11641,
+      "git_blob": "11a94c87b1dfc832db6b8122eb3d18218e479566",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+      "sha256": "f7e3519fadf0c7a08af81e4e8650890f694076509cb282a1c88dbcc9d03e965c",
+      "working_sha256": "f7e3519fadf0c7a08af81e4e8650890f694076509cb282a1c88dbcc9d03e965c"
+    },
+    {
+      "bytes": 7362,
+      "git_blob": "d4cd03276b1c13cd86f68d5177d2871be301532e",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketNavigationService.java",
+      "sha256": "be73a82211721c2e3ad6377632bffbf3aa5330f1a5e960d29b58a9a77a7ce3d0",
+      "working_sha256": "be73a82211721c2e3ad6377632bffbf3aa5330f1a5e960d29b58a9a77a7ce3d0"
+    },
+    {
+      "bytes": 3942,
+      "git_blob": "4a860225c2677557278c51ac6c10f47b2fe0fce3",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketOperationService.java",
+      "sha256": "3c263ff6ea9364865192c7d6e8e906155caba605fa1cf7c245ce11cd37a3b450",
+      "working_sha256": "3c263ff6ea9364865192c7d6e8e906155caba605fa1cf7c245ce11cd37a3b450"
+    },
+    {
+      "bytes": 8179,
+      "git_blob": "8f88a1bf1911b9b2a7664f1c69725a4c4261e64c",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketRuntime.java",
+      "sha256": "51a23881adfeafe70a2e55d588d5c695c852131c11cab0f52e8db080c8e8d8cd",
+      "working_sha256": "51a23881adfeafe70a2e55d588d5c695c852131c11cab0f52e8db080c8e8d8cd"
+    },
+    {
+      "bytes": 6215,
+      "git_blob": "586f24e66ca0276eeabdf20ac4b2518ced045de5",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotTest.java",
+      "sha256": "e0034693236267706b77b6887f8b4d5ac3d8b8646c55d8d9f161a3b7e1e4db50",
+      "working_sha256": "e0034693236267706b77b6887f8b4d5ac3d8b8646c55d8d9f161a3b7e1e4db50"
+    },
+    {
+      "bytes": 4697,
+      "git_blob": "c686f3e89988a2f13fe91dd84bfbcff0f5765e73",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapLayoutTest.java",
+      "sha256": "0b95d10f95500b69d2f619127542c676ce9030220659e029a4769ef5a5b586aa",
+      "working_sha256": "0b95d10f95500b69d2f619127542c676ce9030220659e029a4769ef5a5b586aa"
+    },
+    {
+      "bytes": 6490,
+      "git_blob": "8a33b65f353eca526f4f397e28c5c02385df092c",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightSelectionTest.java",
+      "sha256": "84bcb13e5b97231ede26582f106920695fd0cad142068111c117c71bd2ef734f",
+      "working_sha256": "84bcb13e5b97231ede26582f106920695fd0cad142068111c117c71bd2ef734f"
+    },
+    {
+      "bytes": 5820,
+      "git_blob": "7b2c89affc168cb236ac8d0672d31a0aa6d9bc16",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationTest.java",
+      "sha256": "61b838d4423094a44af63189201e167628941b44fc4c5afb1b47e28e30e53b64",
+      "working_sha256": "61b838d4423094a44af63189201e167628941b44fc4c5afb1b47e28e30e53b64"
+    },
+    {
+      "bytes": 10002,
+      "git_blob": "38bef455f252540157d8feba614b0b338a7b696c",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacketTest.java",
+      "sha256": "0242a85b7b91893bd727a0ebc97d54a86484dfdade79e306f1e21fc140a15a8d",
+      "working_sha256": "0242a85b7b91893bd727a0ebc97d54a86484dfdade79e306f1e21fc140a15a8d"
+    },
+    {
+      "bytes": 2303,
+      "git_blob": "812fcf67b9ce5a13244ed9c141c573d7f68cae22",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketCatalogRefreshLimiterTest.java",
+      "sha256": "3b98bd661c30c5e4b67118ca2b057fd4c1519087077cb17c1b6793eb02be43d7",
+      "working_sha256": "3b98bd661c30c5e4b67118ca2b057fd4c1519087077cb17c1b6793eb02be43d7"
+    },
+    {
+      "bytes": 4385,
+      "git_blob": "206b86c3666709524558a27383b7feba17e95adf",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketMaintenanceStructureTest.java",
+      "sha256": "993d0cd8e6a6e95ee954c6d82030a9deb18b52b80212846f93dc6961fd06c28e",
+      "working_sha256": "993d0cd8e6a6e95ee954c6d82030a9deb18b52b80212846f93dc6961fd06c28e"
+    }
+  ],
+  "scope": "Changed staged inputs outside this evidence directory; raw worktree digests identify executed inputs"
+}

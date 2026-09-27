@@ -1,0 +1,782 @@
+[
+  {
+    "bytes": 5571,
+    "path": "contract/ADR-035-initial.md",
+    "sha256": "b81497da46036124bf381caca20bb42347127893e52115f65209b9b2e463f0c9"
+  },
+  {
+    "bytes": 7672,
+    "path": "contract/ADR-035-revised.md",
+    "sha256": "927850d00f0a1324f76811feeee74d7352b886359d6c056775942d054e062fa1"
+  },
+  {
+    "bytes": 10107,
+    "path": "contract/REVIEW.md",
+    "sha256": "30390be0fc909c790c4e82d6ff7560b5820311742c9b7d5d9f73bf8f1e980f4e"
+  },
+  {
+    "bytes": 699,
+    "path": "contract/SHA256SUMS",
+    "sha256": "d528fb59b4d119d8010c3d39c2ca51bb0de65de960f27afa15eee31ce710c6c1"
+  },
+  {
+    "bytes": 42,
+    "path": "contract/baseline.txt",
+    "sha256": "5b2241cf55a8817b977d84fd9e21e5a0bf2a9adda21d3ebfd40b10d3f3e2c5f7"
+  },
+  {
+    "bytes": 28265,
+    "path": "contract/implementation-log-initial.md",
+    "sha256": "f940f1c176c4042386fecc005792035d15eac28324521318d76b63eaebfa180e"
+  },
+  {
+    "bytes": 28509,
+    "path": "contract/implementation-log-revised.md",
+    "sha256": "7116c0370679f4dc56981435695b53566bfc1841a6d3ee4b27dbb07402f0fefd"
+  },
+  {
+    "bytes": 3845,
+    "path": "contract/reviewed-inputs.json",
+    "sha256": "8ec062ea8fbb5c2fff076f3fd59b85afd722306f3d859518007a5081b7178d72"
+  },
+  {
+    "bytes": 3529,
+    "path": "contract/worklog-initial.diff",
+    "sha256": "a88b042e7b375c3e36533dc1dd830cc9283da87b84b389b5748458542dad965e"
+  },
+  {
+    "bytes": 11473,
+    "path": "final/REVIEW-FINAL.md",
+    "sha256": "cd4c072e66b9628143784caaa472bbc12cc277aa99cd1c0c567b339daa5ab4a1"
+  },
+  {
+    "bytes": 10998,
+    "path": "final/SHA256SUMS",
+    "sha256": "86a7a1c17946750ff02d7aba73473a363abcd09d2b5e4e161e507693e7482bc4"
+  },
+  {
+    "bytes": 3387,
+    "path": "final/artifact-audit.json",
+    "sha256": "51b13935f1f476886fc6d024d5d59ff31e8d9e42773521d16cda2f5b4c4e8c15"
+  },
+  {
+    "bytes": 69,
+    "path": "final/artifact-audit.log",
+    "sha256": "357dff96b2fc0fc1981a5f0e0a417b4a2ab2686535c3cf19a633da904f285695"
+  },
+  {
+    "bytes": 714,
+    "path": "final/artifacts-after.json",
+    "sha256": "5d596c940b085a007f368ae121fcd37e765a6b186f5d5a0b3240543895bb37a2"
+  },
+  {
+    "bytes": 714,
+    "path": "final/artifacts-before.json",
+    "sha256": "5d596c940b085a007f368ae121fcd37e765a6b186f5d5a0b3240543895bb37a2"
+  },
+  {
+    "bytes": 1443,
+    "path": "final/audit-artifacts.py",
+    "sha256": "5a8de99a3aba5c28ee6a46733054b0b28daa40f6a5aad099919e02c011da5505"
+  },
+  {
+    "bytes": 8381,
+    "path": "final/audit-native-v2.py",
+    "sha256": "c5865ff4739629cf084969b56f4f9da299792dc5dc22cd7e0888a9173efbf9d8"
+  },
+  {
+    "bytes": 8047,
+    "path": "final/audit-native.py",
+    "sha256": "b30586e9ca3582b399e38cab46fe1e06632b5709908e41170eccf490eeabc3d2"
+  },
+  {
+    "bytes": 400,
+    "path": "final/focused-command.txt",
+    "sha256": "49be70a7ee814ba4982c3ebd142db3a5b2284d523e0f4b09babd15a00c9c659c"
+  },
+  {
+    "bytes": 1893,
+    "path": "final/focused-counts.json",
+    "sha256": "3a5a26ed22306ec9e4ca7fa2d5d861a2735df8355f8dc1c46e062c31a12ae782"
+  },
+  {
+    "bytes": 5683,
+    "path": "final/focused-gradle.log",
+    "sha256": "c09229b58587f5257de5b99e8d5463b5e3d250ce34c529e429f0dec2dfdfbd76"
+  },
+  {
+    "bytes": 1350,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSnapshotTest.xml",
+    "sha256": "1bf8ad60dadde324ea972f8ee1135cf0219104fb80674dee60d48a3dcea3cb8c"
+  },
+  {
+    "bytes": 1130,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.starmap.StarMapLayoutTest.xml",
+    "sha256": "8440ab856e7846605e9e1f8be2ebee43fe11a9b9cf0de8c3626cd2380244bb72"
+  },
+  {
+    "bytes": 982,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTargetFlightPlannerTest.xml",
+    "sha256": "75fc83787cd9dafa8f6a13034dbf1f647584cea54c578c077dfab1f526fb46e6"
+  },
+  {
+    "bytes": 1613,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest.xml",
+    "sha256": "4942596cde9c69916041d7df959c9eec3c4f4d806526041995ef289bc7d42523"
+  },
+  {
+    "bytes": 2300,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest.xml",
+    "sha256": "04c7336de360c16d7e25a6f3020159cf778f7ee04f1c5f6c5afc68c89474f1d5"
+  },
+  {
+    "bytes": 1088,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationTest.xml",
+    "sha256": "7acce190b6636196ba8ce37af718049ee1dd705638b558dc1595dcde8f4343d5"
+  },
+  {
+    "bytes": 1911,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest.xml",
+    "sha256": "9797cd96fbbcf5c8e01a7e8a0e0c61e9a93d46181aaa1f19a94a1777ad40fd50"
+  },
+  {
+    "bytes": 800,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketCatalogRefreshLimiterTest.xml",
+    "sha256": "b8d379a0c9e2e2bd0fa25011e74095fc7968825c35069b80fc6b9ac41f397b1f"
+  },
+  {
+    "bytes": 1165,
+    "path": "final/focused-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMaintenanceStructureTest.xml",
+    "sha256": "459cf925e120e445f53ee2156fbeaddb6902a9dc3f13c11e99c80d2dab3b6e53"
+  },
+  {
+    "bytes": 111,
+    "path": "final/focused-junit/binary/output.bin",
+    "sha256": "2765c44cc4744e50b9fcc65e6acfa82b20cc635291ca8e1754ce8dfd0f675ca5"
+  },
+  {
+    "bytes": 36,
+    "path": "final/focused-junit/binary/output.bin.idx",
+    "sha256": "9cb6e0087a4ded786b3dc5ad4f3b1e9f29ef2e3a57cf248a624081ee48907cc3"
+  },
+  {
+    "bytes": 7005,
+    "path": "final/focused-junit/binary/results.bin",
+    "sha256": "6c7d8651aa4ab15a8d14bdf339f53980cbff7c68fa453a19fa30e3ec68ea3c6e"
+  },
+  {
+    "bytes": 600,
+    "path": "final/focused-result.json",
+    "sha256": "59ad52653b79d70f0d361caa3118c5e629aa1c02c3bd650c34b97de63d4af855"
+  },
+  {
+    "bytes": 29415,
+    "path": "final/gametest-logs/2026-09-27-1.log.gz",
+    "sha256": "8b34a7f59c1c065249a597c74228e0226b6f9813235de921205b396d3d2328a5"
+  },
+  {
+    "bytes": 40759,
+    "path": "final/gametest-logs/debug-1.log.gz",
+    "sha256": "c2190c6b54fbaa5f3a4ee873889a218f2ee8fadec251977d9ae4190e5255fa61"
+  },
+  {
+    "bytes": 502844,
+    "path": "final/gametest-logs/debug.log",
+    "sha256": "db7e131415f87662b30e9f0b71cdc44de2b2478d354ea87c47b2faccf3514e69"
+  },
+  {
+    "bytes": 390231,
+    "path": "final/gametest-logs/latest.log",
+    "sha256": "c5b2bb6912b8fb3e4fd9300d72ba1bb5b402ba8dbb8393f7fad1ecc223d7ace5"
+  },
+  {
+    "bytes": 6207,
+    "path": "final/generated-resource-diff.patch",
+    "sha256": "69befbb0fc8760f8642df04aeb023144762384673b8ea07dba7f07a84694b5b8"
+  },
+  {
+    "bytes": 42,
+    "path": "final/head-before.txt",
+    "sha256": "5b2241cf55a8817b977d84fd9e21e5a0bf2a9adda21d3ebfd40b10d3f3e2c5f7"
+  },
+  {
+    "bytes": 74,
+    "path": "final/identity-comparison.json",
+    "sha256": "25376d75f9921edcef3ba790bb036d80aac9f1f763eb74942fec74b54df0b4ff"
+  },
+  {
+    "bytes": 3803,
+    "path": "final/input-snapshots/src/generated/v1.4/resources/assets/advancedrocketrycommunity_v140/lang/en_us.json",
+    "sha256": "1fa400ea8789aaf164beff2b4e63c5fcd311662ef8d6fd5df41dcaccf6675868"
+  },
+  {
+    "bytes": 3689,
+    "path": "final/input-snapshots/src/generated/v1.4/resources/assets/advancedrocketrycommunity_v140/lang/zh_cn.json",
+    "sha256": "840204b5c5250efe223aa71dfee677695e1cd1621357a7afff49b133eb2e42ef"
+  },
+  {
+    "bytes": 2759,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialClientCache.java",
+    "sha256": "a2d8ae43cc08ac4d1cfee571aec09010baba813ab3f3617628ee11dd522f85dc"
+  },
+  {
+    "bytes": 821,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightPlanHandler.java",
+    "sha256": "984954b3eba43fa339d59b853eb0d7deda1b74b79e13909ebbb2a02056e1ac69"
+  },
+  {
+    "bytes": 19476,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightScreen.java",
+    "sha256": "186cb1b8c16216d5d5c0c9786c713479ea9182f8fc49096ad900e03e5d278b97"
+  },
+  {
+    "bytes": 12516,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/RocketStarMap.java",
+    "sha256": "57f32041550d30fd8c6ee051ac9b955ecfc13ba5a8900f12b5ebd02504145ca5"
+  },
+  {
+    "bytes": 462,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapInput.java",
+    "sha256": "1de61f774d832d1328499a7a2a345e3cfb3a3a8682b374540e32e52205409d3a"
+  },
+  {
+    "bytes": 2966,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapLayout.java",
+    "sha256": "17cfafb6f4e2528d9c991a002066dd6846fcc35ea6c7c1abad5869008f3a0a76"
+  },
+  {
+    "bytes": 2065,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapViewport.java",
+    "sha256": "439b61535d601320bcb1eb0b47232dd0bed26e67382f591765937c734bb3007d"
+  },
+  {
+    "bytes": 5226,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V140PlanetaryLanguageProvider.java",
+    "sha256": "6af8cfe1f1f940b3a2b5638306fccf27e7bdeda7f856cd79dcd2aedb1ce74f02"
+  },
+  {
+    "bytes": 17636,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java",
+    "sha256": "93736de44e168c9ff6aab916f6256498abbe3d750dd3bd1a77519c163afb10f9"
+  },
+  {
+    "bytes": 18733,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryExposureGameTests.java",
+    "sha256": "560715b89aa1bae85f999ebde51fc0adaef685bd7995d5fd4c9e9541737f83f1"
+  },
+  {
+    "bytes": 15086,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketNavigationGameTests.java",
+    "sha256": "1ba49694a663188bd941ac73cb8a1e616b9ec20d9d7a5e05440fea94a8e64455"
+  },
+  {
+    "bytes": 819,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketCatalogSync.java",
+    "sha256": "5a9d973432cd49033ed292738c4d3a2fa2e18cc2c8f831fe4db8c52fe54a3df7"
+  },
+  {
+    "bytes": 11853,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightMenu.java",
+    "sha256": "cf7c22249b66efd24937086f1dcd93f5d21aafb92092389ebd2b40130da28b5e"
+  },
+  {
+    "bytes": 6595,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightQuotes.java",
+    "sha256": "3747eb7020a1c006966031484867b43176e54e4e3a093e48663e92d7707568de"
+  },
+  {
+    "bytes": 6170,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightSelection.java",
+    "sha256": "950610c709099439c2a490c73dca554c368ff8a3c15e19250dd344635812ca12"
+  },
+  {
+    "bytes": 2566,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigation.java",
+    "sha256": "fa379d08ba3fc74e5ae10433ad0c95bab266626f1fbf32d633db47920ca374ee"
+  },
+  {
+    "bytes": 1839,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationStatus.java",
+    "sha256": "1dd237ac76bf757f55fef0132e48f0dd712418698bad8012c6b158c3826f972c"
+  },
+  {
+    "bytes": 4223,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightNetwork.java",
+    "sha256": "2dd77d8321b5baed4748024d5dc1a688325a6fc9af6f0f55180f24f386ee5a6a"
+  },
+  {
+    "bytes": 7118,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacket.java",
+    "sha256": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf"
+  },
+  {
+    "bytes": 1290,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketCatalogRefreshLimiter.java",
+    "sha256": "e329fc6807842c4f4431404dd3af473260a4f8feac994e826cefb692fc4ecec7"
+  },
+  {
+    "bytes": 24944,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java",
+    "sha256": "d3fcfa36445a0eb9a879f91854e93689f81dcfb731dbeb395118aad9b13fb1fd"
+  },
+  {
+    "bytes": 11641,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+    "sha256": "f7e3519fadf0c7a08af81e4e8650890f694076509cb282a1c88dbcc9d03e965c"
+  },
+  {
+    "bytes": 7362,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketNavigationService.java",
+    "sha256": "be73a82211721c2e3ad6377632bffbf3aa5330f1a5e960d29b58a9a77a7ce3d0"
+  },
+  {
+    "bytes": 3942,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketOperationService.java",
+    "sha256": "3c263ff6ea9364865192c7d6e8e906155caba605fa1cf7c245ce11cd37a3b450"
+  },
+  {
+    "bytes": 8179,
+    "path": "final/input-snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketRuntime.java",
+    "sha256": "51a23881adfeafe70a2e55d588d5c695c852131c11cab0f52e8db080c8e8d8cd"
+  },
+  {
+    "bytes": 6215,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotTest.java",
+    "sha256": "e0034693236267706b77b6887f8b4d5ac3d8b8646c55d8d9f161a3b7e1e4db50"
+  },
+  {
+    "bytes": 4697,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapLayoutTest.java",
+    "sha256": "0b95d10f95500b69d2f619127542c676ce9030220659e029a4769ef5a5b586aa"
+  },
+  {
+    "bytes": 6490,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightSelectionTest.java",
+    "sha256": "84bcb13e5b97231ede26582f106920695fd0cad142068111c117c71bd2ef734f"
+  },
+  {
+    "bytes": 5820,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationTest.java",
+    "sha256": "61b838d4423094a44af63189201e167628941b44fc4c5afb1b47e28e30e53b64"
+  },
+  {
+    "bytes": 10002,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacketTest.java",
+    "sha256": "0242a85b7b91893bd727a0ebc97d54a86484dfdade79e306f1e21fc140a15a8d"
+  },
+  {
+    "bytes": 2303,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketCatalogRefreshLimiterTest.java",
+    "sha256": "3b98bd661c30c5e4b67118ca2b057fd4c1519087077cb17c1b6793eb02be43d7"
+  },
+  {
+    "bytes": 4385,
+    "path": "final/input-snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketMaintenanceStructureTest.java",
+    "sha256": "993d0cd8e6a6e95ee954c6d82030a9deb18b52b80212846f93dc6961fd06c28e"
+  },
+  {
+    "bytes": 328168,
+    "path": "final/inputs-after.json",
+    "sha256": "75f56c05a766c6c52f8c8db20743a033e27b40b113edd5ca7c7a48251cb13aea"
+  },
+  {
+    "bytes": 328168,
+    "path": "final/inputs-before.json",
+    "sha256": "75f56c05a766c6c52f8c8db20743a033e27b40b113edd5ca7c7a48251cb13aea"
+  },
+  {
+    "bytes": 96,
+    "path": "final/integration-command.txt",
+    "sha256": "4815769ea0b76fd4c9dc70ac1a271ce10aeb04886f061f70989213341160f867"
+  },
+  {
+    "bytes": 354197,
+    "path": "final/integration-gradle.log",
+    "sha256": "810f8db7b8a0378df12a0984ec2670fdc5c232dfdf455ea390a20f758cc3a74e"
+  },
+  {
+    "bytes": 297,
+    "path": "final/integration-result.json",
+    "sha256": "51d323fa1e2749892d21346bd6faccdf08b34e1edefc326890677ba5276fbbcb"
+  },
+  {
+    "bytes": 198,
+    "path": "final/native-audit-v2.log",
+    "sha256": "a4de69d67a9a616b3509194f113c40f240ce87a52622c468c3046f7bb057541b"
+  },
+  {
+    "bytes": 14172,
+    "path": "final/native-audit.json",
+    "sha256": "776fb0b0ebf572c81b3cfca89af70014c9d9c35ab955646ed4295e13aa42e23e"
+  },
+  {
+    "bytes": 1152,
+    "path": "final/native-audit.log",
+    "sha256": "843aa3da8d4d3952f29d17b03f78c652dcd6929f9215bb181936c8698ac095c1"
+  },
+  {
+    "bytes": 1309,
+    "path": "final/new-source-paths.txt",
+    "sha256": "0774668292a33971781fdb105369517194f687a502e022b87f7a64d3a80d09d2"
+  },
+  {
+    "bytes": 16323,
+    "path": "final/prior-review-comparison.json",
+    "sha256": "e43c27d2ef8f4ce8979088aad45c8fefd8a56b5b5c43f8c2175b3ac474c53461"
+  },
+  {
+    "bytes": 2222,
+    "path": "final/run-checks.ps1",
+    "sha256": "8bc9f0d823a80600c96a99b9dc0d6ec64c2e9379f4390ee741938f56addd9667"
+  },
+  {
+    "bytes": 72256,
+    "path": "final/source-after.patch",
+    "sha256": "024b4f9fe427908e46bcf8b41e0c1bd5399d7a96c2a98f04e2807b072c204904"
+  },
+  {
+    "bytes": 72256,
+    "path": "final/source-before.patch",
+    "sha256": "024b4f9fe427908e46bcf8b41e0c1bd5399d7a96c2a98f04e2807b072c204904"
+  },
+  {
+    "bytes": 92,
+    "path": "final/source-review-receipt.json",
+    "sha256": "b85f1ea3734c4af6b5281c10d472cd310f1a647222324fef15f515c02fa22451"
+  },
+  {
+    "bytes": 7530,
+    "path": "incremental/REVIEW-INCREMENTAL.md",
+    "sha256": "cadf9402da447066f681660ea3a7246d65f250567a2280084ff61cab99c960be"
+  },
+  {
+    "bytes": 1755,
+    "path": "incremental/SHA256SUMS",
+    "sha256": "86cb7e1088738cf8f3038c63fee63edacba5c3b0dbef121161fab3990f22bcfd"
+  },
+  {
+    "bytes": 42,
+    "path": "incremental/baseline.txt",
+    "sha256": "5b2241cf55a8817b977d84fd9e21e5a0bf2a9adda21d3ebfd40b10d3f3e2c5f7"
+  },
+  {
+    "bytes": 867,
+    "path": "incremental/delta-identities.json",
+    "sha256": "2e197cb96e3b3954b4a136f39e25d80e1487444ab573b90ab2b0ef1e2c25f9f2"
+  },
+  {
+    "bytes": 13931,
+    "path": "incremental/snapshots/docs/CELESTIAL-DATA-GUIDE.md",
+    "sha256": "6a48225b8e13cdbea6adf622644305c95d5d035b597936656319226373b5a91a"
+  },
+  {
+    "bytes": 3028,
+    "path": "incremental/snapshots/docs/provenance/v1.4.0-development-metadata.md",
+    "sha256": "ee8900b43770ec541aecd6137bb5dd2f08c221ced7c19d9bc75f93af8cf1d273"
+  },
+  {
+    "bytes": 2522,
+    "path": "incremental/snapshots/docs/work/v1.4.0-nav/MANUAL-CASES.md",
+    "sha256": "f79c954214fbae7c6fc3402ff2c25c5038a588aad7f7d5caf110bbce4c39920e"
+  },
+  {
+    "bytes": 12516,
+    "path": "incremental/snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/RocketStarMap.java",
+    "sha256": "57f32041550d30fd8c6ee051ac9b955ecfc13ba5a8900f12b5ebd02504145ca5"
+  },
+  {
+    "bytes": 17636,
+    "path": "incremental/snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java",
+    "sha256": "93736de44e168c9ff6aab916f6256498abbe3d750dd3bd1a77519c163afb10f9"
+  },
+  {
+    "bytes": 15086,
+    "path": "incremental/snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketNavigationGameTests.java",
+    "sha256": "1ba49694a663188bd941ac73cb8a1e616b9ec20d9d7a5e05440fea94a8e64455"
+  },
+  {
+    "bytes": 2566,
+    "path": "incremental/snapshots/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigation.java",
+    "sha256": "fa379d08ba3fc74e5ae10433ad0c95bab266626f1fbf32d633db47920ca374ee"
+  },
+  {
+    "bytes": 5820,
+    "path": "incremental/snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationTest.java",
+    "sha256": "61b838d4423094a44af63189201e167628941b44fc4c5afb1b47e28e30e53b64"
+  },
+  {
+    "bytes": 10002,
+    "path": "incremental/snapshots/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacketTest.java",
+    "sha256": "0242a85b7b91893bd727a0ebc97d54a86484dfdade79e306f1e21fc140a15a8d"
+  },
+  {
+    "bytes": 1885,
+    "path": "incremental/source-identities.json",
+    "sha256": "c9875bdf6542a9b1f2bfffb2a0f6070eacd0327cf9f634e19b6f888bf219972d"
+  },
+  {
+    "bytes": 18733,
+    "path": "lighting/PlanetaryExposureGameTests-current.java",
+    "sha256": "560715b89aa1bae85f999ebde51fc0adaef685bd7995d5fd4c9e9541737f83f1"
+  },
+  {
+    "bytes": 17625,
+    "path": "lighting/PlanetaryExposureGameTests-fixed-delay.java",
+    "sha256": "a60d16d827b0fecbf92fa309294049ff6c043b8165047a047bcb2f186c85896e"
+  },
+  {
+    "bytes": 4576,
+    "path": "lighting/PlayerEnvironmentalService.java",
+    "sha256": "f4e275c2882ec16e045a23fcda5b710986eeaf6e5784e73b02bff1f7dec2461c"
+  },
+  {
+    "bytes": 4290,
+    "path": "lighting/REVIEW-LIGHTING.md",
+    "sha256": "ea1f24dd91d7b617630cac9965008f1cc85f8993227f9e45e781bbfe321393b3"
+  },
+  {
+    "bytes": 1111,
+    "path": "lighting/SHA256SUMS",
+    "sha256": "9f65b3be6ede2c62bd8b42f71684ba4d559843f24a9c0df71f82d877f9e0d610"
+  },
+  {
+    "bytes": 469,
+    "path": "lighting/failure-excerpts.txt",
+    "sha256": "f64d7515eed0e5f535bb4e280d799d38424d12d59a389422b1c6134ad46753fa"
+  },
+  {
+    "bytes": 3090,
+    "path": "lighting/fixture.patch",
+    "sha256": "942b8571c000f54d4bd153d78d9f4f8b41abfdf7659817d2e70c93f18cfab072"
+  },
+  {
+    "bytes": 42,
+    "path": "lighting/head.txt",
+    "sha256": "5b2241cf55a8817b977d84fd9e21e5a0bf2a9adda21d3ebfd40b10d3f3e2c5f7"
+  },
+  {
+    "bytes": 1157,
+    "path": "lighting/identities.json",
+    "sha256": "6f82f9888ba1e0b85aaf8a1e746b745cada7431b12029e6b2bb87cbf1f6b07f8"
+  },
+  {
+    "bytes": 39821,
+    "path": "lighting/net.minecraft.server.level.ThreadedLevelLightEngine.javap.txt",
+    "sha256": "9445f047be1c7399f8764c2c78198fe03ba1da47c3457061974a156bdd6b5e9a"
+  },
+  {
+    "bytes": 2289,
+    "path": "lighting/net.minecraft.world.level.BlockAndTintGetter.javap.txt",
+    "sha256": "007fc676a302a46932cfe1b61ba6b5444aa90c7fcca97797802d2e05c1095e10"
+  },
+  {
+    "bytes": 19948,
+    "path": "lighting/net.minecraft.world.level.lighting.LevelLightEngine.javap.txt",
+    "sha256": "01d9184eae421163dbd203654cd441fd5b53fd81f6164f3cd97656ce663dd3ce"
+  },
+  {
+    "bytes": 7672,
+    "path": "source/ADR-035.md",
+    "sha256": "927850d00f0a1324f76811feeee74d7352b886359d6c056775942d054e062fa1"
+  },
+  {
+    "bytes": 110481,
+    "path": "source/AbstractContainerScreen.javap.txt",
+    "sha256": "530ccaf1f0d37d3c68cc0a54d6a817911e68103224f8368d821c7c17459a1b7c"
+  },
+  {
+    "bytes": 10868,
+    "path": "source/REVIEW-SOURCE.md",
+    "sha256": "9dac424bec47dc7fa332c2da42f6b8ee797a4609e41d9611c1aa7e6578c971dd"
+  },
+  {
+    "bytes": 6341,
+    "path": "source/SHA256SUMS",
+    "sha256": "d60e195c35bd05a8df4d3c8ac66503bb8595a315b8eba8b5142a9d0603bd858e"
+  },
+  {
+    "bytes": 42,
+    "path": "source/baseline.txt",
+    "sha256": "5b2241cf55a8817b977d84fd9e21e5a0bf2a9adda21d3ebfd40b10d3f3e2c5f7"
+  },
+  {
+    "bytes": 11853,
+    "path": "source/initial-source/RocketFlightMenu.java",
+    "sha256": "cf7c22249b66efd24937086f1dcd93f5d21aafb92092389ebd2b40130da28b5e"
+  },
+  {
+    "bytes": 19365,
+    "path": "source/initial-source/RocketFlightScreen.java",
+    "sha256": "bee5173408ba066bc89622299e6641afcfdc024ff2201d4b26c258f5c172d153"
+  },
+  {
+    "bytes": 7362,
+    "path": "source/initial-source/RocketNavigationService.java",
+    "sha256": "be73a82211721c2e3ad6377632bffbf3aa5330f1a5e960d29b58a9a77a7ce3d0"
+  },
+  {
+    "bytes": 12150,
+    "path": "source/initial-source/RocketStarMap.java",
+    "sha256": "0955d3b9b2f8e205104fff1974355ff194c63fde7f1054973056f772b8601ed3"
+  },
+  {
+    "bytes": 304,
+    "path": "source/platform-identity.json",
+    "sha256": "2896efa4d818387ca5d1cd1d32839b99b4a82c1c717e4485b87625b9d49182f4"
+  },
+  {
+    "bytes": 2759,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialClientCache.java",
+    "sha256": "a2d8ae43cc08ac4d1cfee571aec09010baba813ab3f3617628ee11dd522f85dc"
+  },
+  {
+    "bytes": 821,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightPlanHandler.java",
+    "sha256": "984954b3eba43fa339d59b853eb0d7deda1b74b79e13909ebbb2a02056e1ac69"
+  },
+  {
+    "bytes": 19476,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightScreen.java",
+    "sha256": "186cb1b8c16216d5d5c0c9786c713479ea9182f8fc49096ad900e03e5d278b97"
+  },
+  {
+    "bytes": 12150,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/RocketStarMap.java",
+    "sha256": "0955d3b9b2f8e205104fff1974355ff194c63fde7f1054973056f772b8601ed3"
+  },
+  {
+    "bytes": 462,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapInput.java",
+    "sha256": "1de61f774d832d1328499a7a2a345e3cfb3a3a8682b374540e32e52205409d3a"
+  },
+  {
+    "bytes": 2966,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapLayout.java",
+    "sha256": "17cfafb6f4e2528d9c991a002066dd6846fcc35ea6c7c1abad5869008f3a0a76"
+  },
+  {
+    "bytes": 2065,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapViewport.java",
+    "sha256": "439b61535d601320bcb1eb0b47232dd0bed26e67382f591765937c734bb3007d"
+  },
+  {
+    "bytes": 5226,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V140PlanetaryLanguageProvider.java",
+    "sha256": "6af8cfe1f1f940b3a2b5638306fccf27e7bdeda7f856cd79dcd2aedb1ce74f02"
+  },
+  {
+    "bytes": 819,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketCatalogSync.java",
+    "sha256": "5a9d973432cd49033ed292738c4d3a2fa2e18cc2c8f831fe4db8c52fe54a3df7"
+  },
+  {
+    "bytes": 11853,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightMenu.java",
+    "sha256": "cf7c22249b66efd24937086f1dcd93f5d21aafb92092389ebd2b40130da28b5e"
+  },
+  {
+    "bytes": 6595,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightQuotes.java",
+    "sha256": "3747eb7020a1c006966031484867b43176e54e4e3a093e48663e92d7707568de"
+  },
+  {
+    "bytes": 6170,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightSelection.java",
+    "sha256": "950610c709099439c2a490c73dca554c368ff8a3c15e19250dd344635812ca12"
+  },
+  {
+    "bytes": 2457,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigation.java",
+    "sha256": "55d0edb6379d2cf861ab6b36eec55f389527d1c58c69ee7fa9b898ba57bf7734"
+  },
+  {
+    "bytes": 1839,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationStatus.java",
+    "sha256": "1dd237ac76bf757f55fef0132e48f0dd712418698bad8012c6b158c3826f972c"
+  },
+  {
+    "bytes": 4223,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightNetwork.java",
+    "sha256": "2dd77d8321b5baed4748024d5dc1a688325a6fc9af6f0f55180f24f386ee5a6a"
+  },
+  {
+    "bytes": 7118,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacket.java",
+    "sha256": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf"
+  },
+  {
+    "bytes": 1290,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketCatalogRefreshLimiter.java",
+    "sha256": "e329fc6807842c4f4431404dd3af473260a4f8feac994e826cefb692fc4ecec7"
+  },
+  {
+    "bytes": 24944,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java",
+    "sha256": "d3fcfa36445a0eb9a879f91854e93689f81dcfb731dbeb395118aad9b13fb1fd"
+  },
+  {
+    "bytes": 11641,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+    "sha256": "f7e3519fadf0c7a08af81e4e8650890f694076509cb282a1c88dbcc9d03e965c"
+  },
+  {
+    "bytes": 7362,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketNavigationService.java",
+    "sha256": "be73a82211721c2e3ad6377632bffbf3aa5330f1a5e960d29b58a9a77a7ce3d0"
+  },
+  {
+    "bytes": 3942,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketOperationService.java",
+    "sha256": "3c263ff6ea9364865192c7d6e8e906155caba605fa1cf7c245ce11cd37a3b450"
+  },
+  {
+    "bytes": 8179,
+    "path": "source/reviewed-source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketRuntime.java",
+    "sha256": "51a23881adfeafe70a2e55d588d5c695c852131c11cab0f52e8db080c8e8d8cd"
+  },
+  {
+    "bytes": 6215,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotTest.java",
+    "sha256": "e0034693236267706b77b6887f8b4d5ac3d8b8646c55d8d9f161a3b7e1e4db50"
+  },
+  {
+    "bytes": 4697,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/starmap/StarMapLayoutTest.java",
+    "sha256": "0b95d10f95500b69d2f619127542c676ce9030220659e029a4769ef5a5b586aa"
+  },
+  {
+    "bytes": 6490,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketFlightSelectionTest.java",
+    "sha256": "84bcb13e5b97231ede26582f106920695fd0cad142068111c117c71bd2ef734f"
+  },
+  {
+    "bytes": 5666,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/menu/RocketNavigationTest.java",
+    "sha256": "fe12f387f2e10e2537ec9e7e1e0d337e429f639181be65922fd30588b182291f"
+  },
+  {
+    "bytes": 10002,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacketTest.java",
+    "sha256": "0242a85b7b91893bd727a0ebc97d54a86484dfdade79e306f1e21fc140a15a8d"
+  },
+  {
+    "bytes": 2303,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketCatalogRefreshLimiterTest.java",
+    "sha256": "3b98bd661c30c5e4b67118ca2b057fd4c1519087077cb17c1b6793eb02be43d7"
+  },
+  {
+    "bytes": 4385,
+    "path": "source/reviewed-source/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketMaintenanceStructureTest.java",
+    "sha256": "993d0cd8e6a6e95ee954c6d82030a9deb18b52b80212846f93dc6961fd06c28e"
+  },
+  {
+    "bytes": 6651,
+    "path": "source/source-identities.json",
+    "sha256": "9b3f27cc009f8d43d07955960e93146008c1ea6aeaa7c5798d5379f7f39e2289"
+  },
+  {
+    "bytes": 61469,
+    "path": "source/tracked-source.diff",
+    "sha256": "db2f86a756232ddf32aa0f7457f96f27c777e18d89b443517dfb6f8c21c911a5"
+  }
+]

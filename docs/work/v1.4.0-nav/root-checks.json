@@ -1,0 +1,40 @@
+{
+  "base_commit": "bd8b9a827f3cf961ee7d658f54ac2b6547716fcc",
+  "clean_world_failed": {
+    "exit_code": 1,
+    "failed_gametests": 1,
+    "junit": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 155,
+      "tests": 866
+    },
+    "log": "root-clean-env-failed.log",
+    "required_gametests": 232
+  },
+  "command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --console=plain",
+  "duration": "3m 22s",
+  "exit_code": 0,
+  "initial_junit": {
+    "errors": 0,
+    "failures": 1,
+    "skipped": 0,
+    "suites": 155,
+    "tests": 866
+  },
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 155,
+    "tests": 866
+  },
+  "python": {
+    "exit_code": 0,
+    "seconds": 0.371,
+    "tests": 24
+  },
+  "required_gametests_passed": 232,
+  "scope": "Short development checks; no client/GPU/load/release acceptance"
+}

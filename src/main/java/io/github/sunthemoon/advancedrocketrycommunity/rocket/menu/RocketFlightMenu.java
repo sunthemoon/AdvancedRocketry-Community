@@ -38,7 +38,11 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     private final TravelTarget openingCurrentTarget;
     private final Player viewer;
     private RocketFlightPlanSnapshot receivedPlan = RocketFlightPlanSnapshot.empty();
-    private RocketFlightQuotes receivedQuotes = RocketFlightQuotes.empty();
+    private RocketNavigation receivedNavigation = RocketNavigation.empty();
+    private RocketNavigation serverNavigation = RocketNavigation.empty();
+    private RocketFlightData quotedFlight;
+    private long lastQuoteTick = -RocketNavigation.REFRESH_TICKS;
+    private final RocketCatalogSync catalogSync = new RocketCatalogSync();
     private RocketFlightPlanPacket lastSentSnapshot;
     private boolean planReceived;
 
@@ -49,6 +53,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     private RocketFlightMenu(int containerId, Inventory playerInventory, ClientPayload payload) {
         this(
                 containerId,
+                payload.rocketEntityId(),
                 resolveRocket(playerInventory, payload.rocketEntityId()),
                 new SimpleContainerData(RocketFlightMenuData.COUNT),
                 payload.stations(),
@@ -62,6 +67,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     public RocketFlightMenu(int containerId, Inventory playerInventory, RocketEntity rocket) {
         this(
                 containerId,
+                rocket.getId(),
                 rocket,
                 new RocketFlightMenuData(rocket),
                 List.of(),
@@ -74,6 +80,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
 
     private RocketFlightMenu(
             int containerId,
+            int rocketEntityId,
             RocketEntity rocket,
             ContainerData data,
             List<StationDestinationSummary> accessibleStations,
@@ -85,7 +92,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         super(ModMenuTypes.ROCKET_FLIGHT.get(), containerId);
         checkContainerDataCount(data, RocketFlightMenuData.COUNT);
         this.rocket = rocket;
-        rocketEntityId = rocket == null ? -1 : rocket.getId();
+        this.rocketEntityId = rocketEntityId;
         this.data = data;
         this.accessibleStations = List.copyOf(accessibleStations);
         this.currentStationId = currentStationId;
@@ -127,8 +134,11 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return rocket != null
+                && player == viewer && player.isAlive()
                 && rocket.isAlive()
+                && rocket.operational()
                 && rocket.level() == player.level()
+                && player.level().hasChunkAt(rocket.blockPosition())
                 && player.distanceToSqr(rocket) <= 64.0D;
     }
 
@@ -140,12 +150,29 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     public void broadcastChanges() {
         super.broadcastChanges();
         if (viewer instanceof ServerPlayer player && player.containerMenu == this && stillValid(player)) {
-            var snapshot = new RocketFlightPlanPacket(containerId, rocketEntityId, activePlan(), quotes());
+            var navigation = navigation();
+            var snapshot = new RocketFlightPlanPacket(containerId, rocketEntityId, activePlan(), navigation);
             if (!snapshot.equals(lastSentSnapshot)) {
                 RocketFlightNetwork.sendPlan(player, snapshot);
                 lastSentSnapshot = snapshot;
             }
+            if (catalogSync.attempt(player.getServer().overworld().getGameTime(), navigation.generation())) {
+                RocketRuntime.navigationCatalog(player, rocket).ifPresent(packet -> {
+                    RocketFlightNetwork.sendCatalog(player, packet);
+                    catalogSync.delivered(packet.catalogGeneration());
+                });
+            }
         }
+    }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != RocketNavigation.REFRESH_BUTTON || !(player instanceof ServerPlayer serverPlayer)
+                || !serverPlayer.getServer().isSameThread() || player.containerMenu != this || !stillValid(player)) {
+            return false;
+        }
+        catalogSync.request();
+        return true;
     }
 
     public RocketFlightPlanSnapshot activePlan() {
@@ -161,10 +188,10 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         return planReceived;
     }
 
-    public void acceptPlanSnapshot(RocketFlightPlanSnapshot plan, RocketFlightQuotes quotes) {
-        if (viewer.level().isClientSide()) {
+    public void acceptPlanSnapshot(RocketFlightPlanSnapshot plan, RocketNavigation navigation) {
+        if (viewer.level().isClientSide() && navigation.generation() >= receivedNavigation.generation()) {
             receivedPlan = java.util.Objects.requireNonNull(plan, "plan");
-            receivedQuotes = java.util.Objects.requireNonNull(quotes, "quotes");
+            receivedNavigation = java.util.Objects.requireNonNull(navigation, "navigation");
             planReceived = true;
         }
     }
@@ -190,17 +217,24 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     }
 
     public RocketFlightQuotes quotes() {
+        return navigation().quotes();
+    }
+
+    public RocketNavigation navigation() {
         if (viewer.level().isClientSide()) {
-            return receivedQuotes;
+            return receivedNavigation;
+        }
+        if (!(viewer instanceof ServerPlayer player) || rocket == null || !stillValid(player)) {
+            return RocketNavigation.empty();
         }
         var flight = rocket.flightData().orElse(null);
-        var snapshot = rocket.snapshot().orElse(null);
-        if (flight == null || snapshot == null) {
-            return RocketFlightQuotes.empty();
+        long now = player.getServer().overworld().getGameTime();
+        if (flight != quotedFlight || now < lastQuoteTick || now - lastQuoteTick >= RocketNavigation.REFRESH_TICKS) {
+            serverNavigation = RocketRuntime.navigation(player, rocket);
+            lastQuoteTick = now;
+            quotedFlight = flight;
         }
-        return viewer instanceof ServerPlayer player
-                ? RocketRuntime.flightQuotes(player, rocket)
-                : RocketFlightQuotes.empty();
+        return serverNavigation;
     }
 
     public RocketDestination currentDestination() {
@@ -233,7 +267,8 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     }
 
     public List<StationDestinationSummary> accessibleStations() {
-        return accessibleStations;
+        return viewer.level().isClientSide() && !planReceived ? accessibleStations
+                : navigation().stations().stream().map(RocketNavigation.Station::summary).toList();
     }
 
     public Optional<UUID> currentStationId() {

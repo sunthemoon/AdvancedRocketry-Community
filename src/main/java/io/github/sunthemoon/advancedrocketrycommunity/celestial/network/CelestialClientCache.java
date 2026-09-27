@@ -13,6 +13,9 @@ public final class CelestialClientCache {
 
     public static AcceptResult accept(CelestialSnapshotPacket packet) {
         State previous = STATE.get();
+        if (packet.catalogGeneration() < previous.generation()) {
+            return AcceptResult.STALE_GENERATION;
+        }
         if (packet.schemaVersion() != CelestialSnapshotCodec.SCHEMA_VERSION) {
             STATE.set(new State(
                     previous.snapshot(),
@@ -68,6 +71,7 @@ public final class CelestialClientCache {
         ACCEPTED,
         UNSUPPORTED_SCHEMA,
         INVALID_PAYLOAD,
+        STALE_GENERATION,
         EMPTY
     }
 
