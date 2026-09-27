@@ -45,6 +45,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterSuitEquipmentEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentService;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.environment.EnvironmentQueryLifecycle;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.SuitEquipmentRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
@@ -65,6 +66,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -132,6 +134,10 @@ public final class AdvancedRocketryCommunity {
         stationManager = new StationManager(celestialCatalogs);
         StationRuntime.install(stationManager);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
+        EnvironmentQueryLifecycle environmentQueries = new EnvironmentQueryLifecycle(celestialCatalogs);
+        MinecraftForge.EVENT_BUS.addListener(environmentQueries::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, environmentQueries::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, environmentQueries::onServerStopped);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);

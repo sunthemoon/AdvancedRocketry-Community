@@ -31,6 +31,13 @@ public final class BodyContextResolver {
         if (catalog == null) {
             return Optional.empty();
         }
+        return resolve(location, catalog);
+    }
+
+    /** Resolves against one caller-captured catalog, so identity and environment use the same data. */
+    public Optional<BodyContext> resolve(WorldLocation location, CelestialCatalog catalog) {
+        Objects.requireNonNull(location, "location");
+        Objects.requireNonNull(catalog, "catalog");
 
         for (InstanceBodyContextResolver resolver : instanceResolvers) {
             BodyContextResolution result = Objects.requireNonNull(

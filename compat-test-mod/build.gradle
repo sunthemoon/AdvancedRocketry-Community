@@ -31,7 +31,10 @@ def exportedClasses = [
         'api/rocket/RocketComponentDefinition.class', 'api/rocket/RocketComponentRegistrar.class',
         'api/rocket/RegisterRocketComponentsEvent.class',
         'api/rocket/RocketFuelDefinition.class', 'api/rocket/RocketFuelRegistrar.class',
-        'api/rocket/RegisterRocketFuelsEvent.class'
+        'api/rocket/RegisterRocketFuelsEvent.class',
+        'api/environment/AtmosphereProfile.class', 'api/environment/EnvironmentSnapshot.class',
+        'api/environment/EnvironmentSnapshot$Locus.class', 'api/environment/EnvironmentQueries.class',
+        'api/environment/ServerEnvironmentReadyEvent.class'
 ].collect { hostPrefix + it }.toSet()
 
 repositories {

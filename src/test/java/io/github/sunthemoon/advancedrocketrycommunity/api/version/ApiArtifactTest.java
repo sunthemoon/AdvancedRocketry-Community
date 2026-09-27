@@ -51,7 +51,12 @@ class ApiArtifactTest {
             API_PACKAGE + "atmosphere/RegisterAtmosphereBoundariesEvent.class",
             API_PACKAGE + "atmosphere/SuitOxygenProvider.class",
             API_PACKAGE + "atmosphere/SuitEquipmentRegistrar.class",
-            API_PACKAGE + "atmosphere/RegisterSuitEquipmentEvent.class")).collect(Collectors.toUnmodifiableSet());
+            API_PACKAGE + "atmosphere/RegisterSuitEquipmentEvent.class",
+            API_PACKAGE + "environment/AtmosphereProfile.class",
+            API_PACKAGE + "environment/EnvironmentSnapshot.class",
+            API_PACKAGE + "environment/EnvironmentSnapshot$Locus.class",
+            API_PACKAGE + "environment/EnvironmentQueries.class",
+            API_PACKAGE + "environment/ServerEnvironmentReadyEvent.class")).collect(Collectors.toUnmodifiableSet());
     private static final Set<String> METADATA = Set.of("META-INF/MANIFEST.MF", "META-INF/LICENSE",
             "META-INF/NOTICE.md", "META-INF/THIRD-PARTY-NOTICES.md",
             "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
@@ -168,6 +173,26 @@ class ApiArtifactTest {
     void fuelConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
         Compilation result = compile("FuelApiConsumer", platformConsumerClasspath());
         assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void environmentConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
+        Compilation result = compile("EnvironmentApiConsumer", platformConsumerClasspath());
+        assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void platformConsumerCannotImportTheEnvironmentImplementation() throws IOException {
+        try (ZipFile runtime = new ZipFile(Path.of(System.getProperty("arce.runtimeJar")).toFile())) {
+            assertNotNull(runtime.getEntry(HOST_PACKAGE + "compat/environment/ServerEnvironmentQueries.class"));
+        }
+        Compilation result = compile("EnvironmentInternalConsumer", platformConsumerClasspath());
+        assertFalse(result.success());
+        assertTrue(result.diagnostics().stream().anyMatch(diagnostic ->
+                diagnostic.getKind() == Diagnostic.Kind.ERROR
+                        && diagnostic.getCode().equals("compiler.err.doesnt.exist")
+                        && diagnostic.getMessage(Locale.ROOT).contains("compat.environment")),
+                result.diagnostics().toString());
     }
 
     @Test

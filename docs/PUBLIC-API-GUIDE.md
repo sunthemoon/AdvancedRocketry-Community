@@ -1,7 +1,7 @@
-# Public API: versioning, rockets, item fuels, atmosphere and equipment
+# Public API: versioning, rockets, atmosphere, equipment and environment
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.5**. Version metadata remains JDK-only in
+types. The API version is **1.6**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -16,8 +16,8 @@ types. The API version is **1.5**. Version metadata remains JDK-only in
 `RocketFuelRegistrar` and `RegisterRocketFuelsEvent`, requiring the
 Minecraft 1.20.1 / Forge platform. Other project packages are implementation
 details, even when their Java types are `public`. `api.atmosphere` exports the four
-state-boundary and three equipment types described below. Environment and
-satellite extension APIs are not yet exported.
+state-boundary and three equipment types described below. `api.environment`
+exports the read-only types described below. Satellite extension APIs are not yet exported.
 
 ## Compile and run
 
@@ -345,6 +345,54 @@ Native single-item data is limited to 4 KiB/depth 16/256 nodes; loader roots to
 preserved and blocked, not turned into empty slots. Already oversized world data
 requires backup/offline repair and refuses survival removal. See the complete
 [fuel and migration contract](decisions/ADR-027-ROCKET-ITEM-FUELS.md).
+
+## Query a server's configured environment
+
+Require API **1.6**. During mod construction subscribe to `ServerEnvironmentReadyEvent`
+on **`MinecraftForge.EVENT_BUS`**, not the mod bus. The event provides an
+`EnvironmentQueries` handle during each logical server's `ServerStartedEvent`.
+Retain that handle for this server and replace it when another server starts.
+
+```java
+private EnvironmentQueries environments;
+
+void environmentReady(ServerEnvironmentReadyEvent event) {
+    environments = event.queries();
+}
+
+// Call only on the owning logical server thread, after the ready event.
+Optional<EnvironmentSnapshot> readEnvironment(ResourceKey<Level> dimension, BlockPos position) {
+    return environments.at(dimension, position);
+}
+```
+
+The supported types are in `api.environment`. A result contains the logical
+`bodyId`, `locus` (`SURFACE` or `STATION_ORBIT`), optional station UUID,
+`gravityMultiplier`, `vacuum` and optional `AtmosphereProfile`. Surface atmosphere
+has relative-atmosphere `pressure`, `breathable`, `temperatureKelvin` and a profile
+ID. Station gravity/vacuum come from its saved environment, **not** its orbited
+body's surface. Station pressure/temperature/breathability/profile are unspecified,
+so its atmosphere Optional is empty; non-vacuum alone is not breathable air.
+
+Queries never read/load a chunk, even for unloaded coordinates. Unmapped,
+ambiguous or unavailable dimensions and uncommitted/missing Space regions return
+empty. A station's horizontal region applies at any Y. Successful celestial
+catalog replacement and station changes are visible to the next query; rejected
+celestial candidates retain the previous catalog. Returned values are detached,
+immutable snapshots, not live views. There is no growing per-position cache.
+
+Only the owning server thread may query. Off-thread and expired calls throw
+`IllegalStateException`; handles expire when their server starts stopping and
+never reactivate for a later integrated-server world. Null inputs throw
+`NullPointerException`. No event is emitted on a client-only resource load.
+
+These are **configured base-environment values**, not effective entity gravity,
+local oxygen-room state, weather, suit protection or travel/build permission.
+The existing gravity controller remains Level-based; the API does not apply
+station gravity to entities. Do not pass this handle to a client or use a query
+result as C2S authority. No save or network migration is needed. Numeric bounds,
+units and lifecycle are specified in
+[ADR-028](decisions/ADR-028-READ-ONLY-ENVIRONMENT-QUERIES.md).
 
 ## Verify an integration boundary
 

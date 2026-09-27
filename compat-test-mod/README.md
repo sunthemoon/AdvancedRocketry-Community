@@ -4,8 +4,15 @@ This standalone ForgeGradle project builds the existing
 [`src/adapterTest`](../src/adapterTest/) fixture into a separate, reobfuscated
 mod JAR. It consumes the published ARCE **API classifier**, not the host project,
 main JAR or compiled output. Its platform is Java 17, Minecraft 1.20.1 and
-Forge 47.4.10. This fixture requires API 1.5 for item fuels, in addition to rocket components (1.4),
+Forge 47.4.10. This fixture requires API 1.6 for environment queries, in addition to item fuels (1.5), rocket components (1.4),
 suit equipment (1.3), atmosphere boundaries (1.2) and rocket registration (1.1).
+
+The environment fixture listens for the actual server-ready API event, queries
+Earth/Moon/unresolved and unloaded locations, and verifies expiration at stopping.
+`-Darce_adapter_test.environmentSmoke=true` enables the permission-level-2
+`arce_env_probe <label> <dimension> <position>` observation command. It logs the
+configured snapshot and loaded-chunk state before/after the query without changing
+the world. Do not use the compatibility fixture in a normal player installation.
 
 ## Build
 

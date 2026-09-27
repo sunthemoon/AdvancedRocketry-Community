@@ -55,8 +55,8 @@ public final class AdapterTestMod {
     static volatile RegisterRocketFuelsEvent fuelEvent;
 
     public AdapterTestMod(FMLJavaModLoadingContext context) {
-        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 5)) != ApiCompatibility.COMPATIBLE) {
-            throw new IllegalStateException("Adapter fixture requires ARCE API 1.5");
+        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 6)) != ApiCompatibility.COMPATIBLE) {
+            throw new IllegalStateException("Adapter fixture requires ARCE API 1.6");
         }
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
@@ -66,6 +66,7 @@ public final class AdapterTestMod {
         modBus.addListener(this::registerSuitEquipment);
         modBus.addListener(this::registerRocketComponents);
         modBus.addListener(this::registerRocketFuels);
+        EnvironmentQueryFixture.install();
         if (Boolean.getBoolean("arce_adapter_test.suitSmoke")) {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(SuitEquipmentFixture::registerCommands);
         }

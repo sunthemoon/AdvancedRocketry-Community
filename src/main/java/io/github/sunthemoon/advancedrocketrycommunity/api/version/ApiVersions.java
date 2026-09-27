@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /** Pure, thread-safe API metadata queries, usable on either physical side. */
 public final class ApiVersions {
-    private static final ApiVersion CURRENT = new ApiVersion(1, 5);
+    private static final ApiVersion CURRENT = new ApiVersion(1, 6);
 
     private ApiVersions() {
     }
