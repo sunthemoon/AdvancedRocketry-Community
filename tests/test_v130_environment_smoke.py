@@ -31,7 +31,7 @@ class EnvironmentSmokeTest(unittest.TestCase):
         runner.validate_lifecycle([runner.READY, runner.EXPIRED])
         for lines in ([], [runner.READY], [runner.EXPIRED, runner.READY],
                       [runner.READY, runner.READY, runner.EXPIRED],
-                      [runner.READY.replace("1.6", "1.5"), runner.EXPIRED]):
+                      [runner.READY.replace("1.7", "1.5"), runner.EXPIRED]):
             with self.assertRaises(runner.SmokeError):
                 runner.validate_lifecycle(lines)
 

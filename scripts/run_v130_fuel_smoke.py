@@ -59,7 +59,7 @@ def validate_registration(lines: list[str], phase: str) -> None:
     require(phase in PHASES, "Unknown fuel phase")
     matches = [line for line in lines if "Registered rocket fuels " in line or "Skipped rocket fuels " in line]
     variant = "updated" if phase in ("updated", "restart") else "standard"
-    expected = "Skipped rocket fuels (event 1)" if phase == "skipped" else f"Registered rocket fuels (variant {variant}, API 1.6, event 1)"
+    expected = "Skipped rocket fuels (event 1)" if phase == "skipped" else f"Registered rocket fuels (variant {variant}, API 1.7, event 1)"
     require(len(matches) == 1 and matches[0].rstrip().endswith(expected), "Fuel registration selection differs")
 
 

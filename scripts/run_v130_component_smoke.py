@@ -48,7 +48,7 @@ def validate_registration(lines: list[str], phase: str) -> None:
     receipts = [line for line in lines if "Registered rocket components " in line or "Skipped rocket components " in line]
     variant = "updated" if phase in ("updated", "restart") else "standard"
     expected = "Skipped rocket components (event 1)" if phase == "skipped" else (
-        f"Registered rocket components (variant {variant}, API 1.6, event 1)")
+        f"Registered rocket components (variant {variant}, API 1.7, event 1)")
     require(len(receipts) == 1 and receipts[0].rstrip().endswith(expected), "Component registration selection differs")
 
 

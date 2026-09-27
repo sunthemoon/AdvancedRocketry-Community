@@ -34,7 +34,7 @@ MOON = HOST + ":moon"
 POSITION = (264, 220, 264)
 REGION = Path("world/dimensions") / HOST / "moon/region/r.0.0.mca"
 PHASES = ("setup", "restart", "skipped", "restored")
-REGISTERED = f"Registered suit equipment {PROVIDER} (API 1.6, event 1)"
+REGISTERED = f"Registered suit equipment {PROVIDER} (API 1.7, event 1)"
 SKIPPED = f"Skipped suit equipment {PROVIDER} (event 1)"
 
 

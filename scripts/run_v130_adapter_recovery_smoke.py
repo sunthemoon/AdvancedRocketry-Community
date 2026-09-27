@@ -56,8 +56,8 @@ INVENTORY = {"Items": [
      "tag": {"display": {"Name": '{"text":"Public adapter cargo"}'}}},
     {"Slot": 1, "id": "minecraft:iron_ingot", "Count": 64},
 ]}
-REGISTERED = "Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.6, event 1)"
-SKIPPED = "Skipped rocket adapter arce_adapter_test:cargo_inventory (API 1.6, event 1)"
+REGISTERED = "Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.7, event 1)"
+SKIPPED = "Skipped rocket adapter arce_adapter_test:cargo_inventory (API 1.7, event 1)"
 PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
           "provider-reinstalled", "container-restart")
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"

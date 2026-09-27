@@ -73,7 +73,7 @@ class FuelSmokeTests(unittest.TestCase):
     def test_registration_and_phase_selection_are_exact(self):
         for phase in runner.PHASES:
             variant = "updated" if phase in ("updated", "restart") else "standard"
-            line = "Skipped rocket fuels (event 1)" if phase == "skipped" else f"Registered rocket fuels (variant {variant}, API 1.6, event 1)"
+            line = "Skipped rocket fuels (event 1)" if phase == "skipped" else f"Registered rocket fuels (variant {variant}, API 1.7, event 1)"
             runner.validate_registration([line], phase)
             for invalid in ([], [line, line], [line + " extra"], [line.replace("event 1", "event 2")]):
                 with self.assertRaises(runner.SmokeError): runner.validate_registration(invalid, phase)
