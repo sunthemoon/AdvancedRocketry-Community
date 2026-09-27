@@ -25,18 +25,19 @@ frozen release-candidate commit or stable approval. See the
 
 The acceptance cursor above remains at the earliest unfinished release Gate;
 it is not the active feature-development branch. Under accepted
-[ADR-020](../decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md), scoped
-v1.3 development proceeds from the immutable v1.2 baseline while inherited
+[ADR-030](../decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md), scoped
+v1.4 development proceeds from the immutable v1.3 baseline while inherited
 acceptance remains open:
 
 ```yaml
-active_development_version: v1.3.0
-active_development_branch: codex/v1.3.0-public-api
-accepted_development_baseline: 163e713206d1b89eca8b3e369b4503ab0a5a4ceb
-development_log: docs/work/v1.3.0-implementation-log.md
+active_development_version: v1.4.0
+active_development_branch: codex/v1.4.0-planetary-expansion
+accepted_development_baseline: 1a192b4b9b9a90372c11643e086f7b0fbdcd1860
+development_log: docs/work/v1.4.0-implementation-log.md
 ```
 
-Use the [v1.3 implementation log](../work/v1.3.0-implementation-log.md) for active
-tasks and the [development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md) for
-implemented scope, artifact evidence and outstanding acceptance. This pointer
-does not approve any candidate or change `GATE_STATUS.md`.
+Use the [v1.4 implementation log](../work/v1.4.0-implementation-log.md) for active
+tasks. Preparation has frozen the first contract; new runtime behavior remains
+unimplemented. The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
+retains the prior implemented scope, artifact evidence and outstanding
+acceptance. This pointer does not approve any candidate or change `GATE_STATUS.md`.

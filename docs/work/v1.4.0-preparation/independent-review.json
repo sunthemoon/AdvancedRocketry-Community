@@ -1,0 +1,71 @@
+{
+  "archive": "independent-review.zip",
+  "archive_sha256": "c27ccfaac933071ed2d06a0b327e4a3afbaecb0f37c520f83b1e56ee603fa75f",
+  "entries": [
+    {
+      "bytes": 2285,
+      "member": "review/capture.py",
+      "sha256": "b6539695284627fb328bdf9a02be72297743d195647d44dc79d4b37efbccbcbd"
+    },
+    {
+      "bytes": 1760,
+      "member": "review/examples.log",
+      "sha256": "6d7a8b5bd8dc3b06189f6e9ab13ae06994551ff47d389f11161e08b0c339ef6e"
+    },
+    {
+      "bytes": 1740,
+      "member": "review/final-checks.json",
+      "sha256": "9aae0411aed30925ef3eeeace7cefebf05d7839de0207bae4c885b9fabb96610"
+    },
+    {
+      "bytes": 2967,
+      "member": "review/final_checks.py",
+      "sha256": "eeb5f1e7fb60df9cb53486074bd49408e2933e4332108bd1801b2267ee43337f"
+    },
+    {
+      "bytes": 3741,
+      "member": "review/initial-ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "sha256": "3c4cf33c0711c1afd10a2a3c52a31def926d3d9e6ecdbab7c46745ce476b4e26"
+    },
+    {
+      "bytes": 12705,
+      "member": "review/initial-ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md",
+      "sha256": "2f8e1c6a8f0de7da71c94c9ff85618eaf1943cd3dd662f215c761bfa250c4b0a"
+    },
+    {
+      "bytes": 37915,
+      "member": "review/initial-identities.json",
+      "sha256": "fb05fb8a46b4c6ffc4c7a490afd25a6970c113eb9a5008d0a876bd092f646f41"
+    },
+    {
+      "bytes": 5879,
+      "member": "review/initial-v1.4.0-implementation-log.md",
+      "sha256": "6c2f650e4a020c2c06e1269405ab6f1ae27cdcd4830d1127913dcfa8b211a909"
+    },
+    {
+      "bytes": 167,
+      "member": "review/links.json",
+      "sha256": "9218f068bcbe0676abf5d898f264f7aab466aa8536d548ff0739241550463c84"
+    },
+    {
+      "bytes": 169,
+      "member": "review/planning.log",
+      "sha256": "f0eb0a508ba1768dc1b024eb4663833b31eb1f106901d8ec56f5de5d6893da54"
+    },
+    {
+      "bytes": 16594,
+      "member": "review/REVIEW.md",
+      "sha256": "42ed789ec9c3efd89af9e1a01ab4b51a0491a1cc3661265859f3411d512dd5a2"
+    },
+    {
+      "bytes": 8546,
+      "member": "review/SimpleJsonResourceReloadListener-javap.txt",
+      "sha256": "a84dccfe402acf49bd5fcdc2d4aa297a5065cd37d27e42bf8cd202e7a4ee18df"
+    }
+  ],
+  "report_sha256": "42ed789ec9c3efd89af9e1a01ab4b51a0491a1cc3661265859f3411d512dd5a2",
+  "reviewed_baseline": "1a192b4b9b9a90372c11643e086f7b0fbdcd1860",
+  "reviewer": "/root/prec04b_readback_review",
+  "schema_version": 1,
+  "scope": "Independent read-only source/draft/example review; not ADR acceptance or runtime verification"
+}

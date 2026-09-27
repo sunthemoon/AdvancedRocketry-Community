@@ -1,0 +1,76 @@
+{
+  "scope": "Documentation-only schema examples; not installed world data, astronomy calibration or asset approval.",
+  "samples": {
+    "legacy_earth": {
+      "id": "advancedrocketrycommunity:earth",
+      "level": "minecraft:overworld",
+      "gravity_multiplier": 1.0,
+      "atmosphere": {"pressure": 1.0, "breathable": true, "temperature_kelvin": 288.0, "profile": "advancedrocketrycommunity:earth"},
+      "orbit": {"distance": 0, "period_ticks": 0, "inclination_degrees": 0.0},
+      "visual_profile": "advancedrocketrycommunity:earth"
+    },
+    "schema2_earth": {
+      "schema_version": 2,
+      "id": "advancedrocketrycommunity:earth",
+      "level": "minecraft:overworld",
+      "gravity_multiplier": 1.0,
+      "atmosphere": {"pressure": 1.0, "breathable": true, "temperature_kelvin": 288.0, "profile": "advancedrocketrycommunity:earth"},
+      "orbit": {"distance": 0, "period_ticks": 0, "inclination_degrees": 0.0},
+      "visual_profile": "advancedrocketrycommunity:earth",
+      "capabilities": {"landable": true, "orbitable": true, "gas_giant": false},
+      "solar_intensity": 1.0,
+      "radiation": 0.0
+    },
+    "schema2_closed_moon": {
+      "schema_version": 2,
+      "id": "advancedrocketrycommunity:moon",
+      "parent": "advancedrocketrycommunity:earth",
+      "level": "advancedrocketrycommunity:moon",
+      "gravity_multiplier": 0.165,
+      "atmosphere": {"pressure": 0.0, "breathable": false, "temperature_kelvin": 220.0, "profile": "advancedrocketrycommunity:vacuum"},
+      "orbit": {"distance": 384400, "period_ticks": 2360591, "inclination_degrees": 5.145},
+      "visual_profile": "advancedrocketrycommunity:moon",
+      "capabilities": {"landable": false, "orbitable": false, "gas_giant": false},
+      "solar_intensity": 1.0,
+      "radiation": 0.0
+    },
+    "schema2_mars_like": {
+      "schema_version": 2,
+      "id": "example:mars_like",
+      "parent": "advancedrocketrycommunity:earth",
+      "level": "example:mars_surface",
+      "gravity_multiplier": 0.38,
+      "atmosphere": {"pressure": 0.006, "breathable": false, "temperature_kelvin": 210.0, "profile": "example:thin_atmosphere"},
+      "orbit": {"distance": 100, "period_ticks": 24000, "inclination_degrees": 0.0},
+      "visual_profile": "example:red_world",
+      "capabilities": {"landable": true, "orbitable": true, "gas_giant": false},
+      "solar_intensity": 0.43,
+      "radiation": 0.0
+    },
+    "schema2_venus_like": {
+      "schema_version": 2,
+      "id": "example:venus_like",
+      "parent": "advancedrocketrycommunity:earth",
+      "level": "example:venus_surface",
+      "gravity_multiplier": 0.90,
+      "atmosphere": {"pressure": 4.0, "breathable": false, "temperature_kelvin": 737.0, "profile": "example:dense_atmosphere"},
+      "orbit": {"distance": 80, "period_ticks": 20000, "inclination_degrees": 0.0},
+      "visual_profile": "example:clouded_world",
+      "capabilities": {"landable": true, "orbitable": true, "gas_giant": false},
+      "solar_intensity": 1.90,
+      "radiation": 0.0
+    },
+    "schema2_gas_giant": {
+      "schema_version": 2,
+      "id": "example:gas_giant",
+      "parent": "advancedrocketrycommunity:earth",
+      "gravity_multiplier": 2.50,
+      "atmosphere": {"pressure": 10.0, "breathable": false, "temperature_kelvin": 165.0, "profile": "example:gas_envelope"},
+      "orbit": {"distance": 300, "period_ticks": 48000, "inclination_degrees": 0.0},
+      "visual_profile": "example:banded_world",
+      "capabilities": {"landable": false, "orbitable": true, "gas_giant": true},
+      "solar_intensity": 0.04,
+      "radiation": 0.0
+    }
+  }
+}

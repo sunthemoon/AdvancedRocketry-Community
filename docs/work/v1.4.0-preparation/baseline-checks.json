@@ -1,0 +1,48 @@
+{
+  "artifacts": [
+    {
+      "bytes": 48469,
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "bytes": 1075630,
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+      "sha256": "359a21d3c5bd7217ed39876d1fb88208438976e8baaa3acec4117c59e5bc2b8a"
+    },
+    {
+      "bytes": 2352333,
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "sha256": "d1f9f564ed1dcd1df7ac0648b4091a07dfa9a02f63b36b827f36aad591224475"
+    }
+  ],
+  "build_log_sha256": "6939a575b7bb6f7717d5b485eedc4a2a89fe6b142b30d2b2a0078c4014f0002f",
+  "candidate_commit": null,
+  "command": "gradlew.bat clean build runData runGameTestServer --offline --no-daemon --console=plain",
+  "datagen_written": 0,
+  "development_baseline": "1a192b4b9b9a90372c11643e086f7b0fbdcd1860",
+  "duration_seconds": 121,
+  "exit_code": 0,
+  "game_test_world": "Disposable build/gametest world after clean",
+  "junit": {
+    "errors": 0,
+    "execution": "FROM-CACHE, not newly run",
+    "failures": 0,
+    "skipped": 0,
+    "suites": 143,
+    "tests": 769
+  },
+  "lag_warnings": [
+    "[14:35:56] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2941ms or 58 ticks behind"
+  ],
+  "native_restart_run": false,
+  "new_runtime_implementation": false,
+  "required_gametests_passed": 210,
+  "schema_version": 1,
+  "scope": "Unchanged v1.3 runtime checks during v1.4 contract preparation; not v1.4 feature verification",
+  "tasks": {
+    "executed": 18,
+    "from_cache": 8,
+    "up_to_date": 1
+  }
+}
