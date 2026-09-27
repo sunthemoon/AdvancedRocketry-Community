@@ -57,7 +57,7 @@ public final class RollingMachineGameTests {
     private RollingMachineGameTests() {
     }
 
-    @GameTest(template = "empty", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", timeoutTicks = 40)
     public static void registeredMachineFormsBreaksAndRebuildsThroughBlockLifecycle(
             GameTestHelper helper
     ) {
@@ -99,7 +99,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = "rocket_test", timeoutTicks = 20)
     public static void futureControllerAndBindingRootsArePreservedAndBlocked(GameTestHelper helper) {
         BlockPos controllerPosition = new BlockPos(2, 2, 2);
         BlockPos portPosition = controllerPosition.east();
@@ -149,7 +149,7 @@ public final class RollingMachineGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = "rocket_test", timeoutTicks = 20)
     public static void malformedCurrentControllerAndBindingRootsArePreservedAndBlocked(GameTestHelper helper) {
         BlockPos controllerPosition = new BlockPos(2, 2, 2);
         BlockPos portPosition = controllerPosition.east();
@@ -195,7 +195,7 @@ public final class RollingMachineGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", timeoutTicks = 40)
     public static void typedCapabilitiesRequireFormationAndRetainResourcesAcrossRebuild(
             GameTestHelper helper
     ) {
@@ -313,7 +313,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = "rocket_test", timeoutTicks = 20)
     public static void futurePortResourceRootIsPreservedAndBlocksFormation(GameTestHelper helper) {
         placeStructure(helper);
         RollingMachinePortBlockEntity port = port(helper, ITEM_INPUT);
@@ -339,7 +339,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 30)
+    @GameTest(template = "rocket_test", timeoutTicks = 30)
     public static void itemPortDropsItsStoredStackWhenRemoved(GameTestHelper helper) {
         placeStructure(helper);
         helper.runAtTickTime(6, () -> {
@@ -362,7 +362,7 @@ public final class RollingMachineGameTests {
         ));
     }
 
-    @GameTest(template = "empty", timeoutTicks = 150)
+    @GameTest(template = "rocket_test", timeoutTicks = 150)
     public static void rollingRecipeConsumesEnergyAndCommitsResourcesExactlyOnce(
             GameTestHelper helper
     ) {
@@ -496,7 +496,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 30)
+    @GameTest(template = "rocket_test", timeoutTicks = 30)
     public static void futureProcessRootIsPreservedAndHidesAllPortCapabilities(GameTestHelper helper) {
         placeStructure(helper);
         RollingMachineBlockEntity controller = controller(helper);
@@ -529,7 +529,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 150)
+    @GameTest(template = "rocket_test", timeoutTicks = 150)
     public static void activeRollingProgressResumesAfterNbtReload(GameTestHelper helper) {
         placeStructure(helper);
         helper.runAtTickTime(6, () -> {
@@ -599,7 +599,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 30)
+    @GameTest(template = "rocket_test", timeoutTicks = 30)
     public static void completedProgressWithoutJournalFailsClosed(GameTestHelper helper) {
         placeStructure(helper);
         helper.runAtTickTime(6, () -> {
@@ -662,7 +662,7 @@ public final class RollingMachineGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", timeoutTicks = 40)
     public static void rollingMenuUsesBoundPortsAndLocatesFirstStructureDiagnostic(
             GameTestHelper helper
     ) {
