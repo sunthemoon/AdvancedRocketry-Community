@@ -45,6 +45,7 @@ public final class AdapterTestMod {
 
     private static volatile int registrationEvents;
     private static volatile RegisterRocketAdaptersEvent receivedEvent;
+    static volatile int rejectedRocketConflicts;
     static volatile int boundaryEvents;
     static volatile RegisterAtmosphereBoundariesEvent boundaryEvent;
     static volatile int suitEvents;
@@ -88,12 +89,25 @@ public final class AdapterTestMod {
             return;
         }
         event.register(ADAPTER_ID, Set.of(CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
+        requireConflict(() -> event.register(ADAPTER_ID, Set.of(ResourceLocation.tryParse("minecraft:furnace")),
+                PAYLOAD_VERSION, new FixtureInventoryAdapter()));
+        requireConflict(() -> event.register(id("conflicting_inventory"), Set.of(CONTAINER_ID),
+                PAYLOAD_VERSION, new FixtureInventoryAdapter()));
+        LogUtils.getLogger().info("ARCE_ADAPTER_REGISTRATION_CONFLICTS rejected={}", rejectedRocketConflicts);
         LogUtils.getLogger().info("Registered rocket adapter {} (payload {}, API {}.{}, event {})",
                 ADAPTER_ID, PAYLOAD_VERSION, version.major(), version.minor(), registrationEvents);
     }
 
     static int registrationEvents() {
         return registrationEvents;
+    }
+
+    private static void requireConflict(Runnable registration) {
+        try { registration.run(); } catch (IllegalArgumentException expected) {
+            rejectedRocketConflicts++;
+            return;
+        }
+        throw new IllegalStateException("Conflicting external adapter registration was accepted");
     }
 
     private void registerAtmosphereBoundaries(RegisterAtmosphereBoundariesEvent event) {

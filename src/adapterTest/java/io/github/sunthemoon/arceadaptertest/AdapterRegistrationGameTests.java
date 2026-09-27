@@ -35,6 +35,13 @@ public final class AdapterRegistrationGameTests {
     private AdapterRegistrationGameTests() {
     }
 
+    @GameTest(templateNamespace = HOST_ID, template = "empty", timeoutTicks = 20)
+    public static void duplicateIdAndTypeRegistrationsAreRejectedOnActualModBus(GameTestHelper helper) {
+        helper.assertTrue(AdapterTestMod.registrationEvents() == 1 && AdapterTestMod.rejectedRocketConflicts == 2,
+                "Both owned ID/type conflicts must be rejected during real registration");
+        helper.succeed();
+    }
+
     @GameTest(templateNamespace = HOST_ID, template = "rocket_test", timeoutTicks = 20)
     public static void externalAdapterReceivesOneClosedRegistrationEvent(GameTestHelper helper) {
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,

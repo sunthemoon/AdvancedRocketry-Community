@@ -17,6 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
 final class FixtureContainerBlockEntity extends BlockEntity implements Container {
     private static final int SLOT_COUNT = 2;
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    // Ephemeral diagnostic state owned by this test instance, never serialized or captured.
+    FixtureAdapterFaults.Probe fault;
 
     FixtureContainerBlockEntity(BlockPos position, BlockState state) {
         super(AdapterTestMod.CONTAINER_TYPE.get(), position, state);
