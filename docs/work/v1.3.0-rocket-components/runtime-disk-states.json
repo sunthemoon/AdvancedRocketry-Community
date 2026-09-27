@@ -1,0 +1,1006 @@
+{
+  "assemble": {
+    "block_entities": [
+      {
+        "RocketAssemblerData": {
+          "code": "SUCCESS",
+          "detail": "assembly committed blocks=5",
+          "schema_version": 1,
+          "stats": {
+            "block_entities": 0,
+            "blocks": 5,
+            "engines": 1,
+            "fuel_capacity": 1500,
+            "guidance": 1,
+            "mass": 254,
+            "seats": 1,
+            "thrust": 2400
+          },
+          "updated_at_game_time": 64
+        },
+        "id": "advancedrocketrycommunity:rocket_assembler",
+        "keepPacked": 0,
+        "x": 264,
+        "y": 100,
+        "z": 264
+      }
+    ],
+    "blocks": {
+      "(263, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 100, 264)": {
+        "Name": "advancedrocketrycommunity:rocket_assembler"
+      },
+      "(264, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 102, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 103, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(265, 101, 264)": {
+        "Name": "minecraft:air"
+      }
+    },
+    "entities": [
+      {
+        "Air": 300,
+        "CanUpdate": 1,
+        "FallDistance": 0.0,
+        "Fire": -1,
+        "Invulnerable": 0,
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "NoGravity": 1,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Pos": [
+          264.5,
+          101.0,
+          264.5
+        ],
+        "RocketEntityData": {
+          "assembly_transaction_id": [
+            -845499197,
+            710624753,
+            -1375566379,
+            549659237
+          ],
+          "flight_data": {
+            "current_body": "advancedrocketrycommunity:earth",
+            "current_dimension": "minecraft:overworld",
+            "current_origin": [
+              264,
+              101,
+              264
+            ],
+            "current_target": {
+              "body_id": "advancedrocketrycommunity:earth",
+              "schema_version": 1,
+              "type": "advancedrocketrycommunity:body_surface"
+            },
+            "fuel": {
+              "amount": 0,
+              "capacity": 1500,
+              "committed_debits": []
+            },
+            "logical_rocket_id": [
+              -845499197,
+              710624753,
+              -1375566379,
+              549659237
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "schema_version": 2,
+            "state": "ASSEMBLED",
+            "state_started_game_time": 64
+          },
+          "owner_id": [
+            0,
+            0,
+            0,
+            5
+          ],
+          "schema_version": 2,
+          "snapshot": {
+            "block_palette": [
+              {
+                "id": "minecraft:diamond_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:emerald_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:gold_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:oak_planks",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:quartz_block",
+                "properties": {}
+              }
+            ],
+            "bounding_box": [
+              -1,
+              0,
+              0,
+              1,
+              2,
+              0
+            ],
+            "content_hash": "653129856cbffb296b48a7cfd151e199cdb82bd5bcc0e160837f7cc0a77ab058",
+            "created_at_game_time": 64,
+            "mass_inputs": {
+              "block_count": 5,
+              "block_entity_count": 0,
+              "engine_count": 1,
+              "fuel_capacity": 1500,
+              "guidance_count": 1,
+              "mass": 254,
+              "seat_count": 1,
+              "thrust": 2400
+            },
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "relative_blocks": [
+              {
+                "palette": 1,
+                "position": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 3,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "palette": 2,
+                "position": [
+                  0,
+                  2,
+                  0
+                ]
+              },
+              {
+                "palette": 4,
+                "position": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "schema_version": 1,
+            "snapshot_id": "66174a32-9a29-4867-b88f-604342fca64f",
+            "source_dimension": "minecraft:overworld",
+            "source_origin": [
+              264,
+              101,
+              264
+            ]
+          }
+        },
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "UUID": [
+          -91563353,
+          982666501,
+          -1575404861,
+          -2045120288
+        ],
+        "id": "advancedrocketrycommunity:rocket"
+      }
+    ],
+    "files": {
+      "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+        "bytes": 108,
+        "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "world/entities/r.0.0.mca": {
+        "bytes": 73728,
+        "sha256": "ed57733618aa90ab4b4f5ce27a820f653796ddb7b9aa9da8644d92c4f0af93e1"
+      },
+      "world/level.dat": {
+        "bytes": 37929,
+        "sha256": "6a05c686fb2cef9c1d0caafa3048b02f4e7b995df73338651ae112bf57e81cfa"
+      },
+      "world/region/r.0.0.mca": {
+        "bytes": 4644864,
+        "sha256": "2aaf0fbc832257db6266f97aeddd4dfadff181e9f3a5afd8b22cd2b5500b1820"
+      }
+    },
+    "journal": {
+      "format_epoch": "v0.9.0-beta",
+      "schema_version": 2,
+      "transactions": []
+    }
+  },
+  "restart": {
+    "block_entities": [
+      {
+        "RocketAssemblerData": {
+          "code": "SUCCESS",
+          "detail": "assembly committed blocks=5",
+          "schema_version": 1,
+          "stats": {
+            "block_entities": 0,
+            "blocks": 5,
+            "engines": 1,
+            "fuel_capacity": 2000,
+            "guidance": 1,
+            "mass": 294,
+            "seats": 1,
+            "thrust": 2800
+          },
+          "updated_at_game_time": 171
+        },
+        "id": "advancedrocketrycommunity:rocket_assembler",
+        "keepPacked": 0,
+        "x": 264,
+        "y": 100,
+        "z": 264
+      }
+    ],
+    "blocks": {
+      "(263, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 100, 264)": {
+        "Name": "advancedrocketrycommunity:rocket_assembler"
+      },
+      "(264, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 102, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 103, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(265, 101, 264)": {
+        "Name": "minecraft:air"
+      }
+    },
+    "entities": [
+      {
+        "Air": 300,
+        "CanUpdate": 1,
+        "FallDistance": 0.0,
+        "Fire": -1,
+        "Invulnerable": 0,
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "NoGravity": 1,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Pos": [
+          264.5,
+          101.0,
+          264.5
+        ],
+        "RocketEntityData": {
+          "assembly_transaction_id": [
+            -172650538,
+            -1980347250,
+            -1084863095,
+            679383327
+          ],
+          "flight_data": {
+            "current_body": "advancedrocketrycommunity:earth",
+            "current_dimension": "minecraft:overworld",
+            "current_origin": [
+              264,
+              101,
+              264
+            ],
+            "current_target": {
+              "body_id": "advancedrocketrycommunity:earth",
+              "schema_version": 1,
+              "type": "advancedrocketrycommunity:body_surface"
+            },
+            "fuel": {
+              "amount": 0,
+              "capacity": 2000,
+              "committed_debits": []
+            },
+            "logical_rocket_id": [
+              -172650538,
+              -1980347250,
+              -1084863095,
+              679383327
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "schema_version": 2,
+            "state": "ASSEMBLED",
+            "state_started_game_time": 171
+          },
+          "owner_id": [
+            0,
+            0,
+            0,
+            5
+          ],
+          "schema_version": 2,
+          "snapshot": {
+            "block_palette": [
+              {
+                "id": "minecraft:diamond_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:emerald_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:gold_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:oak_planks",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:quartz_block",
+                "properties": {}
+              }
+            ],
+            "bounding_box": [
+              -1,
+              0,
+              0,
+              1,
+              2,
+              0
+            ],
+            "content_hash": "3315779e9f999356094e5b71087709e1d43c4d8e62d60a2e730d993ac7d1699e",
+            "created_at_game_time": 171,
+            "mass_inputs": {
+              "block_count": 5,
+              "block_entity_count": 0,
+              "engine_count": 1,
+              "fuel_capacity": 2000,
+              "guidance_count": 1,
+              "mass": 294,
+              "seat_count": 1,
+              "thrust": 2800
+            },
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "relative_blocks": [
+              {
+                "palette": 1,
+                "position": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 3,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "palette": 2,
+                "position": [
+                  0,
+                  2,
+                  0
+                ]
+              },
+              {
+                "palette": 4,
+                "position": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "schema_version": 1,
+            "snapshot_id": "46f07423-df30-4daf-a83f-60fd75cb8c6c",
+            "source_dimension": "minecraft:overworld",
+            "source_origin": [
+              264,
+              101,
+              264
+            ]
+          }
+        },
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "UUID": [
+          -112477592,
+          -614380150,
+          -1482901580,
+          -1045043786
+        ],
+        "id": "advancedrocketrycommunity:rocket"
+      }
+    ],
+    "files": {
+      "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+        "bytes": 108,
+        "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "world/entities/r.0.0.mca": {
+        "bytes": 81920,
+        "sha256": "900b912b56564e663361b09279e381f9747fd425297cc80f5bb98676d585a497"
+      },
+      "world/level.dat": {
+        "bytes": 37928,
+        "sha256": "b73eb38ba309db6e40f33cc15ee90a9745eaac93701fbe351ce12ac2660200e5"
+      },
+      "world/region/r.0.0.mca": {
+        "bytes": 4714496,
+        "sha256": "d77d3749820ef11cfdab9ecf77768f34800ef474029b86153af5dc6e83b081af"
+      }
+    },
+    "journal": {
+      "format_epoch": "v0.9.0-beta",
+      "schema_version": 2,
+      "transactions": []
+    }
+  },
+  "skipped": {
+    "block_entities": [
+      {
+        "RocketAssemblerData": {
+          "code": "SUCCESS",
+          "detail": "assembly committed blocks=5",
+          "schema_version": 1,
+          "stats": {
+            "block_entities": 0,
+            "blocks": 5,
+            "engines": 1,
+            "fuel_capacity": 1500,
+            "guidance": 1,
+            "mass": 254,
+            "seats": 1,
+            "thrust": 2400
+          },
+          "updated_at_game_time": 64
+        },
+        "id": "advancedrocketrycommunity:rocket_assembler",
+        "keepPacked": 0,
+        "x": 264,
+        "y": 100,
+        "z": 264
+      }
+    ],
+    "blocks": {
+      "(263, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 100, 264)": {
+        "Name": "advancedrocketrycommunity:rocket_assembler"
+      },
+      "(264, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 102, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 103, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(265, 101, 264)": {
+        "Name": "minecraft:air"
+      }
+    },
+    "entities": [
+      {
+        "Air": 300,
+        "CanUpdate": 1,
+        "FallDistance": 0.0,
+        "Fire": -1,
+        "Invulnerable": 0,
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "NoGravity": 1,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Pos": [
+          264.5,
+          101.0,
+          264.5
+        ],
+        "RocketEntityData": {
+          "assembly_transaction_id": [
+            -845499197,
+            710624753,
+            -1375566379,
+            549659237
+          ],
+          "flight_data": {
+            "current_body": "advancedrocketrycommunity:earth",
+            "current_dimension": "minecraft:overworld",
+            "current_origin": [
+              264,
+              101,
+              264
+            ],
+            "current_target": {
+              "body_id": "advancedrocketrycommunity:earth",
+              "schema_version": 1,
+              "type": "advancedrocketrycommunity:body_surface"
+            },
+            "fuel": {
+              "amount": 0,
+              "capacity": 1500,
+              "committed_debits": []
+            },
+            "logical_rocket_id": [
+              -845499197,
+              710624753,
+              -1375566379,
+              549659237
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "schema_version": 2,
+            "state": "ASSEMBLED",
+            "state_started_game_time": 64
+          },
+          "owner_id": [
+            0,
+            0,
+            0,
+            5
+          ],
+          "schema_version": 2,
+          "snapshot": {
+            "block_palette": [
+              {
+                "id": "minecraft:diamond_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:emerald_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:gold_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:oak_planks",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:quartz_block",
+                "properties": {}
+              }
+            ],
+            "bounding_box": [
+              -1,
+              0,
+              0,
+              1,
+              2,
+              0
+            ],
+            "content_hash": "653129856cbffb296b48a7cfd151e199cdb82bd5bcc0e160837f7cc0a77ab058",
+            "created_at_game_time": 64,
+            "mass_inputs": {
+              "block_count": 5,
+              "block_entity_count": 0,
+              "engine_count": 1,
+              "fuel_capacity": 1500,
+              "guidance_count": 1,
+              "mass": 254,
+              "seat_count": 1,
+              "thrust": 2400
+            },
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "relative_blocks": [
+              {
+                "palette": 1,
+                "position": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 3,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "palette": 2,
+                "position": [
+                  0,
+                  2,
+                  0
+                ]
+              },
+              {
+                "palette": 4,
+                "position": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "schema_version": 1,
+            "snapshot_id": "66174a32-9a29-4867-b88f-604342fca64f",
+            "source_dimension": "minecraft:overworld",
+            "source_origin": [
+              264,
+              101,
+              264
+            ]
+          }
+        },
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "UUID": [
+          -91563353,
+          982666501,
+          -1575404861,
+          -2045120288
+        ],
+        "id": "advancedrocketrycommunity:rocket"
+      }
+    ],
+    "files": {
+      "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+        "bytes": 108,
+        "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "world/entities/r.0.0.mca": {
+        "bytes": 77824,
+        "sha256": "fd0e51b4ce8486d01e7dbe77f43550d0b92573203b1d80f3a58a59da19ddcc7b"
+      },
+      "world/level.dat": {
+        "bytes": 37930,
+        "sha256": "08809ba5a9aad0779babd10c85f652169f1ed077596738df69c3473d60ff9072"
+      },
+      "world/region/r.0.0.mca": {
+        "bytes": 4689920,
+        "sha256": "622c14b0758445202d6bd5ac11af0dc4603387b343ee609b7bf0731f924c9f47"
+      }
+    },
+    "journal": {
+      "format_epoch": "v0.9.0-beta",
+      "schema_version": 2,
+      "transactions": []
+    }
+  },
+  "updated": {
+    "block_entities": [
+      {
+        "RocketAssemblerData": {
+          "code": "SUCCESS",
+          "detail": "assembly committed blocks=5",
+          "schema_version": 1,
+          "stats": {
+            "block_entities": 0,
+            "blocks": 5,
+            "engines": 1,
+            "fuel_capacity": 2000,
+            "guidance": 1,
+            "mass": 294,
+            "seats": 1,
+            "thrust": 2800
+          },
+          "updated_at_game_time": 171
+        },
+        "id": "advancedrocketrycommunity:rocket_assembler",
+        "keepPacked": 0,
+        "x": 264,
+        "y": 100,
+        "z": 264
+      }
+    ],
+    "blocks": {
+      "(263, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 100, 264)": {
+        "Name": "advancedrocketrycommunity:rocket_assembler"
+      },
+      "(264, 101, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 102, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(264, 103, 264)": {
+        "Name": "minecraft:air"
+      },
+      "(265, 101, 264)": {
+        "Name": "minecraft:air"
+      }
+    },
+    "entities": [
+      {
+        "Air": 300,
+        "CanUpdate": 1,
+        "FallDistance": 0.0,
+        "Fire": -1,
+        "Invulnerable": 0,
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "NoGravity": 1,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Pos": [
+          264.5,
+          101.0,
+          264.5
+        ],
+        "RocketEntityData": {
+          "assembly_transaction_id": [
+            -172650538,
+            -1980347250,
+            -1084863095,
+            679383327
+          ],
+          "flight_data": {
+            "current_body": "advancedrocketrycommunity:earth",
+            "current_dimension": "minecraft:overworld",
+            "current_origin": [
+              264,
+              101,
+              264
+            ],
+            "current_target": {
+              "body_id": "advancedrocketrycommunity:earth",
+              "schema_version": 1,
+              "type": "advancedrocketrycommunity:body_surface"
+            },
+            "fuel": {
+              "amount": 0,
+              "capacity": 2000,
+              "committed_debits": []
+            },
+            "logical_rocket_id": [
+              -172650538,
+              -1980347250,
+              -1084863095,
+              679383327
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "schema_version": 2,
+            "state": "ASSEMBLED",
+            "state_started_game_time": 171
+          },
+          "owner_id": [
+            0,
+            0,
+            0,
+            5
+          ],
+          "schema_version": 2,
+          "snapshot": {
+            "block_palette": [
+              {
+                "id": "minecraft:diamond_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:emerald_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:gold_block",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:oak_planks",
+                "properties": {}
+              },
+              {
+                "id": "minecraft:quartz_block",
+                "properties": {}
+              }
+            ],
+            "bounding_box": [
+              -1,
+              0,
+              0,
+              1,
+              2,
+              0
+            ],
+            "content_hash": "3315779e9f999356094e5b71087709e1d43c4d8e62d60a2e730d993ac7d1699e",
+            "created_at_game_time": 171,
+            "mass_inputs": {
+              "block_count": 5,
+              "block_entity_count": 0,
+              "engine_count": 1,
+              "fuel_capacity": 2000,
+              "guidance_count": 1,
+              "mass": 294,
+              "seat_count": 1,
+              "thrust": 2800
+            },
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "relative_blocks": [
+              {
+                "palette": 1,
+                "position": [
+                  -1,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 3,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              },
+              {
+                "palette": 2,
+                "position": [
+                  0,
+                  2,
+                  0
+                ]
+              },
+              {
+                "palette": 4,
+                "position": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "schema_version": 1,
+            "snapshot_id": "46f07423-df30-4daf-a83f-60fd75cb8c6c",
+            "source_dimension": "minecraft:overworld",
+            "source_origin": [
+              264,
+              101,
+              264
+            ]
+          }
+        },
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "UUID": [
+          -112477592,
+          -614380150,
+          -1482901580,
+          -1045043786
+        ],
+        "id": "advancedrocketrycommunity:rocket"
+      }
+    ],
+    "files": {
+      "world/data/advancedrocketrycommunity_rocket_transactions.dat": {
+        "bytes": 108,
+        "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+      },
+      "world/entities/r.0.0.mca": {
+        "bytes": 81920,
+        "sha256": "da361b3f2d2bd483d74668592e66b7c209cecec1a6a575bdb648fb8579a2fb68"
+      },
+      "world/level.dat": {
+        "bytes": 37930,
+        "sha256": "32e24efdf8b404b89a7e724d5e9a9176b4a6550d65888a464fdb55f54f909498"
+      },
+      "world/region/r.0.0.mca": {
+        "bytes": 4714496,
+        "sha256": "ed624cebfbad6aae6cbb77cedb35d761094a2c5b0df1687c39aa46ac8739fac5"
+      }
+    },
+    "journal": {
+      "format_epoch": "v0.9.0-beta",
+      "schema_version": 2,
+      "transactions": []
+    }
+  }
+}

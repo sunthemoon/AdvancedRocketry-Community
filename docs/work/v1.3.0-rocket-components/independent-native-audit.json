@@ -1,0 +1,482 @@
+{
+  "scope": "read-only artifact and native captures; no server launched",
+  "artifacts": [
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev-api.jar",
+      "bytes": 36091,
+      "sha256": "487ac76c7e92b44641460700be4889748f3a62d6f853c0e9a2d131039e98eabd"
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev-sources.jar",
+      "bytes": 1036125,
+      "sha256": "b705a2f5e56e20d6f2d5f961e137778d48db28c8bf190772e61cd30ac547515d"
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "name": "advancedrocketry-community-1.20.1-1.3.0-dev.jar",
+      "bytes": 2268701,
+      "sha256": "848b2a28cd6b26bebbdd26c00e1ceb42911827ef004e4d93a47b02b5368128ee"
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\compat-test-mod\\build\\libs\\arce-adapter-compat-test-1.0.0.jar",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "bytes": 45905,
+      "sha256": "d8dfdf962a0f9804697503882df294ae769e31a078e5c08faec2beda93b726db"
+    }
+  ],
+  "consumer": {
+    "api_classes": [
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/AtmosphereBoundary.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/AtmosphereBoundaryProvider.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/AtmosphereBoundaryRegistrar.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/RegisterAtmosphereBoundariesEvent.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/RegisterSuitEquipmentEvent.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/SuitEquipmentRegistrar.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere/SuitOxygenProvider.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/rocket/RegisterRocketAdaptersEvent.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/rocket/RegisterRocketComponentsEvent.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/rocket/RocketAdapterRegistrar.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/rocket/RocketBlockEntityAdapter.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/rocket/RocketComponentDefinition.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/rocket/RocketComponentRegistrar.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiCompatibility.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersion.class",
+      "io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersions.class"
+    ],
+    "classpath_entries": 114,
+    "source_files": 17,
+    "mapped_sha256": "496e8e409200a2d656b39b7f5165a5c822885b65dbdd86fa959da254e21d6586",
+    "cache_input": {
+      "names": "f5fa2554c58505bbb05836b9b987b46853742a0f",
+      "orig": "454b54ee801ed379f2c4d30d488ed4239fc59cb9"
+    },
+    "negative_compile_exit": 1
+  },
+  "manifest": {
+    "files": 61,
+    "sha256": "47fa430ed8ed7a396e681c0f1dfbd369ca3b59e338fd424cf9041a33c8452377"
+  },
+  "library_files_checked": 104,
+  "phases": [
+    {
+      "phase": "assemble",
+      "seed": 1617306729368065995,
+      "time": 91,
+      "entity_uuid": "fa8adaa7-3a92-4d05-a219-3ac38619f0e0",
+      "snapshot_id": "66174a32-9a29-4867-b88f-604342fca64f",
+      "hash": "653129856cbffb296b48a7cfd151e199cdb82bd5bcc0e160837f7cc0a77ab058",
+      "stats": {
+        "block_count": 5,
+        "mass": 254,
+        "thrust": 2400,
+        "fuel_capacity": 1500,
+        "engine_count": 1,
+        "seat_count": 1,
+        "guidance_count": 1,
+        "block_entity_count": 0
+      },
+      "journal": {
+        "schema_version": 2,
+        "transactions": [],
+        "format_epoch": "v0.9.0-beta"
+      },
+      "recorded_exit": 0,
+      "observation_ticks": 20,
+      "logs": {
+        "stdout.txt": {
+          "lines": 143,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[10:05:13] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\config\\fml.toml is not correct. Correcting",
+            "[10:05:13] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:13] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:13] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:13] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:20] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\config\\advancedrocketrycommunity-common.toml is not correct. Correcting",
+            "[10:05:20] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. ",
+            "[10:05:20] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. ",
+            "[10:05:20] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. ",
+            "[10:05:21] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[10:05:21] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[10:05:23] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[10:05:23] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+            "[10:05:23] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[10:05:23] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file.",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file .\\world\\serverconfig\\forge-server.toml is not correct. Correcting",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. ",
+            "[10:05:24] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. "
+          ],
+          "tick_queries": [
+            67,
+            74,
+            80,
+            87
+          ]
+        },
+        "latest.log": {
+          "lines": 142,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:05:13.078] [main/WARN] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\config\\fml.toml is not correct. Correcting",
+            "[27Sep2026 10:05:13.412] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:13.419] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:13.425] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:13.429] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:20.380] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\config\\advancedrocketrycommunity-common.toml is not correct. Correcting",
+            "[27Sep2026 10:05:20.382] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. ",
+            "[27Sep2026 10:05:20.382] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. ",
+            "[27Sep2026 10:05:20.382] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. ",
+            "[27Sep2026 10:05:21.529] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:05:21.530] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:05:23.993] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:05:23.994] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:05:23.994] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:05:23.994] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file.",
+            "[27Sep2026 10:05:24.021] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file .\\world\\serverconfig\\forge-server.toml is not correct. Correcting",
+            "[27Sep2026 10:05:24.022] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. "
+          ],
+          "tick_queries": [
+            67,
+            74,
+            80,
+            87
+          ]
+        },
+        "debug.log": {
+          "lines": 669,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:05:13.078] [main/WARN] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\config\\fml.toml is not correct. Correcting",
+            "[27Sep2026 10:05:13.412] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:13.419] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:13.425] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:13.429] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:20.380] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\config\\advancedrocketrycommunity-common.toml is not correct. Correcting",
+            "[27Sep2026 10:05:20.382] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. ",
+            "[27Sep2026 10:05:20.382] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. ",
+            "[27Sep2026 10:05:20.382] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. ",
+            "[27Sep2026 10:05:21.529] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:05:21.530] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:05:23.993] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:05:23.994] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:05:23.994] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:05:23.994] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file.",
+            "[27Sep2026 10:05:24.021] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file .\\world\\serverconfig\\forge-server.toml is not correct. Correcting",
+            "[27Sep2026 10:05:24.022] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. ",
+            "[27Sep2026 10:05:24.023] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. "
+          ],
+          "tick_queries": [
+            67,
+            74,
+            80,
+            87
+          ]
+        }
+      }
+    },
+    {
+      "phase": "skipped",
+      "seed": 1617306729368065995,
+      "time": 143,
+      "entity_uuid": "fa8adaa7-3a92-4d05-a219-3ac38619f0e0",
+      "snapshot_id": "66174a32-9a29-4867-b88f-604342fca64f",
+      "hash": "653129856cbffb296b48a7cfd151e199cdb82bd5bcc0e160837f7cc0a77ab058",
+      "stats": {
+        "block_count": 5,
+        "mass": 254,
+        "thrust": 2400,
+        "fuel_capacity": 1500,
+        "engine_count": 1,
+        "seat_count": 1,
+        "guidance_count": 1,
+        "block_entity_count": 0
+      },
+      "journal": {
+        "schema_version": 2,
+        "transactions": [],
+        "format_epoch": "v0.9.0-beta"
+      },
+      "recorded_exit": 0,
+      "observation_ticks": 21,
+      "logs": {
+        "stdout.txt": {
+          "lines": 92,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[10:05:48] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:48] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:48] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:48] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:05:57] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[10:05:57] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[10:06:00] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[10:06:00] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+            "[10:06:00] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[10:06:00] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            118,
+            125,
+            132,
+            139
+          ]
+        },
+        "latest.log": {
+          "lines": 91,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:05:48.475] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:48.481] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:48.488] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:48.494] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:57.959] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:05:57.959] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            118,
+            125,
+            132,
+            139
+          ]
+        },
+        "debug.log": {
+          "lines": 605,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:05:48.475] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:48.481] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:48.488] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:48.494] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:05:57.959] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:05:57.959] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:06:00.471] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            118,
+            125,
+            132,
+            139
+          ]
+        }
+      }
+    },
+    {
+      "phase": "updated",
+      "seed": 1617306729368065995,
+      "time": 199,
+      "entity_uuid": "f94bba68-db61-4d8a-a79c-b7b4c1b5e5b6",
+      "snapshot_id": "46f07423-df30-4daf-a83f-60fd75cb8c6c",
+      "hash": "3315779e9f999356094e5b71087709e1d43c4d8e62d60a2e730d993ac7d1699e",
+      "stats": {
+        "block_count": 5,
+        "mass": 294,
+        "thrust": 2800,
+        "fuel_capacity": 2000,
+        "engine_count": 1,
+        "seat_count": 1,
+        "guidance_count": 1,
+        "block_entity_count": 0
+      },
+      "journal": {
+        "schema_version": 2,
+        "transactions": [],
+        "format_epoch": "v0.9.0-beta"
+      },
+      "recorded_exit": 0,
+      "observation_ticks": 21,
+      "logs": {
+        "stdout.txt": {
+          "lines": 105,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[10:06:10] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:11] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:11] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:11] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:19] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[10:06:19] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[10:06:21] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[10:06:21] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+            "[10:06:21] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[10:06:21] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            174,
+            181,
+            188,
+            195
+          ]
+        },
+        "latest.log": {
+          "lines": 104,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:06:10.995] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:11.000] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:11.004] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:11.009] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:19.276] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:19.276] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            174,
+            181,
+            188,
+            195
+          ]
+        },
+        "debug.log": {
+          "lines": 616,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:06:10.995] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:11.000] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:11.004] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:11.009] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:19.276] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:19.276] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:06:21.470] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            174,
+            181,
+            188,
+            195
+          ]
+        }
+      }
+    },
+    {
+      "phase": "restart",
+      "seed": 1617306729368065995,
+      "time": 249,
+      "entity_uuid": "f94bba68-db61-4d8a-a79c-b7b4c1b5e5b6",
+      "snapshot_id": "46f07423-df30-4daf-a83f-60fd75cb8c6c",
+      "hash": "3315779e9f999356094e5b71087709e1d43c4d8e62d60a2e730d993ac7d1699e",
+      "stats": {
+        "block_count": 5,
+        "mass": 294,
+        "thrust": 2800,
+        "fuel_capacity": 2000,
+        "engine_count": 1,
+        "seat_count": 1,
+        "guidance_count": 1,
+        "block_entity_count": 0
+      },
+      "journal": {
+        "schema_version": 2,
+        "transactions": [],
+        "format_epoch": "v0.9.0-beta"
+      },
+      "recorded_exit": 0,
+      "observation_ticks": 20,
+      "logs": {
+        "stdout.txt": {
+          "lines": 92,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[10:06:31] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:31] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:31] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:31] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[10:06:39] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[10:06:39] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[10:06:42] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[10:06:42] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.",
+            "[10:06:42] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[10:06:42] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            225,
+            232,
+            239,
+            245
+          ]
+        },
+        "latest.log": {
+          "lines": 91,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:06:31.529] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:31.534] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:31.539] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:31.544] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:39.894] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:39.894] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:42.207] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:06:42.208] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:06:42.208] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:06:42.208] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            225,
+            232,
+            239,
+            245
+          ]
+        },
+        "debug.log": {
+          "lines": 603,
+          "error_or_linkage": 0,
+          "warnings": [
+            "[27Sep2026 10:06:31.529] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\fmlcore\\1.20.1-47.4.10\\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:31.534] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\javafmllanguage\\1.20.1-47.4.10\\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:31.539] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\lowcodelanguage\\1.20.1-47.4.10\\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:31.544] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v130-comp01-1790472883078\\server\\libraries\\net\\minecraftforge\\mclanguage\\1.20.1-47.4.10\\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file",
+            "[27Sep2026 10:06:39.894] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/assets/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:39.894] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/Administrator/AppData/Local/Temp/arce-v130-comp01-1790472883078/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23105!/data/.mcassetsroot' uses unexpected schema",
+            "[27Sep2026 10:06:42.207] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
+            "[27Sep2026 10:06:42.208] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.",
+            "[27Sep2026 10:06:42.208] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
+            "[27Sep2026 10:06:42.208] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set \"online-mode\" to \"true\" in the server.properties file."
+          ],
+          "tick_queries": [
+            225,
+            232,
+            239,
+            245
+          ]
+        }
+      }
+    }
+  ],
+  "result": "PASS"
+}
