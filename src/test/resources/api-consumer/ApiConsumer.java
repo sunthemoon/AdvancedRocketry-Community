@@ -7,7 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersions;
 public final class ApiConsumer {
     public static String verify() {
         ApiVersion host = ApiVersions.current();
-        if (host.major() != 1 || host.minor() != 3) {
+        if (host.major() != 1 || host.minor() != 4) {
             throw new AssertionError("Unexpected host version: " + host);
         }
         ApiCompatibility result = ApiVersions.check(host, new ApiVersion(1, 0));

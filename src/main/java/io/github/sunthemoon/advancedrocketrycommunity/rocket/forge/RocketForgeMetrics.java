@@ -1,11 +1,17 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.forge;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockTags;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketBlockMetrics;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class RocketForgeMetrics {
     private RocketForgeMetrics() {
+    }
+
+    public static RocketBlockMetrics resolve(BlockState state, RocketComponentCatalog components) {
+        RocketBlockMetrics explicit = components.find(state);
+        return explicit == null ? resolve(state) : explicit;
     }
 
     public static RocketBlockMetrics resolve(BlockState state) {

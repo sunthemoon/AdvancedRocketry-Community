@@ -287,7 +287,8 @@ tasks.named('jar', Jar).configure {
 def apiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/version'
 def exportedApiTypes = ['ApiVersion', 'ApiCompatibility', 'ApiVersions']
 def rocketApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/rocket'
-def exportedRocketApiTypes = ['RocketBlockEntityAdapter', 'RocketAdapterRegistrar', 'RegisterRocketAdaptersEvent']
+def exportedRocketApiTypes = ['RocketBlockEntityAdapter', 'RocketAdapterRegistrar', 'RegisterRocketAdaptersEvent',
+                             'RocketComponentDefinition', 'RocketComponentRegistrar', 'RegisterRocketComponentsEvent']
 def atmosphereApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/atmosphere'
 def exportedAtmosphereApiTypes = ['AtmosphereBoundary', 'AtmosphereBoundaryProvider',
                                   'AtmosphereBoundaryRegistrar', 'RegisterAtmosphereBoundariesEvent',

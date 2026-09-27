@@ -84,6 +84,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
             case OUT_OF_RANGE -> "Rocket interaction is out of range";
             case UNAUTHORIZED -> "Player is not authorized for this rocket";
             case FUEL_DISPOSAL_REQUIRED -> "Disassembly requires explicit consent to discard remaining fuel";
+            case FUEL_CAPACITY_EXCEEDED -> "Rocket fuel capacity exceeds the supported limit";
         };
     }
 
@@ -127,6 +128,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
             case OUT_OF_RANGE -> "火箭交互超出距离";
             case UNAUTHORIZED -> "玩家无权操作这枚火箭";
             case FUEL_DISPOSAL_REQUIRED -> "拆解需要明确确认丢弃剩余燃料";
+            case FUEL_CAPACITY_EXCEEDED -> "火箭燃料容量超过支持上限";
         };
     }
 }

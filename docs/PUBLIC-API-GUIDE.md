@@ -1,7 +1,7 @@
-# Public API: versioning, rocket containers, atmosphere and equipment
+# Public API: versioning, rocket containers/components, atmosphere and equipment
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.3**. Version metadata remains JDK-only in
+types. The API version is **1.4**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 | Type | Purpose |
@@ -11,7 +11,8 @@ types. The API version is **1.3**. Version metadata remains JDK-only in
 | `ApiVersions` | Host version and pure compatibility checks |
 
 `api.rocket` additionally exports `RocketBlockEntityAdapter`,
-`RocketAdapterRegistrar` and `RegisterRocketAdaptersEvent`, requiring the
+`RocketAdapterRegistrar`, `RegisterRocketAdaptersEvent`, `RocketComponentDefinition`,
+`RocketComponentRegistrar` and `RegisterRocketComponentsEvent`, requiring the
 Minecraft 1.20.1 / Forge platform. Other project packages are implementation
 details, even when their Java types are `public`. `api.atmosphere` exports the four
 state-boundary and three equipment types described below. Fuel, environment and
@@ -259,6 +260,47 @@ Supported API additions increment the minor version. Existing signatures and
 documented behavior remain compatible within a major. Removal or incompatible
 changes require a new major and a prior publicly released minor with deprecation,
 a replacement and migration notes. See [the version policy](decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md).
+
+## Register rocket engines and components
+
+Require API **1.4** and subscribe to `RegisterRocketComponentsEvent` on the mod
+event bus during mod construction. The host dispatches synchronously in queued
+common setup after block registration. Use owned definition IDs and registered
+block IDs; vanilla/foreign blocks are permitted except the four built-in host
+motor, tank, seat and guidance blocks. For example, using `api.rocket` imports:
+
+```java
+void registerComponents(RegisterRocketComponentsEvent event) {
+    event.register(ResourceLocation.tryParse("example:engine"),
+            Set.of(ResourceLocation.tryParse("example:engine_block")),
+            new RocketComponentDefinition(120, 2400, 0, true, false, false));
+}
+```
+
+The record fields are mass, thrust, fuel capacity, engine, seat and guidance.
+Bounds per block: mass 1..1,000,000, thrust 0..1,000,000, capacity 0..2,048,000.
+Nonzero thrust requires an engine. Multiple roles may be explicitly combined;
+each seat adds one captured anchor, while passenger capacity remains capped at 16.
+Values apply to every state of a block. No world/item callback is retained.
+
+Registration is atomic and limited to 256 definitions, 64 blocks per call and
+1,024 blocks total. All IDs are at most 255 characters. Unknown/air/reserved blocks,
+duplicate IDs/claims and late/off-thread registration reject. Do not retain the
+event. Explicit definitions take precedence over legacy role tags; unclaimed
+blocks use the unchanged tag/default behavior. Add desired blocks to
+`advancedrocketrycommunity:rocket_movable` separately. Forbidden blocks, missing
+BlockEntity adapters, loaded-only scans, ownership and flight checks still apply.
+Total tank capacity over 2,048,000 rejects before world extraction.
+
+Already assembled rockets keep their captured numeric stats and anchors across
+restart or changed/omitted registration. Disassembly restores ordinary blocks;
+reassembly uses the then-current definitions. Missing actual block registrations
+still prevent unsafe restoration under the existing recovery policy. No new save
+schema is introduced; API/loader compatibility still applies on downgrade.
+
+Names/icons remain those of the registered blocks. There is no separate component
+item, fuel-kind registry or custom propellant support in this API. Details and
+limits are frozen in [ADR-026](decisions/ADR-026-ROCKET-COMPONENT-DEFINITIONS.md).
 
 ## Verify an integration boundary
 

@@ -61,4 +61,12 @@ final class RocketStatsValidatorTest {
                 () -> result.issues().get(0).parameters().put("required", "0")
         );
     }
+
+    @Test
+    void aggregateFuelCapacityAcceptsTheExactFlightLimitAndRejectsOneMoreUnit() {
+        assertTrue(RocketStatsValidator.validate(new RocketStats(4, 200, 1000, 2_048_000, 1, 1, 1, 0)).valid());
+        var rejected = RocketStatsValidator.validate(new RocketStats(4, 200, 1000, 2_048_001, 1, 1, 1, 0));
+        assertEquals(RocketValidationCode.FUEL_CAPACITY_EXCEEDED, rejected.primaryCode());
+        assertEquals(Map.of("capacity", "2048001", "maximum", "2048000"), rejected.issues().get(0).parameters());
+    }
 }

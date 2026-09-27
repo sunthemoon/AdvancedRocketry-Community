@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.validation;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +29,13 @@ public final class RocketStatsValidator {
                             "mass", Long.toString(stats.mass()),
                             "thrust", Long.toString(stats.thrust())
                     )
+            ));
+        }
+        if (stats.fuelCapacity() > RocketFlightLimits.MAX_FUEL_CAPACITY) {
+            issues.add(new RocketValidationIssue(
+                    RocketValidationCode.FUEL_CAPACITY_EXCEEDED,
+                    Map.of("capacity", Long.toString(stats.fuelCapacity()),
+                            "maximum", Long.toString(RocketFlightLimits.MAX_FUEL_CAPACITY))
             ));
         }
         return new RocketValidationResult(issues);

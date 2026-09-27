@@ -22,7 +22,8 @@ class RocketDisassemblyLanguageTest {
                 prefix + "disassembly_discard_action", 1,
                 prefix + "disassembly_confirmation_invalid", 0,
                 prefix + "disassembly_fuel_discarded", 1,
-                "validation.advancedrocketrycommunity.rocket.fuel_disposal_required", 0);
+                "validation.advancedrocketrycommunity.rocket.fuel_disposal_required", 0,
+                "validation.advancedrocketrycommunity.rocket.fuel_capacity_exceeded", 0);
         try (var runtime = new ZipFile(System.getProperty("arce.runtimeJar"))) {
             for (String locale : new String[] {"en_us", "zh_cn"}) {
                 String entryName = "assets/advancedrocketrycommunity_v130/lang/" + locale + ".json";

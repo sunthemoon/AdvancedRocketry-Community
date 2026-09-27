@@ -33,6 +33,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketComponentsEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryRegistry;
@@ -186,13 +189,23 @@ public final class AdvancedRocketryCommunity {
                 ForgeRegistries.BLOCK_ENTITY_TYPES::containsKey)) {
             ModLoader.get().runEventGenerator(container -> new RegisterRocketAdaptersEvent(
                     registry.forOwner(container.getModId())));
-            RocketManager manager = new RocketManager(registry.freeze(), celestialCatalogs, routeCatalogs);
+            RocketManager manager = new RocketManager(registry.freeze(), celestialCatalogs, routeCatalogs,
+                    initializeRocketComponents());
             RocketRuntime.install(manager);
             MinecraftForge.EVENT_BUS.addListener(manager::onServerTick);
             MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedIn);
             MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedOut);
             MinecraftForge.EVENT_BUS.addListener(new RocketCommands(manager)::register);
             rocketManager = manager;
+        }
+    }
+
+    private RocketComponentCatalog initializeRocketComponents() {
+        try (RocketComponentRegistry registry = new RocketComponentRegistry(id ->
+                ForgeRegistries.BLOCKS.containsKey(id) ? ForgeRegistries.BLOCKS.getValue(id) : null)) {
+            ModLoader.get().runEventGenerator(container -> new RegisterRocketComponentsEvent(
+                    registry.forOwner(container.getModId())));
+            return registry.freeze();
         }
     }
 

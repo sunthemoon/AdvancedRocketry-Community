@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.forge;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockTags;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanObservation;
@@ -32,10 +33,17 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
 
     private final ServerLevel level;
     private final RocketBlockEntityAdapters adapters;
+    private final RocketComponentCatalog components;
 
     public ServerLevelRocketScanWorld(ServerLevel level, RocketBlockEntityAdapters adapters) {
+        this(level, adapters, RocketComponentCatalog.empty());
+    }
+
+    public ServerLevelRocketScanWorld(ServerLevel level, RocketBlockEntityAdapters adapters,
+                                     RocketComponentCatalog components) {
         this.level = Objects.requireNonNull(level, "level");
         this.adapters = Objects.requireNonNull(adapters, "adapters");
+        this.components = Objects.requireNonNull(components, "components");
     }
 
     @Override
@@ -69,7 +77,7 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
         }
         return RocketScanObservation.movable(
                 RocketBlockStateAdapter.capture(state),
-                RocketForgeMetrics.resolve(state),
+                RocketForgeMetrics.resolve(state, components),
                 payload
         );
     }

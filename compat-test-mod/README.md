@@ -4,8 +4,8 @@ This standalone ForgeGradle project builds the existing
 [`src/adapterTest`](../src/adapterTest/) fixture into a separate, reobfuscated
 mod JAR. It consumes the published ARCE **API classifier**, not the host project,
 main JAR or compiled output. Its platform is Java 17, Minecraft 1.20.1 and
-Forge 47.4.10. This fixture requires API 1.3 for suit equipment, in addition to
-atmosphere boundaries (1.2) and rocket registration (1.1).
+Forge 47.4.10. This fixture requires API 1.4 for rocket components, in addition to
+suit equipment (1.3), atmosphere boundaries (1.2) and rocket registration (1.1).
 
 ## Build
 
@@ -46,7 +46,7 @@ directory, not a remote repository URL.
 
 - `verifyApiClasspath` records requested/resolved coordinates, raw publication
   and remapped API hashes, the complete compiler classpath, and fixture source
-  hashes. It requires the thirteen exported API 1.3 types and rejects host internals,
+  hashes. It requires the sixteen exported API 1.4 types and rejects host internals,
   project output directories or additional host artifacts.
 - `verifyConsumerBoundary` compiles an intentional internal import against that
   same classpath, requires the missing internal-package diagnostic, and checks
@@ -58,6 +58,22 @@ Reports are written to `compat-test-mod/build/reports/consumer/`. The resulting
 mod is `compat-test-mod/build/libs/arce-adapter-compat-test-1.0.0.jar`.
 
 ## Runtime limits
+
+The component fixture registers diamond, emerald, oak-plank, gold and quartz
+blocks as an engine, tank, seat, guidance and structural contribution. It also
+tags diamond blocks as both legacy engines and seats to exercise explicit
+definition precedence. These are disposable fixtures, not gameplay balance.
+`-Darce_adapter_test.skipRocketComponents=true` omits the definitions while keeping
+the blocks installed. `-Darce_adapter_test.componentVariant=updated` changes only
+the declared engine values and tank capacity on the next process start.
+
+The [component runner](../scripts/run_v130_component_smoke.py) accepts the same
+fresh libraries-only server and explicit artifact arguments as the recovery
+runner below. It assembles five blocks, restarts with definitions omitted,
+restarts with changed definitions, then disassembles/reassembles and restarts
+again. Native saved snapshots must keep captured values until reassembly.
+It uses zero fuel and opt-in operator diagnostics; it is not player flight,
+custom-fuel, missing-block, forced-crash or load evidence.
 
 The equipment fixture registers vanilla leather armor as an external suit, with
 its own oxygen payload; it does not add art or make existing third-party capability

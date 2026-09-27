@@ -3,5 +3,6 @@
   "message.advancedrocketrycommunity.rocket.disassembly_discard_action": "[Discard %s fuel units and disassemble: click, then submit the command]",
   "message.advancedrocketrycommunity.rocket.disassembly_fuel_discarded": "Disassembly complete; discarded %s fuel units as confirmed.",
   "message.advancedrocketrycommunity.rocket.disassembly_fuel_warning": "Rocket has %s fuel units. Disassembly will discard them without refund. Confirmation expires in %s seconds; do nothing to keep the rocket.",
+  "validation.advancedrocketrycommunity.rocket.fuel_capacity_exceeded": "Rocket fuel capacity exceeds the supported limit",
   "validation.advancedrocketrycommunity.rocket.fuel_disposal_required": "Disassembly requires explicit consent to discard remaining fuel"
 }

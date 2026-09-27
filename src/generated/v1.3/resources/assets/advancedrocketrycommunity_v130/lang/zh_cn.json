@@ -3,5 +3,6 @@
   "message.advancedrocketrycommunity.rocket.disassembly_discard_action": "[丢弃 %s 单位燃料并拆解：点击后提交命令]",
   "message.advancedrocketrycommunity.rocket.disassembly_fuel_discarded": "拆解完成，已按确认丢弃 %s 单位燃料。",
   "message.advancedrocketrycommunity.rocket.disassembly_fuel_warning": "火箭仍有 %s 单位燃料。拆解将丢弃这些燃料且无法回收。确认在 %s 秒后过期；不确认则保留火箭。",
+  "validation.advancedrocketrycommunity.rocket.fuel_capacity_exceeded": "火箭燃料容量超过支持上限",
   "validation.advancedrocketrycommunity.rocket.fuel_disposal_required": "拆解需要明确确认丢弃剩余燃料"
 }

@@ -1,6 +1,11 @@
 {
   "replace": false,
   "values": [
-    "arce_adapter_test:cargo_container"
+    "arce_adapter_test:cargo_container",
+    "minecraft:diamond_block",
+    "minecraft:emerald_block",
+    "minecraft:oak_planks",
+    "minecraft:gold_block",
+    "minecraft:quartz_block"
   ]
 }

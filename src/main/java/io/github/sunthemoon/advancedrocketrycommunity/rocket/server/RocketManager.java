@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -64,10 +65,19 @@ public final class RocketManager implements RocketOperationService {
             CelestialCatalogManager celestialCatalogs,
             RouteCatalogManager routeCatalogs
     ) {
+        this(adapters, celestialCatalogs, routeCatalogs, RocketComponentCatalog.empty());
+    }
+
+    public RocketManager(
+            RocketBlockEntityAdapters adapters,
+            CelestialCatalogManager celestialCatalogs,
+            RouteCatalogManager routeCatalogs,
+            RocketComponentCatalog components
+    ) {
         RocketBlockEntityAdapters requiredAdapters = Objects.requireNonNull(adapters, "adapters");
         flights = new RocketFlightService(celestialCatalogs, routeCatalogs);
         transactions = new RocketTransactionExecutor(requiredAdapters);
-        assemblerScans = new RocketAssemblerScanService(transactions);
+        assemblerScans = new RocketAssemblerScanService(transactions, components);
         disassembly = new RocketDisassemblyService(transactions, flights);
         targetContexts = new RocketTargetContextService(celestialCatalogs);
         recovery = new RocketTransactionRecoveryService(requiredAdapters);

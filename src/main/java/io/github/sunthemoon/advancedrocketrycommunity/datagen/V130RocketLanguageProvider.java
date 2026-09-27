@@ -34,5 +34,8 @@ public final class V130RocketLanguageProvider extends LanguageProvider {
         add(RocketValidationCode.FUEL_DISPOSAL_REQUIRED.translationKey(), chinese
                 ? "拆解需要明确确认丢弃剩余燃料"
                 : "Disassembly requires explicit consent to discard remaining fuel");
+        add(RocketValidationCode.FUEL_CAPACITY_EXCEEDED.translationKey(), chinese
+                ? "火箭燃料容量超过支持上限"
+                : "Rocket fuel capacity exceeds the supported limit");
     }
 }

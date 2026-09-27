@@ -2,6 +2,7 @@ package io.github.sunthemoon.arceadaptertest;
 
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketComponentsEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.AtmosphereBoundary;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterSuitEquipmentEvent;
@@ -47,10 +48,12 @@ public final class AdapterTestMod {
     static volatile RegisterAtmosphereBoundariesEvent boundaryEvent;
     static volatile int suitEvents;
     static volatile RegisterSuitEquipmentEvent suitEvent;
+    static volatile int componentEvents;
+    static volatile RegisterRocketComponentsEvent componentEvent;
 
     public AdapterTestMod(FMLJavaModLoadingContext context) {
-        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 3)) != ApiCompatibility.COMPATIBLE) {
-            throw new IllegalStateException("Adapter fixture requires ARCE API 1.3");
+        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 4)) != ApiCompatibility.COMPATIBLE) {
+            throw new IllegalStateException("Adapter fixture requires ARCE API 1.4");
         }
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
@@ -58,6 +61,7 @@ public final class AdapterTestMod {
         modBus.addListener(this::registerRocketAdapters);
         modBus.addListener(this::registerAtmosphereBoundaries);
         modBus.addListener(this::registerSuitEquipment);
+        modBus.addListener(this::registerRocketComponents);
         if (Boolean.getBoolean("arce_adapter_test.suitSmoke")) {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(SuitEquipmentFixture::registerCommands);
         }
@@ -119,5 +123,17 @@ public final class AdapterTestMod {
 
     static ResourceLocation id(String path) {
         return ResourceLocation.tryParse(MOD_ID + ":" + path);
+    }
+
+    private void registerRocketComponents(RegisterRocketComponentsEvent event) {
+        componentEvents++;
+        componentEvent = event;
+        if (Boolean.getBoolean("arce_adapter_test.skipRocketComponents")) {
+            LogUtils.getLogger().info("Skipped rocket components (event {})", componentEvents);
+            return;
+        }
+        FixtureRocketComponents.register(event);
+        LogUtils.getLogger().info("Registered rocket components (variant {}, API {}.{}, event {})",
+                FixtureRocketComponents.variant(), ApiVersions.current().major(), ApiVersions.current().minor(), componentEvents);
     }
 }

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -29,11 +30,13 @@ import net.minecraft.world.level.Level;
 /** Owns the bounded assembler scan queue and commits successful scan results. */
 final class RocketAssemblerScanService {
     private final RocketTransactionExecutor transactions;
+    private final RocketComponentCatalog components;
     private final Map<AssemblerKey, PendingScan> pending = new LinkedHashMap<>();
     private final ArrayDeque<AssemblerKey> scanOrder = new ArrayDeque<>();
 
-    RocketAssemblerScanService(RocketTransactionExecutor transactions) {
+    RocketAssemblerScanService(RocketTransactionExecutor transactions, RocketComponentCatalog components) {
         this.transactions = Objects.requireNonNull(transactions, "transactions");
+        this.components = Objects.requireNonNull(components, "components");
     }
 
     void requestAssembler(ServerPlayer player, BlockPos assemblerPosition, boolean assemble) {
@@ -328,7 +331,7 @@ final class RocketAssemblerScanService {
             return RocketValidationCode.OPERATION_LEDGER_FULL;
         }
         RocketStructureScanTask task = new RocketStructureScanTask(
-                new ServerLevelRocketScanWorld(level, transactions.adapters()),
+                new ServerLevelRocketScanWorld(level, transactions.adapters(), components),
                 level.dimension().location(),
                 toRocketPosition(assemblerPosition.above()),
                 UUID.randomUUID(),

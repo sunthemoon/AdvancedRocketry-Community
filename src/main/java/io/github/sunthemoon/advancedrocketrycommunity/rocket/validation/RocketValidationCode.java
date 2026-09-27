@@ -41,7 +41,8 @@ public enum RocketValidationCode {
     REQUEST_REPLAYED,
     OUT_OF_RANGE,
     UNAUTHORIZED,
-    FUEL_DISPOSAL_REQUIRED;
+    FUEL_DISPOSAL_REQUIRED,
+    FUEL_CAPACITY_EXCEEDED;
 
     public String translationKey() {
         return "validation.advancedrocketrycommunity.rocket."
