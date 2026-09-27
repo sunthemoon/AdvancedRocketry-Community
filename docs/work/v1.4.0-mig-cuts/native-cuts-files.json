@@ -1,0 +1,1752 @@
+[
+  {
+    "bytes": 7077,
+    "path": "inputs-final/DiscoveryCutProbe.java",
+    "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+  },
+  {
+    "bytes": 17276,
+    "path": "inputs-final/run_v140_discovery_cut_smoke.py",
+    "sha256": "96d8ecde2d50f41708b0c94b316e9e1a56904aba003ec747950392ddb79e5059"
+  },
+  {
+    "bytes": 16149,
+    "path": "inputs-final/test_v140_discovery_cut_smoke.py",
+    "sha256": "2cb2a6b0961a9bf5b5b0ec4b48200f09796bdab2d88508bb69b1b5889a12d688"
+  },
+  {
+    "bytes": 10224,
+    "path": "inputs-final/v140_discovery_cut_fixture.py",
+    "sha256": "10a915f9f12c344e62d04de677c236634710a7d3df6d55126ae27131312b546e"
+  },
+  {
+    "bytes": 7077,
+    "path": "inputs-initial/DiscoveryCutProbe.java",
+    "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+  },
+  {
+    "bytes": 17440,
+    "path": "inputs-initial/run_v140_discovery_cut_smoke.py",
+    "sha256": "60efa2242882a16be966750931d956c0864915f4b87bd4f4825ba5b770db6025"
+  },
+  {
+    "bytes": 14970,
+    "path": "inputs-initial/test_v140_discovery_cut_smoke.py",
+    "sha256": "15c3f03882b8a203317677d667567db32b1e82f6b4d0310e9a08d591577cabef"
+  },
+  {
+    "bytes": 9322,
+    "path": "inputs-initial/v140_discovery_cut_fixture.py",
+    "sha256": "ae48577e8f2f817197127a2aea3ea47ba9be75ae9ad46eb421b045b8a7333107"
+  },
+  {
+    "bytes": 7077,
+    "path": "native-final/DiscoveryCutProbe.java",
+    "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+  },
+  {
+    "bytes": 25654,
+    "path": "native-final/SHA256SUMS",
+    "sha256": "945cb4874713671909858a27c7146d35f0e1f3d2c5d78e4c620e6137acd41617"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-1/before-restart/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-1/before-restart/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 714,
+    "path": "native-final/cut-1/before-restart/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "7ab19fe1362229a6981d7f1c547f1cc8e5c81103776bd51f033e6e3bad273af4"
+  },
+  {
+    "bytes": 9355,
+    "path": "native-final/cut-1/before-restart/decoded.json",
+    "sha256": "06a67cf4785abc9dd1fa4939adca88de005cbe24dd8e12bfaba4feba4f8b0f27"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-1/kill/before/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-1/kill/before/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 4868,
+    "path": "native-final/cut-1/kill/before/decoded.json",
+    "sha256": "a1b3f663fc49690683b07f8a2715839314fb6fff8b254acfac7baa5984ed6ae6"
+  },
+  {
+    "bytes": 199,
+    "path": "native-final/cut-1/kill/commands.json",
+    "sha256": "efe8136c40d8aa3c714d080406cec3832df1dca32d0b05aaad6f42f98c7ad94d"
+  },
+  {
+    "bytes": 83862,
+    "path": "native-final/cut-1/kill/debug.log",
+    "sha256": "d15c8ef9f2706dad9a94c590dac9c1491a93af4b8094a809c3686daf1fca3b45"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-1/kill/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-1/kill/killed/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-1/kill/killed/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 714,
+    "path": "native-final/cut-1/kill/killed/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "7ab19fe1362229a6981d7f1c547f1cc8e5c81103776bd51f033e6e3bad273af4"
+  },
+  {
+    "bytes": 9355,
+    "path": "native-final/cut-1/kill/killed/decoded.json",
+    "sha256": "06a67cf4785abc9dd1fa4939adca88de005cbe24dd8e12bfaba4feba4f8b0f27"
+  },
+  {
+    "bytes": 13693,
+    "path": "native-final/cut-1/kill/latest.log",
+    "sha256": "6e1ca5b6ac3293ce650c0a5899f8a290fcdc8fec1ce12f6ebdcde7d1b09a2d39"
+  },
+  {
+    "bytes": 581,
+    "path": "native-final/cut-1/kill/launch.json",
+    "sha256": "5274462c58c588c2fa4e16f5a79853970fdd280a1b564d2673c9b3e05c1c2163"
+  },
+  {
+    "bytes": 7650,
+    "path": "native-final/cut-1/kill/observations.json",
+    "sha256": "f8133ab3322a78a3a339a71013968a8adb9e70ec9384eb3194ce024bcc10ecc4"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-1/kill/paused/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-1/kill/paused/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 714,
+    "path": "native-final/cut-1/kill/paused/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "7ab19fe1362229a6981d7f1c547f1cc8e5c81103776bd51f033e6e3bad273af4"
+  },
+  {
+    "bytes": 9355,
+    "path": "native-final/cut-1/kill/paused/decoded.json",
+    "sha256": "06a67cf4785abc9dd1fa4939adca88de005cbe24dd8e12bfaba4feba4f8b0f27"
+  },
+  {
+    "bytes": 488,
+    "path": "native-final/cut-1/kill/probe-launch.json",
+    "sha256": "ac6d57587e6bfc5d6dc4684a9f8d3d0c4f7b8518407ca228cf2284ac71f6bb56"
+  },
+  {
+    "bytes": 320,
+    "path": "native-final/cut-1/kill/probe.txt",
+    "sha256": "560297fcebbba8e9420c2df013351827767abd3bcb09aca528905af4bb2e3628"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-1/kill/server.properties",
+    "sha256": "99c793c2cdb98c2c00a4491ba1cb78148daaf445c1283ddd107cb20b9b93b26c"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-1/kill/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 11150,
+    "path": "native-final/cut-1/kill/stdout.txt",
+    "sha256": "6b5db04ab057bd8c131739b1b658a4872db1f93c3edf8d7842ca326e586ed29f"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-1/recovery/before-manual-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-1/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 714,
+    "path": "native-final/cut-1/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "7ab19fe1362229a6981d7f1c547f1cc8e5c81103776bd51f033e6e3bad273af4"
+  },
+  {
+    "bytes": 9355,
+    "path": "native-final/cut-1/recovery/before-manual-claim/decoded.json",
+    "sha256": "06a67cf4785abc9dd1fa4939adca88de005cbe24dd8e12bfaba4feba4f8b0f27"
+  },
+  {
+    "bytes": 325,
+    "path": "native-final/cut-1/recovery/commands.json",
+    "sha256": "2a2982b1493d4eed9fbcd94920a2f36f7ebe834bc1878463ef87981ea2d09cde"
+  },
+  {
+    "bytes": 88863,
+    "path": "native-final/cut-1/recovery/debug.log",
+    "sha256": "761ba6c5f8d20ca1acd933d66ac3872f3caf3c5969060ba04808f3fcad723299"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-1/recovery/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 169,
+    "path": "native-final/cut-1/recovery/final/advancedrocketrycommunity_celestial.dat",
+    "sha256": "7ab5cfc8ea4965977a0a81e6f555a60bca9e622d72fb4f48b27261ea4738af3b"
+  },
+  {
+    "bytes": 689,
+    "path": "native-final/cut-1/recovery/final/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "becdfb5b8426e8f269c0b888a33b16b47f2d414344ec73ea687eaaaf66f437b5"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-1/recovery/final/decoded.json",
+    "sha256": "c10a68d73a7779b9a9cea8a8bacf8cfe9aa9041ab485a9ea0c515c7f99fc4847"
+  },
+  {
+    "bytes": 169,
+    "path": "native-final/cut-1/recovery/first-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "7ab5cfc8ea4965977a0a81e6f555a60bca9e622d72fb4f48b27261ea4738af3b"
+  },
+  {
+    "bytes": 686,
+    "path": "native-final/cut-1/recovery/first-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7a4c184c8532db6050df225973dc95e7af5f1d9ceadf26095415d1de98d01099"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-1/recovery/first-claim/decoded.json",
+    "sha256": "3cf8e9471ea9b72b7910dcee436f63af7e5180a0ef9584b90b8949efea8d70ff"
+  },
+  {
+    "bytes": 18515,
+    "path": "native-final/cut-1/recovery/latest.log",
+    "sha256": "fe76786313bd36236f89610118210f47e835416e1e9753fabd1ae01369122a9b"
+  },
+  {
+    "bytes": 500,
+    "path": "native-final/cut-1/recovery/launch.json",
+    "sha256": "94d90c45a1e7614f0ae7b2d6f36910a04742cbbbbe55166779effb68ef9cb4ed"
+  },
+  {
+    "bytes": 1047,
+    "path": "native-final/cut-1/recovery/observations.json",
+    "sha256": "ba28305ed019d1b5c71860c948b714d9d79d0754cad18709bdb3f6bad034f0ce"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-1/recovery/server.properties",
+    "sha256": "6f131c5de0537c441523cfb0251e1a1d95ce938457419bf791fa24179bb3c35b"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-1/recovery/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 14971,
+    "path": "native-final/cut-1/recovery/stdout.txt",
+    "sha256": "cf71eae8bdc67b3b4cfb2164a1aac4196bbe0beba8856433db8248a09966d8d0"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-2/before-restart/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-2/before-restart/advancedrocketrycommunity_celestial.dat.arce-pending",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 713,
+    "path": "native-final/cut-2/before-restart/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7354ed6c32a81e64b5e5eb0a6edc6b2d961107612b2c5a684cef401942051334"
+  },
+  {
+    "bytes": 5429,
+    "path": "native-final/cut-2/before-restart/decoded.json",
+    "sha256": "13c9723372a29288dbdd53e2bbf15f46898d8d3d6c0c052a8cd8299a837c2e6b"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-2/kill/before/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-2/kill/before/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 4868,
+    "path": "native-final/cut-2/kill/before/decoded.json",
+    "sha256": "a1b3f663fc49690683b07f8a2715839314fb6fff8b254acfac7baa5984ed6ae6"
+  },
+  {
+    "bytes": 199,
+    "path": "native-final/cut-2/kill/commands.json",
+    "sha256": "efe8136c40d8aa3c714d080406cec3832df1dca32d0b05aaad6f42f98c7ad94d"
+  },
+  {
+    "bytes": 83860,
+    "path": "native-final/cut-2/kill/debug.log",
+    "sha256": "5c39bfaffd6a79be9cf85e4fb66a213b36673432b3896065e1081516aa386361"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-2/kill/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-2/kill/killed/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-2/kill/killed/advancedrocketrycommunity_celestial.dat.arce-pending",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 713,
+    "path": "native-final/cut-2/kill/killed/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7354ed6c32a81e64b5e5eb0a6edc6b2d961107612b2c5a684cef401942051334"
+  },
+  {
+    "bytes": 5429,
+    "path": "native-final/cut-2/kill/killed/decoded.json",
+    "sha256": "13c9723372a29288dbdd53e2bbf15f46898d8d3d6c0c052a8cd8299a837c2e6b"
+  },
+  {
+    "bytes": 13692,
+    "path": "native-final/cut-2/kill/latest.log",
+    "sha256": "de0a312f949252cf3a802bec099f555dccd3f823fd7b9b4704a010f1104748f7"
+  },
+  {
+    "bytes": 581,
+    "path": "native-final/cut-2/kill/launch.json",
+    "sha256": "0a33589d0e4e1b2ef1daa0673143560d3f9a16e1f29d9b203a67e659ee5fde01"
+  },
+  {
+    "bytes": 7639,
+    "path": "native-final/cut-2/kill/observations.json",
+    "sha256": "336c7d333f614fdee9e24de7af029c05ff869d0197c26b74dfc08c27112c2faa"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-2/kill/paused/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-2/kill/paused/advancedrocketrycommunity_celestial.dat.arce-pending",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 713,
+    "path": "native-final/cut-2/kill/paused/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7354ed6c32a81e64b5e5eb0a6edc6b2d961107612b2c5a684cef401942051334"
+  },
+  {
+    "bytes": 5429,
+    "path": "native-final/cut-2/kill/paused/decoded.json",
+    "sha256": "13c9723372a29288dbdd53e2bbf15f46898d8d3d6c0c052a8cd8299a837c2e6b"
+  },
+  {
+    "bytes": 488,
+    "path": "native-final/cut-2/kill/probe-launch.json",
+    "sha256": "61f65b8c5e1d91a83d72411bf62b3c042d7a708eb8112a89dbacef60f479b28d"
+  },
+  {
+    "bytes": 419,
+    "path": "native-final/cut-2/kill/probe.txt",
+    "sha256": "a5bb31714ae55777d01b6281ad934a6e8dc8f6d639df5bd1d11ad74040b3f266"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-2/kill/server.properties",
+    "sha256": "e3e8dd1053941f0eb182e3933b300cf37e74fd24c48339d968ece9669bb09639"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-2/kill/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 11149,
+    "path": "native-final/cut-2/kill/stdout.txt",
+    "sha256": "eaee194b5edde1f649bb040a90bc4b44242059d1c65aa7eb97ce516a87cf2243"
+  },
+  {
+    "bytes": 169,
+    "path": "native-final/cut-2/recovery/before-manual-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "307d70e4603e907a5019730bc59c59ac9cbea5da5a4f67b8a869034527027b96"
+  },
+  {
+    "bytes": 686,
+    "path": "native-final/cut-2/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "61555155fc9f913985184d6c9177cda27ddfe79e0350f7f155580693c7b186a7"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-2/recovery/before-manual-claim/decoded.json",
+    "sha256": "ef25b9c04e8d82e360a8224984f6d38a79708c8f59da4fee1e4cc105dbfdd0de"
+  },
+  {
+    "bytes": 325,
+    "path": "native-final/cut-2/recovery/commands.json",
+    "sha256": "2a2982b1493d4eed9fbcd94920a2f36f7ebe834bc1878463ef87981ea2d09cde"
+  },
+  {
+    "bytes": 89039,
+    "path": "native-final/cut-2/recovery/debug.log",
+    "sha256": "8f70d01c15e79936a48f1ae53141b68e5703cf989c2fc7eb31ba8c941d643344"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-2/recovery/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 169,
+    "path": "native-final/cut-2/recovery/final/advancedrocketrycommunity_celestial.dat",
+    "sha256": "307d70e4603e907a5019730bc59c59ac9cbea5da5a4f67b8a869034527027b96"
+  },
+  {
+    "bytes": 691,
+    "path": "native-final/cut-2/recovery/final/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "1127c57652a4f74327cf4a8c956e609fa61445793e43ba245e6337f770ad4c06"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-2/recovery/final/decoded.json",
+    "sha256": "7b506bbbe19e3bc07eda29e3b59f187d0e0006dd6d0e611ad3587d17a86782a1"
+  },
+  {
+    "bytes": 169,
+    "path": "native-final/cut-2/recovery/first-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "307d70e4603e907a5019730bc59c59ac9cbea5da5a4f67b8a869034527027b96"
+  },
+  {
+    "bytes": 691,
+    "path": "native-final/cut-2/recovery/first-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "05690b635b0c35b785279d75cb346096706f67f83ed40122a8ca4d5a4d9a8b23"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-2/recovery/first-claim/decoded.json",
+    "sha256": "409b1115184e8606780a578203fb5389ede3d1877809c1579e5d5e2a03a08d4e"
+  },
+  {
+    "bytes": 18389,
+    "path": "native-final/cut-2/recovery/latest.log",
+    "sha256": "be7e5362c02afe75ff3f762e83634df7e1d7ac15465c2dcda2579f8635b0fa51"
+  },
+  {
+    "bytes": 500,
+    "path": "native-final/cut-2/recovery/launch.json",
+    "sha256": "70f66268fb99f893d9bb37c19663984a9b7e4f0b27ab800b2ae6b01fae75747f"
+  },
+  {
+    "bytes": 1049,
+    "path": "native-final/cut-2/recovery/observations.json",
+    "sha256": "54ee68e799efbaf45f9c9c4f3cd878567b21c764230963d8d4e049477b89ab78"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-2/recovery/server.properties",
+    "sha256": "73389c0755912b15b72e1e700c8395be9dd97a8e12188fb59c63601663ad25e2"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-2/recovery/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 14887,
+    "path": "native-final/cut-2/recovery/stdout.txt",
+    "sha256": "b43335d9723eb48378049fa801043ab7b982e5b9b396661e552d52b6f0cf7179"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-3/before-restart/advancedrocketrycommunity_celestial.dat",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 713,
+    "path": "native-final/cut-3/before-restart/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7354ed6c32a81e64b5e5eb0a6edc6b2d961107612b2c5a684cef401942051334"
+  },
+  {
+    "bytes": 686,
+    "path": "native-final/cut-3/before-restart/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "61555155fc9f913985184d6c9177cda27ddfe79e0350f7f155580693c7b186a7"
+  },
+  {
+    "bytes": 9354,
+    "path": "native-final/cut-3/before-restart/decoded.json",
+    "sha256": "0faee89aa823a53b5b3d15befea021dd1ad357da6dbf6931b1d7295f37b9c25e"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-3/kill/before/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-3/kill/before/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 4868,
+    "path": "native-final/cut-3/kill/before/decoded.json",
+    "sha256": "a1b3f663fc49690683b07f8a2715839314fb6fff8b254acfac7baa5984ed6ae6"
+  },
+  {
+    "bytes": 199,
+    "path": "native-final/cut-3/kill/commands.json",
+    "sha256": "efe8136c40d8aa3c714d080406cec3832df1dca32d0b05aaad6f42f98c7ad94d"
+  },
+  {
+    "bytes": 83803,
+    "path": "native-final/cut-3/kill/debug.log",
+    "sha256": "0f3a50319720dfd5f8ca62f00caa7a86f9fa57db6d8ac5e5aad1452dc7fbeae3"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-3/kill/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-3/kill/killed/advancedrocketrycommunity_celestial.dat",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 713,
+    "path": "native-final/cut-3/kill/killed/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7354ed6c32a81e64b5e5eb0a6edc6b2d961107612b2c5a684cef401942051334"
+  },
+  {
+    "bytes": 686,
+    "path": "native-final/cut-3/kill/killed/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "61555155fc9f913985184d6c9177cda27ddfe79e0350f7f155580693c7b186a7"
+  },
+  {
+    "bytes": 9354,
+    "path": "native-final/cut-3/kill/killed/decoded.json",
+    "sha256": "0faee89aa823a53b5b3d15befea021dd1ad357da6dbf6931b1d7295f37b9c25e"
+  },
+  {
+    "bytes": 13692,
+    "path": "native-final/cut-3/kill/latest.log",
+    "sha256": "8163259166e68830435c94e4de954f3422e165ece86aaa7a92a8ae4b4a494e45"
+  },
+  {
+    "bytes": 581,
+    "path": "native-final/cut-3/kill/launch.json",
+    "sha256": "ae88d9e81423bd641f0d0f0a26620cac8bc6f858c3b957688f15257862d8c0dd"
+  },
+  {
+    "bytes": 7650,
+    "path": "native-final/cut-3/kill/observations.json",
+    "sha256": "289899d8587412d0ade0dd5197a4e0b5ec4288391ff9d0a3cb80812dae63a829"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-3/kill/paused/advancedrocketrycommunity_celestial.dat",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 713,
+    "path": "native-final/cut-3/kill/paused/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "7354ed6c32a81e64b5e5eb0a6edc6b2d961107612b2c5a684cef401942051334"
+  },
+  {
+    "bytes": 686,
+    "path": "native-final/cut-3/kill/paused/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "61555155fc9f913985184d6c9177cda27ddfe79e0350f7f155580693c7b186a7"
+  },
+  {
+    "bytes": 9354,
+    "path": "native-final/cut-3/kill/paused/decoded.json",
+    "sha256": "0faee89aa823a53b5b3d15befea021dd1ad357da6dbf6931b1d7295f37b9c25e"
+  },
+  {
+    "bytes": 488,
+    "path": "native-final/cut-3/kill/probe-launch.json",
+    "sha256": "70062bf32acf1164bcb7840e098821e16f33edf505fbc9c6c9237c5fcbd8db5e"
+  },
+  {
+    "bytes": 545,
+    "path": "native-final/cut-3/kill/probe.txt",
+    "sha256": "eb0b019705d3c7cd0eb5fdd4a813ae0d1666ee9a44c3bd88887313cb03e17416"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-3/kill/server.properties",
+    "sha256": "f43581027a69f422d7dc49bf986befe03afe5d9721a8e9788de41bffb9c2a577"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-3/kill/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 11149,
+    "path": "native-final/cut-3/kill/stdout.txt",
+    "sha256": "0d656554665857df8d0db8491eedf69cb8dfb9b59565857051dd3bc7f924feed"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-3/recovery/before-manual-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 686,
+    "path": "native-final/cut-3/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "61555155fc9f913985184d6c9177cda27ddfe79e0350f7f155580693c7b186a7"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-3/recovery/before-manual-claim/decoded.json",
+    "sha256": "f19352a92ec47b17c8978fbaf2f9472121343f23912108ab5b1d10ae3631c97f"
+  },
+  {
+    "bytes": 325,
+    "path": "native-final/cut-3/recovery/commands.json",
+    "sha256": "2a2982b1493d4eed9fbcd94920a2f36f7ebe834bc1878463ef87981ea2d09cde"
+  },
+  {
+    "bytes": 90153,
+    "path": "native-final/cut-3/recovery/debug.log",
+    "sha256": "fa2a339e63a51ba826a3bd87a3b4297ccbdbacee5cf5d080ee6ecc17ed7962bb"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-3/recovery/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-3/recovery/final/advancedrocketrycommunity_celestial.dat",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 692,
+    "path": "native-final/cut-3/recovery/final/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "bfb6d0ec69f8fa1d9ab8a79eebf87643cfb450b5d2ea1fa9f5157a13c319e7e7"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-3/recovery/final/decoded.json",
+    "sha256": "b040778932eeeb89c890daa489e6ffd8832eac738b4847284896ec21357c31b9"
+  },
+  {
+    "bytes": 166,
+    "path": "native-final/cut-3/recovery/first-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "6adf3efad8b79f98af179eddf4775cb3aa277401a93bad87e79d52f7c1c591e3"
+  },
+  {
+    "bytes": 691,
+    "path": "native-final/cut-3/recovery/first-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "0500304de976ecb6ea8905a4d74a4f2ff9bf72ef7a80e5caee5540cfa185092b"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-3/recovery/first-claim/decoded.json",
+    "sha256": "6f160adc88d568a6ee227254b3598a3970f3f7dcef992ae51b0b55a5db2b8f9b"
+  },
+  {
+    "bytes": 18533,
+    "path": "native-final/cut-3/recovery/latest.log",
+    "sha256": "d293fddadb94017cd8b33ac8b330953e4c0689d714fa89f9128f873f94e8a35f"
+  },
+  {
+    "bytes": 500,
+    "path": "native-final/cut-3/recovery/launch.json",
+    "sha256": "5fcdb0113d8e5fb4d223cd29a4a00ba7a74ff562494e0b549c160e532dd41490"
+  },
+  {
+    "bytes": 1049,
+    "path": "native-final/cut-3/recovery/observations.json",
+    "sha256": "c24ed4b68fe323d474dff031d86ee2977b4aeac10edfad067242c5f3ac60f187"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-3/recovery/server.properties",
+    "sha256": "b8e9c17133a2bae048d4f2ba22464763845773b663d26ce1d0554ffae06d049a"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-3/recovery/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 14989,
+    "path": "native-final/cut-3/recovery/stdout.txt",
+    "sha256": "0347628c2f60a90557e927e6dc5184035109d85bdba9d4a00fbb5ddad2e2b819"
+  },
+  {
+    "bytes": 167,
+    "path": "native-final/cut-4/before-restart/advancedrocketrycommunity_celestial.dat",
+    "sha256": "e2ae16f1a42d6583ca0eac6837676da4b7439b80a74842507fb7c816a9888523"
+  },
+  {
+    "bytes": 687,
+    "path": "native-final/cut-4/before-restart/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "febe984f6202757e8d5d3d5283dce61c0ddafcf67a0f5b847f348fb4ca205c55"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-4/before-restart/decoded.json",
+    "sha256": "e52d77430fdae964164da050922cfef23dee5242a65ee56fd07dfcb3c0e147a4"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/cut-4/kill/before/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/cut-4/kill/before/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 4868,
+    "path": "native-final/cut-4/kill/before/decoded.json",
+    "sha256": "a1b3f663fc49690683b07f8a2715839314fb6fff8b254acfac7baa5984ed6ae6"
+  },
+  {
+    "bytes": 199,
+    "path": "native-final/cut-4/kill/commands.json",
+    "sha256": "efe8136c40d8aa3c714d080406cec3832df1dca32d0b05aaad6f42f98c7ad94d"
+  },
+  {
+    "bytes": 83500,
+    "path": "native-final/cut-4/kill/debug.log",
+    "sha256": "5763b9eb826015923299dc765d566fdbe154cecc5273f3e6a28f817486f6aec3"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-4/kill/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 167,
+    "path": "native-final/cut-4/kill/killed/advancedrocketrycommunity_celestial.dat",
+    "sha256": "e2ae16f1a42d6583ca0eac6837676da4b7439b80a74842507fb7c816a9888523"
+  },
+  {
+    "bytes": 687,
+    "path": "native-final/cut-4/kill/killed/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "febe984f6202757e8d5d3d5283dce61c0ddafcf67a0f5b847f348fb4ca205c55"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-4/kill/killed/decoded.json",
+    "sha256": "e52d77430fdae964164da050922cfef23dee5242a65ee56fd07dfcb3c0e147a4"
+  },
+  {
+    "bytes": 13693,
+    "path": "native-final/cut-4/kill/latest.log",
+    "sha256": "efd51e8353316dc9018c619b366ddaa13bcf376febc644b888e64c55566e58db"
+  },
+  {
+    "bytes": 581,
+    "path": "native-final/cut-4/kill/launch.json",
+    "sha256": "7b71c4a29790e34d9f25ce073584018bc461a76277916888fa731171c682c16c"
+  },
+  {
+    "bytes": 7450,
+    "path": "native-final/cut-4/kill/observations.json",
+    "sha256": "e7a28a4b1ff17f663d997d75c4f29304dc87d7b761a0d5cf7397f988959ba8ad"
+  },
+  {
+    "bytes": 167,
+    "path": "native-final/cut-4/kill/paused/advancedrocketrycommunity_celestial.dat",
+    "sha256": "e2ae16f1a42d6583ca0eac6837676da4b7439b80a74842507fb7c816a9888523"
+  },
+  {
+    "bytes": 687,
+    "path": "native-final/cut-4/kill/paused/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "febe984f6202757e8d5d3d5283dce61c0ddafcf67a0f5b847f348fb4ca205c55"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-4/kill/paused/decoded.json",
+    "sha256": "e52d77430fdae964164da050922cfef23dee5242a65ee56fd07dfcb3c0e147a4"
+  },
+  {
+    "bytes": 488,
+    "path": "native-final/cut-4/kill/probe-launch.json",
+    "sha256": "9fb8ed7d01ed919db0de4f555bc7e5f95bb84471dd3cd108c011d6165fa15b20"
+  },
+  {
+    "bytes": 549,
+    "path": "native-final/cut-4/kill/probe.txt",
+    "sha256": "74e69d21cb208adb8e165dd7da0069b25363a3947afc4d9add3b9ee346619034"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-4/kill/server.properties",
+    "sha256": "7bd70492dde080c7c2881fd5c25577b1552206736d160b9c47d7d75f94171e0a"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-4/kill/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 11150,
+    "path": "native-final/cut-4/kill/stdout.txt",
+    "sha256": "be1ebc58d0159545b682783b569a41720ec9c3731bd3fab8b6db387994501abe"
+  },
+  {
+    "bytes": 167,
+    "path": "native-final/cut-4/recovery/before-manual-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "e2ae16f1a42d6583ca0eac6837676da4b7439b80a74842507fb7c816a9888523"
+  },
+  {
+    "bytes": 687,
+    "path": "native-final/cut-4/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "febe984f6202757e8d5d3d5283dce61c0ddafcf67a0f5b847f348fb4ca205c55"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-4/recovery/before-manual-claim/decoded.json",
+    "sha256": "e52d77430fdae964164da050922cfef23dee5242a65ee56fd07dfcb3c0e147a4"
+  },
+  {
+    "bytes": 325,
+    "path": "native-final/cut-4/recovery/commands.json",
+    "sha256": "2a2982b1493d4eed9fbcd94920a2f36f7ebe834bc1878463ef87981ea2d09cde"
+  },
+  {
+    "bytes": 89231,
+    "path": "native-final/cut-4/recovery/debug.log",
+    "sha256": "6e47a4780a161d08ec01a5b9f4169bae487ad3e8e722500039b59fe8a02a77bc"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/cut-4/recovery/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 167,
+    "path": "native-final/cut-4/recovery/final/advancedrocketrycommunity_celestial.dat",
+    "sha256": "e2ae16f1a42d6583ca0eac6837676da4b7439b80a74842507fb7c816a9888523"
+  },
+  {
+    "bytes": 692,
+    "path": "native-final/cut-4/recovery/final/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "15999e9cdc1424ca004d5f8531c9b4c1eb87f71c31bbd407d461ceb0c8d32b3f"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-4/recovery/final/decoded.json",
+    "sha256": "3bf943e34bcf7514690b2da8a6ca31a7c6945a2e8778885e5c139f64061b2133"
+  },
+  {
+    "bytes": 167,
+    "path": "native-final/cut-4/recovery/first-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "e2ae16f1a42d6583ca0eac6837676da4b7439b80a74842507fb7c816a9888523"
+  },
+  {
+    "bytes": 692,
+    "path": "native-final/cut-4/recovery/first-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "d9917a2bb10ae671692063c61cef0c918d8e433e1170f19f13dbabf94257ee80"
+  },
+  {
+    "bytes": 4867,
+    "path": "native-final/cut-4/recovery/first-claim/decoded.json",
+    "sha256": "6f28e0414619c5b0fb623380d104b874616b20dba4991d52ad5b5d5acf409d93"
+  },
+  {
+    "bytes": 18530,
+    "path": "native-final/cut-4/recovery/latest.log",
+    "sha256": "079671562c7244baa529c57d363ef8d301ae3f797bb088c65e22d98f18a40f46"
+  },
+  {
+    "bytes": 500,
+    "path": "native-final/cut-4/recovery/launch.json",
+    "sha256": "c8da19dbcce16556a7e102fc00088a840b4a749250fc8e449024a12aca7755e1"
+  },
+  {
+    "bytes": 1048,
+    "path": "native-final/cut-4/recovery/observations.json",
+    "sha256": "e4497db845982ec8b48466b0d7214b2b69a8530db7bf12525108eef46d718611"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/cut-4/recovery/server.properties",
+    "sha256": "3b56df058281603842a5111528f52c5c5be260543b12bac15cc6046f1138960f"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/cut-4/recovery/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 14986,
+    "path": "native-final/cut-4/recovery/stdout.txt",
+    "sha256": "68eabdc2b4c704e70c5026e81efeba501854be16deddfb6de269a22be8841c5c"
+  },
+  {
+    "bytes": 225,
+    "path": "native-final/mission.json",
+    "sha256": "8f50aa13c1fa93a96fa57090581e318755f60a80a76b87ecc036d9c0bfed9ea7"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/original-state/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 555,
+    "path": "native-final/original-state/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "73e41a68d01f5c4e5afab6c01f64b57998a07859bb20a553a38f746ed24b09d6"
+  },
+  {
+    "bytes": 3314,
+    "path": "native-final/original-state/decoded.json",
+    "sha256": "edc308847d78f2457ed949e85c16949c50cf6e125bbc54dedfc9dc24e8c96343"
+  },
+  {
+    "bytes": 24,
+    "path": "native-final/original-unchanged.json",
+    "sha256": "1ae748d5796cc995906ddf0fba5e5626f9c1c6ac79cec8fb465106e92254a77b"
+  },
+  {
+    "bytes": 215,
+    "path": "native-final/prepare/commands.json",
+    "sha256": "4d767d672252bdf51c558296308a15a12201da1a2a9c6dab393d6cd04af3a180"
+  },
+  {
+    "bytes": 87763,
+    "path": "native-final/prepare/debug.log",
+    "sha256": "44135543c5618c44202e04a292789c195b0bf0d46ff9512bab8a15d87c3999bd"
+  },
+  {
+    "bytes": 47,
+    "path": "native-final/prepare/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 17503,
+    "path": "native-final/prepare/latest.log",
+    "sha256": "2a0c567d87fa1cc526ba11ff025a71f4435fea9aa0b4093e96b2dc286a308ddc"
+  },
+  {
+    "bytes": 495,
+    "path": "native-final/prepare/launch.json",
+    "sha256": "8bf09a416512725d0704d1cab64b28a840b4c7b7d3ad38a0f96dc8492106b74d"
+  },
+  {
+    "bytes": 995,
+    "path": "native-final/prepare/observations.json",
+    "sha256": "37e4116fb6bf0543687af315b3f7b93950c22f330caf1c6af87bdabdcb8326ac"
+  },
+  {
+    "bytes": 1351,
+    "path": "native-final/prepare/server.properties",
+    "sha256": "3419f5cb75b930cc8bc55fc76308bb293cfd751fa7e8c65589f221da4e92095d"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/prepare/state/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/prepare/state/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 4868,
+    "path": "native-final/prepare/state/decoded.json",
+    "sha256": "a1b3f663fc49690683b07f8a2715839314fb6fff8b254acfac7baa5984ed6ae6"
+  },
+  {
+    "bytes": 1064,
+    "path": "native-final/prepare/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 14194,
+    "path": "native-final/prepare/stdout.txt",
+    "sha256": "f344c7be5d30a335d8b4b015d6a6d905131ad6f1adfecb71f112c51905933113"
+  },
+  {
+    "bytes": 9724,
+    "path": "native-final/probe-classes/DiscoveryCutProbe.class",
+    "sha256": "4da92e38456e3a2acd43a9b34a0659e2cdd5f34b459e8f732315bff9fea541fa"
+  },
+  {
+    "bytes": 426,
+    "path": "native-final/probe-compile.json",
+    "sha256": "3c51bf79932efa0dc3caf23b4ed9e9fa00a9815b04b020f609aa202d2f5b9c13"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/probe-compile.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 6064,
+    "path": "native-final/ready-world-files.json",
+    "sha256": "1ff0735cdc5b82798e6bd0333254d19c56c4025c08d8f0af98b4275ce95ad69d"
+  },
+  {
+    "bytes": 324,
+    "path": "native-final/ready-world/.v002-smoke-world-identity.json",
+    "sha256": "5fb82671338cba6fcfead80b1612875e17ada0c2274d644ac6b6144c1c3b6586"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/DIM-1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native-final/ready-world/DIM-1/data/raids.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/DIM1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native-final/ready-world/DIM1/data/raids_end.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 153,
+    "path": "native-final/ready-world/data/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 508,
+    "path": "native-final/ready-world/data/advancedrocketrycommunity_planetary_bindings.json",
+    "sha256": "46415acea29b2804e9ed00e860ccdc115eb29bea8457e21ecd9119e0c894108b"
+  },
+  {
+    "bytes": 699,
+    "path": "native-final/ready-world/data/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "8ac0c8b5fa0a1ab8541e7169f8cee95a8c5fd6be26ff8755a5dfeca6552216d0"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 65,
+    "path": "native-final/ready-world/data/chunks.dat",
+    "sha256": "085a64c666efa89271db6e8e750cab92cde8be1d62a6439f649b436956d6493a"
+  },
+  {
+    "bytes": 90,
+    "path": "native-final/ready-world/data/raids.dat",
+    "sha256": "3d93d12cafdccaed923417f1f779de7efe4457057696a2eb91c4ba8273dbb69c"
+  },
+  {
+    "bytes": 257,
+    "path": "native-final/ready-world/datapacks/satellite_payload/data/arce_adapter_test/satellite_definitions/research_payload.json",
+    "sha256": "cda3dd277245c9c5c1f2d954c61a46d51953ff1a8cc15cf4cba319e7203feb3b"
+  },
+  {
+    "bytes": 90,
+    "path": "native-final/ready-world/datapacks/satellite_payload/pack.mcmeta",
+    "sha256": "5edd1bb996320052deb28f5b6f77e0148e9a1c22cb0bae2ade9ad96e692777f9"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/mars/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/mars/data/raids.dat",
+    "sha256": "cf3a2501a2f8cb97e036756e0ff31f8bebbc7e8a1ca077de4fbf061be2764987"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/moon/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/moon/data/raids.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/space/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/space/data/raids.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 48,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/venus/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "native-final/ready-world/dimensions/advancedrocketrycommunity/venus/data/raids.dat",
+    "sha256": "cf3a2501a2f8cb97e036756e0ff31f8bebbc7e8a1ca077de4fbf061be2764987"
+  },
+  {
+    "bytes": 98304,
+    "path": "native-final/ready-world/entities/r.0.-1.mca",
+    "sha256": "4e46585aa0dfb2eda44f82f6402291f57cb1fedb7288c2b90f7cbf6b8f6db2c4"
+  },
+  {
+    "bytes": 24576,
+    "path": "native-final/ready-world/entities/r.0.0.mca",
+    "sha256": "203b9006fbcdf07833b3896b1cb9340be4b7066889299daca10a80d9cf515cc3"
+  },
+  {
+    "bytes": 38001,
+    "path": "native-final/ready-world/level.dat",
+    "sha256": "3d7f4fbc482b0591f81991a37fef577268358c20bea4304fc94202de70f314e2"
+  },
+  {
+    "bytes": 38002,
+    "path": "native-final/ready-world/level.dat_old",
+    "sha256": "7974cdf59315ea338b46abe90aa6fe2b5013995586e8df281967513977ee341c"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/ready-world/poi/r.-1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/ready-world/poi/r.-1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/ready-world/poi/r.0.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/ready-world/poi/r.0.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/ready-world/poi/r.1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native-final/ready-world/poi/r.1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 602112,
+    "path": "native-final/ready-world/region/r.-1.-1.mca",
+    "sha256": "bff770e4e8812d9ce5ca8c1d29f31074338e9342a27b61ac4875dfe2ced6371d"
+  },
+  {
+    "bytes": 528384,
+    "path": "native-final/ready-world/region/r.-1.0.mca",
+    "sha256": "11aa769db1610fb03cac3c49c483274a803eb82e946b3f93ddd848d34197da39"
+  },
+  {
+    "bytes": 5165056,
+    "path": "native-final/ready-world/region/r.0.-1.mca",
+    "sha256": "ef4b3aeb752f75f1baab2c886ba18d7c78cf486f2a657b154fb7bc849bd0817c"
+  },
+  {
+    "bytes": 5791744,
+    "path": "native-final/ready-world/region/r.0.0.mca",
+    "sha256": "2851ea94201d555ecfb514d790faa9428957f363b18c14344934de31e463f608"
+  },
+  {
+    "bytes": 700416,
+    "path": "native-final/ready-world/region/r.1.-1.mca",
+    "sha256": "e8119ed604e860d990417a28138399a56d648a60734e98089a1b09b903804297"
+  },
+  {
+    "bytes": 614400,
+    "path": "native-final/ready-world/region/r.1.0.mca",
+    "sha256": "1b83979fc640488363b747310d0e4e883598e30e960168044770fd0e7e1d2412"
+  },
+  {
+    "bytes": 1787,
+    "path": "native-final/ready-world/serverconfig/forge-server.toml",
+    "sha256": "e2c32c27453033ef3910d5b6a24ae1a8c1fd224c2ac0a97388d5aa27a6a00ad1"
+  },
+  {
+    "bytes": 3,
+    "path": "native-final/ready-world/session.lock",
+    "sha256": "51643361c79ecaef25a8de802de24f570ba25d9c2df1d22d94fade11b4f466cc"
+  },
+  {
+    "bytes": 5766,
+    "path": "native-final/source-provenance.json",
+    "sha256": "14ea4fa0e9fdccb6c139f3413a2213e78ba7098b32c6b82ded0ab734aa6900ff"
+  },
+  {
+    "bytes": 1626,
+    "path": "native-final/summary.json",
+    "sha256": "ff4b92e5ad016fdc5d0655dd711d40c3f5f0c2dfb38d3103f8b2a425f70c426e"
+  },
+  {
+    "bytes": 7077,
+    "path": "native/DiscoveryCutProbe.java",
+    "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+  },
+  {
+    "bytes": 10910,
+    "path": "native/SHA256SUMS",
+    "sha256": "c6393c36977a81c492a06ecf569c432016e99f81db4f34872e73c627b2bd2c02"
+  },
+  {
+    "bytes": 153,
+    "path": "native/cut-1/before-restart/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 704,
+    "path": "native/cut-1/before-restart/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 717,
+    "path": "native/cut-1/before-restart/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "4f2a16c223db1f4a40962690f60a2f821465702f7f2b925cd2c404fd1aae2817"
+  },
+  {
+    "bytes": 9387,
+    "path": "native/cut-1/before-restart/decoded.json",
+    "sha256": "feabf73bf2002285d556a582b936c8cbd8ef002987e5713990c14dc1e7711edd"
+  },
+  {
+    "bytes": 153,
+    "path": "native/cut-1/kill/before/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 704,
+    "path": "native/cut-1/kill/before/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 4884,
+    "path": "native/cut-1/kill/before/decoded.json",
+    "sha256": "5ac0faa7f608f30a77c8aa028efbe710f706253ecc038a4785f21f5bbc123475"
+  },
+  {
+    "bytes": 199,
+    "path": "native/cut-1/kill/commands.json",
+    "sha256": "1d1ecc965c1e77e5333c7b24771501cdf0bad885b69e9a122cc70f4e647e34d8"
+  },
+  {
+    "bytes": 83278,
+    "path": "native/cut-1/kill/debug.log",
+    "sha256": "09b67c2b58db5e32b7e87440ca5b1624a42a26198ba293980a6af55734d9b2f4"
+  },
+  {
+    "bytes": 47,
+    "path": "native/cut-1/kill/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 153,
+    "path": "native/cut-1/kill/killed/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 704,
+    "path": "native/cut-1/kill/killed/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 717,
+    "path": "native/cut-1/kill/killed/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "4f2a16c223db1f4a40962690f60a2f821465702f7f2b925cd2c404fd1aae2817"
+  },
+  {
+    "bytes": 9387,
+    "path": "native/cut-1/kill/killed/decoded.json",
+    "sha256": "feabf73bf2002285d556a582b936c8cbd8ef002987e5713990c14dc1e7711edd"
+  },
+  {
+    "bytes": 13639,
+    "path": "native/cut-1/kill/latest.log",
+    "sha256": "248ba1c8bf6581b61549b3b28cab1d4df3004b1bc0c87c31c754e48259bc112c"
+  },
+  {
+    "bytes": 575,
+    "path": "native/cut-1/kill/launch.json",
+    "sha256": "cac355a016e23982d5088e14dce9969973b81edc0d1ccb4bfaadcd3ff396c8bf"
+  },
+  {
+    "bytes": 7644,
+    "path": "native/cut-1/kill/observations.json",
+    "sha256": "203721a896651cf0e475d060ec63be3a6e3513234e6ec38935e8c212610d66e9"
+  },
+  {
+    "bytes": 153,
+    "path": "native/cut-1/kill/paused/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 704,
+    "path": "native/cut-1/kill/paused/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 717,
+    "path": "native/cut-1/kill/paused/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "4f2a16c223db1f4a40962690f60a2f821465702f7f2b925cd2c404fd1aae2817"
+  },
+  {
+    "bytes": 9387,
+    "path": "native/cut-1/kill/paused/decoded.json",
+    "sha256": "feabf73bf2002285d556a582b936c8cbd8ef002987e5713990c14dc1e7711edd"
+  },
+  {
+    "bytes": 476,
+    "path": "native/cut-1/kill/probe-launch.json",
+    "sha256": "08cd61d147aca975551e3406e630559849d0606b23092f48d39c1430bdd4bd36"
+  },
+  {
+    "bytes": 320,
+    "path": "native/cut-1/kill/probe.txt",
+    "sha256": "eac80b20f6cafca0e865185988a99a0081f8cb513e5d731973c79e287d7d0a65"
+  },
+  {
+    "bytes": 1351,
+    "path": "native/cut-1/kill/server.properties",
+    "sha256": "458c72c9bf6d993a79d8bb558d53a98193506ddb2ff0960cc7f6d7b9e2802307"
+  },
+  {
+    "bytes": 1064,
+    "path": "native/cut-1/kill/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 11096,
+    "path": "native/cut-1/kill/stdout.txt",
+    "sha256": "1e55471d069beb3a76ce08837514f5220ecd0c829e64fa6a14612567955472f6"
+  },
+  {
+    "bytes": 153,
+    "path": "native/cut-1/recovery/before-manual-claim/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 704,
+    "path": "native/cut-1/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 717,
+    "path": "native/cut-1/recovery/before-manual-claim/advancedrocketrycommunity_satellite_missions.dat.arce-pending",
+    "sha256": "4f2a16c223db1f4a40962690f60a2f821465702f7f2b925cd2c404fd1aae2817"
+  },
+  {
+    "bytes": 9387,
+    "path": "native/cut-1/recovery/before-manual-claim/decoded.json",
+    "sha256": "feabf73bf2002285d556a582b936c8cbd8ef002987e5713990c14dc1e7711edd"
+  },
+  {
+    "bytes": 123,
+    "path": "native/cut-1/recovery/commands.json",
+    "sha256": "95211f4fb8238682d9dbb9c69ad64c8f4475b0b6acf0b3256c9bf8fdd48980f9"
+  },
+  {
+    "bytes": 81180,
+    "path": "native/cut-1/recovery/debug.log",
+    "sha256": "bd290a043337d084870663a283fe38e376c38d54593d860c9fa79a6e6841aaee"
+  },
+  {
+    "bytes": 47,
+    "path": "native/cut-1/recovery/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 11925,
+    "path": "native/cut-1/recovery/latest.log",
+    "sha256": "253a802a73f4b55234678a4f59f59066fa1570c636538ee3480dcc7b37847fc4"
+  },
+  {
+    "bytes": 494,
+    "path": "native/cut-1/recovery/launch.json",
+    "sha256": "6216c03ac675d804f31519523bae7f7a6aa751bf3085af51e86d782a3a7618e4"
+  },
+  {
+    "bytes": 574,
+    "path": "native/cut-1/recovery/observations.json",
+    "sha256": "b58ff7d10a99b0e91b3263b6205ec84d3863ec74e4678d587fab8863a292d934"
+  },
+  {
+    "bytes": 1351,
+    "path": "native/cut-1/recovery/server.properties",
+    "sha256": "2281bef51a13695b8fe2e302aca0395fab71b24bca468fd74c2c1e5f1a2a682f"
+  },
+  {
+    "bytes": 1064,
+    "path": "native/cut-1/recovery/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 9628,
+    "path": "native/cut-1/recovery/stdout.txt",
+    "sha256": "4dde2c8ee8f64b28456b412cd2c1d06a58baf328f1bf252d48db1d19e09c49b0"
+  },
+  {
+    "bytes": 68,
+    "path": "native/failure.json",
+    "sha256": "d344452f2ea0940ba8bed9a8876f2da290e89fcfec2625d9af0929aea310800f"
+  },
+  {
+    "bytes": 225,
+    "path": "native/mission.json",
+    "sha256": "636a1234a4792cab95cbf14f6ff53cc1997c54f374f190d7ce5c63d365fefb49"
+  },
+  {
+    "bytes": 153,
+    "path": "native/original-state/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 555,
+    "path": "native/original-state/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "73e41a68d01f5c4e5afab6c01f64b57998a07859bb20a553a38f746ed24b09d6"
+  },
+  {
+    "bytes": 3314,
+    "path": "native/original-state/decoded.json",
+    "sha256": "edc308847d78f2457ed949e85c16949c50cf6e125bbc54dedfc9dc24e8c96343"
+  },
+  {
+    "bytes": 24,
+    "path": "native/original-unchanged.json",
+    "sha256": "1ae748d5796cc995906ddf0fba5e5626f9c1c6ac79cec8fb465106e92254a77b"
+  },
+  {
+    "bytes": 215,
+    "path": "native/prepare/commands.json",
+    "sha256": "e865830e1c93c20c8d8e9b275b9b39f7836d2633ad787d74c5edfb5134e544bd"
+  },
+  {
+    "bytes": 87542,
+    "path": "native/prepare/debug.log",
+    "sha256": "a7211c990ce72349bf455f7c295afdf16de0bcd2645f509ce52f59211d3923f5"
+  },
+  {
+    "bytes": 47,
+    "path": "native/prepare/eula.txt",
+    "sha256": "ace92be452b2ab313d7d4f434973d2f0fbceaae53bf3e0b61595561bc275e795"
+  },
+  {
+    "bytes": 17450,
+    "path": "native/prepare/latest.log",
+    "sha256": "21a08708208ba37fdb71847b865ed72d11b363fd7cc63effc1e274d0b564fe30"
+  },
+  {
+    "bytes": 489,
+    "path": "native/prepare/launch.json",
+    "sha256": "413919d30e3c1c574ca5508dc1233a6a8db1c910a7148530d91089ab7c1e6968"
+  },
+  {
+    "bytes": 989,
+    "path": "native/prepare/observations.json",
+    "sha256": "f977d9b3c6a02a7293c1b60d34d0bc571b94e58853c87f1dd025c9c521acb707"
+  },
+  {
+    "bytes": 1351,
+    "path": "native/prepare/server.properties",
+    "sha256": "fa1f23c343b63711dec28a13f3f5d60738edb6036466cca3d729c7c7781f4012"
+  },
+  {
+    "bytes": 153,
+    "path": "native/prepare/state/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 704,
+    "path": "native/prepare/state/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 4884,
+    "path": "native/prepare/state/decoded.json",
+    "sha256": "5ac0faa7f608f30a77c8aa028efbe710f706253ecc038a4785f21f5bbc123475"
+  },
+  {
+    "bytes": 1064,
+    "path": "native/prepare/status.json",
+    "sha256": "662cd7d07d65950bc2f366fcabe29f009fb2b58d396c2df1fd6826b0ef737109"
+  },
+  {
+    "bytes": 14141,
+    "path": "native/prepare/stdout.txt",
+    "sha256": "d92447e415c5107b2bae0891c3780415948af0dd2d069a6ddcffbf327b54fb5a"
+  },
+  {
+    "bytes": 9724,
+    "path": "native/probe-classes/DiscoveryCutProbe.class",
+    "sha256": "4da92e38456e3a2acd43a9b34a0659e2cdd5f34b459e8f732315bff9fea541fa"
+  },
+  {
+    "bytes": 414,
+    "path": "native/probe-compile.json",
+    "sha256": "891b0960707831f11520c0939d4f1b67585719561b15a3b8439e921563874f95"
+  },
+  {
+    "bytes": 0,
+    "path": "native/probe-compile.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 6064,
+    "path": "native/ready-world-files.json",
+    "sha256": "f2280bfafa3e7d6e80becc942cd1fa09856a10220771dc2f5326f13c42c2314c"
+  },
+  {
+    "bytes": 324,
+    "path": "native/ready-world/.v002-smoke-world-identity.json",
+    "sha256": "5fb82671338cba6fcfead80b1612875e17ada0c2274d644ac6b6144c1c3b6586"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/DIM-1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native/ready-world/DIM-1/data/raids.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/DIM1/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native/ready-world/DIM1/data/raids_end.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 153,
+    "path": "native/ready-world/data/advancedrocketrycommunity_celestial.dat",
+    "sha256": "c14f20969a60d7026e49d672264517a7ee842c780ca7bd2dd9e2186e884fc37e"
+  },
+  {
+    "bytes": 508,
+    "path": "native/ready-world/data/advancedrocketrycommunity_planetary_bindings.json",
+    "sha256": "46415acea29b2804e9ed00e860ccdc115eb29bea8457e21ecd9119e0c894108b"
+  },
+  {
+    "bytes": 704,
+    "path": "native/ready-world/data/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "555776d45a733556e951b729caf662c61628862c3824b89ecf62bebb27e5e40a"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 65,
+    "path": "native/ready-world/data/chunks.dat",
+    "sha256": "085a64c666efa89271db6e8e750cab92cde8be1d62a6439f649b436956d6493a"
+  },
+  {
+    "bytes": 90,
+    "path": "native/ready-world/data/raids.dat",
+    "sha256": "3d93d12cafdccaed923417f1f779de7efe4457057696a2eb91c4ba8273dbb69c"
+  },
+  {
+    "bytes": 257,
+    "path": "native/ready-world/datapacks/satellite_payload/data/arce_adapter_test/satellite_definitions/research_payload.json",
+    "sha256": "cda3dd277245c9c5c1f2d954c61a46d51953ff1a8cc15cf4cba319e7203feb3b"
+  },
+  {
+    "bytes": 90,
+    "path": "native/ready-world/datapacks/satellite_payload/pack.mcmeta",
+    "sha256": "5edd1bb996320052deb28f5b6f77e0148e9a1c22cb0bae2ade9ad96e692777f9"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/mars/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/mars/data/raids.dat",
+    "sha256": "cf3a2501a2f8cb97e036756e0ff31f8bebbc7e8a1ca077de4fbf061be2764987"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/moon/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/moon/data/raids.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/space/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 90,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/space/data/raids.dat",
+    "sha256": "4b8c2204473fc66e751b5b845a507d8c88f5b4f0e3c67e3a82054d26c4b7a789"
+  },
+  {
+    "bytes": 48,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/venus/data/capabilities.dat",
+    "sha256": "9dad459b3f201df11aafab8f80ff8b27efcbd7332062fdccb74a9dc734c16b92"
+  },
+  {
+    "bytes": 89,
+    "path": "native/ready-world/dimensions/advancedrocketrycommunity/venus/data/raids.dat",
+    "sha256": "cf3a2501a2f8cb97e036756e0ff31f8bebbc7e8a1ca077de4fbf061be2764987"
+  },
+  {
+    "bytes": 86016,
+    "path": "native/ready-world/entities/r.0.-1.mca",
+    "sha256": "e8899d1ad194328ebd0c77f58564f9fdebcd6f383e8b1d1e0c6b204414b5f655"
+  },
+  {
+    "bytes": 24576,
+    "path": "native/ready-world/entities/r.0.0.mca",
+    "sha256": "203b9006fbcdf07833b3896b1cb9340be4b7066889299daca10a80d9cf515cc3"
+  },
+  {
+    "bytes": 38001,
+    "path": "native/ready-world/level.dat",
+    "sha256": "ab337329ae2d8db8249a4b29561fceca58c47f5ee87fce6e1fcbd5659833bb35"
+  },
+  {
+    "bytes": 38001,
+    "path": "native/ready-world/level.dat_old",
+    "sha256": "f6da9f98c326b5a938aa1f7570771da8a1c14fbda3fb7a358348a7f38f389fa5"
+  },
+  {
+    "bytes": 0,
+    "path": "native/ready-world/poi/r.-1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native/ready-world/poi/r.-1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native/ready-world/poi/r.0.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native/ready-world/poi/r.0.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native/ready-world/poi/r.1.-1.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 0,
+    "path": "native/ready-world/poi/r.1.0.mca",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 602112,
+    "path": "native/ready-world/region/r.-1.-1.mca",
+    "sha256": "381c86bcee216a388978ba4b403b8e6e513e9fc7ce691427c6be2588551e6924"
+  },
+  {
+    "bytes": 528384,
+    "path": "native/ready-world/region/r.-1.0.mca",
+    "sha256": "dbdf0aa08b244defd66be21988728f3427e15f647bd715bfd160191a7ddf0728"
+  },
+  {
+    "bytes": 5177344,
+    "path": "native/ready-world/region/r.0.-1.mca",
+    "sha256": "3664ffea8a4e69caf41749fcfd7c7e51ecae232c455bfcc6a6aa43b91f851fe2"
+  },
+  {
+    "bytes": 5791744,
+    "path": "native/ready-world/region/r.0.0.mca",
+    "sha256": "64115098194b78823abd54ab759ce7756f7e4203049213ee8b498009c1ea823e"
+  },
+  {
+    "bytes": 700416,
+    "path": "native/ready-world/region/r.1.-1.mca",
+    "sha256": "cb3713b1fb7a16afff8e04bd279a6fe8c40097cfb0b3771a02011759634fb980"
+  },
+  {
+    "bytes": 614400,
+    "path": "native/ready-world/region/r.1.0.mca",
+    "sha256": "7a32cb73d4e58399f0f0407e6ae66497576c1218a196f36d7a3525d128f2abce"
+  },
+  {
+    "bytes": 1787,
+    "path": "native/ready-world/serverconfig/forge-server.toml",
+    "sha256": "e2c32c27453033ef3910d5b6a24ae1a8c1fd224c2ac0a97388d5aa27a6a00ad1"
+  },
+  {
+    "bytes": 3,
+    "path": "native/ready-world/session.lock",
+    "sha256": "51643361c79ecaef25a8de802de24f570ba25d9c2df1d22d94fade11b4f466cc"
+  },
+  {
+    "bytes": 5766,
+    "path": "native/source-provenance.json",
+    "sha256": "14ea4fa0e9fdccb6c139f3413a2213e78ba7098b32c6b82ded0ab734aa6900ff"
+  },
+  {
+    "bytes": 1270,
+    "path": "native/summary.json",
+    "sha256": "df25f186a8ddf4f32e23a0c3ac1ba0ba2b27154a4eff96a13db3496c30b1726b"
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "artifacts": [
+    {
+      "bytes": 48469,
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev-api.jar",
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "bytes": 1193936,
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev-sources.jar",
+      "sha256": "afc83ef63e3054657831bfb6e170cbc4a6cbffe3029738ec3a6bb562474dc8db"
+    },
+    {
+      "bytes": 2624223,
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475"
+    }
+  ],
+  "base_commit": "b56e40e1c42c4e5b28cfdc4fcdbd64ead8530f1a",
+  "native_artifacts": [
+    {
+      "bytes": 2624223,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475",
+      "version": "1.20.1-1.4.0-dev"
+    },
+    {
+      "bytes": 72583,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "e58de48ff038ff42fa1173bfd210d9e8321cfcfa66849ba1c13a0e31c1c02a47",
+      "version": "1.0.0"
+    }
+  ],
+  "production_commit": "a9143c2b62d5daab412cefedcee198f1fd032588",
+  "runtime_unchanged": true
+}

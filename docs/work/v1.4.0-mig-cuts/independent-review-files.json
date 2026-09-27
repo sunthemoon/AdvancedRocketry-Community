@@ -1,0 +1,177 @@
+[
+  {
+    "bytes": 7077,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/DiscoveryCutProbe.java",
+    "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+  },
+  {
+    "bytes": 9444,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/REVIEW-MIG03-SOURCE.md",
+    "sha256": "ac25a267c7beef18e091f39b31e534553658cad71a957d9006a1b29363900f98"
+  },
+  {
+    "bytes": 2229,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/SHA256SUMS",
+    "sha256": "4eaff4a6d9e50ccc10094878cddfec9999294481b8167f73fd6d5bbce05066ac"
+  },
+  {
+    "bytes": 9724,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/classes/DiscoveryCutProbe.class",
+    "sha256": "4da92e38456e3a2acd43a9b34a0659e2cdd5f34b459e8f732315bff9fea541fa"
+  },
+  {
+    "bytes": 7077,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/corrected-DiscoveryCutProbe.java",
+    "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+  },
+  {
+    "bytes": 594,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/corrected-inputs-after.json",
+    "sha256": "2fae9af65871cc5d6d3e3a7c775a1ac9c68fa6ab5d19452f4771e46482fd2ac1"
+  },
+  {
+    "bytes": 594,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/corrected-inputs-before.json",
+    "sha256": "2fae9af65871cc5d6d3e3a7c775a1ac9c68fa6ab5d19452f4771e46482fd2ac1"
+  },
+  {
+    "bytes": 17276,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/corrected-run_v140_discovery_cut_smoke.py",
+    "sha256": "96d8ecde2d50f41708b0c94b316e9e1a56904aba003ec747950392ddb79e5059"
+  },
+  {
+    "bytes": 16149,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/corrected-test_v140_discovery_cut_smoke.py",
+    "sha256": "2cb2a6b0961a9bf5b5b0ec4b48200f09796bdab2d88508bb69b1b5889a12d688"
+  },
+  {
+    "bytes": 10224,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/corrected-v140_discovery_cut_fixture.py",
+    "sha256": "10a915f9f12c344e62d04de677c236634710a7d3df6d55126ae27131312b546e"
+  },
+  {
+    "bytes": 3146,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/failed-cut1-readback.json",
+    "sha256": "cbe96ba1fc10f0261b00e781a1b6d49a035c14a94eb7f9b53bb4871fbd633c41"
+  },
+  {
+    "bytes": 3146,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/failed-cut1-readback.log",
+    "sha256": "cbe96ba1fc10f0261b00e781a1b6d49a035c14a94eb7f9b53bb4871fbd633c41"
+  },
+  {
+    "bytes": 594,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/inputs-after.json",
+    "sha256": "123ee8269b7d27803947a104830323fdeefaf8667466ad7b2f4c14b56712fdb9"
+  },
+  {
+    "bytes": 594,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/inputs-before.json",
+    "sha256": "123ee8269b7d27803947a104830323fdeefaf8667466ad7b2f4c14b56712fdb9"
+  },
+  {
+    "bytes": 2571,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/inspect_failed_cut1.py",
+    "sha256": "46579e8f9f4513bbb1542e5262b59c04820ded6f0414c1bc5dd1e83b135b713a"
+  },
+  {
+    "bytes": 335,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/javac-result.json",
+    "sha256": "e7e995a9bb83330bb1af1a9e2aa5d03fc7d5ab12cce06a999c46189eccc638db"
+  },
+  {
+    "bytes": 0,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/javac.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 10485,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/python-corrected-independent.log",
+    "sha256": "ac94dbc3bdfec7daac91fe65a9ac9ded082c01fa95951737c15b1f39fc6f6da6"
+  },
+  {
+    "bytes": 241,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/python-corrected-result.json",
+    "sha256": "6d199d4a2b6cca222e4275361db9d5875d0ec02e21a762f1c578b7e1c98b1e9b"
+  },
+  {
+    "bytes": 10269,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/python-independent.log",
+    "sha256": "eccb49abff5c7be52828962364c882f5dff032d3da6d4e70f8b557e4827a2763"
+  },
+  {
+    "bytes": 240,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/python-result.json",
+    "sha256": "a6cfa7018a8167eba3020885f91272556d4c3bbf879dbef5618f6b44e9e06b72"
+  },
+  {
+    "bytes": 17440,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/run_v140_discovery_cut_smoke.py",
+    "sha256": "60efa2242882a16be966750931d956c0864915f4b87bd4f4825ba5b770db6025"
+  },
+  {
+    "bytes": 14970,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/test_v140_discovery_cut_smoke.py",
+    "sha256": "15c3f03882b8a203317677d667567db32b1e82f6b4d0310e9a08d591577cabef"
+  },
+  {
+    "bytes": 9322,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/v140_discovery_cut_fixture.py",
+    "sha256": "ae48577e8f2f817197127a2aea3ea47ba9be75ae9ad46eb421b045b8a7333107"
+  },
+  {
+    "bytes": 3493,
+    "path": "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171/worklog.patch",
+    "sha256": "570ef71ec017d29b90f90368e282a558b2f6e76f160d0f3a24c4c356c844984c"
+  },
+  {
+    "bytes": 12857,
+    "path": "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c/REVIEW-MIG03-NATIVE.md",
+    "sha256": "3029a10b7321a78a0c4e8921873c01916d2ef9bf7bca7011b6bc04608259db83"
+  },
+  {
+    "bytes": 416,
+    "path": "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c/SHA256SUMS",
+    "sha256": "ef6253aa341f0aeac7f9b01247185556e5ab69d1677cb9d0982a9b02cdc8c505"
+  },
+  {
+    "bytes": 201,
+    "path": "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c/audit-command.json",
+    "sha256": "cbf5d60109589221212e8489baf68c476567abe22436b20a28adc06b8f3d63e0"
+  },
+  {
+    "bytes": 16378,
+    "path": "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c/audit.log",
+    "sha256": "8e902969c80885084c972b5258889adabdefe54aa2712901516e55c1041bee50"
+  },
+  {
+    "bytes": 17291,
+    "path": "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c/audit_native.py",
+    "sha256": "52288164a49a1ba6a646ecc44b1b29ec300b8bb732a0e176e4e82588642797d9"
+  },
+  {
+    "bytes": 16378,
+    "path": "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c/observations.json",
+    "sha256": "8e902969c80885084c972b5258889adabdefe54aa2712901516e55c1041bee50"
+  },
+  {
+    "bytes": 6453,
+    "path": "exploration-subset/ADR-038-ORDERED-PLANETARY-DISCOVERY-RECOVERY.md",
+    "sha256": "039dc0a86f0b7dc22c80963e5f5c58ee1ac01174c55588a81e99bffe00cd093f"
+  },
+  {
+    "bytes": 14413,
+    "path": "exploration-subset/REVIEW-MIG03-EXPLORATION.md",
+    "sha256": "1ca6a355dcd0b83af689ab893da96220af5fd3ec879a96065ebe020bb3e90d54"
+  },
+  {
+    "bytes": 22635,
+    "path": "exploration-subset/atomic-saved-data-javap.txt",
+    "sha256": "ba7bce87793617e1c9249c7943b053941d8aeb444f08960f416bb1b30ef9c4fb"
+  },
+  {
+    "bytes": 1684,
+    "path": "exploration-subset/source-identities.json",
+    "sha256": "97646c8f920de72604ed2202913d704d2f27103fea7cb13d7165a33658cef616"
+  }
+]

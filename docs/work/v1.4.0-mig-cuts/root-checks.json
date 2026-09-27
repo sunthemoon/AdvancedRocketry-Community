@@ -1,0 +1,23 @@
+{
+  "base_commit": "b56e40e1c42c4e5b28cfdc4fcdbd64ead8530f1a",
+  "exploration_archive": "Subset excludes copied JDK source and original full manifest",
+  "gametests_executed": 236,
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 167,
+    "tests": 922
+  },
+  "junit_execution": "FROM-CACHE",
+  "native_manifest_counts": {
+    "native": 103,
+    "native-final": 237
+  },
+  "python_executed": 57,
+  "review_manifest_counts": {
+    "arce-v140-mig03-implementation-review-39431c8315a741788ce76d3bd991d171": 24,
+    "arce-v140-mig03-native-review-ce6d862db90c4f1485f7cdf0cb71d76c": 5
+  },
+  "scope": "Finite development checks; all Required Gates remain open"
+}

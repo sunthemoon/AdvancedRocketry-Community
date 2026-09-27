@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2624223,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475",
+      "version": "1.20.1-1.4.0-dev"
+    },
+    {
+      "bytes": 72583,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "e58de48ff038ff42fa1173bfd210d9e8321cfcfa66849ba1c13a0e31c1c02a47",
+      "version": "1.0.0"
+    }
+  ],
+  "backup_unchanged": true,
+  "boundaries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "forge_args_sha256": "be6edc64448d827ce12cd64a6781c908761381b377c4b666e480f2d8ac90134f",
+  "java": "17.0.7",
+  "mission": {
+    "body": "advancedrocketrycommunity:mars",
+    "deadline": 726,
+    "mission": "e895c8a5-0543-3fb0-89e3-0c162691e733",
+    "owner": "00000000-0000-0000-0000-000000000005",
+    "satellite": "6f79aa6b-007f-4dba-b3c5-d1817a1f6edb"
+  },
+  "result": "PASS",
+  "schema_version": 1,
+  "scope": "Four finite two-store process cuts; no target invocation, state repair, clients or power-loss claim",
+  "source_unchanged": true,
+  "work_dir": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-cuts-2cee140e075a4234b93df8bb6df2d28e\\servers-final"
+}

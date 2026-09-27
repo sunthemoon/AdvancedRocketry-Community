@@ -1,0 +1,48 @@
+{
+  "base_commit": "b56e40e1c42c4e5b28cfdc4fcdbd64ead8530f1a",
+  "files": [
+    {
+      "bytes": 4502,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "f6e7d8108df44246111d6d054b0b2a3c77954746a83fe9fbe588506884aa6cf7",
+      "working_sha256": "f6e7d8108df44246111d6d054b0b2a3c77954746a83fe9fbe588506884aa6cf7"
+    },
+    {
+      "bytes": 16313,
+      "path": "docs/versions/V1.4.0-PLANETARY-EXPANSION.md",
+      "sha256": "197dd5e210e13e6cba089cc064b0f4e4ff230821f6649d4b5a83de8e9d9da52c",
+      "working_sha256": "197dd5e210e13e6cba089cc064b0f4e4ff230821f6649d4b5a83de8e9d9da52c"
+    },
+    {
+      "bytes": 46386,
+      "path": "docs/work/v1.4.0-implementation-log.md",
+      "sha256": "9bd7d6a6549d50b1e1a7cfc0b1c10879fcfcb892bd932ca036cf888451756d45",
+      "working_sha256": "9bd7d6a6549d50b1e1a7cfc0b1c10879fcfcb892bd932ca036cf888451756d45"
+    },
+    {
+      "bytes": 7077,
+      "path": "scripts/java/DiscoveryCutProbe.java",
+      "sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72",
+      "working_sha256": "536ebc2ba5443624d6ff339b4383edb76e14347c8fee3c8050026c013aca9d72"
+    },
+    {
+      "bytes": 17276,
+      "path": "scripts/run_v140_discovery_cut_smoke.py",
+      "sha256": "96d8ecde2d50f41708b0c94b316e9e1a56904aba003ec747950392ddb79e5059",
+      "working_sha256": "96d8ecde2d50f41708b0c94b316e9e1a56904aba003ec747950392ddb79e5059"
+    },
+    {
+      "bytes": 10224,
+      "path": "scripts/v140_discovery_cut_fixture.py",
+      "sha256": "10a915f9f12c344e62d04de677c236634710a7d3df6d55126ae27131312b546e",
+      "working_sha256": "10a915f9f12c344e62d04de677c236634710a7d3df6d55126ae27131312b546e"
+    },
+    {
+      "bytes": 16149,
+      "path": "tests/test_v140_discovery_cut_smoke.py",
+      "sha256": "2cb2a6b0961a9bf5b5b0ec4b48200f09796bdab2d88508bb69b1b5889a12d688",
+      "working_sha256": "2cb2a6b0961a9bf5b5b0ec4b48200f09796bdab2d88508bb69b1b5889a12d688"
+    }
+  ],
+  "production_commit": "a9143c2b62d5daab412cefedcee198f1fd032588"
+}

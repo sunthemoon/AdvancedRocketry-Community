@@ -63,10 +63,14 @@ receipt repair and bounded runtime replay; see
 [recovery evidence](../work/v1.4.0-mig-claims/VERIFICATION.md). MIG-02 verifies an
 authentic v1.3 development-world copy and coherent removal/restoration through
 four clean processes; see [migration evidence](../work/v1.4.0-mig-worlds/VERIFICATION.md).
-Packaged forced interruptions remain MIG-03; normal restart and deterministic
-file cuts do not replace that check.
+MIG-03 verifies four finite packaged two-store interruptions and unedited
+same-world restart, with independent native readback; see
+[cut evidence](../work/v1.4.0-mig-cuts/VERIFICATION.md). Uncommitted READY remains
+unpaid, paid receipts recover automatically and repeated claims do not repay.
+This does not certify arbitrary hardware power loss or unrelated subsystem cuts.
 Real-client navigation/presentation/discovery acceptance and remaining
-migration/acceptance are still pending.
+migration/acceptance are still pending. The next development task is the v1.4
+handoff with explicit deferred acceptance, not a release tag or Gate approval.
 The [v1.3 development handoff](../releases/v1.3.0/RELEASE-EVIDENCE.md)
 retains the prior implemented scope, artifact evidence and outstanding
 acceptance. This pointer does not approve any candidate or change `GATE_STATUS.md`.
