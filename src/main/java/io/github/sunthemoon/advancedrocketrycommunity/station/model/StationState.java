@@ -191,6 +191,20 @@ public final class StationState {
         return copy(newOwnerId, updated, updatedInvitations);
     }
 
+    /** The single allowed growth: the centered 768-square region of the same cell. */
+    public StationState withExpandedRegion() {
+        StationRegion expanded = cell.region(StationLimits.EXPANDED_REGION_SIZE);
+        if (region.equals(expanded)) {
+            return this;
+        }
+        return new StationState(schemaVersion, stationId, ownerId, name, cell, expanded, landingPad,
+                orbitBody, createdAtGameTime, environment, members, invitations);
+    }
+
+    public boolean expanded() {
+        return region.width() == StationLimits.EXPANDED_REGION_SIZE;
+    }
+
     private StationState copy(
             UUID updatedOwner,
             Collection<UUID> updatedMembers,

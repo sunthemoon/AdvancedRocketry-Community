@@ -1,0 +1,21 @@
+{
+  "api_jar_identical_to_station_schema": true,
+  "artifacts": [
+    {
+      "bytes": 48469,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "bytes": 1208275,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+      "sha256": "e280df014df493805671e8acbb03936abadea79d59c3033d6eaa8cee0449611a"
+    },
+    {
+      "bytes": 2661760,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+      "sha256": "7d5953061da585e16ada3ba9e7f25fe38dac02b9b1ed947244ad812fd1935c0c"
+    }
+  ],
+  "base_commit": "37e4be6296093b9ab41020e3e8f4be5439146676"
+}

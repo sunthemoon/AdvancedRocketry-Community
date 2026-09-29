@@ -1,11 +1,14 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModel;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +19,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.LevelResource;
 
 /** Overworld-owned station registry; invalid/future data is preserved fail-closed. */
 public final class StationRegistrySavedData extends SavedData {
@@ -23,6 +27,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     private final StationRegistryModel registry;
     private CompoundTag preservedBlockedData;
+    private boolean expansionQuarantined;
 
     public StationRegistrySavedData() {
         this(new StationRegistryModel());
@@ -192,6 +197,95 @@ public final class StationRegistrySavedData extends SavedData {
         return new OrbitBodyValidation(true, invalidStations, invalidReservations);
     }
 
+    /** True after a checked expansion could not determine whether its replacement happened. */
+    public boolean expansionQuarantined() {
+        return expansionQuarantined;
+    }
+
+    /**
+     * Replaces the station file with the complete candidate registry, then publishes the expansion.
+     * The live registry is not changed unless the candidate is known to be the replaced authority.
+     */
+    public CheckedExpansion checkedExpand(MinecraftServer server, StationState observed) {
+        Objects.requireNonNull(server, "server");
+        return checkedExpand(server.getWorldPath(LevelResource.ROOT).resolve("data")
+                .resolve(ManagedSavedDataType.STATIONS.fileName()), observed, CheckedSavedDataFile::atomicMove);
+    }
+
+    CheckedExpansion checkedExpand(Path file, StationState observed, CheckedSavedDataFile.Committer committer) {
+        Objects.requireNonNull(file, "file");
+        Objects.requireNonNull(observed, "observed");
+        Objects.requireNonNull(committer, "committer");
+        if (!operational() || expansionQuarantined) {
+            return CheckedExpansion.UNAVAILABLE;
+        }
+        if (!registry.find(observed.stationId()).filter(observed::equals).isPresent()) {
+            return CheckedExpansion.STALE;
+        }
+        if (observed.expanded()) {
+            return CheckedExpansion.ALREADY_EXPANDED;
+        }
+        StationState expanded = observed.withExpandedRegion();
+        CompoundTag candidate = encode(new CompoundTag(), expanded);
+        requireValidCandidate(candidate, expanded);
+        boolean[] replacementAttempted = {false};
+        try {
+            CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, candidate::copy, (staged, target) -> {
+                replacementAttempted[0] = true;
+                committer.commit(staged, target);
+            });
+        } catch (RuntimeException failure) {
+            if (!replacementAttempted[0]) {
+                AdvancedRocketryCommunity.LOGGER.error(
+                        "ARCE_STATION_EXPANSION_WRITE_FAILED station={} stage=before_replace",
+                        observed.stationId(), failure);
+                return CheckedExpansion.WRITE_FAILED;
+            }
+            CheckedExpansion resolved = resolveReplacement(file, candidate, observed, failure);
+            if (resolved != CheckedExpansion.EXPANDED) {
+                return resolved;
+            }
+        }
+        registry.replaceExpanded(observed, expanded);
+        return CheckedExpansion.EXPANDED;
+    }
+
+    private CheckedExpansion resolveReplacement(Path file, CompoundTag candidate, StationState observed,
+                                                RuntimeException failure) {
+        Optional<CompoundTag> onDisk;
+        try {
+            onDisk = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.STATIONS);
+        } catch (RuntimeException unreadable) {
+            failure.addSuppressed(unreadable);
+            expansionQuarantined = true;
+            // The acknowledged authority excludes the expansion; let ordinary saves reassert it.
+            setDirty();
+            AdvancedRocketryCommunity.LOGGER.error(
+                    "ARCE_STATION_EXPANSION_OUTCOME_UNKNOWN station={} file={}; expansion disabled until restart",
+                    observed.stationId(), file, failure);
+            return CheckedExpansion.OUTCOME_UNKNOWN;
+        }
+        if (onDisk.filter(candidate::equals).isPresent()) {
+            AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_STATION_EXPANSION_REPLACED_DESPITE_ERROR station={}", observed.stationId(), failure);
+            return CheckedExpansion.EXPANDED;
+        }
+        AdvancedRocketryCommunity.LOGGER.error(
+                "ARCE_STATION_EXPANSION_WRITE_FAILED station={} stage=replace; previous file retained",
+                observed.stationId(), failure);
+        return CheckedExpansion.WRITE_FAILED;
+    }
+
+    private static void requireValidCandidate(CompoundTag candidate, StationState expanded) {
+        SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                ManagedSavedDataType.STATIONS, candidate.copy());
+        if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT
+                || !StationRegistryPayload.decodeCurrent(migration.payload()).find(expanded.stationId())
+                .filter(expanded::equals).isPresent()) {
+            throw new IllegalStateException("Candidate station registry failed validation");
+        }
+    }
+
     public void flush(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
         if (isDirty()) {
@@ -204,9 +298,15 @@ public final class StationRegistrySavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
+        return encode(target, null);
+    }
+
+    /** Encodes the registry, optionally substituting one station by UUID without mutating it. */
+    private CompoundTag encode(CompoundTag target, StationState substitute) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.STATIONS, target);
         ListTag stations = new ListTag();
-        registry.stations().forEach(state -> stations.add(StationNbtCodec.encodeState(state)));
+        registry.stations().forEach(state -> stations.add(StationNbtCodec.encodeState(
+                substitute != null && substitute.stationId().equals(state.stationId()) ? substitute : state)));
         target.put("stations", stations);
         ListTag reservations = new ListTag();
         registry.reservations().forEach(
@@ -223,6 +323,15 @@ public final class StationRegistrySavedData extends SavedData {
         if (!operational()) {
             throw new IllegalStateException("Station registry is blocked by invalid or future data");
         }
+    }
+
+    public enum CheckedExpansion {
+        EXPANDED,
+        ALREADY_EXPANDED,
+        STALE,
+        UNAVAILABLE,
+        WRITE_FAILED,
+        OUTCOME_UNKNOWN
     }
 
     public record OrbitBodyValidation(

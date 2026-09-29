@@ -4,9 +4,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationResult;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionCode;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +51,12 @@ public final class StationCommands {
                 .then(Commands.literal("remove")
                         .then(Commands.argument(STATION, UuidArgument.uuid())
                                 .then(Commands.argument("player", EntityArgument.player())
-                                        .executes(this::remove))));
+                                        .executes(this::remove))))
+                .then(Commands.literal("expand")
+                        .executes(this::requestExpansion)
+                        .then(Commands.literal("confirm")
+                                .then(Commands.argument(STATION, UuidArgument.uuid())
+                                        .executes(this::confirmExpansion))));
         var admin = Commands.literal("admin")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("create")
@@ -127,6 +136,46 @@ public final class StationCommands {
         ), "Member removed immediately");
     }
 
+    private int requestExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        StationExpansionResult result = stations.requestExpansion(player);
+        if (result.code() != StationExpansionCode.ISSUED) {
+            return expansionFailure(context, result);
+        }
+        StationState station = result.station().orElseThrow();
+        long seconds = StationLimits.EXPANSION_CONFIRMATION_TICKS / 20L;
+        context.getSource().sendSuccess(() -> Component.literal(
+                "Expand " + station.name() + " id=" + station.stationId()
+                        + " from region " + bounds(station.region())
+                        + " to " + bounds(station.withExpandedRegion().region()) + "."
+                        + " Any blocks already in the added area become part of this station:"
+                        + " members can then build there and they are not checked, moved or removed."
+                        + " This cannot be undone. To confirm within " + seconds + " seconds, run"
+                        + " /arce station expand confirm " + station.stationId()
+        ), false);
+        return 1;
+    }
+
+    private int confirmExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        StationExpansionResult result = stations.confirmExpansion(player, UuidArgument.getUuid(context, STATION));
+        if (result.code() != StationExpansionCode.EXPANDED) {
+            return expansionFailure(context, result);
+        }
+        StationState station = result.station().orElseThrow();
+        context.getSource().sendSuccess(() -> Component.literal(
+                "Station expanded; station=" + station.stationId() + " region=" + bounds(station.region())
+        ), true);
+        return 1;
+    }
+
+    private static int expansionFailure(CommandContext<CommandSourceStack> context, StationExpansionResult result) {
+        context.getSource().sendFailure(Component.literal(
+                "Station expansion rejected: " + result.code().description()
+        ));
+        return 0;
+    }
+
     private int create(CommandContext<CommandSourceStack> context) {
         UUID owner = UuidArgument.getUuid(context, "owner");
         ResourceLocation orbit = ResourceLocationArgument.getId(context, "orbit");
@@ -157,8 +206,7 @@ public final class StationCommands {
         }
         context.getSource().sendSuccess(() -> summary(station), false);
         context.getSource().sendSuccess(() -> Component.literal(
-                "region=" + station.region().minimumX() + "," + station.region().minimumZ()
-                        + ".." + station.region().maximumX() + "," + station.region().maximumZ()
+                "region=" + bounds(station.region())
                         + " pad=" + station.landingPad().x() + "," + station.landingPad().y()
                         + "," + station.landingPad().z()
                         + " orbit=" + station.orbitBody()
@@ -239,6 +287,10 @@ public final class StationCommands {
 
     private static UUID actor(CommandSourceStack source) {
         return source.getEntity() instanceof ServerPlayer player ? player.getUUID() : CONSOLE_ACTOR;
+    }
+
+    private static String bounds(StationRegion region) {
+        return region.minimumX() + "," + region.minimumZ() + ".." + region.maximumX() + "," + region.maximumZ();
     }
 
     private static Component summary(StationState station) {

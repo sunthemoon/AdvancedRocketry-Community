@@ -1,0 +1,62 @@
+{
+  "base_commit": "37e4be6296093b9ab41020e3e8f4be5439146676",
+  "expansion_audit_codes_run_03": {
+    "confirm:CONFIRMATION_MISMATCH": 1,
+    "confirm:EXPANDED": 2,
+    "confirm:NO_CONFIRMATION": 4,
+    "confirm:STATION_CHANGED": 1,
+    "request:ALREADY_EXPANDED": 1,
+    "request:CHUNK_UNLOADED": 1,
+    "request:ISSUED": 5,
+    "request:NOT_IN_SPACE": 1,
+    "request:NOT_IN_STATION": 1,
+    "request:UNAUTHORIZED": 3
+  },
+  "gametests_required_passed": 238,
+  "junit": {
+    "run_01": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 173,
+      "tests": 959
+    },
+    "run_02_failed": {
+      "errors": 0,
+      "failures": 1,
+      "skipped": 0,
+      "suites": 173,
+      "tests": 959
+    },
+    "run_03": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 173,
+      "tests": 959
+    }
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "gradle.properties": "3909bd8c1a06b767d5182c9b653049c3e63531f231e06dd4ca8864033177b0df",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "6be38591b2e505c667204cc922504c69475549df10b599d3211786911d62ffd9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationExpansionGameTests.java": "c92716f713028216614329f3f7237744d83459d5aafac2cb59f21bf1711e48a3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/AtomicSavedData.java": "df2bf0f5d2b9ba85f42c9afb628ad2a4a0b745f9bf83ed32f2184bc6d601ceb5",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/CheckedSavedDataFile.java": "6ad784429c9f243c6e8825236844606ad6a183038c225330df128f186ab17b2c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java": "1d8d11b488de1fff0ea9a91bbafa390ae6f1b2075395dbd0a004baeae8e1305f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationLimits.java": "14174ff9bdd3afb711f854f9549f1a246e70fb8c7701ad3ce1ba65726504a149",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationRegistryModel.java": "a8bf2308bef28607903dd5eca530364c571b8d6ab235e4bf3254267af9018cee",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationState.java": "0a164c6b09fc1c39fd15a02df18752faf8e19fd13acb45c569c02c6b29598b57",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "49c22b7e3e78ec4ad98413dec621a4e7904e74c1681d1035a38698c3577df9c5",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationAccessAction.java": "7e05b45ace7da14ebe8ccf3154790886dcea8c6732fdce49bf3bc51440f07602",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionCode.java": "f05c5bebc8d02f1f40c2758d8afefbb840933aacf979de896ecd9cbab54a8037",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionConfirmations.java": "0b8c2664df1bc0179e425d8c94b0c8f64f8742a2becedb6d3c53591d9e60d68e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionResult.java": "acc68b5985ca5122c1819f90711ff3d0941b40e0c3bab87bb3c5916ab141fff0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionService.java": "85ba39fda78446754680754c6a56e0301a3f5d193a48c40d23cc02e4436539b7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "0481aebe195262e212073947e29c5abd7d3078d1b3c95c22604fc8299041ffff",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java": "3bb02756aa8a975886cee713f044db64a22227148bdfa64c93f628f7ffc10122",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedExpansionTest.java": "e41629b0cf41be0498063e447131c0d3a522699e30980f621c1dadac7e7b0d46",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionConfirmationsTest.java": "79819d2af7dfcb58698131b14b9e20fd7a973ea9a6ed2af8f9fd3fc85f853441",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionServiceTest.java": "e1b4a5df31ecb75cd3665bb32f52aed65f7fa84708afefe7f566e8f67a12e0bf"
+  }
+}

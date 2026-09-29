@@ -13,8 +13,19 @@ No candidate or release approval is assigned.
   of managed files and their previous copies. Backup manifests identify each
   file's source and target schema; other managed authorities remain at schema 2.
 - Preserve old station UUIDs, owners, members, invitations, cells, landing pads,
-  orbit IDs and 512-square regions. New internal records also support a centered
-  768-square region; player expansion controls are not implemented yet.
+  orbit IDs and 512-square regions.
+- Add `/arce station expand`: the owner, or an operator, standing inside a
+  station in Space can grow its permission region once from 512 to 768 blocks
+  square around the same center. The server shows the station ID and old/new
+  bounds, warns that blocks already in the added area join the station, and
+  requires `/arce station expand confirm <station_id>` within 10 seconds.
+  Confirmations are one-shot and bound to that player and the observed station;
+  they are discarded on logout or server stop. Members, invitees and the console
+  cannot expand. No blocks are moved or removed and no chunks are loaded.
+- The expanded registry is written to a staged file, verified and atomically
+  replaced before the new region takes effect. If saving fails the station
+  keeps its old region; if the result cannot be determined, further expansion
+  is disabled until restart.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.
@@ -22,8 +33,8 @@ No candidate or release approval is assigned.
   at station capacity retains the pending reservation.
 
 Back up the complete world before using development builds. Restore that backup
-for downgrade; older station readers cannot use the new schema. Expansion,
-orbital effects, multi-star travel and warp recovery remain under development.
+for downgrade; older station readers cannot use the new schema. Orbital
+effects, multi-star travel and warp recovery remain under development.
 See the [implementation log](docs/work/v1.5.0-implementation-log.md) for tested
 scope and remaining work.
 

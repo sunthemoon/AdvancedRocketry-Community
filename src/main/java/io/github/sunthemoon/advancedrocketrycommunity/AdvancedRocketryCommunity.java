@@ -145,6 +145,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, environmentQueries::onServerStopped);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
         new RocketFlightNetwork();
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();

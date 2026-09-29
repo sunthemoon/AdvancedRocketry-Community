@@ -5,6 +5,7 @@ public enum StationAccessAction {
     BUILD,
     MANAGE_MEMBERS,
     TRANSFER_OWNERSHIP,
-    DELETE
+    DELETE,
+    EXPAND
 }
 

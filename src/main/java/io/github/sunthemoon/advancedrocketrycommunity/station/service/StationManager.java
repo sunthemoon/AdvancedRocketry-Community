@@ -27,6 +27,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 
@@ -39,6 +40,7 @@ public final class StationManager implements StationOperationService {
     private final CelestialCatalogManager celestialCatalogs;
     private final StationCreationService creation;
     private final StationAccessService access = new StationAccessService();
+    private final StationExpansionService expansion = new StationExpansionService(access);
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
 
     public StationManager(CelestialCatalogManager celestialCatalogs) {
@@ -243,6 +245,18 @@ public final class StationManager implements StationOperationService {
                 && station.region().maximumZ() >= rocket.minimum().z();
     }
 
+    public StationExpansionResult requestExpansion(ServerPlayer player) {
+        return expansion.request(player);
+    }
+
+    public StationExpansionResult confirmExpansion(ServerPlayer player, UUID stationId) {
+        return expansion.confirm(player, stationId);
+    }
+
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        expansion.forget(event.getEntity().getUUID());
+    }
+
     public int recoverReservations(MinecraftServer server) {
         return creation.recoverReservations(server);
     }
@@ -294,6 +308,7 @@ public final class StationManager implements StationOperationService {
 
     public void clear() {
         lastDenialNotice.clear();
+        expansion.clear();
     }
 
     private void protect(

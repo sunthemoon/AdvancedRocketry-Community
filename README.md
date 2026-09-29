@@ -55,11 +55,13 @@ port; the release-acceptance cursor above remains unchanged.
 **v1.5 Orbital/Station/Warp is in development (`1.20.1-1.5.0-dev`).**
 Station storage now upgrades through a pre-start backup and validation step;
 existing station identities, permissions, coordinates and 512-square regions
-are retained. Use only copies of backed-up worlds. Downgrading requires a
+are retained. A station owner or operator standing in the station can grow it
+once from 512 to 768 blocks square with `/arce station expand` and a timed
+confirmation. Use only copies of backed-up worlds. Downgrading requires a
 complete pre-upgrade world backup, not editing a schema number. The
-[implementation log](docs/work/v1.5.0-implementation-log.md) tracks station
-expansion controls, orbital environment and recoverable multi-star travel;
-those features are not yet available. This is not a stable release.
+[implementation log](docs/work/v1.5.0-implementation-log.md) tracks orbital
+environment and recoverable multi-star travel; those features are not yet
+available. This is not a stable release.
 
 ## What this project is
 

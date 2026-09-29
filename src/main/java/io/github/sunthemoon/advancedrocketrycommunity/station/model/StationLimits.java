@@ -22,6 +22,8 @@ public final class StationLimits {
     public static final int MAX_CELL_COORDINATE = 1_000_000;
     public static final int MAX_STATION_RECORD_NBT_BYTES = 8_192;
     public static final int MAX_REGISTRY_NBT_BYTES = 4 * 1_024 * 1_024;
+    public static final int MAX_PENDING_EXPANSIONS = 128;
+    public static final long EXPANSION_CONFIRMATION_TICKS = 200L;
 
     private StationLimits() {
     }

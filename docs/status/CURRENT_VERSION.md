@@ -47,8 +47,10 @@ The station model/migration slice (STATION-01/02) passed 943 unit tests,
 237 GameTests and two finite copied-world native starts. It is committed with
 its [archived evidence](../work/v1.5.0-station-schema/VERIFICATION.md); see the
 [checkpoint](../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed).
-Next is STATION-03, checked local expansion. Release status remains
-`IN_PROGRESS`, not `PASSED`.
+STATION-03, confirmed owner/operator expansion with a checked commit, is
+implemented and passes the required short commands; its independent review is
+pending. See its [verification](../work/v1.5.0-station-expansion/VERIFICATION.md).
+Next is STATION-04 native checks. Release status remains `IN_PROGRESS`, not `PASSED`.
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and

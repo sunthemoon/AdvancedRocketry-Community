@@ -103,6 +103,19 @@ public final class StationRegistryModel {
         return update(requireStation(stationId).transferOwnership(ownerId));
     }
 
+    /** Publishes a checked expansion only while the station still equals the observed state. */
+    public synchronized StationState replaceExpanded(StationState expected, StationState expanded) {
+        Objects.requireNonNull(expected, "expected");
+        Objects.requireNonNull(expanded, "expanded");
+        if (!expected.withExpandedRegion().equals(expanded) || expected.expanded()) {
+            throw new IllegalArgumentException("Replacement is not the expansion of the observed station");
+        }
+        if (!expected.equals(stations.get(expected.stationId()))) {
+            throw new IllegalStateException("Station changed before its expansion was published");
+        }
+        return update(expanded);
+    }
+
     public synchronized Optional<StationState> find(UUID stationId) {
         return Optional.ofNullable(stations.get(Objects.requireNonNull(stationId, "stationId")));
     }

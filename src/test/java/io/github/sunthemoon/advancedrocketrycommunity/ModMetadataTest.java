@@ -22,7 +22,8 @@ class ModMetadataTest {
             assertTrue(metadata.contains("license=\"MIT\""));
             assertTrue(metadata.contains("version=\"1.20.1-1.5.0-dev\""));
             assertTrue(metadata.contains("This v1.5.0 development build"));
-            assertTrue(metadata.contains("Station expansion controls, orbit systems, warp and release validation remain in progress"));
+            assertTrue(metadata.contains("confirmed owner/operator station expansion to the planetary development baseline. "
+                    + "Orbit systems, warp and release validation remain in progress"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));

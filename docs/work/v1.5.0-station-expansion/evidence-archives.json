@@ -1,0 +1,18 @@
+{
+  "archives": [
+    {
+      "bytes": 648772,
+      "manifest": "root-checks-files.json",
+      "members": 537,
+      "name": "root-checks.zip",
+      "sha256": "feda5de574b4c4123583d2ee1721cb753e58dc0210c01cb241a97331426add24"
+    }
+  ],
+  "base_commit": "37e4be6296093b9ab41020e3e8f4be5439146676",
+  "excluded": [
+    "packaging/out/",
+    "packaging/__pycache__/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-expansion-cc05bea54bc943d5bc174b001c7e8b37"
+}
