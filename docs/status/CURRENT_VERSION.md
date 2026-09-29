@@ -47,10 +47,13 @@ The station model/migration slice (STATION-01/02) passed 943 unit tests,
 237 GameTests and two finite copied-world native starts. It is committed with
 its [archived evidence](../work/v1.5.0-station-schema/VERIFICATION.md); see the
 [checkpoint](../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed).
-STATION-03, confirmed owner/operator expansion with a checked commit, is
-implemented and passes the required short commands; its independent review is
-pending. See its [verification](../work/v1.5.0-station-expansion/VERIFICATION.md).
-Next is STATION-04 native checks. Release status remains `IN_PROGRESS`, not `PASSED`.
+STATION-03, confirmed owner/operator expansion with a checked commit, was
+independently reviewed and its findings fixed
+([verification](../work/v1.5.0-station-expansion/VERIFICATION.md)). STATION-04
+passed a native v1.4-world team/upgrade/expansion/restart check
+([verification](../work/v1.5.0-station-native/VERIFICATION.md)). Both await an
+independent re-review. Next is the ORBIT-01 contract. Release status remains
+`IN_PROGRESS`, not `PASSED`.
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and

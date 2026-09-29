@@ -1,0 +1,35 @@
+{
+  "base_commit": "e3d136f264e881b2da4516c94d0446242179ea77",
+  "files": [
+    {
+      "bytes": 14343,
+      "path": "compat-test-mod/README.md",
+      "sha256": "a1008e8c9630caa21422d4e0ffeb897bf5e9ce1f958d9714104c66c6e19e9ea3",
+      "working_sha256": "a1008e8c9630caa21422d4e0ffeb897bf5e9ce1f958d9714104c66c6e19e9ea3"
+    },
+    {
+      "bytes": 3586,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "19911ce87a31b3b30c6bbf56cd2bbec0d6d7759fa388ccfb904290faadcf33d4",
+      "working_sha256": "19911ce87a31b3b30c6bbf56cd2bbec0d6d7759fa388ccfb904290faadcf33d4"
+    },
+    {
+      "bytes": 22636,
+      "path": "docs/work/v1.5.0-implementation-log.md",
+      "sha256": "f8efa45a9ebb700b7907e99c0bc5bde20fb318c9f4553e8eb8a1fc8a7bf7543a",
+      "working_sha256": "f8efa45a9ebb700b7907e99c0bc5bde20fb318c9f4553e8eb8a1fc8a7bf7543a"
+    },
+    {
+      "bytes": 9363,
+      "path": "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/AdapterTestMod.java",
+      "sha256": "1d987b21dc5adf85fd83047390f8dfe63133cef26a02813ceb506635739c72ae",
+      "working_sha256": "1d987b21dc5adf85fd83047390f8dfe63133cef26a02813ceb506635739c72ae"
+    },
+    {
+      "bytes": 9590,
+      "path": "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/StationExpansionProbe.java",
+      "sha256": "9336a8dc6116c75cde603cac43e6fb40bdf526ea2f13300fa20b09e77c72ad21",
+      "working_sha256": "9336a8dc6116c75cde603cac43e6fb40bdf526ea2f13300fa20b09e77c72ad21"
+    }
+  ]
+}

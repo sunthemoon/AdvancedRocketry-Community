@@ -1,0 +1,138 @@
+{
+  "links": [
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../src/adapterTest/"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_adapter_recovery_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_adapter_flight_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_atmosphere_boundary_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_suit_equipment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_component_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_fuel_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_environment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_satellite_payload_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_component_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_suit_equipment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_satellite_payload_smoke.py"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../versions/V1.5.0-ORBITAL-STATION-WARP.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-native/VERIFICATION.md",
+      "target": "../../../compat-test-mod/README.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

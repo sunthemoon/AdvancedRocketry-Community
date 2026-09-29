@@ -1,0 +1,22 @@
+{
+  "archives": [
+    {
+      "bytes": 465422,
+      "manifest": "native-checks-files.json",
+      "members": 302,
+      "name": "native-checks.zip",
+      "sha256": "c1925e02b64737abaeeb34001d70b8d2db4429f21372769fc678a1de142de7a7"
+    }
+  ],
+  "base_commit": "e3d136f264e881b2da4516c94d0446242179ea77",
+  "excluded": [
+    "station-server/",
+    "attempt-01-failed/station-server/",
+    "attempt-02-failed/station-server/",
+    "__pycache__/",
+    "packaging/out/",
+    "packaging/__pycache__/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-native-88ac79b6f33b4516a3ada0b5aa418818"
+}

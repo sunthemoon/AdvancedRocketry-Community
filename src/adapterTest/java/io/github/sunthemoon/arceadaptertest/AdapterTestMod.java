@@ -69,6 +69,7 @@ public final class AdapterTestMod {
         modBus.addListener(this::registerRocketFuels);
         modBus.addListener(SatellitePayloadFixture::register);
         EnvironmentQueryFixture.install();
+        StationExpansionProbe.install();
         if (Boolean.getBoolean("arce_adapter_test.satelliteSmoke")) {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(SatellitePayloadFixture::commands);
         }
