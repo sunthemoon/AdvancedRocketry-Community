@@ -246,7 +246,17 @@ public final class StationRegistrySavedData extends SavedData {
                 return resolved;
             }
         }
-        registry.replaceExpanded(observed, expanded);
+        try {
+            registry.replaceExpanded(observed, expanded);
+        } catch (RuntimeException publishFailure) {
+            // Unreachable on the owning server thread; never report a written growth as a clean failure.
+            expansionQuarantined = true;
+            setDirty();
+            AdvancedRocketryCommunity.LOGGER.error(
+                    "ARCE_STATION_EXPANSION_OUTCOME_UNKNOWN station={} stage=publish; expansion disabled until restart",
+                    observed.stationId(), publishFailure);
+            return CheckedExpansion.OUTCOME_UNKNOWN;
+        }
         return CheckedExpansion.EXPANDED;
     }
 
@@ -270,9 +280,11 @@ public final class StationRegistrySavedData extends SavedData {
                     "ARCE_STATION_EXPANSION_REPLACED_DESPITE_ERROR station={}", observed.stationId(), failure);
             return CheckedExpansion.EXPANDED;
         }
+        // Not the candidate; ordinary saves rewrite the acknowledged authority in case the file is stale.
+        setDirty();
         AdvancedRocketryCommunity.LOGGER.error(
-                "ARCE_STATION_EXPANSION_WRITE_FAILED station={} stage=replace; previous file retained",
-                observed.stationId(), failure);
+                "ARCE_STATION_EXPANSION_WRITE_FAILED station={} stage=replace file_present={}",
+                observed.stationId(), onDisk.isPresent(), failure);
         return CheckedExpansion.WRITE_FAILED;
     }
 

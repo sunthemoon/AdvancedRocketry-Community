@@ -4,7 +4,12 @@ Date: 2026-09-30. Branch: `codex/v1.5.0-orbital-station-warp`.
 Base: `37e4be6296093b9ab41020e3e8f4be5439146676` (STATION-01/02).
 Development slice only: v1.5 and inherited G0-G9 remain `IN_PROGRESS`.
 No release candidate, tag, real-client result or human Gate approval.
-**Independent diff review has not been performed for this slice.**
+
+**Update after independent review:** the original commit `fa00570` (described
+below) had one Medium and several Low findings. They are fixed in a follow-up
+commit; see [Independent review and fixes](#independent-review-and-fixes). Where
+the text below says the console is rejected, it held only for a bare console
+source until that fix.
 
 ## Implemented scope and design
 
@@ -166,8 +171,47 @@ planning regression suite exit 0 (15 tests), `git diff --check` exit 0.
   cases cover caught failures, a refused atomic move and an unreadable result.
 - Expansion adopts any existing blocks in the added ring as station territory;
   this is the accepted ADR-040 tradeoff, stated in the warning.
-- Independent diff review is pending. v1.5 G0-G9 remain open; nothing here
-  approves a Gate.
+- The independent review below covered `fa00570`; the follow-up fix has not
+  been re-reviewed yet. v1.5 G0-G9 remain open; nothing here approves a Gate.
 
-Rollback: revert this commit. Expanded records are valid schema 2 and remain
-readable by STATION-01/02 code, which keeps the 768 region but offers no command.
+Rollback: revert the fix and this commit. Expanded records are valid schema 2 and
+remain readable by STATION-01/02 code, which keeps the 768 region but offers no command.
+
+## Independent review and fixes
+
+Reviewer: a separate read-only agent, outputs only in its own Temp directory;
+review of `fa00570` against ADR-040 and the evidence ZIP. Its unmodified
+`REVIEW.md`, commands, logs and XML are archived in `independent-review.zip`.
+It reran the targeted tests (37, exit 0) and the focused station/migration set
+(89, exit 0), both with `:test` executed. It confirmed the checked-commit core,
+the unchanged `AtomicSavedData` extraction, confirmation binding/expiry/cap,
+logout/stop wiring, that no chunk is loaded and no block touched, unchanged
+ordinary flush callers, and the recorded evidence hashes. Findings and handling:
+
+| ID | Severity | Finding | Fix |
+|---|---|---|---|
+| M1 | Medium | The actor came from `getPlayerOrException()`, so `/execute as <owner>`, command blocks, functions or multi-line signs (all level 2 to set up) could request and confirm for an owner who never saw the warning. The CHANGELOG and this report overstated "console cannot expand". | Both steps now require `source.source == player` (the player's own command source). A non-local confirm is rejected before the confirmation is taken, so it cannot consume the owner's pending confirmation. New code `NOT_LOCAL_PLAYER`. |
+| L1 | Low | FakePlayers were accepted although ADR-040 says actual server players. | The player must also be the connected entity in the server player list. GameTests now use connected mock players, built the way vanilla `GameTestHelper.makeMockServerPlayerInLevel` builds them. |
+| L2 | Low | A failed replacement that left non-candidate or absent content returned `WRITE_FAILED` without scheduling a rewrite; a (currently unreachable) publish failure after a successful write would be reported as a clean failure. | The registry is marked dirty so ordinary saves rewrite the acknowledged authority. A publish failure now quarantines and reports `OUTCOME_UNKNOWN`. |
+| L3 | Low | No test observed the live registry during the commit. | The success test's committer asserts the live state is still the observed one before and after the move. A missing-target failure test was added. The service-level catch of a candidate exception is still untested. |
+| L4 | Low | The GameTest's unloaded-chunk step was conditional; logout was only called on a private manager; any console syntax error passed; permission-order tests used only authorized actors. | The GameTest now uses the registered command and global listeners, including a real `PlayerList.remove` logout and rejoin. The console check requires `ERROR_NOT_PLAYER`. `/execute as` is rejected for request and confirm, with the reply captured on the console source. Order tests include member and outsider actors. A connected player's arrival loads their own chunk, so `CHUNK_UNLOADED` is unreachable for real players; the GameTest asserts that and keeps the code as defense in depth, covered by the unit test. |
+| I1 | Info | `compileJava` and focused-test rows had no archived logs. | The fix round archives compile, focused and all full-run logs. |
+
+Fix round (evidence in `review-fix-checks.zip`; base `fa00570`; the uncommitted
+STATION-04 probe work was stashed so the run covers only this fix):
+
+| Command | Result |
+|---|---|
+| `gradlew compileJava compileTestJava compileAdapterTestJava` | Exit 0 |
+| `gradlew test --tests '*station.*' --tests '*persistence.migration.*' --no-build-cache` | Exit 0; 91 tests / 14 suites |
+| `clean build test runData runGameTestServer` run 01 | Exit 1; JUnit 961/173 passed; the GameTest expected `CHUNK_UNLOADED`, but the connected player's arrival had loaded the chunk |
+| same, run 02 | Exit 1; JUnit 961 passed; the GameTest asserted the `/execute` return value, but Brigadier returns the fork count, not the inner result. The service had returned `NOT_LOCAL_PLAYER`. |
+| same, run 03 | Exit 0; 961 JUnit / 173 suites, 0 failures; all 238 required GameTests passed; generated files unchanged |
+
+Run 03 audit lines: request ISSUED 5, UNAUTHORIZED 3, NOT_IN_SPACE 1,
+NOT_IN_STATION 1, NOT_LOCAL_PLAYER 1, ALREADY_EXPANDED 1; confirm EXPANDED 2,
+NO_CONFIRMATION 4, NOT_LOCAL_PLAYER 2, CONFIRMATION_MISMATCH 1, STATION_CHANGED 1.
+Both failed runs are retained; their failures were test-assertion errors, and
+no assertion was weakened: each now checks the actual observable outcome.
+Development JARs from run 03: main `5225de27c1095858e7cff10ec830f38a5dbc18fb3d46e6e03e7ccb0cbaa6ea17`
+(2666519 bytes), API unchanged `50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf`.

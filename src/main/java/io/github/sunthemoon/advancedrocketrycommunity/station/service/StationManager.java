@@ -245,12 +245,12 @@ public final class StationManager implements StationOperationService {
                 && station.region().maximumZ() >= rocket.minimum().z();
     }
 
-    public StationExpansionResult requestExpansion(ServerPlayer player) {
-        return expansion.request(player);
+    public StationExpansionResult requestExpansion(ServerPlayer player, boolean issuedByPlayer) {
+        return expansion.request(player, issuedByPlayer);
     }
 
-    public StationExpansionResult confirmExpansion(ServerPlayer player, UUID stationId) {
-        return expansion.confirm(player, stationId);
+    public StationExpansionResult confirmExpansion(ServerPlayer player, boolean issuedByPlayer, UUID stationId) {
+        return expansion.confirm(player, issuedByPlayer, stationId);
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {

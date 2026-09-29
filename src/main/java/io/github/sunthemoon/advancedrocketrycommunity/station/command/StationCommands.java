@@ -138,7 +138,7 @@ public final class StationCommands {
 
     private int requestExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        StationExpansionResult result = stations.requestExpansion(player);
+        StationExpansionResult result = stations.requestExpansion(player, issuedBy(context.getSource(), player));
         if (result.code() != StationExpansionCode.ISSUED) {
             return expansionFailure(context, result);
         }
@@ -158,7 +158,8 @@ public final class StationCommands {
 
     private int confirmExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        StationExpansionResult result = stations.confirmExpansion(player, UuidArgument.getUuid(context, STATION));
+        StationExpansionResult result = stations.confirmExpansion(player, issuedBy(context.getSource(), player),
+                UuidArgument.getUuid(context, STATION));
         if (result.code() != StationExpansionCode.EXPANDED) {
             return expansionFailure(context, result);
         }
@@ -167,6 +168,11 @@ public final class StationCommands {
                 "Station expanded; station=" + station.stationId() + " region=" + bounds(station.region())
         ), true);
         return 1;
+    }
+
+    /** {@code /execute as}, command blocks, functions and signs keep a different output source. */
+    private static boolean issuedBy(CommandSourceStack source, ServerPlayer player) {
+        return source.source == player;
     }
 
     private static int expansionFailure(CommandContext<CommandSourceStack> context, StationExpansionResult result) {

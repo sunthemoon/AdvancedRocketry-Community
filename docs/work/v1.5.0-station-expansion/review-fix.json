@@ -1,0 +1,83 @@
+{
+  "archives": [
+    {
+      "bytes": 700103,
+      "excluded": [],
+      "manifest": "independent-review-files.json",
+      "members": 568,
+      "name": "independent-review.zip",
+      "sha256": "b499652f0f68cb5dd3285cb7fa1f8c0ef01027e376f0719b86843a93b1092a3d",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-expansion-review-2be54341cce94d0ea3f6ab2ff9d25d22"
+    },
+    {
+      "bytes": 767287,
+      "excluded": [
+        "packaging/out/",
+        "packaging/__pycache__/"
+      ],
+      "manifest": "review-fix-checks-files.json",
+      "members": 553,
+      "name": "review-fix-checks.zip",
+      "sha256": "836f1535c60ad69d5d700f92f864b17a9e0ef3a8bb86e333f8b2d1cc9cb26537",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-expansion-fix-851325cbbc91474aabc358f8f48223a7"
+    }
+  ],
+  "expansion_audit_codes_run_03": {
+    "confirm:CONFIRMATION_MISMATCH": 1,
+    "confirm:EXPANDED": 2,
+    "confirm:NOT_LOCAL_PLAYER": 2,
+    "confirm:NO_CONFIRMATION": 4,
+    "confirm:STATION_CHANGED": 1,
+    "request:ALREADY_EXPANDED": 1,
+    "request:ISSUED": 5,
+    "request:NOT_IN_SPACE": 1,
+    "request:NOT_IN_STATION": 1,
+    "request:NOT_LOCAL_PLAYER": 1,
+    "request:UNAUTHORIZED": 3
+  },
+  "fix_tested_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationExpansionGameTests.java": "5103f049fcda6cd12d40d4aeec3625a2622272c1db3c3002cabbf45f98411979",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java": "80f8ae3adf18ddea6b3d16c469baccea00c211bd5b3b3c796a4e49c462058f83",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "90277f4f6b9311aa20a0a26da970fd523610648db57162813f054a202a6a4b5b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionCode.java": "9e3f06d5dbc7983e4c930e6ea4c3610e021a62499fedb27cd58826212e754bd9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionService.java": "d29aacbe4dec82e7562113aef5b0f88230f06f792ddc48b59165abf7c69fed79",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "7ae01d50c95e8a00fb23f8a36caec25e95d7275242d56b30f3fab13b35fcf37d",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedExpansionTest.java": "0d316b21ecfe5ed303c51d78bef4498c46ad3299704146ff7e181fa855ca6fd5",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionServiceTest.java": "274562eb7a470d93b3ada086aa970040a96a382a43e0667a045b8ccc6be83e1c"
+  },
+  "gametests_required_passed_run_03": 238,
+  "junit": {
+    "focused": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 14,
+      "tests": 91
+    },
+    "run_01_failed": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 173,
+      "tests": 961
+    },
+    "run_02_failed": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 173,
+      "tests": 961
+    },
+    "run_03": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 173,
+      "tests": 961
+    }
+  },
+  "review_sha256": "8a74b95f6bb2e98dad7c70c89a7cffad6a9c5c5884946d33acd736284f6ef5e2",
+  "reviewed_commit": "fa005706a81e585f3b296bdfaa837268b69e5b73",
+  "schema_version": 1,
+  "scope": "Review of fa00570 and the fix round; the fix is not yet independently re-reviewed"
+}

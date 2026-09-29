@@ -28,6 +28,7 @@ public final class StationExpansionService {
     public static StationExpansionCode check(
             StationAccessService access,
             boolean authorityAvailable,
+            boolean localPlayer,
             boolean inSpace,
             boolean chunkLoaded,
             Optional<StationState> stationAtPosition,
@@ -36,6 +37,9 @@ public final class StationExpansionService {
     ) {
         if (!authorityAvailable) {
             return StationExpansionCode.AUTHORITY_UNAVAILABLE;
+        }
+        if (!localPlayer) {
+            return StationExpansionCode.NOT_LOCAL_PLAYER;
         }
         if (!inSpace) {
             return StationExpansionCode.NOT_IN_SPACE;
@@ -53,9 +57,13 @@ public final class StationExpansionService {
         return station.expanded() ? StationExpansionCode.ALREADY_EXPANDED : null;
     }
 
-    public StationExpansionResult request(ServerPlayer player) {
+    /**
+     * @param issuedByPlayer whether the command source is the player itself, not a console,
+     *                       command block, function, sign or {@code /execute as} wrapper
+     */
+    public StationExpansionResult request(ServerPlayer player, boolean issuedByPlayer) {
         Objects.requireNonNull(player, "player");
-        Located located = locate(player);
+        Located located = locate(player, issuedByPlayer);
         if (located.code() != null) {
             return audit("request", player, StationExpansionResult.of(located.code(), located.station()));
         }
@@ -66,12 +74,16 @@ public final class StationExpansionService {
                 issued ? StationExpansionCode.ISSUED : StationExpansionCode.CAPACITY_REACHED, located.station()));
     }
 
-    public StationExpansionResult confirm(ServerPlayer player, UUID stationId) {
+    public StationExpansionResult confirm(ServerPlayer player, boolean issuedByPlayer, UUID stationId) {
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(stationId, "stationId");
         MinecraftServer server = player.getServer();
         if (server == null) {
             return StationExpansionResult.failure(StationExpansionCode.AUTHORITY_UNAVAILABLE);
+        }
+        if (!localPlayer(server, player, issuedByPlayer)) {
+            // Rejected before take(): another source cannot consume the player's confirmation.
+            return audit("confirm", player, StationExpansionResult.failure(StationExpansionCode.NOT_LOCAL_PLAYER));
         }
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
         var outcome = confirmations.take(player.getUUID(), stationId, data, server.getTickCount());
@@ -85,7 +97,7 @@ public final class StationExpansionService {
             return audit("confirm", player, StationExpansionResult.failure(rejected));
         }
         // Recheck permission, position, loaded chunk and authority against current state.
-        Located located = locate(player);
+        Located located = locate(player, issuedByPlayer);
         if (located.code() != null) {
             return audit("confirm", player, StationExpansionResult.of(located.code(), located.station()));
         }
@@ -122,7 +134,12 @@ public final class StationExpansionService {
         confirmations.clear();
     }
 
-    private Located locate(ServerPlayer player) {
+    /** A connected player (not a FakePlayer or detached entity) who issued the command directly. */
+    private static boolean localPlayer(MinecraftServer server, ServerPlayer player, boolean issuedByPlayer) {
+        return issuedByPlayer && server.getPlayerList().getPlayer(player.getUUID()) == player;
+    }
+
+    private Located locate(ServerPlayer player, boolean issuedByPlayer) {
         MinecraftServer server = player.getServer();
         if (server == null) {
             return new Located(StationExpansionCode.AUTHORITY_UNAVAILABLE, null, null);
@@ -138,7 +155,8 @@ public final class StationExpansionService {
                 ? data.findAt(position.getX(), position.getZ())
                 : Optional.empty();
         StationExpansionCode code = check(access, data.operational() && !data.expansionQuarantined(),
-                inSpace, chunkLoaded, station, player.getUUID(), player.hasPermissions(2));
+                localPlayer(server, player, issuedByPlayer), inSpace, chunkLoaded, station,
+                player.getUUID(), player.hasPermissions(2));
         return new Located(code, station.orElse(null), data);
     }
 

@@ -20,8 +20,10 @@ No candidate or release approval is assigned.
   bounds, warns that blocks already in the added area join the station, and
   requires `/arce station expand confirm <station_id>` within 10 seconds.
   Confirmations are one-shot and bound to that player and the observed station;
-  they are discarded on logout or server stop. Members, invitees and the console
-  cannot expand. No blocks are moved or removed and no chunks are loaded.
+  they are discarded on logout or server stop. Members and invitees cannot
+  expand. Both steps must be typed by the connected player themselves: the
+  console, command blocks, functions, signs and `/execute as` are rejected.
+  No blocks are moved or removed and no chunks are loaded.
 - The expanded registry is written to a staged file, verified and atomically
   replaced before the new region takes effect. If saving fails the station
   keeps its old region; if the result cannot be determined, further expansion

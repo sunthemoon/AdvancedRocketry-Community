@@ -50,7 +50,13 @@ final class StationCheckedExpansionTest {
 
     @Test
     void successReplacesTheFileBeforePublishingOnlyTheExpandedRegion() {
-        assertEquals(CheckedExpansion.EXPANDED, data.checkedExpand(file, station, CheckedSavedDataFile::atomicMove));
+        assertEquals(CheckedExpansion.EXPANDED, data.checkedExpand(file, station, (from, to) -> {
+            // The live registry must still be the observed state while the candidate is committed.
+            assertEquals(station, data.find(station.stationId()).orElseThrow());
+            assertEquals(station, data.findAt(station.cell().centerX(), station.cell().centerZ()).orElseThrow());
+            CheckedSavedDataFile.atomicMove(from, to);
+            assertEquals(station, data.find(station.stationId()).orElseThrow());
+        }));
         StationState published = data.find(station.stationId()).orElseThrow();
         assertEquals(station.withExpandedRegion(), published);
         assertEquals(StationLimits.EXPANDED_REGION_SIZE, published.region().width());
@@ -108,12 +114,25 @@ final class StationCheckedExpansionTest {
         assertArrayEquals(original, Files.readAllBytes(file));
         assertEquals(station, data.find(station.stationId()).orElseThrow());
         assertFalse(data.expansionQuarantined());
+        assertTrue(data.isDirty(), "Ordinary saves must reassert the acknowledged authority");
         assertFalse(Files.exists(pending()));
         // An ordinary autosave cannot commit the rejected growth.
         StationRegistrySavedData reloaded = StationRegistrySavedData.load(data.save(new CompoundTag()));
         assertEquals(StationLimits.REGION_SIZE, reloaded.find(station.stationId()).orElseThrow().region().width());
         // The request can be retried once storage works again.
         assertEquals(CheckedExpansion.EXPANDED, data.checkedExpand(file, station, CheckedSavedDataFile::atomicMove));
+    }
+
+    @Test
+    void failedReplacementThatLeavesNoFileKeepsAuthorityAndSchedulesRewrite() {
+        assertEquals(CheckedExpansion.WRITE_FAILED, data.checkedExpand(file, station, (from, to) -> {
+            Files.delete(to);
+            throw new java.io.IOException("injected missing target");
+        }));
+        assertEquals(station, data.find(station.stationId()).orElseThrow());
+        assertFalse(data.expansionQuarantined());
+        assertTrue(data.isDirty(), "The acknowledged authority must be written again");
+        assertFalse(Files.exists(file));
     }
 
     @Test

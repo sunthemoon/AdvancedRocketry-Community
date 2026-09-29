@@ -6,6 +6,8 @@ public enum StationExpansionCode {
     EXPANDED(true, "station expanded"),
     ALREADY_EXPANDED(false, "the station already uses its largest region"),
     AUTHORITY_UNAVAILABLE(false, "station authority is unavailable"),
+    NOT_LOCAL_PLAYER(false, "run this command yourself as a connected player;"
+            + " command blocks, functions, signs and /execute cannot expand stations"),
     NOT_IN_SPACE(false, "stand inside the station in Space"),
     NOT_IN_STATION(false, "stand inside the station's current region"),
     CHUNK_UNLOADED(false, "your current chunk is not loaded"),

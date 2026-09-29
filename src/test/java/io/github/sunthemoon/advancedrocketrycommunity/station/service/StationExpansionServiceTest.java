@@ -30,16 +30,26 @@ final class StationExpansionServiceTest {
     }
 
     @Test
-    void locationAndAuthorityAreCheckedBeforePermission() {
+    void onlyADirectlyCommandingConnectedPlayerIsAccepted() {
+        for (boolean operator : new boolean[]{false, true}) {
+            assertEquals(StationExpansionCode.NOT_LOCAL_PLAYER, StationExpansionService.check(
+                    access, true, false, true, true, Optional.of(station), owner, operator));
+        }
+    }
+
+    @Test
+    void authorityAndLocationAreCheckedBeforePermission() {
         Optional<StationState> here = Optional.of(station);
-        assertEquals(StationExpansionCode.AUTHORITY_UNAVAILABLE,
-                StationExpansionService.check(access, false, true, true, here, owner, true));
-        assertEquals(StationExpansionCode.NOT_IN_SPACE,
-                StationExpansionService.check(access, true, false, true, here, owner, true));
-        assertEquals(StationExpansionCode.CHUNK_UNLOADED,
-                StationExpansionService.check(access, true, true, false, here, owner, true));
-        assertEquals(StationExpansionCode.NOT_IN_STATION,
-                StationExpansionService.check(access, true, true, true, Optional.empty(), owner, true));
+        for (UUID actor : new UUID[]{owner, member, UUID.randomUUID()}) {
+            assertEquals(StationExpansionCode.AUTHORITY_UNAVAILABLE,
+                    StationExpansionService.check(access, false, true, true, true, here, actor, false));
+            assertEquals(StationExpansionCode.NOT_IN_SPACE,
+                    StationExpansionService.check(access, true, true, false, true, here, actor, false));
+            assertEquals(StationExpansionCode.CHUNK_UNLOADED,
+                    StationExpansionService.check(access, true, true, true, false, here, actor, false));
+            assertEquals(StationExpansionCode.NOT_IN_STATION,
+                    StationExpansionService.check(access, true, true, true, true, Optional.empty(), actor, false));
+        }
     }
 
     @Test
@@ -51,6 +61,6 @@ final class StationExpansionServiceTest {
     }
 
     private StationExpansionCode check(StationState state, UUID actor, boolean operator) {
-        return StationExpansionService.check(access, true, true, true, Optional.of(state), actor, operator);
+        return StationExpansionService.check(access, true, true, true, true, Optional.of(state), actor, operator);
     }
 }
