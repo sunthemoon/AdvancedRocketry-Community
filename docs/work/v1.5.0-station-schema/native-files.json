@@ -1,0 +1,187 @@
+[
+  {
+    "bytes": 179,
+    "path": "native/before/advancedrocketrycommunity_celestial.dat",
+    "sha256": "215cb4bc05628513f926c8eabffbfb05e9fa813bcf5eb77e070dba84f9cc6e16"
+  },
+  {
+    "bytes": 108,
+    "path": "native/before/advancedrocketrycommunity_rocket_transactions.dat",
+    "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+  },
+  {
+    "bytes": 759,
+    "path": "native/before/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "259a6309120082a89b96966c9edd6939e66a78c0b9349a566adba1b11ba4804e"
+  },
+  {
+    "bytes": 479,
+    "path": "native/before/advancedrocketrycommunity_stations.dat",
+    "sha256": "8d628c8dacc408b2a16665123017270e135a7a831b893adc4ad1e1cda8d8ab15"
+  },
+  {
+    "bytes": 7316,
+    "path": "native/before/decoded.json",
+    "sha256": "94c3793076b01e97c8c0edc74e73e689f788c45cc16da124e5ded2e2deb087dd"
+  },
+  {
+    "bytes": 776,
+    "path": "native/historical-inputs.json",
+    "sha256": "01a71a085723605978e346f74a046fa4109df88ad85c33b3d2111c36032e998b"
+  },
+  {
+    "bytes": 179,
+    "path": "native/migration-backups/20260929T160846.195Z-managed/advancedrocketrycommunity_celestial.dat",
+    "sha256": "215cb4bc05628513f926c8eabffbfb05e9fa813bcf5eb77e070dba84f9cc6e16"
+  },
+  {
+    "bytes": 108,
+    "path": "native/migration-backups/20260929T160846.195Z-managed/advancedrocketrycommunity_rocket_transactions.dat",
+    "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+  },
+  {
+    "bytes": 759,
+    "path": "native/migration-backups/20260929T160846.195Z-managed/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "259a6309120082a89b96966c9edd6939e66a78c0b9349a566adba1b11ba4804e"
+  },
+  {
+    "bytes": 479,
+    "path": "native/migration-backups/20260929T160846.195Z-managed/advancedrocketrycommunity_stations.dat",
+    "sha256": "8d628c8dacc408b2a16665123017270e135a7a831b893adc4ad1e1cda8d8ab15"
+  },
+  {
+    "bytes": 1109,
+    "path": "native/migration-backups/20260929T160846.195Z-managed/manifest.json",
+    "sha256": "6cc8b02d9af3b6f3dcd253ceb15e52fdd3b2c0cb8ed2e9aee1e7ce632ec9534c"
+  },
+  {
+    "bytes": 171,
+    "path": "native/restart/commands.json",
+    "sha256": "134a292f42d6cd661fdae806ef2413cbda1623b9407947b20f1afe12f07f4cd5"
+  },
+  {
+    "bytes": 85216,
+    "path": "native/restart/debug.log",
+    "sha256": "1f75631071c4600c0e8e527f6dd2c80eb4ab80cc9bd58ed11721fae513645e7c"
+  },
+  {
+    "bytes": 15067,
+    "path": "native/restart/latest.log",
+    "sha256": "ad94bc114fbebdcf2c436ff7f38fc39792d43be6e6dac508a5c52dc412bfe998"
+  },
+  {
+    "bytes": 1227,
+    "path": "native/restart/launch.json",
+    "sha256": "74602b67fc380c6b86f95fa1dfaddc7514c26bc5fa9ef0ba05dc5c9d62e11591"
+  },
+  {
+    "bytes": 499,
+    "path": "native/restart/receipt.json",
+    "sha256": "9d63b8ae77c70fd9424f0d269e60a5fe013a1b52f27c46946dd2d1b64646ed3c"
+  },
+  {
+    "bytes": 179,
+    "path": "native/restart/state/advancedrocketrycommunity_celestial.dat",
+    "sha256": "215cb4bc05628513f926c8eabffbfb05e9fa813bcf5eb77e070dba84f9cc6e16"
+  },
+  {
+    "bytes": 108,
+    "path": "native/restart/state/advancedrocketrycommunity_rocket_transactions.dat",
+    "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+  },
+  {
+    "bytes": 759,
+    "path": "native/restart/state/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "99af109771e55ab6b12098b95b31a199cf2b2ad471085af793b4ffd9e6866a1e"
+  },
+  {
+    "bytes": 488,
+    "path": "native/restart/state/advancedrocketrycommunity_stations.dat",
+    "sha256": "2e9fef1644ae2ed7a00ce80ecda54432af8d19d019edd8110875a3ddeb4065c4"
+  },
+  {
+    "bytes": 7327,
+    "path": "native/restart/state/decoded.json",
+    "sha256": "0d42d9a36dc8f64768b660681da1668cfd83c1a5026e367cd880160664c4f73a"
+  },
+  {
+    "bytes": 1064,
+    "path": "native/restart/status.json",
+    "sha256": "c053d963d3b82d15ce4faf969a448c17b3b50b65f332b4811f9ee3928908c953"
+  },
+  {
+    "bytes": 12205,
+    "path": "native/restart/stdout.txt",
+    "sha256": "0df690fb0e106b420900857c5b949eaa9bacf6422583b613e49528cae812b0db"
+  },
+  {
+    "bytes": 11359,
+    "path": "native/source-world-files.json",
+    "sha256": "d2f284b35dd7cf8090fbd448ae3ab80b74e7d8b8ddd035aaacab68f7dbdf834c"
+  },
+  {
+    "bytes": 2494,
+    "path": "native/summary.json",
+    "sha256": "55c2586aa6c9a47d717f3df0f23937f30ec5364cf25cc6d774e52148ec51c0ec"
+  },
+  {
+    "bytes": 171,
+    "path": "native/upgrade/commands.json",
+    "sha256": "134a292f42d6cd661fdae806ef2413cbda1623b9407947b20f1afe12f07f4cd5"
+  },
+  {
+    "bytes": 87922,
+    "path": "native/upgrade/debug.log",
+    "sha256": "4681aee790c21c5f36ade3b45230bb948367373b1e2542a7fa0fa29f91c91e1f"
+  },
+  {
+    "bytes": 17385,
+    "path": "native/upgrade/latest.log",
+    "sha256": "a895c7105bd91e292cf5bd477b208b6c5d2ec18cc05e204fd30fc98aa02312f1"
+  },
+  {
+    "bytes": 1227,
+    "path": "native/upgrade/launch.json",
+    "sha256": "74602b67fc380c6b86f95fa1dfaddc7514c26bc5fa9ef0ba05dc5c9d62e11591"
+  },
+  {
+    "bytes": 523,
+    "path": "native/upgrade/receipt.json",
+    "sha256": "78649519f13365319569312981ab16dff648abbd74ae591661feaaf61c4c32a4"
+  },
+  {
+    "bytes": 179,
+    "path": "native/upgrade/state/advancedrocketrycommunity_celestial.dat",
+    "sha256": "215cb4bc05628513f926c8eabffbfb05e9fa813bcf5eb77e070dba84f9cc6e16"
+  },
+  {
+    "bytes": 108,
+    "path": "native/upgrade/state/advancedrocketrycommunity_rocket_transactions.dat",
+    "sha256": "8a46b80b3382ec6617707abd54bc70482b5256675c2c73a504d68158707a75d4"
+  },
+  {
+    "bytes": 759,
+    "path": "native/upgrade/state/advancedrocketrycommunity_satellite_missions.dat",
+    "sha256": "259a6309120082a89b96966c9edd6939e66a78c0b9349a566adba1b11ba4804e"
+  },
+  {
+    "bytes": 488,
+    "path": "native/upgrade/state/advancedrocketrycommunity_stations.dat",
+    "sha256": "2e9fef1644ae2ed7a00ce80ecda54432af8d19d019edd8110875a3ddeb4065c4"
+  },
+  {
+    "bytes": 7327,
+    "path": "native/upgrade/state/decoded.json",
+    "sha256": "e4be15a9750bbb26bc628338cbdfd6792126a63f0c5084337282043c0ad87508"
+  },
+  {
+    "bytes": 1064,
+    "path": "native/upgrade/status.json",
+    "sha256": "c053d963d3b82d15ce4faf969a448c17b3b50b65f332b4811f9ee3928908c953"
+  },
+  {
+    "bytes": 14141,
+    "path": "native/upgrade/stdout.txt",
+    "sha256": "3ba45953c17547d5451f9e83692e442c997cec12d0d0b5f3b25bc0557f2ff1e1"
+  }
+]

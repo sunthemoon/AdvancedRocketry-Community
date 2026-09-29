@@ -1,0 +1,39 @@
+{
+  "api_classes_unchanged_from_v140": 27,
+  "artifacts": [
+    {
+      "bytes": 48469,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+      "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+    },
+    {
+      "bytes": 1197309,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+      "sha256": "d8cc369d59d09e4693a4d60e7246914fb369c7726e7d75ab6fbe9b2c7cc83b08"
+    },
+    {
+      "bytes": 2632344,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+      "sha256": "119671d32d133311a4d227f42edcd15d8912a8f63f1c0a606b36f8071011b3cb"
+    }
+  ],
+  "base_commit": "a0e1d8fd90bc1731a3de5c34b8d3fdf20d35ab03",
+  "native_artifacts": [
+    {
+      "bytes": 2632344,
+      "mod_id": "advancedrocketrycommunity",
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\build\\libs\\advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+      "sha256": "119671d32d133311a4d227f42edcd15d8912a8f63f1c0a606b36f8071011b3cb",
+      "version": "1.20.1-1.5.0-dev"
+    },
+    {
+      "bytes": 72583,
+      "mod_id": "arce_adapter_test",
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\artifacts\\arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "e58de48ff038ff42fa1173bfd210d9e8321cfcfa66849ba1c13a0e31c1c02a47",
+      "version": "1.0.0"
+    }
+  ]
+}

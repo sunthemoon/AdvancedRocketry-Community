@@ -18,7 +18,14 @@ public record StationGridCell(int x, int z) implements Comparable<StationGridCel
     }
 
     public StationRegion region() {
-        int half = StationLimits.REGION_SIZE / 2;
+        return region(StationLimits.REGION_SIZE);
+    }
+
+    public StationRegion region(int width) {
+        if (width != StationLimits.REGION_SIZE && width != StationLimits.EXPANDED_REGION_SIZE) {
+            throw new IllegalArgumentException("Unsupported station region width");
+        }
+        int half = width / 2;
         return new StationRegion(
                 Math.subtractExact(centerX(), half),
                 Math.subtractExact(centerZ(), half),
@@ -37,4 +44,3 @@ public record StationGridCell(int x, int z) implements Comparable<StationGridCel
         return xOrder != 0 ? xOrder : Integer.compare(z, other.z);
     }
 }
-

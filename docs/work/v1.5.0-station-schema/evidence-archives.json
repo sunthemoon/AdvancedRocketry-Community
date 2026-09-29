@@ -1,0 +1,47 @@
+{
+  "archives": [
+    {
+      "bytes": 535096,
+      "manifest": "root-checks-files.json",
+      "members": 383,
+      "name": "root-checks.zip",
+      "sha256": "b7c00411807b92e0528b22fd6c9e932c74b5898f720809f1367e9e6dffac25ce"
+    },
+    {
+      "bytes": 59238,
+      "manifest": "native-files.json",
+      "members": 37,
+      "name": "native.zip",
+      "sha256": "37593567e2b16106267eec54fb38dc7096d6ecb6db1af599876f35ff40babceb"
+    },
+    {
+      "bytes": 320586,
+      "manifest": "independent-review-files.json",
+      "members": 142,
+      "name": "independent-review.zip",
+      "sha256": "a92ada5431e7b90118bcf48463835f9bd16b15edf5c333ccf3588db7e4f4cb46"
+    }
+  ],
+  "base_commit": "a0e1d8fd90bc1731a3de5c34b8d3fdf20d35ab03",
+  "root_excluded_top_level": [
+    {
+      "name": "__pycache__",
+      "reason": "Python bytecode cache"
+    },
+    {
+      "name": "native",
+      "reason": "archived separately as native.zip"
+    },
+    {
+      "name": "station-server",
+      "reason": "server runtime/libraries/disposable world copy; phase logs and state retained in native/"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "V150-STATION-01/02 development evidence; archived after pause without rerunning checks",
+  "source_directories": {
+    "packaging": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-schema-archive-b8ce4069ac76419e8395d18c9c91f506",
+    "review": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-schema-review-3c51e146d3d54e2f828b5959d7f8ea66",
+    "root": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-schema-04389c908f4b406ebc03badf69358576"
+  }
+}

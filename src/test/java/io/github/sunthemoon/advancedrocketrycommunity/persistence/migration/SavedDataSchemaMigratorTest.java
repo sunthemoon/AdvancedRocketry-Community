@@ -37,8 +37,8 @@ final class SavedDataSchemaMigratorTest {
 
             assertEquals(SavedDataSchemaMigrator.MigrationStatus.MIGRATED, migrated.status());
             assertEquals(1, migrated.sourceSchema());
-            assertEquals(2, migrated.payload().getInt("schema_version"));
-            assertEquals(SavedDataSchemaMigrator.FORMAT_EPOCH,
+            assertEquals(fixture.getKey().currentSchemaVersion(), migrated.payload().getInt("schema_version"));
+            assertEquals(fixture.getKey().formatEpoch(),
                     migrated.payload().getString("format_epoch"));
             assertEquals(1, migrated.payload().getInt("migrated_from_schema"));
             assertEquals(1, source.getInt("schema_version"), "source fixture must stay immutable");
@@ -118,8 +118,9 @@ final class SavedDataSchemaMigratorTest {
                 RocketTransactionSavedData.SCHEMA_VERSION);
         assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
                 RocketTransferSavedData.ROOT_SCHEMA_VERSION);
-        assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
-                StationLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(3, StationLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(StationLimits.REGISTRY_SCHEMA_VERSION, ManagedSavedDataType.STATIONS.currentSchemaVersion());
+        assertEquals(2, SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION);
         assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
                 SatelliteLimits.REGISTRY_SCHEMA_VERSION);
     }

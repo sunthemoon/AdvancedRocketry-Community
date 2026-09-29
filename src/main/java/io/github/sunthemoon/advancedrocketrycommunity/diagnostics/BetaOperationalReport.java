@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightIntentPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
@@ -81,7 +82,8 @@ public record BetaOperationalReport(
                 + " build=" + runtime.build()
                 + " forge=" + runtime.forge()
                 + " jei=" + runtime.jei()
-                + " root_schema=" + SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION
+                + " default_root_schema=" + SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION
+                + " station_root_schema=" + ManagedSavedDataType.STATIONS.currentSchemaVersion()
                 + " operational=" + roots.operational()
                 + " roots=" + roots.flags()
                 + " bodies=" + roots.bodies()

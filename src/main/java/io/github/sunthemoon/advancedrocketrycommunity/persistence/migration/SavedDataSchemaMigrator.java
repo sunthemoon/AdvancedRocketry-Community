@@ -1,10 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistryPayload;
 import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-/** Pure and deterministic schema-1 to schema-2 migration for managed root payloads. */
+/** Pure per-authority migration; station schema evolves independently of Beta roots. */
 public final class SavedDataSchemaMigrator {
     public static final int LEGACY_SCHEMA_VERSION = 1;
     public static final int CURRENT_SCHEMA_VERSION = 2;
@@ -30,10 +31,11 @@ public final class SavedDataSchemaMigrator {
             );
         }
         int schema = source.getInt(SCHEMA_KEY);
-        if (schema > CURRENT_SCHEMA_VERSION) {
+        if (schema > type.currentSchemaVersion()) {
             return new MigrationResult(MigrationStatus.FUTURE, schema, source);
         }
-        if (schema != LEGACY_SCHEMA_VERSION && schema != CURRENT_SCHEMA_VERSION) {
+        if (schema != LEGACY_SCHEMA_VERSION && schema != CURRENT_SCHEMA_VERSION
+                && schema != type.currentSchemaVersion()) {
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.INVALID_SCHEMA,
                     type.dataName() + " has unsupported schema " + schema
@@ -41,15 +43,33 @@ public final class SavedDataSchemaMigrator {
         }
         type.validateRootShape(source);
 
-        if (schema == CURRENT_SCHEMA_VERSION) {
+        if (schema >= CURRENT_SCHEMA_VERSION) {
+            String expectedEpoch = schema == CURRENT_SCHEMA_VERSION ? FORMAT_EPOCH : type.formatEpoch();
             if (!source.contains(EPOCH_KEY, Tag.TAG_STRING)
-                    || !FORMAT_EPOCH.equals(source.getString(EPOCH_KEY))) {
+                    || !expectedEpoch.equals(source.getString(EPOCH_KEY))) {
                 throw new SavedDataMigrationException(
                         MigrationDiagnosticId.INVALID_SCHEMA,
-                        type.dataName() + " schema 2 is missing the Beta format epoch"
+                        type.dataName() + " schema " + schema + " has an invalid format epoch"
                 );
             }
+        }
+        if (schema == type.currentSchemaVersion()) {
             return new MigrationResult(MigrationStatus.CURRENT, schema, source);
+        }
+
+        if (type == ManagedSavedDataType.STATIONS) {
+            try {
+                CompoundTag migrated = StationRegistryPayload.upgradeLegacyRecords(source);
+                stampCurrent(type, migrated);
+                if (schema == LEGACY_SCHEMA_VERSION && !migrated.contains(MIGRATED_FROM_KEY)) {
+                    migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
+                }
+                StationRegistryPayload.decodeCurrent(migrated);
+                return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
+            } catch (RuntimeException exception) {
+                throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                        type.dataName() + " has invalid legacy station data", exception);
+            }
         }
 
         CompoundTag migrated = source.copy();
@@ -62,8 +82,8 @@ public final class SavedDataSchemaMigrator {
     public static void stampCurrent(ManagedSavedDataType type, CompoundTag target) {
         Objects.requireNonNull(type, "type");
         Objects.requireNonNull(target, "target");
-        target.putInt(SCHEMA_KEY, CURRENT_SCHEMA_VERSION);
-        target.putString(EPOCH_KEY, FORMAT_EPOCH);
+        target.putInt(SCHEMA_KEY, type.currentSchemaVersion());
+        target.putString(EPOCH_KEY, type.formatEpoch());
     }
 
     public enum MigrationStatus {

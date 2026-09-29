@@ -53,7 +53,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @Test
-    void populatedLegacyMigrationChangesOnlyRootMetadataAndKeepsExactBackups() throws Exception {
+    void populatedLegacyMigrationChangesOnlySchemaMetadataAndKeepsExactBackups() throws Exception {
         Map<ManagedSavedDataType, CompoundTag> current = PopulatedManagedDataFixture.currentPayloads();
         Path world = writeWorld(legacyPayloads());
         Map<ManagedSavedDataType, byte[]> originals = capture(world);
@@ -104,7 +104,7 @@ final class PopulatedWorldDataPreservationTest {
     @EnumSource(ManagedSavedDataType.class)
     void oneFutureRootBlocksTheWholePopulatedUpgradeBeforeAnyWrite(ManagedSavedDataType futureType) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
-        payloads.get(futureType).putInt("schema_version", SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION + 1);
+        payloads.get(futureType).putInt("schema_version", futureType.currentSchemaVersion() + 1);
         assertBlockedWithoutWrites(payloads, MigrationDiagnosticId.FUTURE_SCHEMA);
     }
 
@@ -174,6 +174,8 @@ final class PopulatedWorldDataPreservationTest {
             payload.putInt("schema_version", 1);
             payload.remove("format_epoch");
         });
+        payloads.get(ManagedSavedDataType.STATIONS).getList("stations", CompoundTag.TAG_COMPOUND)
+                .forEach(record -> ((CompoundTag) record).putInt("schema_version", 1));
         return payloads;
     }
 

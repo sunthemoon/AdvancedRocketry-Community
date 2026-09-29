@@ -5,10 +5,19 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Centralized, client-independent station authorization policy. */
 public final class StationAccessService {
+    public boolean allowedBuild(boolean registryOperational, Optional<StationState> station,
+                                UUID actorId, boolean operator) {
+        Objects.requireNonNull(station, "station");
+        Objects.requireNonNull(actorId, "actorId");
+        return registryOperational && (station.isEmpty()
+                || allowed(station.orElseThrow(), actorId, operator, StationAccessAction.BUILD));
+    }
+
     public boolean allowed(
             StationState station,
             UUID actorId,
@@ -39,4 +48,3 @@ public final class StationAccessService {
                 .toList();
     }
 }
-

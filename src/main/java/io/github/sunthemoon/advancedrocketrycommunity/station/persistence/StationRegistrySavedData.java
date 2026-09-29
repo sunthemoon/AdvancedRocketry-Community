@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -22,8 +21,16 @@ import net.minecraft.world.level.saveddata.SavedData;
 public final class StationRegistrySavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_stations";
 
-    private final StationRegistryModel registry = new StationRegistryModel();
+    private final StationRegistryModel registry;
     private CompoundTag preservedBlockedData;
+
+    public StationRegistrySavedData() {
+        this(new StationRegistryModel());
+    }
+
+    private StationRegistrySavedData(StationRegistryModel registry) {
+        this.registry = registry;
+    }
 
     public static StationRegistrySavedData get(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
@@ -36,7 +43,6 @@ public final class StationRegistrySavedData extends SavedData {
 
     public static StationRegistrySavedData load(CompoundTag source) {
         Objects.requireNonNull(source, "source");
-        StationRegistrySavedData data = new StationRegistrySavedData();
         CompoundTag preserved = source.copy();
         try {
             if (StationNbtSize.uncompressedBytes(source) > StationLimits.MAX_REGISTRY_NBT_BYTES) {
@@ -46,29 +52,15 @@ public final class StationRegistrySavedData extends SavedData {
                     ManagedSavedDataType.STATIONS,
                     source
             );
-            if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
-                throw new IllegalArgumentException("Station registry uses a future root schema");
+            if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT) {
+                throw new IllegalArgumentException("Station registry requires supported pre-start migration");
             }
-            CompoundTag payload = migration.payload();
-            ListTag stations = requireList(payload, "stations");
-            ListTag reservations = requireList(payload, "reservations");
-            if (stations.size() > StationLimits.MAX_STATIONS
-                    || reservations.size() > StationLimits.MAX_RESERVATIONS) {
-                throw new IllegalArgumentException("Station registry lists exceed fixed bounds");
-            }
-            for (Tag raw : stations) {
-                data.registry.restoreStation(StationNbtCodec.decodeState((CompoundTag) raw));
-            }
-            for (Tag raw : reservations) {
-                data.registry.restoreReservation(StationNbtCodec.decodeReservation((CompoundTag) raw));
-            }
-            if (migration.changed()) {
-                data.setDirty();
-            }
+            return new StationRegistrySavedData(StationRegistryPayload.decodeCurrent(migration.payload()));
         } catch (RuntimeException exception) {
+            StationRegistrySavedData data = new StationRegistrySavedData();
             data.preservedBlockedData = preserved;
+            return data;
         }
-        return data;
     }
 
     public boolean operational() {
@@ -231,15 +223,6 @@ public final class StationRegistrySavedData extends SavedData {
         if (!operational()) {
             throw new IllegalStateException("Station registry is blocked by invalid or future data");
         }
-    }
-
-    private static ListTag requireList(CompoundTag source, String key) {
-        Tag raw = source.get(key);
-        if (!(raw instanceof ListTag list)
-                || (!list.isEmpty() && list.getElementType() != Tag.TAG_COMPOUND)) {
-            throw new IllegalArgumentException("Missing or invalid station registry list " + key);
-        }
-        return list;
     }
 
     public record OrbitBodyValidation(

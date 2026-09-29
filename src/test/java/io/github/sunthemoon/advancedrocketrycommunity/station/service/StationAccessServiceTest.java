@@ -14,6 +14,20 @@ final class StationAccessServiceTest {
     private final StationAccessService access = new StationAccessService();
 
     @Test
+    void unavailableAuthorityNeverGrantsBuildEvenToOwnerOrOperator() {
+        UUID owner = UUID.randomUUID();
+        var station = StationState.fromReservation(new StationReservation(UUID.randomUUID(), owner, "Blocked",
+                new StationGridCell(0, 0), ModIdentity.id("earth"), 0));
+        for (boolean operator : new boolean[]{false, true}) {
+            assertFalse(access.allowedBuild(false, java.util.Optional.empty(), owner, operator));
+            assertFalse(access.allowedBuild(false, java.util.Optional.of(station), owner, operator));
+            assertTrue(access.allowedBuild(true, java.util.Optional.empty(), owner, operator));
+            assertTrue(access.allowedBuild(true, java.util.Optional.of(station), owner, operator));
+        }
+        assertFalse(access.allowedBuild(true, java.util.Optional.of(station), UUID.randomUUID(), false));
+    }
+
+    @Test
     void ownerMemberOutsiderAndOperatorUseOnePolicy() {
         UUID owner = UUID.randomUUID();
         UUID member = UUID.randomUUID();

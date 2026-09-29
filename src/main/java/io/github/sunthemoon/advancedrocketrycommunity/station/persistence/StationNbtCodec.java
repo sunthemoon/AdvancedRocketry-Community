@@ -62,9 +62,17 @@ final class StationNbtCodec {
     }
 
     static StationState decodeState(CompoundTag source) {
+        return decodeState(source, StationLimits.STATE_SCHEMA_VERSION);
+    }
+
+    static StationState decodeLegacyState(CompoundTag source) {
+        return decodeState(source, 1);
+    }
+
+    private static StationState decodeState(CompoundTag source, int expectedSchema) {
         requireRecordBound(source);
         int schema = requireInt(source, "schema_version");
-        if (schema != StationLimits.STATE_SCHEMA_VERSION) {
+        if (schema != expectedSchema) {
             throw new IllegalArgumentException("Unsupported station state schema " + schema);
         }
         StationGridCell cell = cell(source);
@@ -72,6 +80,9 @@ final class StationNbtCodec {
         StationRegion region = new StationRegion(
                 rawRegion[0], rawRegion[1], rawRegion[2], rawRegion[3]
         );
+        if (expectedSchema == 1 && !cell.region().equals(region)) {
+            throw new IllegalArgumentException("Legacy station must retain its initial cell region");
+        }
         int[] rawLanding = requireIntArray(source, "landing_pad", 3);
         StationPosition landing = new StationPosition(rawLanding[0], rawLanding[1], rawLanding[2]);
         CompoundTag environment = requireCompound(source, "environment");
@@ -97,7 +108,7 @@ final class StationNbtCodec {
             invitations.add(requireUuid((CompoundTag) raw, "id"));
         }
         return new StationState(
-                schema,
+                StationLimits.STATE_SCHEMA_VERSION,
                 requireUuid(source, "station_id"),
                 requireUuid(source, "owner_id"),
                 requireString(source, "name", StationLimits.MAX_NAME_LENGTH),
@@ -121,7 +132,7 @@ final class StationNbtCodec {
                 reservation.orbitBody(),
                 reservation.createdAtGameTime()
         );
-        target.putInt("schema_version", StationLimits.STATE_SCHEMA_VERSION);
+        target.putInt("schema_version", StationLimits.RESERVATION_SCHEMA_VERSION);
         requireRecordBound(target);
         return target;
     }
@@ -129,7 +140,7 @@ final class StationNbtCodec {
     static StationReservation decodeReservation(CompoundTag source) {
         requireRecordBound(source);
         int schema = requireInt(source, "schema_version");
-        if (schema != StationLimits.STATE_SCHEMA_VERSION) {
+        if (schema != StationLimits.RESERVATION_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported station reservation schema " + schema);
         }
         return new StationReservation(

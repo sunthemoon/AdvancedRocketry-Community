@@ -49,7 +49,7 @@ public final class StationState {
         this.region = Objects.requireNonNull(region, "region");
         this.landingPad = Objects.requireNonNull(landingPad, "landingPad");
         this.orbitBody = Objects.requireNonNull(orbitBody, "orbitBody");
-        if (!cell.region().equals(region) || !cell.landingPad().equals(landingPad)) {
+        if (!cell.region(region.width()).equals(region) || !cell.landingPad().equals(landingPad)) {
             throw new IllegalArgumentException("Station geometry does not match its allocated cell");
         }
         if (orbitBody.toString().length() > 128) {

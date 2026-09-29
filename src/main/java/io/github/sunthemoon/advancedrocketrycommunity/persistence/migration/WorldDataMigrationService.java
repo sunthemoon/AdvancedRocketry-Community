@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -47,14 +46,20 @@ public final class WorldDataMigrationService {
 
     private final Clock clock;
     private final FileCommitter committer;
+    private final FileStager stager;
 
     public WorldDataMigrationService() {
         this(Clock.systemUTC(), WorldDataMigrationService::replaceFile);
     }
 
     WorldDataMigrationService(Clock clock, FileCommitter committer) {
+        this(clock, committer, WorldDataMigrationService::writeDurably);
+    }
+
+    WorldDataMigrationService(Clock clock, FileCommitter committer, FileStager stager) {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.committer = Objects.requireNonNull(committer, "committer");
+        this.stager = Objects.requireNonNull(stager, "stager");
     }
 
     public MigrationReport migrate(Path suppliedWorldRoot) {
@@ -78,7 +83,7 @@ public final class WorldDataMigrationService {
         Map<SourceFile, Path> staged = stageMigrations(paths, upgrades);
         try {
             commit(staged);
-        } catch (IOException commitFailure) {
+        } catch (IOException | RuntimeException commitFailure) {
             restoreOrThrow(sources, staged.values(), backup, commitFailure);
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.COMMIT_ROLLED_BACK,
@@ -142,13 +147,13 @@ public final class WorldDataMigrationService {
                         "The fixed limit of " + MAX_BACKUPS + " migration backups is reached"
                 );
             }
-            String name = BACKUP_TIME.format(createdAt) + "-schema1-to2";
+            String name = BACKUP_TIME.format(createdAt) + "-managed";
             Path directory = safeChild(root, name, paths.worldRoot());
             Files.createDirectory(directory);
 
             List<ManifestFile> manifestFiles = new ArrayList<>();
             for (SourceFile source : sources) {
-                copyBackupFile(source.path(), directory, source.type().fileName(), manifestFiles);
+                copyBackupFile(source.path(), directory, source, false, manifestFiles);
                 Path old = safeChild(
                         paths.dataDirectory(),
                         source.type().fileName() + "_old",
@@ -156,15 +161,13 @@ public final class WorldDataMigrationService {
                 );
                 if (Files.exists(old, LinkOption.NOFOLLOW_LINKS)) {
                     requireRegularFile(old);
-                    copyBackupFile(old, directory, old.getFileName().toString(), manifestFiles);
+                    copyBackupFile(old, directory, source, true, manifestFiles);
                 }
             }
             manifestFiles.sort(Comparator.comparing(ManifestFile::file));
             BackupManifest manifest = new BackupManifest(
-                    1,
+                    2,
                     createdAt.toString(),
-                    SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION,
-                    SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
                     List.copyOf(manifestFiles)
             );
             writeDurably(directory.resolve(MANIFEST_FILE), GSON.toJson(manifest).getBytes(java.nio.charset.StandardCharsets.UTF_8));
@@ -198,7 +201,7 @@ public final class WorldDataMigrationService {
                         paths.worldRoot()
                 );
                 staged.put(source, staging);
-                writeDurably(staging, encoded);
+                stager.stage(staging, encoded);
                 validateStaged(staging, source.type());
             }
             return staged;
@@ -212,7 +215,7 @@ public final class WorldDataMigrationService {
                     "Cannot stage and validate every migrated SavedData file",
                     exception
             );
-        } catch (IOException exception) {
+        } catch (IOException | RuntimeException exception) {
             deleteStaged(staged.values());
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.STAGING_FAILED,
@@ -247,11 +250,15 @@ public final class WorldDataMigrationService {
             List<SourceFile> sources,
             Iterable<Path> staged,
             Backup backup,
-            IOException commitFailure
+            Exception commitFailure
     ) {
         deleteStaged(staged);
         try {
             for (SourceFile source : sources) {
+                if (Files.isRegularFile(source.path(), LinkOption.NOFOLLOW_LINKS)
+                        && source.sha256().equals(sha256(source.path()))) {
+                    continue;
+                }
                 Path backupFile = backup.directory().resolve(source.type().fileName());
                 Path restore = Files.createTempFile(
                         source.path().getParent(),
@@ -273,7 +280,8 @@ public final class WorldDataMigrationService {
             rollbackFailure.addSuppressed(commitFailure);
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.ROLLBACK_FAILED,
-                    "SavedData migration failed and automatic rollback was not complete; restore the backup manually",
+                    "SavedData migration failed and automatic rollback was not complete; restore backup "
+                            + backup.directory().getFileName() + " manually",
                     rollbackFailure
             );
         }
@@ -282,9 +290,11 @@ public final class WorldDataMigrationService {
     private static void copyBackupFile(
             Path source,
             Path directory,
-            String fileName,
+            SourceFile authority,
+            boolean previousCopy,
             List<ManifestFile> manifestFiles
     ) throws IOException {
+        String fileName = source.getFileName().toString();
         Path destination = directory.resolve(fileName);
         CopyOption[] options = {
                 StandardCopyOption.COPY_ATTRIBUTES,
@@ -295,7 +305,10 @@ public final class WorldDataMigrationService {
         manifestFiles.add(new ManifestFile(
                 fileName,
                 Files.size(destination),
-                sha256(destination)
+                sha256(destination),
+                previousCopy ? "previous-copy" : "authority",
+                previousCopy ? null : authority.migration().sourceSchema(),
+                previousCopy ? null : authority.type().currentSchemaVersion()
         ));
     }
 
@@ -364,16 +377,7 @@ public final class WorldDataMigrationService {
     }
 
     private static void replaceFile(Path staged, Path target) throws IOException {
-        try {
-            Files.move(
-                    staged,
-                    target,
-                    StandardCopyOption.ATOMIC_MOVE,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
-        } catch (AtomicMoveNotSupportedException exception) {
-            Files.move(staged, target, StandardCopyOption.REPLACE_EXISTING);
-        }
+        Files.move(staged, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 
     private static void deleteStaged(Iterable<Path> staged) {
@@ -411,6 +415,11 @@ public final class WorldDataMigrationService {
     @FunctionalInterface
     interface FileCommitter {
         void replace(Path staged, Path target) throws IOException;
+    }
+
+    @FunctionalInterface
+    interface FileStager {
+        void stage(Path target, byte[] content) throws IOException;
     }
 
     public record MigrationReport(
@@ -473,12 +482,11 @@ public final class WorldDataMigrationService {
     private record BackupManifest(
             int manifestSchema,
             String createdAt,
-            int sourceSchema,
-            int targetSchema,
             List<ManifestFile> files
     ) {
     }
 
-    private record ManifestFile(String file, long bytes, String sha256) {
+    private record ManifestFile(String file, long bytes, String sha256, String role,
+                                Integer sourceSchema, Integer targetSchema) {
     }
 }

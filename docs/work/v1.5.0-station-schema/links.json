@@ -1,0 +1,242 @@
+{
+  "links": [
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.2.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.1.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.0.2/INSTALLATION.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/status/GATE_STATUS.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/04-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v0.9.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/status/GATE_STATUS.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.0.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/PLANETARY-DISCOVERY-GUIDE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "README.md",
+      "target": "DOCUMENT-INDEX.md"
+    },
+    {
+      "document": "README.md",
+      "target": "LICENSE"
+    },
+    {
+      "document": "README.md",
+      "target": "NOTICE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "UPSTREAM.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/PUBLIC-API-GUIDE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "README.md",
+      "target": "compat-test-mod/README.md"
+    },
+    {
+      "document": "README.md",
+      "target": "CONTRIBUTING.md"
+    },
+    {
+      "document": "README.md",
+      "target": "AGENTS.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/04-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/BETA-SUPPORT-POLICY.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.4.0/MIGRATION-REPORT.md"
+    },
+    {
+      "document": "README.md",
+      "target": "SECURITY.md"
+    },
+    {
+      "document": "README.md",
+      "target": "LICENSE"
+    },
+    {
+      "document": "README.md",
+      "target": "NOTICE.md"
+    },
+    {
+      "document": "docs/provenance/v1.5.0-development-metadata.md",
+      "target": "v0.0.2-forge-mdk-and-gradle-wrapper.md"
+    },
+    {
+      "document": "docs/provenance/v1.5.0-development-metadata.md",
+      "target": "../../THIRD-PARTY-NOTICES.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md",
+      "target": "../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md",
+      "target": "../decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md"
+    },
+    {
+      "document": "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md",
+      "target": "../work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md",
+      "target": "../06-RELEASE-AND-ACCEPTANCE-GATES.md"
+    },
+    {
+      "document": "docs/versions/V1.5.0-ORBITAL-STATION-WARP.md",
+      "target": "../17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../versions/V1.5.0-ORBITAL-STATION-WARP.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-schema/VERIFICATION.md",
+      "target": "../../decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-schema/VERIFICATION.md",
+      "target": "../../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-schema/VERIFICATION.md",
+      "target": "../../provenance/v1.5.0-development-metadata.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-schema/VERIFICATION.md",
+      "target": "../v1.5.0-implementation-log.md#v150-station-03"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

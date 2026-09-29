@@ -4,6 +4,29 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.5.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.5.0-dev`.
+No candidate or release approval is assigned.
+
+- Upgrade legacy station storage before world startup, with byte-exact backups
+  of managed files and their previous copies. Backup manifests identify each
+  file's source and target schema; other managed authorities remain at schema 2.
+- Preserve old station UUIDs, owners, members, invitations, cells, landing pads,
+  orbit IDs and 512-square regions. New internal records also support a centered
+  768-square region; player expansion controls are not implemented yet.
+- Reject malformed, mixed-version or unsupported station data without replacing
+  it. If station authority is unavailable, deny player placement and breaking
+  in Space, including ordinary operator building; other Levels are unaffected.
+- Keep the 4,096-station and 64-reservation limits independent. A failed commit
+  at station capacity retains the pending reservation.
+
+Back up the complete world before using development builds. Restore that backup
+for downgrade; older station readers cannot use the new schema. Expansion,
+orbital effects, multi-star travel and warp recovery remain under development.
+See the [implementation log](docs/work/v1.5.0-implementation-log.md) for tested
+scope and remaining work.
+
 ## v1.4.0 — in development
 
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.4.0-dev`.

@@ -22,6 +22,7 @@ class BetaOperationalReportTest {
         assertTrue(line.contains("build=1.20.1-0.9.0-beta.1"));
         assertTrue(line.contains("forge=47.4.10"));
         assertTrue(line.contains("jei=absent"));
+        assertTrue(line.contains("default_root_schema=2 station_root_schema=3"));
         assertTrue(line.contains("operational=true roots=11111"));
         assertTrue(line.contains("stations=10 missions=100"));
         assertTrue(line.contains("protocols=life:1,celestial:1,flight:6,visual:1"));

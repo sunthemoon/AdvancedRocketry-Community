@@ -311,14 +311,9 @@ public final class StationManager implements StationOperationService {
         if (!level.dimension().equals(CelestialIds.SPACE_LEVEL)) {
             return true;
         }
-        Optional<StationState> station = StationRegistrySavedData.get(level.getServer())
-                .findAt(position.getX(), position.getZ());
-        return station.isEmpty() || access.allowed(
-                station.orElseThrow(),
-                player.getUUID(),
-                player.hasPermissions(2),
-                StationAccessAction.BUILD
-        );
+        StationRegistrySavedData data = StationRegistrySavedData.get(level.getServer());
+        return access.allowedBuild(data.operational(), data.findAt(position.getX(), position.getZ()),
+                player.getUUID(), player.hasPermissions(2));
     }
 
     private void deny(
@@ -335,13 +330,15 @@ public final class StationManager implements StationOperationService {
             lastDenialNotice.remove(eldest);
         }
         if (previous == null || time - previous >= DENIAL_NOTICE_TICKS) {
+            boolean authorityAvailable = StationRegistrySavedData.get(level.getServer()).operational();
             player.displayClientMessage(
-                    Component.translatable("station.advancedrocketrycommunity.access.denied"),
+                    Component.translatable(authorityAvailable ? "station.advancedrocketrycommunity.access.denied"
+                            : "station.advancedrocketrycommunity.creation.registry_blocked"),
                     true
             );
             AdvancedRocketryCommunity.LOGGER.warn(
-                    "ARCE_STATION_ACCESS_DENIED player={} position={} dimension={}",
-                    player.getUUID(), position.toShortString(), level.dimension().location()
+                    "ARCE_STATION_ACCESS_DENIED player={} position={} dimension={} authority_available={}",
+                    player.getUUID(), position.toShortString(), level.dimension().location(), authorityAvailable
             );
         }
     }

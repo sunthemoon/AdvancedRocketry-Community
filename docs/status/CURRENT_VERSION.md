@@ -27,22 +27,33 @@ The acceptance cursor above remains at the earliest unfinished release Gate;
 it is not the active feature-development branch. Under accepted
 [ADR-039](../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
 v1.5 development baseline is the immutable v1.4 handoff. Inherited acceptance
-remains open; preparation does not imply runtime implementation:
+remains open; implemented station storage does not imply completed station/warp gameplay:
 
 ```yaml
 active_development_version: v1.5.0
 active_development_branch: codex/v1.5.0-orbital-station-warp
-phase: STATION_FOUNDATION_READY
+phase: IMPLEMENTING
+execution_state: ACTIVE
+paused_at: 2026-09-30
+resumed_at: 2026-09-30
 accepted_development_baseline: 6f530ac7db4bf0e06be6d6aaef35e6ca31a5651b
 development_log: docs/work/v1.5.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.4.0/RELEASE-EVIDENCE.md
-runtime_build: 1.20.1-1.4.0-dev
+runtime_build: 1.20.1-1.5.0-dev
 ```
 
+The maintainer paused advancement on 2026-09-30 and resumed it the same day.
+The station model/migration slice (STATION-01/02) passed 943 unit tests,
+237 GameTests and two finite copied-world native starts. It is committed with
+its [archived evidence](../work/v1.5.0-station-schema/VERIFICATION.md); see the
+[checkpoint](../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed).
+Next is STATION-03, checked local expansion. Release status remains
+`IN_PROGRESS`, not `PASSED`.
+
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
-tasks. The first slice establishes station identity/region/migration decisions
-and documentation examples. Production station changes require the accepted
-baseline and first contract; orbit effects, multi-star catalogs and warp remain
+tasks. The first runtime slice implements the accepted station model and
+pre-start migration contract, retaining old station identity/geometry. Local
+expansion controls, orbit effects, multi-star catalogs and warp remain
 unimplemented current-version work, not metadata-only substitutes.
 
 The [v1.4 development handoff](../releases/v1.4.0/RELEASE-EVIDENCE.md) and

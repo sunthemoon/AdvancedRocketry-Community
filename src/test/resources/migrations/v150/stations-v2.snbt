@@ -1,0 +1,33 @@
+{
+  schema_version: 2,
+  format_epoch: "v0.9.0-beta",
+  migrated_from_schema: 1,
+  retained_root_extra: "keep",
+  stations: [{
+    schema_version: 1,
+    station_id: [I; 21, 0, 0, 1],
+    owner_id: [I; 21, 0, 0, 2],
+    name: "Legacy Station",
+    cell_x: -2,
+    cell_z: 3,
+    region: [I; -2304, 2816, -1793, 3327],
+    landing_pad: [I; -2048, 128, 3072],
+    orbit_body: "example:removed_body",
+    created_at_game_time: 77L,
+    environment: {gravity_milli: 10000, vacuum: 2b, solar_angle_milli_degrees: 359999},
+    members: [{id: [I; 21, 0, 0, 3]}],
+    invitations: [{id: [I; 21, 0, 0, 4]}],
+    retained_record_extra: {value: 9}
+  }],
+  reservations: [{
+    schema_version: 1,
+    station_id: [I; 21, 0, 0, 5],
+    owner_id: [I; 21, 0, 0, 6],
+    name: "Legacy Reservation",
+    cell_x: 0,
+    cell_z: 0,
+    orbit_body: "example:unavailable",
+    created_at_game_time: 78L,
+    retained_reservation_extra: "keep"
+  }]
+}

@@ -47,6 +47,9 @@ public final class StationRegistryModel {
     }
 
     public synchronized StationState commit(UUID stationId) {
+        if (stations.size() >= StationLimits.MAX_STATIONS) {
+            throw new IllegalStateException("Station registry is full; reservation retained");
+        }
         StationReservation reservation = reservations.remove(Objects.requireNonNull(stationId, "stationId"));
         if (reservation == null) {
             throw new IllegalArgumentException("Station reservation is missing");
@@ -142,6 +145,9 @@ public final class StationRegistryModel {
 
     public synchronized void restoreStation(StationState state) {
         Objects.requireNonNull(state, "state");
+        if (stations.size() >= StationLimits.MAX_STATIONS) {
+            throw new IllegalArgumentException("Station registry exceeds the fixed bound");
+        }
         restoreIdentity(state.stationId(), state.cell());
         stations.put(state.stationId(), state);
     }
@@ -169,9 +175,6 @@ public final class StationRegistryModel {
     }
 
     private void restoreIdentity(UUID stationId, StationGridCell cell) {
-        if (stations.size() >= StationLimits.MAX_STATIONS) {
-            throw new IllegalArgumentException("Station registry exceeds the fixed bound");
-        }
         if (stations.containsKey(stationId) || reservations.containsKey(stationId)) {
             throw new IllegalArgumentException("Station registry contains a duplicate UUID");
         }

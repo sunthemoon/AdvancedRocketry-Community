@@ -8,7 +8,7 @@ import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-/** Fixed allowlist of global ARCE SavedData files covered by the Beta transaction. */
+/** Fixed allowlist of global ARCE SavedData files covered by pre-start migration. */
 public enum ManagedSavedDataType {
     CELESTIAL(
             "v0.3.0",
@@ -78,6 +78,15 @@ public enum ManagedSavedDataType {
 
     public String fileName() {
         return dataName + ".dat";
+    }
+
+    public int currentSchemaVersion() {
+        return this == STATIONS ? StationLimits.REGISTRY_SCHEMA_VERSION
+                : SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
+    }
+
+    public String formatEpoch() {
+        return this == STATIONS ? "v1.5.0-orbital-station" : SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
 
     public long maxUncompressedBytes() {

@@ -1,0 +1,97 @@
+{
+  "base_commit": "a0e1d8fd90bc1731a3de5c34b8d3fdf20d35ab03",
+  "gametests_required_passed": 237,
+  "independent_native_readback": {
+    "corrected_harness_sha256": "9c992bd8f8d9d7fa25eaf2ad27040cf6e42c51f52be7b8e8e027e11fd21590d8",
+    "kind": "independent readback, not independent server execution",
+    "oracle_probes": {
+      "duplicate-row": true,
+      "empty": true,
+      "missing-row": true,
+      "valid": false,
+      "wrong-size": true
+    },
+    "result": "PASS"
+  },
+  "junit_focused": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 12,
+    "tests": 76
+  },
+  "junit_full_first_failed": {
+    "errors": 0,
+    "failures": 1,
+    "skipped": 0,
+    "suites": 170,
+    "tests": 943
+  },
+  "junit_full_passing": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 170,
+    "tests": 943
+  },
+  "junit_independent_targeted": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 9,
+    "tests": 61
+  },
+  "native": {
+    "phases": [
+      {
+        "exit_code": 0,
+        "migration_lines": [
+          "[00:08:46] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1002] Beta world data check complete: managed=4, migrated=1, backup=20260929T160846.195Z-managed"
+        ],
+        "phase": "upgrade",
+        "result": "PASS",
+        "station_count": 2
+      },
+      {
+        "exit_code": 0,
+        "migration_lines": [
+          "[00:09:03] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1001] Beta world data check complete: managed=4, migrated=0, backup=none"
+        ],
+        "phase": "restart",
+        "result": "PASS",
+        "station_count": 2
+      }
+    ],
+    "result": "PASS"
+  },
+  "scope": "Short development checks, not Required Gate approval",
+  "tested_implementation_files": {
+    "gradle.properties": "ab2b7a640bb800f6033c922028b45d77cd8d913c98b975b997e8a3a7aeb9783f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/diagnostics/BetaOperationalReport.java": "be50c42f180369c367f4448e33e4e448a914b578ab78d9de38830d3abc3361b5",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationProtectionGameTests.java": "2fe521b9ac2d3ceb1e309d5763e7b2fd454e95b4cb2dbc9195ae49e8e518e9d4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataType.java": "b9cb36e04d085d30445b75ca0c8379a9837310553e021412cc512cd0cb66d46f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/SavedDataSchemaMigrator.java": "e7b5e6f079144bef99bf80eb69d66c9333f5a23d213d37519bb7d61bc411cdbc",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/WorldDataMigrationService.java": "4dca7f9344579fc78593d7892b53f654c6f9ddd947f6210096475cb7a4efafe7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationGridCell.java": "0859d95c95bf76d1db5bc03effd4d057db443ef7a186f12746a781d989516b97",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationLimits.java": "26d39eedd5f9f76b686c55118b984fbfa9b592123c7abd91e6cea78c3bcf0e43",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationRegion.java": "e230dc5ad1c6cd3cb0f2a14531a11f0f1d4f2716c3da3849f936140f17e3037d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationRegistryModel.java": "6f5a012fc59850dcebcc7790ee6f3de1df7449fb2ea105f965ef0d95e5ca7bf2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationState.java": "f7fb891dd0b53984af016f1ff03a14c18c4fb8b2d2584a0647f762e0c74b6904",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationNbtCodec.java": "a0be064e2fca7ceaad70ff3aeb12c4d2865c20fb756c5eff44bb279cc97c10d7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistryPayload.java": "6f4a5dded3bfacf45885b19192389194a6110559895a2dc80a46b9ff55ec9f31",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "a874ad7b644de112d8c623ebbfa507d177c2af2ea9ed00c25ee5bc12c266569b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationAccessService.java": "8ca5cf4558f954710bc29942a4f71f8adc3231dc7d63fa3b6d86618dc262fdc5",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "f17ab78c9356c235f9b8626bb0c1f568726510aedf5df1cf54812f509a38d9ed",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java": "352c6075da55f68c249c53104a0b8a0e130a70680c62f9a1d602fe3b9f4c6294",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/diagnostics/BetaOperationalReportTest.java": "3ca094ef54a1759b364b64da249284acd9fad2e2b5ee3243d7a0f9369f9d2162",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataLoaderMigrationTest.java": "64d20bfb6dce8d36f1dbcd7ad2def1e32e014acfed752026ce4688c8e8479297",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/PopulatedWorldDataPreservationTest.java": "54805b324a7ab4e0d2582ebcd6df7faeaba5b05c19b5e53e70a13db6b1878dbc",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/SavedDataSchemaMigratorTest.java": "b2633dde5e06bd077a721cadc2a23e72fc56e6cafd41cd3892be0d5163f0747e",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/StationWorldMigrationTest.java": "49882b93a9b350a786bc58a02670443686d69ce07d753d4e433cea534cfa1032",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/WorldDataMigrationServiceTest.java": "89f9585cb15cd01d300069b105fd7dbbfa7a35474b68743eecc94583e06d121d",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationRegionBoundaryTest.java": "f1d8f561197ef538c31e026fc376d04160f62075276b7788495c81659296ca04",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationSchemaMigrationTest.java": "402e74855135ead8053d8c721a2d20917cc6a61fc53c72105a319cfb97c94dcd",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationAccessServiceTest.java": "366f4f59090edd2cbaa3e17737a749d557ed89c1641e61a20ad491eb01ed6013",
+    "src/test/resources/migrations/v150/stations-v2.snbt": "1764217e0c1f00c6a61af1952e903384c378a08decd7d809af13e4dabc8647b1"
+  }
+}

@@ -23,16 +23,26 @@ final class ManagedSavedDataLoaderMigrationTest {
     private static final Map<ManagedSavedDataType, String> FIXTURES = fixtures();
 
     @Test
-    void everyHistoricalRootLoadsOperationalAndIsRewrittenOnce() throws Exception {
+    void everyHistoricalRootBecomesCurrentThroughItsRequiredMigrationBoundary() throws Exception {
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
-            SavedData legacy = load(type, fixture(type));
+            CompoundTag source = fixture(type);
+            SavedData legacy = load(type, source);
 
-            assertTrue(legacy.isDirty(), type + " migration must schedule one canonical save");
+            if (type == ManagedSavedDataType.STATIONS) {
+                assertFalse(((StationRegistrySavedData) legacy).operational());
+                assertFalse(legacy.isDirty(), "station upgrade must not bypass pre-start backups");
+                assertEquals(source, legacy.save(new CompoundTag()));
+                legacy = load(type, SavedDataSchemaMigrator.migrate(type, source).payload());
+                assertFalse(legacy.isDirty());
+            } else {
+                assertTrue(legacy.isDirty(), type + " migration must schedule one canonical save");
+            }
+
             assertOperational(type, legacy);
             CompoundTag canonical = legacy.save(new CompoundTag());
-            assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
+            assertEquals(type.currentSchemaVersion(),
                     canonical.getInt("schema_version"));
-            assertEquals(SavedDataSchemaMigrator.FORMAT_EPOCH,
+            assertEquals(type.formatEpoch(),
                     canonical.getString("format_epoch"));
             assertAuthorityCollections(type, canonical);
 

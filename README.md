@@ -52,11 +52,14 @@ with the [discovery guide](docs/PLANETARY-DISCOVERY-GUIDE.md) or
 This is a development build, not a new stable release or complete classic-content
 port; the release-acceptance cursor above remains unchanged.
 
-**v1.5 Orbital/Station/Warp is in preparation.** The
+**v1.5 Orbital/Station/Warp is in development (`1.20.1-1.5.0-dev`).**
+Station storage now upgrades through a pre-start backup and validation step;
+existing station identities, permissions, coordinates and 512-square regions
+are retained. Use only copies of backed-up worlds. Downgrading requires a
+complete pre-upgrade world backup, not editing a schema number. The
 [implementation log](docs/work/v1.5.0-implementation-log.md) tracks station
-upgrades, orbital environment and recoverable multi-star travel. These planned
-features are not available merely because the development branch exists; the
-runtime build remains `1.20.1-1.4.0-dev` until implementation begins.
+expansion controls, orbital environment and recoverable multi-star travel;
+those features are not yet available. This is not a stable release.
 
 ## What this project is
 

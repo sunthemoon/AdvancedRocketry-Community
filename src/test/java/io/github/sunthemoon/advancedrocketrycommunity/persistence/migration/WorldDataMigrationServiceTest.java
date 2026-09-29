@@ -81,8 +81,8 @@ class WorldDataMigrationServiceTest {
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
             assertArrayEquals(originals.get(type), Files.readAllBytes(backup.resolve(type.fileName())));
             CompoundTag migrated = readPayload(dataFile(world, type));
-            assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION, migrated.getInt("schema_version"));
-            assertEquals(SavedDataSchemaMigrator.FORMAT_EPOCH, migrated.getString("format_epoch"));
+            assertEquals(type.currentSchemaVersion(), migrated.getInt("schema_version"));
+            assertEquals(type.formatEpoch(), migrated.getString("format_epoch"));
             assertEquals(SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION, migrated.getInt("migrated_from_schema"));
         }
         assertArrayEquals(oldOriginal, Files.readAllBytes(backup.resolve(oldFile.getFileName())));
@@ -90,7 +90,9 @@ class WorldDataMigrationServiceTest {
         JsonObject manifest = JsonParser.parseString(
                 Files.readString(backup.resolve("manifest.json"), StandardCharsets.UTF_8)
         ).getAsJsonObject();
-        assertEquals(1, manifest.get("manifestSchema").getAsInt());
+        assertEquals(2, manifest.get("manifestSchema").getAsInt());
+        assertFalse(manifest.has("sourceSchema"));
+        assertFalse(manifest.has("targetSchema"));
         assertEquals(FIXED_TIME.toString(), manifest.get("createdAt").getAsString());
         assertEquals(ManagedSavedDataType.values().length + 1, manifest.getAsJsonArray("files").size());
         assertFalse(Files.readString(backup.resolve("manifest.json")).contains(world.toString()));

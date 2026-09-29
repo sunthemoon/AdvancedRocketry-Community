@@ -1,9 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.model;
 
-/** Fixed v0.7 station budgets. Relaxing these bounds requires new evidence. */
+/** Fixed station budgets; ADR-040 adds one bounded expansion size. */
 public final class StationLimits {
-    public static final int STATE_SCHEMA_VERSION = 1;
-    public static final int REGISTRY_SCHEMA_VERSION = 2;
+    public static final int STATE_SCHEMA_VERSION = 2;
+    public static final int RESERVATION_SCHEMA_VERSION = 1;
+    public static final int REGISTRY_SCHEMA_VERSION = 3;
     public static final int MAX_STATIONS = 4_096;
     public static final int MAX_RESERVATIONS = 64;
     public static final int MAX_MEMBERS = 32;
@@ -12,6 +13,7 @@ public final class StationLimits {
     public static final int MAX_OWNED_STATIONS = 1;
     public static final int MAX_NAME_LENGTH = 48;
     public static final int REGION_SIZE = 512;
+    public static final int EXPANDED_REGION_SIZE = 768;
     public static final int GRID_SPACING = 1_024;
     public static final int PLATFORM_RADIUS = 8;
     public static final int PLATFORM_BLOCKS = 289;

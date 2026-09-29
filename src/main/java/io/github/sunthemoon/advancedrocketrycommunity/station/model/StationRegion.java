@@ -8,9 +8,14 @@ public record StationRegion(int minimumX, int minimumZ, int maximumX, int maximu
         }
         long width = (long) maximumX - minimumX + 1L;
         long depth = (long) maximumZ - minimumZ + 1L;
-        if (width != StationLimits.REGION_SIZE || depth != StationLimits.REGION_SIZE) {
-            throw new IllegalArgumentException("Station region must use the fixed v0.7 size");
+        if (width != depth || (width != StationLimits.REGION_SIZE
+                && width != StationLimits.EXPANDED_REGION_SIZE)) {
+            throw new IllegalArgumentException("Station region must use an allowed square size");
         }
+    }
+
+    public int width() {
+        return maximumX - minimumX + 1;
     }
 
     public boolean contains(int x, int z) {
@@ -24,4 +29,3 @@ public record StationRegion(int minimumX, int minimumZ, int maximumX, int maximu
                 && maximumZ >= other.minimumZ;
     }
 }
-
