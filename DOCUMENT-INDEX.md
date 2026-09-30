@@ -9,6 +9,7 @@
 | `00-READ-ME-FIRST.md` | 人工启动顺序 |
 | `MASTER-EXECUTION-PLAN.md` | v0.x–v1.0 初始单文件快照；后续规划以分文件、ADR/状态为准 |
 | `codex-prompts/00-initialize-repository.md` | 第一次执行，只完成 v0.0.1 |
+| [至完成的分会话计划](docs/status/COMPLETION-PLAN.md) | 从当前到 v2.0 的分会话执行块、每块做法与“下一块”指针 |
 
 ## 产品与总体方案
 
