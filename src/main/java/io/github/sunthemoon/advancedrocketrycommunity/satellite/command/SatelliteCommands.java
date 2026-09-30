@@ -202,8 +202,15 @@ public final class SatelliteCommands {
             context.getSource().sendFailure(Component.literal("The held chip is already blank"));
             return 0;
         }
-        UUID satelliteId = decoded.identity().map(SatelliteIdentity::satelliteId).orElse(null);
-        if (satelliteId != null && satellites.satellite(context.getSource().getServer(), satelliteId).isPresent()) {
+        SatelliteMissionSavedData registry = SatelliteMissionSavedData.get(context.getSource().getServer());
+        if (!registry.operational()) {
+            // C7-L1: a blocked registry cannot tell whether the satellite still exists.
+            context.getSource().sendFailure(Component.literal("The satellite registry is blocked; nothing was blanked"));
+            return 0;
+        }
+        UUID satelliteId = decoded.identity().map(SatelliteIdentity::satelliteId)
+                .or(() -> SatelliteItemData.rawSatelliteId(held)).orElse(null);
+        if (satelliteId != null && registry.satellite(satelliteId).isPresent()) {
             context.getSource().sendFailure(Component.literal(
                     "Satellite " + satelliteId + " is still registered; decommission it first"));
             return 0;

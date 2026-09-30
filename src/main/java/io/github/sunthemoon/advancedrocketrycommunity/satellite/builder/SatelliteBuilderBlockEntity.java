@@ -60,7 +60,7 @@ public final class SatelliteBuilderBlockEntity extends BlockEntity implements Me
     /** Revision-4 amendment: the builder charges from redstone like the terminal (no FE source exists yet). */
     public static final int SLOT_CHARGE = 10;
     public static final int SLOT_COUNT = 11;
-    public static final int MENU_DATA_COUNT = 11;
+    public static final int MENU_DATA_COUNT = 12;
     public static final int ENERGY_CAPACITY = 10_000;
     public static final int REDSTONE_ENERGY = 2_000;
     public static final int ASSEMBLY_ENERGY = 1_000;
@@ -420,7 +420,8 @@ public final class SatelliteBuilderBlockEntity extends BlockEntity implements Me
         @Nonnull
         @Override
         public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-            return inventory.insertItem(slot, stack, simulate);
+            // C7-L11: automation inserts only components and redstone, never the chip.
+            return slot == SLOT_CHIP ? stack : inventory.insertItem(slot, stack, simulate);
         }
 
         @Nonnull
@@ -436,7 +437,7 @@ public final class SatelliteBuilderBlockEntity extends BlockEntity implements Me
 
         @Override
         public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-            return inventory.isItemValid(slot, stack);
+            return slot != SLOT_CHIP && inventory.isItemValid(slot, stack);
         }
     }
 

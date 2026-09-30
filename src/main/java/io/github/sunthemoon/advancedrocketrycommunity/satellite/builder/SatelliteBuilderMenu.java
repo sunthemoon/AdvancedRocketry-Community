@@ -169,16 +169,17 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
 
     public Optional<SatelliteStats> previewStats() {
         int battery = (data.get(5) & 0xFFFF) | ((data.get(6) & 0xFFFF) << 16);
+        int dataStat = (data.get(7) & 0xFFFF) | ((data.get(8) & 0xFFFF) << 16);
         try {
-            return data.get(10) == 0 ? Optional.empty()
-                    : Optional.of(new SatelliteStats(data.get(4), battery, data.get(7), data.get(8), data.get(9)));
+            return data.get(11) == 0 ? Optional.empty()
+                    : Optional.of(new SatelliteStats(data.get(4), battery, dataStat, data.get(9), data.get(10)));
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
         }
     }
 
     public Optional<SatelliteKind> previewKind() {
-        int value = data.get(10) - 1;
+        int value = data.get(11) - 1;
         return value >= 0 && value < SatelliteKind.values().length ? Optional.of(SatelliteKind.values()[value]) : Optional.empty();
     }
 
@@ -200,7 +201,7 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
         }
     }
 
-    /** Read-only, server-authoritative menu values; battery is split into two 16-bit halves. */
+    /** Read-only, server-authoritative menu values; battery and data are split into two 16-bit halves. */
     private static final class MenuData implements ContainerData {
         private final SatelliteBuilderBlockEntity builder;
 
@@ -220,10 +221,11 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
                 case 4 -> stats == null ? 0 : stats.power();
                 case 5 -> stats == null ? 0 : stats.battery() & 0xFFFF;
                 case 6 -> stats == null ? 0 : stats.battery() >>> 16;
-                case 7 -> stats == null ? 0 : stats.data();
-                case 8 -> stats == null ? 0 : stats.cargo();
-                case 9 -> stats == null ? 0 : stats.rating();
-                case 10 -> stats == null ? 0 : preview.definition().map(definition -> definition.kind().ordinal() + 1).orElse(0);
+                case 7 -> stats == null ? 0 : stats.data() & 0xFFFF;
+                case 8 -> stats == null ? 0 : stats.data() >>> 16;
+                case 9 -> stats == null ? 0 : stats.cargo();
+                case 10 -> stats == null ? 0 : stats.rating();
+                case 11 -> stats == null ? 0 : preview.definition().map(definition -> definition.kind().ordinal() + 1).orElse(0);
                 default -> 0;
             };
         }

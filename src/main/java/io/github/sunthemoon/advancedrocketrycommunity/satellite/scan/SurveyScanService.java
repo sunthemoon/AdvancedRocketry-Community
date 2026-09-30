@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.scan;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
@@ -133,11 +134,20 @@ public final class SurveyScanService {
                         "status.advancedrocketrycommunity.survey_scan.cancelled"), true);
                 continue;
             }
-            if (scan.job().step(new LevelScanSource(player.serverLevel()), budget)) {
+            try {
+                if (scan.job().step(new LevelScanSource(player.serverLevel()), budget)) {
+                    jobs.remove(entry.getKey());
+                    sender.accept(player, scan.job().result());
+                    player.displayClientMessage(Component.translatable(
+                            "status.advancedrocketrycommunity.survey_scan.complete"), true);
+                }
+            } catch (RuntimeException exception) {
+                // C7-M3: a failing job is dropped (not refunded) and never reaches the server tick.
                 jobs.remove(entry.getKey());
-                sender.accept(player, scan.job().result());
+                AdvancedRocketryCommunity.LOGGER.error("Survey scan for {} failed and was dropped",
+                        entry.getKey(), exception);
                 player.displayClientMessage(Component.translatable(
-                        "status.advancedrocketrycommunity.survey_scan.complete"), true);
+                        "status.advancedrocketrycommunity.survey_scan.cancelled"), true);
             }
         }
     }

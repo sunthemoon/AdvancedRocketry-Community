@@ -149,7 +149,8 @@ public final class SurveyScanJob {
                 }
             }
             int biome = SurveyScanResultPacket.Cell.OTHER;
-            if (dominant != null) {
+            // C7-M3: an ID the result cannot carry (over 128 characters) is shown as OTHER.
+            if (dominant != null && dominant.toString().length() <= SurveyScanResultPacket.MAX_ID_CHARS) {
                 int known = palette.indexOf(dominant);
                 if (known >= 0) {
                     biome = known;

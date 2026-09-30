@@ -116,6 +116,25 @@ final class SurveyScanJobTest {
     }
 
     @Test
+    void aBiomeIdTheResultCannotCarryIsShownAsOther() {
+        // C7-M3: a 129-character biome ID must not make the finished scan throw.
+        ResourceLocation longBiome = ResourceLocation.tryParse("test:" + "b".repeat(124));
+        assertEquals(129, longBiome.toString().length());
+        SurveyScanJob job = new SurveyScanJob(0, 0, 16, 16, 0, 4);
+        Source source = new Source((x, z) -> 1, (x, z) -> 0) {
+            @Override
+            public Optional<ResourceLocation> biome(int x, int y, int z) {
+                return Optional.of(x < 0 ? longBiome : ResourceLocation.tryParse("minecraft:plains"));
+            }
+        };
+        assertTrue(job.step(source, Integer.MAX_VALUE));
+        SurveyScanResultPacket result = job.result();
+        assertEquals(SurveyScanResultPacket.Cell.OTHER, result.cells().get(0).biome());
+        assertEquals(0, result.cells().get(1).biome());
+        assertEquals(1, result.palette().size());
+    }
+
+    @Test
     void invalidGeometryIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new SurveyScanJob(0, 0, 15, 4, 0, 16));
         assertThrows(IllegalArgumentException.class, () -> new SurveyScanJob(0, 0, 52, 4, 0, 16));

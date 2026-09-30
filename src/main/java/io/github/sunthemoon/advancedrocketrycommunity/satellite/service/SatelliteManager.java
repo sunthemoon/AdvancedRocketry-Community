@@ -82,7 +82,12 @@ public final class SatelliteManager {
             return;
         }
         MinecraftServer server = event.getServer();
-        scans.tick(server);
+        try {
+            scans.tick(server);
+        } catch (RuntimeException exception) {
+            // C7-M3: the service drops a failing job itself; this guards the tick against anything else.
+            logOperationFailure("survey scan tick", exception);
+        }
         if (!replayInitialized) {
             initializeDiscoveryReplay(server);
         }
@@ -93,6 +98,10 @@ public final class SatelliteManager {
         }
         try {
             SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+            if (!data.operational()) {
+                // A blocked registry (ADR-050 section 9) was reported when it loaded; nothing is scheduled.
+                return;
+            }
             SatelliteMissionRegistry.SchedulerPass pass = data.completeDue(gameTime);
             if (pass.completed() > 0) {
                 data.flush(server);
@@ -454,7 +463,12 @@ public final class SatelliteManager {
     /** ADR-049 section 9: the 20-tick check of one loaded receiver. */
     public SolarLinks.ReceiverCheck checkReceiver(MinecraftServer server, UUID receiverId,
                                                   List<Optional<SatelliteIdentity>> chips) {
-        return links.check(server, receiverId, chips);
+        try {
+            return links.check(server, receiverId, chips);
+        } catch (RuntimeException exception) {
+            logOperationFailure("receiver check", exception);
+            return SolarLinks.unavailable(chips);
+        }
     }
 
     public void registerReceiver(UUID receiverId, net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> level,
@@ -463,7 +477,11 @@ public final class SatelliteManager {
     }
 
     public void releaseReceiver(MinecraftServer server, UUID receiverId) {
-        links.release(server, receiverId);
+        try {
+            links.release(server, receiverId);
+        } catch (RuntimeException exception) {
+            logOperationFailure("receiver release", exception);
+        }
     }
 
     public SatelliteOperationResult unlink(ServerPlayer player, SatelliteIdentity identity, boolean operator) {
@@ -472,6 +490,10 @@ public final class SatelliteManager {
 
     public SatelliteOperationResult unlinkAdmin(MinecraftServer server, UUID satelliteId, UUID actor) {
         return links.unlinkAdmin(server, satelliteId, actor);
+    }
+
+    public boolean scanRunning(UUID playerId) {
+        return scans.running(playerId);
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {

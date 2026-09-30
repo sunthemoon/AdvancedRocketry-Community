@@ -362,5 +362,7 @@ public final class AdvancedRocketryCommunity {
         StationRuntime.clear();
         SatelliteRuntime.clear();
         planetaryCatalogs.clear();
+        satelliteComponents.clear();
+        resourceTables.clear();
     }
 }

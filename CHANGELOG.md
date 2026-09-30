@@ -24,8 +24,10 @@ No candidate or release approval is assigned.
   requirements, and lifetime research, then binds a blank chip and outputs a
   package. It charges from redstone like the terminal.
 - The Satellite Terminal launches the new kinds idle into a chosen orbit body
-  (discovery rules apply) and consumes a replayed package exactly once. It can
-  decommission an idle satellite and blank its chip; nothing is refunded.
+  (discovery rules apply) and consumes a replayed package exactly once, only
+  after the satellite is saved. A newly inserted chip starts from its first
+  launch target. The terminal can decommission an idle satellite and blank its
+  chip; nothing is refunded.
 - Add `/arce satellite admin blank-chip <player>` for chips of satellites that no
   longer exist. `recover-chip` now restores the satellite's kind and components.
 - Using a survey satellite's chip starts an area scan around the player, paid

@@ -106,6 +106,11 @@ public final class SatelliteRuntime {
         return current == null ? SatelliteOperationCode.SERVER_ERROR : current.requestScan(player, identity);
     }
 
+    public static boolean scanRunning(java.util.UUID playerId) {
+        SatelliteManager current = manager;
+        return current != null && current.scanRunning(playerId);
+    }
+
     public static Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog> celestialCatalog() {
         SatelliteManager current = manager;
         return current == null ? Optional.empty() : current.celestialCatalog();

@@ -20,9 +20,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 /** Six-slot input policy and preflight before native item decoding. */
 final class SatelliteTerminalInventory extends ItemStackHandler {
     private final BooleanSupplier blocked;
-    private final Runnable changed;
+    private final java.util.function.IntConsumer changed;
 
-    SatelliteTerminalInventory(BooleanSupplier blocked, Runnable changed) {
+    SatelliteTerminalInventory(BooleanSupplier blocked, java.util.function.IntConsumer changed) {
         super(6);
         this.blocked = blocked;
         this.changed = changed;
@@ -36,7 +36,7 @@ final class SatelliteTerminalInventory extends ItemStackHandler {
         return blocked.getAsBoolean() ? ItemStack.EMPTY : super.extractItem(slot, amount, simulate);
     }
 
-    @Override protected void onContentsChanged(int slot) { changed.run(); }
+    @Override protected void onContentsChanged(int slot) { changed.accept(slot); }
 
     static boolean validItemForSlot(int slot, ItemStack stack) {
         if (stack.isEmpty()) { return false; }

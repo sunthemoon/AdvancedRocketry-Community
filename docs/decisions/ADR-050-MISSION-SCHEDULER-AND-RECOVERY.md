@@ -12,6 +12,7 @@ accepted_by: sunthemoon
 accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-038, ADR-040, ADR-049, ADR-051, ADR-052]
+pending_amendment: revision 4 (proposed 2026-10-01 after the C7 review; decided by that review)
 ```
 
 Revision 2 answers the first independent review (H1–H4, H7, M4–M8, M15, L1, L2,
@@ -329,3 +330,31 @@ final Low findings are applied in this text. Reports and dispositions are in the
 Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
+
+## Proposed amendment — revision 4 (C7, 2026-10-01)
+
+Status: **PROPOSED**. Revision 3 stays the accepted contract until the C7
+independent review accepts this amendment. It records what C7 implemented where
+the revision-3 text differs (review finding C7-M5,
+[dispositions](../work/v1.6.0-c7-review/VERIFICATION.md)).
+
+1. **Save epoch (§2).** A write carries E + 1 only when the registry changed
+   since the last persisted epoch; otherwise it carries E. E advances only after
+   such a changed write returns without error. An unchanged reload therefore
+   writes the same bytes. The invariant used by ADR-051 still holds, because
+   every start and every acknowledgement is a change: a mission started at
+   epoch s is present in every file whose epoch is greater than s, and
+   `ack_epoch < E` still means the acknowledgement is durable.
+2. **Counters (§10).** Root 3 does not persist counters. Owner counts, the
+   receiver-link index and the queues are derived when a root loads and kept
+   incrementally, so they cannot disagree with the records.
+3. **`target_body` (§3) is required.** It is the data mission's target, the
+   system root of a survey or asteroid mission, and the gas giant of a gas
+   mission. The root-3 codec already requires it.
+4. **Blocked registry.** While the registry is blocked (§9), the scheduler pass
+   does nothing and reports nothing further, launches and scans are refused
+   without consuming anything, and receivers produce nothing (ADR-049 revision 4,
+   item 7).
+5. **Per-player intent rate limits (§6)** for the terminal's start, claim, cancel,
+   decommission and unlink intents and its selection intents are delivered with
+   the C8a limits; until then only the builder's assembly cooldown applies.

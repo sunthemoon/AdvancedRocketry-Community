@@ -56,6 +56,11 @@ final class SatelliteKindLifecycle {
                 boolean same = existing.ownerId().equals(identity.ownerId())
                         && existing.definitionId().equals(identity.definitionId())
                         && existing.kind() == identity.kind();
+                // C7-H1: a replay after a failed barrier flush must not consume the package before the
+                // registry is durable; a flush failure throws and keeps the package in the terminal.
+                if (same && data.isDirty()) {
+                    data.flush(server);
+                }
                 return new SatelliteOperationResult(
                         same ? SatelliteOperationCode.IDEMPOTENT : SatelliteOperationCode.IDENTITY_CONFLICT,
                         false, Optional.of(existing), Optional.empty(), 0);
@@ -67,7 +72,11 @@ final class SatelliteKindLifecycle {
             SatelliteKindDefinition definition = catalog.kindDefinition(identity.definitionId())
                     .filter(candidate -> candidate.kind() == identity.kind())
                     .orElse(null);
-            if (definition == null) {
+            // C7-L4: the primary component must still select this definition after a data-pack change.
+            boolean primarySelects = definition != null && identity.components().size() > 1
+                    && catalog.kindDefinitionForPrimary(identity.components().get(1))
+                            .filter(candidate -> candidate.id().equals(definition.id())).isPresent();
+            if (!primarySelects) {
                 return SatelliteManager.failure(SatelliteOperationCode.DEFINITION_NOT_FOUND);
             }
             SatelliteOperationCode orbit = validateOrbitBody(server, definition, orbitBody);
@@ -140,7 +149,8 @@ final class SatelliteKindLifecycle {
             SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
             SatelliteOperationResult result = data.decommission(
                     identity.satelliteId(), player.getUUID(), operator, receiverMissing(server, identity.satelliteId()));
-            if (result.changed() || data.isDirty()) {
+            // C7-L5: only a removal needs the barrier; a refusal writes nothing.
+            if (result.changed()) {
                 data.flush(server);
             }
             if (result.changed()) {

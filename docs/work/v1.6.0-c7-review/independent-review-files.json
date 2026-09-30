@@ -1,0 +1,12 @@
+[
+  {
+    "bytes": 1354,
+    "path": "gradle-test.log",
+    "sha256": "13bd886fe21452a93261773734fadbc52080c5af4c1aabf7dc60fc391ee96a1f"
+  },
+  {
+    "bytes": 22599,
+    "path": "REVIEW.md",
+    "sha256": "054e37cff911ef7fc0928b8cedb8f8daa9810582b6e2e5aa60e8672546af344f"
+  }
+]

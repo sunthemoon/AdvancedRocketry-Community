@@ -50,6 +50,9 @@ public final class SolarLinks {
     /** The 20-tick receiver check: claim free links, keep held ones, release links whose chip is gone. */
     ReceiverCheck check(MinecraftServer server, UUID receiverId, List<Optional<SatelliteIdentity>> chips) {
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        if (!data.operational()) {
+            return unavailable(chips);
+        }
         Map<UUID, SatelliteState> holding = new LinkedHashMap<>();
         List<LinkStatus> statuses = new ArrayList<>(chips.size());
         for (Optional<SatelliteIdentity> chip : chips) {
@@ -103,10 +106,25 @@ public final class SolarLinks {
         return (int) Math.min(MAX_OUTPUT_PER_TICK, Math.floor(total));
     }
 
-    /** A removed receiver clears every link it holds. */
+    /**
+     * C7-M1: with a blocked registry (ADR-050 section 9) a receiver produces nothing, shows every chip as
+     * unavailable and leaves the links untouched; it never throws.
+     */
+    static ReceiverCheck unavailable(List<Optional<SatelliteIdentity>> chips) {
+        List<LinkStatus> statuses = new ArrayList<>(chips.size());
+        chips.forEach(chip -> statuses.add(chip.isPresent() ? LinkStatus.UNAVAILABLE : LinkStatus.EMPTY));
+        return new ReceiverCheck(statuses, 0);
+    }
+
+    /** A removed receiver clears every link it holds; a blocked registry keeps them for the operator. */
     void release(MinecraftServer server, UUID receiverId) {
         receivers.remove(receiverId);
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        if (!data.operational()) {
+            AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_SATELLITE_RECEIVER_RELEASE_SKIPPED receiver={} reason=registry_blocked", receiverId);
+            return;
+        }
         for (UUID linked : data.linkedTo(receiverId)) {
             clearLink(data, linked);
         }

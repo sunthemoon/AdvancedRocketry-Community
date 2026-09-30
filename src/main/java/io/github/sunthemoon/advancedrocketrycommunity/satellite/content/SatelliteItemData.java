@@ -51,6 +51,16 @@ public final class SatelliteItemData {
         root.put(DATA_KEY, data);
     }
 
+    /** The raw {@code satellite_id} of any bound chip, even one whose identity no longer decodes. */
+    public static Optional<java.util.UUID> rawSatelliteId(ItemStack stack) {
+        CompoundTag root = stack.getTag();
+        if (root == null || !root.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
+            return Optional.empty();
+        }
+        CompoundTag data = root.getCompound(DATA_KEY);
+        return data.hasUUID("satellite_id") ? Optional.of(data.getUUID("satellite_id")) : Optional.empty();
+    }
+
     public static DecodeResult read(ItemStack stack) {
         Objects.requireNonNull(stack, "stack");
         return readTag(stack.getTag());

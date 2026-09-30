@@ -95,7 +95,8 @@ final class MicrowaveReceiverInventory extends ItemStackHandler {
                 throw new IllegalArgumentException("Unknown microwave receiver item");
             }
             ItemStack stack = ItemStack.of(nativeItem);
-            if (stack.isEmpty() || !nativeItem.equals(stack.serializeNBT())) {
+            if (stack.isEmpty() || !stack.is(ModItems.SATELLITE_CONTROL_CHIP.get())
+                    || !nativeItem.equals(stack.serializeNBT())) {
                 throw new IllegalArgumentException("Microwave receiver item would be normalized");
             }
             decoded[slot] = stack;

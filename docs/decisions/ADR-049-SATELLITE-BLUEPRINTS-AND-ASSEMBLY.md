@@ -12,7 +12,7 @@ accepted_by: sunthemoon
 accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-050, ADR-051, ADR-052]
-pending_amendment: revision 4 (proposed 2026-10-01 in C7b and C7c; decided by the C7 independent review)
+pending_amendment: revision 4 (proposed 2026-10-01 in C7; decided by the C7 independent review)
 ```
 
 Revision 2 answers the first independent review (H3, M4, M9, M10, M11, M14,
@@ -377,59 +377,85 @@ Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
 
-## Proposed amendment — revision 4 (C7b and C7c, 2026-10-01)
+## Proposed amendment — revision 4 (C7, 2026-10-01)
 
 Status: **PROPOSED**. Revision 3 stays the accepted contract until the C7
-independent review accepts or rejects this amendment. The C7b implementation
-already follows it; if it is rejected, C7 is reworked before it closes.
+independent review accepts this amendment. The first C7 review
+([report and dispositions](../work/v1.6.0-c7-review/VERIFICATION.md)) accepted
+items 1, 4 and 5 and asked for the changes now written into items 2, 3, 6 and 7,
+and for items 8–11. The C7 implementation follows this text.
 
 1. **Builder charge slot.** The mod has no FE generator, and ADR-010 already
    charges the terminal from redstone (2,000 FE per item). The builder therefore
    gets an eleventh slot (index 10) that accepts only plain redstone, with the
    same 2,000 FE per item, up to the 10,000 FE buffer. Energy still arrives from
    any side as well. Root schema 1 holds **exactly 11 slots** (§5 said 10).
-   Automation may insert redstone into slot 10 and still extracts only slot 9.
-2. **Terminal view contents.** Besides the §10 sections, the view carries the
-   selected satellite kind (one byte) and the orbit body of the chip's
-   registered satellite (≤ 131 bytes), so a non-`data` satellite can be shown
-   without a data mission. With every section at its maximum and 128-character
-   IDs, the measured worst case is 8,405 bytes (≤ 12 KiB), pinned by a test. In C7b the
+   Automation may insert components into slots 0–7 and redstone into slot 10,
+   never the chip (slot 8), and extracts only slot 9.
+2. **Terminal view contents and pace.** Besides the §10 sections, the view
+   carries the selected satellite kind (one byte) and the orbit body of the
+   chip's registered satellite (≤ 131 bytes). The kind comes from the chip, and
+   is `data` when the chip slot is empty. With every section at its maximum and
+   128-character IDs, the measured worst case is 8,405 bytes (≤ 12 KiB), pinned
+   by a test. The view is composed and sent at most once per 5 **server ticks**
+   per open menu, however many clicks or broadcasts happen in between. In C7 the
    definition and launch target come from the chip; the instance, product,
    mission-page and reward-buffer sections stay empty until ADR-051 missions
    exist (C8b), and the wire format does not change then.
 3. **Blank-chip command.** The command is `/arce satellite admin blank-chip
-   <player>` (permission level 2) and blanks that player's main-hand chip. It
-   refuses a chip whose satellite is still registered, so an operator cannot
-   strand a live satellite; `recover-chip` stays the way to replace a lost
-   chip, and now writes the satellite's kind and components. The audit line is
-   `ARCE_SATELLITE_BLANK_CHIP`.
+   <player>` (permission level 2). It blanks that player's main-hand chip, with
+   the audit line `ARCE_SATELLITE_BLANK_CHIP`. It refuses a chip whose satellite
+   is still registered, reading the raw `satellite_id` of a chip whose identity
+   no longer decodes, and it refuses everything while the registry is blocked,
+   so an operator cannot strand a live satellite. `recover-chip` stays the way to
+   replace a lost chip and now writes the satellite's kind and components.
 4. **Data mission start for other kinds.** The existing data-mission start
    returns `DEFINITION_NOT_FOUND` for a non-`data` chip; resource missions get
    their own starts (ADR-051).
-
-C7c adds these clarifications of §8–§10:
-
 5. **Scan request codes.** In order: `UNAUTHORIZED` (not the owner, and not an
    operator); `RATE_LIMITED` (a job running for the player, or the cooldown);
    `CAPACITY_REACHED` (the server job limit); `SATELLITE_NOT_FOUND`;
    `DEFINITION_NOT_FOUND` (not a survey satellite); `BODY_UNAVAILABLE` (the
    orbit body left the catalog); `TARGET_NOT_ALLOWED` (the player's Level is not
    the orbit body's); `NO_POWER`. Nothing is paid before the last check, and a
-   cancelled job is not refunded.
+   cancelled or failed job is not refunded.
 6. **Scan reading.** A block is ore when it is in `#forge:ores` and counted when
    it is not air. The biome is sampled at every fourth block of each column (the
    biome resolution); ties go to the smaller ID. The first 16 dominant biomes get
-   palette indices in cell order; later ones are `OTHER` (254), and cells not
-   read are `UNKNOWN` (255, ratio 0). A cell stops at its first unloaded column.
-   The measured maximum result is 3,819 bytes (≤ 8 KiB). The cooldown starts
-   with the job, and the three limits are COMMON config values that cannot be
-   loosened past §8.
-7. **Receiver links.** Only bound chips of `solar` satellites fit the four slots,
-   and a chip whose owner differs from the record does not link. Links change
-   only at the 20-tick check, so moving chips cannot churn the registry. The
-   output of the held links is recomputed at each check. A receiver is
-   **missing** only when the server has seen it since the start and its last
-   chunk is loaded with no receiver of that ID there. A receiver not seen since
-   the start, or in an unloaded chunk, is unknown, and then only an operator can
-   unlink (`/arce satellite admin unlink <satellite_id>`, audit line
-   `ARCE_SATELLITE_UNLINK`). The terminal gains the `UNLINK` intent (button 7).
+   palette indices in cell order; later ones, and any ID longer than 128
+   characters, are `OTHER` (254). Cells not read are `UNKNOWN` (255, ratio 0),
+   and a cell stops at its first unloaded column. The measured maximum result is
+   3,819 bytes (≤ 8 KiB). The cooldown starts with the job. The three limits of
+   §8 are COMMON config values that cannot be loosened past §8. The read budget
+   is per tick, so a scan's length scales with the Level's height: about 216
+   ticks at the worst-case geometry in a 384-block Level.
+7. **Receiver links.** Only bound chips of `solar` satellites fit the four slots
+   (also when a root loads), and a chip whose owner differs from the record does
+   not link. Links change only at the 20-tick check, so moving chips cannot
+   churn the registry; the output of the held links is recomputed there. A
+   receiver is **missing** only when the server has seen it since the start and
+   its last chunk is loaded with no receiver of that ID there. A receiver not
+   seen since the start, or in an unloaded chunk, is unknown; then only an
+   operator can unlink (`/arce satellite admin unlink <satellite_id>`, audit
+   line `ARCE_SATELLITE_UNLINK`). An operator unlink of a link whose holder is
+   present is undone by that holder's next check; it is meant for missing
+   receivers. The terminal gains the `UNLINK` intent (button 7). `MISSION_BUSY`
+   is reused for "linked to a present or unknown receiver", and `IDEMPOTENT`
+   answers an unlink when there is no link. With a blocked registry (ADR-050
+   §9) a receiver produces nothing, shows its chips as unavailable, never throws,
+   and leaves the links untouched when it is broken. Receivers have no access
+   control, like a chest.
+8. **Operator decommission.** An operator (permission level 2) may decommission
+   another owner's idle satellite at a terminal with its chip, under the same
+   idle and link rules, with the same audit line.
+9. **Launch refusals.** Besides `COMPONENT_UNAVAILABLE`, `STAT_LIMIT` and
+   `REQUIREMENT_UNMET` (§6), a launch can answer `INVALID_COMPONENTS` (a
+   component's role changed), `DEFINITION_NOT_FOUND` (the definition is gone,
+   or the identity's primary component no longer selects it), `TARGET_NOT_ALLOWED`,
+   `RESEARCH_LOCKED`, `OWNER_LIMIT` and `CAPACITY_REACHED`. The package is kept
+   in every case.
+10. **Replay durability.** A replayed non-`data` launch flushes a dirty registry
+    before it answers `IDEMPOTENT`, so the package is consumed only once the
+    satellite is durable; a failed flush keeps the package.
+11. **Target selection.** When the chip or payload selects another definition,
+    the terminal's target selection starts again from its first target.

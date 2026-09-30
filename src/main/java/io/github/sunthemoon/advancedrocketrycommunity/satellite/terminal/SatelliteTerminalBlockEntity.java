@@ -61,12 +61,15 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     private static final int MAX_TERMINAL_NBT_BYTES = 64 * 1024;
     static final String DATA_KEY = "SatelliteTerminal";
 
-    private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(), this::setChanged);
+    private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(), this::inventoryChanged);
     private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage();
     private LazyOptional<net.minecraftforge.items.IItemHandler> itemCapability = LazyOptional.empty();
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.empty();
 
     private int selectedTargetIndex;
+    /** The definition the target index was chosen for; runtime only (C7-L6). */
+    @Nullable
+    private ResourceLocation targetDefinition;
     private SatelliteOperationCode lastResult = SatelliteOperationCode.SUCCESS;
     @Nullable
     private UUID ownerId;
@@ -331,6 +334,18 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         return Optional.of(identity);
     }
 
+    /** C7-L6: when the chip or payload selects another definition, its targets start from the first. */
+    private void inventoryChanged(int slot) {
+        if (slot == SLOT_CONTROL_CHIP || slot == SLOT_DATA_STORAGE) {
+            ResourceLocation definition = selectedDefinition();
+            if (!java.util.Objects.equals(definition, targetDefinition)) {
+                targetDefinition = definition;
+                selectedTargetIndex = 0;
+            }
+        }
+        setChanged();
+    }
+
     private void chargeFromRedstone() {
         if (blocked()) {
             return;
@@ -567,6 +582,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             }
             inventory.loadValidated(data.getCompound("inventory"));
             energyStorage.set(energy);
+            targetDefinition = selectedDefinition();
             selectedTargetIndex = target;
             lastResult = SatelliteOperationCode.values()[result];
             if (data.hasUUID("owner_id")) {
@@ -587,6 +603,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         }
         energyStorage.set(0);
         selectedTargetIndex = 0;
+        targetDefinition = null;
         lastResult = SatelliteOperationCode.SUCCESS;
         ownerId = null;
         futureSchemaBlocked = false;
