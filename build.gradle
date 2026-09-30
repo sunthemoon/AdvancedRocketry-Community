@@ -1,5 +1,5 @@
 // Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03, 2026-09-11, 2026-09-26, and 2026-09-27; see THIRD-PARTY-NOTICES.md.
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03, 2026-09-11, 2026-09-26, 2026-09-27, and 2026-09-30; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
@@ -94,7 +94,7 @@ minecraft {
             workingDirectory project.file('run-data')
             args '--mod', mod_id,
                     '--all',
-                    '--output', file('src/generated/v1.4/resources/'),
+                    '--output', file('src/generated/v1.5/resources/'),
                     '--existing', file('src/main/resources/'),
                     '--existing', file('src/generated/resources/'),
                     '--existing', file('src/generated/v0.2/resources/'),
@@ -105,7 +105,8 @@ minecraft {
                     '--existing', file('src/generated/v0.7/resources/'),
                     '--existing', file('src/generated/v0.8/resources/'),
                     '--existing', file('src/generated/v1.2/resources/'),
-                    '--existing', file('src/generated/v1.3/resources/')
+                    '--existing', file('src/generated/v1.3/resources/'),
+                    '--existing', file('src/generated/v1.4/resources/')
         }
     }
 }
@@ -122,6 +123,7 @@ sourceSets.main.resources {
     srcDir 'src/generated/v1.2/resources'
     srcDir 'src/generated/v1.3/resources'
     srcDir 'src/generated/v1.4/resources'
+    srcDir 'src/generated/v1.5/resources'
     exclude '.cache/**'
 }
 
@@ -139,7 +141,9 @@ def currentSatelliteDefinition = 'data/advancedrocketrycommunity/satellite_defin
 
 tasks.named('processResources') {
     eachFile { details ->
-        if (details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
+        // ADR-043: the v1.5 copy is authoritative; the v0.8 and v1.4 copies are superseded.
+        if ((details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
+                || details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath()))
                 && details.path == currentSatelliteDefinition) {
             details.exclude()
         }
@@ -160,7 +164,9 @@ tasks.named('processResources') {
 
 tasks.named('sourcesJar') {
     eachFile { details ->
-        if (details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
+        // ADR-043: the v1.5 copy is authoritative; the v0.8 and v1.4 copies are superseded.
+        if ((details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
+                || details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath()))
                 && details.path == currentSatelliteDefinition) {
             details.exclude()
         }

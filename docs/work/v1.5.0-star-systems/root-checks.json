@@ -1,0 +1,74 @@
+{
+  "artifacts": {
+    "api_classes_unchanged": 27,
+    "api_jar_note": "only META-INF/THIRD-PARTY-NOTICES.md differs (new modification dates)",
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1232474,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "cdc3f2b29f89f0766b9cad8d7fc73896cfd3121fea374263678df983eec37090"
+      },
+      {
+        "bytes": 2713439,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "6f1158aa064d32e5750b6d54e6c13af81f30991973b1291b3128cfa9f9d25fc7"
+      }
+    ],
+    "base_commit": "71808851411beb13c420ebfa1c387c4e0737bf5d"
+  },
+  "base_commit": "7180885",
+  "junit": {
+    "full_01_failed": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 178,
+      "tests": 981
+    },
+    "full_02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 178,
+      "tests": 981
+    },
+    "gametests_required_passed_run_02": 240,
+    "junit_run_02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 178,
+      "tests": 981
+    },
+    "test_task": "executed"
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    ".gitignore": "7d52c0f026bb83c11022233f7b05c8e7db90ada0219c82b25eef4ab0fba99272",
+    "build.gradle": "a40f3df935150c0737f45748c7f6de2450641be78eedd0084019c523f4e26b6c",
+    "src/generated/v1.5/resources/assets/advancedrocketrycommunity_v150/lang/en_us.json": "bdfbdd307f0ed5bcc44810c407c52aa3cc7f230451615cab43ebcb95a7a5455e",
+    "src/generated/v1.5/resources/assets/advancedrocketrycommunity_v150/lang/zh_cn.json": "c6e28a812862abdc69c56776f3b7434e4b011c7a8cdd6eda37462114679d0e92",
+    "src/generated/v1.5/resources/data/advancedrocketrycommunity/celestial_bodies/tau_ceti.json": "86e67f7f410bfe6ac96127cc075d6f3202737743343584509332422b8b19875c",
+    "src/generated/v1.5/resources/data/advancedrocketrycommunity/celestial_bodies/tau_ceti_e.json": "e259836c4610ac87649a9994c06e63af11a31e4eff5346e9ad45996e3c4ea73d",
+    "src/generated/v1.5/resources/data/advancedrocketrycommunity/satellite_definitions/data_satellite.json": "dc9c7a92def03a0be52b04cd74acf77f31fdb3a4a00e587d413c14808eca8b50",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/command/CelestialCommands.java": "6c2948ce8757de0691918c8b44c92156ef92e194e3c0070d66284f9f5fd9cd87",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/content/StarSystemContent.java": "d935233516be8fd34b766f7156ecb82b995a5d090c4173ae6397e5a3af14bc9a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryCatalog.java": "34946189e65746f02356720b709d25131af2b66a8ab139851cdd24e03b877f7c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialCatalog.java": "45d4f0d03a81167c870f725146524a4a048bbc52369a3b3cc14cbf6bf2cd81a2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/StarSystemKnowledge.java": "6f2e0c1cf4bff3a728738ae37393cadd85aabd96e25a66f27a6cadf29e37facf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java": "72261b02f24bbc12172736e2508a6d3eaa75f21dfc39ab96aa7ec80af6c950fe",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V150StarSystemLanguageProvider.java": "66973197ca1bb0a4d5c0944e55f080acdfaa3ed4f62a69a8f94d29c5c4f53d73",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V150StarSystemProvider.java": "2c11ae65c3b906f409ae30b3e258516fa897dc52c7c5e21156f8ed7fa433a810",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.java": "26028dfe62379c189a62cf73d2af2db6cb73aef0befd25f6572b5a348a7c6c5a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ConnectedTestPlayers.java": "439fd690cc314a1168c4f59c01bd9cb9789183258c5fc0fc2a82e619abc7b077",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StarSystemGameTests.java": "442ea81dc6c7595e5c3cbfb6f41af11e1a0c47c8319e38c3687b4e0a0ec780c6",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/PlanetaryDiscoveryTest.java": "1ba3f3f50f97fdeff6757e3462bf662598515873496c14a9df14fdd52608b7f1",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/StarSystemContentTest.java": "1246fa12bc1766f1602d5790d4ac52ec4593c552cb147d95afa08069bff2946f",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryReloadTest.java": "32c57df7ee785ec63ffe6cc08bc2fe4f00ffde1d13320d178331f91da8d25b26"
+  }
+}

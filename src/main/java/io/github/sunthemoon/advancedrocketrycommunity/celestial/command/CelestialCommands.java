@@ -7,10 +7,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.BoundedCelestialCodecs;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.PlanetaryDiscoveryPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.StarSystemKnowledge;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -37,6 +41,7 @@ public final class CelestialCommands {
                 .then(Commands.literal("celestial")
                         .then(Commands.literal("validate").executes(this::validate))
                         .then(Commands.literal("list").executes(this::list))
+                        .then(Commands.literal("systems").executes(this::systems))
                         .then(Commands.literal("goto")
                                 .requires(source -> source.hasPermission(2))
                                 .then(Commands.argument(BODY_ARGUMENT, StringArgumentType.word())
@@ -53,6 +58,27 @@ public final class CelestialCommands {
                                                         values -> SharedSuggestionProvider.suggest(values, builder)
                                                 )))
                                         .executes(this::goTo)))));
+    }
+
+    /** ADR-043 star systems (root trees) with shared knowledge state; at most 16 lines. */
+    private int systems(CommandContext<CommandSourceStack> context) {
+        CelestialCatalog catalog = catalogs.current().orElse(null);
+        if (catalog == null) {
+            context.getSource().sendFailure(Component.literal("Celestial catalog unavailable"));
+            return 0;
+        }
+        var progress = CelestialSavedData.get(context.getSource().getServer());
+        Predicate<ResourceLocation> discovered =
+                body -> progress.isWritableSchema() && progress.get(body).isPresent();
+        for (ResourceLocation system : catalog.systems()) {
+            var bodies = catalog.systemBodies(system);
+            long known = bodies.stream().filter(body -> PlanetaryDiscoveryPolicy.allows(body, discovered)).count();
+            boolean systemKnown = StarSystemKnowledge.systemKnown(catalog, system, discovered);
+            context.getSource().sendSuccess(() -> Component.literal(
+                    "system=" + system + " known=" + systemKnown + " bodies=" + bodies.size()
+                            + " known_bodies=" + known), false);
+        }
+        return catalog.systems().size();
     }
 
     private int validate(CommandContext<CommandSourceStack> context) {

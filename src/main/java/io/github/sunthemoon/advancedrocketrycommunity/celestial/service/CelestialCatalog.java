@@ -18,12 +18,25 @@ import net.minecraft.world.level.Level;
 /** Immutable, graph-validated celestial definition snapshot. */
 public final class CelestialCatalog {
     public static final int MAX_BODIES = 128;
+    /** ADR-043: at most this many star systems (root bodies) per catalog. */
+    public static final int MAX_SYSTEMS = 16;
 
     private final Map<ResourceLocation, CelestialBodyDefinition> definitions;
     private final Map<ResourceKey<Level>, List<CelestialBodyDefinition>> definitionsByLevel;
+    private final Map<ResourceLocation, ResourceLocation> systemByBody;
 
     private CelestialCatalog(Map<ResourceLocation, CelestialBodyDefinition> definitions) {
         this.definitions = Collections.unmodifiableMap(new LinkedHashMap<>(definitions));
+        // Derived per catalog (ADR-043), never persisted: a body's system is its root body's ID.
+        Map<ResourceLocation, ResourceLocation> systems = new LinkedHashMap<>();
+        for (CelestialBodyDefinition definition : definitions.values()) {
+            CelestialBodyDefinition current = definition;
+            for (int depth = 0; current.parentId().isPresent() && depth < MAX_BODIES; depth++) {
+                current = definitions.get(current.parentId().get());
+            }
+            systems.put(definition.id(), current.id());
+        }
+        this.systemByBody = Collections.unmodifiableMap(systems);
         Map<ResourceKey<Level>, List<CelestialBodyDefinition>> byLevel = new LinkedHashMap<>();
         definitions.values().forEach(definition -> definition.levelKey().ifPresent(level -> byLevel
                 .computeIfAbsent(level, ignored -> new ArrayList<>()).add(definition)));
@@ -58,6 +71,11 @@ public final class CelestialCatalog {
         String cycle = findCycle(byId);
         if (cycle != null) {
             return DataResult.error(() -> "Celestial parent cycle: " + cycle);
+        }
+        long roots = byId.values().stream().filter(CelestialBodyDefinition::isRoot).count();
+        if (roots > MAX_SYSTEMS) {
+            return DataResult.error(() -> "Celestial catalog has too many root bodies (star systems): "
+                    + roots + " > " + MAX_SYSTEMS);
         }
         return DataResult.success(new CelestialCatalog(byId));
     }
@@ -98,6 +116,23 @@ public final class CelestialCatalog {
     public Optional<CelestialBodyDefinition> forLevel(ResourceKey<Level> levelKey) {
         List<CelestialBodyDefinition> candidates = definitionsByLevel.getOrDefault(levelKey, List.of());
         return candidates.size() == 1 ? Optional.of(candidates.get(0)) : Optional.empty();
+    }
+
+    /** ADR-043 star system of a body: its root body's ID. */
+    public Optional<ResourceLocation> systemOf(ResourceLocation bodyId) {
+        return Optional.ofNullable(systemByBody.get(bodyId));
+    }
+
+    /** Root bodies (star systems), in ID order. */
+    public List<ResourceLocation> systems() {
+        return definitions.values().stream().filter(CelestialBodyDefinition::isRoot)
+                .map(CelestialBodyDefinition::id).toList();
+    }
+
+    /** Bodies of one star system, in ID order. */
+    public List<CelestialBodyDefinition> systemBodies(ResourceLocation systemId) {
+        return definitions.values().stream()
+                .filter(definition -> systemId.equals(systemByBody.get(definition.id()))).toList();
     }
 
     public List<CelestialBodyDefinition> candidatesForLevel(ResourceKey<Level> levelKey) {

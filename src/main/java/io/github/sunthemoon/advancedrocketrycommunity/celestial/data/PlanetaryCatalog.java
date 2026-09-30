@@ -21,6 +21,13 @@ public final class PlanetaryCatalog {
         Objects.requireNonNull(celestial, "celestial");
         Objects.requireNonNull(routes, "routes");
         for (var route : routes.definitions()) {
+            var fromSystem = celestial.systemOf(route.from().bodyId());
+            var toSystem = celestial.systemOf(route.to().bodyId());
+            if (fromSystem.isPresent() && toSystem.isPresent() && !fromSystem.equals(toSystem)) {
+                // ADR-043: rockets never cross star systems; only station warp does.
+                return DataResult.error(() -> "Route " + route.id() + " connects systems "
+                        + fromSystem.get() + " and " + toSystem.get());
+            }
             for (var anchor : List.of(route.from(), route.to())) {
                 var body = celestial.get(anchor.bodyId()).orElse(null);
                 if (body == null) {

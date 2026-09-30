@@ -1,0 +1,26 @@
+{
+  "atmosphere": {
+    "breathable": false,
+    "pressure": 0.0,
+    "profile": "advancedrocketrycommunity:vacuum",
+    "temperature_kelvin": 2000.0
+  },
+  "capabilities": {
+    "gas_giant": false,
+    "landable": false,
+    "orbitable": false
+  },
+  "discovery_required": false,
+  "environment_effects": false,
+  "gravity_multiplier": 0.0,
+  "id": "advancedrocketrycommunity:tau_ceti",
+  "orbit": {
+    "distance": 0,
+    "inclination_degrees": 0.0,
+    "period_ticks": 0
+  },
+  "radiation": 0.0,
+  "schema_version": 2,
+  "solar_intensity": 0.0,
+  "visual_profile": "advancedrocketrycommunity:space"
+}

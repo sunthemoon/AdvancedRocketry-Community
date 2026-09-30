@@ -340,6 +340,49 @@ class PlanetaryReloadTest {
         assertTrue(manager.status().message().contains("broken.json: fixture read failure"));
     }
 
+    @Test
+    void starSystemsDeriveFromRootsAndCrossSystemRoutesRejectTheWholeCandidate() throws IOException {
+        write(BODIES, "far_star", star("far_star").toString());
+        write(BODIES, "far_planet", child("far_planet", "far_star").toString());
+        write(ROUTES, "far_local", orbitRoute("far_local", "far_star", "far_planet").toString());
+        reload();
+        var accepted = manager.capture().orElseThrow();
+        var celestial = accepted.catalog().celestial();
+        assertEquals(List.of(CelestialIds.EARTH_ID, ModIdentity.id("far_star")), celestial.systems());
+        assertEquals(ModIdentity.id("far_star"), celestial.systemOf(ModIdentity.id("far_planet")).orElseThrow());
+        assertEquals(CelestialIds.EARTH_ID, celestial.systemOf(CelestialIds.MOON_ID).orElseThrow());
+
+        // A route between systems rejects the whole reload; the previous pair stays active.
+        write(ROUTES, "interstellar", orbitRoute("interstellar", "earth", "far_planet").toString());
+        reload();
+        retained(accepted);
+        assertTrue(manager.status().message().contains("connects systems"), manager.status().message());
+    }
+
+    @Test
+    void tooManyStarSystemsRejectTheReload() throws IOException {
+        reload();
+        var before = manager.capture().orElseThrow();
+        for (int index = 0; index < 16; index++) {
+            write(BODIES, "star_" + index, star("star_" + index).toString());
+        }
+        reload();
+        retained(before);
+        assertTrue(manager.status().message().contains("too many root bodies"), manager.status().message());
+    }
+
+    @Test
+    void invalidInitialStarSystemDataRefusesTheFirstLoad() throws IOException {
+        write(BODIES, "far_star", star("far_star").toString());
+        write(BODIES, "far_planet", child("far_planet", "far_star").toString());
+        write(ROUTES, "interstellar", orbitRoute("interstellar", "earth", "far_planet").toString());
+        var failure = assertThrows(CompletionException.class, this::reload);
+        assertTrue(failure.getCause() instanceof IllegalStateException, String.valueOf(failure.getCause()));
+        assertTrue(failure.getCause().getMessage().contains("Initial planetary catalog is invalid")
+                && failure.getCause().getMessage().contains("connects systems"), failure.getCause().getMessage());
+        assertTrue(manager.capture().isEmpty());
+    }
+
     private void retained(PlanetaryCatalogManager.Generation previous) {
         var current = manager.capture().orElseThrow();
         assertSame(previous.catalog(), current.catalog());
@@ -391,6 +434,21 @@ class PlanetaryReloadTest {
         body.addProperty("solar_intensity", 0.1);
         body.addProperty("radiation", 0.2);
         body.add("capabilities", JsonParser.parseString("{\"landable\":false,\"orbitable\":true,\"gas_giant\":true}"));
+        return body;
+    }
+
+    /** A root body (star system) with no Level; not landable or orbitable. */
+    private static JsonObject star(String id) throws IOException {
+        var body = gas(id);
+        body.remove("parent");
+        body.add("orbit", JsonParser.parseString("{\"distance\":0,\"period_ticks\":0,\"inclination_degrees\":0.0}"));
+        body.add("capabilities", JsonParser.parseString("{\"landable\":false,\"orbitable\":false,\"gas_giant\":false}"));
+        return body;
+    }
+
+    private static JsonObject child(String id, String parent) throws IOException {
+        var body = gas(id);
+        body.addProperty("parent", ModIdentity.id(parent).toString());
         return body;
     }
 

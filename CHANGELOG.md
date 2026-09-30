@@ -35,6 +35,14 @@ No candidate or release approval is assigned.
   (percent of normal gravity), under the same rules as expansion and saved the
   same checked way, at most once every 5 seconds per station. Stored values above four times normal are limited to four
   for movement; the public API still reports the stored value.
+- Add star systems: every root celestial body now starts its own system, and an
+  example system, Tau Ceti, ships with the star (public) and the orbit-only
+  planet Tau Ceti e (discovered by a data-satellite mission, which now lists it
+  as a target). Rocket routes can no longer connect two systems; a data pack
+  that does so, or that defines more than 16 systems, is rejected as a whole,
+  and on first load the server refuses to start with the reason in the log.
+  `/arce celestial systems` lists the systems and what is known. Interstellar
+  travel arrives with station warp.
 - Add `/arce station environment`: shows the orbited body of the station you are
   in (and whether it is still available), gravity, vacuum, solar intensity of the
   orbited body and sun angle. The station's name and ID are shown only to its
