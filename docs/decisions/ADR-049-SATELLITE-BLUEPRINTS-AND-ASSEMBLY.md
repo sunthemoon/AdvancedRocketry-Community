@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -12,7 +12,8 @@ related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-050, ADR-051, ADR-052]
 ```
 
 Revision 2 answers the first independent review (H3, M4, M9, M10, M11, M14,
-L4, L5, L13); see the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+L4, L5, L13). Revision 3 answers the second (R2-H1, R2-M3, R2-L3, R2-L4, R2-L6,
+R2-L7, R2-L9, R2-L12). See the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
 
 ## Context
 
@@ -131,16 +132,23 @@ Host-fixed v1 requirements:
 Refusal codes, checked in this order:
 
 1. menu, proximity and rate checks (§10);
-2. `OUTPUT_OCCUPIED`;
-3. `INVALID_LAYOUT` (a slot is empty or holds the wrong role; the chassis or
-   primary is missing);
-4. `DEFINITION_UNAVAILABLE`;
+2. `OUTPUT_BLOCKED`;
+3. `INVALID_COMPONENTS` (a slot is empty or holds the wrong role; the chassis
+   or primary is missing);
+4. `DEFINITION_NOT_FOUND`;
 5. `STAT_LIMIT`;
 6. `REQUIREMENT_UNMET`;
 7. `RESEARCH_LOCKED`;
-8. `NO_ENERGY`.
+8. `NO_POWER`.
 
-Nothing is clamped silently.
+Nothing is clamped silently. Codes that already exist in
+`SatelliteOperationCode` are reused. The terminal persists and syncs these codes
+by **ordinal**, so new codes (`STAT_LIMIT`, `REQUIREMENT_UNMET`,
+`RESEARCH_LOCKED`, `COMPONENT_UNAVAILABLE`, `RATE_LIMITED`, `OWNER_LIMIT`,
+`STORAGE_BUDGET`, `AWAITING_WORLD_SAVE`, `DELIVERY_BUFFER_FULL`,
+`TERMINAL_RECEIPTS_FULL`, `TERMINAL_MISSING`, `NO_ASTEROID_TYPES`,
+`BODY_UNAVAILABLE`) are only appended after the existing constants. Existing
+constants are never reordered or removed.
 
 The legacy `data` recipe {chassis, solar module, data-storage unit} has the stats
 {power 4, battery 720, data 1,000, cargo 0, rating 0}.
@@ -184,9 +192,20 @@ package UUID. For non-`data` kinds the server:
   `launch_targets`. The body must be orbitable and, if it requires discovery,
   discovered (ADR-037). It stays fixed for the satellite's life;
 - snapshots the kind parameters (§3) into the satellite;
-- on replay, returns `IDEMPOTENT` when a satellite with the same ID, owner,
-  definition and kind exists without a mission. This fixes the current
-  `IDENTITY_CONFLICT` answer to a missionless replay.
+- on replay, returns `IDEMPOTENT` and consumes the package when a satellite with
+  the same ID, owner, definition and kind exists, whatever its current mission.
+  This replaces the current `IDENTITY_CONFLICT` answer, which could leave a
+  package that can never be consumed.
+
+**Durability order (every kind).** A launch performs the registry barrier flush
+(ADR-050 §2) **before** the package is extracted from the terminal, as ADR-010
+does for `data`:
+
+- If the flush fails, nothing changes.
+- If the registry is saved but the chunk is not, the package reappears after a
+  restart, and the replay consumes it with `IDEMPOTENT`.
+- The reverse order, where the package is gone and the satellite is missing,
+  cannot happen.
 
 Item NBT is not trusted for numbers. A forged component list amounts to owning
 those components, which already needs creative or operator rights, and an owner
@@ -202,12 +221,13 @@ gain:
 - the blueprint snapshot: component IDs and the five stats;
 - the kind state:
   - `survey`: `charge` and `charge_time`, plus the snapshotted scan parameters;
-  - `solar`: `output_multiplier_percent` and an optional receiver link (receiver
-    UUID and link epoch);
+  - `solar`: `output_multiplier_percent` and an optional receiver link
+    (receiver UUID);
   - other kinds: empty.
 
-A record is at most 2 KiB. With eight 128-character IDs the worst case is about
-1.7 KiB.
+A record is at most 2 KiB. With eight 128-character IDs and the full kind state,
+the worst case is about 1,860 bytes. An encode/decode test at the bound is
+required.
 
 Schema-1 records migrate to `kind: data`, with `components: []` and a
 `legacy_blueprint` flag. They get the fixed legacy stats as a label; this does
@@ -222,8 +242,12 @@ unchanged.
 The per-owner satellite limit is 256; the global limit of 4,096 is unchanged
 (ADR-050 §6). An owner may **decommission** an idle satellite: one with no
 unfinished mission, and either no receiver link or a link to a missing receiver
-(§9). This is done with its chip at a terminal. The record is removed, the chip
-becomes blank, and nothing is refunded.
+(§9). This is done with its chip at a terminal. The record is removed with a
+barrier flush **before** the chip is blanked, and nothing is refunded. If the
+server crashes after the flush and before the chunk is saved, the chip stays
+bound to a removed satellite. Such a chip is inert: every action returns
+`SATELLITE_NOT_FOUND`, and an operator may blank it. Nothing is duplicated; only
+a blank chip is lost.
 
 ### 8. Survey area scan
 
@@ -275,17 +299,20 @@ A new **microwave receiver** block has four chip slots and a `receiver_id`.
 
 | Surface | Change | Bound |
 |---|---|---|
-| Terminal menu extra data | `FORMAT_VERSION` 1 → 2 (marker −1 kept). Adds: up to 16 schema-2 definitions with kind and ≤ 16 launch targets; the player's ≤ 16 instances; ≤ 8 gas products for the selected body; ≤ 64 bound-mission summaries; ≤ 32 reward-buffer entries | ≤ 32,600 bytes, tested at maximum; version-1 readers reject it |
-| Terminal buttons | New fixed IDs through `clickMenuButton`: select previous/next for kind, target, instance and product; start, claim, cancel, withdraw, decommission, unlink. Selection is server-side menu state; no packet carries an index | fixed-size |
+| Terminal menu extra data | `FORMAT_VERSION` 1 → 2 (marker −1 kept): the unchanged format-1 content (ADR-029, already tested at its maximum) plus one flag saying that a terminal view follows | ≤ 32,600 bytes; version-1 readers reject it |
+| Terminal view | New S2C message on the satellite channel, sent on open and on change (at most once per 5 ticks per player). It carries the **server-selected** kind/definition, launch target, instance (with its full yield) and gas product, each with its position and list size; one page of ≤ 8 bound-mission summaries; and ≤ 32 reward-buffer entries | ≤ 12 KiB. Worst case with 128-character IDs: selections ≈ 0.6 KiB, one yield ≈ 2.3 KiB, 8 summaries ≈ 1.4 KiB, buffer ≈ 4.3 KiB, total ≈ 8.6 KiB; tested at maximum |
+| Terminal buttons | New fixed IDs through `clickMenuButton`: select previous/next for kind, target, instance, product and mission page; start, claim, cancel, withdraw, decommission, unlink. Selection is server-side menu state; no packet carries an index | fixed-size |
 | Builder menu | New menu type, extra data format 1: position and catalog generation | ≤ 64 bytes |
 | Receiver menu | New menu type, extra data format 1: position, links and output | ≤ 1 KiB |
-| Scan result | New channel `advancedrocketrycommunity:satellite`, protocol `1`, S2C only | ≤ 8 KiB |
+| Scan result | S2C on the same channel | ≤ 8 KiB |
 
+The new channel is `advancedrocketrycommunity:satellite`, protocol `1`, S2C only.
 Existing channel versions (life support 1, celestial 3, rocket flight 8, rocket
 visual 1) are unchanged. As with the existing channels, a client without the new
 channel cannot join. All intents are validated on the main thread: player,
-distance, loaded chunk, menu binding, catalog generation, ownership and state,
-with a 10-tick per-player rate limit.
+distance, loaded chunk, menu binding, catalog generation, ownership and state.
+Rate limits per player: 10 ticks for state-changing intents, 2 ticks for
+selection intents.
 
 Star map: the terminal names mission targets from the same celestial display
 data (IDs, names, parents, discovery state) as the console star map (ADR-035).
@@ -322,5 +349,9 @@ definitions keep working.
   kind and idempotent replay; lifetime-research and discovery gates; decommission;
   scan budgets, `UNKNOWN` cells and zero chunk tickets; receiver link holding
   against a duplicate chip, unlink paths and output.
-- Maximum-size tests for the terminal menu and the scan packet; builder and
-  receiver root quarantine and carry tests.
+- Maximum-size tests for the terminal menu, the terminal view and the scan
+  packet; builder and receiver root quarantine and carry tests; persisted result
+  ordinals unchanged.
+- S2 (C9): force-stop a non-`data` launch after the barrier flush and before the
+  chunk save. The package reappears and is consumed once by replay, and no
+  component is lost.

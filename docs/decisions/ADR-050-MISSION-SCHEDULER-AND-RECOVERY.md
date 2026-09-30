@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -12,7 +12,8 @@ related: [ADR-010, ADR-038, ADR-040, ADR-049, ADR-051, ADR-052]
 ```
 
 Revision 2 answers the first independent review (H1–H4, H7, M4–M8, M15, L1, L2,
-L13, L14); see the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+L13, L14). Revision 3 answers the second (R2-H1, R2-H2, R2-M1, R2-M2, R2-L1,
+R2-L4, R2-L5, R2-L11, R2-L13). See the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
 
 ## Context
 
@@ -53,15 +54,26 @@ mod), the jump counts as elapsed time and §5 spreads the resulting completions.
 
 ### 2. Write policy and save epoch
 
-- **Barrier flushes** (the existing `flush(server)`) remain only on the existing
-  `data` paths that ADR-010/038 order across two authorities: `data` launch,
-  start, claim and cancel, and discovery replay. Their behaviour is unchanged.
-- **Every other mutation only marks the registry dirty.** That covers scheduler
-  completions of every kind (a change from today; a lost completion is only
-  repeated after a restart), all v1.6-kind operations, instance expiry, pruning,
-  acknowledgements, receipt reconciliation, link changes, scan payments,
-  decommission and quarantine. A coalesced flush runs at most once per 100 ticks
-  while the registry is dirty; autosave and shutdown persist as usual.
+- **Barrier flushes** (the existing `flush(server)`) are kept where one store
+  must be durable before a second store changes:
+  - launches of **every** kind and decommissions (ADR-049 §6, §7): the registry
+    is written before the terminal extracts the package or blanks the chip.
+    Launches are rare, at most one per satellite;
+  - the existing `data` start, claim and cancel;
+  - discovery replay (ADR-010/038).
+
+  These behave as today.
+- **Every other state mutation marks the registry "flush pending".** That covers
+  scheduler completions of every kind (a change from today; a lost completion is
+  only repeated after a restart), v1.6 starts, claims and cancels, instance
+  expiry, pruning, acknowledgements, receipt reconciliation, link changes, scan
+  payments and quarantine. A coalesced flush runs at most once per 100 ticks while
+  a flush is pending.
+- **Clock-only changes do not set "flush pending".** They only set the ordinary
+  dirty flag, so autosave and shutdown persist them. After a restart the clock
+  resumes from game time (ADR-010). An idle server therefore makes no coalesced
+  flushes. An active one makes at most one per 100 ticks, on top of its barriers.
+  C9 reports the observed flush frequency.
 - **Save epoch.** The registry holds `save_epoch` E, starting at 1. A flush or
   save writes E + 1 into the file; when the write returns without error,
   E becomes E + 1. On load, E is the value read from the file. Each mission
@@ -70,9 +82,11 @@ mod), the jump counts as elapsed time and §5 spreads the resulting completions.
 - **Cost.** C9 measures barrier and coalesced flush times at the 500- and
   1,000-mission roots and at a synthetic worst-case root. The docs/17 P95/P99
   MSPT budgets apply. If they are exceeded, the version stays blocked until a
-  follow-up ADR moves the file write to one writer thread. The root would still
-  be serialized on the main thread, and the epoch would advance on completion.
-  This is a gate, not a waiver.
+  follow-up ADR moves the file write to one writer thread. That ADR must
+  separate a **snapshot epoch**, fixed when the root is serialized on the main
+  thread and used for `start_epoch`, from the **durable epoch**, advanced when the
+  write completes. Otherwise a mission started during the write would appear
+  durable while missing from the file. This is a gate, not a waiver.
 
 ### 3. Records and size bounds
 
@@ -81,13 +95,14 @@ Mission records (schema 2), common fields: `mission_id`, `satellite_id`,
 optional `target_body`, optional `instance_id`, `seed` (ADR-052),
 `started_at`, `completes_at`, `start_epoch`, `status`, optional `ready_at` and
 `resolved_at`, `reward_version` (≤ 200 chars), optional quarantine {`reason`,
-`previous_status`}. Kind payload:
+`previous_status`, `receipt_seen`}. Kind payload:
 
 - `data`: `research_yield`, `discovery_cost`, `discovery_required` (schema 1);
 - `survey`: 1..4 instance IDs and `candidate_fingerprint` (ADR-052);
 - `asteroid` / `gas`: reward snapshot (1..17 entries, item ID and count, total
   ≤ 1,728 items), `bound_terminal` (terminal UUID, plus Level key and position
-  for display), `acknowledged`, optional `ack_epoch` (ADR-051).
+  for display), `rebound` (set by an operator rebind), optional `paid_terminal`,
+  `acknowledged`, optional `ack_epoch` (ADR-051).
 
 Record bounds are derived from the field maxima with 128-character IDs:
 **mission ≤ 4 KiB** (worst case about 3.7 KiB), **instance ≤ 4 KiB** (about
@@ -123,7 +138,9 @@ Every 20 ticks, in order: advance the clock; drain deadlines (≤ 32 completions
 ≤ 64 inspections); expire instances (≤ 16 expiries, ≤ 32 inspections); prune
 (≤ 64 removals, ≤ 128 inspections). All three queues are ordered by the time an
 entry becomes actionable. An entry that is inspected but not yet eligible goes
-back into the queue at its next eligible time.
+back into the queue at its next eligible time. A CLAIMED resource record has no
+eligible time until its acknowledgement is durable. It enters the pruning queue
+only then (ADR-051 §7), not by time.
 
 Queue integrity: the entry is removed when its mission is cancelled,
 quarantined or claimed before its deadline. Capacity is checked before any map
@@ -148,7 +165,7 @@ Server config values, bounded by these maxima, which are also the defaults
 | Missions of every status | 3,072 | replaces 8,192 for admission only (§10) |
 | Satellites, global / per owner | 4,096 / 256 | per-owner is new |
 | Asteroid instances, global / per owner (live) | 2,048 / 16 | ADR-051 |
-| Start, claim and cancel intents per player | 1 per 10 ticks | new |
+| Start, claim and cancel intents per player | 1 per 10 ticks | new; selection intents 1 per 2 ticks (ADR-049 §10) |
 
 Refusals are explicit codes (`CAPACITY_REACHED`, `OWNER_LIMIT`, `RATE_LIMITED`,
 `STORAGE_BUDGET`), never silent drops. Per-owner limits apply at admission only.
@@ -174,6 +191,12 @@ ticks. An operator may `mission purge <id>` a CLAIMED record that is not
 acknowledged because its terminal is gone; the audit line says that the reward
 may be lost if that terminal never materialized it.
 
+**Discovery evidence is exempt.** For each target body, the newest CLAIMED
+`data` mission with `discovery_required` is never pruned: at most one record per
+body, so at most 128 records. ADR-038 repairs missing discoveries from those
+records, and one record per body is enough evidence for that body. The records
+count toward the finished-record limits, but pruning skips them.
+
 ### 8. Cancellation and timeouts
 
 - `data` and `survey` missions: the owner at any terminal with the matching chip,
@@ -183,7 +206,12 @@ may be lost if that terminal never materialized it.
   a QUARANTINED resource mission, moves an allocated instance to **QUARANTINED**,
   never to AVAILABLE, and writes an audit line. The operator can later
   `instance release <id>` after checking the terminal. An owner cancel after
-  reconciliation returns the instance to AVAILABLE if it has not expired.
+  reconciliation returns the instance to AVAILABLE if it has not expired, unless
+  the mission is `rebound`. Then the old terminal may still hold an unreported
+  receipt, so the instance goes to QUARANTINED.
+- Cancelling or releasing a mission releases a satellite only if that satellite
+  names this mission as `current_mission`. A `MISSING_SATELLITE` quarantine
+  therefore never touches another satellite.
 - Cancellation never pays a reward and never refunds consumed inputs.
 - READY missions never expire. AVAILABLE instances expire after their TTL
   (ADR-051). A resource mission whose bound terminal is missing stays READY with
@@ -227,19 +255,28 @@ replace atomically, never fall back to a non-atomic move. The service keeps at
 most five backups, so every v1.6 upgrade adds one. Repeated startup of a root-3
 file does not migrate again.
 
-A legacy root may exceed the count limits (up to 8,192 missions, owners above the
-per-owner limits). It loads, is migrated unchanged in count, and admission
-refuses new starts until retention has drained it. The byte budgets hold, because
-a v1.5 root is at most 4 MiB. A v1.5 host refuses root 3 in its pre-start
-validation, which blocks the whole world's startup. The recovery is the
-pre-upgrade backup.
+A root may exceed the count limits: a legacy root 2, or a root 3 saved before
+retention had drained it. Such a root may hold up to 8,192 missions and owners
+above the per-owner limits. It loads (8,192 remains the load bound for missions)
+and keeps its count, and admission refuses new starts until retention has
+drained it.
+
+The byte budgets still hold after migration. A schema-1 satellite record is at
+most about 350 bytes and grows by about 150 bytes (kind, legacy flag, stats,
+reservation), so 4,096 satellites need about 2 MiB of the 4 MiB. A schema-1
+mission is at most about 450 bytes and grows by about 150 bytes (kind, seed,
+epoch, version, quarantine reservation), so 8,192 missions need about 4.8 MiB of
+the 6 MiB. C7 encodes a worst-case legacy root to confirm this.
+
+A v1.5 host refuses root 3 in its pre-start validation, which blocks the whole
+world's startup. The recovery is the pre-upgrade backup.
 
 ### 11. Definition and celestial changes
 
 Satellites keep their blueprint and kind-parameter snapshots (ADR-049), and
 missions and instances keep theirs. Removing or changing a definition,
 component, asteroid type or gas table refuses only new assemblies, launches and
-starts (`DEFINITION_UNAVAILABLE`). If a satellite's orbit body is removed, scans
+starts (`DEFINITION_NOT_FOUND`). If a satellite's orbit body is removed, scans
 return `BODY_UNAVAILABLE`, solar output is 0, and asteroid and gas starts are
 refused. In-flight missions are unaffected. A craft's system is recomputed from
 the current tree at each start; instances keep the system they recorded.
@@ -256,7 +293,11 @@ the current tree at each start; instances keep the system they recorded.
 - A0: status machine, refusals and replays; queue removal on cancel, quarantine
   and early claim; start/cancel churn beyond 1,024 cycles; atomic schedule
   failure; the backlog of 1,024 in 32 passes; expiry and pruning inspection
-  budgets; per-owner retention; lifecycle-size reservation; worst-case record
+  budgets; per-owner retention; discovery evidence kept one per body;
+  clock-only passes set no flush-pending flag; barrier-before-extraction order
+  for launches and decommissions; rebound cancel quarantines the instance; a
+  cancel never releases a satellite that does not name the mission;
+  lifecycle-size reservation; worst-case record
   encode/decode at every bound; save-epoch semantics across save and load;
   schema 1 → 2 migration; an over-cap legacy root; future-schema and unknown-kind
   blocking; invariants and quarantine; definition and body removal.

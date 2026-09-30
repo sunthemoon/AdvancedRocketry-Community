@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reference projections of ADR-049..052 (revision 2) arithmetic, not production code or runtime behavior.
+"""Reference projections of ADR-049..052 (revision 3) arithmetic, not production code or runtime behavior.
 
 The functions below restate the frozen integer rules so that the Java slices (C7/C8)
 can be checked against the same vectors in examples.json.
@@ -168,33 +168,87 @@ def drain_passes(due, per_pass=32):
 
 
 REGISTRY_STATES = ("UNAVAILABLE", "ABSENT", "ACTIVE_HERE", "READY_HERE", "ACTIVE_ELSEWHERE",
-                   "READY_ELSEWHERE", "CLAIMED_HERE", "CLAIMED_ACK_PENDING", "CLAIMED_ACK_DURABLE",
-                   "CLAIMED_ELSEWHERE", "CANCELLED", "QUARANTINED")
-RECEIPT_STATES = ("NONE", "UNSERIALIZED", "SERIALIZED")
+                   "READY_ELSEWHERE", "CLAIMED_PAID_HERE", "CLAIMED_ACK_PENDING", "CLAIMED_ACK_DURABLE",
+                   "CLAIMED_PAID_ELSEWHERE", "CANCELLED", "QUARANTINED")
+RECEIPT_STATES = ("NONE", "UNPERSISTED", "PERSISTED")
 
 
 def reconcile(registry, receipt):
-    """ADR-051 revision 2, section 7: total over REGISTRY_STATES x RECEIPT_STATES."""
+    """ADR-051 revision 3, section 7: total over REGISTRY_STATES x RECEIPT_STATES.
+    *_HERE / PAID_HERE are relative to the reconciling terminal; ACK states imply paid here."""
     if registry not in REGISTRY_STATES or receipt not in RECEIPT_STATES:
         raise ValueError((registry, receipt))
     if registry == "UNAVAILABLE":
         return "NONE_REGISTRY_BLOCKED"
-    if registry == "CLAIMED_HERE":
-        return {"SERIALIZED": "ACKNOWLEDGE", "UNSERIALIZED": "WAIT", "NONE": "REMATERIALIZE"}[receipt]
+    if registry == "CLAIMED_PAID_HERE":
+        return {"PERSISTED": "ACKNOWLEDGE", "UNPERSISTED": "WAIT", "NONE": "REMATERIALIZE"}[receipt]
     if receipt == "NONE":
         return "NONE"
     return {
         "ABSENT": "DROP_RECEIPT",
-        "ACTIVE_HERE": "SET_CLAIMED_NO_ITEMS",
-        "READY_HERE": "SET_CLAIMED_NO_ITEMS",
-        "ACTIVE_ELSEWHERE": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT",
-        "READY_ELSEWHERE": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT",
+        "ACTIVE_HERE": "SET_CLAIMED_PAID_HERE",
+        "READY_HERE": "SET_CLAIMED_PAID_HERE",
+        "ACTIVE_ELSEWHERE": "SET_CLAIMED_PAID_HERE_BIND_BACK",
+        "READY_ELSEWHERE": "SET_CLAIMED_PAID_HERE_BIND_BACK",
         "CLAIMED_ACK_PENDING": "WAIT",
         "CLAIMED_ACK_DURABLE": "DROP_RECEIPT",
-        "CLAIMED_ELSEWHERE": "KEEP_AUDIT_DOUBLE_PAY",
+        "CLAIMED_PAID_ELSEWHERE": "KEEP_AUDIT_DOUBLE_PAY",
         "CANCELLED": "KEEP_AUDIT_PAID_THEN_CANCELLED",
         "QUARANTINED": "KEEP_MARK_RECEIPT_SEEN",
     }[registry]
+
+
+REBIND_EVENTS = ("t1_return", "t2_reconcile", "t2_claim", "owner_cancel_t2")
+
+
+def simulate_rebind(events):
+    """ADR-051 section 9 composition, using only reconcile() above. Premise (crash cut 2): T1 paid and
+    holds a persisted receipt, the registry reverted to READY bound to T1, T1 was carried away, and an
+    operator rebinds to T2. Returns (payments, instance state)."""
+    mission = {"status": "READY", "bound": "T2", "paid": None, "rebound": True}
+    receipts = {"T1": "PERSISTED", "T2": "NONE"}
+    payments = 1
+    instance = "ALLOCATED"
+
+    def view(terminal):
+        if mission["status"] in ("ACTIVE", "READY"):
+            return mission["status"] + ("_HERE" if mission["bound"] == terminal else "_ELSEWHERE")
+        if mission["status"] == "CLAIMED":
+            return "CLAIMED_PAID_HERE" if mission["paid"] == terminal else "CLAIMED_PAID_ELSEWHERE"
+        return mission["status"]
+
+    def run_reconcile(terminal):
+        nonlocal payments, instance
+        action = reconcile(view(terminal), receipts[terminal])
+        if action.startswith("SET_CLAIMED_PAID_HERE"):
+            mission.update(status="CLAIMED", paid=terminal)
+            instance = "DEPLETED"
+            if action.endswith("BIND_BACK"):
+                mission["bound"] = terminal
+        elif action == "REMATERIALIZE":
+            payments += 1
+            receipts[terminal] = "UNPERSISTED"
+
+    for event in events:
+        if event == "t1_return":
+            run_reconcile("T1")
+        elif event == "t2_reconcile":
+            run_reconcile("T2")
+        elif event == "t2_claim":
+            run_reconcile("T2")
+            if mission["status"] == "READY" and mission["bound"] == "T2":
+                mission.update(status="CLAIMED", paid="T2")
+                receipts["T2"] = "UNPERSISTED"
+                payments += 1
+                instance = "DEPLETED"
+        elif event == "owner_cancel_t2":
+            run_reconcile("T2")
+            if mission["status"] in ("ACTIVE", "READY") and mission["bound"] == "T2":
+                mission["status"] = "CANCELLED"
+                instance = "QUARANTINED" if mission["rebound"] else "AVAILABLE"
+        else:
+            raise ValueError(event)
+    return payments, instance
 
 
 class ExampleTests(unittest.TestCase):
@@ -266,6 +320,16 @@ class ExampleTests(unittest.TestCase):
         for case in EXAMPLES["scheduler_backlog"]:
             self.assertEqual(drain_passes(case["due"]), case["passes"])
             self.assertEqual(drain_passes(case["due"]) * 20, case["ticks"])
+
+    def test_rebind_orderings(self):
+        cases = EXAMPLES["rebind_orderings"]
+        expected_orders = {tuple(order) for n in range(1, len(REBIND_EVENTS) + 1)
+                           for order in itertools.permutations(REBIND_EVENTS, n)}
+        self.assertEqual({tuple(case["events"]) for case in cases}, expected_orders)
+        for case in cases:
+            payments, instance = simulate_rebind(case["events"])
+            self.assertEqual([payments, instance], [case["payments"], case["instance"]], case["events"])
+            self.assertNotEqual(instance, "AVAILABLE")
 
     def test_reconciliation_table_is_total(self):
         rows = {(case["registry"], case["receipt"]): case["action"] for case in EXAMPLES["reconciliation"]}

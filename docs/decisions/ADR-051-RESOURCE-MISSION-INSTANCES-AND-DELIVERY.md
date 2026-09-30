@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -12,7 +12,8 @@ related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-049, ADR-050, ADR-052]
 ```
 
 Revision 1 was rejected by the first independent review. Revision 2 answers
-H3, H5, H6, H7, M1, M2, M3, M16 and L8–L11; see the
+H3, H5, H6, H7, M1, M2, M3, M16 and L8–L11. Revision 3 answers the second review
+(R2-H2, R2-L2, R2-L4, R2-L8). See the
 [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
 
 ## Context
@@ -118,12 +119,21 @@ The Satellite Terminal root moves from schema 1 to 2. The ADR-029 inventory
 existing item-handler exposure are unchanged. New bounded fields:
 
 - `terminal_id`: a UUID created on placement, or on the first load of a schema-1
-  root, and carried with the raw root when the block is taken as an item. It is
-  **persisted** once a `ChunkDataEvent.Save` tag for the terminal's chunk has been
-  seen containing it. Until then no resource mission can bind to the terminal;
+  root, and carried with the raw root when the block is taken as an item. No
+  resource mission can bind to the terminal until the ID is **persisted**;
 - `reward_buffer`: ≤ 32 distinct plain item entries, ≤ 3,456 items in total,
   counted in items (extraction splits by each item's stack size);
-- `receipts`: ≤ 256 entries of {`mission_id`, `serialized`}.
+- `receipts`: ≤ 256 entries of `mission_id`, each with a runtime `persisted` flag.
+
+Persistence of the ID and of receipts is tracked at runtime, not stored:
+
+- state read from chunk storage is persisted by definition;
+- state created in memory, or read from a carried item root, becomes persisted
+  when a `ChunkDataEvent.Save` tag for the terminal's chunk contains it;
+- while the terminal holds any unpersisted ID or receipt, it calls `setChanged()`,
+  so the incremental chunk save picks it up within seconds;
+- other callers of `saveAdditional` (the carry path, `/data`, structure capture,
+  other mods) never mark anything persisted.
 
 Withdrawal in v1.6 is menu-only: the withdraw intent moves up to one stack into
 the player's inventory, and whatever does not fit stays in the buffer. The buffer
@@ -140,12 +150,11 @@ Because of the last condition, every registry file that can be loaded after a
 crash contains the mission. With the 100-tick coalesced flush, the wait is at
 most about 100 ticks after the start.
 
-In one server tick the claim sets the mission to CLAIMED
-(`acknowledged = false`), updates the instance and the satellite, and adds the
-reward and an unserialized receipt to the terminal. A receipt becomes
-`serialized` only when a `ChunkDataEvent.Save` tag for the terminal's chunk
-contains that receipt. Other callers of `saveAdditional` (the carry path,
-`/data`, structure capture, other mods) never set it.
+In one server tick the claim sets the mission to CLAIMED with
+`paid_terminal` = this terminal and `acknowledged = false`, updates the instance
+and the satellite, and adds the reward and an unpersisted receipt to the
+terminal. `paid_terminal` is the only terminal that may ever rematerialize or
+acknowledge this reward.
 
 ### 7. Reconciliation
 
@@ -155,33 +164,42 @@ every mission named by its receipts, ≤ 64 per tick. Resource actions at that
 terminal wait until the pass completes. The table covers every registry state
 and receipt state:
 
+"Here" means this terminal's ID. "Paid here" means `paid_terminal` is this
+terminal.
+
 | Registry state of the mission | Receipt at this terminal | Action |
 |---|---|---|
 | Registry not operational (blocked) | any | Nothing; resource actions refused |
-| ACTIVE or READY, bound here | present | Registry was behind: set CLAIMED, apply side effects, no items; audit `CLAIM_RECOVERED` |
-| ACTIVE or READY, bound elsewhere (rebound) | present | Set CLAIMED, no items; audit `REBIND_CONFLICT` |
-| CLAIMED, not acknowledged, bound here | serialized | Set `acknowledged`, `ack_epoch = E` |
-| CLAIMED, not acknowledged, bound here | unserialized | Wait |
-| CLAIMED, not acknowledged, bound here | none | Chunk was behind: add the reward and an unserialized receipt (wait while the buffer is full); audit `REMATERIALIZED` |
-| CLAIMED, acknowledged | present | Drop the receipt once `ack_epoch < E`; audit `RECEIPT_DROPPED` |
-| CLAIMED, bound elsewhere (paid at another terminal) | present | Keep the receipt; audit `REBIND_DOUBLE_PAY` once |
+| ACTIVE or READY, bound here | present | Registry was behind: set CLAIMED, `paid_terminal` = here, apply the claim side effects (instance DEPLETED, satellite released), no items; audit `CLAIM_RECOVERED` |
+| ACTIVE or READY, bound elsewhere (rebound) | present | Same, and also bind the mission back here (`bound_terminal` = here); audit `REBIND_CONFLICT` |
+| CLAIMED, paid here, not acknowledged | persisted | Set `acknowledged`, `ack_epoch = E` |
+| CLAIMED, paid here, not acknowledged | unpersisted | Wait |
+| CLAIMED, paid here, not acknowledged | none | Chunk was behind: add the reward and an unpersisted receipt (wait while the buffer is full); audit `REMATERIALIZED` |
+| CLAIMED, paid here, acknowledged, `ack_epoch ≥ E` | present | Wait until the acknowledgement is durable |
+| CLAIMED, paid here, acknowledged, `ack_epoch < E` | present | Drop the receipt; audit `RECEIPT_DROPPED` |
+| CLAIMED, paid elsewhere | present | Keep the receipt; audit `REBIND_DOUBLE_PAY` once |
 | CANCELLED | present | Keep the receipt, add nothing; audit `PAID_THEN_CANCELLED` once |
-| QUARANTINED | present | Keep the receipt; record `receipt_seen` on the quarantine for the operator |
+| QUARANTINED | present | Keep the receipt; set `receipt_seen` on the quarantine |
 | Absent (operational registry) | present | Drop the receipt; audit `RECEIPT_DROPPED` |
-| any state | none | Nothing (apart from the rematerialize row) |
+| any state not listed above | none | Nothing |
 
-"Absent" means pruned. The epoch rule keeps every claimed mission in any
-recoverable file, and resource-mission records are deleted only by pruning,
-which needs a durable acknowledgement (ADR-050 §7). Receipts are released by
-the durable-acknowledgement row, independently of pruning, so a terminal does
-not fill up on a server that rarely prunes.
+A mission is **absent** only if it was pruned (which needs a durable
+acknowledgement, ADR-050 §7) or purged by an operator. The epoch rule keeps
+every claimed mission in any file that can be recovered. Dropping a receipt never
+pays, so an absent mission cannot cause a duplicate. Receipts are released by
+the durable-acknowledgement row, independently of pruning.
+
+Outside the guarantee: an operator who replaces the registry file with an empty
+one lets terminals drop their receipts. If the real file is then restored, recent
+unacknowledged claims can be rematerialized.
 
 ### 8. Cancellation
 
 The owner cancels an asteroid or gas mission only at its bound terminal, after
-§7. Operator cancels and cancels of QUARANTINED missions move an allocated
-instance to QUARANTINED (ADR-050 §8). A mission paid through a receipt therefore
-cannot free its instance for a second reward.
+§7. The instance goes to QUARANTINED instead of AVAILABLE for operator cancels,
+cancels of QUARANTINED missions and cancels of `rebound` missions (ADR-050 §8).
+A mission paid through a receipt, even one that no terminal has reported yet,
+therefore cannot free its instance for a second reward.
 
 ### 9. Missing terminal and rebind
 
@@ -189,10 +207,23 @@ A terminal is **missing** when the chunk at its last recorded position is loaded
 and holds no terminal with that ID, or when an operator declares it missing. The
 mission stays READY and shows `TERMINAL_MISSING`. Only an operator can run
 `mission rebind <id> <terminal>`, for a READY mission, to a terminal whose ID is
-persisted. The audit line records the old terminal. If the old terminal comes
-back with a receipt, §7 records `REBIND_CONFLICT` or `REBIND_DOUBLE_PAY`.
-**Residual**: a destroyed terminal that had paid, and never returns, followed by
-a rebind, pays twice. The audit lines make this visible, but cannot prevent it.
+persisted. The command sets `rebound` and writes an audit line naming the old
+terminal. Outcomes:
+
+- If the old terminal comes back with a receipt **before** the new terminal
+  claims, §7 sets CLAIMED with `paid_terminal` = old and binds the mission back
+  to the old terminal. The new terminal then sees "paid elsewhere" and never
+  rematerializes. The reward is paid once.
+- **Residual**: if the new terminal claims first, and the old one had already
+  paid before the registry reverted, the reward is paid twice. The old terminal
+  records `REBIND_DOUBLE_PAY` when it returns. The same happens if the old
+  terminal never returns. A rebind is therefore an operator decision to be taken
+  only for a terminal known to be destroyed. The audit lines make the case
+  visible, but cannot prevent it.
+
+`examples.json` enumerates every ordering of rebind, old-terminal return,
+new-terminal reconciliation, claim and owner cancel. It checks that exactly
+the residual ordering pays twice, and that no ordering frees the instance.
 
 ### 10. Audit lines
 
@@ -214,7 +245,9 @@ result.
 | Start and claim before any registry write | Not reachable | Claim refused with `AWAITING_WORLD_SAVE` |
 | Registry blocked at load | Blocked | Nothing happens; receipts kept for later |
 | Registry reverted, then an operator cancels | CANCELLED + receipt | Paid once; instance QUARANTINED, not reusable |
-| **Residual**: `IOWorker` write lost after `ChunkDataEvent.Save` and after the acknowledgement was flushed | Acknowledged, no receipt | The reward is lost (never duplicated); same class as a torn vanilla save |
+| Registry reverted, operator rebind, old terminal returns first | CLAIMED, paid at the old terminal | Paid once (§9) |
+| **Residual**: registry reverted, operator rebind, new terminal claims first | CLAIMED at the new terminal; the old one holds a receipt | Paid twice; `REBIND_DOUBLE_PAY` (§9) |
+| **Residual**: `IOWorker` write lost after `ChunkDataEvent.Save` and after the acknowledgement was flushed | Acknowledged, no receipt | The reward is lost, not duplicated, for a process interruption; same class as a torn vanilla save. Power loss of directory metadata is excluded, as in ADR-038 |
 
 ## Consequences
 
@@ -229,7 +262,7 @@ result.
 - A0: instance state machine, TTL and expiry budget, limits; survey generation at
   start; start refusals; the reconciliation function over **every** row
   (`examples.json`); crash cuts by fault injection; receipt and buffer bounds;
-  `serialized` set only from a chunk-save tag; terminal ID persistence before
+  persistence set only from chunk storage or a chunk-save tag; terminal ID persistence before
   binding; terminal root schema 1 → 2 and quarantine; audit-line bounds.
 - A1: survey → instances → asteroid mission → claim → withdraw; a gas mission on
   the discovered gas giant; cancel and recycle; a wrong-terminal claim refused;

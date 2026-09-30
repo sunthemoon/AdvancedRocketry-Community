@@ -1,5 +1,5 @@
 {
- "purpose": "Reference vectors for ADR-049..052 revision 2 integer rules; not NBT, runtime data or built-in balance",
+ "purpose": "Reference vectors for ADR-049..052 revision 3 integer rules; not NBT, runtime data or built-in balance",
  "splitmix64_seed0": [
   "e220a8397b1dcdaf",
   "6e789e6aa1b965f4",
@@ -945,12 +945,12 @@
   },
   {
    "registry": "UNAVAILABLE",
-   "receipt": "UNSERIALIZED",
+   "receipt": "UNPERSISTED",
    "action": "NONE_REGISTRY_BLOCKED"
   },
   {
    "registry": "UNAVAILABLE",
-   "receipt": "SERIALIZED",
+   "receipt": "PERSISTED",
    "action": "NONE_REGISTRY_BLOCKED"
   },
   {
@@ -960,12 +960,12 @@
   },
   {
    "registry": "ABSENT",
-   "receipt": "UNSERIALIZED",
+   "receipt": "UNPERSISTED",
    "action": "DROP_RECEIPT"
   },
   {
    "registry": "ABSENT",
-   "receipt": "SERIALIZED",
+   "receipt": "PERSISTED",
    "action": "DROP_RECEIPT"
   },
   {
@@ -975,13 +975,13 @@
   },
   {
    "registry": "ACTIVE_HERE",
-   "receipt": "UNSERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS"
+   "receipt": "UNPERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE"
   },
   {
    "registry": "ACTIVE_HERE",
-   "receipt": "SERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS"
+   "receipt": "PERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE"
   },
   {
    "registry": "READY_HERE",
@@ -990,13 +990,13 @@
   },
   {
    "registry": "READY_HERE",
-   "receipt": "UNSERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS"
+   "receipt": "UNPERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE"
   },
   {
    "registry": "READY_HERE",
-   "receipt": "SERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS"
+   "receipt": "PERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE"
   },
   {
    "registry": "ACTIVE_ELSEWHERE",
@@ -1005,13 +1005,13 @@
   },
   {
    "registry": "ACTIVE_ELSEWHERE",
-   "receipt": "UNSERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+   "receipt": "UNPERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE_BIND_BACK"
   },
   {
    "registry": "ACTIVE_ELSEWHERE",
-   "receipt": "SERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+   "receipt": "PERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE_BIND_BACK"
   },
   {
    "registry": "READY_ELSEWHERE",
@@ -1020,27 +1020,27 @@
   },
   {
    "registry": "READY_ELSEWHERE",
-   "receipt": "UNSERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+   "receipt": "UNPERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE_BIND_BACK"
   },
   {
    "registry": "READY_ELSEWHERE",
-   "receipt": "SERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+   "receipt": "PERSISTED",
+   "action": "SET_CLAIMED_PAID_HERE_BIND_BACK"
   },
   {
-   "registry": "CLAIMED_HERE",
+   "registry": "CLAIMED_PAID_HERE",
    "receipt": "NONE",
    "action": "REMATERIALIZE"
   },
   {
-   "registry": "CLAIMED_HERE",
-   "receipt": "UNSERIALIZED",
+   "registry": "CLAIMED_PAID_HERE",
+   "receipt": "UNPERSISTED",
    "action": "WAIT"
   },
   {
-   "registry": "CLAIMED_HERE",
-   "receipt": "SERIALIZED",
+   "registry": "CLAIMED_PAID_HERE",
+   "receipt": "PERSISTED",
    "action": "ACKNOWLEDGE"
   },
   {
@@ -1050,12 +1050,12 @@
   },
   {
    "registry": "CLAIMED_ACK_PENDING",
-   "receipt": "UNSERIALIZED",
+   "receipt": "UNPERSISTED",
    "action": "WAIT"
   },
   {
    "registry": "CLAIMED_ACK_PENDING",
-   "receipt": "SERIALIZED",
+   "receipt": "PERSISTED",
    "action": "WAIT"
   },
   {
@@ -1065,27 +1065,27 @@
   },
   {
    "registry": "CLAIMED_ACK_DURABLE",
-   "receipt": "UNSERIALIZED",
+   "receipt": "UNPERSISTED",
    "action": "DROP_RECEIPT"
   },
   {
    "registry": "CLAIMED_ACK_DURABLE",
-   "receipt": "SERIALIZED",
+   "receipt": "PERSISTED",
    "action": "DROP_RECEIPT"
   },
   {
-   "registry": "CLAIMED_ELSEWHERE",
+   "registry": "CLAIMED_PAID_ELSEWHERE",
    "receipt": "NONE",
    "action": "NONE"
   },
   {
-   "registry": "CLAIMED_ELSEWHERE",
-   "receipt": "UNSERIALIZED",
+   "registry": "CLAIMED_PAID_ELSEWHERE",
+   "receipt": "UNPERSISTED",
    "action": "KEEP_AUDIT_DOUBLE_PAY"
   },
   {
-   "registry": "CLAIMED_ELSEWHERE",
-   "receipt": "SERIALIZED",
+   "registry": "CLAIMED_PAID_ELSEWHERE",
+   "receipt": "PERSISTED",
    "action": "KEEP_AUDIT_DOUBLE_PAY"
   },
   {
@@ -1095,12 +1095,12 @@
   },
   {
    "registry": "CANCELLED",
-   "receipt": "UNSERIALIZED",
+   "receipt": "UNPERSISTED",
    "action": "KEEP_AUDIT_PAID_THEN_CANCELLED"
   },
   {
    "registry": "CANCELLED",
-   "receipt": "SERIALIZED",
+   "receipt": "PERSISTED",
    "action": "KEEP_AUDIT_PAID_THEN_CANCELLED"
   },
   {
@@ -1110,13 +1110,595 @@
   },
   {
    "registry": "QUARANTINED",
-   "receipt": "UNSERIALIZED",
+   "receipt": "UNPERSISTED",
    "action": "KEEP_MARK_RECEIPT_SEEN"
   },
   {
    "registry": "QUARANTINED",
-   "receipt": "SERIALIZED",
+   "receipt": "PERSISTED",
    "action": "KEEP_MARK_RECEIPT_SEEN"
+  }
+ ],
+ "rebind_orderings": [
+  {
+   "events": [
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "ALLOCATED"
+  },
+  {
+   "events": [
+    "t2_claim"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t2_claim"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t2_reconcile"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_reconcile",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_reconcile",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_claim",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_claim",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "owner_cancel_t2",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "owner_cancel_t2",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t1_return",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t1_return",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t2_claim",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t2_claim",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "owner_cancel_t2",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "owner_cancel_t2",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t1_return",
+    "t2_reconcile"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t1_return",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t2_reconcile",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t2_reconcile",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "owner_cancel_t2",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "owner_cancel_t2",
+    "t2_reconcile"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t1_return",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t1_return",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_reconcile",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_reconcile",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_claim",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_claim",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_reconcile",
+    "t2_claim",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_reconcile",
+    "owner_cancel_t2",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_claim",
+    "t2_reconcile",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "t2_claim",
+    "owner_cancel_t2",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "owner_cancel_t2",
+    "t2_reconcile",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t1_return",
+    "owner_cancel_t2",
+    "t2_claim",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t1_return",
+    "t2_claim",
+    "owner_cancel_t2"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t1_return",
+    "owner_cancel_t2",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t2_claim",
+    "t1_return",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "t2_claim",
+    "owner_cancel_t2",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "owner_cancel_t2",
+    "t1_return",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t2_reconcile",
+    "owner_cancel_t2",
+    "t2_claim",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t1_return",
+    "t2_reconcile",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t1_return",
+    "owner_cancel_t2",
+    "t2_reconcile"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t2_reconcile",
+    "t1_return",
+    "owner_cancel_t2"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "t2_reconcile",
+    "owner_cancel_t2",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "owner_cancel_t2",
+    "t1_return",
+    "t2_reconcile"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "t2_claim",
+    "owner_cancel_t2",
+    "t2_reconcile",
+    "t1_return"
+   ],
+   "payments": 2,
+   "instance": "DEPLETED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t1_return",
+    "t2_reconcile",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t1_return",
+    "t2_claim",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_reconcile",
+    "t1_return",
+    "t2_claim"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_reconcile",
+    "t2_claim",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_claim",
+    "t1_return",
+    "t2_reconcile"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
+  },
+  {
+   "events": [
+    "owner_cancel_t2",
+    "t2_claim",
+    "t2_reconcile",
+    "t1_return"
+   ],
+   "payments": 1,
+   "instance": "QUARANTINED"
   }
  ]
 }
