@@ -23,6 +23,15 @@ final class ConnectedTestPlayers {
     /** Joins a creative, non-operator player with the given UUID over an embedded channel and moves it. */
     static ServerPlayer join(MinecraftServer server, UUID id, String name, ServerLevel level, BlockPos position,
                              List<String> replies) {
+        return join(server, id, name, level, position, replies, false);
+    }
+
+    /**
+     * As {@link #join}; with {@code serverPermissions} the player's permission level comes from the
+     * server's ops list, so {@code op}/{@code deop} change it as for a real player.
+     */
+    static ServerPlayer join(MinecraftServer server, UUID id, String name, ServerLevel level, BlockPos position,
+                             List<String> replies, boolean serverPermissions) {
         ServerPlayer player = new ServerPlayer(server, level, new GameProfile(id, name)) {
             @Override
             public boolean isSpectator() {
@@ -36,7 +45,7 @@ final class ConnectedTestPlayers {
 
             @Override
             public boolean hasPermissions(int permissionLevel) {
-                return false;
+                return serverPermissions && server.getProfilePermissions(getGameProfile()) >= permissionLevel;
             }
 
             @Override

@@ -3,12 +3,15 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -20,8 +23,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCre
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +43,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -80,6 +87,16 @@ public final class StationWarpGameTests {
             helper.assertTrue(core.receiveEnergy(1_000_000, true) == StationLimits.WARP_CREDIT_PER_TICK,
                     "Simulation must report the per-tick allowance");
             helper.assertTrue(warp.pendingCredit(fixture.id()) == 0, "Simulation changed the pending credit");
+            // WARP review R2 (M16, M27): with the whole allowance unused, only the Level and thread checks
+            // refuse. The Overworld call names a position inside this station's region.
+            helper.assertTrue(warp.receiveEnergy(helper.getLevel(), fixture.pad.east(2), 1_000, false) == 0,
+                    "An Overworld position at the station's x/z was accepted");
+            int offThreadFirst = CompletableFuture.supplyAsync(
+                    () -> warp.receiveEnergy(fixture.space, fixture.pad.east(2), 1_000, false)).join();
+            helper.assertTrue(offThreadFirst == 0, "An off-thread call with allowance left was accepted");
+            helper.assertTrue(warp.pendingCredit(fixture.id()) == 0, "A refused call changed the pending credit");
+            helper.assertTrue(warp.receiveEnergy(fixture.space, fixture.pad.east(2), 1_000, true) == 1_000,
+                    "The same call on the server thread in Space must be accepted");
             helper.assertTrue(core.receiveEnergy(150_000, false) == 150_000
                     && second.receiveEnergy(150_000, false) == 50_000
                     && core.receiveEnergy(1, false) == 0, "Cores of one station share the per-tick allowance");
@@ -127,6 +144,12 @@ public final class StationWarpGameTests {
                             && !quote.contains("no rocket routes")
                             && quote.contains("/arce station warp confirm " + fixture.id()),
                     "Quote differs: " + quote);
+            // WARP review R2 (M11): a non-local source is refused before the confirmation is taken, so the
+            // owner's own confirmation still works afterwards.
+            List<String> console = new ArrayList<>();
+            fixture.run(fixture.server.createCommandSourceStack().withSource(ConnectedTestPlayers.capture(console)),
+                    "execute as " + fixture.ownerId + " run arce station warp confirm " + fixture.id());
+            expect(helper, console, StationManagementCode.NOT_LOCAL_PLAYER, "/execute confirm");
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             helper.assertTrue(last(owner).startsWith("Warp countdown started; station=" + fixture.id()),
                     "Confirmation differs: " + owner);
@@ -256,14 +279,22 @@ public final class StationWarpGameTests {
             expect(helper, owner, StationManagementCode.WARP_NO_CONFIRMATION, "confirm without request");
             fixture.run(fixture.ownerId, "arce station warp cancel");
             expect(helper, owner, StationManagementCode.WARP_NO_COUNTDOWN, "cancel without countdown");
+            // WARP review R6: status shows a pending credit without folding it and dirties nothing.
+            helper.assertTrue(fixture.warp.receiveEnergy(fixture.space, fixture.pad.east(2), 1_000, false) == 1_000,
+                    "The core fixture did not charge");
+            fixture.data.flush(fixture.server);
             fixture.run(memberId, "arce station warp status");
             helper.assertTrue(last(member).startsWith("Warp status; station=" + fixture.id())
-                    && last(member).contains("energy=3000000 FE") && last(member).contains("countdown=none"),
-                    "Member status differs: " + last(member));
+                    && last(member).contains("energy=3000000 FE pending=1000 FE")
+                    && last(member).contains("countdown=none"), "Member status differs: " + last(member));
+            helper.assertTrue(!fixture.data.isDirty() && fixture.warp.pendingCredit(fixture.id()) == 1_000,
+                    "Status folded or dirtied the registry");
             fixture.run(outsiderId, "arce station warp status");
             expect(helper, outsider, StationManagementCode.UNAUTHORIZED, "outsider status");
             helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
                     && fixture.data.warpEnergy(fixture.id()) == 3_000_000, "A rejected request changed the station");
+            fixture.warp.fold(fixture.server);
+            helper.assertTrue(fixture.data.warpEnergy(fixture.id()) == 3_001_000, "The pending credit was lost");
         } finally {
             fixture.warp.installRocketAuthority(previous);
             fixture.close();
@@ -472,6 +503,195 @@ public final class StationWarpGameTests {
         }
     }
 
+    /** WARP review R2 (M10): the kill switch is rechecked at commit; a countdown aborts when it is off. */
+    @GameTest(template = "empty", batch = "station_warp_killswitch", timeoutTicks = 400)
+    public static void theKillSwitchAbortsARunningCountdown(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper, "Kill switch", CelestialIds.EARTH_ID, 2_500_000);
+        StationRocketAuthority previous = fixture.warp.installRocketAuthority(NOTHING_IN_MOTION);
+        boolean scheduled = false;
+        try {
+            fixture.core(fixture.pad.east(2));
+            List<String> owner = fixture.join(fixture.ownerId, "killOwner");
+            fixture.look(fixture.ownerId, fixture.pad.east(2));
+            fixture.run(fixture.ownerId, "arce station warp " + MOON);
+            fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
+            helper.assertTrue(last(owner).startsWith("Warp countdown started"), "Countdown did not start: " + owner);
+            CommonConfig.WARP_ENABLED.set(false);
+            scheduled = true;
+            helper.runAfterDelay(COMMIT_DELAY, () -> {
+                try {
+                    helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
+                            && fixture.data.warpEnergy(fixture.id()) == 2_500_000, "A disabled warp committed");
+                    helper.assertTrue(owner.contains("Station warp aborted: "
+                            + StationManagementCode.WARP_DISABLED.description() + "."), "Abort differs: " + owner);
+                } finally {
+                    CommonConfig.WARP_ENABLED.set(true);
+                    fixture.warp.installRocketAuthority(previous);
+                    fixture.close();
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                CommonConfig.WARP_ENABLED.set(true);
+                fixture.warp.installRocketAuthority(previous);
+                fixture.close();
+            }
+        }
+    }
+
+    /** WARP review R2 (M02): an operator who confirmed and is de-opped before the commit cannot warp. */
+    @GameTest(template = "empty", batch = "station_warp_deop", timeoutTicks = 400)
+    public static void aDeoppedOperatorsCountdownAborts(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper, "De-op", CelestialIds.EARTH_ID, 2_500_000);
+        StationRocketAuthority previous = fixture.warp.installRocketAuthority(NOTHING_IN_MOTION);
+        UUID operatorId = UUID.randomUUID();
+        com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(operatorId, "warpOperator");
+        boolean scheduled = false;
+        try {
+            // PlayerList.op uses the GameTest server's operator level (0); an explicit level-4 entry is an operator.
+            fixture.server.getPlayerList().getOps().add(new ServerOpListEntry(profile, 4, false));
+            fixture.core(fixture.pad.east(2));
+            List<String> operator = fixture.join(operatorId, "warpOperator", true);
+            fixture.look(operatorId, fixture.pad.east(2));
+            fixture.run(operatorId, "arce station warp " + MOON);
+            fixture.run(operatorId, "arce station warp confirm " + fixture.id());
+            helper.assertTrue(last(operator).startsWith("Warp countdown started"),
+                    "An operator could not start the countdown: " + operator);
+            fixture.server.getPlayerList().getOps().remove(profile);
+            scheduled = true;
+            helper.runAfterDelay(COMMIT_DELAY, () -> {
+                try {
+                    helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
+                            && fixture.data.warpEnergy(fixture.id()) == 2_500_000, "A de-opped operator warped");
+                    helper.assertTrue(operator.contains("Station warp aborted: "
+                            + StationManagementCode.WARP_ACTOR_CHANGED.description() + "."),
+                            "Abort differs: " + operator);
+                } finally {
+                    fixture.server.getPlayerList().getOps().remove(profile);
+                    fixture.warp.installRocketAuthority(previous);
+                    fixture.close();
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                fixture.server.getPlayerList().getOps().remove(profile);
+                fixture.warp.installRocketAuthority(previous);
+                fixture.close();
+            }
+        }
+    }
+
+    /** WARP review R2 (M03): two countdowns due in the same tick commit on consecutive ticks. */
+    @GameTest(template = "empty", batch = "station_warp_serial", timeoutTicks = 400)
+    public static void countdownsDueTogetherCommitOnePerTick(GameTestHelper helper) {
+        Fixture first = new Fixture(helper, "Serial one", CelestialIds.EARTH_ID, 2_500_000);
+        Fixture second = new Fixture(helper, "Serial two", CelestialIds.EARTH_ID, 2_500_000);
+        StationRocketAuthority previous = first.warp.installRocketAuthority(NOTHING_IN_MOTION);
+        java.util.Map<UUID, Long> committedAt = new java.util.HashMap<>();
+        boolean scheduled = false;
+        try {
+            int index = 0;
+            for (Fixture fixture : List.of(first, second)) {
+                fixture.core(fixture.pad.east(2));
+                List<String> owner = fixture.join(fixture.ownerId, "serialOwner" + index++);
+                fixture.look(fixture.ownerId, fixture.pad.east(2));
+                fixture.run(fixture.ownerId, "arce station warp " + MOON);
+                fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
+                helper.assertTrue(last(owner).startsWith("Warp countdown started"), "Countdown did not start: " + owner);
+            }
+            helper.onEachTick(() -> {
+                for (Fixture fixture : List.of(first, second)) {
+                    if (!committedAt.containsKey(fixture.id()) && fixture.data.find(fixture.id())
+                            .filter(state -> state.orbitBody().equals(MOON)).isPresent()) {
+                        committedAt.put(fixture.id(), fixture.server.overworld().getGameTime());
+                    }
+                }
+            });
+            scheduled = true;
+            helper.runAfterDelay(COMMIT_DELAY + 3, () -> {
+                try {
+                    helper.assertTrue(committedAt.size() == 2, "Both warps must commit: " + committedAt);
+                    long a = committedAt.get(first.id());
+                    long b = committedAt.get(second.id());
+                    helper.assertTrue(Math.abs(a - b) == 1,
+                            "Due countdowns must commit one per tick, on consecutive ticks: " + committedAt);
+                } finally {
+                    first.warp.installRocketAuthority(previous);
+                    first.close();
+                    second.close();
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                first.warp.installRocketAuthority(previous);
+                first.close();
+                second.close();
+            }
+        }
+    }
+
+    /**
+     * WARP review R2 (ADR-044 §8): a target removed from the catalog during the countdown aborts the
+     * commit. A private service on a private catalog, so the server's catalogs are never replaced.
+     */
+    @GameTest(template = "empty", batch = "station_warp_target_removed", timeoutTicks = 400)
+    public static void aTargetRemovedDuringTheCountdownAborts(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper, "Removed target", CelestialIds.EARTH_ID, 9_000_000);
+        CelestialCatalogManager catalogs = new CelestialCatalogManager();
+        StationWarpService isolated = new StationWarpService(catalogs, system -> false, () -> WarpSettings.DEFAULTS);
+        isolated.installRocketAuthority(NOTHING_IN_MOTION);
+        boolean scheduled = false;
+        try {
+            helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(bodies(true))),
+                    "The private catalog with the target was rejected");
+            CelestialSavedData discoveries = CelestialSavedData.get(fixture.server);
+            if (discoveries.get(StarSystemContent.TAU_CETI_E).isEmpty()) {
+                discoveries.discover(StarSystemContent.TAU_CETI_E, helper.getLevel().getGameTime());
+            }
+            fixture.core(fixture.pad.east(2));
+            List<String> owner = fixture.join(fixture.ownerId, "removedOwner");
+            fixture.look(fixture.ownerId, fixture.pad.east(2));
+            ServerPlayer player = fixture.server.getPlayerList().getPlayer(fixture.ownerId);
+            StationWarpResult issued = isolated.request(player, true, StarSystemContent.TAU_CETI_E);
+            helper.assertTrue(issued.code() == StationManagementCode.WARP_ISSUED, "Request differs: " + issued.code());
+            StationWarpResult started = isolated.confirm(player, true, fixture.id());
+            helper.assertTrue(started.code() == StationManagementCode.WARP_STARTED, "Confirm differs: " + started.code());
+            helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(bodies(false))),
+                    "The private catalog without the target was rejected");
+            helper.onEachTick(() -> isolated.onServerTick(
+                    new TickEvent.ServerTickEvent(TickEvent.Phase.END, () -> true, fixture.server)));
+            scheduled = true;
+            helper.runAfterDelay(COMMIT_DELAY, () -> {
+                try {
+                    helper.assertTrue(isolated.countdown(fixture.id()).isEmpty(), "The countdown never ended");
+                    helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
+                            && fixture.data.warpEnergy(fixture.id()) == 9_000_000, "A removed target was warped to");
+                    helper.assertTrue(owner.contains("Station warp aborted: "
+                            + StationManagementCode.WARP_TARGET_UNAVAILABLE.description() + "."),
+                            "Abort differs: " + owner);
+                } finally {
+                    fixture.close();
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                fixture.close();
+            }
+        }
+    }
+
+    private static List<CelestialBodyDefinition> bodies(boolean withStarSystem) {
+        List<CelestialBodyDefinition> bodies = new ArrayList<>(CelestialDefaults.definitions());
+        if (withStarSystem) {
+            bodies.addAll(StarSystemContent.definitions());
+        }
+        return bodies;
+    }
+
     private static void expect(GameTestHelper helper, List<String> replies, StationManagementCode code, String label) {
         helper.assertTrue(!replies.isEmpty() && last(replies).contains(code.description()),
                 label + ": expected " + code + " but got " + replies);
@@ -554,8 +774,12 @@ public final class StationWarpGameTests {
         }
 
         List<String> join(UUID playerId, String name) {
+            return join(playerId, name, false);
+        }
+
+        List<String> join(UUID playerId, String name, boolean serverPermissions) {
             List<String> replies = new ArrayList<>();
-            online.add(ConnectedTestPlayers.join(server, playerId, name, space, pad, replies));
+            online.add(ConnectedTestPlayers.join(server, playerId, name, space, pad, replies, serverPermissions));
             return replies;
         }
 

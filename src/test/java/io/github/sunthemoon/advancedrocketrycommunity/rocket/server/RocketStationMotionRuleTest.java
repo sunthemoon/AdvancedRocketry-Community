@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -107,6 +108,59 @@ final class RocketStationMotionRuleTest {
         assertThrows(IllegalArgumentException.class, () -> new RocketStationMotionRule.Region(moon, 5, 0, 4, 0));
     }
 
+    /**
+     * WARP review R2 (M08/M09): the service wiring counts a record as classified only when it is live or
+     * settled, and treats only live PREPARED records as moving, against a real journal.
+     */
+    @Test
+    void serviceWiringUsesLiveAndSettledSetsAsSpecified() {
+        var journal = new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                .RocketTransferSavedData();
+        RocketTransferRecord prepared = record();
+        journal.put(prepared);
+        UUID id = prepared.transferId();
+        ResourceLocation moon = RocketFlightPlanner.MOON.dimensionId();
+        assertTrue(wired(journal, Set.of(), Set.of(), moon, 1_000, 1_000), "An unclassified record blocks everywhere");
+        assertFalse(wired(journal, Set.of(), Set.of(id), moon, 1_000, 1_000), "A settled record far away does not");
+        assertTrue(wired(journal, Set.of(id), Set.of(), moon, 0, 0), "A live PREPARED record at its pad blocks");
+        assertFalse(wired(journal, Set.of(), Set.of(id), moon, 0, 0), "A settled PREPARED record does not");
+        assertFalse(wired(new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                .RocketTransferSavedData(), Set.of(), Set.of(), moon, 0, 0), "An empty journal never blocks");
+    }
+
+    /** WARP review R6: unclassified records are listed (bounded) with both ends and the operator step. */
+    @Test
+    void diagnosticsListUnclassifiedRecordsForTheOperator() {
+        var journal = new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                .RocketTransferSavedData();
+        java.util.List<RocketTransferRecord> records = new java.util.ArrayList<>();
+        for (int index = 0; index < 6; index++) {
+            RocketTransferRecord record = record(new RocketPosition(72 + 10 * index, 80, 8));
+            journal.put(record);
+            records.add(record);
+        }
+        Set<UUID> live = Set.of(records.get(0).transferId());
+        String line = RocketTransferService.journalDiagnostics(journal, live, Set.of());
+        assertTrue(line.startsWith("transfer_journal=operational records=6 live=1 settled=0 unclassified=5"), line);
+        assertEquals(4, line.split(java.util.regex.Pattern.quote("[transfer="), -1).length - 1,
+                "At most four records are listed: " + line);
+        assertTrue(line.contains("source=" + RocketFlightPlanner.EARTH.dimensionId() + "@12,72,12")
+                && line.contains("destination=" + RocketFlightPlanner.MOON.dimensionId() + "@")
+                && line.endsWith("load an end, then /arce rocket recover <transfer>"), line);
+        assertTrue(!line.contains(records.get(0).transferId().toString()), "A live record is not listed");
+        String clean = RocketTransferService.journalDiagnostics(journal,
+                records.stream().map(RocketTransferRecord::transferId).collect(java.util.stream.Collectors.toSet()),
+                Set.of());
+        assertEquals("transfer_journal=operational records=6 live=6 settled=0 unclassified=0", clean);
+    }
+
+    private static boolean wired(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                                         .RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled,
+                                 ResourceLocation dimension, int x, int z) {
+        return RocketTransferService.stationRegionInMotion(journal, live, settled, 0L, dimension, x, z, x + 511,
+                z + 511);
+    }
+
     private static boolean blocks(boolean operational, List<RocketTransferRecord> records, Set<UUID> classified,
                                   Set<UUID> live, long gameTime, RocketStationMotionRule.Region region) {
         return RocketStationMotionRule.blocks(operational, records, classified::contains, live::contains, gameTime,
@@ -121,6 +175,10 @@ final class RocketStationMotionRuleTest {
     }
 
     private static RocketTransferRecord record() {
+        return record(MOON_ORIGIN);
+    }
+
+    private static RocketTransferRecord record(RocketPosition destinationOrigin) {
         UUID transfer = UUID.randomUUID();
         UUID logical = UUID.randomUUID();
         ResourceLocation iron = ResourceLocation.tryParse("minecraft:iron_block");
@@ -135,7 +193,7 @@ final class RocketStationMotionRuleTest {
                 RocketFlightPlanner.EARTH.dimensionId(), EARTH_ORIGIN, blocks, List.of(new RocketPosition(1, 1, 0)),
                 stats, 0L);
         RocketStructureSnapshot destination = source.relocated(UUID.randomUUID(),
-                RocketFlightPlanner.MOON.dimensionId(), MOON_ORIGIN, 160L);
+                RocketFlightPlanner.MOON.dimensionId(), destinationOrigin, 160L);
         RocketFuelState fuel = RocketFuelState.empty(1_000L).fill(1_000L).state();
         RocketFlightPlan plan = RocketFlightPlanner.plan(stats, fuel, RocketFlightPlanner.EARTH,
                 RocketFlightPlanner.MOON, transfer, 0L).plan();
@@ -149,7 +207,7 @@ final class RocketStationMotionRuleTest {
                 .beginTransit(transfer, RocketFlightLimits.COUNTDOWN_TICKS + RocketFlightLimits.ASCENT_TICKS);
         RocketFlightData destinationFlight = sourceFlight.arriveAtDestination(
                 sourceFlight.fuel().debit(transfer, plan.requiredFuel()).state(), RocketFlightPlanner.MOON.bodyId(),
-                RocketFlightPlanner.MOON.dimensionId(), MOON_ORIGIN, ARRIVAL);
+                RocketFlightPlanner.MOON.dimensionId(), destinationOrigin, ARRIVAL);
         return RocketTransferRecord.create(transfer, logical, UUID.randomUUID(), UUID.randomUUID(), source,
                 destination, sourceFlight, destinationFlight, plan.requiredFuel(), 0L);
     }

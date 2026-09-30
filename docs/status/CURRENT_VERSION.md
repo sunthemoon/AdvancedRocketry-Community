@@ -73,8 +73,9 @@ status remains `IN_PROGRESS`, not `PASSED`.
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and
 pre-start migration contract, retaining old station identity/geometry. The
-per-station sky, UI screens, the elevator endpoint, the MIG recovery matrix and
-acceptance remain unimplemented current-version work,
+per-station sky, the elevator endpoint validator, the UI-03 permission matrix,
+the MIG recovery matrix and acceptance remain unimplemented current-version work
+(ADR-046 records that v1.5 has no control screen),
 not metadata-only substitutes.
 
 The [v1.4 development handoff](../releases/v1.4.0/RELEASE-EVIDENCE.md) and

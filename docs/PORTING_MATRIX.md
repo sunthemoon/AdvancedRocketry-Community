@@ -35,9 +35,12 @@
 | JEI | integration | API 版本 | optional compat | `v0.2.0+` | absent/present startup | PASSED |
 | ASM/coremod | asm | 高风险、时代 API | 不迁移 | never unless ADR | no coremod | REJECTED |
 | 旧世界直开 | backwardCompat/dimension | ID/格式跨度巨大 | 不属于 v1.0 | `v1.x` research | offline conversion only | DEFERRED |
-| 跃迁/多星系 | stations/dimension | 动态天体复杂 | post-MVP | `v1.x` | future plan | DEFERRED |
+| 跃迁/多星系 | stations/dimension | 动态天体复杂 | 逻辑轨道重定位（ADR-044）、恒星系即根天体树（ADR-043） | `v1.5.0` | WARP/STAR 证据 + ACC | IN_PROGRESS |
+| 空间站/跃迁控制 | stations GUI | 客户端界面与协议 | 服务端命令（ADR-046），无新数据包 | `v1.5.0` | UI-03 权限矩阵（A1/S1，V2 待 ACC-02） | IN_PROGRESS |
+| 空间站/跃迁控制界面 | stations GUI | 需版本化负载 | 屏幕推迟（ADR-046 处置，最晚 v1.8.0 复议） | `v1.8.0` | 独立 ADR + 有界负载 | DEFERRED |
 | 地球化 | dimension/world | 全局世界修改 | post-MVP | `v1.x+` | future plan | DEFERRED |
-| 黑洞/空间电梯/轨道激光 | 多处 | 高内容/渲染/兼容 | post-MVP | `v1.x+` | future plan | DEFERRED |
+| 黑洞/轨道激光 | 多处 | 高内容/渲染/兼容 | 终局系统 | `v1.7.0` | v1.7 计划 | PLANNED |
+| 空间电梯 | 多处 | 物流/跨维度 | v1.5 端点契约与只读校验（ADR-045）；v1.7 结构与物流 | `v1.5.0`/`v1.7.0` | ELEVATOR 校验测试；v1.7 计划 | IN_PROGRESS |
 
 ## 使用规则
 

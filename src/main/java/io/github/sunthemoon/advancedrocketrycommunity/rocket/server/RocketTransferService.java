@@ -246,31 +246,66 @@ final class RocketTransferService {
      */
     boolean stationRegionInMotion(MinecraftServer server, int minX, int minZ, int maxX, int maxZ) {
         Objects.requireNonNull(server, "server");
-        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        return stationRegionInMotion(RocketTransferSavedData.get(server), liveTransfers, settledTransfers,
+                server.overworld().getGameTime(),
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.SPACE_LEVEL.location(),
+                minX, minZ, maxX, maxZ);
+    }
+
+    /**
+     * The wiring of {@link RocketStationMotionRule}: classified means live or settled this session, and
+     * only live records count as moving {@code PREPARED} records. Package-private for tests.
+     */
+    static boolean stationRegionInMotion(RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled,
+                                         long gameTime, net.minecraft.resources.ResourceLocation dimension,
+                                         int minX, int minZ, int maxX, int maxZ) {
         return RocketStationMotionRule.blocks(
                 journal.operational(),
                 journal.entries(),
-                transferId -> liveTransfers.contains(transferId) || settledTransfers.contains(transferId),
-                liveTransfers::contains,
-                server.overworld().getGameTime(),
-                new RocketStationMotionRule.Region(
-                        io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.SPACE_LEVEL.location(),
-                        minX, minZ, maxX, maxZ)
+                transferId -> live.contains(transferId) || settled.contains(transferId),
+                live::contains,
+                gameTime,
+                new RocketStationMotionRule.Region(dimension, minX, minZ, maxX, maxZ)
         );
     }
 
     /** Operator line for the warp in-motion rule: journal state and this session's classification. */
     String journalDiagnostics(MinecraftServer server) {
-        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        return journalDiagnostics(RocketTransferSavedData.get(server), liveTransfers, settledTransfers);
+    }
+
+    /**
+     * One bounded line. Unclassified records (which block every warp, ADR-044 §5 rule 2) are listed, at
+     * most four, with both ends, so an operator can load one end and run {@code /arce rocket recover}.
+     */
+    static String journalDiagnostics(RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled) {
         if (!journal.operational()) {
             return "transfer_journal=blocked";
         }
         List<RocketTransferRecord> records = journal.entries();
-        long live = records.stream().filter(record -> liveTransfers.contains(record.transferId())).count();
-        long settled = records.stream().filter(record -> settledTransfers.contains(record.transferId())).count();
-        return String.format(java.util.Locale.ROOT,
+        long liveCount = records.stream().filter(record -> live.contains(record.transferId())).count();
+        long settledCount = records.stream().filter(record -> settled.contains(record.transferId())).count();
+        List<RocketTransferRecord> unclassified = records.stream()
+                .filter(record -> !live.contains(record.transferId()) && !settled.contains(record.transferId()))
+                .toList();
+        StringBuilder line = new StringBuilder(String.format(java.util.Locale.ROOT,
                 "transfer_journal=operational records=%d live=%d settled=%d unclassified=%d",
-                records.size(), live, settled, records.size() - live - settled);
+                records.size(), liveCount, settledCount, unclassified.size()));
+        for (RocketTransferRecord record : unclassified.subList(0, Math.min(4, unclassified.size()))) {
+            line.append(String.format(java.util.Locale.ROOT, " [transfer=%s phase=%s source=%s@%s destination=%s@%s]",
+                    record.transferId(), record.phase(),
+                    record.sourceSnapshot().sourceDimension(), position(record.sourceSnapshot().sourceOrigin()),
+                    record.destinationSnapshot().sourceDimension(),
+                    position(record.destinationSnapshot().sourceOrigin())));
+        }
+        if (!unclassified.isEmpty()) {
+            line.append(" load an end, then /arce rocket recover <transfer>");
+        }
+        return line.toString();
+    }
+
+    private static String position(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition origin) {
+        return origin.x() + "," + origin.y() + "," + origin.z();
     }
 
     int activeCount(MinecraftServer server) {

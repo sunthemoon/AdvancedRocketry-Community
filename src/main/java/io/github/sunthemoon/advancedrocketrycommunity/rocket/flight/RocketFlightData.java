@@ -200,6 +200,22 @@ public final class RocketFlightData {
         return Optional.ofNullable(currentTarget);
     }
 
+    /**
+     * ADR-044 §5: a rocket docked at a station records the station's current orbit body. Only a
+     * station target may change its body this way; nothing else about the flight changes.
+     */
+    public RocketFlightData atStationOrbit(ResourceLocation stationOrbitBody) {
+        Objects.requireNonNull(stationOrbitBody, "stationOrbitBody");
+        if (!(currentTarget instanceof TravelTarget.Station)) {
+            throw new IllegalStateException("Only a station-docked rocket follows its station's orbit body");
+        }
+        if (stationOrbitBody.equals(currentBody)) {
+            return this;
+        }
+        return copy(state, fuel, plan, passengers, stationOrbitBody, currentDimension, currentOrigin,
+                stateStartedGameTime, activeTransferId);
+    }
+
     public RocketFlightData withMigratedCurrentTarget(TravelTarget target) {
         if (schemaVersion != 1) {
             if (Objects.equals(currentTarget, target)) {

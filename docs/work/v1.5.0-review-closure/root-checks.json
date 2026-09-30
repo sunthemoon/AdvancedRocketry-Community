@@ -1,0 +1,51 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1279026,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "3ce3dfbfc062c1818d63f09b92af5e01e7ed78b8393685b91f512649be3795fb"
+      },
+      {
+        "bytes": 2820179,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "9102bea69d27a349b328bb80f1e1023d087750da2931ffbe120b148ff7d53487"
+      }
+    ]
+  },
+  "base_commit": "130a744571cc61fec416b0a982ea093243fa0ec9",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 186,
+    "tests": 1032
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "87f52c1e77b8f5654fd84ca3f9bd1c63ba02e054aed52b70b259e511da5c904c",
+    "DOCUMENT-INDEX.md": "b82797be99bb400740f8fcfd783c8b2bbe648d99c6ca276cb57f42612a81e751",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ConnectedTestPlayers.java": "bf20555423ff1d933c1585e19e8fbab98b163686917c2f7f126a0bf743781f76",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java": "b1d934ee4524cff1fa7509d5052e7023aa4ff9fda179de3ec0c86ceded4c6f0d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpGameTests.java": "07fbe8b61307d96ca74d94f9e8a8aff0df5d83878e2cd2c5dd817792322fa806",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataType.java": "e861f2bc93c15a3314e89eb37d234fa4e3009f552eead4f5a5ec7f51f771c803",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketFlightData.java": "e693387ac43b2f97fbd5c07e0d1688cf1a2c7e60697e283deee27aa452e2cce8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java": "3d60890ead05e950ba08ec6f869c007d5d86a43d79b91e2ee9990819ba99c8e1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferService.java": "f1439b0f0f378623fa7499588ba5efb3dbf0c73200ebdd1221b6222bb0f993e2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationWarpCommands.java": "089fc0b52e8d9000b9ba68c5d796d668a1f32e3ece553c7af2abc2b27af1b826",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "73d0662bc40430d7c367b4715ba91060cd02924fa81c7b659174437f6895a29c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationStorageBudget.java": "ca2a460704b429362215f4f7497c8d0c45c5b9afae64e12b2d4fb35a8ed0c1e4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java": "44dd8c03e5572e9d3575b8e4d85272da42a18fdfbb677ea3ec135bdb1bd9cddd",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/BoundedSavedDataIoCapacityTest.java": "0cba7a5f6918e1b0b241124e8699ce64eac1807fa170f2afe60421547609446e",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketStationMotionRuleTest.java": "ccef829093782ecfbbe9cb8246b62753ef2caeeb2bf78d4e851bec5e6e9d49df",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferJournalCapacityTest.java": "555c67230c79df6a11a5e6670df86a9f5fee8ade6bcdf6bdf1a3b9c651944e99",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateTest.java": "c5d163c4d9dfea642b39a1c5cd42e000fddda37061adf135ccbb43f40f0e70b4",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistryStorageBoundTest.java": "d11a987ab5667bce4607137313d827bdd78d46332db384b76990c278424de7ef",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationStorageBudgetTest.java": "fc5c71bacce6348dae87cf7a65804fc70c23399fdc7366791511e2b1c44af5d7"
+  }
+}

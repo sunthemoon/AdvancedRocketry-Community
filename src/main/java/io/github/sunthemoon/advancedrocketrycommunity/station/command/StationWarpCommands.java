@@ -118,8 +118,10 @@ public final class StationWarpCommands {
                         running.quote().target(), (running.ticksLeft(player.getServer().getTickCount()) + 19L) / 20L))
                 .orElse(" countdown=none");
         context.getSource().sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                "Warp status; station=%s orbit=%s energy=%d FE enabled=%s cost_in_system=%d cost_interstellar=%d%s",
-                station.stationId(), station.orbitBody(), result.balance(), settings.enabled(),
+                "Warp status; station=%s orbit=%s energy=%d FE pending=%d FE enabled=%s cost_in_system=%d"
+                        + " cost_interstellar=%d%s",
+                station.stationId(), station.orbitBody(), result.balance(), warp.pendingCredit(station.stationId()),
+                settings.enabled(),
                 settings.inSystemCost(), settings.interstellarCost(), countdown)), false);
         return 1;
     }

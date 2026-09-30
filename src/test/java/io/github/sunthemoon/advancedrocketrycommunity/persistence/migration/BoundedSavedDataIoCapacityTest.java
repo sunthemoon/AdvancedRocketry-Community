@@ -62,6 +62,69 @@ final class BoundedSavedDataIoCapacityTest {
                 .orElseThrow().getList("stations", 10).size());
     }
 
+    /**
+     * WARP review R1: a satellite registry grown through its public API to 6,144 missions (about
+     * 3.7 MB raw, heap ratio about 5) must round-trip through the checked writer and bounded reader.
+     */
+    @Test
+    void largeSatelliteRegistryRoundTripsThroughTheBoundedCodec() throws Exception {
+        var definition = io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent
+                .surveySatellite();
+        var target = io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent.TAU_CETI_E;
+        var data = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData
+                .create(0);
+        int limit = io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits.MAX_SATELLITES - 1;
+        java.util.List<UUID> satellites = new java.util.ArrayList<>();
+        long time = 0;
+        int missions = 0;
+        while (missions < 6_144) {
+            java.util.List<UUID> started = new java.util.ArrayList<>();
+            java.util.List<UUID> owners = new java.util.ArrayList<>();
+            for (int batch = 0; batch < 32 && missions < 6_144; batch++) {
+                UUID mission = new UUID(77, missions);
+                UUID owner;
+                boolean ok;
+                if (satellites.size() < limit) {
+                    UUID satellite = new UUID(79, satellites.size());
+                    owner = new UUID(78, satellites.size() % 4_000);
+                    ok = data.launch(satellite, mission, owner, definition, target, time, false).success();
+                    if (ok) {
+                        satellites.add(satellite);
+                    }
+                } else {
+                    int index = missions % satellites.size();
+                    owner = new UUID(78, index % 4_000);
+                    ok = data.startMission(satellites.get(index), mission, owner, definition, target, time, false)
+                            .success();
+                }
+                assertTrue(ok, "Mission " + missions + " was not started");
+                started.add(mission);
+                owners.add(owner);
+                missions++;
+            }
+            time += definition.missionDurationTicks() + 1;
+            for (int pass = 0; pass < 4; pass++) {
+                data.completeDue(time);
+            }
+            for (int index = 0; index < started.size(); index++) {
+                data.claim(started.get(index), owners.get(index), time);
+            }
+        }
+        CompoundTag payload = data.save(new CompoundTag());
+        CompoundTag outer = new CompoundTag();
+        outer.put("data", payload);
+        long raw = serialized(outer);
+        NbtAccounter heap = new NbtAccounter(Long.MAX_VALUE);
+        NbtIo.read(new DataInputStream(new ByteArrayInputStream(bytes(outer))), heap);
+        System.out.printf("ARCE_BOUNDED_IO_CAPACITY satellite_missions=%d raw_bytes=%d heap_accounted=%d ratio=%.2f%n",
+                missions, raw, heap.getUsage(), heap.getUsage() / (double) raw);
+        ManagedSavedDataType type = ManagedSavedDataType.SATELLITE_MISSIONS;
+        assertTrue(raw <= type.maxCompressedBytes(), "Payload exceeds its raw bound");
+        Path file = root.resolve(type.fileName());
+        CheckedSavedDataFile.replace(file, type, () -> payload);
+        assertEquals(payload, BoundedSavedDataIo.read(file, type).getCompound("data"));
+    }
+
     @Test
     void rawBytesBeyondTheBoundAreStillRejected() throws Exception {
         CompoundTag payload = new CompoundTag();

@@ -107,11 +107,13 @@ public enum ManagedSavedDataType {
     }
 
     /**
-     * Heap-accounting quota as a multiple of the raw byte bound. Stations were measured at 5.67 at
-     * capacity (ADR-041 capacity fix); the other types keep their earlier factor 1.
+     * Heap-accounting quota as a multiple of the raw byte bound. Measured ratios: stations 6.49 at
+     * their growth bound, satellite missions 5.05 at 6,144 missions (WARP review R1). A factor of 1
+     * refused valid data, and the per-declaration guard in {@link BoundedSavedDataIo} already stops a
+     * tiny file from forcing a large allocation, so every type uses 8.
      */
     public long heapAccountingFactor() {
-        return this == STATIONS ? 8L : 1L;
+        return 8L;
     }
 
     public long maxUncompressedBytes() {

@@ -261,11 +261,50 @@ public final class PlanetaryAdmissionGameTests {
                     launchAndCancel(helper, manager, rocket, owner, MOON);
                     helper.assertTrue(stations.find(stationId).orElseThrow().orbitBody().equals(CelestialIds.MOON_ID),
                             "Departure rewrote the relocated orbit");
+                    // ADR-044 §5 (WARP review R4): the departure recorded the station's current orbit.
+                    helper.assertTrue(rocket.flightData().orElseThrow().currentBody().equals(CelestialIds.MOON_ID),
+                            "The departure kept the stale body: " + rocket.flightData().orElseThrow().currentBody());
                 }, cleanup);
             } catch (RuntimeException | Error exception) {
                 cleanup.run();
                 throw exception;
             }
+        });
+    }
+
+    /** ADR-044 §5 (WARP review R2, M12): a rocket built on a station records the station's orbit body. */
+    @GameTest(template = "rocket_test", batch = "planetary_admission_station_built", timeoutTicks = 100)
+    public static void rocketBuiltOnAStationRecordsItsOrbitBody(GameTestHelper helper) {
+        helper.runAtTickTime(1, () -> {
+            var server = helper.getLevel().getServer();
+            var space = server.getLevel(CelestialIds.SPACE_LEVEL);
+            helper.assertTrue(space != null, "Space is unavailable");
+            var stations = StationRegistrySavedData.get(server);
+            UUID stationId = UUID.randomUUID();
+            UUID ownerId = UUID.randomUUID();
+            var built = new RocketEntity(ModEntities.ROCKET.get(), space);
+            var original = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), ownerId);
+            try {
+                stations.reserve(stationId, ownerId, "Built-here fixture", CelestialIds.MOON_ID,
+                        helper.getLevel().getGameTime());
+                var station = stations.commit(stationId);
+                var pad = station.landingPad();
+                var snapshot = original.snapshot().orElseThrow().relocated(UUID.randomUUID(),
+                        CelestialIds.SPACE_LEVEL.location(), new RocketPosition(pad.x(), pad.y(), pad.z()),
+                        space.getGameTime());
+                built.initialize(snapshot, UUID.randomUUID(), ownerId);
+                var flight = built.flightData().orElseThrow();
+                helper.assertTrue(flight.currentTarget().filter(new TravelTarget.Station(stationId)::equals).isPresent(),
+                        "The rocket is not docked at the station: " + flight.currentTarget());
+                helper.assertTrue(flight.currentBody().equals(CelestialIds.MOON_ID),
+                        "A station-built rocket must record the station's orbit, not " + flight.currentBody());
+            } finally {
+                built.discard();
+                original.discard();
+                stations.delete(stationId);
+                stations.flush(server);
+            }
+            helper.succeed();
         });
     }
 

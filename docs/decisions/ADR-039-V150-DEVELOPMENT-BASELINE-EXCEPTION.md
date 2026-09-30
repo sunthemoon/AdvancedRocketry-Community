@@ -44,6 +44,12 @@ multi-star routes/unlocks; UI/security and a bounded elevator endpoint contract.
 Metadata, a diagnostic command or passing unit tests alone cannot substitute
 for these outcomes. Full elevator logistics and v1.6+ content remain excluded.
 
+> Amended on 2026-09-30 by [ADR-046](ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md):
+> the v1.5 "UI/security" outcome is the server command interface with no screen,
+> verified behaviourally (UI-01..03). A station/warp control screen is
+> reconsidered no later than v1.8.0. [ADR-045](ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md)
+> explains why its validator is the elevator-contract outcome itself.
+
 Retain short build/unit/DataGen/GameTest checks, independent actual-diff review
 and finite save/restart/authority checks needed by each changed behavior.
 Known loss, duplication or authority failures must be repaired; they are not

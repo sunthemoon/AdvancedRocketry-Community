@@ -58,7 +58,8 @@ No candidate or release approval is assigned.
   10,000,000 FE in total); it stores nothing itself, reports 0 stored and drops
   as a plain block. Energy received is added to the balance every 10 seconds and
   when the server stops; energy received in the last moments before a crash can
-  be lost.
+  be lost. Every station always has room for its balance, even when the station
+  registry is at its storage bound.
 - Add `/arce station warp <body>`, `/arce station warp confirm <station_id>`,
   `/arce station warp cancel` and `/arce station warp status`. The owner, or an
   operator, standing in the station and looking at its warp core requests a
@@ -66,7 +67,9 @@ No candidate or release approval is assigned.
   within a star system, 8,000,000 FE between systems, both configurable in the
   common config between 100,000 and 10,000,000, with `stations.warpEnabled` as a
   switch) and the balance, and warns when the target system has no rocket
-  routes. After confirmation a 10-second countdown is shown to online members;
+  routes. `status` shows the balance and the energy still waiting to be added,
+  without saving anything. After confirmation a 10-second countdown is shown to
+  online members;
   it can be cancelled, and it aborts if the station, its owner, the target or
   the cost changed. The commit moves only the orbit: blocks, players and gravity
   stay as they are. A warp waits while a rocket is launching from, arriving at or
@@ -85,9 +88,10 @@ No candidate or release approval is assigned.
 - Station registries near the 4,096-station limit no longer fail the pre-start
   upgrade or a station change with a false "oversized" error; the size bound is
   the raw data size, and its heap estimate no longer rejects valid data.
-- A corrupt or crafted data file that declares huge contents is refused as
-  oversized before any memory is reserved for it, instead of risking an
-  out-of-memory crash at start.
+- A corrupt or crafted data file that declares more contents than the file
+  itself could hold is refused as oversized before memory is reserved for them,
+  instead of risking an out-of-memory crash at start. Contents a file can hold
+  are still read within the data type's memory budget.
 - Creating a station, inviting or adding members and transferring ownership are
   refused once the station registry nears its 4 MiB storage bound (reached well
   below 4,096 stations when teams are full), instead of later saves failing.

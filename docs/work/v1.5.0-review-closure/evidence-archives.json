@@ -1,0 +1,52 @@
+{
+  "archives": [
+    {
+      "bytes": 511485,
+      "manifest": "root-checks-files.json",
+      "members": 225,
+      "name": "root-checks.zip",
+      "sha256": "fe79511d1943a6d108797cb6668935cb7983a6464d6f393856631444ac2a670e"
+    },
+    {
+      "bytes": 1066616,
+      "excluded": [
+        "tree-",
+        "prev-review/",
+        "packets/",
+        "__pycache__/"
+      ],
+      "manifest": "independent-review-warp-files.json",
+      "members": 117,
+      "name": "independent-review-warp.zip",
+      "reviewed_commits": [
+        "0416455",
+        "615a5f1",
+        "1a5763a"
+      ],
+      "sha256": "0410e4ae8b9fd5aa89d94e5ee8c2ed76ab320f00a636e71a139f3a38240e4248",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-warp-review-b42c92ae0c3f8a585f4f4b526c215583"
+    },
+    {
+      "bytes": 13481,
+      "excluded": [
+        "prev-review/"
+      ],
+      "manifest": "independent-review-contracts-files.json",
+      "members": 1,
+      "name": "independent-review-contracts.zip",
+      "reviewed_commits": [
+        "2900e66"
+      ],
+      "sha256": "44b00924e3cfb9570172940c6adf0d9ce5e5d2bc7e6191c6ba2b2c7154bfd462",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-elevator-ui-review-bb661d39bfc2c602c71f3cbf41fb7981"
+    }
+  ],
+  "base_commit": "130a744571cc61fec416b0a982ea093243fa0ec9",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-review-closure-8111fe62833d46a9a62022b15f2e21dd"
+}

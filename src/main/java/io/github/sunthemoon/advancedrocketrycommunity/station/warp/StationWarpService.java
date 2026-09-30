@@ -88,7 +88,7 @@ public final class StationWarpService {
             return 0;
         }
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
-        if (!data.operational() || data.updatesQuarantined()) {
+        if (!data.acceptsWarpEnergy()) {
             return 0;
         }
         return data.findAt(position.getX(), position.getZ())
@@ -253,7 +253,10 @@ public final class StationWarpService {
                 cancelled.orElseThrow().quote(), located.authority().warpEnergy(located.station().stationId())));
     }
 
-    /** Read-only status for the owner, members and operators inside the station (after a fold). */
+    /**
+     * Read-only status for the owner, members and operators inside the station. It never folds (WARP
+     * review R6): the balance is the folded one, and callers show {@link #pendingCredit} beside it.
+     */
     public StationWarpResult status(ServerPlayer player) {
         Objects.requireNonNull(player, "player");
         MinecraftServer server = player.getServer();
@@ -276,7 +279,6 @@ public final class StationWarpService {
                 StationAccessAction.VISIT)) {
             return StationWarpResult.of(StationManagementCode.UNAUTHORIZED, null);
         }
-        fold(server);
         UUID stationId = station.orElseThrow().stationId();
         return new StationWarpResult(StationManagementCode.WARP_STATUS, station,
                 countdowns.get(stationId).map(StationWarpCountdowns.Countdown::quote), data.warpEnergy(stationId));

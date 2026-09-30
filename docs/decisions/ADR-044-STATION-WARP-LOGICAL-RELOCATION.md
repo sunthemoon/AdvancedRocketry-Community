@@ -1,8 +1,8 @@
-# ADR-044 — Station warp as logical orbit relocation (revision 3)
+# ADR-044 — Station warp as logical orbit relocation (revision 4)
 
 ```yaml
 status: ACCEPTED
-revision: 3
+revision: 4
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -11,7 +11,7 @@ accepted_at: 2026-09-30
 acceptance_basis: maintainer standing goal to complete the project with recommended solutions, after independent re-review of revision 2 ("accept with changes"); all nine required changes applied in this revision
 target_version: v1.5.0
 development_dependency: ADR-040, ADR-041, ADR-043
-amends: ADR-040 (warp fields; "no speculative warp fields yet"; "current root 3 accepts only record 2" becomes the schema table in §6), ADR-041 (adds the named transition "orbit relocation" and balance invariance for existing transitions)
+amends: ADR-040 (warp fields; "no speculative warp fields yet"; "current root 3 accepts only record 2" becomes the schema table in §6; its 4,096-station count holds only for small records, see §2 growth admission), ADR-041 (adds the named transition "orbit relocation" and balance invariance for existing transitions)
 implements: V150-WARP-01 contract for WARP-02..05 and UI-01..03
 station_registry_schema: 4 (record 2 and reservation 1 unchanged)
 ```
@@ -44,8 +44,12 @@ not physical isolation.
     more than 4,096 entries blocks the registry (fail closed).
   - Each balance is at most 10,000,000 FE.
   - Budget: each entry is at most 64 bytes, so the full list is at most 256 KiB.
-    A credit that would add an entry while the encoded registry is within 256 KiB
-    of the bound is refused.
+    That 256 KiB headroom belongs to balances. Every other growth stops before it
+    (growth admission, below), so a new entry is admitted up to the 4 MiB bound
+    itself, and a fold never refuses a credit for lack of room in a registry grown
+    under these rules. Only a registry loaded above the growth limit could refuse
+    a new entry; that credit is then lost with an
+    `ARCE_STATION_WARP_CREDIT_REFUSED` warning (§3). (Revision 4, WARP review R4.)
   - Growth admission (amended after the WARP-02 implementation review, F2):
     4,096 records fit only when they are small (1.59 MB measured for minimal
     records); records at their bounds (about 2.3 KB each) reach the 4 MiB bound
@@ -80,7 +84,10 @@ not physical isolation.
   every warp request and commit check, and in `ServerStoppingEvent` before the
   stop save. A fold is an ordinary registry mutation (dirty, ordinary save),
   never a flush. A continuously charging station therefore dirties the registry
-  at most once per 10 s, not every tick (plan §13.3).
+  at most once per 10 s, not every tick (plan §13.3). `/arce station warp status`
+  is not a fold trigger: it shows the folded balance and the pending credit
+  and changes nothing, so command blocks cannot add dirty saves (revision 4,
+  WARP review R6).
 - **Deletion and reuse.** Deleting a station removes its balance (audited). A
   reused cell starts at 0, and a carried core carries nothing.
 - **Cost.** COMMON config (the mod's existing config type, integrator-registered):
@@ -145,7 +152,10 @@ For each station and each crash:
 - energy accepted but not yet folded is lost, bounded by 200,000 FE × 200 ticks
   and capped at 10,000,000 FE;
 - energy folded into the registry after the energy source's last chunk save can
-  be supplied again after the crash, capped at 10,000,000 FE.
+  be supplied again after the crash, capped at 10,000,000 FE;
+- without a crash, a credit refused by a fold is lost and logged. That happens
+  only for a station deleted before the fold, or for a registry loaded above the
+  growth limit (§2).
 
 ARCE flushes save the registry often, while source chunks are saved on unrelated
 schedules, so duplication is the likelier direction. Restoring the pre-upgrade
@@ -253,7 +263,9 @@ Station registry acceptance by root schema:
 ## 7. Content, UI and sky
 
 - **Warp core.** Original block, model and recipe; no imported art or code.
-  - The model uses the existing machine-casing textures.
+  - The model uses the existing machine-casing textures on its sides and bottom.
+    Its top references the vanilla `minecraft:block/crying_obsidian` texture: a
+    reference, not a copied asset (revision 4, WARP review R11).
   - The recipe (v1.5 DataGen) is four machine casings, four advanced circuits and
     one data storage unit, so the core follows the existing machine progression.
   - Generated assets and data go in `src/generated/v1.5/resources`, and name keys
@@ -275,7 +287,7 @@ Station registry acceptance by root schema:
 | §10 Two stations warping at once to different targets | WARP-05 GameTest (commits serialized, one per tick) and MIG-02 native |
 | §10 Owner disconnect and reconnect; passengers online and offline | WARP-04 GameTest (countdown survives logout; offline data untouched) |
 | §10 Docked rocket saved and restored across a warp | WARP-04 GameTest and native |
-| §10 Catalog reload or target removal during countdown aborts safely | WARP-03 GameTest (a cost-class change and target removal both cancel) |
+| §10 Catalog reload or target removal during countdown aborts safely | WARP-03 GameTest (a config price change cancels); review-closure GameTest `aTargetRemovedDuringTheCountdownAborts` (the target removed from a private catalog cancels) |
 | §10/§12 Non-member, forged or stale requests; no client-supplied energy or cost | UI-03 and WARP-03 tests |
 | §11.2 Countdown and failure feedback | WARP-03 GameTest capturing member messages |
 | §11.3 No data mixed between stations | WARP-05 two-station GameTest (balances and orbits independent) |
@@ -330,3 +342,17 @@ is not a Gate approval.
   - §3 the split between registry and commit-step checks (F4).
 
   See `docs/work/v1.5.0-slices-review/`.
+
+- **Revision 4** (2026-09-30), from the independent review of WARP-03, WARP-04
+  and the first review fixes (`docs/work/v1.5.0-review-closure/`). The earlier
+  growth-admission correction was a behavioural rule edited in place (R14); this
+  revision is numbered instead. Changes:
+  - §2: the balance headroom belongs to balances, so a new entry is admitted up
+    to the bound (R4);
+  - §2: `status` no longer folds (R6);
+  - §3: refused credits are disclosed;
+  - §7: the texture statement corrected (R11);
+  - §8: the target-removal row points to its test.
+
+  The relocation decision, the schema and the checked commit are unchanged.
+  Acceptance is not a Gate approval.

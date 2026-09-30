@@ -273,7 +273,10 @@ final class RocketFlightService {
                     planned.requiredFuel()
             );
         }
-        RocketFlightData countdown = flight.withPlan(planned.plan())
+        // ADR-044 §5: the new record carries the station's current orbit (the planner's source body).
+        RocketFlightData docked = source instanceof TravelTarget.Station
+                ? flight.atStationOrbit(planned.plan().sourceBody()) : flight;
+        RocketFlightData countdown = docked.withPlan(planned.plan())
                 .startCountdown(rocket.level().getGameTime());
         return transfers.prepareLaunch(rocket, countdown);
     }
