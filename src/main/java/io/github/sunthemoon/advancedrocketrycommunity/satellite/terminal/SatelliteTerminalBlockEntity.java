@@ -199,10 +199,12 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         ItemStack satellitePackage = new ItemStack(ModItems.DATA_SATELLITE_PACKAGE.get());
         SatelliteItemData.write(satellitePackage, identity);
 
+        // R2-L1: the bound chip is written first, so the selected definition never changes during assembly
+        // and the chosen target survives it.
+        inventory.setStackInSlot(SLOT_CONTROL_CHIP, boundChip);
         inventory.extractItem(SLOT_CHASSIS, 1, false);
         inventory.extractItem(SLOT_SOLAR_MODULE, 1, false);
         inventory.extractItem(SLOT_DATA_STORAGE, 1, false);
-        inventory.setStackInSlot(SLOT_CONTROL_CHIP, boundChip);
         inventory.setStackInSlot(SLOT_PACKAGE, satellitePackage);
         energyStorage.consume(ASSEMBLY_ENERGY);
         updateResult(player, SatelliteOperationCode.SUCCESS);

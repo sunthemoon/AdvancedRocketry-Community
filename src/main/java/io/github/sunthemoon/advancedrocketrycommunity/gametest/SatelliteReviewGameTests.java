@@ -281,6 +281,29 @@ public final class SatelliteReviewGameTests {
         helper.succeed();
     }
 
+    /** R2-L1: assembling a third-party payload keeps the target chosen before assembly. */
+    @GameTest(template = "empty", batch = "satellite", timeoutTicks = 30)
+    public static void assemblyKeepsTheChosenTargetOfAThirdPartyPayload(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        SatelliteTerminalBlockEntity terminal = terminal(helper);
+        FakePlayer owner = player(helper, "PayloadOwner");
+        IItemHandler slots = terminal.menuInventory();
+        power(terminal);
+        insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_CHASSIS, new ItemStack(ModItems.SATELLITE_CHASSIS.get()));
+        insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_SOLAR_MODULE, new ItemStack(ModItems.SATELLITE_SOLAR_MODULE.get()));
+        // The adapter test mod registers amethyst shards as a payload whose targets are Earth, then the Moon.
+        insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_DATA_STORAGE, new ItemStack(Items.AMETHYST_SHARD));
+        insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get()));
+        press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_NEXT, SatelliteOperationCode.SUCCESS);
+        helper.assertTrue(SatelliteTerminalViews.compose(terminal, 1, server).target().id()
+                .equals(Optional.of(CelestialIds.MOON_ID)), "The payload's second target was not selected");
+        press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_ASSEMBLE, SatelliteOperationCode.SUCCESS);
+        var view = SatelliteTerminalViews.compose(terminal, 1, server);
+        helper.assertTrue(view.target().position() == 1 && view.target().id().equals(Optional.of(CelestialIds.MOON_ID)),
+                "Assembly lost the chosen target: " + view.target());
+        helper.succeed();
+    }
+
     private static int firstEmptyModule(IItemHandler slots) {
         for (int slot = SatelliteBuilderBlockEntity.SLOT_MODULE_FIRST; slot <= SatelliteBuilderBlockEntity.SLOT_MODULE_LAST; slot++) {
             if (slots.getStackInSlot(slot).isEmpty()) {

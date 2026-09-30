@@ -2,8 +2,8 @@
 
 ```yaml
 status: ACCEPTED
-revision: 3
-date: 2026-09-30
+revision: 4
+date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.6.0
@@ -12,12 +12,14 @@ accepted_by: sunthemoon
 accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-038, ADR-040, ADR-049, ADR-051, ADR-052]
-pending_amendment: revision 4 (proposed 2026-10-01 after the C7 review; decided by that review)
+revision_4_accepted_at: 2026-10-01
 ```
 
 Revision 2 answers the first independent review (H1–H4, H7, M4–M8, M15, L1, L2,
 L13, L14). Revision 3 answers the second (R2-H1, R2-H2, R2-M1, R2-M2, R2-L1,
 R2-L4, R2-L5, R2-L11, R2-L13). See the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+Revision 4 (2026-10-01) adds the amendment at the end, accepted after the two C7
+implementation reviews.
 
 ## Context
 
@@ -331,12 +333,13 @@ Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
 
-## Proposed amendment — revision 4 (C7, 2026-10-01)
+## Amendment — revision 4 (C7, accepted 2026-10-01)
 
-Status: **PROPOSED**. Revision 3 stays the accepted contract until the C7
-independent review accepts this amendment. It records what C7 implemented where
-the revision-3 text differs (review finding C7-M5,
-[dispositions](../work/v1.6.0-c7-review/VERIFICATION.md)).
+Status: **ACCEPTED** on 2026-10-01 after the second C7 review round, under the
+maintainer's standing authorization to proceed with recommended solutions. It
+records what C7 implemented where the revision-3 text differs (review finding
+C7-M5, [dispositions](../work/v1.6.0-c7-review/VERIFICATION.md)); where they
+differ, these items prevail.
 
 1. **Save epoch (§2).** A write carries E + 1 only when the registry changed
    since the last persisted epoch; otherwise it carries E. E advances only after
@@ -344,17 +347,21 @@ the revision-3 text differs (review finding C7-M5,
    writes the same bytes. The invariant used by ADR-051 still holds, because
    every start and every acknowledgement is a change: a mission started at
    epoch s is present in every file whose epoch is greater than s, and
-   `ack_epoch < E` still means the acknowledgement is durable.
+   `ack_epoch < E` still means the acknowledgement is durable. This holds only
+   if every registry change marks the registry changed; C8 keeps that as a
+   review rule and tests it.
 2. **Counters (§10).** Root 3 does not persist counters. Owner counts, the
    receiver-link index and the queues are derived when a root loads and kept
    incrementally, so they cannot disagree with the records.
 3. **`target_body` (§3) is required.** It is the data mission's target, the
    system root of a survey or asteroid mission, and the gas giant of a gas
-   mission. The root-3 codec already requires it.
+   mission. The root-3 codec already requires it, and C8b supplies it for
+   every mission kind.
 4. **Blocked registry.** While the registry is blocked (§9), the scheduler pass
    does nothing and reports nothing further, launches and scans are refused
    without consuming anything, and receivers produce nothing (ADR-049 revision 4,
    item 7).
 5. **Per-player intent rate limits (§6)** for the terminal's start, claim, cancel,
    decommission and unlink intents and its selection intents are delivered with
-   the C8a limits; until then only the builder's assembly cooldown applies.
+   the C8a limits, before any v1.6 Gate evidence; until then only the builder's
+   assembly cooldown applies.

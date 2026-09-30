@@ -1,0 +1,53 @@
+{
+  "base_commit": "2e0dbb7648b6e96600571beacfc861fb36dfcb87",
+  "files": [
+    {
+      "bytes": 26450,
+      "path": "docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md",
+      "sha256": "4a160093e0d06526220b0b000accd2c56f923f0fcc419883848613b4ea7c8d62",
+      "working_sha256": "4a160093e0d06526220b0b000accd2c56f923f0fcc419883848613b4ea7c8d62"
+    },
+    {
+      "bytes": 21095,
+      "path": "docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md",
+      "sha256": "1ae3e9f4cb8f724cd167a7ed5d96c202e34aa362fcbf794567856ad8f638723c",
+      "working_sha256": "1ae3e9f4cb8f724cd167a7ed5d96c202e34aa362fcbf794567856ad8f638723c"
+    },
+    {
+      "bytes": 10255,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "e8f8f3e2efd1328b114005b1946e00b4aa986adb6210623353682c000cc49c08",
+      "working_sha256": "e8f8f3e2efd1328b114005b1946e00b4aa986adb6210623353682c000cc49c08"
+    },
+    {
+      "bytes": 6746,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "728c8bcb0768eb8c48d1b7856073272c376550f4a5bc06485fd909866c3c2742",
+      "working_sha256": "728c8bcb0768eb8c48d1b7856073272c376550f4a5bc06485fd909866c3c2742"
+    },
+    {
+      "bytes": 8731,
+      "path": "docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md",
+      "sha256": "44aebdade80afe66e0649a83fa5d20c2599729f1ca0a69f69416b70120190cce",
+      "working_sha256": "44aebdade80afe66e0649a83fa5d20c2599729f1ca0a69f69416b70120190cce"
+    },
+    {
+      "bytes": 8565,
+      "path": "docs/work/v1.6.0-implementation-log.md",
+      "sha256": "22bdb84a12054ddee856272fb9e2720bad789ecfd9fb6a9eab0955bfb7e7023f",
+      "working_sha256": "22bdb84a12054ddee856272fb9e2720bad789ecfd9fb6a9eab0955bfb7e7023f"
+    },
+    {
+      "bytes": 26165,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SatelliteReviewGameTests.java",
+      "sha256": "61ef6df0806127b639398a508bba4d56db339cedb8985cddbfa8a75efcda5929",
+      "working_sha256": "61ef6df0806127b639398a508bba4d56db339cedb8985cddbfa8a75efcda5929"
+    },
+    {
+      "bytes": 28658,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java",
+      "sha256": "e271e6d20592b9b43bc83a5f1f2bcfc1e4daf245b137c5bee7e6c9f4393b337f",
+      "working_sha256": "e271e6d20592b9b43bc83a5f1f2bcfc1e4daf245b137c5bee7e6c9f4393b337f"
+    }
+  ]
+}

@@ -33,21 +33,25 @@ mission gameplay:
 ```yaml
 active_development_version: v1.6.0
 active_development_branch: codex/v1.6.0-satellite-resource-missions
-phase: CONTRACT_FROZEN
+phase: IMPLEMENTING
 execution_state: ACTIVE
 accepted_development_baseline: 940a5ed3b90a4da0ca4e43417b2bddf41ebb7307
 development_log: docs/work/v1.6.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.5.0/RELEASE-EVIDENCE.md
-runtime_build: 1.20.1-1.5.0-dev
+runtime_build: 1.20.1-1.6.0-dev
 ```
 
 v1.6 preparation (C6) is complete. [ADR-048](../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md)
 accepts v1.6 development from the v1.5 closure commit `940a5ed`, separately from
 inherited acceptance. ADR-049..052 freeze the satellite, scheduler, resource-mission
 and reward contracts after three independent review rounds
-([preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md)). The runtime is
-unchanged: the rebuilt JARs are byte-identical to the v1.5 closure build. The next
-chunk is C7 in [COMPLETION-PLAN](COMPLETION-PLAN.md). The v1.5 facts below are unchanged.
+([preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md)). C7 (satellite
+components, the Satellite Builder, launchable kinds, survey scans and microwave
+receivers) is implemented and closed after two independent reviews, which also
+accepted ADR-049 and ADR-050 revision 4 ([closure](../work/v1.6.0-c7-close/VERIFICATION.md)).
+The runtime identity is `1.20.1-1.6.0-dev`. C8a-2 (resource tables) is done; the next
+work is C8a-1 in [COMPLETION-PLAN](COMPLETION-PLAN.md). No Gate is claimed. The v1.5
+facts below are unchanged.
 
 Previous development version (v1.5, development complete, release `IN_PROGRESS`):
 

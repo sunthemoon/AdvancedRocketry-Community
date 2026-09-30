@@ -1,0 +1,34 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48476,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+      },
+      {
+        "bytes": 1481192,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "1d9286f1d651dd3d9f51d9d772982e494766f60d624f86a34099ceb735eb7df8"
+      },
+      {
+        "bytes": 3262894,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "77f7f5bf7859a95338d714408d50e6b43dd6cf7cba55f1c3c55395b7017906de"
+      }
+    ]
+  },
+  "base_commit": "2e0dbb7648b6e96600571beacfc861fb36dfcb87",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 209,
+    "tests": 1116
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SatelliteReviewGameTests.java": "61ef6df0806127b639398a508bba4d56db339cedb8985cddbfa8a75efcda5929",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java": "e271e6d20592b9b43bc83a5f1f2bcfc1e4daf245b137c5bee7e6c9f4393b337f"
+  }
+}

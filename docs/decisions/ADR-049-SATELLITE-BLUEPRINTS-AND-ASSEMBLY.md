@@ -2,8 +2,8 @@
 
 ```yaml
 status: ACCEPTED
-revision: 3
-date: 2026-09-30
+revision: 4
+date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.6.0
@@ -12,12 +12,14 @@ accepted_by: sunthemoon
 accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-050, ADR-051, ADR-052]
-pending_amendment: revision 4 (proposed 2026-10-01 in C7; decided by the C7 independent review)
+revision_4_accepted_at: 2026-10-01
 ```
 
 Revision 2 answers the first independent review (H3, M4, M9, M10, M11, M14,
 L4, L5, L13). Revision 3 answers the second (R2-H1, R2-M3, R2-L3, R2-L4, R2-L6,
 R2-L7, R2-L9, R2-L12). See the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+Revision 4 (2026-10-01) adds the amendment at the end, accepted after the two C7
+implementation reviews.
 
 ## Context
 
@@ -377,13 +379,15 @@ Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
 
-## Proposed amendment — revision 4 (C7, 2026-10-01)
+## Amendment — revision 4 (C7, accepted 2026-10-01)
 
-Status: **PROPOSED**. Revision 3 stays the accepted contract until the C7
-independent review accepts this amendment. The first C7 review
-([report and dispositions](../work/v1.6.0-c7-review/VERIFICATION.md)) accepted
-items 1, 4 and 5 and asked for the changes now written into items 2, 3, 6 and 7,
-and for items 8–11. The C7 implementation follows this text.
+Status: **ACCEPTED** on 2026-10-01, under the maintainer's standing authorization
+to proceed with recommended solutions, after two independent C7 review rounds
+([report and dispositions](../work/v1.6.0-c7-review/VERIFICATION.md)). Round 1
+accepted items 1, 4 and 5 and asked for the changes written into items 2, 3, 6
+and 7, and for items 8–11. Round 2 accepted every item, items 7, 9 and 11 with
+the wording now below. These items amend §4–§10; where they differ, they
+prevail.
 
 1. **Builder charge slot.** The mod has no FE generator, and ADR-010 already
    charges the terminal from redstone (2,000 FE per item). The builder therefore
@@ -443,8 +447,11 @@ and for items 8–11. The C7 implementation follows this text.
    is reused for "linked to a present or unknown receiver", and `IDEMPOTENT`
    answers an unlink when there is no link. With a blocked registry (ADR-050
    §9) a receiver produces nothing, shows its chips as unavailable, never throws,
-   and leaves the links untouched when it is broken. Receivers have no access
-   control, like a chest.
+   and leaves the links untouched when it is broken. Its directory entry is
+   removed all the same, so once the registry is repaired only an operator can
+   clear those links. A receiver root loads only control chips; a chip that no
+   longer decodes as a `solar` identity stays in its slot and shows as
+   unavailable. Receivers have no access control, like a chest.
 8. **Operator decommission.** An operator (permission level 2) may decommission
    another owner's idle satellite at a terminal with its chip, under the same
    idle and link rules, with the same audit line.
@@ -452,10 +459,23 @@ and for items 8–11. The C7 implementation follows this text.
    `REQUIREMENT_UNMET` (§6), a launch can answer `INVALID_COMPONENTS` (a
    component's role changed), `DEFINITION_NOT_FOUND` (the definition is gone,
    or the identity's primary component no longer selects it), `TARGET_NOT_ALLOWED`,
-   `RESEARCH_LOCKED`, `OWNER_LIMIT` and `CAPACITY_REACHED`. The package is kept
-   in every case.
+   `RESEARCH_LOCKED`, `OWNER_LIMIT`, `CAPACITY_REACHED`, `STORAGE_BUDGET`,
+   `CATALOG_UNAVAILABLE`, `UNAUTHORIZED`, `UNSUPPORTED_DATA` (for example a failed
+   barrier flush) and `IDENTITY_CONFLICT` (another owner, definition or kind
+   already holds the satellite ID, so that package can never be launched). Every
+   answer other than `SUCCESS` and `IDEMPOTENT` keeps the package.
 10. **Replay durability.** A replayed non-`data` launch flushes a dirty registry
     before it answers `IDEMPOTENT`, so the package is consumed only once the
     satellite is durable; a failed flush keeps the package.
-11. **Target selection.** When the chip or payload selects another definition,
-    the terminal's target selection starts again from its first target.
+11. **Target selection.** When an action leaves the chip or payload selecting
+    another definition, the terminal's target selection starts again from its
+    first target. The definition is compared over the whole action, so an
+    assembly, which keeps its definition, keeps the chosen target.
+
+### Acceptance record — revision 4
+
+Accepted on 2026-10-01 by root, under the maintainer's standing authorization to
+proceed with recommended solutions. The C7 round-1 review accepted C7 with
+required changes (1 High, 5 Medium, 12 Low), and round 2 found every required
+change resolved and accepted all eleven items, three with the wording above.
+This is not a runtime-completion claim, a Gate PASS or a publication decision.
