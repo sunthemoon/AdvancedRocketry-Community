@@ -784,7 +784,7 @@
      "cargo_hold"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "seven modules",
@@ -802,7 +802,7 @@
      "solar_module"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "primary of another kind",
@@ -815,7 +815,7 @@
      "cargo_hold"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "missing chassis",
@@ -827,7 +827,7 @@
      "solar_module"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "module in the chassis slot",
@@ -839,7 +839,7 @@
      "solar_module"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "second chassis in a module slot",
@@ -852,7 +852,7 @@
      "chassis"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "module in the primary slot",
@@ -864,7 +864,7 @@
      "solar_module"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "missing primary for a non-data kind",
@@ -876,7 +876,7 @@
      "solar_module"
     ]
    },
-   "expected": "INVALID_LAYOUT"
+   "expected": "INVALID_COMPONENTS"
   },
   {
    "name": "solar six panels",

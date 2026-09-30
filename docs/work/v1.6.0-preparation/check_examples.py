@@ -139,12 +139,12 @@ def blueprint(slots, kind, catalog, scan_energy=0):
     modules = [catalog[name] for name in modules]
     if (chassis is None or chassis["role"] != "chassis" or len(modules) > 6
             or any(m["role"] not in MODULE_STAT for m in modules)):
-        return "INVALID_LAYOUT"
+        return "INVALID_COMPONENTS"
     if kind == "data":
         if primary is not None:
-            return "INVALID_LAYOUT"
+            return "INVALID_COMPONENTS"
     elif primary is None or primary["role"] != "primary" or primary["kind"] != kind:
-        return "INVALID_LAYOUT"
+        return "INVALID_COMPONENTS"
     stats = {"power": 0, "battery": 720, "data": 0, "cargo": 0,
              "rating": primary["primary_rating"] if primary else 0}
     for module in modules:

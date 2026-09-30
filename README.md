@@ -65,6 +65,13 @@ Downgrading requires a complete pre-upgrade world backup, not editing a schema
 number. The [implementation log](docs/work/v1.5.0-implementation-log.md) tracks
 the remaining warp, sky, UI and acceptance work. This is not a stable release.
 
+**v1.6 Satellites & Resource Missions is in preparation.** Its contracts are
+accepted: satellite kinds assembled from components, a bounded offline mission
+scheduler, and asteroid and gas-giant missions with reproducible rewards. The
+[implementation log](docs/work/v1.6.0-implementation-log.md) tracks the work.
+None of these features is available yet; the runtime build remains
+`1.20.1-1.5.0-dev` until implementation begins.
+
 ## What this project is
 
 Advanced Rocketry: Community Edition aims to rebuild the core Advanced Rocketry experience on a maintainable Forge 1.20.1 foundation:

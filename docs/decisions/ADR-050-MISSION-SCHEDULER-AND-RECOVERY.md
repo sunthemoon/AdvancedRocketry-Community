@@ -1,13 +1,16 @@
 # ADR-050 — Mission scheduler, lifecycle and recovery
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.6.0
 slices: [V160-SCHED-01, V160-SCHED-02, V160-REC-01]
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
+acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-038, ADR-040, ADR-049, ADR-051, ADR-052]
 ```
 
@@ -59,6 +62,8 @@ mod), the jump counts as elapsed time and §5 spreads the resulting completions.
   - launches of **every** kind and decommissions (ADR-049 §6, §7): the registry
     is written before the terminal extracts the package or blanks the chip.
     Launches are rare, at most one per satellite;
+  - the `REBIND_CONFLICT` bind-back (ADR-051 §7), which only follows an
+    operator rebind. A crash can therefore not undo it;
   - the existing `data` start, claim and cancel;
   - discovery replay (ADR-010/038).
 
@@ -105,7 +110,7 @@ optional `target_body`, optional `instance_id`, `seed` (ADR-052),
   `acknowledged`, optional `ack_epoch` (ADR-051).
 
 Record bounds are derived from the field maxima with 128-character IDs:
-**mission ≤ 4 KiB** (worst case about 3.7 KiB), **instance ≤ 4 KiB** (about
+**mission ≤ 4 KiB** (worst case about 3,804 bytes), **instance ≤ 4 KiB** (about
 3.1 KiB), **satellite ≤ 2 KiB** (about 1.7 KiB). An asteroid type, gas table,
 component or definition whose worst-case record would exceed a bound is
 rejected when it loads. Bounds are enforced when a record is created or changed,
@@ -175,7 +180,8 @@ Refusals are explicit codes (`CAPACITY_REACHED`, `OWNER_LIMIT`, `RATE_LIMITED`,
 Byte budgets per section: satellites 4 MiB, missions 6 MiB, instances 2 MiB,
 accounts, clock and counters 1 MiB. Count limits (§6) apply as well. When a record
 is admitted, the registry reserves the largest size that record can reach during
-its lifecycle: the claim, acknowledgement and quarantine fields. Later
+its lifecycle: the claim, acknowledgement, quarantine and rebind fields
+(`paid_terminal`, `rebound` and a rebound `bound_terminal`). Later
 transitions therefore never fail with `STORAGE_BUDGET`. A server with very long
 IDs reaches the byte budget before the count limits. The root bound rises from
 4 MiB to **16 MiB** (13 MiB of sections plus framing). The old bound was not
@@ -264,9 +270,10 @@ drained it.
 The byte budgets still hold after migration. A schema-1 satellite record is at
 most about 350 bytes and grows by about 150 bytes (kind, legacy flag, stats,
 reservation), so 4,096 satellites need about 2 MiB of the 4 MiB. A schema-1
-mission is at most about 450 bytes and grows by about 150 bytes (kind, seed,
-epoch, version, quarantine reservation), so 8,192 missions need about 4.8 MiB of
-the 6 MiB. C7 encodes a worst-case legacy root to confirm this.
+mission is at most 597 bytes with 128-character IDs and grows by about 150 bytes
+(kind, seed, epoch, version, quarantine reservation). So 8,192 missions need
+about 5.84 MiB of the 6 MiB, and a v1.5 root, capped at 4 MiB, needs at most
+about 5.17 MiB after growth. C7 encodes a worst-case legacy root to confirm this.
 
 A v1.5 host refuses root 3 in its pre-start validation, which blocks the whole
 world's startup. The recovery is the pre-upgrade backup.
@@ -309,3 +316,16 @@ the current tree at each start; instances keep the system they recorded.
   holding 8,192 missions and an owner with 300 satellites.
 - Performance (C9): 500 and 1,000 missions — pass time, root size, and barrier
   and coalesced flush times against docs/17.
+
+## Acceptance record
+
+Accepted on 2026-09-30 by root, under the maintainer's standing authorization
+to proceed with recommended solutions, after three independent contract-review
+rounds. Rounds 1 and 2 accepted it with required changes, and round 3 accepted
+revision 3. Every Critical, High and Medium finding is resolved, and the
+final Low findings are applied in this text. Reports and dispositions are in the
+[preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.6 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.

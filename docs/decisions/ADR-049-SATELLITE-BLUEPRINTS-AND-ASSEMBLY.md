@@ -1,13 +1,16 @@
 # ADR-049 — Satellite blueprints, components, kinds and assembly
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.6.0
 slices: [V160-SAT-01, V160-SAT-02, V160-SAT-03]
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
+acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-050, ADR-051, ADR-052]
 ```
 
@@ -201,7 +204,9 @@ package UUID. For non-`data` kinds the server:
 (ADR-050 §2) **before** the package is extracted from the terminal, as ADR-010
 does for `data`:
 
-- If the flush fails, nothing changes.
+- If the flush fails, the launch result is an error and the package stays in the
+  terminal. The satellite registered in memory is persisted later, and the
+  next launch attempt with that package returns `IDEMPOTENT` and consumes it.
 - If the registry is saved but the chunk is not, the package reappears after a
   restart, and the replay consumes it with `IDEMPOTENT`.
 - The reverse order, where the package is gone and the satellite is missing,
@@ -246,7 +251,9 @@ unfinished mission, and either no receiver link or a link to a missing receiver
 barrier flush **before** the chip is blanked, and nothing is refunded. If the
 server crashes after the flush and before the chunk is saved, the chip stays
 bound to a removed satellite. Such a chip is inert: every action returns
-`SATELLITE_NOT_FOUND`, and an operator may blank it. Nothing is duplicated; only
+`SATELLITE_NOT_FOUND`. The player discards it and uses a new blank chip.
+An operator can also blank it with the new `satellite blank-chip` command
+(held item, permission level 2, audit line). Nothing is duplicated; only
 a blank chip is lost.
 
 ### 8. Survey area scan
@@ -355,3 +362,16 @@ definitions keep working.
 - S2 (C9): force-stop a non-`data` launch after the barrier flush and before the
   chunk save. The package reappears and is consumed once by replay, and no
   component is lost.
+
+## Acceptance record
+
+Accepted on 2026-09-30 by root, under the maintainer's standing authorization
+to proceed with recommended solutions, after three independent contract-review
+rounds. Rounds 1 and 2 accepted it with required changes, and round 3 accepted
+revision 3. Every Critical, High and Medium finding is resolved, and the
+final Low findings are applied in this text. Reports and dispositions are in the
+[preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.6 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.

@@ -226,13 +226,14 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [v1.5 空间站控制即服务端命令](docs/decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md)（第 2 版，已接受，修订 ADR-039）：命令即界面、四个通道协议固定、预期结果表与 A1/S1/V2 权限报告、速率上限。
 - [按站点天空上下文](docs/decisions/ADR-047-PER-STATION-SKY-CONTEXT.md)（第 3 版，已接受，修订 ADR-036、ADR-046）：服务端按玩家位置推导所绕天体 ID、变化时发送、天体圆盘避开太阳、天体协议 3。
 - [v1.6 实施日志](docs/work/v1.6.0-implementation-log.md)：卫星与资源任务的分块任务、契约状态与实际验证范围。
+- [v1.6 准备验证](docs/work/v1.6.0-preparation/VERIFICATION.md)：三轮独立契约审核、处置表、参考向量与未改动运行时的检查。
 - [v1.6 旧版卫星/任务审计](docs/work/v1.6.0-legacy-audit.md)：固定 MIT commit 的只读行为与算法审计、旧版缺陷与现代处置，未导入任何上游文件。
 - [v1.6 契约覆盖表](docs/work/v1.6.0-contract-coverage.md)：版本文档第 8–14 节每一项对应的契约条款、测试等级、分块或处置。
-- [v1.6 开发基线例外](docs/decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md)（提议）：本版开发与继承发布验收分离。
-- [卫星蓝图、组件与组装](docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md)（提议）：五种卫星类型、组件目录、蓝图属性上限、卫星组装机、有界区域扫描与太阳能接收器。
-- [任务调度与恢复](docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md)（提议）：单一注册表与逻辑时钟、状态机、预算与保留、取消与超时、隔离与启动前迁移。
-- [资源任务实例与奖励交付](docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md)（提议）：无坐标的逻辑小行星实例、气态巨行星采集、绑定终端的回执与对账矩阵。
-- [资源表、种子与版本化奖励](docs/decisions/ADR-052-RESOURCE-TABLES-AND-SEEDS.md)（提议）：数据驱动的小行星类型与气体表、SplitMix64 种子派生与 v1 整数算法、可审计的奖励版本。
+- [v1.6 开发基线例外](docs/decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md)（已接受）：本版开发与继承发布验收分离。
+- [卫星蓝图、组件与组装](docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md)（第 3 版，已接受）：五种卫星类型、组件目录、蓝图属性上限、卫星组装机、有界区域扫描与太阳能接收器。
+- [任务调度与恢复](docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md)（第 3 版，已接受）：单一注册表与逻辑时钟、状态机、预算与保留、取消与超时、隔离与启动前迁移。
+- [资源任务实例与奖励交付](docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md)（第 3 版，已接受）：无坐标的逻辑小行星实例、气态巨行星采集、绑定终端的回执与对账矩阵。
+- [资源表、种子与版本化奖励](docs/decisions/ADR-052-RESOURCE-TABLES-AND-SEEDS.md)（第 2 版，已接受）：数据驱动的小行星类型与气体表、SplitMix64 种子派生与 v1 整数算法、可审计的奖励版本。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。

@@ -1,14 +1,14 @@
 # ADR-048 — v1.6 development baseline exception
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.6.0
 accepted_baseline: 940a5ed3b90a4da0ca4e43417b2bddf41ebb7307
-accepted_by: ""
-accepted_at: ""
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 expires: before v1.6.0 release-candidate freeze
 recovery_condition: complete or explicitly disposition every inherited and current Required Gate before freezing a v1.6.0 candidate
@@ -86,7 +86,11 @@ Without this version-limited exception, v1.6 remains planning-only.
 
 ## Acceptance record
 
-Pending independent contract review of ADR-048..052 in the
-[preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md). Root records
-acceptance separately from the independent review; acceptance permits
-development, not runtime-completion claims, inherited Gate PASS or publication.
+Recorded on 2026-09-30 under the maintainer's standing direction to continue
+implementation and use recommended solutions. This is a scoped application of
+that authorization, not a new manual approval message for this numbered ADR.
+Three independent contract-review rounds found no required change to this ADR.
+ADR-049..052 are ACCEPTED in the same step, which satisfies the version's third
+prerequisite. Reports and dispositions are in the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md). Root records
+this acceptance separately from the reviews. It permits development, not
+runtime-completion claims, inherited Gate PASS or publication.

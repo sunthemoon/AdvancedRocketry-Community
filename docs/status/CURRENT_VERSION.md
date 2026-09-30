@@ -25,21 +25,37 @@ frozen release-candidate commit or stable approval. See the
 
 The acceptance cursor above remains at the earliest unfinished release Gate;
 it is not the active feature-development branch. Under accepted
-[ADR-039](../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
-v1.5 development baseline is the immutable v1.4 handoff. Inherited acceptance
-remains open; implemented station storage does not imply completed station/warp gameplay:
+[ADR-048](../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
+v1.6 development baseline is the v1.5 closure commit. Inherited acceptance
+remains open; accepted v1.6 contracts do not imply implemented satellite or
+mission gameplay:
 
 ```yaml
-active_development_version: v1.5.0
-active_development_branch: codex/v1.5.0-orbital-station-warp
-phase: IMPLEMENTING
+active_development_version: v1.6.0
+active_development_branch: codex/v1.6.0-satellite-resource-missions
+phase: CONTRACT_FROZEN
 execution_state: ACTIVE
-paused_at: 2026-09-30
-resumed_at: 2026-09-30
-accepted_development_baseline: 6f530ac7db4bf0e06be6d6aaef35e6ca31a5651b
-development_log: docs/work/v1.5.0-implementation-log.md
-previous_development_handoff: docs/releases/v1.4.0/RELEASE-EVIDENCE.md
+accepted_development_baseline: 940a5ed3b90a4da0ca4e43417b2bddf41ebb7307
+development_log: docs/work/v1.6.0-implementation-log.md
+previous_development_handoff: docs/releases/v1.5.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.5.0-dev
+```
+
+v1.6 preparation (C6) is complete. [ADR-048](../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md)
+accepts v1.6 development from the v1.5 closure commit `940a5ed`, separately from
+inherited acceptance. ADR-049..052 freeze the satellite, scheduler, resource-mission
+and reward contracts after three independent review rounds
+([preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md)). The runtime is
+unchanged: the rebuilt JARs are byte-identical to the v1.5 closure build. The next
+chunk is C7 in [COMPLETION-PLAN](COMPLETION-PLAN.md). The v1.5 facts below are unchanged.
+
+Previous development version (v1.5, development complete, release `IN_PROGRESS`):
+
+```yaml
+previous_development_version: v1.5.0
+previous_development_branch: codex/v1.5.0-orbital-station-warp
+previous_accepted_development_baseline: 6f530ac7db4bf0e06be6d6aaef35e6ca31a5651b
+previous_development_log: docs/work/v1.5.0-implementation-log.md
 ```
 
 The maintainer paused advancement on 2026-09-30 and resumed it the same day.

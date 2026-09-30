@@ -94,7 +94,7 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
 
 依据 `docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md`。
 
-### C6. v1.6 准备与契约 `[~]`
+### C6. v1.6 准备与契约 `[x]`
 - 建立 v1.6 实施日志与分支；只读审计旧卫星/任务代码与资产。
 - 冻结以下契约：
   - 卫星组件与组装；
@@ -103,10 +103,12 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
   - 资源表与可重现随机种子；
   - 取消、超时与重启恢复。
 - 契约送独立审核并接受。
-- 进展（2026-09-30）：分支 `codex/v1.6.0-satellite-resource-missions`；
-  ADR-048..052 第 1 版经独立审核（0 Critical / 7 High，ADR-051 被拒），
-  第 2 版已按审核修订，等待第二次审核后接受。审核要求把 C8 拆为 C8a/C8b，
-  且 C7 需实现完整的注册表根 3 编解码。
+- 结果（2026-09-30）：分支 `codex/v1.6.0-satellite-resource-missions`；旧版审计
+  43 个上游文件哈希一致、未导入。ADR-048..052 经三轮独立审核后接受：第 1 轮
+  0 Critical / 7 High（ADR-051 第 1 版被拒），第 2 轮 2 High，第 3 轮无
+  Critical/High/Medium，6 个 Low 已写入正文。参考向量 13 项检查通过；运行时未改动，
+  重建 JAR 与 v1.5 收尾字节一致（`docs/work/v1.6.0-preparation/`）。C8 拆为
+  C8a/C8b，C7 需实现完整的注册表根 3 编解码。
 
 ### C7. 卫星组件与代表类型 `[ ]`
 - 组件与组装校验；数据、扫描、太阳能三种代表卫星；发现与研究解锁。
@@ -201,4 +203,5 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
 
 ## 下一块
 
-**C6 v1.6 准备与契约**（新会话；从 v1.5 分支的最新提交建立 v1.6 分支与实施日志）。
+**C7 卫星组件与代表类型**（新会话；在 `codex/v1.6.0-satellite-resource-missions` 上，
+按已接受的 ADR-049/050 实现，含完整的注册表根 3 编解码与启动前迁移）。

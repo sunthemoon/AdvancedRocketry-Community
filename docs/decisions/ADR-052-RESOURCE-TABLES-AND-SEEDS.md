@@ -1,7 +1,7 @@
 # ADR-052 — Resource tables, seeds and versioned rewards
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 2
 date: 2026-09-30
 deciders: [sunthemoon]
@@ -9,6 +9,9 @@ owner: sunthemoon
 target_version: v1.6.0
 slices: [V160-RES-01]
 algorithm_versions: [survey-v1, asteroid-v1, gas-v1]
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
+acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-029, ADR-043, ADR-049, ADR-050, ADR-051]
 reference_vectors: docs/work/v1.6.0-preparation/examples.json
 ```
@@ -176,3 +179,16 @@ which gives a new table version.
   `mission verify` outcome.
 - A1: a survey generates instances identical to the vectors; the reward snapshot
   is unchanged after a table reload; a new seed is not accepted from the client.
+
+## Acceptance record
+
+Accepted on 2026-09-30 by root, under the maintainer's standing authorization
+to proceed with recommended solutions, after two independent contract-review
+rounds. Round 1 accepted it with required changes, and round 2 accepted
+revision 2. Every Critical, High and Medium finding is resolved, and the
+final Low findings are applied in this text. Reports and dispositions are in the
+[preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.6 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.

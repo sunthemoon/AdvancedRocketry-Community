@@ -1,13 +1,16 @@
 # ADR-051 — Resource mission instances, gas harvesting and reward delivery
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.6.0
 slices: [V160-AST-01, V160-GAS-01, V160-DEL-01]
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
+acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-049, ADR-050, ADR-052]
 ```
 
@@ -70,7 +73,8 @@ ADR-043), `asteroid_type`, `table_version`, `candidate_fingerprint`, `seed`,
 | AVAILABLE | asteroid start (owner, same system, not expired) | ALLOCATED |
 | AVAILABLE | TTL reached (expiry queue) | EXPIRED |
 | ALLOCATED | mission claim or reconciliation to CLAIMED | DEPLETED |
-| ALLOCATED | owner cancel after reconciliation | AVAILABLE if not expired, else EXPIRED |
+| ALLOCATED | owner cancel after reconciliation, mission not `rebound` | AVAILABLE if not expired, else EXPIRED |
+| ALLOCATED | owner cancel of a `rebound` mission | QUARANTINED |
 | ALLOCATED | operator cancel, or cancel of a QUARANTINED mission | QUARANTINED |
 | QUARANTINED | operator `instance release` | AVAILABLE or EXPIRED |
 | any | invariant failure (ADR-050 §9) | QUARANTINED |
@@ -127,9 +131,11 @@ existing item-handler exposure are unchanged. New bounded fields:
 
 Persistence of the ID and of receipts is tracked at runtime, not stored:
 
-- state read from chunk storage is persisted by definition;
-- state created in memory, or read from a carried item root, becomes persisted
-  when a `ChunkDataEvent.Save` tag for the terminal's chunk contains it;
+- an ID or receipt is persisted when it is present in the terminal's entry of a
+  `ChunkDataEvent.Load` or `ChunkDataEvent.Save` tag for the terminal's chunk.
+  That is the only signal. `BlockEntity.load` is shared by chunk loading, the
+  host's carried-root placement and third-party block-entity movers, so
+  everything else starts unpersisted;
 - while the terminal holds any unpersisted ID or receipt, it calls `setChanged()`,
   so the incremental chunk save picks it up within seconds;
 - other callers of `saveAdditional` (the carry path, `/data`, structure capture,
@@ -171,7 +177,7 @@ terminal.
 |---|---|---|
 | Registry not operational (blocked) | any | Nothing; resource actions refused |
 | ACTIVE or READY, bound here | present | Registry was behind: set CLAIMED, `paid_terminal` = here, apply the claim side effects (instance DEPLETED, satellite released), no items; audit `CLAIM_RECOVERED` |
-| ACTIVE or READY, bound elsewhere (rebound) | present | Same, and also bind the mission back here (`bound_terminal` = here); audit `REBIND_CONFLICT` |
+| ACTIVE or READY, bound elsewhere (rebound) | present | Same, and also bind the mission back here (`bound_terminal` = here) with a registry barrier flush; audit `REBIND_CONFLICT` |
 | CLAIMED, paid here, not acknowledged | persisted | Set `acknowledged`, `ack_epoch = E` |
 | CLAIMED, paid here, not acknowledged | unpersisted | Wait |
 | CLAIMED, paid here, not acknowledged | none | Chunk was behind: add the reward and an unpersisted receipt (wait while the buffer is full); audit `REMATERIALIZED` |
@@ -271,3 +277,16 @@ result.
 - S1/S2 (C9): forced stops after an incremental chunk save and before the
   coalesced flush, after a flush and before the chunk save, and around an operator
   cancel. After each restart the reward exists exactly once and no instance pays twice.
+
+## Acceptance record
+
+Accepted on 2026-09-30 by root, under the maintainer's standing authorization
+to proceed with recommended solutions, after three independent contract-review
+rounds. Round 1 rejected revision 1, round 2 accepted revision 2 with required
+changes, and round 3 accepted revision 3. Every Critical, High and Medium finding is resolved, and the
+final Low findings are applied in this text. Reports and dispositions are in the
+[preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.6 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.

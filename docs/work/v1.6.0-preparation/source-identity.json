@@ -1,0 +1,89 @@
+{
+  "base_commit": "940a5ed3b90a4da0ca4e43417b2bddf41ebb7307",
+  "files": [
+    {
+      "bytes": 23016,
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "d152cf2188b58983ec98fc046ef552bcf4a462d9eff2e142d3933a708de85c51",
+      "working_sha256": "d152cf2188b58983ec98fc046ef552bcf4a462d9eff2e142d3933a708de85c51"
+    },
+    {
+      "bytes": 9627,
+      "path": "README.md",
+      "sha256": "71e2c7c6274138f855c13c68ac99bb744ae4bcf08618fafdb348314e89977e73",
+      "working_sha256": "71e2c7c6274138f855c13c68ac99bb744ae4bcf08618fafdb348314e89977e73"
+    },
+    {
+      "bytes": 9209,
+      "path": "docs/PORTING_MATRIX.md",
+      "sha256": "d0b0ceb2bf6d15905f0992bba122106063d6b38611ba1a5826853c64e5e69f61",
+      "working_sha256": "d0b0ceb2bf6d15905f0992bba122106063d6b38611ba1a5826853c64e5e69f61"
+    },
+    {
+      "bytes": 5320,
+      "path": "docs/decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "sha256": "f12927407ee309444edebfdb02737a46807ab0a15c3eb198737f240fd527766f",
+      "working_sha256": "f12927407ee309444edebfdb02737a46807ab0a15c3eb198737f240fd527766f"
+    },
+    {
+      "bytes": 19145,
+      "path": "docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md",
+      "sha256": "87954eb08924092e2f2ef6d17cd7bcb401e69d1c94ac5a5ff640db47654f8ebf",
+      "working_sha256": "87954eb08924092e2f2ef6d17cd7bcb401e69d1c94ac5a5ff640db47654f8ebf"
+    },
+    {
+      "bytes": 18928,
+      "path": "docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md",
+      "sha256": "6daf42ab134ac307272b7ac746f36c927604df5687e99ec241fca87001421c6b",
+      "working_sha256": "6daf42ab134ac307272b7ac746f36c927604df5687e99ec241fca87001421c6b"
+    },
+    {
+      "bytes": 16660,
+      "path": "docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md",
+      "sha256": "744d0e34385e31e8a7a8930dc70ba1792dcf4ec58deb419391272afe35344fcd",
+      "working_sha256": "744d0e34385e31e8a7a8930dc70ba1792dcf4ec58deb419391272afe35344fcd"
+    },
+    {
+      "bytes": 8999,
+      "path": "docs/decisions/ADR-052-RESOURCE-TABLES-AND-SEEDS.md",
+      "sha256": "463c8e22d3bffb14ed194bab8b217f0a1dca6d29deddeca01d5bd9aabefda0a3",
+      "working_sha256": "463c8e22d3bffb14ed194bab8b217f0a1dca6d29deddeca01d5bd9aabefda0a3"
+    },
+    {
+      "bytes": 9713,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "275a1f2c52883270ee9e4b4514e47b21103da31b4d6ecc4640c1a83dd2a25d93",
+      "working_sha256": "275a1f2c52883270ee9e4b4514e47b21103da31b4d6ecc4640c1a83dd2a25d93"
+    },
+    {
+      "bytes": 6472,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "4cd29dca7ce8dd1cd644a9dbb92ae9601a1de76eefad01a9f6f41acb2d98c4ea",
+      "working_sha256": "4cd29dca7ce8dd1cd644a9dbb92ae9601a1de76eefad01a9f6f41acb2d98c4ea"
+    },
+    {
+      "bytes": 8734,
+      "path": "docs/versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md",
+      "sha256": "6f3aace92de40c1a3a47fc171239b58e037246723124eabb5e053a8a33732a07",
+      "working_sha256": "6f3aace92de40c1a3a47fc171239b58e037246723124eabb5e053a8a33732a07"
+    },
+    {
+      "bytes": 4528,
+      "path": "docs/work/v1.6.0-contract-coverage.md",
+      "sha256": "a0e15ef748fe7c351e047e8ba8a806de2a2a0697c0ae3c6b5f4591c4fccacde4",
+      "working_sha256": "a0e15ef748fe7c351e047e8ba8a806de2a2a0697c0ae3c6b5f4591c4fccacde4"
+    },
+    {
+      "bytes": 6741,
+      "path": "docs/work/v1.6.0-implementation-log.md",
+      "sha256": "c825d04288190906f81f494faf37e65399319635be505298ede74a525c2478d4",
+      "working_sha256": "c825d04288190906f81f494faf37e65399319635be505298ede74a525c2478d4"
+    },
+    {
+      "bytes": 9921,
+      "path": "docs/work/v1.6.0-legacy-audit.md",
+      "sha256": "6aa3d31a7e2003f79fe53c1b8f76003345fb8a2a28c9b2f0b1665ce51856d5eb",
+      "working_sha256": "6aa3d31a7e2003f79fe53c1b8f76003345fb8a2a28c9b2f0b1665ce51856d5eb"
+    }
+  ]
+}
