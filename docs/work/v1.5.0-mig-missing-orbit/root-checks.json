@@ -1,0 +1,27 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1274433,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "bb2bdc690379eb3689044712f70447b22dc6db2b29ddb2cacdaedba2edd8dba1"
+      },
+      {
+        "bytes": 2812108,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "a99f78c0d63ceccbcfd821bb4f4aea09db5b52dd960ee9b3a91c45a28b95bce2"
+      }
+    ]
+  },
+  "base_commit": "2900e66",
+  "junit": {
+    "note": "No Gradle run: no product code changed in this slice; the native run used the WARP-05 build"
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {}
+}

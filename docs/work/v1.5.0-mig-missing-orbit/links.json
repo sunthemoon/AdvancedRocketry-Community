@@ -1,0 +1,130 @@
+{
+  "links": [
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../versions/V1.5.0-ORBITAL-STATION-WARP.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-043-STAR-SYSTEMS-AS-ROOT-TREES.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-slices-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-star-systems/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-mig-missing-orbit/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-orbit-environment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-capacity/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-mig-missing-orbit/VERIFICATION.md",
+      "target": "../../decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}
