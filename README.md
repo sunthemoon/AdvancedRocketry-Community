@@ -70,8 +70,9 @@ Its contracts are accepted: satellite kinds assembled from components, a bounded
 offline mission scheduler, and asteroid and gas-giant missions with reproducible
 rewards. The Satellite Builder now assembles survey, solar, asteroid-miner and
 gas-harvester satellites from component items, and the terminal launches them
-into orbit or decommissions idle ones. Survey scans, solar receivers and
-resource missions are not available yet. Opening a world upgrades its satellite
+into orbit or decommissions idle ones. Survey satellites scan the area around
+the player, and solar satellites power Microwave Receivers. Resource missions
+are not available yet. Opening a world upgrades its satellite
 registry and blocks a return to v1.5 builds; use copies of backed-up worlds. The
 [implementation log](docs/work/v1.6.0-implementation-log.md) tracks the work.
 

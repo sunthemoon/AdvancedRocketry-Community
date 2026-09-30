@@ -101,6 +101,47 @@ public final class SatelliteRuntime {
         return current != null && current.discovered(server, target);
     }
 
+    public static SatelliteOperationCode requestScan(ServerPlayer player, SatelliteIdentity identity) {
+        SatelliteManager current = manager;
+        return current == null ? SatelliteOperationCode.SERVER_ERROR : current.requestScan(player, identity);
+    }
+
+    public static Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog> celestialCatalog() {
+        SatelliteManager current = manager;
+        return current == null ? Optional.empty() : current.celestialCatalog();
+    }
+
+    /** The receiver's 20-tick link check; empty when the satellite service is not running. */
+    public static Optional<SolarLinks.ReceiverCheck> checkReceiver(
+            MinecraftServer server,
+            java.util.UUID receiverId,
+            List<Optional<SatelliteIdentity>> chips
+    ) {
+        SatelliteManager current = manager;
+        return current == null ? Optional.empty() : Optional.of(current.checkReceiver(server, receiverId, chips));
+    }
+
+    public static void registerReceiver(java.util.UUID receiverId,
+                                        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> level,
+                                        net.minecraft.core.BlockPos position) {
+        SatelliteManager current = manager;
+        if (current != null) {
+            current.registerReceiver(receiverId, level, position);
+        }
+    }
+
+    public static void releaseReceiver(MinecraftServer server, java.util.UUID receiverId) {
+        SatelliteManager current = manager;
+        if (current != null) {
+            current.releaseReceiver(server, receiverId);
+        }
+    }
+
+    public static SatelliteOperationResult unlink(ServerPlayer player, SatelliteIdentity identity) {
+        SatelliteManager current = manager;
+        return current == null ? unavailable() : current.unlink(player, identity, player.hasPermissions(2));
+    }
+
     public static void clear() {
         manager = null;
     }

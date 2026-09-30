@@ -33,11 +33,11 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
     public SatelliteTerminalScreen(SatelliteTerminalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 224;
-        imageHeight = 216;
+        imageHeight = 234;
         titleLabelX = 9;
         titleLabelY = 7;
         inventoryLabelX = 31;
-        inventoryLabelY = 123;
+        inventoryLabelY = 141;
     }
 
     @Override
@@ -63,6 +63,12 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         decommission.setTooltip(Tooltip.create(
                 Component.translatable("tooltip.advancedrocketrycommunity.satellite.decommission")));
         addRenderableWidget(decommission);
+        Button unlink = button(172, 123, 46,
+                "screen.advancedrocketrycommunity.satellite.unlink",
+                SatelliteTerminalMenu.BUTTON_UNLINK);
+        unlink.setTooltip(Tooltip.create(
+                Component.translatable("tooltip.advancedrocketrycommunity.satellite.unlink")));
+        addRenderableWidget(unlink);
     }
 
     @Override

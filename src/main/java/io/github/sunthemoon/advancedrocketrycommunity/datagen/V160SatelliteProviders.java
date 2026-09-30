@@ -68,6 +68,14 @@ public final class V160SatelliteProviders {
             );
             horizontalBlock(ModBlocks.SATELLITE_BUILDER.get(), builder);
             simpleBlockItem(ModBlocks.SATELLITE_BUILDER.get(), builder);
+            ModelFile receiver = models().cubeBottomTop(
+                    "microwave_receiver",
+                    modLoc("block/machine_casing_side"),
+                    modLoc("block/machine_casing_top"),
+                    mcLoc("block/daylight_detector_inverted_top")
+            );
+            simpleBlock(ModBlocks.MICROWAVE_RECEIVER.get(), receiver);
+            simpleBlockItem(ModBlocks.MICROWAVE_RECEIVER.get(), receiver);
             item("satellite_package", "item/conduit");
             item("advanced_solar_panel", "item/light_blue_stained_glass_pane");
             item("satellite_battery", "item/redstone_block");
@@ -86,23 +94,24 @@ public final class V160SatelliteProviders {
 
     public static LootTableProvider loot(PackOutput output) {
         return new LootTableProvider(output, Set.of(), List.of(
-                new LootTableProvider.SubProviderEntry(BuilderLoot::new, LootContextParamSets.BLOCK)));
+                new LootTableProvider.SubProviderEntry(SatelliteBlockLoot::new, LootContextParamSets.BLOCK)));
     }
 
-    /** A plain self-drop; the block adds a quarantined root to the drop itself, as the terminal does. */
-    private static final class BuilderLoot extends BlockLootSubProvider {
-        private BuilderLoot() {
+    /** Plain self-drops; each block adds a quarantined root to the drop itself, as the terminal does. */
+    private static final class SatelliteBlockLoot extends BlockLootSubProvider {
+        private SatelliteBlockLoot() {
             super(Set.of(), FeatureFlags.REGISTRY.allFlags());
         }
 
         @Override
         protected void generate() {
             dropSelf(ModBlocks.SATELLITE_BUILDER.get());
+            dropSelf(ModBlocks.MICROWAVE_RECEIVER.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return List.of(ModBlocks.SATELLITE_BUILDER.get());
+            return List.of(ModBlocks.SATELLITE_BUILDER.get(), ModBlocks.MICROWAVE_RECEIVER.get());
         }
     }
 
@@ -123,6 +132,15 @@ public final class V160SatelliteProviders {
                     .define('I', Tags.Items.INGOTS_IRON)
                     .define('R', Items.REDSTONE_BLOCK)
                     .unlockedBy("has_satellite_chassis", has(ModItems.SATELLITE_CHASSIS.get()))
+                    .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MICROWAVE_RECEIVER.get())
+                    .pattern("MLM").pattern("ADA").pattern("MRM")
+                    .define('M', ModItems.MACHINE_CASING.get())
+                    .define('L', Items.LIGHTNING_ROD)
+                    .define('A', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('D', Items.DAYLIGHT_DETECTOR)
+                    .define('R', Items.REDSTONE_BLOCK)
+                    .unlockedBy("has_solar_transmitter_module", has(ModItems.SOLAR_TRANSMITTER_MODULE.get()))
                     .save(output);
             ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.ADVANCED_SOLAR_PANEL.get())
                     .pattern("SSS").pattern("GAG").pattern("GRG")
@@ -175,7 +193,7 @@ public final class V160SatelliteProviders {
 
     /**
      * Complete v1.6 copies of the two vanilla tool tags; they supersede the v1.5 copies (build.gradle
-     * excludes those), so every earlier machine block keeps its entry.
+     * excludes those), so every earlier machine block keeps its entry; C7c adds the microwave receiver.
      */
     public static final class ToolTags extends BlockTagsProvider {
         public ToolTags(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider,
@@ -198,7 +216,8 @@ public final class V160SatelliteProviders {
                     ModBlocks.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get(),
                     ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get(),
                     ModBlocks.WARP_CORE.get(),
-                    ModBlocks.SATELLITE_BUILDER.get()
+                    ModBlocks.SATELLITE_BUILDER.get(),
+                    ModBlocks.MICROWAVE_RECEIVER.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);

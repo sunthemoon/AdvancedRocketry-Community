@@ -9,3 +9,4 @@ advancedrocketrycommunity:rocket_flight|8|1|RocketFlightPlanPacket|PLAY_TO_CLIEN
 advancedrocketrycommunity:rocket_flight|8|2|CelestialSnapshotPacket|PLAY_TO_CLIENT
 advancedrocketrycommunity:rocket_visual|1|0|RocketVisualChunkPacket|PLAY_TO_CLIENT
 advancedrocketrycommunity:satellite|1|0|SatelliteTerminalViewPacket|PLAY_TO_CLIENT
+advancedrocketrycommunity:satellite|1|1|SurveyScanResultPacket|PLAY_TO_CLIENT

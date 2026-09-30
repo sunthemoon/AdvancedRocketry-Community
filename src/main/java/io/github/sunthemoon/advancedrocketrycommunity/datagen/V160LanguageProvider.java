@@ -23,6 +23,35 @@ public final class V160LanguageProvider extends LanguageProvider {
         add("block.advancedrocketrycommunity.satellite_builder", chinese ? "卫星组装台" : "Satellite Builder");
         add("menu.advancedrocketrycommunity.satellite_builder", chinese ? "卫星组装台" : "Satellite Builder");
         add("item.advancedrocketrycommunity.satellite_package", chinese ? "卫星组件包" : "Satellite Package");
+        add("block.advancedrocketrycommunity.microwave_receiver", chinese ? "微波接收器" : "Microwave Receiver");
+        add("menu.advancedrocketrycommunity.microwave_receiver", chinese ? "微波接收器" : "Microwave Receiver");
+        add("screen.advancedrocketrycommunity.microwave_receiver.output",
+                chinese ? "输出 %s FE/t" : "OUTPUT  %s FE/t");
+        add("screen.advancedrocketrycommunity.microwave_receiver.link.empty", chinese ? "空槽位" : "Empty slot");
+        add("screen.advancedrocketrycommunity.microwave_receiver.link.holding",
+                chinese ? "已连接：本接收器持有链接" : "Linked: this receiver holds the link");
+        add("screen.advancedrocketrycommunity.microwave_receiver.link.elsewhere",
+                chinese ? "该卫星已连接其他接收器" : "Linked to another receiver");
+        add("screen.advancedrocketrycommunity.microwave_receiver.link.unavailable",
+                chinese ? "卫星不存在或不是太阳能卫星" : "Satellite missing or not a solar satellite");
+        add("screen.advancedrocketrycommunity.satellite.unlink", chinese ? "断开" : "UNLINK");
+        add("tooltip.advancedrocketrycommunity.satellite.unlink",
+                chinese ? "当所连接收器已确认丢失时，断开太阳能卫星的链接"
+                        : "Clear a solar satellite's link when its receiver is confirmed missing");
+        add("status.advancedrocketrycommunity.survey_scan.started",
+                chinese ? "勘测扫描已开始；请留在 64 格范围内" : "Survey scan started; stay within 64 blocks");
+        add("status.advancedrocketrycommunity.survey_scan.cancelled",
+                chinese ? "勘测扫描已取消" : "Survey scan cancelled");
+        add("status.advancedrocketrycommunity.survey_scan.complete",
+                chinese ? "勘测扫描完成" : "Survey scan complete");
+        add("screen.advancedrocketrycommunity.survey_scan.title",
+                chinese ? "勘测扫描 %s, %s" : "SURVEY SCAN  %s, %s");
+        add("screen.advancedrocketrycommunity.survey_scan.legend", chinese ? "主要生物群系" : "Dominant biomes");
+        add("screen.advancedrocketrycommunity.survey_scan.cell",
+                chinese ? "矿石占比 %s%% · %s" : "Ore share %s%% · %s");
+        add("screen.advancedrocketrycommunity.survey_scan.unknown",
+                chinese ? "未扫描：区块未加载" : "Not scanned: chunk not loaded");
+        add("screen.advancedrocketrycommunity.survey_scan.other", chinese ? "其他生物群系" : "Other biome");
         add("item.advancedrocketrycommunity.advanced_solar_panel", chinese ? "高级太阳能板" : "Advanced Solar Panel");
         add("item.advancedrocketrycommunity.satellite_battery", chinese ? "卫星电池" : "Satellite Battery");
         add("item.advancedrocketrycommunity.large_satellite_battery",

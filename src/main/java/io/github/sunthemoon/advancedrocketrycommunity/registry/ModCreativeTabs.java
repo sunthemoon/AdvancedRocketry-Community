@@ -59,6 +59,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.DATA_SATELLITE_PACKAGE.get());
                         output.accept(ModItems.WARP_CORE.get());
                         output.accept(ModItems.SATELLITE_BUILDER.get());
+                        output.accept(ModItems.MICROWAVE_RECEIVER.get());
                         output.accept(ModItems.SATELLITE_PACKAGE.get());
                         output.accept(ModItems.ADVANCED_SOLAR_PANEL.get());
                         output.accept(ModItems.SATELLITE_BATTERY.get());

@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48476,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+      },
+      {
+        "bytes": 1450453,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "8ae4b5c9eb0bf1f34492009752088d2ce52564b9dad8fd781e9efe6880def393"
+      },
+      {
+        "bytes": 3194457,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "e459610212fc79b26e6fad7eac6392cee8444cb5cacf5bcf31f967d6367f8ce6"
+      }
+    ]
+  },
+  "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 206,
+    "tests": 1102
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "f007fb6a89151f8a2d39311ee6eefe1767c27ccc11180a83dd793b15030763d7",
+    "README.md": "a632f4f14a168b5f11993fce2effd4be4dda4d6e3b37e7c7e3bb3d72834a7279",
+    "gradle.properties": "ca7c329e63e0321b21896b88e9e6f90d6cc7155d68936989e9fcfd5b9c8b4598",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity/blockstates/microwave_receiver.json": "3193ba9b87049f278b790cfbb663d98fc58ed3900db45e489279c593ebe5faf3",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/microwave_receiver.json": "c74de9ec248d18b4222e7661e9b5469c4b52c68687111f0c77a18b27f5bd457f",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/microwave_receiver.json": "36fd46e434f8b2f649096394285659128589b969b50b3019f5708d34196b5685",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity_v160/lang/en_us.json": "70dd682a98549c47302fe346d1b2b6a82d5395fc1327741325a19151ea564d7c",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity_v160/lang/zh_cn.json": "83d5f45c33f57edfa5973bbb7ef91bbe446e303102c01c83798d0a70093673bb",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/microwave_receiver.json": "d7a670f102624b315f11b27dab6faa835ffccd70a83d1281705003759361497a",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/loot_tables/blocks/microwave_receiver.json": "3635b1abe9ab857654eef1bd2067c359b85ffa5781c2877213551a5d7c8dac32",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/microwave_receiver.json": "b478eee254fef508700b98b912c565a7a9d4988dc834c7a34faa462160f00822",
+    "src/generated/v1.6/resources/data/minecraft/tags/blocks/mineable/pickaxe.json": "a15167725adbd9fe39ba16e218806203df1f0b9626ddfb7d55169532d79af22c",
+    "src/generated/v1.6/resources/data/minecraft/tags/blocks/needs_iron_tool.json": "a15167725adbd9fe39ba16e218806203df1f0b9626ddfb7d55169532d79af22c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "bc5b4cf0debda62f15cef99cd83093a1bbb89ee2f98eea064fc58fe319bffaa8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java": "52f062f36b83ee042c5e0a81223110ba01750ee04ef1089a722aeb3f288bc2d3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientSatelliteEvents.java": "4fe54e360bacf93f8bb2e948204f9132eed959ee5f96a4499549106d5e4adce9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/MicrowaveReceiverScreen.java": "fc96bd03301bfc1bed74eeff4813959a0d6cb897fe982f3e14116e5630e31422",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/SatelliteTerminalScreen.java": "bbb187c7e1708c593069e5a79c8d7f91832f521456010d75bfdcb750e6744a15",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/SurveyScanScreen.java": "7fca28bd31f0f239fa9bb529eebc39ecdc4832954b9c78c5f9ba2ed83ba7e864",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java": "5e7ffed9db85f9ca3f766ea3641cd135347fcb7238e6d0b0a71e45cda0e8c527",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160LanguageProvider.java": "9caf964a78bf569ba834d886b8bc7bdd7084259c4bec85ac063b14b1de9fc5af",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MicrowaveReceiverGameTests.java": "df86bce50dd024c5ce4f8b6db5459d224765e41a002e78724b08a3de1d27c74a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SurveyScanGameTests.java": "13453524d0aa41c28d8d7f13e6ef93d966f12ddac912899b97a509c397bd409c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java": "95d26f3f4ac8de948e4777ddb55994bbd511fef29ff8857e82ab944d01a3270e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java": "93abe18e3607e20a5be683e369523ebc4caf52ce9fe4dbfab7c1dd5f56973f07",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java": "38a471f99453debfffba40cdc105766b5b1ebe5b6ab5990a14d1c63b8ddb5988",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java": "e6665395e81890ec054a91335763ce8f234522e0cf3987e73523b8ca465fc44b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java": "2a67ec8c3d88c710dbb83d9096c76aa5277198f2012fa6dfa7f813e5b0d91e9d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/SatelliteCommands.java": "d0a5031f12a66b87fd71042e97837440afc08b58c0edb0a644a2cf034a6b11c7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/content/SatelliteControlChipItem.java": "312792b7f0ab192915d6a4858a565f129cc43a5e3c66029ee494254443c789ff",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java": "aa393243fd727b494ecc36570473c5cf6b5207e8e35df095ce30c83d445d978e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKindState.java": "7851441e44211a6e3701ce1e49a3e2e96d76c13dd2e33c0674697ae2547f01bb",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SatelliteNetwork.java": "d35728013ff484d1e268dc80361cd87594a621c9c4a5d381accc23a2dd88705a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SurveyScanResultCache.java": "0908649ce4b51d0aaa9dcb15b13d802a4736cea3d0e7fdea901c63e120b045b3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SurveyScanResultPacket.java": "76d20036938f1066f77108ce23aa61371cba685f5c34f2c237fdd25ee468ac61",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java": "b13448195750fd7ead376a574ee716d7967f55014e9077c4d7e7be3f5578befd",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/receiver/MicrowaveReceiverBlock.java": "021d54541af416c04d2ff6f06c9fb4ed6ced0a4bfa601482cbf74ae73cf3770b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/receiver/MicrowaveReceiverBlockEntity.java": "f44135a7696f2a441fca989f98b2fcb87b88f5726e86fc156d790415d317cf9d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/receiver/MicrowaveReceiverInventory.java": "3a0c3d74c118b10ff5d131a84245079093fd33e920fdfa9efa28641c51a3e16e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/receiver/MicrowaveReceiverMenu.java": "95e53b3013b2a53aecce690cf02d67666b26c431246fa3cdaad92fb3c8e3bd52",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/LevelScanSource.java": "14b1d296ffe2c3ff23e37da4341819664e08ca6b2c9e3429b10579394c9fcf9f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/ScanColumnSource.java": "3cc7fd3a32540034810d32193ce714209a772ef356235becb450e89916fd1f8d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/ScanSettings.java": "03db8ca1dce25e8c49e5b0657a609ea06c2defc51273c1c1ffa5a85e130ee8f8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanJob.java": "2eda82ab2477862912767dc4c5b7b4aabfb5985013f1a100bc93585bbc761b28",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanService.java": "0212edb784563ec9ce21d687823a79269381ce2c24f70ac198c692712f3a7127",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ReceiverDirectory.java": "cb97c719985055aaba95d8e6ab048a1ea5aa3b08fab174e540dd8f77ce54bad2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteKindLifecycle.java": "4498bac4b9243a3714074af42df929ed390d64779115a38d122ec0b7203c7428",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java": "811435b06c33eb05ba0041a3599b6bed3235cce956ed2d5721462e7cc3315581",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteRuntime.java": "019acb672bb8c58bdbfa6f71e1c9e8f2c99cff109ac09b8c7ac2c7eb5887e334",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SolarLinks.java": "41aa698ebb3a71a568fff67509775a5182c3244dbc3c8d5422396e11fba36d77",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java": "c9894ae03dd1668f87482831fe06aff4cfe1e10d81abd9959ed756b66fda6a06",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalMenu.java": "c717e64caa49ecd35450d4872b35804b9c990b0943747f0ebcdeb07f534d271d",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java": "c844cb910add1a234485fe210495639f7acdab937de180b55134a0d6749c780e",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java": "c1cafc0ae5b04a5573b721ccb6a4a7a25342b45c849aaade56414177177e896a",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteScanAndLinkRegistryTest.java": "6d8bab09f58e914331deeaeda784be3daccefd773fb1ea5ab65dae5cda5d3b5e",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SurveyScanResultPacketTest.java": "efea5a3cf9e09eee75e3b0f410c80b835b1bfa54ebc8091cd2f64061f9219c81",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanJobTest.java": "39374a9319112df259fbacfa634548c4e4c2c9d242d79d3e154f956f854d076c",
+    "src/test/resources/network-protocols.txt": "8f18bcfa6bc8ff1a9a9b5f969f0e1733d2ede607849bd4798de4a0c3b23f931e"
+  }
+}

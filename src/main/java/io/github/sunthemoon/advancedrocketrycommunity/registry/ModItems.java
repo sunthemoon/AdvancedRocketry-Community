@@ -152,6 +152,7 @@ public final class ModItems {
 
     // v1.6 (ADR-049): the Satellite Builder, the generic package and the satellite components.
     public static final RegistryObject<Item> SATELLITE_BUILDER = blockItem("satellite_builder", ModBlocks.SATELLITE_BUILDER);
+    public static final RegistryObject<Item> MICROWAVE_RECEIVER = blockItem("microwave_receiver", ModBlocks.MICROWAVE_RECEIVER);
     public static final RegistryObject<Item> SATELLITE_PACKAGE = ITEMS.register(
             "satellite_package",
             () -> new DataSatellitePackageItem(new Item.Properties().stacksTo(1))

@@ -57,6 +57,9 @@ public final class SatelliteCommands {
                                 .then(Commands.argument("satellite_id", UuidArgument.uuid())
                                         .then(Commands.argument("player", EntityArgument.player())
                                                 .executes(this::recoverChip))))
+                        .then(Commands.literal("unlink")
+                                .then(Commands.argument("satellite_id", UuidArgument.uuid())
+                                        .executes(this::unlink)))
                         .then(Commands.literal("blank-chip")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(this::blankChip)))
@@ -202,6 +205,20 @@ public final class SatelliteCommands {
                 actor(context.getSource()));
         context.getSource().sendSuccess(() -> Component.literal(
                 "Blanked the control chip held by " + player.getScoreboardName()), true);
+        return 1;
+    }
+
+    /** ADR-049 section 9: an operator clears a solar satellite's receiver link by ID. */
+    private int unlink(CommandContext<CommandSourceStack> context) {
+        UUID satelliteId = UuidArgument.getUuid(context, "satellite_id");
+        SatelliteOperationResult result = satellites.unlinkAdmin(context.getSource().getServer(), satelliteId,
+                actor(context.getSource()));
+        if (!result.success()) {
+            context.getSource().sendFailure(Component.literal("Unlink rejected: " + result.code()));
+            return 0;
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Satellite link cleared: " + satelliteId
+                + " (" + result.code() + ")"), true);
         return 1;
     }
 

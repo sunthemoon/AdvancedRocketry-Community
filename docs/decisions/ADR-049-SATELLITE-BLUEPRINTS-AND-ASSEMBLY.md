@@ -12,7 +12,7 @@ accepted_by: sunthemoon
 accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-050, ADR-051, ADR-052]
-pending_amendment: revision 4 (proposed 2026-10-01 in C7b; decided by the C7 independent review)
+pending_amendment: revision 4 (proposed 2026-10-01 in C7b and C7c; decided by the C7 independent review)
 ```
 
 Revision 2 answers the first independent review (H3, M4, M9, M10, M11, M14,
@@ -377,7 +377,7 @@ Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
 
-## Proposed amendment — revision 4 (C7b, 2026-10-01)
+## Proposed amendment — revision 4 (C7b and C7c, 2026-10-01)
 
 Status: **PROPOSED**. Revision 3 stays the accepted contract until the C7
 independent review accepts or rejects this amendment. The C7b implementation
@@ -406,3 +406,30 @@ already follows it; if it is rejected, C7 is reworked before it closes.
 4. **Data mission start for other kinds.** The existing data-mission start
    returns `DEFINITION_NOT_FOUND` for a non-`data` chip; resource missions get
    their own starts (ADR-051).
+
+C7c adds these clarifications of §8–§10:
+
+5. **Scan request codes.** In order: `UNAUTHORIZED` (not the owner, and not an
+   operator); `RATE_LIMITED` (a job running for the player, or the cooldown);
+   `CAPACITY_REACHED` (the server job limit); `SATELLITE_NOT_FOUND`;
+   `DEFINITION_NOT_FOUND` (not a survey satellite); `BODY_UNAVAILABLE` (the
+   orbit body left the catalog); `TARGET_NOT_ALLOWED` (the player's Level is not
+   the orbit body's); `NO_POWER`. Nothing is paid before the last check, and a
+   cancelled job is not refunded.
+6. **Scan reading.** A block is ore when it is in `#forge:ores` and counted when
+   it is not air. The biome is sampled at every fourth block of each column (the
+   biome resolution); ties go to the smaller ID. The first 16 dominant biomes get
+   palette indices in cell order; later ones are `OTHER` (254), and cells not
+   read are `UNKNOWN` (255, ratio 0). A cell stops at its first unloaded column.
+   The measured maximum result is 3,819 bytes (≤ 8 KiB). The cooldown starts
+   with the job, and the three limits are COMMON config values that cannot be
+   loosened past §8.
+7. **Receiver links.** Only bound chips of `solar` satellites fit the four slots,
+   and a chip whose owner differs from the record does not link. Links change
+   only at the 20-tick check, so moving chips cannot churn the registry. The
+   output of the held links is recomputed at each check. A receiver is
+   **missing** only when the server has seen it since the start and its last
+   chunk is loaded with no receiver of that ID there. A receiver not seen since
+   the start, or in an unloaded chunk, is unknown, and then only an operator can
+   unlink (`/arce satellite admin unlink <satellite_id>`, audit line
+   `ARCE_SATELLITE_UNLINK`). The terminal gains the `UNLINK` intent (button 7).

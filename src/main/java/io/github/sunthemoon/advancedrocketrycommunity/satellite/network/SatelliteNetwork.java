@@ -27,6 +27,11 @@ public final class SatelliteNetwork {
                 .decoder(SatelliteTerminalViewPacket::decode)
                 .consumerMainThread(SatelliteTerminalViewPacket::handle)
                 .add();
+        channel.messageBuilder(SurveyScanResultPacket.class, 1, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SurveyScanResultPacket::encode)
+                .decoder(SurveyScanResultPacket::decode)
+                .consumerMainThread(SurveyScanResultPacket::handle)
+                .add();
     }
 
     /** The channel is registered once per game; it holds no world state. */
@@ -36,6 +41,13 @@ public final class SatelliteNetwork {
 
     public static String protocolVersion() {
         return PROTOCOL_VERSION;
+    }
+
+    public static void sendScanResult(ServerPlayer player, SurveyScanResultPacket packet) {
+        SatelliteNetwork current = installed;
+        if (current != null) {
+            current.channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
+        }
     }
 
     public static void sendTerminalView(ServerPlayer player, SatelliteTerminalViewPacket packet) {

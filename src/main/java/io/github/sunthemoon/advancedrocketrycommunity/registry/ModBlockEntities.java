@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.builder.SatelliteBuilderBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.receiver.MicrowaveReceiverBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -117,6 +118,15 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             SatelliteBuilderBlockEntity::new,
                             ModBlocks.SATELLITE_BUILDER.get()
+                    ).build(null)
+            );
+
+    public static final RegistryObject<BlockEntityType<MicrowaveReceiverBlockEntity>> MICROWAVE_RECEIVER =
+            BLOCK_ENTITIES.register(
+                    "microwave_receiver",
+                    () -> BlockEntityType.Builder.of(
+                            MicrowaveReceiverBlockEntity::new,
+                            ModBlocks.MICROWAVE_RECEIVER.get()
                     ).build(null)
             );
 

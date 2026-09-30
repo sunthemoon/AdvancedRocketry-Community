@@ -30,6 +30,8 @@ public final class SatelliteMissionRegistry {
     private final Map<UUID, AsteroidInstance> instances = new LinkedHashMap<>();
     /** ADR-050 §5: maintained incrementally; derived on restore, never persisted. */
     private final Map<UUID, Integer> satellitesByOwner = new java.util.HashMap<>();
+    /** ADR-049 §9 receiver → linked solar satellites; derived on restore, never persisted. */
+    private final Map<UUID, java.util.Set<UUID>> receiverLinks = new java.util.HashMap<>();
     private final MissionDeadlineScheduler scheduler = new MissionDeadlineScheduler();
     private final MonotonicMissionClock clock;
     /**
@@ -72,6 +74,7 @@ public final class SatelliteMissionRegistry {
             throw new IllegalArgumentException("Duplicate satellite id " + state.satelliteId());
         }
         satellitesByOwner.merge(state.ownerId(), 1, Integer::sum);
+        indexLink(null, state);
     }
 
     public synchronized void restoreMission(MissionState state) {
@@ -245,6 +248,7 @@ public final class SatelliteMissionRegistry {
         }
         satellites.put(candidate.satelliteId(), candidate);
         satellitesByOwner.merge(candidate.ownerId(), 1, Integer::sum);
+        indexLink(null, candidate);
         accounts.computeIfAbsent(candidate.ownerId(), ResearchAccount::empty);
         return result(SatelliteOperationCode.SUCCESS, true, candidate, null);
     }
@@ -278,6 +282,7 @@ public final class SatelliteMissionRegistry {
         }
         satellites.remove(satelliteId);
         satellitesByOwner.computeIfPresent(satellite.ownerId(), (owner, count) -> count <= 1 ? null : count - 1);
+        indexLink(satellite, null);
         return result(SatelliteOperationCode.SUCCESS, true, null, null);
     }
 
@@ -292,7 +297,62 @@ public final class SatelliteMissionRegistry {
         }
         SatelliteState updated = satellite.withKindState(next);
         satellites.put(satelliteId, updated);
+        indexLink(satellite, updated);
         return result(SatelliteOperationCode.SUCCESS, true, updated, null);
+    }
+
+    /**
+     * ADR-049 section 8: pays one area scan from the survey satellite's lazy battery. Only a paid scan changes
+     * the record; a refused one leaves it untouched.
+     */
+    public synchronized SatelliteOperationResult payScan(
+            UUID satelliteId,
+            UUID requesterId,
+            boolean operator,
+            long observedGameTime
+    ) {
+        Objects.requireNonNull(satelliteId, "satelliteId");
+        Objects.requireNonNull(requesterId, "requesterId");
+        long logicalTime = clock.advance(observedGameTime);
+        SatelliteState satellite = satellites.get(satelliteId);
+        if (satellite == null) {
+            return result(SatelliteOperationCode.SATELLITE_NOT_FOUND, false, null, null);
+        }
+        if (!operator && !satellite.ownerId().equals(requesterId)) {
+            return result(SatelliteOperationCode.UNAUTHORIZED, false, satellite, null);
+        }
+        if (!(satellite.kindState() instanceof SatelliteKindState.Survey survey)) {
+            return result(SatelliteOperationCode.DEFINITION_NOT_FOUND, false, satellite, null);
+        }
+        long charge = survey.chargeAt(logicalTime, satellite.blueprint().stats().power(),
+                satellite.blueprint().stats().battery());
+        if (charge < survey.scanEnergy()) {
+            return result(SatelliteOperationCode.NO_POWER, false, satellite, null);
+        }
+        SatelliteState paid = satellite.withKindState(new SatelliteKindState.Survey(charge - survey.scanEnergy(),
+                logicalTime, survey.scanEnergy(), survey.scanRadius(), survey.scanCell()));
+        satellites.put(satelliteId, paid);
+        return result(SatelliteOperationCode.SUCCESS, true, paid, null);
+    }
+
+    /** Solar satellites whose link names this receiver, in ID order. */
+    public synchronized List<UUID> linkedTo(UUID receiverId) {
+        return receiverLinks.getOrDefault(Objects.requireNonNull(receiverId, "receiverId"), java.util.Set.of())
+                .stream().sorted(UUID_ORDER).toList();
+    }
+
+    private void indexLink(SatelliteState previous, SatelliteState next) {
+        receiver(previous).ifPresent(receiver -> receiverLinks.computeIfPresent(receiver, (key, linked) -> {
+            linked.remove(previous.satelliteId());
+            return linked.isEmpty() ? null : linked;
+        }));
+        receiver(next).ifPresent(receiver -> receiverLinks
+                .computeIfAbsent(receiver, key -> new java.util.HashSet<>()).add(next.satelliteId()));
+    }
+
+    private static java.util.Optional<UUID> receiver(SatelliteState state) {
+        return state != null && state.kindState() instanceof SatelliteKindState.Solar solar
+                ? solar.receiver() : java.util.Optional.empty();
     }
 
     public synchronized int ownerSatellites(UUID ownerId) {

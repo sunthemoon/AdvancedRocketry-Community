@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
 import java.util.List;
@@ -32,8 +33,9 @@ class CommonConfigTest {
     @Test
     void obsoleteUnconsumedLifecycleToggleIsNotExposed() {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
-        // Two atmosphere values, the three ADR-044 station warp values and the ADR-041 rev. 2 write spacing.
-        assertEquals(6, countValues(CommonConfig.SPEC.getValues()));
+        // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing
+        // and the three ADR-049 survey scan limits.
+        assertEquals(9, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -54,6 +56,22 @@ class CommonConfigTest {
         assertEquals(2_000_000, CommonConfig.WARP_COST_IN_SYSTEM.getDefault());
         assertEquals(8_000_000, CommonConfig.WARP_COST_INTERSTELLAR.getDefault());
         assertEquals(WarpSettings.DEFAULTS, CommonConfig.warpSettings(), "Defaults apply until the config loads");
+    }
+
+    @Test
+    void surveyScanLimitsDefaultToTheirHardMaximaAndCannotBeLoosened() {
+        assertRange("satellites.surveyScanJobLimit", CommonConfig.SURVEY_SCAN_JOB_LIMIT, 1, 4);
+        assertRange("satellites.surveyScanReadsPerTick", CommonConfig.SURVEY_SCAN_READS_PER_TICK, 1, 16_384);
+        ForgeConfigSpec.ValueSpec cooldown = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("satellites.surveyScanCooldownTicks"));
+        ForgeConfigSpec.Range<Integer> range = cooldown.getRange();
+        assertEquals(100, range.getMin());
+        assertEquals(72_000, range.getMax());
+        assertFalse(cooldown.test(99));
+        assertEquals(4, CommonConfig.SURVEY_SCAN_JOB_LIMIT.getDefault());
+        assertEquals(100, CommonConfig.SURVEY_SCAN_COOLDOWN_TICKS.getDefault());
+        assertEquals(16_384, CommonConfig.SURVEY_SCAN_READS_PER_TICK.getDefault());
+        assertEquals(ScanSettings.DEFAULTS, CommonConfig.surveyScanSettings(), "Defaults apply until the config loads");
     }
 
     @Test

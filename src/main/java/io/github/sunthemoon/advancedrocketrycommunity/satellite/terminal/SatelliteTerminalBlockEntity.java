@@ -132,6 +132,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             case SatelliteTerminalMenu.BUTTON_CLAIM -> claim(player);
             case SatelliteTerminalMenu.BUTTON_CANCEL -> cancel(player);
             case SatelliteTerminalMenu.BUTTON_DECOMMISSION -> decommission(player);
+            case SatelliteTerminalMenu.BUTTON_UNLINK -> unlink(player);
             default -> {
                 return false;
             }
@@ -293,6 +294,17 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             inventory.setStackInSlot(SLOT_CONTROL_CHIP, new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get()));
         }
         updateResult(player, result.code());
+    }
+
+    private void unlink(ServerPlayer player) {
+        SatelliteIdentity chip = validOwnedIdentity(
+                player,
+                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
+                ModItems.SATELLITE_CONTROL_CHIP.get()
+        ).orElse(null);
+        if (chip != null) {
+            updateResult(player, SatelliteRuntime.unlink(player, chip).code());
+        }
     }
 
     private Optional<SatelliteIdentity> validOwnedIdentity(

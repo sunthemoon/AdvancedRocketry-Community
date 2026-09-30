@@ -38,6 +38,21 @@ public sealed interface SatelliteKindState {
         public SatelliteKind kind() {
             return SatelliteKind.SURVEY;
         }
+
+        /**
+         * ADR-049 section 8 lazy battery: {@code min(battery, charge + power × Δ)} for Δ logical ticks since
+         * {@link #chargeTime()}, in saturating 64-bit arithmetic.
+         */
+        public long chargeAt(long logicalTime, int power, int battery) {
+            if (power < 0 || battery < 0) {
+                throw new IllegalArgumentException("Survey stats must not be negative");
+            }
+            long elapsed = Math.max(0L, logicalTime - chargeTime);
+            long gained = elapsed == 0L || power == 0 ? 0L
+                    : elapsed > Long.MAX_VALUE / power ? Long.MAX_VALUE : elapsed * power;
+            long total = gained > Long.MAX_VALUE - charge ? Long.MAX_VALUE : charge + gained;
+            return Math.min(battery, total);
+        }
     }
 
     /** Output multiplier fixed at launch and the receiver currently holding the link. */

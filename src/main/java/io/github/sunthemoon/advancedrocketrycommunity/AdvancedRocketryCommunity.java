@@ -206,6 +206,7 @@ public final class AdvancedRocketryCommunity {
         SatelliteNetwork.install(new SatelliteNetwork());
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(satelliteManager::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(new SatelliteCommands(satelliteManager)::register);
     }
 

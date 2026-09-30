@@ -151,6 +151,21 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         return registry.ownerSatellites(ownerId);
     }
 
+    /** ADR-049 section 8: a paid scan is a registry change; a refused one is not. */
+    public SatelliteOperationResult payScan(UUID satelliteId, UUID requesterId, boolean operator, long observedGameTime) {
+        requireOperational();
+        SatelliteOperationResult result = registry.payScan(satelliteId, requesterId, operator, observedGameTime);
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    public List<UUID> linkedTo(UUID receiverId) {
+        requireOperational();
+        return registry.linkedTo(receiverId);
+    }
+
     public SatelliteOperationResult startMission(
             UUID satelliteId,
             UUID missionId,

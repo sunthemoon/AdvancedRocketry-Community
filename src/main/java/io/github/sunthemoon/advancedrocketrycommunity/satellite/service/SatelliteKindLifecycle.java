@@ -26,10 +26,13 @@ import net.minecraft.server.level.ServerPlayer;
 final class SatelliteKindLifecycle {
     private final SatelliteCatalogManager satelliteCatalogs;
     private final CelestialCatalogManager celestialCatalogs;
+    private final SolarLinks links;
 
-    SatelliteKindLifecycle(SatelliteCatalogManager satelliteCatalogs, CelestialCatalogManager celestialCatalogs) {
+    SatelliteKindLifecycle(SatelliteCatalogManager satelliteCatalogs, CelestialCatalogManager celestialCatalogs,
+                           SolarLinks links) {
         this.satelliteCatalogs = Objects.requireNonNull(satelliteCatalogs, "satelliteCatalogs");
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
+        this.links = Objects.requireNonNull(links, "links");
     }
 
     /**
@@ -152,8 +155,10 @@ final class SatelliteKindLifecycle {
         }
     }
 
-    /** Whether a solar satellite's linked receiver is known to be gone; receivers arrive in C7c. */
+    /** Whether a solar satellite's linked receiver is confirmed missing (ADR-049 section 9). */
     private boolean receiverMissing(MinecraftServer server, UUID satelliteId) {
-        return false;
+        return SatelliteMissionSavedData.get(server).satellite(satelliteId)
+                .map(satellite -> links.receiverMissing(server, satellite))
+                .orElse(false);
     }
 }

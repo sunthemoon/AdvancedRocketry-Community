@@ -23,9 +23,9 @@ class ModMetadataTest {
             assertTrue(metadata.contains("version=\"1.20.1-1.6.0-dev\""));
             assertTrue(metadata.contains("This v1.6.0 development build"));
             assertTrue(metadata.contains("This v1.6.0 development build adds a Satellite Builder, satellite component items, "
-                    + "launchable survey, solar, asteroid-miner and gas-harvester satellites, and a versioned, "
-                    + "backed-up satellite registry upgrade to the station and warp development baseline. "
-                    + "Survey scans, solar receivers, resource missions and release validation remain in progress"));
+                    + "launchable survey, solar, asteroid-miner and gas-harvester satellites, survey area scans, "
+                    + "microwave receivers and a versioned, backed-up satellite registry upgrade to the station and "
+                    + "warp development baseline. Resource missions and release validation remain in progress"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));

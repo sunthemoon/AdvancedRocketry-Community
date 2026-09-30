@@ -3,7 +3,10 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.service;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.SurveyScanService;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
@@ -27,6 +30,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 
 /** Server-thread authority joining definitions, missions, research, and discovery. */
@@ -39,7 +43,10 @@ public final class SatelliteManager {
     private final SatelliteCatalogManager satelliteCatalogs;
     private final CelestialCatalogManager celestialCatalogs;
     private final Consumer<MinecraftServer> snapshots;
+    private final ReceiverDirectory receivers = new ReceiverDirectory();
+    private final SolarLinks links;
     private final SatelliteKindLifecycle kinds;
+    private final SurveyScanService scans;
     private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
     private boolean replayInitialized;
     private int replayBackoffTicks;
@@ -58,7 +65,9 @@ public final class SatelliteManager {
         this.satelliteCatalogs = Objects.requireNonNull(satelliteCatalogs, "satelliteCatalogs");
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
         this.snapshots = Objects.requireNonNull(snapshots, "snapshots");
-        this.kinds = new SatelliteKindLifecycle(satelliteCatalogs, celestialCatalogs);
+        this.links = new SolarLinks(celestialCatalogs, receivers);
+        this.kinds = new SatelliteKindLifecycle(satelliteCatalogs, celestialCatalogs, links);
+        this.scans = SurveyScanService.create(celestialCatalogs, CommonConfig::surveyScanSettings);
     }
 
     public void onServerStarted(ServerStartedEvent event) {
@@ -73,6 +82,7 @@ public final class SatelliteManager {
             return;
         }
         MinecraftServer server = event.getServer();
+        scans.tick(server);
         if (!replayInitialized) {
             initializeDiscoveryReplay(server);
         }
@@ -431,7 +441,50 @@ public final class SatelliteManager {
         return CelestialSavedData.get(server).get(targetBodyId).isPresent();
     }
 
+    /** ADR-049 section 8: a survey scan requested with the bound chip in hand. */
+    public SatelliteOperationCode requestScan(ServerPlayer player, SatelliteIdentity identity) {
+        try {
+            return scans.request(player, identity);
+        } catch (RuntimeException exception) {
+            logOperationFailure("survey scan", exception);
+            return SatelliteOperationCode.UNSUPPORTED_DATA;
+        }
+    }
+
+    /** ADR-049 section 9: the 20-tick check of one loaded receiver. */
+    public SolarLinks.ReceiverCheck checkReceiver(MinecraftServer server, UUID receiverId,
+                                                  List<Optional<SatelliteIdentity>> chips) {
+        return links.check(server, receiverId, chips);
+    }
+
+    public void registerReceiver(UUID receiverId, net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> level,
+                                 net.minecraft.core.BlockPos position) {
+        receivers.register(receiverId, level, position);
+    }
+
+    public void releaseReceiver(MinecraftServer server, UUID receiverId) {
+        links.release(server, receiverId);
+    }
+
+    public SatelliteOperationResult unlink(ServerPlayer player, SatelliteIdentity identity, boolean operator) {
+        return links.unlink(player, identity, operator);
+    }
+
+    public SatelliteOperationResult unlinkAdmin(MinecraftServer server, UUID satelliteId, UUID actor) {
+        return links.unlinkAdmin(server, satelliteId, actor);
+    }
+
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        scans.cancel(event.getEntity().getUUID());
+    }
+
+    public Optional<CelestialCatalog> celestialCatalog() {
+        return celestialCatalogs.current();
+    }
+
     public void clear() {
+        scans.clear();
+        receivers.clear();
         pendingDiscoveryReplay.clear();
         replayInitialized = false;
         replayBackoffTicks = 0;

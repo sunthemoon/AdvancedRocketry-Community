@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.builder.SatelliteBuilderBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.receiver.MicrowaveReceiverBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlock;
 import net.minecraft.world.level.block.Block;
@@ -133,6 +134,16 @@ public final class ModBlocks {
     public static final RegistryObject<Block> SATELLITE_BUILDER = BLOCKS.register(
             "satellite_builder",
             () -> new SatelliteBuilderBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
+    );
+
+    /** ADR-049 section 9: turns linked solar satellites' output into Forge Energy while loaded. */
+    public static final RegistryObject<Block> MICROWAVE_RECEIVER = BLOCKS.register(
+            "microwave_receiver",
+            () -> new MicrowaveReceiverBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)

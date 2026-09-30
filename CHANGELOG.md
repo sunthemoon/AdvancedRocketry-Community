@@ -28,6 +28,18 @@ No candidate or release approval is assigned.
   decommission an idle satellite and blank its chip; nothing is refunded.
 - Add `/arce satellite admin blank-chip <player>` for chips of satellites that no
   longer exist. `recover-chip` now restores the satellite's kind and components.
+- Using a survey satellite's chip starts an area scan around the player, paid
+  from the satellite's battery, which recharges from its power. The scan reads
+  only loaded chunks over several ticks and shows the ore share and dominant
+  biome of each cell; unloaded cells show as unknown. One scan per player, four
+  on the server, and a 5-second cooldown (COMMON config, cannot be loosened).
+- Add the Microwave Receiver: a solar satellite's chip in one of its four slots
+  links that satellite at the next check, and the receiver produces
+  power × solar intensity FE/t (at most 10,000) into a 100,000 FE buffer that
+  feeds neighbours. A copied chip in another receiver produces nothing. Nothing
+  is produced while unloaded. Breaking the receiver clears its links. The
+  terminal can unlink a satellite whose receiver is confirmed missing, and
+  operators can use `/arce satellite admin unlink <satellite_id>`.
 - Add the `advancedrocketrycommunity:satellite` network channel (protocol 1) for
   the terminal view; a client without it cannot join. The terminal menu data
   moves to format 2.

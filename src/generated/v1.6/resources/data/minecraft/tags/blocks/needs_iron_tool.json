@@ -12,6 +12,7 @@
     "advancedrocketrycommunity:precision_assembler_item_output_port",
     "advancedrocketrycommunity:precision_assembler_energy_input_port",
     "advancedrocketrycommunity:warp_core",
-    "advancedrocketrycommunity:satellite_builder"
+    "advancedrocketrycommunity:satellite_builder",
+    "advancedrocketrycommunity:microwave_receiver"
   ]
 }

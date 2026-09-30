@@ -34,6 +34,8 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     public static final int BUTTON_CANCEL = 5;
     /** ADR-049 section 7: remove an idle satellite and blank its chip. */
     public static final int BUTTON_DECOMMISSION = 6;
+    /** ADR-049 section 9: clear the link of a solar satellite whose receiver is confirmed missing. */
+    public static final int BUTTON_UNLINK = 7;
 
     private static final int PLAYER_SLOT_START = SatelliteTerminalBlockEntity.SLOT_COUNT;
     private static final int PLAYER_SLOT_END = PLAYER_SLOT_START + 27;
@@ -130,12 +132,12 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
                         inventory,
                         column + row * 9 + 9,
                         31 + column * 18,
-                        132 + row * 18
+                        150 + row * 18
                 ));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new net.minecraft.world.inventory.Slot(inventory, column, 31 + column * 18, 190));
+            addSlot(new net.minecraft.world.inventory.Slot(inventory, column, 31 + column * 18, 208));
         }
     }
 

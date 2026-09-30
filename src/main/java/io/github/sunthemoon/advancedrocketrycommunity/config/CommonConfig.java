@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -68,7 +69,33 @@ public final class CommonConfig {
             )
             .defineInRange("stations.checkedWriteTicksPer100Stations", 3, 0, 100);
 
+    public static final ForgeConfigSpec.IntValue SURVEY_SCAN_JOB_LIMIT = BUILDER
+            .comment("Survey area scans that may run at once on the server (ADR-049; at most 4).")
+            .defineInRange("satellites.surveyScanJobLimit", ScanSettings.MAX_JOBS, 1, ScanSettings.MAX_JOBS);
+
+    public static final ForgeConfigSpec.IntValue SURVEY_SCAN_COOLDOWN_TICKS = BUILDER
+            .comment("Ticks a player waits between survey area scans (ADR-049; at least 100).")
+            .defineInRange("satellites.surveyScanCooldownTicks", ScanSettings.MIN_COOLDOWN_TICKS,
+                    ScanSettings.MIN_COOLDOWN_TICKS, ScanSettings.MAX_COOLDOWN_TICKS);
+
+    public static final ForgeConfigSpec.IntValue SURVEY_SCAN_READS_PER_TICK = BUILDER
+            .comment(
+                    "Block states one survey scan reads per server tick (ADR-049; at most 16,384).",
+                    "Lower values spread a scan over more ticks."
+            )
+            .defineInRange("satellites.surveyScanReadsPerTick", ScanSettings.MAX_READS_PER_TICK, 1,
+                    ScanSettings.MAX_READS_PER_TICK);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
+
+    /** Current survey scan limits; the defaults (also the maxima) until the COMMON config is loaded. */
+    public static ScanSettings surveyScanSettings() {
+        if (!SPEC.isLoaded()) {
+            return ScanSettings.DEFAULTS;
+        }
+        return new ScanSettings(SURVEY_SCAN_JOB_LIMIT.get(), SURVEY_SCAN_COOLDOWN_TICKS.get(),
+                SURVEY_SCAN_READS_PER_TICK.get());
+    }
 
     /** Current warp settings; defaults until the COMMON config is loaded. */
     public static WarpSettings warpSettings() {

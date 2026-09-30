@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.Precisio
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.builder.SatelliteBuilderMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.receiver.MicrowaveReceiverMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
@@ -44,6 +45,11 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<SatelliteBuilderMenu>> SATELLITE_BUILDER = MENUS.register(
             "satellite_builder",
             () -> IForgeMenuType.create(SatelliteBuilderMenu::new)
+    );
+
+    public static final RegistryObject<MenuType<MicrowaveReceiverMenu>> MICROWAVE_RECEIVER = MENUS.register(
+            "microwave_receiver",
+            () -> IForgeMenuType.create(MicrowaveReceiverMenu::new)
     );
 
     private ModMenuTypes() {
