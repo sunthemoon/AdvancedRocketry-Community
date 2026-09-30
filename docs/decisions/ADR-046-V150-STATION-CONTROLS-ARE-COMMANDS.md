@@ -74,6 +74,10 @@ defines targets and closes nothing by itself.
   message list against a committed table. The table changes only with an ADR.
   The plan YAML records `network_protocol` at ACC.
 
+  > Amended on 2026-09-30 by [ADR-047](ADR-047-PER-STATION-SKY-CONTEXT.md) (the
+  > ORBIT-03 carve-out): the celestial channel is now protocol 3, with message 1, the
+  > station sky context. The pinned table is updated accordingly.
+
 ### UI-02: presentation
 
 - Feedback uses chat and the action bar:

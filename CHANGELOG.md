@@ -46,7 +46,12 @@ No candidate or release approval is assigned.
 - Add `/arce station environment`: shows the orbited body of the station you are
   in (and whether it is still available), gravity, vacuum, solar intensity of the
   orbited body and sun angle. The station's name and ID are shown only to its
-  owner, members and operators. The sky is not yet per-station.
+  owner, members and operators.
+- Inside a station, the sky shows the body the station orbits as a large disc
+  below the horizon, and the sun's size follows that body's sunlight. The
+  sky follows a warp. Only the orbited body is sent to the client, never the
+  station's identity. The celestial network protocol moves to version 3, so
+  clients and servers must be updated together.
 - Station storage moves to schema 4, which adds a warp energy balance per station
   (none for every existing station). Worlds from earlier builds, including v1.5
   development worlds, are upgraded before start with another backup. A warp

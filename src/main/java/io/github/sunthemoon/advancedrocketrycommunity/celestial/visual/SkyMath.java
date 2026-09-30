@@ -2,7 +2,33 @@ package io.github.sunthemoon.advancedrocketrycommunity.celestial.visual;
 
 /** Pure display math; these values never feed server exposure or navigation. */
 public final class SkyMath {
+    /** ADR-047: angular radius of the orbited body's disc seen from a station. */
+    public static final double ORBITED_BODY_RADIUS_DEGREES = 30;
+    /**
+     * ADR-047: the disc's centre is below the horizon toward +X, not at the nadir. The Space Level's
+     * fixed time (18000) puts the sun at the nadir (sun angle pi), and the disc must not cover it.
+     */
+    public static final double ORBITED_BODY_ELEVATION_DEGREES = -25;
+    /** The sun halo reaches 2.5 sun radii (SkyGeometry.sun(true)); the sun radius is at most 12 degrees. */
+    public static final double MAX_SUN_HALO_DEGREES = 2.5 * 12;
+
     private SkyMath() { }
+
+    /** Unit direction of the orbited body's disc centre: the renderer turns +Y about Z by elevation - 90. */
+    public static double[] orbitedBodyDirection() {
+        double elevation = Math.toRadians(ORBITED_BODY_ELEVATION_DEGREES);
+        return new double[] {Math.cos(elevation), Math.sin(elevation), 0};
+    }
+
+    /** Unit direction of the sun as the renderer draws it: +Y turned by rotateY(-pi/2).rotateX(angle). */
+    public static double[] sunDirection(double angle) {
+        return new double[] {-Math.sin(angle), Math.cos(angle), 0};
+    }
+
+    public static double separationDegrees(double[] first, double[] second) {
+        double dot = first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
+        return Math.toDegrees(Math.acos(clamp(dot, -1, 1)));
+    }
 
     public static double daylight(double angle) { return clamp(Math.cos(angle) * 1.5 + 0.25, 0, 1); }
 

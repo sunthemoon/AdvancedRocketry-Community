@@ -25,6 +25,10 @@ public final class ClientSkyEvents {
         PlanetarySkyClient.logout();
     }
 
+    @SubscribeEvent public static void levelChanged(ClientPlayerNetworkEvent.Clone event) {
+        PlanetarySkyClient.levelChanged();
+    }
+
     @SubscribeEvent(priority = EventPriority.LOW) public static void fogColor(ViewportEvent.ComputeFogColor event) {
         var level = Minecraft.getInstance().level;
         var selection = PlanetarySkyClient.selection(level);

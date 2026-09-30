@@ -1,0 +1,29 @@
+{
+  "archives": [
+    {
+      "bytes": 474255,
+      "manifest": "root-checks-files.json",
+      "members": 211,
+      "name": "root-checks.zip",
+      "sha256": "fc0c1abd06b84a2c868c7834eed29acc51e9604a13834e3dabb054465f40112c"
+    },
+    {
+      "bytes": 8711,
+      "excluded": [],
+      "manifest": "independent-review-sky-files.json",
+      "members": 1,
+      "name": "independent-review-sky.zip",
+      "reviewed": "ADR-047 revision 1 against 50a0f42",
+      "sha256": "fbc686e987b285bd6076380aeff1cf00a1960fc639ba9893ccb57fe7f6539cc9",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-sky-review-ef7fac56f1114aeca5c06712eac8f494"
+    }
+  ],
+  "base_commit": "50a0f425786ac349fb76575546aa35cb8ffd7252",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-sky-3555da2693fb48698f92591776571046"
+}

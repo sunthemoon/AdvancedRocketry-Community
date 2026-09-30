@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.CelestialCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.PlanetaryRouteCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
@@ -180,6 +181,12 @@ public final class AdvancedRocketryCommunity {
                 celestialNetwork
         );
         MinecraftForge.EVENT_BUS.addListener(snapshotSynchronizer::onDatapackSync);
+        StationSkyContextService skyContexts = new StationSkyContextService(celestialNetwork::sendSkyContext);
+        MinecraftForge.EVENT_BUS.addListener(skyContexts::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerChangedDimension);
+        MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerRespawn);
+        MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerLoggedOut);
+        MinecraftForge.EVENT_BUS.addListener(skyContexts::onServerStopping);
         satelliteManager = new SatelliteManager(
                 satelliteCatalogs,
                 celestialCatalogs,

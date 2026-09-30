@@ -3,7 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.sky;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialClientCache;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.StationSkyContextCache;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.AmbientController;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelection;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelection.Selection;
@@ -31,7 +33,11 @@ public final class PlanetarySkyClient {
             SELECTION.clear();
             return null;
         }
-        return SELECTION.resolve(level.dimension().location(), CelestialClientCache.snapshot().orElse(null), RESOURCES.profiles());
+        // ADR-047: the station context applies only in the Space Level.
+        var orbit = level.dimension().equals(CelestialIds.SPACE_LEVEL)
+                ? StationSkyContextCache.orbitBody() : java.util.Optional.<net.minecraft.resources.ResourceLocation>empty();
+        return SELECTION.resolve(level.dimension().location(), CelestialClientCache.snapshot().orElse(null),
+                RESOURCES.profiles(), orbit);
     }
 
     static boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle) {
@@ -59,7 +65,13 @@ public final class PlanetarySkyClient {
     }
 
     public static void logout() {
+        StationSkyContextCache.clear();
         cleanup(false);
+    }
+
+    /** A new Level (dimension change or respawn): the server re-sends the station sky context. */
+    public static void levelChanged() {
+        StationSkyContextCache.clear();
     }
 
     private static void resourceReloaded() {

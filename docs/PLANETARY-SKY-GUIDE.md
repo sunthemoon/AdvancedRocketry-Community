@@ -19,7 +19,11 @@ real-GPU and multiplayer acceptance is not yet complete.
    its appearance according to ordinary resource-pack priority.
 
 Built-in Mars, Venus and Moon use the surface effect. Shared Space uses the
-space effect and a generic space sky, not a station-specific parent-planet disc.
+space effect and the space sky. Inside a station, the server tells the client which
+body the station orbits (ADR-047), and the sky adds that body as a large disc below
+the horizon; the sun follows its solar intensity. Packaged bodies have fixed orbital
+colours; a data-pack body uses its profile's day colour if that is bright enough,
+otherwise a neutral colour.
 Earth retains its normal renderer. Gas-giant definitions have no surface sky.
 The four built-in profile IDs are `advancedrocketrycommunity:moon`, `:space`,
 `:mars` and `:venus` (each abbreviated ID uses the same namespace).

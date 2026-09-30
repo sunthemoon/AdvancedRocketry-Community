@@ -42,7 +42,7 @@ class CelestialSnapshotV2Test {
         var gas = CelestialSchemaV2Test.gasGiant();
         values.add(gas);
         var packet = packet(values, 12);
-        assertEquals("2", CelestialNetwork.protocolVersion());
+        assertEquals("3", CelestialNetwork.protocolVersion());
         assertEquals(2, packet.schemaVersion());
         assertEquals(CelestialClientCache.AcceptResult.ACCEPTED, CelestialClientCache.accept(packet));
         var entry = CelestialClientCache.snapshot().orElseThrow().entries().stream()

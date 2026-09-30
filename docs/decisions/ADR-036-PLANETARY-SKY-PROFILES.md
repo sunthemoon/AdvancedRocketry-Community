@@ -16,6 +16,10 @@ world state from the client or change gravity, hazards, oxygen, routes or saves.
 Shared space has a generic space profile, not a fabricated per-station orbit
 context. Earth retains the vanilla renderer; gas giants have no surface.
 
+> Amended on 2026-09-30 by [ADR-047](ADR-047-PER-STATION-SKY-CONTEXT.md): inside a
+> station in Space, the sky also shows the orbited body, driven by one bounded server
+> context message (the orbit body ID only). Everywhere else this decision is unchanged.
+
 - Add stable dimension-effects IDs `advancedrocketrycommunity:planetary` and
   `advancedrocketrycommunity:planetary_space`. Mars/Venus/Moon select the first;
   shared Space selects the second. Only `effects` changes in the old type JSON:

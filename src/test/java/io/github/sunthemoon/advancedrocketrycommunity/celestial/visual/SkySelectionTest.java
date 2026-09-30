@@ -62,6 +62,35 @@ class SkySelectionTest {
         assertNull(selector.resolve(ModIdentity.id("gas"), new CelestialSnapshot(2, List.of(gas)), SkyProfiles.builtins()));
     }
 
+    /** ADR-047: a station sky context adds the orbited body and moves the sun to its solar intensity. */
+    @Test void aStationContextAddsTheOrbitedBodyAndItsSun() {
+        var space = new CelestialSnapshot.Entry(ModIdentity.id("space"), Optional.empty(), Optional.of(ModIdentity.id("space")),
+                0, 0, false, 3, ModIdentity.id("vacuum"), ModIdentity.id("space"),
+                new CelestialCapabilities(false, false, false), 1.0, 0.1);
+        var mars = body("mars", "mars", "mars");
+        var earth = new CelestialSnapshot.Entry(ModIdentity.id("earth"), Optional.empty(), Optional.of(ModIdentity.id("overworld")),
+                1, 1, true, 288, ModIdentity.id("earth"), ModIdentity.id("earth"),
+                new CelestialCapabilities(true, true, false), 1.0, 0);
+        var snapshot = new CelestialSnapshot(2, List.of(space, mars, earth));
+        var plain = selector.resolve(ModIdentity.id("space"), snapshot, SkyProfiles.builtins());
+        assertTrue(plain.orbit().isEmpty());
+        assertEquals(1.0, plain.solarIntensity());
+        var atMars = selector.resolve(ModIdentity.id("space"), snapshot, SkyProfiles.builtins(), Optional.of(ModIdentity.id("mars")));
+        assertEquals(ModIdentity.id("mars"), atMars.orbit().orElseThrow().bodyId());
+        assertEquals(OrbitalAppearance.packaged().get(ModIdentity.id("mars")), atMars.orbit().orElseThrow().color());
+        assertEquals(0.43, atMars.solarIntensity(), "The sun follows the orbited body");
+        assertEquals(ModIdentity.id("space"), atMars.bodyId(), "The Level's own profile keeps the sky");
+        assertSame(atMars, selector.resolve(ModIdentity.id("space"), snapshot, SkyProfiles.builtins(), Optional.of(ModIdentity.id("mars"))));
+        var atEarth = selector.resolve(ModIdentity.id("space"), snapshot, SkyProfiles.builtins(), Optional.of(ModIdentity.id("earth")));
+        assertEquals(OrbitalAppearance.packaged().get(ModIdentity.id("earth")), atEarth.orbit().orElseThrow().color(),
+                "Earth has no surface sky profile but a packaged orbital colour");
+        assertEquals(1.0, atEarth.solarIntensity(), "The sun follows the orbited body even without a profile");
+        var unknown = selector.resolve(ModIdentity.id("space"), snapshot, SkyProfiles.builtins(), Optional.of(ModIdentity.id("gone")));
+        assertTrue(unknown.orbit().isEmpty());
+        assertEquals(1.0, unknown.solarIntensity(), "An unknown body leaves the Level's sun");
+        assertNotEquals(atMars, selector.resolve(ModIdentity.id("space"), snapshot, SkyProfiles.builtins(), Optional.empty()));
+    }
+
     private static CelestialSnapshot.Entry body(String id, String level, String profile) {
         return new CelestialSnapshot.Entry(ModIdentity.id(id), Optional.empty(), Optional.of(ModIdentity.id(level)),
                 0.38, 0.006, false, 210, ModIdentity.id("mars"), ModIdentity.id(profile),

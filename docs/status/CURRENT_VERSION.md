@@ -73,7 +73,8 @@ status remains `IN_PROGRESS`, not `PASSED`.
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and
 pre-start migration contract, retaining old station identity/geometry. The
-per-station sky and acceptance remain unimplemented current-version work. The
+acceptance remains open current-version work. The per-station sky
+([verification](../work/v1.5.0-orbit-sky/VERIFICATION.md); V0/V1/V2 open), the
 elevator endpoint validator and the A1 permission matrix
 ([verification](../work/v1.5.0-elevator-ui/VERIFICATION.md); ADR-046 records that
 v1.5 has no control screen), and native rocket identity, concurrent warp,

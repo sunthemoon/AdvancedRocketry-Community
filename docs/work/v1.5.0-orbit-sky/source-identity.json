@@ -1,0 +1,161 @@
+{
+  "base_commit": "50a0f425786ac349fb76575546aa35cb8ffd7252",
+  "files": [
+    {
+      "bytes": 28455,
+      "path": "CHANGELOG.md",
+      "sha256": "8285fb324d62223e1c0a523a84da115577d655920db948d531becba3c17ca123",
+      "working_sha256": "8285fb324d62223e1c0a523a84da115577d655920db948d531becba3c17ca123"
+    },
+    {
+      "bytes": 21035,
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "78746cb472bc0a8eee2b37a6305aa264771df5db04e322efe00c1517c7cb10e3",
+      "working_sha256": "78746cb472bc0a8eee2b37a6305aa264771df5db04e322efe00c1517c7cb10e3"
+    },
+    {
+      "bytes": 5011,
+      "path": "docs/PLANETARY-SKY-GUIDE.md",
+      "sha256": "3c9b8bade65357fa2dc595ba92f616696175d2594abf6adcca2b2a9e6b9f27d8",
+      "working_sha256": "3c9b8bade65357fa2dc595ba92f616696175d2594abf6adcca2b2a9e6b9f27d8"
+    },
+    {
+      "bytes": 6598,
+      "path": "docs/decisions/ADR-036-PLANETARY-SKY-PROFILES.md",
+      "sha256": "9cc8c044bb7779ca360d855a039c9ba62a6cf65371122662e4c72a4a4c63eb36",
+      "working_sha256": "9cc8c044bb7779ca360d855a039c9ba62a6cf65371122662e4c72a4a4c63eb36"
+    },
+    {
+      "bytes": 11150,
+      "path": "docs/decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md",
+      "sha256": "13ab1392b016e5a1793fdd8fda974895aa787719a3d492cbc19d078569db7fdf",
+      "working_sha256": "13ab1392b016e5a1793fdd8fda974895aa787719a3d492cbc19d078569db7fdf"
+    },
+    {
+      "bytes": 11739,
+      "path": "docs/decisions/ADR-047-PER-STATION-SKY-CONTEXT.md",
+      "sha256": "2af9c0ca2065da035a2ea9627ac7dadd2ed8663164d0d5f7294603c29159e2e7",
+      "working_sha256": "2af9c0ca2065da035a2ea9627ac7dadd2ed8663164d0d5f7294603c29159e2e7"
+    },
+    {
+      "bytes": 8112,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "85a28bc21e64ebe28c8c65f8f0648e744af22da8fde5fa9ba7b2ec9823865106",
+      "working_sha256": "85a28bc21e64ebe28c8c65f8f0648e744af22da8fde5fa9ba7b2ec9823865106"
+    },
+    {
+      "bytes": 4922,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "f91e0357a0c06ce575ca0b5a8c27b33b56fe1b0787a3ce379292da8c74a1adb3",
+      "working_sha256": "f91e0357a0c06ce575ca0b5a8c27b33b56fe1b0787a3ce379292da8c74a1adb3"
+    },
+    {
+      "bytes": 38282,
+      "path": "docs/work/v1.5.0-implementation-log.md",
+      "sha256": "6e1feb5c4573f1039fefd5fb3d28494e4d7e2dcfc221dccd222b18c3a05453d5",
+      "working_sha256": "6e1feb5c4573f1039fefd5fb3d28494e4d7e2dcfc221dccd222b18c3a05453d5"
+    },
+    {
+      "bytes": 23001,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "18dbe9fc7a6a2a7dbb55ffcb4466fc16c6f43006e7329be1dbdcb705537650af",
+      "working_sha256": "18dbe9fc7a6a2a7dbb55ffcb4466fc16c6f43006e7329be1dbdcb705537650af"
+    },
+    {
+      "bytes": 2114,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialNetwork.java",
+      "sha256": "94650b0282aa80620c736bbf04fafdb545288821ab07593a36e19b48848171df",
+      "working_sha256": "94650b0282aa80620c736bbf04fafdb545288821ab07593a36e19b48848171df"
+    },
+    {
+      "bytes": 885,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/StationSkyContextCache.java",
+      "sha256": "0bde3fa53b1e69e227866905e95dcbf17f4c059abb719c03fc99052e40389c26",
+      "working_sha256": "0bde3fa53b1e69e227866905e95dcbf17f4c059abb719c03fc99052e40389c26"
+    },
+    {
+      "bytes": 2929,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/StationSkyContextPacket.java",
+      "sha256": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867",
+      "working_sha256": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867"
+    },
+    {
+      "bytes": 1986,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/OrbitalAppearance.java",
+      "sha256": "c5ab8c8d666aef86aefed78f2b00b21210ed4ed1a00fb026b6057d4e7fa66c4a",
+      "working_sha256": "c5ab8c8d666aef86aefed78f2b00b21210ed4ed1a00fb026b6057d4e7fa66c4a"
+    },
+    {
+      "bytes": 3095,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMath.java",
+      "sha256": "3d35c2fd18dde25373b2f0e4fe65c905ab4b613567ae4abc693057976bc4de91",
+      "working_sha256": "3d35c2fd18dde25373b2f0e4fe65c905ab4b613567ae4abc693057976bc4de91"
+    },
+    {
+      "bytes": 4184,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelection.java",
+      "sha256": "8e71fa0acaf84430e762b720732bd35b7a2518a8b3708a46f98a276d76c3cefb",
+      "working_sha256": "8e71fa0acaf84430e762b720732bd35b7a2518a8b3708a46f98a276d76c3cefb"
+    },
+    {
+      "bytes": 2950,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/ClientSkyEvents.java",
+      "sha256": "ff7b4540097148d6e170f204cb0291c348740e37fd6fc0cea3dec7defa624f99",
+      "working_sha256": "ff7b4540097148d6e170f204cb0291c348740e37fd6fc0cea3dec7defa624f99"
+    },
+    {
+      "bytes": 4243,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyClient.java",
+      "sha256": "18f263a32c65eaa3d61b9c8032be6732c51bf9746dd9ec2c0de398a09ec7d1c9",
+      "working_sha256": "18f263a32c65eaa3d61b9c8032be6732c51bf9746dd9ec2c0de398a09ec7d1c9"
+    },
+    {
+      "bytes": 6685,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyRenderer.java",
+      "sha256": "d6a94ea584b82992ecc977ace39efa22c048b06df7d7aec0e7013bf8458c5f53",
+      "working_sha256": "d6a94ea584b82992ecc977ace39efa22c048b06df7d7aec0e7013bf8458c5f53"
+    },
+    {
+      "bytes": 10827,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationSkyContextGameTests.java",
+      "sha256": "7ad73d8831d9cd88c243244a9b53670cced67611afc475f38c3d35f2a43a9771",
+      "working_sha256": "7ad73d8831d9cd88c243244a9b53670cced67611afc475f38c3d35f2a43a9771"
+    },
+    {
+      "bytes": 4160,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationSkyContextService.java",
+      "sha256": "f6c2b48e49a7f74cd46c7a18bf451c7e4a8059a76867bed77def111040a2d9b8",
+      "working_sha256": "f6c2b48e49a7f74cd46c7a18bf451c7e4a8059a76867bed77def111040a2d9b8"
+    },
+    {
+      "bytes": 9287,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotV2Test.java",
+      "sha256": "043ca2d3420a364976b1b151468f26576a49ef7dc4e38135eb611dd17509a9cc",
+      "working_sha256": "043ca2d3420a364976b1b151468f26576a49ef7dc4e38135eb611dd17509a9cc"
+    },
+    {
+      "bytes": 4271,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/StationSkyContextPacketTest.java",
+      "sha256": "d56b05199adcbdbfb864d43b8db841a83f1360a899fa372f662f083318d152ac",
+      "working_sha256": "d56b05199adcbdbfb864d43b8db841a83f1360a899fa372f662f083318d152ac"
+    },
+    {
+      "bytes": 4093,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/OrbitalSkyTest.java",
+      "sha256": "99133e0f5d640baa66182aa6f58c0efaacefec665e401cba6a8841516068e70b",
+      "working_sha256": "99133e0f5d640baa66182aa6f58c0efaacefec665e401cba6a8841516068e70b"
+    },
+    {
+      "bytes": 7050,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelectionTest.java",
+      "sha256": "193df3746548dab8e69f80bb695f0b0a72bf4410f4b6524f6c21b17a1f0eca27",
+      "working_sha256": "193df3746548dab8e69f80bb695f0b0a72bf4410f4b6524f6c21b17a1f0eca27"
+    },
+    {
+      "bytes": 856,
+      "path": "src/test/resources/network-protocols.txt",
+      "sha256": "6d052113d355d0ec0d8d657d15574226ad87ef0297d3e0a5e970e3d54b71bff2",
+      "working_sha256": "6d052113d355d0ec0d8d657d15574226ad87ef0297d3e0a5e970e3d54b71bff2"
+    }
+  ]
+}

@@ -15,7 +15,10 @@ import net.minecraft.client.renderer.GameRenderer;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL14;
 
-/** Five fixed GPU meshes; no profile-dependent geometry, textures or per-frame uploads. */
+/**
+ * Five fixed GPU meshes; no profile-dependent geometry, textures or per-frame uploads. The orbited body
+ * of a station (ADR-047) reuses the sun disc mesh, turned toward the nadir and tinted.
+ */
 final class PlanetarySkyRenderer implements AutoCloseable {
     private VertexBuffer sphere;
     private VertexBuffer horizon;
@@ -58,6 +61,15 @@ final class PlanetarySkyRenderer implements AutoCloseable {
             var rotating = new Matrix4f(view).rotateY((float) (-Math.PI / 2)).rotateX(angle);
             tint(0xFFFFFF, 1, SkyMath.stars(profile, selection.pressure(), daylight));
             draw(stars, rotating, projection);
+            if (selection.orbit().isPresent()) {
+                // ADR-047: below the horizon toward +X, clear of the sun; drawn before the sun and its halo.
+                float radius = (float) (100 * Math.tan(Math.toRadians(SkyMath.ORBITED_BODY_RADIUS_DEGREES)));
+                var body = new Matrix4f(view)
+                        .rotateZ((float) Math.toRadians(SkyMath.ORBITED_BODY_ELEVATION_DEGREES - 90))
+                        .scale(radius, 1, radius);
+                tint(selection.orbit().orElseThrow().color(), 1, 1);
+                draw(sun, body, projection);
+            }
             double radius = 100 * Math.tan(Math.toRadians(SkyMath.sunRadius(profile, selection.solarIntensity())));
             rotating.scale((float) radius, 1, (float) radius);
             tint(profile.sunColor(), 1, selection.solarIntensity() > 0 ? profile.sunOpacity() : 0);

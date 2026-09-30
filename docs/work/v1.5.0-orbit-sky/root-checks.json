@@ -1,0 +1,51 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1308624,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "23c48a95889facff1c41146c2ae79a1d648373cf432317f40feaf49e8da0e9d3"
+      },
+      {
+        "bytes": 2891359,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "f95d6b76caa5ad59e1b2b314092d1835d1ebf5679c1fb76ba07022fcf7de4b0b"
+      }
+    ]
+  },
+  "base_commit": "50a0f425786ac349fb76575546aa35cb8ffd7252",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 192,
+    "tests": 1051
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "8285fb324d62223e1c0a523a84da115577d655920db948d531becba3c17ca123",
+    "DOCUMENT-INDEX.md": "78746cb472bc0a8eee2b37a6305aa264771df5db04e322efe00c1517c7cb10e3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "18dbe9fc7a6a2a7dbb55ffcb4466fc16c6f43006e7329be1dbdcb705537650af",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialNetwork.java": "94650b0282aa80620c736bbf04fafdb545288821ab07593a36e19b48848171df",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/StationSkyContextCache.java": "0bde3fa53b1e69e227866905e95dcbf17f4c059abb719c03fc99052e40389c26",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/StationSkyContextPacket.java": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/OrbitalAppearance.java": "c5ab8c8d666aef86aefed78f2b00b21210ed4ed1a00fb026b6057d4e7fa66c4a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMath.java": "3d35c2fd18dde25373b2f0e4fe65c905ab4b613567ae4abc693057976bc4de91",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelection.java": "8e71fa0acaf84430e762b720732bd35b7a2518a8b3708a46f98a276d76c3cefb",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/ClientSkyEvents.java": "ff7b4540097148d6e170f204cb0291c348740e37fd6fc0cea3dec7defa624f99",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyClient.java": "18f263a32c65eaa3d61b9c8032be6732c51bf9746dd9ec2c0de398a09ec7d1c9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyRenderer.java": "d6a94ea584b82992ecc977ace39efa22c048b06df7d7aec0e7013bf8458c5f53",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationSkyContextGameTests.java": "7ad73d8831d9cd88c243244a9b53670cced67611afc475f38c3d35f2a43a9771",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationSkyContextService.java": "f6c2b48e49a7f74cd46c7a18bf451c7e4a8059a76867bed77def111040a2d9b8",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialSnapshotV2Test.java": "043ca2d3420a364976b1b151468f26576a49ef7dc4e38135eb611dd17509a9cc",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/StationSkyContextPacketTest.java": "d56b05199adcbdbfb864d43b8db841a83f1360a899fa372f662f083318d152ac",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/OrbitalSkyTest.java": "99133e0f5d640baa66182aa6f58c0efaacefec665e401cba6a8841516068e70b",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkySelectionTest.java": "193df3746548dab8e69f80bb695f0b0a72bf4410f4b6524f6c21b17a1f0eca27",
+    "src/test/resources/network-protocols.txt": "6d052113d355d0ec0d8d657d15574226ad87ef0297d3e0a5e970e3d54b71bff2"
+  }
+}
