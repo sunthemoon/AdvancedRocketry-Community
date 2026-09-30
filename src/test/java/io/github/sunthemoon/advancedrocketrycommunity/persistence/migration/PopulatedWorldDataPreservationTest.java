@@ -65,12 +65,15 @@ final class PopulatedWorldDataPreservationTest {
                 .resolve(report.backupDirectory().orElseThrow());
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
             assertArrayEquals(originals.get(type), Files.readAllBytes(backup.resolve(type.fileName())));
-            CompoundTag expected = current.get(type).copy();
+            CompoundTag representable = legacyRepresentable(type, current.get(type));
+            CompoundTag expected = representable.copy();
             expected.putInt("migrated_from_schema", 1);
             assertEquals(expected, read(world, type), type + " migration changed authority state");
-            assertEquals(current.get(type), PopulatedManagedDataFixture.load(type, read(world, type))
+            assertEquals(representable, PopulatedManagedDataFixture.load(type, read(world, type))
                     .save(new CompoundTag()));
         }
+        assertTrue(read(world, ManagedSavedDataType.STATIONS).getList("warp_energy", CompoundTag.TAG_COMPOUND)
+                .isEmpty(), "A legacy station root gains an empty balance list");
         Map<ManagedSavedDataType, byte[]> migrated = capture(world);
         assertEquals(0, new WorldDataMigrationService().migrate(world).migratedFileCount());
         assertFilesEqual(world, migrated);
@@ -168,12 +171,23 @@ final class PopulatedWorldDataPreservationTest {
         return world;
     }
 
+    /** The current payload as a legacy root can express it: a station root before 4 has no balances. */
+    private static CompoundTag legacyRepresentable(ManagedSavedDataType type, CompoundTag current) {
+        CompoundTag representable = current.copy();
+        if (type == ManagedSavedDataType.STATIONS) {
+            assertEquals(1, current.getList("warp_energy", CompoundTag.TAG_COMPOUND).size());
+            representable.put("warp_energy", new ListTag());
+        }
+        return representable;
+    }
+
     private static Map<ManagedSavedDataType, CompoundTag> legacyPayloads() {
         Map<ManagedSavedDataType, CompoundTag> payloads = PopulatedManagedDataFixture.currentPayloads();
         payloads.values().forEach(payload -> {
             payload.putInt("schema_version", 1);
             payload.remove("format_epoch");
         });
+        payloads.get(ManagedSavedDataType.STATIONS).remove("warp_energy");
         payloads.get(ManagedSavedDataType.STATIONS).getList("stations", CompoundTag.TAG_COMPOUND)
                 .forEach(record -> ((CompoundTag) record).putInt("schema_version", 1));
         return payloads;

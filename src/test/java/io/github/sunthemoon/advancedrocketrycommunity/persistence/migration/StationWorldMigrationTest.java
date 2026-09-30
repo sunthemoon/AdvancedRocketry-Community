@@ -75,7 +75,7 @@ final class StationWorldMigrationTest {
             } else {
                 assertEquals("authority", row.get("role").getAsString());
                 assertEquals(2, row.get("sourceSchema").getAsInt());
-                assertEquals(name.equals(STATIONS.fileName()) ? 3 : 2, row.get("targetSchema").getAsInt());
+                assertEquals(name.equals(STATIONS.fileName()) ? 4 : 2, row.get("targetSchema").getAsInt());
             }
         }
         var migrated = capture(world);
@@ -91,6 +91,8 @@ final class StationWorldMigrationTest {
         int index = 0;
         for (Consumer<CompoundTag> mutation : java.util.List.<Consumer<CompoundTag>>of(
                 root -> root.putInt("schema_version", 4),
+                root -> root.putInt("schema_version", 5),
+                root -> root.put("warp_energy", new net.minecraft.nbt.ListTag()),
                 root -> root.putString("format_epoch", "unexpected"),
                 root -> station(root).putInt("schema_version", 2),
                 root -> station(root).putIntArray("region", new int[]{-2432, 2688, -1665, 3455}),

@@ -236,6 +236,27 @@ public final class StationState {
         return growth || gravityOnly;
     }
 
+    /** The same station orbiting another body (ADR-044 logical relocation); everything else is kept. */
+    public StationState withOrbitBody(ResourceLocation body) {
+        Objects.requireNonNull(body, "body");
+        if (body.equals(orbitBody)) {
+            return this;
+        }
+        return new StationState(schemaVersion, stationId, ownerId, name, cell, region, landingPad,
+                body, createdAtGameTime, environment, members, invitations);
+    }
+
+    /**
+     * True for exactly one orbit relocation: the orbit body differs and every other field (region,
+     * environment, identity, ownership, team) is equal. Deliberately independent of
+     * {@link #sameAuthorityAs(StationState)}, which includes the orbit.
+     */
+    public boolean isOrbitRelocationOf(StationState previous) {
+        Objects.requireNonNull(previous, "previous");
+        return !orbitBody.equals(previous.orbitBody)
+                && equals(previous.withOrbitBody(orbitBody));
+    }
+
     /** True when identity, ownership and team fields are equal (region and environment may differ). */
     public boolean sameAuthorityAs(StationState other) {
         Objects.requireNonNull(other, "other");

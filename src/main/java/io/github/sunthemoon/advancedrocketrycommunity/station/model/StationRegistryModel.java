@@ -6,14 +6,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 
-/** Synchronized pure registry with deterministic allocation and indexed lookup. */
+/**
+ * Synchronized pure registry with deterministic allocation and indexed lookup. Warp energy (ADR-044)
+ * is kept here, beside the stations it belongs to, so a warp changes the orbit and the balance in
+ * one publish.
+ */
 public final class StationRegistryModel {
     private final Map<UUID, StationState> stations = new LinkedHashMap<>();
     private final Map<UUID, StationReservation> reservations = new LinkedHashMap<>();
     private final Map<StationGridCell, UUID> occupiedCells = new LinkedHashMap<>();
+    private final Map<UUID, Integer> warpEnergy = new LinkedHashMap<>();
 
     public synchronized StationReservation reserve(
             UUID stationId,
@@ -75,6 +82,8 @@ public final class StationRegistryModel {
         StationState removed = stations.remove(Objects.requireNonNull(stationId, "stationId"));
         if (removed != null) {
             occupiedCells.remove(removed.cell(), stationId);
+            // The balance belongs to the station, never to its cell or a carried core.
+            warpEnergy.remove(stationId);
         }
         return Optional.ofNullable(removed);
     }
@@ -117,6 +126,88 @@ public final class StationRegistryModel {
             throw new IllegalStateException("Station changed before its update was published");
         }
         return update(replacement);
+    }
+
+    /**
+     * Publishes one orbit relocation and its charge together: the live station must equal the observed
+     * state and its live balance must equal {@code expectedBalance}. Nothing fallible follows the checks.
+     */
+    public synchronized StationState relocateChecked(
+            StationState expected,
+            StationState replacement,
+            int expectedBalance,
+            int cost
+    ) {
+        Objects.requireNonNull(expected, "expected");
+        Objects.requireNonNull(replacement, "replacement");
+        if (!replacement.isOrbitRelocationOf(expected)) {
+            throw new IllegalArgumentException("Replacement is not an orbit relocation of the observed station");
+        }
+        if (cost <= 0 || cost > expectedBalance) {
+            throw new IllegalArgumentException("Warp cost must be positive and covered by the balance");
+        }
+        if (!expected.equals(stations.get(expected.stationId()))
+                || warpEnergy(expected.stationId()) != expectedBalance) {
+            throw new IllegalStateException("Station or balance changed before the warp was published");
+        }
+        stations.put(replacement.stationId(), replacement);
+        putBalance(replacement.stationId(), expectedBalance - cost);
+        return replacement;
+    }
+
+    /** Stored warp energy of a committed station; 0 when it has no entry. */
+    public synchronized int warpEnergy(UUID stationId) {
+        return warpEnergy.getOrDefault(Objects.requireNonNull(stationId, "stationId"), 0);
+    }
+
+    /** Every positive balance, ordered by station UUID. */
+    public synchronized SortedMap<UUID, Integer> warpEnergyBalances() {
+        return new TreeMap<>(warpEnergy);
+    }
+
+    /** True when crediting this station would add a balance entry. */
+    public synchronized boolean needsWarpEnergyEntry(UUID stationId) {
+        return !warpEnergy.containsKey(Objects.requireNonNull(stationId, "stationId"));
+    }
+
+    /**
+     * Adds energy to a committed station's balance up to {@link StationLimits#MAX_WARP_ENERGY}.
+     * Returns the accepted amount; 0 for a missing station or a full balance.
+     */
+    public synchronized int creditWarpEnergy(UUID stationId, int amount) {
+        Objects.requireNonNull(stationId, "stationId");
+        if (amount < 0) {
+            throw new IllegalArgumentException("Warp energy credit cannot be negative");
+        }
+        if (!stations.containsKey(stationId)) {
+            return 0;
+        }
+        int balance = warpEnergy(stationId);
+        int accepted = Math.min(amount, StationLimits.MAX_WARP_ENERGY - balance);
+        if (accepted > 0) {
+            if (warpEnergy.size() >= StationLimits.MAX_WARP_ENERGY_ENTRIES && balance == 0) {
+                return 0;
+            }
+            putBalance(stationId, balance + accepted);
+        }
+        return accepted;
+    }
+
+    /** Restores one persisted balance; zero, negative, oversized, duplicate or orphaned values are invalid. */
+    public synchronized void restoreWarpEnergy(UUID stationId, int energy) {
+        Objects.requireNonNull(stationId, "stationId");
+        if (energy <= 0 || energy > StationLimits.MAX_WARP_ENERGY) {
+            throw new IllegalArgumentException("Station warp energy is outside its bound");
+        }
+        if (!stations.containsKey(stationId)) {
+            throw new IllegalArgumentException("Station warp energy belongs to no committed station");
+        }
+        if (warpEnergy.size() >= StationLimits.MAX_WARP_ENERGY_ENTRIES) {
+            throw new IllegalArgumentException("Station warp energy list exceeds the fixed bound");
+        }
+        if (warpEnergy.putIfAbsent(stationId, energy) != null) {
+            throw new IllegalArgumentException("Station warp energy contains a duplicate station");
+        }
     }
 
     public synchronized Optional<StationState> find(UUID stationId) {
@@ -188,6 +279,14 @@ public final class StationRegistryModel {
     private StationState update(StationState state) {
         stations.put(state.stationId(), state);
         return state;
+    }
+
+    private void putBalance(UUID stationId, int balance) {
+        if (balance == 0) {
+            warpEnergy.remove(stationId);
+        } else {
+            warpEnergy.put(stationId, balance);
+        }
     }
 
     private void restoreIdentity(UUID stationId, StationGridCell cell) {

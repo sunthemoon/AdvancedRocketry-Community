@@ -50,6 +50,7 @@ public enum ManagedSavedDataType {
     );
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
+    private static final String WARP_ENERGY_KEY = "warp_energy";
 
     private final String introducedIn;
     private final String dataName;
@@ -86,7 +87,23 @@ public enum ManagedSavedDataType {
     }
 
     public String formatEpoch() {
-        return this == STATIONS ? "v1.5.0-orbital-station" : SavedDataSchemaMigrator.FORMAT_EPOCH;
+        return formatEpoch(currentSchemaVersion());
+    }
+
+    /** The format epoch a root of this schema must carry; stations evolve independently (ADR-040, ADR-044). */
+    public String formatEpoch(int schema) {
+        if (this == STATIONS && schema == StationLimits.ORBITAL_REGISTRY_SCHEMA_VERSION) {
+            return "v1.5.0-orbital-station";
+        }
+        if (this == STATIONS && schema == StationLimits.REGISTRY_SCHEMA_VERSION) {
+            return "v1.5.0-station-warp";
+        }
+        return SavedDataSchemaMigrator.FORMAT_EPOCH;
+    }
+
+    /** Every root schema from the legacy one up to the current one is readable for migration. */
+    public boolean supportsSchema(int schema) {
+        return schema >= SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION && schema <= currentSchemaVersion();
     }
 
     public long maxUncompressedBytes() {
@@ -97,12 +114,23 @@ public enum ManagedSavedDataType {
         return maxUncompressedBytes + FILE_OVERHEAD_BYTES;
     }
 
-    void validateRootShape(CompoundTag payload) {
+    void validateRootShape(CompoundTag payload, int schema) {
         for (RequiredTag required : requiredTags) {
             if (!payload.contains(required.name(), required.type())) {
                 throw new SavedDataMigrationException(
                         MigrationDiagnosticId.INVALID_SCHEMA,
                         dataName + " is missing required " + required.name()
+                );
+            }
+        }
+        if (this == STATIONS) {
+            // Root 4 requires the warp energy list; older roots must not carry one (ADR-044 §6).
+            boolean warpRoot = schema >= StationLimits.REGISTRY_SCHEMA_VERSION;
+            if (warpRoot ? !payload.contains(WARP_ENERGY_KEY, Tag.TAG_LIST) : payload.contains(WARP_ENERGY_KEY)) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (warpRoot ? " is missing required " : " cannot carry ")
+                                + WARP_ENERGY_KEY
                 );
             }
         }

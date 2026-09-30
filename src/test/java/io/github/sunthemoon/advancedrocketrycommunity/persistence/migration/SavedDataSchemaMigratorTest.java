@@ -118,7 +118,8 @@ final class SavedDataSchemaMigratorTest {
                 RocketTransactionSavedData.SCHEMA_VERSION);
         assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
                 RocketTransferSavedData.ROOT_SCHEMA_VERSION);
-        assertEquals(3, StationLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(4, StationLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(3, StationLimits.ORBITAL_REGISTRY_SCHEMA_VERSION);
         assertEquals(StationLimits.REGISTRY_SCHEMA_VERSION, ManagedSavedDataType.STATIONS.currentSchemaVersion());
         assertEquals(2, SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION);
         assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,

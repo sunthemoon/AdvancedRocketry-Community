@@ -153,6 +153,26 @@ final class StationNbtCodec {
         );
     }
 
+    /** One ADR-044 balance entry: exactly {@code station_id} and a positive {@code energy}. */
+    static CompoundTag encodeWarpEnergy(UUID stationId, int energy) {
+        CompoundTag target = new CompoundTag();
+        target.putUUID("station_id", Objects.requireNonNull(stationId, "stationId"));
+        target.putInt("energy", energy);
+        return target;
+    }
+
+    /** Decodes one balance entry; range, duplicate and ownership checks belong to the registry model. */
+    static WarpEnergyEntry decodeWarpEnergy(CompoundTag source) {
+        if (StationNbtSize.uncompressedBytes(source) > StationLimits.MAX_WARP_ENERGY_ENTRY_NBT_BYTES
+                || source.getAllKeys().size() != 2) {
+            throw new IllegalArgumentException("Station warp energy entry has an invalid shape");
+        }
+        return new WarpEnergyEntry(requireUuid(source, "station_id"), requireInt(source, "energy"));
+    }
+
+    record WarpEnergyEntry(UUID stationId, int energy) {
+    }
+
     private static CompoundTag base(
             UUID stationId,
             UUID ownerId,

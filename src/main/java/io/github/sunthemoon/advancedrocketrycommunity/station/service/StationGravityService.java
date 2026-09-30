@@ -51,7 +51,8 @@ public final class StationGravityService {
             case COMMITTED -> StationManagementCode.GRAVITY_SET;
             case UNCHANGED -> StationManagementCode.GRAVITY_UNCHANGED;
             case STALE -> StationManagementCode.STATION_CHANGED;
-            case UNAVAILABLE -> StationManagementCode.AUTHORITY_UNAVAILABLE;
+            // INSUFFICIENT_ENERGY belongs to relocation only and cannot be returned here.
+            case UNAVAILABLE, INSUFFICIENT_ENERGY -> StationManagementCode.AUTHORITY_UNAVAILABLE;
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };

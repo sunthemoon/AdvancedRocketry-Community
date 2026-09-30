@@ -1,0 +1,33 @@
+{
+  schema_version: 3,
+  format_epoch: "v1.5.0-orbital-station",
+  migrated_from_schema: 1,
+  retained_root_extra: "keep",
+  stations: [{
+    schema_version: 2,
+    station_id: [I; 21, 0, 0, 1],
+    owner_id: [I; 21, 0, 0, 2],
+    name: "Orbital Station",
+    cell_x: -2,
+    cell_z: 3,
+    region: [I; -2432, 2688, -1665, 3455],
+    landing_pad: [I; -2048, 128, 3072],
+    orbit_body: "advancedrocketrycommunity:earth",
+    created_at_game_time: 77L,
+    environment: {gravity_milli: 400, vacuum: 1b, solar_angle_milli_degrees: 90000},
+    members: [{id: [I; 21, 0, 0, 3]}],
+    invitations: [{id: [I; 21, 0, 0, 4]}],
+    retained_record_extra: {value: 9}
+  }],
+  reservations: [{
+    schema_version: 1,
+    station_id: [I; 21, 0, 0, 5],
+    owner_id: [I; 21, 0, 0, 6],
+    name: "Orbital Reservation",
+    cell_x: 0,
+    cell_z: 0,
+    orbit_body: "advancedrocketrycommunity:moon",
+    created_at_game_time: 78L,
+    retained_reservation_extra: "keep"
+  }]
+}

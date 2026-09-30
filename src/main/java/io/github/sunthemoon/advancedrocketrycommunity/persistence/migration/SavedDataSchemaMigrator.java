@@ -34,17 +34,16 @@ public final class SavedDataSchemaMigrator {
         if (schema > type.currentSchemaVersion()) {
             return new MigrationResult(MigrationStatus.FUTURE, schema, source);
         }
-        if (schema != LEGACY_SCHEMA_VERSION && schema != CURRENT_SCHEMA_VERSION
-                && schema != type.currentSchemaVersion()) {
+        if (!type.supportsSchema(schema)) {
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.INVALID_SCHEMA,
                     type.dataName() + " has unsupported schema " + schema
             );
         }
-        type.validateRootShape(source);
+        type.validateRootShape(source, schema);
 
         if (schema >= CURRENT_SCHEMA_VERSION) {
-            String expectedEpoch = schema == CURRENT_SCHEMA_VERSION ? FORMAT_EPOCH : type.formatEpoch();
+            String expectedEpoch = type.formatEpoch(schema);
             if (!source.contains(EPOCH_KEY, Tag.TAG_STRING)
                     || !expectedEpoch.equals(source.getString(EPOCH_KEY))) {
                 throw new SavedDataMigrationException(
@@ -59,7 +58,7 @@ public final class SavedDataSchemaMigrator {
 
         if (type == ManagedSavedDataType.STATIONS) {
             try {
-                CompoundTag migrated = StationRegistryPayload.upgradeLegacyRecords(source);
+                CompoundTag migrated = StationRegistryPayload.upgrade(source, schema);
                 stampCurrent(type, migrated);
                 if (schema == LEGACY_SCHEMA_VERSION && !migrated.contains(MIGRATED_FROM_KEY)) {
                     migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);

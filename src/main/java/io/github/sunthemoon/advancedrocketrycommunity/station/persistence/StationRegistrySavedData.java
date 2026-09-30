@@ -10,8 +10,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReser
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Predicate;
 import net.minecraft.nbt.CompoundTag;
@@ -111,9 +114,14 @@ public final class StationRegistrySavedData extends SavedData {
 
     public Optional<StationState> delete(UUID stationId) {
         requireOperational();
+        int balance = registry.warpEnergy(stationId);
         Optional<StationState> result = registry.delete(stationId);
         if (result.isPresent()) {
             setDirty();
+            if (balance > 0) {
+                AdvancedRocketryCommunity.LOGGER.warn(
+                        "ARCE_STATION_WARP_ENERGY_DROPPED station={} energy={}", stationId, balance);
+            }
         }
         return result;
     }
@@ -180,6 +188,67 @@ public final class StationRegistrySavedData extends SavedData {
         return operational() ? registry.ownedBy(ownerId) : Long.MAX_VALUE;
     }
 
+    /** Stored warp energy of a station (ADR-044); 0 when absent or while the registry is blocked. */
+    public int warpEnergy(UUID stationId) {
+        return operational() ? registry.warpEnergy(stationId) : 0;
+    }
+
+    public SortedMap<UUID, Integer> warpEnergyBalances() {
+        return operational() ? registry.warpEnergyBalances() : new TreeMap<>();
+    }
+
+    /**
+     * Folds pending warp credits into the balances as one ordinary mutation (dirty, never a flush).
+     * Credits for missing stations, beyond the per-station cap, or that would add an entry while the
+     * encoded registry is within the headroom of its bound are refused and reported.
+     */
+    public WarpCreditFold foldWarpCredits(Map<UUID, Integer> credits) {
+        Objects.requireNonNull(credits, "credits");
+        long offered = credits.values().stream().mapToLong(Integer::longValue).sum();
+        if (!operational()) {
+            return new WarpCreditFold(0L, offered);
+        }
+        long credited = 0L;
+        Boolean entryHeadroom = null;
+        for (Map.Entry<UUID, Integer> credit : new TreeMap<>(credits).entrySet()) {
+            if (registry.needsWarpEnergyEntry(credit.getKey())) {
+                if (entryHeadroom == null) {
+                    entryHeadroom = hasWarpEntryHeadroom();
+                }
+                if (!entryHeadroom) {
+                    continue;
+                }
+            }
+            credited += registry.creditWarpEnergy(credit.getKey(), credit.getValue());
+        }
+        if (credited > 0L) {
+            setDirty();
+        }
+        if (credited < offered) {
+            AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_STATION_WARP_CREDIT_REFUSED offered={} credited={} entry_headroom={}",
+                    offered, credited, entryHeadroom);
+        }
+        return new WarpCreditFold(credited, offered - credited);
+    }
+
+    /** True while the encoded registry leaves the ADR-044 headroom; encodes only when the cheap bound fails. */
+    private boolean hasWarpEntryHeadroom() {
+        long limit = (long) StationLimits.MAX_REGISTRY_NBT_BYTES - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES;
+        long upperBound = 1_024L
+                + (long) (registry.stations().size() + registry.reservations().size())
+                * StationLimits.MAX_STATION_RECORD_NBT_BYTES
+                + (long) registry.warpEnergyBalances().size() * StationLimits.MAX_WARP_ENERGY_ENTRY_NBT_BYTES;
+        if (upperBound <= limit) {
+            return true;
+        }
+        try {
+            return StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null)) <= limit;
+        } catch (IllegalStateException oversized) {
+            return false;
+        }
+    }
+
     /** Validates persisted orbit references without deleting recoverable station state. */
     public OrbitBodyValidation validateOrbitBodies(Predicate<ResourceLocation> bodyExists) {
         Objects.requireNonNull(bodyExists, "bodyExists");
@@ -223,19 +292,45 @@ public final class StationRegistrySavedData extends SavedData {
         return checkedReplace(file, observed, observed.withGravityMilli(gravityMilli), committer);
     }
 
+    /**
+     * ADR-044 warp: moves the observed station's orbit to {@code target} and debits {@code cost} from
+     * its balance in one checked replacement of the station file, then one publish.
+     */
+    public CheckedUpdate checkedRelocation(MinecraftServer server, StationState observed, ResourceLocation target,
+                                           int cost) {
+        return checkedRelocation(stationFile(server), observed, target, cost, CheckedSavedDataFile::atomicMove);
+    }
+
+    CheckedUpdate checkedRelocation(Path file, StationState observed, ResourceLocation target, int cost,
+                                    CheckedSavedDataFile.Committer committer) {
+        Objects.requireNonNull(observed, "observed");
+        Objects.requireNonNull(target, "target");
+        if (cost <= 0 || cost > StationLimits.MAX_WARP_ENERGY) {
+            throw new IllegalArgumentException("Warp cost is outside its bound");
+        }
+        return checked(file, observed, observed.withOrbitBody(target), cost, committer);
+    }
+
     private static Path stationFile(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
         return server.getWorldPath(LevelResource.ROOT).resolve("data")
                 .resolve(ManagedSavedDataType.STATIONS.fileName());
     }
 
-    /**
-     * Replaces the station file with the complete candidate registry, then publishes the update.
-     * The live registry is not changed unless the candidate is known to be the replaced authority.
-     */
     /** Package-private for tests; production callers go through the named transitions above. */
     CheckedUpdate checkedReplace(Path file, StationState observed, StationState replacement,
                                          CheckedSavedDataFile.Committer committer) {
+        return checked(file, observed, replacement, 0, committer);
+    }
+
+    /**
+     * Replaces the station file with the complete candidate registry, then publishes the update.
+     * The live registry is not changed unless the candidate is known to be the replaced authority.
+     * A positive {@code cost} makes this an orbit relocation charged to the station's balance;
+     * otherwise it is growth or a gravity-only change, and every balance must stay as it is.
+     */
+    private CheckedUpdate checked(Path file, StationState observed, StationState replacement, int cost,
+                                  CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(file, "file");
         Objects.requireNonNull(committer, "committer");
         if (!operational() || updatesQuarantined) {
@@ -247,12 +342,21 @@ public final class StationRegistrySavedData extends SavedData {
         if (replacement.equals(observed)) {
             return CheckedUpdate.UNCHANGED;
         }
-        if (!replacement.isCheckedUpdateOf(observed)) {
-            // Rejected before any write, so a disallowed transition can never reach disk.
+        boolean relocation = cost > 0;
+        // Rejected before any write, so a disallowed transition can never reach disk.
+        if (relocation && !replacement.isOrbitRelocationOf(observed)) {
+            throw new IllegalArgumentException("A charged update must be exactly one orbit relocation");
+        }
+        if (!relocation && !replacement.isCheckedUpdateOf(observed)) {
             throw new IllegalArgumentException("Only station growth or a gravity-only change is a checked update");
         }
-        CompoundTag candidate = encode(new CompoundTag(), replacement);
-        requireValidCandidate(candidate, replacement);
+        int balance = registry.warpEnergy(observed.stationId());
+        if (relocation && balance < cost) {
+            return CheckedUpdate.INSUFFICIENT_ENERGY;
+        }
+        Integer debited = relocation ? balance - cost : null;
+        CompoundTag candidate = encode(new CompoundTag(), replacement, debited);
+        requireValidCandidate(candidate, replacement, debited);
         boolean[] replacementAttempted = {false};
         try {
             CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, candidate::copy, (staged, target) -> {
@@ -272,7 +376,11 @@ public final class StationRegistrySavedData extends SavedData {
             }
         }
         try {
-            registry.replaceChecked(observed, replacement);
+            if (relocation) {
+                registry.relocateChecked(observed, replacement, balance, cost);
+            } else {
+                registry.replaceChecked(observed, replacement);
+            }
         } catch (RuntimeException publishFailure) {
             // Unreachable on the owning server thread; never report a written update as a clean failure.
             updatesQuarantined = true;
@@ -313,12 +421,31 @@ public final class StationRegistrySavedData extends SavedData {
         return CheckedUpdate.WRITE_FAILED;
     }
 
-    private static void requireValidCandidate(CompoundTag candidate, StationState replacement) {
+    /**
+     * The candidate must decode to the live registry with exactly the replacement state and, for a
+     * relocation, exactly the debited balance substituted: every other state, reservation and balance
+     * is unchanged.
+     */
+    private void requireValidCandidate(CompoundTag candidate, StationState replacement, Integer debited) {
+        UUID stationId = replacement.stationId();
+        List<StationState> expectedStations = registry.stations().stream()
+                .map(state -> state.stationId().equals(stationId) ? replacement : state)
+                .toList();
+        SortedMap<UUID, Integer> expectedBalances = registry.warpEnergyBalances();
+        if (debited != null && debited > 0) {
+            expectedBalances.put(stationId, debited);
+        } else if (debited != null) {
+            expectedBalances.remove(stationId);
+        }
         SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
                 ManagedSavedDataType.STATIONS, candidate.copy());
-        if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT
-                || !StationRegistryPayload.decodeCurrent(migration.payload()).find(replacement.stationId())
-                .filter(replacement::equals).isPresent()) {
+        if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT) {
+            throw new IllegalStateException("Candidate station registry failed validation");
+        }
+        StationRegistryModel decoded = StationRegistryPayload.decodeCurrent(migration.payload());
+        if (!decoded.stations().equals(expectedStations)
+                || !decoded.reservations().equals(registry.reservations())
+                || !decoded.warpEnergyBalances().equals(expectedBalances)) {
             throw new IllegalStateException("Candidate station registry failed validation");
         }
     }
@@ -335,11 +462,14 @@ public final class StationRegistrySavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        return encode(target, null);
+        return encode(target, null, null);
     }
 
-    /** Encodes the registry, optionally substituting one station by UUID without mutating it. */
-    private CompoundTag encode(CompoundTag target, StationState substitute) {
+    /**
+     * Encodes the registry, optionally substituting one station by UUID and, for a relocation, that
+     * station's balance, without mutating the live registry.
+     */
+    private CompoundTag encode(CompoundTag target, StationState substitute, Integer substituteBalance) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.STATIONS, target);
         ListTag stations = new ListTag();
         registry.stations().forEach(state -> stations.add(StationNbtCodec.encodeState(
@@ -350,6 +480,16 @@ public final class StationRegistrySavedData extends SavedData {
                 reservation -> reservations.add(StationNbtCodec.encodeReservation(reservation))
         );
         target.put("reservations", reservations);
+        SortedMap<UUID, Integer> balances = registry.warpEnergyBalances();
+        if (substitute != null && substituteBalance != null) {
+            balances.remove(substitute.stationId());
+            if (substituteBalance > 0) {
+                balances.put(substitute.stationId(), substituteBalance);
+            }
+        }
+        ListTag warpEnergy = new ListTag();
+        balances.forEach((stationId, energy) -> warpEnergy.add(StationNbtCodec.encodeWarpEnergy(stationId, energy)));
+        target.put(StationRegistryPayload.WARP_ENERGY, warpEnergy);
         if (StationNbtSize.uncompressedBytes(target) > StationLimits.MAX_REGISTRY_NBT_BYTES) {
             throw new IllegalStateException("Encoded station registry exceeds the fixed NBT bound");
         }
@@ -368,7 +508,13 @@ public final class StationRegistrySavedData extends SavedData {
         STALE,
         UNAVAILABLE,
         WRITE_FAILED,
-        OUTCOME_UNKNOWN
+        OUTCOME_UNKNOWN,
+        /** Relocation only: the live balance does not cover the cost; nothing was written. */
+        INSUFFICIENT_ENERGY
+    }
+
+    /** Result of one fold: energy added to balances, and energy refused (lost from the pending credits). */
+    public record WarpCreditFold(long credited, long refused) {
     }
 
     public record OrbitBodyValidation(

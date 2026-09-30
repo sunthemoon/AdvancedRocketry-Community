@@ -38,6 +38,8 @@ final class PopulatedManagedDataFixture {
     static final UUID OWNER = id(1);
     static final UUID PENDING_MISSION = id(31);
     static final UUID ACTIVE_MISSION = id(33);
+    /** ADR-044 balance of the occupied station; root 4 only (older roots carry no balances). */
+    static final int WARP_ENERGY = 1_234_567;
 
     private PopulatedManagedDataFixture() {
     }
@@ -68,6 +70,7 @@ final class PopulatedManagedDataFixture {
         stations.invite(id(40), id(2));
         stations.acceptInvitation(id(40), id(2));
         stations.invite(id(40), id(3));
+        stations.foldWarpCredits(java.util.Map.of(id(40), WARP_ENERGY));
         stations.reserve(id(41), OWNER, "Reserved", ModIdentity.id("moon"), 43L);
         payloads.put(ManagedSavedDataType.STATIONS, stations.save(new CompoundTag()));
 

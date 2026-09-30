@@ -47,6 +47,12 @@ No candidate or release approval is assigned.
   in (and whether it is still available), gravity, vacuum, solar intensity of the
   orbited body and sun angle. The station's name and ID are shown only to its
   owner, members and operators. The sky is not yet per-station.
+- Station storage moves to schema 4, which adds a warp energy balance per station
+  (none for every existing station). Worlds from earlier builds, including v1.5
+  development worlds, are upgraded before start with another backup. A warp
+  debits the balance and changes the orbit in one checked write; deleting a
+  station discards its balance. Warp cores and warp commands are not yet
+  available.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.
