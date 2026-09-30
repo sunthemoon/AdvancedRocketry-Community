@@ -13,7 +13,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationGridCell;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import net.minecraft.nbt.CompoundTag;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,6 +78,31 @@ final class StationOrbitEnvironmentResolverTest {
                 station(CelestialIds.EARTH_ID), Optional.of(catalog(1.0D)));
         assertEquals(0.0D, environment.effectiveGravity());
         assertEquals(0.0D, environment.configuredGravity());
+    }
+
+    @Test
+    void positionLookupCoversRegionEdgesNegativeCellsOtherLevelsAndBlockedRegistries() {
+        StationRegistrySavedData registry = new StationRegistrySavedData();
+        UUID id = UUID.randomUUID();
+        registry.reserve(id, UUID.randomUUID(), "Lookup", CelestialIds.MOON_ID, 0);
+        StationState committed = registry.commit(id);
+        Optional<CelestialCatalog> catalog = Optional.of(catalog(1.0D));
+        var region = committed.region();
+        for (int[] inside : new int[][]{{region.minimumX(), region.minimumZ()}, {region.maximumX(), region.maximumZ()},
+                {committed.cell().centerX(), committed.cell().centerZ()}}) {
+            assertEquals(id, StationOrbitEnvironmentResolver.resolveAt(registry, catalog, CelestialIds.SPACE_LEVEL,
+                    inside[0], inside[1]).orElseThrow().stationId());
+        }
+        assertTrue(StationOrbitEnvironmentResolver.resolveAt(registry, catalog, CelestialIds.SPACE_LEVEL,
+                region.minimumX() - 1, region.minimumZ()).isEmpty());
+        assertTrue(StationOrbitEnvironmentResolver.resolveAt(registry, catalog, CelestialIds.SPACE_LEVEL,
+                region.maximumX() + 1, region.maximumZ()).isEmpty());
+        assertTrue(StationOrbitEnvironmentResolver.resolveAt(registry, catalog, CelestialIds.MOON_LEVEL,
+                committed.cell().centerX(), committed.cell().centerZ()).isEmpty());
+        CompoundTag future = new CompoundTag();
+        future.putInt("schema_version", 99);
+        assertTrue(StationOrbitEnvironmentResolver.resolveAt(StationRegistrySavedData.load(future), catalog,
+                CelestialIds.SPACE_LEVEL, 0, 0).isEmpty());
     }
 
     @Test

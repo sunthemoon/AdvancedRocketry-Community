@@ -268,6 +268,15 @@ public final class StationManager implements StationOperationService {
         return orbitEnvironments.at(level.getServer(), level.dimension(), position.getX(), position.getZ());
     }
 
+    /** Owner, member or operator: may see a station's name and UUID (as {@code /arce station list} does). */
+    public boolean canIdentify(ServerPlayer player, UUID stationId) {
+        MinecraftServer server = player.getServer();
+        return server != null && station(server, stationId)
+                .filter(state -> access.allowed(state, player.getUUID(), player.hasPermissions(2),
+                        StationAccessAction.VISIT))
+                .isPresent();
+    }
+
     /** Player-physics gravity for a station region; empty elsewhere so the Level profile applies. */
     public OptionalDouble effectiveGravity(ServerLevel level, BlockPos position) {
         return environmentAt(level, position)
@@ -331,6 +340,7 @@ public final class StationManager implements StationOperationService {
     public void clear() {
         lastDenialNotice.clear();
         expansion.clear();
+        gravity.clear();
     }
 
     private void protect(

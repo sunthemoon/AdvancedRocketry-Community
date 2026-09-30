@@ -40,8 +40,9 @@ preservation; such a check would pass vacuously.
 3. Until then, the existing unit evidence stands and nothing more is claimed:
    - legacy/current codec preservation of unknown orbit IDs (`StationSchemaMigrationTest`);
    - resolver fallback for a missing body (`StationOrbitEnvironmentResolverTest`);
-   - rocket transaction and transfer authorities left byte-equal apart from the
-     mission clock during migration.
+   - no native rocket evidence: the fixture world has no rocket transactions or
+     transfers, so the unchanged-authority check is vacuous for rockets and is not
+     cited as rocket coverage.
 
 This moves coverage between current-version leaves. It does not waive a Required
 Gate or lower an acceptance bar. STATION-04 may be marked `verified` for its
@@ -52,3 +53,12 @@ remaining scope once reviewed. MIG-01 must name these two cases explicitly.
 This record expires before V150-ACC-02. If MIG-01 has not produced native rocket
 and missing-orbit-body evidence by then, STATION-04's original acceptance is open
 again and v1.5 cannot pass G0-G9.
+
+## Review record
+
+The independent review of `442e4a7` checked this record against AGENTS.md
+section 5. It is formally complete (owner, reason, expiry before ACC-02, recovery
+condition), MIG-01 names both deferred cases, and no Gate bar is lowered. The
+review also noted that the acceptance above was recorded in the same commit
+without a prior independent review; this section records that review after the
+fact.

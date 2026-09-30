@@ -6,6 +6,7 @@ public enum StationManagementCode {
     EXPANDED(true, "station expanded"),
     GRAVITY_SET(true, "station gravity set"),
     GRAVITY_UNCHANGED(true, "the station already uses that gravity"),
+    GRAVITY_COOLDOWN(false, "the station's gravity was changed moments ago; wait 5 seconds"),
     ALREADY_EXPANDED(false, "the station already uses its largest region"),
     AUTHORITY_UNAVAILABLE(false, "station authority is unavailable"),
     NOT_LOCAL_PLAYER(false, "run this command yourself as a connected player;"

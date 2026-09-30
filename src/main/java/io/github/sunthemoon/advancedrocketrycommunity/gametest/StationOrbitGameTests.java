@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.environment.ServerEnvironmentQueries;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
@@ -36,6 +37,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -104,6 +106,10 @@ public final class StationOrbitGameTests {
                     .filter(published::equals).isPresent(), "Station file lacks the checked gravity update");
             run(dispatcher, owner.createCommandSourceStack(), "arce station gravity 35");
             helper.assertTrue(last(ownerReplies).contains("unchanged"), "Repeat was not reported unchanged");
+            run(dispatcher, owner.createCommandSourceStack(), "arce station gravity 40");
+            helper.assertTrue(last(ownerReplies).contains(StationManagementCode.GRAVITY_COOLDOWN.description())
+                    && data.find(station.stationId()).orElseThrow().environment().gravityMilli() == 350,
+                    "A second change inside the cooldown was written: " + ownerReplies);
 
             // Effective player gravity: station value inside, shared Space outside, Level elsewhere.
             tick(controller, owner);
@@ -116,6 +122,10 @@ public final class StationOrbitGameTests {
             tick(controller, owner);
             helper.assertTrue(close(gravity(owner), BASE_GRAVITY), "Overworld gravity changed: " + gravity(owner));
             owner.teleportTo(space, pad.getX() + 0.5D, pad.getY(), pad.getZ() + 0.5D, 0.0F, 0.0F);
+            // The production-registered controller (mod wiring) applies the same station gravity.
+            MinecraftForge.EVENT_BUS.post(new LivingEvent.LivingTickEvent(owner));
+            helper.assertTrue(close(gravity(owner), BASE_GRAVITY * 0.35D),
+                    "Registered controller did not apply station gravity: " + gravity(owner));
 
             // Display and catalog reload through the resolver.
             var environment = manager.environmentAt(space, pad).orElseThrow();
@@ -130,6 +140,30 @@ public final class StationOrbitGameTests {
             helper.assertTrue(shown.contains("id=" + station.stationId()) && shown.contains("orbit=" + CelestialIds.MOON_ID)
                     && shown.contains("gravity=35%") && shown.contains("vacuum=true") && shown.contains("sun_angle=270.0"),
                     "Environment display differs: " + shown);
+            List<String> outsiderReplies = new ArrayList<>();
+            ServerPlayer outsider = join(server, online, UUID.randomUUID(), space, pad, outsiderReplies);
+            run(dispatcher, outsider.createCommandSourceStack(), "arce station environment");
+            helper.assertTrue(last(outsiderReplies).contains("not a member")
+                    && !last(outsiderReplies).contains(station.stationId().toString()),
+                    "Station identity shown to an outsider: " + outsiderReplies);
+
+            // Configured gravity above the physics bound: API reports it, physics clamps to 4.0.
+            StationState current = data.find(station.stationId()).orElseThrow();
+            helper.assertTrue(data.checkedSetGravity(server, current, 5_000)
+                    == StationRegistrySavedData.CheckedUpdate.COMMITTED, "Configured gravity write failed");
+            var clamped = manager.environmentAt(space, pad).orElseThrow();
+            helper.assertTrue(clamped.gravityClamped() && close(clamped.configuredGravity(), 5.0D)
+                    && close(clamped.effectiveGravity(), CelestialBodyDefinition.MAX_GRAVITY_MULTIPLIER),
+                    "Clamp differs");
+            try (var queries = new ServerEnvironmentQueries(server::isSameThread, key -> server.getLevel(key) != null,
+                    catalogs, data)) {
+                var snapshot = queries.at(CelestialIds.SPACE_LEVEL, pad).orElseThrow();
+                helper.assertTrue(close(snapshot.gravityMultiplier(), 5.0D),
+                        "API did not report the configured gravity: " + snapshot.gravityMultiplier());
+            }
+            tick(controller, owner);
+            helper.assertTrue(close(gravity(owner), BASE_GRAVITY * CelestialBodyDefinition.MAX_GRAVITY_MULTIPLIER),
+                    "Physics did not clamp to 4: " + gravity(owner));
         } finally {
             for (ServerPlayer player : online) {
                 server.getPlayerList().remove(player);

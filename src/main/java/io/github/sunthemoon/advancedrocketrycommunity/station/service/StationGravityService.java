@@ -10,8 +10,11 @@ import net.minecraft.server.level.ServerPlayer;
 /** ADR-041 local owner/operator gravity setting (0..100 % of 1 g), written through a checked commit. */
 public final class StationGravityService {
     public static final int MAX_PERCENT = 100;
+    /** Each committed gravity write rewrites the whole registry; allow one per station per 5 s. */
+    public static final long WRITE_COOLDOWN_TICKS = 100L;
 
     private final StationAccessService access;
+    private final StationWriteCooldown cooldown = new StationWriteCooldown(WRITE_COOLDOWN_TICKS);
 
     public StationGravityService(StationAccessService access) {
         this.access = Objects.requireNonNull(access, "access");
@@ -29,6 +32,13 @@ public final class StationGravityService {
         MinecraftServer server = player.getServer();
         StationState observed = located.station();
         StationRegistrySavedData data = located.authority();
+        if (observed.environment().gravityMilli() == percent * 10) {
+            // No write, so no cooldown.
+            return audit(player, StationManagementResult.of(StationManagementCode.GRAVITY_UNCHANGED, observed));
+        }
+        if (!cooldown.ready(observed.stationId(), server.getTickCount())) {
+            return audit(player, StationManagementResult.of(StationManagementCode.GRAVITY_COOLDOWN, observed));
+        }
         StationRegistrySavedData.CheckedUpdate written;
         try {
             written = data.checkedSetGravity(server, observed, percent * 10);
@@ -45,8 +55,15 @@ public final class StationGravityService {
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };
+        if (code == StationManagementCode.GRAVITY_SET) {
+            cooldown.record(observed.stationId(), server.getTickCount());
+        }
         return audit(player, StationManagementResult.of(code, code == StationManagementCode.GRAVITY_SET
                 ? data.find(observed.stationId()).orElse(null) : observed));
+    }
+
+    public void clear() {
+        cooldown.clear();
     }
 
     private static StationManagementResult audit(ServerPlayer player, StationManagementResult result) {

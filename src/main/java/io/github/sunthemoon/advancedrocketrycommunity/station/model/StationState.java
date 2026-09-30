@@ -216,7 +216,27 @@ public final class StationState {
                 orbitBody, createdAtGameTime, updated, members, invitations);
     }
 
-    /** True when only the region or environment differs: the fields checked management may change. */
+    /**
+     * True for exactly the two checked management transitions: the single 512→768 growth with an
+     * unchanged environment, or a gravity-only change within the unchanged region. Shrinking, other
+     * environment fields and any identity, ownership or team change are not checked updates.
+     */
+    public boolean isCheckedUpdateOf(StationState previous) {
+        Objects.requireNonNull(previous, "previous");
+        if (!sameAuthorityAs(previous) || equals(previous)) {
+            return false;
+        }
+        boolean growth = !previous.expanded()
+                && region.equals(previous.withExpandedRegion().region())
+                && environment.equals(previous.environment);
+        boolean gravityOnly = region.equals(previous.region)
+                && environment.vacuum() == previous.environment.vacuum()
+                && environment.solarAngleMilliDegrees() == previous.environment.solarAngleMilliDegrees()
+                && environment.gravityMilli() != previous.environment.gravityMilli();
+        return growth || gravityOnly;
+    }
+
+    /** True when identity, ownership and team fields are equal (region and environment may differ). */
     public boolean sameAuthorityAs(StationState other) {
         Objects.requireNonNull(other, "other");
         return schemaVersion == other.schemaVersion

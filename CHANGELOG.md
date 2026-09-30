@@ -33,11 +33,12 @@ No candidate or release approval is assigned.
   still applies. Existing stations keep zero gravity. The owner, or an operator,
   standing in the station can set it with `/arce station gravity <0-100>`
   (percent of normal gravity), under the same rules as expansion and saved the
-  same checked way. Stored values above four times normal are limited to four
+  same checked way, at most once every 5 seconds per station. Stored values above four times normal are limited to four
   for movement; the public API still reports the stored value.
-- Add `/arce station environment`: shows the station you are in, its orbited
-  body (and whether it is still available), gravity, vacuum, solar intensity
-  of the orbited body and sun angle. The sky is not yet per-station.
+- Add `/arce station environment`: shows the orbited body of the station you are
+  in (and whether it is still available), gravity, vacuum, solar intensity of the
+  orbited body and sun angle. The station's name and ID are shown only to its
+  owner, members and operators. The sky is not yet per-station.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.

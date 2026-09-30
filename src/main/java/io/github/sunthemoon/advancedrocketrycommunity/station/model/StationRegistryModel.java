@@ -104,13 +104,13 @@ public final class StationRegistryModel {
     }
 
     /**
-     * Publishes a checked region/environment update only while the station still equals the
-     * observed state; identity, ownership and team fields cannot change this way.
+     * Publishes a checked growth or gravity-only update only while the station still equals the
+     * observed state; see {@link StationState#isCheckedUpdateOf(StationState)}.
      */
     public synchronized StationState replaceChecked(StationState expected, StationState replacement) {
         Objects.requireNonNull(expected, "expected");
         Objects.requireNonNull(replacement, "replacement");
-        if (expected.equals(replacement) || !expected.sameAuthorityAs(replacement)) {
+        if (!replacement.isCheckedUpdateOf(expected)) {
             throw new IllegalArgumentException("Replacement is not a checked update of the observed station");
         }
         if (!expected.equals(stations.get(expected.stationId()))) {

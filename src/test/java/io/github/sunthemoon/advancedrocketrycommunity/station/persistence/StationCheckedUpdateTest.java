@@ -213,6 +213,33 @@ final class StationCheckedUpdateTest {
         assertEquals(expanded.withGravityMilli(250), model.replaceChecked(expanded, expanded.withGravityMilli(250)));
     }
 
+    @Test
+    void onlyGrowthOrAGravityOnlyChangeIsACheckedUpdate() {
+        StationState expanded = station.withExpandedRegion();
+        assertTrue(expanded.isCheckedUpdateOf(station));
+        assertTrue(station.withGravityMilli(300).isCheckedUpdateOf(station));
+        assertFalse(station.isCheckedUpdateOf(expanded), "Shrinking back to 512 is not allowed");
+        assertFalse(expanded.withGravityMilli(300).isCheckedUpdateOf(station), "Growth must not also change gravity");
+        assertFalse(environment(station, 0, false, 270_000).isCheckedUpdateOf(station), "Vacuum is not settable");
+        assertFalse(environment(station, 0, true, 90_000).isCheckedUpdateOf(station), "Sun angle is not settable");
+        assertFalse(station.isCheckedUpdateOf(station));
+        StationRegistryModel model = new StationRegistryModel();
+        model.restoreStation(expanded);
+        assertThrows(IllegalArgumentException.class, () -> model.replaceChecked(expanded, station));
+        assertThrows(IllegalArgumentException.class,
+                () -> model.replaceChecked(expanded, environment(expanded, 9_999, false, 0)));
+        // Gravity outside the stored bound is refused before any write.
+        assertThrows(IllegalArgumentException.class, () -> data.checkedSetGravity(file, station, 10_001,
+                CheckedSavedDataFile::atomicMove));
+    }
+
+    private static StationState environment(StationState state, int gravityMilli, boolean vacuum, int angle) {
+        return new StationState(state.schemaVersion(), state.stationId(), state.ownerId(), state.name(), state.cell(),
+                state.region(), state.landingPad(), state.orbitBody(), state.createdAtGameTime(),
+                new io.github.sunthemoon.advancedrocketrycommunity.station.model.StationEnvironmentProfile(
+                        gravityMilli, vacuum, angle), state.members(), state.invitations());
+    }
+
     private StationState commit(String name) {
         UUID stationId = UUID.randomUUID();
         data.reserve(stationId, UUID.randomUUID(), name, ModIdentity.id("earth"), 0);

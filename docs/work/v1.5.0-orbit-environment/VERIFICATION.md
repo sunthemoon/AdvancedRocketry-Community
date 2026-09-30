@@ -92,3 +92,45 @@ file and JAR matches the tree. After the documentation edits the repository
   observed (no real client); the attribute is Forge's synchronized one.
 - Non-player entities keep Level gravity, as before.
 - ADR-041 and this code await independent review; G0-G9 remain open.
+
+## Independent review and fixes
+
+An independent reviewer reviewed ADR-041, `f27b11a` and the confirmation of
+`442e4a7`; its unmodified report, logs, bytecode listings and probe sources are in
+`independent-review.zip`. Verdict: ADR-041 "accept with changes". It found no
+Critical or High issues. It confirmed:
+
+- edge and negative-coordinate gravity (32 probes);
+- no effect on non-station positions and no write for an unchanged value;
+- the expansion refactor preserves decisions, and the API JAR is byte-identical;
+- the `442e4a7` non-silent check is correct for Forge 47.4.10, and its GameTests
+  fail for the right reason.
+
+Its full `gradlew test` executed 967 tests with 0 failures.
+
+| ID | Severity | Finding | Fix |
+|---|---|---|---|
+| M1 | Medium | `replaceChecked` accepted any region/environment change (shrink, vacuum/angle) | `StationState.isCheckedUpdateOf`: only 512→768 growth with an unchanged environment, or a gravity-only change; the persistence path refuses anything else before writing; tests reject shrink, vacuum, angle, and growth combined with gravity |
+| M2 | Medium | Every gravity command rewrites and fsyncs the whole registry with no rate bound | One committed write per station per 100 ticks (`StationWriteCooldown`, bounded and cleared at stop); an unchanged value writes nothing and starts no cooldown; ORBIT-04 measures the commit time |
+| M3 | Medium | "Actual solar behavior" had no home | ADR-041 "Solar scope in v1.5": display plus the effective value; no power machine exists; the leaf is retitled |
+| L1 | Low | "No gravity change for existing worlds" was too broad | ADR-041 lists the three cases in which a station region now differs |
+| L2 | Low | ADR-028 not amended explicitly | ADR-041 "Relation to ADR-028" |
+| L3 | Low | Test gaps | Pure `resolveAt` with edge/negative/other-Level/blocked-registry tests; the GameTest posts a real `LivingTickEvent` to the production-registered controller; the API reports the configured 5.0 while physics clamps to 4.0; the cooldown is covered by a GameTest and unit tests |
+| L4 | Low | ADR-042 was accepted without review, contained a vacuous rocket bullet, and the STATION-04 leaf text was stale | Review record added; the bullet now says there is no native rocket evidence; the leaf is corrected |
+| L5 | Low | `environment` showed a station's name and UUID to any visitor | Only the owner, members and operators see them, as with `/arce station list` |
+| L6 | Low | ORBIT-02 was committed before ADR-041 was accepted | Recorded in the implementation log and the ADR acceptance record |
+
+It also noted that diagnostic keys changed to `ARCE_STATION_UPDATE_*` and that
+some reply texts now say "manage"; both are listed in this report.
+
+Fix round (`review-fix-checks.zip`, base `442e4a7`):
+
+| Command | Result |
+|---|---|
+| `gradlew compileJava compileTestJava compileAdapterTestJava` | Exit 0 |
+| focused `test` (`station`, `persistence.migration`, `celestial`) with `--no-build-cache` | Exit 0; 245 tests / 38 suites |
+| `clean build test runData runGameTestServer` | Exit 0, 163 s; `:test` executed, 971 JUnit / 175 suites, 0 failures; all 239 GameTests passed; generated files unchanged; API JAR unchanged |
+
+Gravity audit lines in this run: SET 1, UNCHANGED 1, COOLDOWN 1,
+NOT_LOCAL_PLAYER 1, UNAUTHORIZED 1. The main JAR is
+`a5ee7b109df8250f5e4d0847a859d556dbfe4a729a2dce1d0c3299aefb8764d6`.

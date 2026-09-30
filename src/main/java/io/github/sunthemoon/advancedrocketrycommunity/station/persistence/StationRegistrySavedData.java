@@ -246,6 +246,10 @@ public final class StationRegistrySavedData extends SavedData {
         if (replacement.equals(observed)) {
             return CheckedUpdate.UNCHANGED;
         }
+        if (!replacement.isCheckedUpdateOf(observed)) {
+            // Rejected before any write, so a disallowed transition can never reach disk.
+            throw new IllegalArgumentException("Only station growth or a gravity-only change is a checked update");
+        }
         CompoundTag candidate = encode(new CompoundTag(), replacement);
         requireValidCandidate(candidate, replacement);
         boolean[] replacementAttempted = {false};

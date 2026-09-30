@@ -1,0 +1,88 @@
+{
+  "archives": [
+    {
+      "bytes": 291335,
+      "excluded": [
+        "station-server/",
+        "attempt-01-failed/station-server/",
+        "__pycache__/",
+        "packaging/out/"
+      ],
+      "manifest": "review-fix-checks-files.json",
+      "members": 225,
+      "name": "review-fix-checks.zip",
+      "sha256": "0467be7287ded45e2e1083e353d6c79a85990e0c2b7d2f6f2f7d10a62d1260bc",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-orbit-fix-523d20d772d54e1caa4c891998f5695c"
+    },
+    {
+      "bytes": 150552,
+      "excluded": [
+        "scratch/"
+      ],
+      "manifest": "independent-review-files.json",
+      "members": 48,
+      "name": "independent-review.zip",
+      "sha256": "32b0c94b6065698fddf898afab051ec96c913e730bcbc23962014323cad5994d",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-orbit-review-93e171ae7db0458da7e8885be4229cb3"
+    }
+  ],
+  "fix_base": "442e4a71700e2d6402c48ffeaf99429a17b4b283",
+  "fix_tested_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationOrbitGameTests.java": "aa446d6438a566fb0d2a7521c38ba48c48585d977eb4f2d0d5d47fdfd3d6844f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java": "66374a1579fcf3eb03d4a27193d1aa07c052b55d8a0f474d34ba0a13e19ed383",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationRegistryModel.java": "06a576e5928735f285ccbcd8731c41bd1023c0235c170516407a2d2399ac4938",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationState.java": "aa2945c706e02b2208c60922fd7e046bb7832ec953214cba74b36c2abb3c6412",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationOrbitEnvironmentResolver.java": "fb73bbab6466e033378b1718c9a5df42aca307289f022e348a2e6eaadec8429f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "f58dbba62a974a29556e674098865622dcdb401a761eacfad36eff4678878fb1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationGravityService.java": "5fe67e3402d03143796e07cec048895cb3d047cf52ca8351df822c75308cd851",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManagementCode.java": "72c61d455d1e51ef74c2d85619c2273f53bd51d5a8c1591c4261dc6d280ac32a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "ea7cea87588b238d937088b486a8de33620721d5d2bf26e58e6187185a7973a9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationWriteCooldown.java": "6173fb4f0580d7b1af8cda4cca3301545bac49ad774ee07981309d0e8bfc22ad",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationOrbitEnvironmentResolverTest.java": "f063ab7085ab73493e736f001ef8ef1a76239fd8456d8b383ea660efd2f631f2",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateTest.java": "2f68ecd0d9512b1d0d21e04f10282a6d6b59ff6eea8ea3830cf5007db28fa49c",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationWriteCooldownTest.java": "5aec44829f3b4d551bf0a8d406a0d952901982774d5e5213e3f8e51be4077b6f"
+  },
+  "junit": {
+    "audit_codes": {
+      "EXPANSION:confirm:CONFIRMATION_MISMATCH": 1,
+      "EXPANSION:confirm:EXPANDED": 2,
+      "EXPANSION:confirm:NOT_LOCAL_PLAYER": 2,
+      "EXPANSION:confirm:NO_CONFIRMATION": 5,
+      "EXPANSION:confirm:STATION_CHANGED": 1,
+      "EXPANSION:request:ALREADY_EXPANDED": 1,
+      "EXPANSION:request:ISSUED": 5,
+      "EXPANSION:request:NOT_IN_SPACE": 1,
+      "EXPANSION:request:NOT_IN_STATION": 1,
+      "EXPANSION:request:NOT_LOCAL_PLAYER": 4,
+      "EXPANSION:request:UNAUTHORIZED": 3,
+      "GRAVITY:set:GRAVITY_COOLDOWN": 1,
+      "GRAVITY:set:GRAVITY_SET": 1,
+      "GRAVITY:set:GRAVITY_UNCHANGED": 1,
+      "GRAVITY:set:NOT_LOCAL_PLAYER": 1,
+      "GRAVITY:set:UNAUTHORIZED": 1
+    },
+    "focused": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 38,
+      "tests": 245
+    },
+    "full": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 175,
+      "tests": 971
+    },
+    "gametests_required_passed": 239,
+    "test_task": "executed"
+  },
+  "review_sha256": "316c3a4a4e1604439bf91549bf31c15d279071c3067f4d74b7797fd16c48018e",
+  "reviewed_commits": [
+    "f27b11a46f4897e12df93ea0bc1bf05fc0e30832",
+    "442e4a71700e2d6402c48ffeaf99429a17b4b283"
+  ],
+  "schema_version": 1,
+  "scope": "ADR-041/ORBIT-02 review and its fixes; confirmation review pending"
+}

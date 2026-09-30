@@ -26,7 +26,18 @@ public final class StationOrbitEnvironmentResolver {
         if (!CelestialIds.SPACE_LEVEL.equals(level)) {
             return Optional.empty();
         }
-        return StationRegistrySavedData.get(server).findAt(x, z).map(station -> resolve(station, catalogs.current()));
+        return resolveAt(StationRegistrySavedData.get(server), catalogs.current(), level, x, z);
+    }
+
+    /** Pure lookup: Space only, one indexed region lookup (empty when blocked), then {@link #resolve}. */
+    public static Optional<StationOrbitEnvironment> resolveAt(StationRegistrySavedData registry,
+                                                              Optional<CelestialCatalog> catalog,
+                                                              ResourceKey<Level> level, int x, int z) {
+        Objects.requireNonNull(registry, "registry");
+        if (!CelestialIds.SPACE_LEVEL.equals(level)) {
+            return Optional.empty();
+        }
+        return registry.findAt(x, z).map(station -> resolve(station, catalog));
     }
 
     public static StationOrbitEnvironment resolve(StationState station, Optional<CelestialCatalog> catalog) {
