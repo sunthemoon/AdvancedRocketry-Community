@@ -143,6 +143,11 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         return true;
     }
 
+    /** ADR-049 section 10: an intent that arrived too soon after the last one changes nothing. */
+    void reportRateLimited(ServerPlayer player) {
+        updateResult(player, SatelliteOperationCode.RATE_LIMITED);
+    }
+
     public boolean canAccess(Player player) {
         return ownerId == null || ownerId.equals(player.getUUID()) || player.hasPermissions(2);
     }

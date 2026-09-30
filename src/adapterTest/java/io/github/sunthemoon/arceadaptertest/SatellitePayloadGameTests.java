@@ -48,18 +48,23 @@ public final class SatellitePayloadGameTests {
         helper.assertTrue(SatellitePayloadFixture.root(terminal).getInt("energy") == 9000, "Assembly energy differs");
         // Discovery is world-wide; snapshot it before launch rather than depend on other test batches.
         int expectedReward = research.targetDiscovered() ? 137 : 126;
-        helper.assertTrue(menu.clickMenuButton(player, 3) && inventory.getStackInSlot(4).isEmpty(), "Actual launch did not consume package");
-        int before = research.balance();
-        var intruder = SatellitePayloadFixture.player(terminal, UUID.randomUUID());
-        helper.assertTrue(!menu.clickMenuButton(intruder, 4), "Wrong owner could use menu");
-        helper.runAtTickTime(430, () -> {
-            helper.assertTrue(menu.clickMenuButton(player, 4), "Claim intent rejected");
-            helper.assertTrue(research.balance() == before + expectedReward, "Registered research reward differs");
-            menu.clickMenuButton(player, 4);
-            helper.assertTrue(research.balance() == before + expectedReward, "Replay duplicated reward");
-            var saved = terminal.saveWithoutMetadata(); terminal.load(saved);
-            helper.assertTrue(saved.equals(terminal.saveWithoutMetadata()), "Native terminal save/load changed completed identity");
-            helper.succeed();
+        // ADR-049 section 10 (C8a): a player's state-changing intents are spaced by 10 ticks.
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(menu.clickMenuButton(player, 3) && inventory.getStackInSlot(4).isEmpty(), "Actual launch did not consume package");
+            int before = research.balance();
+            var intruder = SatellitePayloadFixture.player(terminal, UUID.randomUUID());
+            helper.assertTrue(!menu.clickMenuButton(intruder, 4), "Wrong owner could use menu");
+            helper.runAtTickTime(430, () -> {
+                helper.assertTrue(menu.clickMenuButton(player, 4), "Claim intent rejected");
+                helper.assertTrue(research.balance() == before + expectedReward, "Registered research reward differs");
+                helper.runAtTickTime(441, () -> {
+                    helper.assertTrue(menu.clickMenuButton(player, 4), "Replayed claim intent was not processed");
+                    helper.assertTrue(research.balance() == before + expectedReward, "Replay duplicated reward");
+                    var saved = terminal.saveWithoutMetadata(); terminal.load(saved);
+                    helper.assertTrue(saved.equals(terminal.saveWithoutMetadata()), "Native terminal save/load changed completed identity");
+                    helper.succeed();
+                });
+            });
         });
     }
 

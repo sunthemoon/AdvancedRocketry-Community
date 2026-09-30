@@ -17,6 +17,10 @@ import net.minecraftforge.gametest.GameTestHolder;
 public final class SatelliteRegistryFixture {
     public static final String FLUSH_FAILURE_BATCH = "satellite_flush_failure";
     public static final String BLOCKED_BATCH = "satellite_blocked";
+    public static final String LIFECYCLE_BATCH = "satellite_lifecycle";
+    /** In the lifecycle batch: a mission whose satellite is gone, and a satellite whose mission is gone. */
+    static java.util.UUID orphanMission;
+    static java.util.UUID strandedSatellite;
 
     private static SatelliteMissionSavedData original;
 
@@ -60,6 +64,36 @@ public final class SatelliteRegistryFixture {
 
     @AfterBatch(batch = FLUSH_FAILURE_BATCH)
     public static void afterFlushFailure(ServerLevel level) {
+        restore(level);
+    }
+
+    /** ADR-050 section 9 fixture: a root whose broken references load as a quarantine and a recovery. */
+    static SatelliteMissionSavedData brokenRegistry(long gameTime) {
+        SatelliteMissionSavedData source = SatelliteMissionSavedData.create(gameTime);
+        java.util.UUID owner = java.util.UUID.randomUUID();
+        java.util.UUID lostSatellite = java.util.UUID.randomUUID();
+        orphanMission = java.util.UUID.randomUUID();
+        strandedSatellite = java.util.UUID.randomUUID();
+        java.util.UUID lostMission = java.util.UUID.randomUUID();
+        var definition = io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent.surveySatellite();
+        var target = io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.MOON_ID;
+        source.launch(lostSatellite, orphanMission, owner, definition, target, gameTime, false);
+        source.launch(strandedSatellite, lostMission, owner, definition, target, gameTime, false);
+        CompoundTag root = source.save(new CompoundTag());
+        root.getList("satellites", net.minecraft.nbt.Tag.TAG_COMPOUND).removeIf(tag ->
+                ((CompoundTag) tag).getUUID("satellite_id").equals(lostSatellite));
+        root.getList("missions", net.minecraft.nbt.Tag.TAG_COMPOUND).removeIf(tag ->
+                ((CompoundTag) tag).getUUID("mission_id").equals(lostMission));
+        return SatelliteMissionSavedData.load(root);
+    }
+
+    @BeforeBatch(batch = LIFECYCLE_BATCH)
+    public static void beforeLifecycle(ServerLevel level) {
+        install(level, brokenRegistry(level.getServer().overworld().getGameTime()));
+    }
+
+    @AfterBatch(batch = LIFECYCLE_BATCH)
+    public static void afterLifecycle(ServerLevel level) {
         restore(level);
     }
 

@@ -163,13 +163,40 @@ public record MissionState(
     }
 
     public MissionState cancel(long logicalTime) {
-        if (status != MissionStatus.ACTIVE && status != MissionStatus.READY) {
+        MissionStatus phase = phase();
+        if (phase != MissionStatus.ACTIVE && phase != MissionStatus.READY) {
             throw new IllegalStateException("Only active or ready missions may be cancelled");
         }
         if (logicalTime < startedAtLogicalTime) {
             throw new IllegalArgumentException("Cancellation precedes mission start");
         }
-        return with(MissionStatus.CANCELLED, readyAtLogicalTime, OptionalLong.of(logicalTime));
+        return new MissionState(schemaVersion, missionId, satelliteId, ownerId, definitionId, kind, targetBodyId,
+                instanceId, seed, startedAtLogicalTime, completesAtLogicalTime, startEpoch, MissionStatus.CANCELLED,
+                readyAtLogicalTime, OptionalLong.of(logicalTime), rewardVersion, Optional.empty(), payload);
+    }
+
+    /** The status that governs times and transitions: the previous status while quarantined. */
+    public MissionStatus phase() {
+        return quarantine.map(MissionQuarantine::previousStatus).orElse(status);
+    }
+
+    /** ADR-050 section 9: holds an unfinished mission for an operator; its times and payload are kept. */
+    public MissionState quarantine(String reason, boolean receiptSeen) {
+        if (!status.unfinished() || status == MissionStatus.QUARANTINED) {
+            throw new IllegalStateException("Only an unfinished mission can be quarantined");
+        }
+        return new MissionState(schemaVersion, missionId, satelliteId, ownerId, definitionId, kind, targetBodyId,
+                instanceId, seed, startedAtLogicalTime, completesAtLogicalTime, startEpoch, MissionStatus.QUARANTINED,
+                readyAtLogicalTime, resolvedAtLogicalTime, rewardVersion,
+                Optional.of(new MissionQuarantine(reason, status, receiptSeen)), payload);
+    }
+
+    /** Returns a quarantined mission to its previous status. */
+    public MissionState releaseQuarantine() {
+        requireStatus(MissionStatus.QUARANTINED);
+        return new MissionState(schemaVersion, missionId, satelliteId, ownerId, definitionId, kind, targetBodyId,
+                instanceId, seed, startedAtLogicalTime, completesAtLogicalTime, startEpoch, phase(),
+                readyAtLogicalTime, resolvedAtLogicalTime, rewardVersion, Optional.empty(), payload);
     }
 
     public int netResearchCredit() {

@@ -105,11 +105,15 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int buttonId) {
-        return buttonId == BUTTON_ASSEMBLE
-                && player instanceof ServerPlayer serverPlayer
-                && builder != null
-                && stillValid(player)
-                && builder.assemble(serverPlayer);
+        if (buttonId != BUTTON_ASSEMBLE || !(player instanceof ServerPlayer serverPlayer) || builder == null
+                || !stillValid(player)) {
+            return false;
+        }
+        if (!SatelliteRuntime.allowIntent(serverPlayer, false)) {
+            builder.reportRateLimited(serverPlayer);
+            return false;
+        }
+        return builder.assemble(serverPlayer);
     }
 
     @Override

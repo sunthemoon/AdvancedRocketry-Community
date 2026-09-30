@@ -1,7 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.scan;
 
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SurveyScanResultPacket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -127,15 +126,15 @@ public final class SurveyScanJob {
      * (ties to the smaller ID). Up to 16 dominant biomes get palette indices in cell order; later ones are
      * {@code OTHER}.
      */
-    public SurveyScanResultPacket result() {
+    public SurveyScanResult result() {
         if (!finished()) {
             throw new IllegalStateException("The survey scan is not finished");
         }
         List<ResourceLocation> palette = new ArrayList<>();
-        List<SurveyScanResultPacket.Cell> cells = new ArrayList<>(side * side);
+        List<SurveyScanResult.Cell> cells = new ArrayList<>(side * side);
         for (int index = 0; index < side * side; index++) {
             if (unknown[index]) {
-                cells.add(SurveyScanResultPacket.Cell.UNKNOWN_CELL);
+                cells.add(SurveyScanResult.Cell.UNKNOWN_CELL);
                 continue;
             }
             int ratio = solids[index] == 0 ? 0 : (int) (ores[index] * MAX_RATIO / solids[index]);
@@ -148,19 +147,19 @@ public final class SurveyScanJob {
                     best = entry.getValue();
                 }
             }
-            int biome = SurveyScanResultPacket.Cell.OTHER;
+            int biome = SurveyScanResult.Cell.OTHER;
             // C7-M3: an ID the result cannot carry (over 128 characters) is shown as OTHER.
-            if (dominant != null && dominant.toString().length() <= SurveyScanResultPacket.MAX_ID_CHARS) {
+            if (dominant != null && dominant.toString().length() <= SurveyScanResult.MAX_ID_CHARS) {
                 int known = palette.indexOf(dominant);
                 if (known >= 0) {
                     biome = known;
-                } else if (palette.size() < SurveyScanResultPacket.MAX_PALETTE) {
+                } else if (palette.size() < SurveyScanResult.MAX_PALETTE) {
                     palette.add(dominant);
                     biome = palette.size() - 1;
                 }
             }
-            cells.add(new SurveyScanResultPacket.Cell(ratio, biome));
+            cells.add(new SurveyScanResult.Cell(ratio, biome));
         }
-        return new SurveyScanResultPacket(centreX, centreZ, radius, cell, palette, cells);
+        return new SurveyScanResult(centreX, centreZ, radius, cell, palette, cells);
     }
 }

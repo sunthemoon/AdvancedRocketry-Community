@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SurveyScanResultPacket;
 import java.util.Optional;
 import java.util.function.IntBinaryOperator;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +24,7 @@ final class SurveyScanJobTest {
         steps++;
         assertEquals(216, steps);
         assertEquals(96L * 96L * 384L, job.reads());
-        SurveyScanResultPacket result = job.result();
+        SurveyScanResult result = job.result();
         assertEquals(24, result.side());
         assertEquals(576, result.cells().size());
         assertTrue(result.cells().stream().allMatch(cell -> cell.ratio() == 0 && cell.biome() == 0));
@@ -61,7 +60,7 @@ final class SurveyScanJobTest {
             }
         };
         assertTrue(job.step(source, Integer.MAX_VALUE));
-        SurveyScanResultPacket result = job.result();
+        SurveyScanResult result = job.result();
         assertEquals(65_535 / 4, result.cells().get(0).ratio());
         assertEquals(0, result.cells().get(1).ratio());
         assertEquals(4, result.cells().size());
@@ -73,9 +72,9 @@ final class SurveyScanJobTest {
         // Only the column at (-16, -16), the first of cell 0, is unloaded.
         Source source = new Source((x, z) -> x == -16 && z == -16 ? 0 : 1, (x, z) -> 1);
         assertTrue(job.step(source, Integer.MAX_VALUE));
-        SurveyScanResultPacket result = job.result();
+        SurveyScanResult result = job.result();
         assertTrue(result.cells().get(0).unknown());
-        assertEquals(SurveyScanResultPacket.Cell.UNKNOWN_CELL, result.cells().get(0));
+        assertEquals(SurveyScanResult.Cell.UNKNOWN_CELL, result.cells().get(0));
         assertFalse(result.cells().get(1).unknown());
         assertEquals(65_535, result.cells().get(1).ratio());
         // Cell 0 cost one read; the other 15 cells read 64 columns of 8 blocks.
@@ -94,12 +93,12 @@ final class SurveyScanJobTest {
             }
         };
         assertTrue(job.step(source, Integer.MAX_VALUE));
-        SurveyScanResultPacket result = job.result();
+        SurveyScanResult result = job.result();
         assertEquals(16, result.palette().size());
         for (int cell = 0; cell < 16; cell++) {
             assertEquals(cell, result.cells().get(cell).biome());
         }
-        assertEquals(SurveyScanResultPacket.Cell.OTHER, result.cells().get(16).biome());
+        assertEquals(SurveyScanResult.Cell.OTHER, result.cells().get(16).biome());
     }
 
     @Test
@@ -128,8 +127,8 @@ final class SurveyScanJobTest {
             }
         };
         assertTrue(job.step(source, Integer.MAX_VALUE));
-        SurveyScanResultPacket result = job.result();
-        assertEquals(SurveyScanResultPacket.Cell.OTHER, result.cells().get(0).biome());
+        SurveyScanResult result = job.result();
+        assertEquals(SurveyScanResult.Cell.OTHER, result.cells().get(0).biome());
         assertEquals(0, result.cells().get(1).biome());
         assertEquals(1, result.palette().size());
     }

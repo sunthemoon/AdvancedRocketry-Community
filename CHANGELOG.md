@@ -50,6 +50,25 @@ No candidate or release approval is assigned.
 - Add `/arce satellite admin mission verify <id>`, which recomputes a mission's
   or asteroid instance's reward from its stored seed and inputs without changing
   anything.
+- Satellite registry limits (ADR-050): unfinished missions (1,024 on the server,
+  64 per owner), finished missions kept per owner (128), all missions (3,072),
+  satellites (4,096, 256 per owner) and asteroid instances (2,048, 16 per owner)
+  are COMMON config values that can only be lowered. Byte budgets per registry
+  section refuse new records with "storage budget full" instead of failing a
+  save later.
+- Finished missions are pruned 1,200 logical ticks after they resolve, once an
+  owner holds more than their limit or the server more than 1,536. The newest
+  claimed discovery mission per body is kept as evidence.
+- A player's satellite intents are spaced: 10 ticks between actions and 2
+  between selections (COMMON config may lengthen them).
+- Mission completions, link changes and scan payments are saved by a coalesced
+  write at most every 5 seconds; launches, decommissions and data claims still
+  write at once.
+- A registry whose records no longer agree now loads: the affected missions are
+  held (quarantined) and the affected satellites need recovery, instead of the
+  whole registry being blocked. Operators use `/arce satellite admin mission
+  inspect|release|cancel <id>`, `satellite recover <id>`, `instance inspect <id>`
+  and `diagnostics`; each action writes one audit line.
 - Add the `advancedrocketrycommunity:satellite` network channel (protocol 1) for
   the terminal view; a client without it cannot join. The terminal menu data
   moves to format 2.

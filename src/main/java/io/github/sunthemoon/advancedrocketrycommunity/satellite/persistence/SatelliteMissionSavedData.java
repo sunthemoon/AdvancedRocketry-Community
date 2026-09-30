@@ -27,14 +27,26 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
 
     private final SatelliteMissionRegistry registry;
     private CompoundTag preservedBlockedData;
+    /** ADR-050 section 2: a state change waits here for the next coalesced flush (at most one per 100 ticks). */
+    private boolean flushPending;
 
     private SatelliteMissionSavedData(SatelliteMissionRegistry registry) {
         super(ManagedSavedDataType.SATELLITE_MISSIONS);
         this.registry = Objects.requireNonNull(registry, "registry");
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RestoreReport report = registry.restoreReport();
+        if (report.changed()) {
+            // ADR-050 section 9: what the load invariants held is persisted with the next coalesced flush.
+            setDirty();
+            flushPending = true;
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_SATELLITE_RESTORE quarantined_missions={} recovery_required={} quarantined_instances={} "
+                            + "accounts_added={}", report.quarantinedMissions(), report.recoveries(),
+                    report.quarantinedInstances(), report.accountsAdded());
+        }
     }
 
     public static SatelliteMissionSavedData create(long observedGameTime) {
-        return new SatelliteMissionSavedData(SatelliteMissionRegistry.create(observedGameTime));
+        return new SatelliteMissionSavedData(SatelliteMissionRegistry.create(observedGameTime, CodecRecordSizer.INSTANCE));
     }
 
     public static SatelliteMissionSavedData get(MinecraftServer server) {
@@ -74,6 +86,53 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
     private void changed() {
         setDirty();
         registry.markChanged();
+        flushPending = true;
+    }
+
+    /** Whether a state change waits for the coalesced flush (clock-only changes never set it). */
+    public boolean flushPending() {
+        return flushPending && operational();
+    }
+
+    public void applyLimits(io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits limits) {
+        if (operational()) {
+            registry.applyLimits(limits);
+        }
+    }
+
+    public SatelliteOperationResult releaseQuarantine(UUID missionId) {
+        requireOperational();
+        SatelliteOperationResult result = registry.releaseQuarantine(missionId);
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    public SatelliteOperationResult recoverSatellite(UUID satelliteId) {
+        requireOperational();
+        SatelliteOperationResult result = registry.recoverSatellite(satelliteId);
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    public Optional<AsteroidInstance> instance(UUID instanceId) {
+        return operational() ? registry.instance(instanceId) : Optional.empty();
+    }
+
+    /** Diagnostics: counts, queue sizes and reserved bytes (ADR-050 sections 5 and 7). */
+    public String diagnostics() {
+        requireOperational();
+        return "satellites=" + registry.satellites().size() + " missions=" + registry.missions().size()
+                + " unfinished=" + registry.unfinishedMissionCount() + " finished=" + registry.finishedMissionCount()
+                + " scheduled=" + registry.scheduledCount() + " instances=" + registry.instances().size()
+                + " bytes_satellites=" + registry.reservedBytes("SATELLITES")
+                + " bytes_missions=" + registry.reservedBytes("MISSIONS")
+                + " bytes_instances=" + registry.reservedBytes("INSTANCES")
+                + " bytes_accounts=" + registry.reservedBytes("ACCOUNTS")
+                + " save_epoch=" + registry.saveEpoch();
     }
 
     public boolean operational() {
@@ -191,11 +250,14 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         return result;
     }
 
-    public SatelliteMissionRegistry.SchedulerPass completeDue(long observedGameTime) {
+    public io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass completeDue(long observedGameTime) {
         requireOperational();
-        SatelliteMissionRegistry.SchedulerPass result = registry.completeDue(observedGameTime);
-        if (result.clockAdvanced() || result.completed() > 0) {
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass result = registry.completeDue(observedGameTime);
+        if (result.changed()) {
             changed();
+        } else if (result.clockAdvanced()) {
+            // ADR-050 section 2: clock-only changes set the ordinary dirty flag, never "flush pending".
+            setDirty();
         }
         return result;
     }
@@ -298,6 +360,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
     protected void onPersisted() {
         if (preservedBlockedData == null) {
             registry.markPersisted();
+            flushPending = false;
         }
     }
 

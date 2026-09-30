@@ -114,20 +114,30 @@ final class SatelliteMissionSavedDataTest {
     }
 
     @Test
-    void malformedListsAndCrossReferencesFailClosed() {
+    void malformedListsFailClosedAndBrokenReferencesAreQuarantined() {
         CompoundTag malformed = emptyRoot();
         malformed.putString("missions", "not-a-list");
         assertFalse(SatelliteMissionSavedData.load(malformed).operational());
 
+        // ADR-050 section 9 (C8a): a broken reference no longer blocks the registry; the unfinished mission is
+        // held for an operator, is not scheduled, and the change waits for the coalesced flush.
         SatelliteMissionSavedData valid = SatelliteMissionSavedData.create(1_000L);
         UUID owner = UUID.randomUUID();
+        UUID missionId = UUID.randomUUID();
         valid.launch(
-                UUID.randomUUID(), UUID.randomUUID(), owner,
+                UUID.randomUUID(), missionId, owner,
                 definition(), ModIdentity.id("moon"), 1_000L, true
         );
         CompoundTag brokenReference = valid.save(new CompoundTag());
         brokenReference.put("satellites", new ListTag());
-        assertFalse(SatelliteMissionSavedData.load(brokenReference).operational());
+        SatelliteMissionSavedData loaded = SatelliteMissionSavedData.load(brokenReference);
+        assertTrue(loaded.operational());
+        assertTrue(loaded.flushPending());
+        var held = loaded.mission(missionId).orElseThrow();
+        assertEquals(MissionStatus.QUARANTINED, held.status());
+        assertEquals("MISSING_SATELLITE", held.quarantine().orElseThrow().reason());
+        assertEquals(MissionStatus.ACTIVE, held.quarantine().orElseThrow().previousStatus());
+        assertEquals(0, loaded.completeDue(1_000_000L).completed());
     }
 
     @Test

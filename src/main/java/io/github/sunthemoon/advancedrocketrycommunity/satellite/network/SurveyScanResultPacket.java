@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.network;
 
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.SurveyScanResult;
 import io.netty.handler.codec.DecoderException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,6 +43,12 @@ public record SurveyScanResultPacket(int centreX, int centreZ, int radius, int c
 
     public int side() {
         return 2 * radius / cell;
+    }
+
+    /** The wire form of a finished scan; the scan domain does not depend on the network package. */
+    public static SurveyScanResultPacket of(SurveyScanResult result) {
+        return new SurveyScanResultPacket(result.centreX(), result.centreZ(), result.radius(), result.cell(),
+                result.palette(), result.cells().stream().map(cell -> new Cell(cell.ratio(), cell.biome())).toList());
     }
 
     public static void encode(SurveyScanResultPacket packet, FriendlyByteBuf buffer) {

@@ -106,6 +106,17 @@ public final class SatelliteRuntime {
         return current == null ? SatelliteOperationCode.SERVER_ERROR : current.requestScan(player, identity);
     }
 
+    /** Whether a client intent from this player may run now; without a running service nothing is limited. */
+    public static boolean allowIntent(ServerPlayer player, boolean selection) {
+        SatelliteManager current = manager;
+        return current == null || current.allowIntent(player, selection);
+    }
+
+    public static long coalescedFlushes() {
+        SatelliteManager current = manager;
+        return current == null ? 0L : current.coalescedFlushes();
+    }
+
     public static boolean scanRunning(java.util.UUID playerId) {
         SatelliteManager current = manager;
         return current != null && current.scanRunning(playerId);

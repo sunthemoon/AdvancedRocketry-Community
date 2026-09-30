@@ -1,0 +1,98 @@
+{
+  "links": [
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.2.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.1.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.0.2/INSTALLATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-c8a-scheduler/VERIFICATION.md",
+      "target": "../../decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "../versions/V1.6.0-SATELLITE-RESOURCE-MISSIONS.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-preparation/examples.json"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-preparation/check_examples.py"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c7a-model/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c7b-builder/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c7c-scan-receiver/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c7-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c7-close/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c8a-resources/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-implementation-log.md",
+      "target": "v1.6.0-c8a-scheduler/VERIFICATION.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

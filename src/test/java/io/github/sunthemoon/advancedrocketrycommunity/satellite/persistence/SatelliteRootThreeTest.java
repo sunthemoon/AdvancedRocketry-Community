@@ -34,6 +34,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -152,30 +153,22 @@ final class SatelliteRootThreeTest {
 
     @Test
     void overCapLegacyRootLoadsWithItsCountAndFitsTheByteBudget() {
+        // A v1.5 root could hold 8,192 finished missions; since C8a the live API admits at most 3,072 and prunes,
+        // so the fixture clones one real claimed mission record in the saved root instead.
         SatelliteMissionSavedData data = SatelliteMissionSavedData.create(0L);
         UUID owner = UUID.randomUUID();
-        List<UUID> satellites = new ArrayList<>();
-        long time = 0L;
-        int missions = 0;
-        while (missions < SatelliteLimits.MAX_MISSIONS) {
-            UUID mission = new UUID(7L, missions);
-            boolean ok;
-            if (satellites.size() < 64) {
-                UUID satellite = new UUID(8L, satellites.size());
-                ok = data.launch(satellite, mission, owner, definition(), ModIdentity.id("moon"), time, false).success();
-                satellites.add(satellite);
-            } else {
-                ok = data.startMission(satellites.get(missions % 64), mission, owner, definition(),
-                        ModIdentity.id("moon"), time, false).success();
-            }
-            assertTrue(ok, "start " + missions);
-            assertTrue(data.claim(mission, owner, time + 200L).success(), "claim " + missions);
-            // The server drains the deadline queue every 20 ticks; a claim leaves a stale entry (ADR-050 §5, C8a).
-            data.completeDue(time + 200L);
-            time += 200L;
-            missions++;
+        UUID first = new UUID(7L, 0L);
+        assertTrue(data.launch(new UUID(8L, 0L), first, owner, definition(), ModIdentity.id("moon"), 0L, false).success());
+        assertTrue(data.claim(first, owner, 200L).success());
+        CompoundTag root = data.save(new CompoundTag());
+        ListTag records = root.getList("missions", Tag.TAG_COMPOUND);
+        CompoundTag template = records.getCompound(0);
+        for (int index = 1; index < SatelliteLimits.MAX_MISSIONS; index++) {
+            CompoundTag copy = template.copy();
+            copy.putUUID("mission_id", new UUID(7L, index));
+            records.add(copy);
         }
-        CompoundTag legacy = downgrade(data.save(new CompoundTag()));
+        CompoundTag legacy = downgrade(root);
         int legacyBytes = SatelliteNbtSize.uncompressedBytes(legacy);
         assertTrue(legacyBytes <= 4 * 1024 * 1024, "a v1.5 root is at most 4 MiB, was " + legacyBytes);
 

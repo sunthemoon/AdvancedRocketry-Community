@@ -31,9 +31,15 @@ public final class SatelliteMissionRegistry {
     /** ADR-050 §5: maintained incrementally; derived on restore, never persisted. */
     private final Map<UUID, Integer> satellitesByOwner = new java.util.HashMap<>();
     /** ADR-049 §9 receiver → linked solar satellites; derived on restore, never persisted. */
-    private final Map<UUID, java.util.Set<UUID>> receiverLinks = new java.util.HashMap<>();
+    private final ReceiverLinkIndex receiverLinks = new ReceiverLinkIndex();
     private final MissionDeadlineScheduler scheduler = new MissionDeadlineScheduler();
     private final MonotonicMissionClock clock;
+    /** ADR-050 sections 5–7: counters, pruning queues, byte budgets and admission limits. */
+    private final MissionRetention retention = new MissionRetention();
+    private final StorageBudget budget = new StorageBudget();
+    private final RecordSizer sizer;
+    private RegistryLimits limits = RegistryLimits.DEFAULTS;
+    private RestoreReport restoreReport = new RestoreReport(0, 0, 0, 0);
     /**
      * ADR-050 §2 save epoch. A write carries {@link #epochToWrite()}; the epoch advances only when that write
      * returned without error and carried a change, so an unchanged reload writes the same bytes. A mission started
@@ -42,8 +48,9 @@ public final class SatelliteMissionRegistry {
     private long saveEpoch;
     private boolean changedSinceEpoch;
 
-    private SatelliteMissionRegistry(MonotonicMissionClock clock, long saveEpoch) {
+    private SatelliteMissionRegistry(MonotonicMissionClock clock, long saveEpoch, RecordSizer sizer) {
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.sizer = Objects.requireNonNull(sizer, "sizer");
         if (saveEpoch < 1L) {
             throw new IllegalArgumentException("Save epoch starts at 1");
         }
@@ -51,7 +58,11 @@ public final class SatelliteMissionRegistry {
     }
 
     public static SatelliteMissionRegistry create(long observedGameTime) {
-        return new SatelliteMissionRegistry(MonotonicMissionClock.create(observedGameTime), 1L);
+        return create(observedGameTime, RecordSizer.BOUNDS);
+    }
+
+    public static SatelliteMissionRegistry create(long observedGameTime, RecordSizer sizer) {
+        return new SatelliteMissionRegistry(MonotonicMissionClock.create(observedGameTime), 1L, sizer);
     }
 
     public static SatelliteMissionRegistry restore(long logicalGameTime, long lastObservedGameTime) {
@@ -59,10 +70,30 @@ public final class SatelliteMissionRegistry {
     }
 
     public static SatelliteMissionRegistry restore(long logicalGameTime, long lastObservedGameTime, long saveEpoch) {
+        return restore(logicalGameTime, lastObservedGameTime, saveEpoch, RecordSizer.BOUNDS);
+    }
+
+    public static SatelliteMissionRegistry restore(long logicalGameTime, long lastObservedGameTime, long saveEpoch,
+                                                   RecordSizer sizer) {
         return new SatelliteMissionRegistry(
                 MonotonicMissionClock.restore(logicalGameTime, lastObservedGameTime),
-                saveEpoch
+                saveEpoch,
+                sizer
         );
+    }
+
+    /** Applies the server config limits (ADR-050 section 6); they govern admission only. */
+    public synchronized void applyLimits(RegistryLimits next) {
+        limits = Objects.requireNonNull(next, "next");
+    }
+
+    public synchronized RegistryLimits limits() {
+        return limits;
+    }
+
+    /** What the last {@link #finishRestore()} changed. */
+    public synchronized RestoreReport restoreReport() {
+        return restoreReport;
     }
 
     public synchronized void restoreSatellite(SatelliteState state) {
@@ -74,7 +105,8 @@ public final class SatelliteMissionRegistry {
             throw new IllegalArgumentException("Duplicate satellite id " + state.satelliteId());
         }
         satellitesByOwner.merge(state.ownerId(), 1, Integer::sum);
-        indexLink(null, state);
+        receiverLinks.update(null, state);
+        budget.reserve(StorageBudget.Section.SATELLITES, state.satelliteId(), sizer.satelliteBytes(state));
     }
 
     public synchronized void restoreMission(MissionState state) {
@@ -82,9 +114,11 @@ public final class SatelliteMissionRegistry {
         if (missions.size() >= SatelliteLimits.MAX_MISSIONS) {
             throw new IllegalArgumentException("Mission registry exceeds its fixed bound");
         }
-        if (missions.putIfAbsent(state.missionId(), state) != null) {
+        if (missions.containsKey(state.missionId())) {
             throw new IllegalArgumentException("Duplicate mission id " + state.missionId());
         }
+        putMission(state);
+        budget.reserve(StorageBudget.Section.MISSIONS, state.missionId(), sizer.missionBytes(state));
     }
 
     public synchronized void restoreAccount(ResearchAccount account) {
@@ -95,6 +129,7 @@ public final class SatelliteMissionRegistry {
         if (accounts.putIfAbsent(account.ownerId(), account) != null) {
             throw new IllegalArgumentException("Duplicate research account " + account.ownerId());
         }
+        budget.reserve(StorageBudget.Section.ACCOUNTS, account.ownerId(), RecordSizer.ACCOUNT_BYTES);
     }
 
     public synchronized void restoreInstance(AsteroidInstance instance) {
@@ -105,48 +140,37 @@ public final class SatelliteMissionRegistry {
         if (instances.putIfAbsent(instance.instanceId(), instance) != null) {
             throw new IllegalArgumentException("Duplicate asteroid instance " + instance.instanceId());
         }
+        budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceBytes(instance));
     }
 
-    public synchronized void finishRestore() {
-        long unfinished = missions.values().stream().filter(state -> state.status().unfinished()).count();
-        if (unfinished > SatelliteLimits.MAX_ACTIVE_MISSIONS) {
-            throw new IllegalArgumentException("Unfinished mission count exceeds its fixed bound");
-        }
+    /**
+     * ADR-050 section 9: one bounded pass over the restored records. Broken references never block the registry:
+     * an unfinished mission without its satellite binding is QUARANTINED (the satellite is not changed), a
+     * satellite whose current mission is not unfinished becomes RECOVERY_REQUIRED, and an instance whose mission
+     * reference is broken is QUARANTINED. Nothing is deleted, completed or paid. Over-limit roots still load.
+     */
+    public synchronized RestoreReport finishRestore() {
+        int accountsAdded = 0;
         for (SatelliteState satellite : satellites.values()) {
             if (!accounts.containsKey(satellite.ownerId())) {
-                throw new IllegalArgumentException("Satellite owner has no research account");
-            }
-            if (satellite.currentMissionId().isEmpty()) {
-                continue;
-            }
-            MissionState mission = missions.get(satellite.currentMissionId().orElseThrow());
-            if (mission == null
-                    || !mission.status().unfinished()
-                    || !mission.satelliteId().equals(satellite.satelliteId())
-                    || !mission.ownerId().equals(satellite.ownerId())
-                    || !mission.definitionId().equals(satellite.definitionId())) {
-                throw new IllegalArgumentException("Satellite has an invalid current mission reference");
+                ResearchAccount account = ResearchAccount.empty(satellite.ownerId());
+                accounts.put(satellite.ownerId(), account);
+                budget.reserve(StorageBudget.Section.ACCOUNTS, account.ownerId(), RecordSizer.ACCOUNT_BYTES);
+                accountsAdded++;
             }
         }
-        for (MissionState mission : missions.values()) {
-            SatelliteState satellite = satellites.get(mission.satelliteId());
-            if (satellite == null) {
-                // ADR-050 §9: finished records may outlive a decommissioned satellite.
-                if (mission.status().unfinished()) {
-                    throw new IllegalArgumentException("Unfinished mission has no satellite");
-                }
-                continue;
-            }
-            if (!satellite.ownerId().equals(mission.ownerId())
-                    || !satellite.definitionId().equals(mission.definitionId())) {
-                throw new IllegalArgumentException("Mission has an invalid satellite reference");
-            }
-            if (mission.status().unfinished()
-                    && !satellite.currentMissionId().filter(mission.missionId()::equals).isPresent()) {
-                throw new IllegalArgumentException("Unfinished mission is not owned by its satellite");
-            }
-        }
+        RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances);
+        plan.missionQuarantines().forEach((id, reason) -> putMission(missions.get(id).quarantine(reason, false)));
+        plan.recoveries().forEach(id -> satellites.put(id, satellites.get(id).requireRecovery()));
+        plan.instanceQuarantines().forEach(id -> instances.put(id, instances.get(id).quarantine()));
         scheduler.rebuild(missions.values());
+        RestoreReport report = new RestoreReport(plan.missionQuarantines().size(), plan.recoveries().size(),
+                plan.instanceQuarantines().size(), accountsAdded);
+        if (report.changed()) {
+            changedSinceEpoch = true;
+        }
+        restoreReport = report;
+        return report;
     }
 
     public synchronized SatelliteOperationResult launch(
@@ -182,13 +206,6 @@ public final class SatelliteMissionRegistry {
         if (missions.containsKey(missionId)) {
             return result(SatelliteOperationCode.IDENTITY_CONFLICT, false, null, missions.get(missionId));
         }
-        if (!hasCapacityFor(ownerId)) {
-            return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
-        }
-        if (ownerSatellites(ownerId) >= SatelliteLimits.MAX_SATELLITES_PER_OWNER) {
-            return result(SatelliteOperationCode.OWNER_LIMIT, false, null, null);
-        }
-
         SatelliteState satellite = SatelliteState.launch(
                 satelliteId, definition.id(), ownerId, logicalTime
         );
@@ -208,10 +225,16 @@ public final class SatelliteMissionRegistry {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
         }
         satellite = satellite.startMission(missionId);
+        SatelliteOperationCode refused = admission(ownerId, satellite, mission);
+        if (refused != null) {
+            return result(refused, false, null, null);
+        }
         satellites.put(satelliteId, satellite);
         satellitesByOwner.merge(ownerId, 1, Integer::sum);
-        missions.put(missionId, mission);
-        accounts.computeIfAbsent(ownerId, ResearchAccount::empty);
+        budget.reserve(StorageBudget.Section.SATELLITES, satelliteId, sizer.satelliteBytes(satellite));
+        putMission(mission);
+        budget.reserve(StorageBudget.Section.MISSIONS, missionId, sizer.missionBytes(mission));
+        admitAccount(ownerId);
         scheduler.schedule(mission);
         return result(SatelliteOperationCode.SUCCESS, true, satellite, mission);
     }
@@ -239,17 +262,15 @@ public final class SatelliteMissionRegistry {
             return result(same ? SatelliteOperationCode.IDEMPOTENT : SatelliteOperationCode.IDENTITY_CONFLICT,
                     false, existing, null);
         }
-        if (satellites.size() >= SatelliteLimits.MAX_SATELLITES
-                || !accounts.containsKey(candidate.ownerId()) && accounts.size() >= SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
-            return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
-        }
-        if (ownerSatellites(candidate.ownerId()) >= SatelliteLimits.MAX_SATELLITES_PER_OWNER) {
-            return result(SatelliteOperationCode.OWNER_LIMIT, false, null, null);
+        SatelliteOperationCode refused = admission(candidate.ownerId(), candidate, null);
+        if (refused != null) {
+            return result(refused, false, null, null);
         }
         satellites.put(candidate.satelliteId(), candidate);
         satellitesByOwner.merge(candidate.ownerId(), 1, Integer::sum);
-        indexLink(null, candidate);
-        accounts.computeIfAbsent(candidate.ownerId(), ResearchAccount::empty);
+        receiverLinks.update(null, candidate);
+        budget.reserve(StorageBudget.Section.SATELLITES, candidate.satelliteId(), sizer.satelliteBytes(candidate));
+        admitAccount(candidate.ownerId());
         return result(SatelliteOperationCode.SUCCESS, true, candidate, null);
     }
 
@@ -282,7 +303,8 @@ public final class SatelliteMissionRegistry {
         }
         satellites.remove(satelliteId);
         satellitesByOwner.computeIfPresent(satellite.ownerId(), (owner, count) -> count <= 1 ? null : count - 1);
-        indexLink(satellite, null);
+        receiverLinks.update(satellite, null);
+        budget.release(StorageBudget.Section.SATELLITES, satelliteId);
         return result(SatelliteOperationCode.SUCCESS, true, null, null);
     }
 
@@ -297,7 +319,7 @@ public final class SatelliteMissionRegistry {
         }
         SatelliteState updated = satellite.withKindState(next);
         satellites.put(satelliteId, updated);
-        indexLink(satellite, updated);
+        receiverLinks.update(satellite, updated);
         return result(SatelliteOperationCode.SUCCESS, true, updated, null);
     }
 
@@ -324,35 +346,63 @@ public final class SatelliteMissionRegistry {
         if (!(satellite.kindState() instanceof SatelliteKindState.Survey survey)) {
             return result(SatelliteOperationCode.DEFINITION_NOT_FOUND, false, satellite, null);
         }
-        long charge = survey.chargeAt(logicalTime, satellite.blueprint().stats().power(),
+        Optional<SatelliteKindState.Survey> after = survey.pay(logicalTime, satellite.blueprint().stats().power(),
                 satellite.blueprint().stats().battery());
-        if (charge < survey.scanEnergy()) {
+        if (after.isEmpty()) {
             return result(SatelliteOperationCode.NO_POWER, false, satellite, null);
         }
-        SatelliteState paid = satellite.withKindState(new SatelliteKindState.Survey(charge - survey.scanEnergy(),
-                logicalTime, survey.scanEnergy(), survey.scanRadius(), survey.scanCell()));
+        SatelliteState paid = satellite.withKindState(after.get());
         satellites.put(satelliteId, paid);
         return result(SatelliteOperationCode.SUCCESS, true, paid, null);
     }
 
+    /**
+     * ADR-050 sections 4 and 9: an operator returns a QUARANTINED mission to its previous status once its
+     * invariants hold again; otherwise the mission stays quarantined.
+     */
+    public synchronized SatelliteOperationResult releaseQuarantine(UUID missionId) {
+        MissionState mission = missions.get(Objects.requireNonNull(missionId, "missionId"));
+        if (mission == null) {
+            return result(SatelliteOperationCode.MISSION_NOT_FOUND, false, null, null);
+        }
+        SatelliteState satellite = satellites.get(mission.satelliteId());
+        if (mission.status() != MissionStatus.QUARANTINED) {
+            return result(SatelliteOperationCode.IDEMPOTENT, false, satellite, mission);
+        }
+        MissionState released = mission.releaseQuarantine();
+        boolean bound = satellite != null && satellite.ownerId().equals(mission.ownerId())
+                && satellite.currentMissionId().filter(missionId::equals).isPresent();
+        if (!bound || RegistryInvariants.instanceProblem(released, instances) != null) {
+            return result(SatelliteOperationCode.RECOVERY_REQUIRED, false, satellite, mission);
+        }
+        putMission(released);
+        if (released.status() == MissionStatus.ACTIVE) {
+            scheduler.schedule(released);
+        }
+        return result(SatelliteOperationCode.SUCCESS, true, satellite, released);
+    }
+
+    /** ADR-050 section 8: an operator returns a RECOVERY_REQUIRED satellite to service. */
+    public synchronized SatelliteOperationResult recoverSatellite(UUID satelliteId) {
+        SatelliteState satellite = satellites.get(Objects.requireNonNull(satelliteId, "satelliteId"));
+        if (satellite == null) {
+            return result(SatelliteOperationCode.SATELLITE_NOT_FOUND, false, null, null);
+        }
+        if (satellite.status() != SatelliteStatus.RECOVERY_REQUIRED) {
+            return result(SatelliteOperationCode.IDEMPOTENT, false, satellite, null);
+        }
+        SatelliteState recovered = satellite.recover();
+        satellites.put(satelliteId, recovered);
+        return result(SatelliteOperationCode.SUCCESS, true, recovered, null);
+    }
+
+    public synchronized Optional<AsteroidInstance> instance(UUID instanceId) {
+        return Optional.ofNullable(instances.get(instanceId));
+    }
+
     /** Solar satellites whose link names this receiver, in ID order. */
     public synchronized List<UUID> linkedTo(UUID receiverId) {
-        return receiverLinks.getOrDefault(Objects.requireNonNull(receiverId, "receiverId"), java.util.Set.of())
-                .stream().sorted(UUID_ORDER).toList();
-    }
-
-    private void indexLink(SatelliteState previous, SatelliteState next) {
-        receiver(previous).ifPresent(receiver -> receiverLinks.computeIfPresent(receiver, (key, linked) -> {
-            linked.remove(previous.satelliteId());
-            return linked.isEmpty() ? null : linked;
-        }));
-        receiver(next).ifPresent(receiver -> receiverLinks
-                .computeIfAbsent(receiver, key -> new java.util.HashSet<>()).add(next.satelliteId()));
-    }
-
-    private static java.util.Optional<UUID> receiver(SatelliteState state) {
-        return state != null && state.kindState() instanceof SatelliteKindState.Solar solar
-                ? solar.receiver() : java.util.Optional.empty();
+        return receiverLinks.linkedTo(receiverId);
     }
 
     public synchronized int ownerSatellites(UUID ownerId) {
@@ -400,11 +450,6 @@ public final class SatelliteMissionRegistry {
         if (missions.containsKey(missionId)) {
             return result(SatelliteOperationCode.IDENTITY_CONFLICT, false, satellite, missions.get(missionId));
         }
-        if (missions.size() >= SatelliteLimits.MAX_MISSIONS
-                || unfinishedMissionCount() >= SatelliteLimits.MAX_ACTIVE_MISSIONS) {
-            return result(SatelliteOperationCode.CAPACITY_REACHED, false, satellite, null);
-        }
-
         MissionState mission;
         try {
             mission = MissionState.start(
@@ -420,9 +465,14 @@ public final class SatelliteMissionRegistry {
         } catch (ArithmeticException exception) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, satellite, null);
         }
+        SatelliteOperationCode refused = admission(ownerId, null, mission);
+        if (refused != null) {
+            return result(refused, false, satellite, null);
+        }
         SatelliteState updated = satellite.startMission(missionId);
         satellites.put(satelliteId, updated);
-        missions.put(missionId, mission);
+        putMission(mission);
+        budget.reserve(StorageBudget.Section.MISSIONS, missionId, sizer.missionBytes(mission));
         scheduler.schedule(mission);
         return result(SatelliteOperationCode.SUCCESS, true, updated, mission);
     }
@@ -434,15 +484,21 @@ public final class SatelliteMissionRegistry {
                 logicalTime,
                 SatelliteLimits.MAX_COMPLETIONS_PER_PASS,
                 id -> Optional.ofNullable(missions.get(id)),
-                mission -> missions.put(mission.missionId(), mission.complete(logicalTime))
+                mission -> putMission(mission.complete(logicalTime))
         );
+        int pruned = retention.prune(logicalTime, limits.finishedPerOwner(), saveEpoch, missions::get,
+                this::removeMission);
+        if (drained.completed() > 0 || pruned > 0) {
+            changedSinceEpoch = true;
+        }
         return new SchedulerPass(
                 logicalTime,
                 logicalTime != before,
                 drained.completed(),
                 drained.inspectedEntries(),
                 drained.staleEntries(),
-                drained.remainingScheduled()
+                drained.remainingScheduled(),
+                pruned
         );
     }
 
@@ -466,8 +522,12 @@ public final class SatelliteMissionRegistry {
         if (mission.status() == MissionStatus.ACTIVE
                 && logicalTime >= mission.completesAtLogicalTime()) {
             mission = mission.complete(logicalTime);
-            missions.put(missionId, mission);
+            putMission(mission);
+            scheduler.remove(missionId);
             completedNow = true;
+        }
+        if (mission.status() == MissionStatus.QUARANTINED) {
+            return result(SatelliteOperationCode.RECOVERY_REQUIRED, false, satellite, mission);
         }
         if (mission.status() == MissionStatus.ACTIVE) {
             return result(SatelliteOperationCode.NOT_READY, false, satellite, mission);
@@ -494,7 +554,7 @@ public final class SatelliteMissionRegistry {
         }
         MissionState claimed = mission.beginClaim(logicalTime);
         accounts.put(ownerId, updated);
-        missions.put(missionId, claimed);
+        putMission(claimed);
         if (claimed.status() == MissionStatus.CLAIMED) {
             satellite = finishSatelliteMission(satellite, missionId);
         }
@@ -523,7 +583,7 @@ public final class SatelliteMissionRegistry {
             return result(SatelliteOperationCode.NOT_READY, false, satellite, mission);
         }
         MissionState claimed = mission.finishDiscovery();
-        missions.put(missionId, claimed);
+        putMission(claimed);
         satellite = finishSatelliteMission(satellite, missionId);
         return result(SatelliteOperationCode.SUCCESS, true, satellite, claimed);
     }
@@ -548,13 +608,19 @@ public final class SatelliteMissionRegistry {
         if (mission.status() == MissionStatus.CANCELLED) {
             return result(SatelliteOperationCode.CANCELLED, false, satellite, mission);
         }
-        if (mission.status() == MissionStatus.CLAIMED
-                || mission.status() == MissionStatus.CLAIM_PENDING_DISCOVERY) {
+        if (mission.status() == MissionStatus.CLAIMED || mission.phase() == MissionStatus.CLAIM_PENDING_DISCOVERY) {
             return result(SatelliteOperationCode.ALREADY_CLAIMED, false, satellite, mission);
         }
+        if (mission.status() == MissionStatus.QUARANTINED && !operator) {
+            return result(SatelliteOperationCode.RECOVERY_REQUIRED, false, satellite, mission);
+        }
         MissionState cancelled = mission.cancel(logicalTime);
-        missions.put(missionId, cancelled);
-        satellite = finishSatelliteMission(satellite, missionId);
+        putMission(cancelled);
+        scheduler.remove(missionId);
+        // ADR-050 section 8: only a satellite that names this mission is released.
+        if (satellite != null && satellite.currentMissionId().filter(missionId::equals).isPresent()) {
+            satellite = finishSatelliteMission(satellite, missionId);
+        }
         return result(SatelliteOperationCode.SUCCESS, true, satellite, cancelled);
     }
 
@@ -631,15 +697,73 @@ public final class SatelliteMissionRegistry {
     }
 
     public synchronized long unfinishedMissionCount() {
-        return missions.values().stream().filter(state -> state.status().unfinished()).count();
+        return retention.unfinished();
     }
 
-    private boolean hasCapacityFor(UUID ownerId) {
-        return satellites.size() < SatelliteLimits.MAX_SATELLITES
-                && missions.size() < SatelliteLimits.MAX_MISSIONS
-                && unfinishedMissionCount() < SatelliteLimits.MAX_ACTIVE_MISSIONS
-                && (accounts.containsKey(ownerId)
-                || accounts.size() < SatelliteLimits.MAX_RESEARCH_ACCOUNTS);
+    public synchronized int finishedMissionCount() {
+        return retention.finished();
+    }
+
+    /** Reserved lifecycle bytes of one section: satellites, missions, instances or accounts. */
+    public synchronized long reservedBytes(String section) {
+        return budget.reserved(StorageBudget.Section.valueOf(section));
+    }
+
+    public synchronized int scheduledCount() {
+        return scheduler.scheduledCount();
+    }
+
+    /**
+     * ADR-050 sections 6–7 admission of new records: counts first, then the lifecycle byte reservations.
+     * {@code satellite} and {@code mission} are the records about to be admitted, either may be null.
+     */
+    private SatelliteOperationCode admission(UUID ownerId, SatelliteState satellite, MissionState mission) {
+        boolean newAccount = !accounts.containsKey(ownerId);
+        if (newAccount && accounts.size() >= SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
+            return SatelliteOperationCode.CAPACITY_REACHED;
+        }
+        if (satellite != null) {
+            if (satellites.size() >= limits.satellitesGlobal()) {
+                return SatelliteOperationCode.CAPACITY_REACHED;
+            }
+            if (ownerSatellites(ownerId) >= limits.satellitesPerOwner()) {
+                return SatelliteOperationCode.OWNER_LIMIT;
+            }
+        }
+        if (mission != null) {
+            if (missions.size() >= Math.min(limits.missionsTotal(), SatelliteLimits.MAX_MISSIONS)
+                    || retention.unfinished() >= limits.unfinishedGlobal()) {
+                return SatelliteOperationCode.CAPACITY_REACHED;
+            }
+            if (retention.unfinished(ownerId) >= limits.unfinishedPerOwner()) {
+                return SatelliteOperationCode.OWNER_LIMIT;
+            }
+        }
+        if (satellite != null && !budget.fits(StorageBudget.Section.SATELLITES, sizer.satelliteBytes(satellite))
+                || mission != null && !budget.fits(StorageBudget.Section.MISSIONS, sizer.missionBytes(mission))
+                || newAccount && !budget.fits(StorageBudget.Section.ACCOUNTS, RecordSizer.ACCOUNT_BYTES)) {
+            return SatelliteOperationCode.STORAGE_BUDGET;
+        }
+        return null;
+    }
+
+    private void admitAccount(UUID ownerId) {
+        if (!accounts.containsKey(ownerId)) {
+            accounts.put(ownerId, ResearchAccount.empty(ownerId));
+            budget.reserve(StorageBudget.Section.ACCOUNTS, ownerId, RecordSizer.ACCOUNT_BYTES);
+        }
+    }
+
+    /** Every mission write goes through here, so counters and pruning queues never drift. */
+    private void putMission(MissionState next) {
+        MissionState previous = missions.put(next.missionId(), next);
+        retention.changed(previous, next, saveEpoch);
+    }
+
+    private void removeMission(MissionState mission) {
+        missions.remove(mission.missionId());
+        retention.changed(mission, null, saveEpoch);
+        budget.release(StorageBudget.Section.MISSIONS, mission.missionId());
     }
 
     private SatelliteState finishSatelliteMission(SatelliteState satellite, UUID missionId) {
@@ -666,15 +790,5 @@ public final class SatelliteMissionRegistry {
                 Optional.ofNullable(mission),
                 balance
         );
-    }
-
-    public record SchedulerPass(
-            long logicalGameTime,
-            boolean clockAdvanced,
-            int completed,
-            int inspectedEntries,
-            int staleEntries,
-            int remainingScheduled
-    ) {
     }
 }

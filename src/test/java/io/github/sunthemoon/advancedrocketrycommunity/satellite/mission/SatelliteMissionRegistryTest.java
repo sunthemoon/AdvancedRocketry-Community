@@ -47,7 +47,7 @@ final class SatelliteMissionRegistryTest {
                 satelliteId, missionId, ownerId, definition(), ModIdentity.id("moon"), 1_000L, true
         );
 
-        SatelliteMissionRegistry.SchedulerPass pass = registry.completeDue(1_200L);
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass pass = registry.completeDue(1_200L);
         SatelliteOperationResult claim = registry.claim(missionId, ownerId, 1_201L);
         SatelliteOperationResult replay = registry.claim(missionId, ownerId, 1_202L);
         SatelliteOperationResult finish = registry.finishDiscovery(missionId);

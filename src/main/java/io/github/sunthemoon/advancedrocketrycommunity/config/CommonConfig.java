@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
@@ -86,7 +87,54 @@ public final class CommonConfig {
             .defineInRange("satellites.surveyScanReadsPerTick", ScanSettings.MAX_READS_PER_TICK, 1,
                     ScanSettings.MAX_READS_PER_TICK);
 
+    public static final ForgeConfigSpec.IntValue UNFINISHED_MISSIONS_GLOBAL = limit(
+            "satellites.unfinishedMissionsGlobal", "Unfinished satellite missions on the server (ADR-050).",
+            RegistryLimits.DEFAULTS.unfinishedGlobal());
+    public static final ForgeConfigSpec.IntValue UNFINISHED_MISSIONS_PER_OWNER = limit(
+            "satellites.unfinishedMissionsPerOwner", "Unfinished satellite missions per owner.",
+            RegistryLimits.MAX_UNFINISHED_PER_OWNER);
+    public static final ForgeConfigSpec.IntValue FINISHED_MISSIONS_PER_OWNER = limit(
+            "satellites.finishedMissionsPerOwner", "Finished missions kept per owner before the oldest are pruned.",
+            RegistryLimits.MAX_FINISHED_PER_OWNER);
+    public static final ForgeConfigSpec.IntValue MISSIONS_TOTAL = limit(
+            "satellites.missionsTotal", "Missions of every status admitted on the server.",
+            RegistryLimits.MAX_MISSIONS_TOTAL);
+    public static final ForgeConfigSpec.IntValue SATELLITES_GLOBAL = limit(
+            "satellites.satellitesGlobal", "Satellites on the server.", RegistryLimits.DEFAULTS.satellitesGlobal());
+    public static final ForgeConfigSpec.IntValue SATELLITES_PER_OWNER = limit(
+            "satellites.satellitesPerOwner", "Satellites per owner.", RegistryLimits.DEFAULTS.satellitesPerOwner());
+    public static final ForgeConfigSpec.IntValue INSTANCES_GLOBAL = limit(
+            "satellites.asteroidInstancesGlobal", "Live asteroid instances on the server.",
+            RegistryLimits.DEFAULTS.instancesGlobal());
+    public static final ForgeConfigSpec.IntValue INSTANCES_PER_OWNER = limit(
+            "satellites.asteroidInstancesPerOwner", "Live asteroid instances per owner.",
+            RegistryLimits.MAX_INSTANCES_PER_OWNER);
+    public static final ForgeConfigSpec.IntValue INTENT_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between a player's state-changing satellite intents (start, claim, cancel...; at least 10).")
+            .defineInRange("satellites.intentIntervalTicks", RegistryLimits.MIN_INTENT_TICKS,
+                    RegistryLimits.MIN_INTENT_TICKS, RegistryLimits.MAX_INTERVAL_TICKS);
+    public static final ForgeConfigSpec.IntValue SELECTION_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between a player's satellite selection intents (previous/next; at least 2).")
+            .defineInRange("satellites.selectionIntervalTicks", RegistryLimits.MIN_SELECTION_TICKS,
+                    RegistryLimits.MIN_SELECTION_TICKS, RegistryLimits.MAX_INTERVAL_TICKS);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
+
+    /** ADR-050 section 6 admission limits; the defaults (also the maxima) until the COMMON config is loaded. */
+    public static RegistryLimits registryLimits() {
+        if (!SPEC.isLoaded()) {
+            return RegistryLimits.DEFAULTS;
+        }
+        return new RegistryLimits(UNFINISHED_MISSIONS_GLOBAL.get(), UNFINISHED_MISSIONS_PER_OWNER.get(),
+                FINISHED_MISSIONS_PER_OWNER.get(), MISSIONS_TOTAL.get(), SATELLITES_GLOBAL.get(),
+                SATELLITES_PER_OWNER.get(), INSTANCES_GLOBAL.get(), INSTANCES_PER_OWNER.get(),
+                INTENT_INTERVAL_TICKS.get(), SELECTION_INTERVAL_TICKS.get());
+    }
+
+    private static ForgeConfigSpec.IntValue limit(String path, String comment, int maximum) {
+        return BUILDER.comment(comment, "Can only be lowered; the default is the hard maximum.")
+                .defineInRange(path, maximum, 1, maximum);
+    }
 
     /** Current survey scan limits; the defaults (also the maxima) until the COMMON config is loaded. */
     public static ScanSettings surveyScanSettings() {

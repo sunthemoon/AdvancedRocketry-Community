@@ -234,6 +234,11 @@ public final class SatelliteBuilderBlockEntity extends BlockEntity implements Me
                 && level.getBlockEntity(worldPosition) == this;
     }
 
+    /** ADR-049 section 10: an intent that arrived too soon after the last one changes nothing. */
+    void reportRateLimited(ServerPlayer player) {
+        updateResult(player, SatelliteOperationCode.RATE_LIMITED);
+    }
+
     private void updateResult(ServerPlayer player, SatelliteOperationCode code) {
         lastResult = code;
         setChanged();

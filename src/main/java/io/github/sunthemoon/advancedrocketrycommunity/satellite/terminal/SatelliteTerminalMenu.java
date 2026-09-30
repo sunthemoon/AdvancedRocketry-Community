@@ -143,10 +143,15 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int buttonId) {
-        return player instanceof ServerPlayer serverPlayer
-                && terminal != null
-                && stillValid(player)
-                && terminal.handleButton(serverPlayer, buttonId);
+        if (!(player instanceof ServerPlayer serverPlayer) || terminal == null || !stillValid(player)) {
+            return false;
+        }
+        boolean selection = buttonId == BUTTON_PREVIOUS || buttonId == BUTTON_NEXT;
+        if (!SatelliteRuntime.allowIntent(serverPlayer, selection)) {
+            terminal.reportRateLimited(serverPlayer);
+            return false;
+        }
+        return terminal.handleButton(serverPlayer, buttonId);
     }
 
     @Override

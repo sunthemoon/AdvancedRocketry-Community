@@ -26,7 +26,8 @@ public final class SatelliteRegistryPayload {
         SatelliteMissionRegistry restored = SatelliteMissionRegistry.restore(
                 requireNonNegativeLong(clock, "logical_game_time"),
                 requireNonNegativeLong(clock, "last_observed_game_time"),
-                payload.getLong(SAVE_EPOCH)
+                payload.getLong(SAVE_EPOCH),
+                CodecRecordSizer.INSTANCE
         );
         ListTag satellites = requireList(payload, "satellites");
         ListTag missions = requireList(payload, "missions");

@@ -53,6 +53,13 @@ public sealed interface SatelliteKindState {
             long total = gained > Long.MAX_VALUE - charge ? Long.MAX_VALUE : charge + gained;
             return Math.min(battery, total);
         }
+
+        /** ADR-049 section 8: the state after paying one scan at {@code logicalTime}, or empty when uncovered. */
+        public Optional<Survey> pay(long logicalTime, int power, int battery) {
+            long available = chargeAt(logicalTime, power, battery);
+            return available < scanEnergy ? Optional.empty()
+                    : Optional.of(new Survey(available - scanEnergy, logicalTime, scanEnergy, scanRadius, scanCell));
+        }
     }
 
     /** Output multiplier fixed at launch and the receiver currently holding the link. */

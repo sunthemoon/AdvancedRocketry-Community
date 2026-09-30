@@ -34,10 +34,18 @@ public final class MissionDeadlineScheduler {
         if (mission.status() != MissionStatus.ACTIVE) {
             throw new IllegalArgumentException("Only active missions can be scheduled");
         }
-        if (queue.size() >= SatelliteLimits.MAX_ACTIVE_MISSIONS) {
+        // Admission bounds unfinished missions (ADR-050 section 6); a loaded over-limit root may hold up to the
+        // record bound, and the queue never holds more entries than there are records it serves.
+        if (queue.size() >= SatelliteLimits.MAX_MISSIONS) {
             throw new IllegalStateException("Mission scheduler capacity reached");
         }
         queue.add(new Entry(mission.completesAtLogicalTime(), mission.missionId()));
+    }
+
+    /** ADR-050 section 5 queue integrity: a cancelled, quarantined or early-claimed mission leaves the queue. */
+    public void remove(UUID missionId) {
+        Objects.requireNonNull(missionId, "missionId");
+        queue.removeIf(entry -> entry.missionId().equals(missionId));
     }
 
     public DrainResult drainDue(

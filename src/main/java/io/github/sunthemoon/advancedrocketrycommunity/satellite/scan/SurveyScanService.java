@@ -137,7 +137,7 @@ public final class SurveyScanService {
             try {
                 if (scan.job().step(new LevelScanSource(player.serverLevel()), budget)) {
                     jobs.remove(entry.getKey());
-                    sender.accept(player, scan.job().result());
+                    sender.accept(player, SurveyScanResultPacket.of(scan.job().result()));
                     player.displayClientMessage(Component.translatable(
                             "status.advancedrocketrycommunity.survey_scan.complete"), true);
                 }

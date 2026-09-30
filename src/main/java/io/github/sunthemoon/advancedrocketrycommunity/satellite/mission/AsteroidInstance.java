@@ -68,4 +68,11 @@ public record AsteroidInstance(
             }
         }
     }
+
+    /** ADR-050 section 9: an instance whose mission reference is broken is held for an operator. */
+    public AsteroidInstance quarantine() {
+        return new AsteroidInstance(schemaVersion, instanceId, ownerId, system, asteroidType, tableVersion,
+                candidateFingerprint, seed, yield, createdAt, expiresAt, InstanceState.QUARANTINED, sourceMission,
+                allocatedMission);
+    }
 }

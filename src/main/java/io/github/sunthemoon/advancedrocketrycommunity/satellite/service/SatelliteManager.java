@@ -47,6 +47,11 @@ public final class SatelliteManager {
     private final SolarLinks links;
     private final SatelliteKindLifecycle kinds;
     private final SurveyScanService scans;
+    private final IntentRateLimiter intents = new IntentRateLimiter();
+    private static final int COALESCED_FLUSH_TICKS = 100;
+    private int lastCoalescedFlush = Integer.MIN_VALUE / 2;
+    private long coalescedFlushes;
+    private boolean coalescedFailureReported;
     private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
     private boolean replayInitialized;
     private int replayBackoffTicks;
@@ -102,17 +107,56 @@ public final class SatelliteManager {
                 // A blocked registry (ADR-050 section 9) was reported when it loaded; nothing is scheduled.
                 return;
             }
-            SatelliteMissionRegistry.SchedulerPass pass = data.completeDue(gameTime);
-            if (pass.completed() > 0) {
-                data.flush(server);
+            data.applyLimits(CommonConfig.registryLimits());
+            io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass pass = data.completeDue(gameTime);
+            if (pass.changed()) {
+                // ADR-050 section 2: completions and pruning wait for the coalesced flush below.
                 AdvancedRocketryCommunity.LOGGER.info(
-                        "ARCE_SATELLITE_SCHEDULER completed={} inspected={} remaining={}",
-                        pass.completed(), pass.inspectedEntries(), pass.remainingScheduled()
+                        "ARCE_SATELLITE_SCHEDULER completed={} pruned={} inspected={} remaining={}",
+                        pass.completed(), pass.pruned(), pass.inspectedEntries(), pass.remainingScheduled()
                 );
             }
+            coalescedFlush(server, data);
         } catch (RuntimeException exception) {
             AdvancedRocketryCommunity.LOGGER.error("Satellite scheduler pass failed", exception);
         }
+    }
+
+    /**
+     * ADR-050 section 2: while a state change is pending, one flush runs at most every 100 ticks, on top of the
+     * barrier flushes. A failing flush keeps the change pending and is reported once until a flush succeeds.
+     */
+    private void coalescedFlush(MinecraftServer server, SatelliteMissionSavedData data) {
+        int now = server.getTickCount();
+        if (!data.flushPending() || now - lastCoalescedFlush < COALESCED_FLUSH_TICKS) {
+            return;
+        }
+        lastCoalescedFlush = now;
+        try {
+            data.flush(server);
+            coalescedFlushes++;
+            coalescedFailureReported = false;
+        } catch (RuntimeException exception) {
+            if (!coalescedFailureReported) {
+                logOperationFailure("coalesced flush (kept pending)", exception);
+                coalescedFailureReported = true;
+            }
+        }
+    }
+
+    /** Coalesced flushes since the server started (ADR-050 section 2, reported by C9). */
+    public long coalescedFlushes() {
+        return coalescedFlushes;
+    }
+
+    /**
+     * ADR-049 section 10 / ADR-050 section 6: one state-changing intent per player per 10 ticks and one
+     * selection intent per 2 ticks (COMMON config may lengthen both). Applied where client intents arrive.
+     */
+    public boolean allowIntent(ServerPlayer player, boolean selection) {
+        MinecraftServer server = player.getServer();
+        return server == null || intents.allow(player.getUUID(), selection, server.getTickCount(),
+                CommonConfig.registryLimits());
     }
 
     public SatelliteOperationResult launch(
@@ -498,6 +542,7 @@ public final class SatelliteManager {
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         scans.cancel(event.getEntity().getUUID());
+        intents.forget(event.getEntity().getUUID());
     }
 
     public Optional<CelestialCatalog> celestialCatalog() {
@@ -506,6 +551,10 @@ public final class SatelliteManager {
 
     public void clear() {
         scans.clear();
+        intents.clear();
+        lastCoalescedFlush = Integer.MIN_VALUE / 2;
+        coalescedFlushes = 0L;
+        coalescedFailureReported = false;
         receivers.clear();
         pendingDiscoveryReplay.clear();
         replayInitialized = false;

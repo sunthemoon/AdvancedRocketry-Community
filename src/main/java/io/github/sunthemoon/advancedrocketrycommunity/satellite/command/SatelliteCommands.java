@@ -59,8 +59,26 @@ public final class SatelliteCommands {
                                 .then(Commands.literal("verify")
                                         .then(Commands.argument("id", UuidArgument.uuid())
                                                 .executes(this::verify)))
+                                .then(Commands.literal("inspect")
+                                        .then(Commands.argument("mission_id", UuidArgument.uuid())
+                                                .executes(this::mission)))
+                                .then(Commands.literal("release")
+                                        .then(Commands.argument("mission_id", UuidArgument.uuid())
+                                                .executes(this::release)))
+                                .then(Commands.literal("cancel")
+                                        .then(Commands.argument("mission_id", UuidArgument.uuid())
+                                                .executes(this::cancel)))
                                 .then(Commands.argument("mission_id", UuidArgument.uuid())
                                         .executes(this::mission)))
+                        .then(Commands.literal("satellite")
+                                .then(Commands.literal("recover")
+                                        .then(Commands.argument("satellite_id", UuidArgument.uuid())
+                                                .executes(this::recover))))
+                        .then(Commands.literal("instance")
+                                .then(Commands.literal("inspect")
+                                        .then(Commands.argument("instance_id", UuidArgument.uuid())
+                                                .executes(this::instance))))
+                        .then(Commands.literal("diagnostics").executes(this::diagnostics))
                         .then(Commands.literal("cancel")
                                 .then(Commands.argument("mission_id", UuidArgument.uuid())
                                         .executes(this::cancel)))
@@ -151,12 +169,7 @@ public final class SatelliteCommands {
                 missionId,
                 actor(context.getSource())
         );
-        if (!result.success()) {
-            context.getSource().sendFailure(Component.literal("Cancel rejected: " + result.code()));
-            return 0;
-        }
-        context.getSource().sendSuccess(() -> Component.literal("Mission cancelled: " + missionId), true);
-        return 1;
+        return audit(context, "mission_cancel", missionId, result);
     }
 
     private int recoverChip(CommandContext<CommandSourceStack> context)
@@ -272,6 +285,75 @@ public final class SatelliteCommands {
         context.getSource().sendSuccess(() -> Component.literal(
                 kind + " " + id + ": " + report.outcome() + " (" + report.detail() + ")"), false);
         return report.outcome() == RewardVerifier.Outcome.MATCH ? 1 : 0;
+    }
+
+    /** ADR-050 sections 4 and 9: returns a QUARANTINED mission to its previous status once its invariants hold. */
+    private int release(CommandContext<CommandSourceStack> context) {
+        UUID missionId = UuidArgument.getUuid(context, "mission_id");
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(context.getSource().getServer());
+        if (!data.operational()) {
+            context.getSource().sendFailure(Component.literal("The satellite registry is blocked"));
+            return 0;
+        }
+        SatelliteOperationResult result = data.releaseQuarantine(missionId);
+        return audit(context, "mission_release", missionId, result);
+    }
+
+    /** ADR-050 section 8: returns a RECOVERY_REQUIRED satellite to service. */
+    private int recover(CommandContext<CommandSourceStack> context) {
+        UUID satelliteId = UuidArgument.getUuid(context, "satellite_id");
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(context.getSource().getServer());
+        if (!data.operational()) {
+            context.getSource().sendFailure(Component.literal("The satellite registry is blocked"));
+            return 0;
+        }
+        SatelliteOperationResult result = data.recoverSatellite(satelliteId);
+        return audit(context, "satellite_recover", satelliteId, result);
+    }
+
+    private int instance(CommandContext<CommandSourceStack> context) {
+        UUID instanceId = UuidArgument.getUuid(context, "instance_id");
+        AsteroidInstance instance = SatelliteMissionSavedData.get(context.getSource().getServer())
+                .instance(instanceId).orElse(null);
+        if (instance == null) {
+            context.getSource().sendFailure(Component.literal("Instance not found"));
+            return 0;
+        }
+        long items = instance.yield().stream().mapToLong(entry -> entry.count()).sum();
+        context.getSource().sendSuccess(() -> Component.literal("instance=" + instance.instanceId()
+                + " owner=" + instance.ownerId() + " state=" + instance.state() + " type=" + instance.asteroidType()
+                + " system=" + instance.system() + " version=" + instance.tableVersion()
+                + " entries=" + instance.yield().size() + " items=" + items
+                + " expires=" + (instance.expiresAt().isPresent() ? instance.expiresAt().getAsLong() : "none")
+                + " source=" + instance.sourceMission()
+                + " allocated=" + instance.allocatedMission().map(UUID::toString).orElse("none")), false);
+        return 1;
+    }
+
+    /** ADR-050 sections 5 and 7: counts, queue sizes, reserved bytes and coalesced flushes. */
+    private int diagnostics(CommandContext<CommandSourceStack> context) {
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(context.getSource().getServer());
+        if (!data.operational()) {
+            context.getSource().sendFailure(Component.literal("The satellite registry is blocked"));
+            return 0;
+        }
+        String line = data.diagnostics() + " flush_pending=" + data.flushPending()
+                + " coalesced_flushes=" + satellites.coalescedFlushes();
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_DIAGNOSTICS {}", line);
+        context.getSource().sendSuccess(() -> Component.literal(line), false);
+        return 1;
+    }
+
+    /** One bounded audit line per operator lifecycle action (ADR-050 section 9). */
+    private int audit(CommandContext<CommandSourceStack> context, String action, UUID id, SatelliteOperationResult result) {
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_ADMIN action={} id={} result={} by={}",
+                action, id, result.code(), actor(context.getSource()));
+        if (!result.success()) {
+            context.getSource().sendFailure(Component.literal(action + " rejected: " + result.code()));
+            return 0;
+        }
+        context.getSource().sendSuccess(() -> Component.literal(action + " " + id + ": " + result.code()), true);
+        return 1;
     }
 
     private int evidence(CommandContext<CommandSourceStack> context) {
