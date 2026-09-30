@@ -6,6 +6,7 @@ public enum StationAccessAction {
     MANAGE_MEMBERS,
     TRANSFER_OWNERSHIP,
     DELETE,
-    EXPAND
+    /** Region expansion and environment settings; owner or operator only. */
+    MANAGE_STATION
 }
 

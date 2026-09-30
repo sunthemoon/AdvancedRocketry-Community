@@ -11,7 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimit
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
-import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionCode;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public final class StationExpansionGameTests {
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         helper.assertTrue(space != null, "Space is unavailable");
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
-        helper.assertTrue(data.operational() && !data.expansionQuarantined(), "Station authority is unavailable");
+        helper.assertTrue(data.operational() && !data.updatesQuarantined(), "Station authority is unavailable");
         StationPlatformGenerator platforms = new StationPlatformGenerator();
         StationCreationService creation = new StationCreationService(platforms, body -> true);
         UUID ownerId = UUID.randomUUID();
@@ -64,18 +64,18 @@ public final class StationExpansionGameTests {
             space.getChunkAt(pad); // Test setup only; production checks never load chunks.
             for (UUID denied : new UUID[]{memberId, inviteeId, UUID.randomUUID()}) {
                 Mock player = join(server, online, denied, false, space, pad);
-                expect(helper, player, StationExpansionCode.UNAUTHORIZED, "arce station expand", "non-manager");
+                expect(helper, player, StationManagementCode.UNAUTHORIZED, "arce station expand", "non-manager");
             }
 
             Mock owner = join(server, online, ownerId, false, helper.getLevel(), helper.absolutePos(BlockPos.ZERO));
-            expect(helper, owner, StationExpansionCode.NOT_IN_SPACE, "arce station expand", "Overworld request");
+            expect(helper, owner, StationManagementCode.NOT_IN_SPACE, "arce station expand", "Overworld request");
             BlockPos gap = pad.east(StationLimits.REGION_SIZE / 2 + 32);
             helper.assertTrue(!space.hasChunkAt(gap), "Gap chunk was already loaded before the player arrived");
             // A connected player's own chunk loads on arrival, so CHUNK_UNLOADED is defense in depth
             // for real players; its ordering is covered by StationExpansionServiceTest.
             owner.player().teleportTo(space, gap.getX() + 0.5D, gap.getY(), gap.getZ() + 0.5D, 0.0F, 0.0F);
             helper.assertTrue(space.hasChunkAt(gap), "The arriving player did not load their own chunk");
-            expect(helper, owner, StationExpansionCode.NOT_IN_STATION, "arce station expand", "gap request");
+            expect(helper, owner, StationManagementCode.NOT_IN_STATION, "arce station expand", "gap request");
             owner.player().teleportTo(space, pad.getX() + 0.5D, pad.getY(), pad.getZ() + 0.5D, 0.0F, 0.0F);
 
             // Only the player's own command source counts: no console, /execute, block or function bypass.
@@ -90,17 +90,17 @@ public final class StationExpansionGameTests {
             // /execute keeps the console's output source; its replies arrive there, not at the owner.
             List<String> consoleReplies = new ArrayList<>();
             CommandSourceStack console = server.createCommandSourceStack().withSource(capture(consoleReplies));
-            String notLocal = StationExpansionCode.NOT_LOCAL_PLAYER.description();
+            String notLocal = StationManagementCode.NOT_LOCAL_PLAYER.description();
             run(dispatcher, console, "execute as " + ownerId + " run arce station expand");
             helper.assertTrue(consoleReplies.size() == 1 && consoleReplies.get(0).contains(notLocal),
                     "/execute as the owner was not rejected as non-local: " + consoleReplies);
             run(dispatcher, console, "execute as " + ownerId + " run arce station expand confirm " + station.stationId());
             helper.assertTrue(consoleReplies.size() == 2 && consoleReplies.get(1).contains(notLocal),
                     "/execute confirm was not rejected as non-local: " + consoleReplies);
-            expect(helper, owner, StationExpansionCode.NO_CONFIRMATION,
+            expect(helper, owner, StationManagementCode.NO_CONFIRMATION,
                     "arce station expand confirm " + station.stationId(), "confirmation after /execute");
 
-            expect(helper, owner, StationExpansionCode.ISSUED, "arce station expand", "owner request");
+            expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
             helper.assertTrue(owner.last().contains("expand confirm " + station.stationId()),
                     "Warning does not name the confirm command");
             run(dispatcher, console, "execute as " + ownerId + " run arce station expand confirm " + station.stationId());
@@ -108,32 +108,32 @@ public final class StationExpansionGameTests {
                     "/execute confirm with a pending confirmation was not rejected: " + consoleReplies);
             // The CONFIRMATION_MISMATCH below proves the owner's confirmation was still pending.
             Mock operator = join(server, online, UUID.randomUUID(), true, space, pad);
-            expect(helper, operator, StationExpansionCode.NO_CONFIRMATION,
+            expect(helper, operator, StationManagementCode.NO_CONFIRMATION,
                     "arce station expand confirm " + station.stationId(), "transferred confirmation");
-            expect(helper, owner, StationExpansionCode.CONFIRMATION_MISMATCH,
+            expect(helper, owner, StationManagementCode.CONFIRMATION_MISMATCH,
                     "arce station expand confirm " + second.stationId(), "other station confirmation");
-            expect(helper, owner, StationExpansionCode.NO_CONFIRMATION,
+            expect(helper, owner, StationManagementCode.NO_CONFIRMATION,
                     "arce station expand confirm " + station.stationId(), "consumed confirmation");
 
             // Real logout through the registered listener, then a fresh connection for the same player.
-            expect(helper, owner, StationExpansionCode.ISSUED, "arce station expand", "owner request");
+            expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
             server.getPlayerList().remove(owner.player());
             online.remove(owner);
             owner = join(server, online, ownerId, false, space, pad);
-            expect(helper, owner, StationExpansionCode.NO_CONFIRMATION,
+            expect(helper, owner, StationManagementCode.NO_CONFIRMATION,
                     "arce station expand confirm " + station.stationId(), "confirmation after logout");
 
-            expect(helper, owner, StationExpansionCode.ISSUED, "arce station expand", "owner request");
+            expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
             data.declineInvitation(station.stationId(), inviteeId);
-            expect(helper, owner, StationExpansionCode.STATION_CHANGED,
+            expect(helper, owner, StationManagementCode.STATION_CHANGED,
                     "arce station expand confirm " + station.stationId(), "stale confirmation");
             helper.assertTrue(data.find(station.stationId()).orElseThrow().region().width() == StationLimits.REGION_SIZE,
                     "Rejected confirmation changed the region");
 
             station = data.find(station.stationId()).orElseThrow();
             int loadedChunks = space.getChunkSource().getLoadedChunksCount();
-            expect(helper, owner, StationExpansionCode.ISSUED, "arce station expand", "owner request");
-            expect(helper, owner, StationExpansionCode.EXPANDED,
+            expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
+            expect(helper, owner, StationManagementCode.EXPANDED,
                     "arce station expand confirm " + station.stationId(), "owner confirm");
             helper.assertTrue(space.getChunkSource().getLoadedChunksCount() == loadedChunks,
                     "Expansion changed the loaded chunk count");
@@ -146,15 +146,15 @@ public final class StationExpansionGameTests {
                     .resolve(ManagedSavedDataType.STATIONS.fileName()), ManagedSavedDataType.STATIONS).orElseThrow();
             helper.assertTrue(StationRegistrySavedData.load(onDisk).find(station.stationId())
                     .filter(published::equals).isPresent(), "Station file does not contain the checked expansion");
-            expect(helper, owner, StationExpansionCode.ALREADY_EXPANDED, "arce station expand", "repeated request");
+            expect(helper, owner, StationManagementCode.ALREADY_EXPANDED, "arce station expand", "repeated request");
 
             // A connected operator standing in another station may expand it.
             BlockPos secondPad = new BlockPos(second.landingPad().x(), StationLimits.LANDING_Y, second.landingPad().z());
             space.getChunkAt(secondPad);
             operator.player().teleportTo(space, secondPad.getX() + 0.5D, secondPad.getY(), secondPad.getZ() + 0.5D,
                     0.0F, 0.0F);
-            expect(helper, operator, StationExpansionCode.ISSUED, "arce station expand", "operator request");
-            expect(helper, operator, StationExpansionCode.EXPANDED,
+            expect(helper, operator, StationManagementCode.ISSUED, "arce station expand", "operator request");
+            expect(helper, operator, StationManagementCode.EXPANDED,
                     "arce station expand confirm " + second.stationId(), "operator confirm");
             helper.assertTrue(data.find(second.stationId()).orElseThrow().expanded(),
                     "Operator command did not expand the station");
@@ -171,17 +171,17 @@ public final class StationExpansionGameTests {
         helper.succeed();
     }
 
-    private static void expect(GameTestHelper helper, Mock player, StationExpansionCode expected, String command,
+    private static void expect(GameTestHelper helper, Mock player, StationManagementCode expected, String command,
                                String step) {
         int before = player.messages().size();
         int result = run(player.player().getServer().getCommands().getDispatcher(),
                 player.player().createCommandSourceStack(), command);
-        boolean success = expected == StationExpansionCode.ISSUED || expected == StationExpansionCode.EXPANDED;
+        boolean success = expected == StationManagementCode.ISSUED || expected == StationManagementCode.EXPANDED;
         helper.assertTrue(result == (success ? 1 : 0), step + ": command result " + result);
         helper.assertTrue(player.messages().size() > before, step + ": no reply");
         String reply = player.last();
         String marker = success
-                ? (expected == StationExpansionCode.ISSUED ? "To confirm within" : "Station expanded;")
+                ? (expected == StationManagementCode.ISSUED ? "To confirm within" : "Station expanded;")
                 : expected.description();
         helper.assertTrue(reply.contains(marker), step + ": expected " + expected + " but replied " + reply);
     }

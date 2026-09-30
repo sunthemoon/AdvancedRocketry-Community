@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.command;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -9,8 +10,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegio
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationResult;
-import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionCode;
-import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationGravityService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import java.util.List;
 import java.util.Objects;
@@ -56,7 +58,12 @@ public final class StationCommands {
                         .executes(this::requestExpansion)
                         .then(Commands.literal("confirm")
                                 .then(Commands.argument(STATION, UuidArgument.uuid())
-                                        .executes(this::confirmExpansion))));
+                                        .executes(this::confirmExpansion))))
+                .then(Commands.literal("gravity")
+                        .then(Commands.argument("percent",
+                                        IntegerArgumentType.integer(0, StationGravityService.MAX_PERCENT))
+                                .executes(this::setGravity)))
+                .then(Commands.literal("environment").executes(this::environment));
         var admin = Commands.literal("admin")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("create")
@@ -138,9 +145,9 @@ public final class StationCommands {
 
     private int requestExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        StationExpansionResult result = stations.requestExpansion(player, issuedBy(context.getSource(), player));
-        if (result.code() != StationExpansionCode.ISSUED) {
-            return expansionFailure(context, result);
+        StationManagementResult result = stations.requestExpansion(player, issuedBy(context.getSource(), player));
+        if (result.code() != StationManagementCode.ISSUED) {
+            return rejected(context, "expansion", result);
         }
         StationState station = result.station().orElseThrow();
         long seconds = StationLimits.EXPANSION_CONFIRMATION_TICKS / 20L;
@@ -158,10 +165,10 @@ public final class StationCommands {
 
     private int confirmExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        StationExpansionResult result = stations.confirmExpansion(player, issuedBy(context.getSource(), player),
+        StationManagementResult result = stations.confirmExpansion(player, issuedBy(context.getSource(), player),
                 UuidArgument.getUuid(context, STATION));
-        if (result.code() != StationExpansionCode.EXPANDED) {
-            return expansionFailure(context, result);
+        if (result.code() != StationManagementCode.EXPANDED) {
+            return rejected(context, "expansion", result);
         }
         StationState station = result.station().orElseThrow();
         context.getSource().sendSuccess(() -> Component.literal(
@@ -170,14 +177,57 @@ public final class StationCommands {
         return 1;
     }
 
+    private int setGravity(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        int percent = IntegerArgumentType.getInteger(context, "percent");
+        StationManagementResult result = stations.setGravity(player, issuedBy(context.getSource(), player), percent);
+        if (!result.code().success()) {
+            return rejected(context, "gravity change", result);
+        }
+        StationState station = result.station().orElseThrow();
+        String state = result.code() == StationManagementCode.GRAVITY_SET ? "Station gravity set" : "Station gravity unchanged";
+        context.getSource().sendSuccess(() -> Component.literal(
+                state + "; station=" + station.stationId() + " gravity=" + percent + "%"
+        ), result.code() == StationManagementCode.GRAVITY_SET);
+        return 1;
+    }
+
+    private int environment(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        var environment = stations.environmentAt(player.serverLevel(), player.blockPosition()).orElse(null);
+        if (environment == null) {
+            context.getSource().sendSuccess(() -> Component.literal(
+                    "Not inside a station region; the Level's own environment applies"), false);
+            return 0;
+        }
+        String gravity = percent(environment.effectiveGravity()) + "%"
+                + (environment.gravityClamped() ? " (configured " + percent(environment.configuredGravity())
+                + "%, limited to " + percent(environment.effectiveGravity()) + "%)" : "");
+        context.getSource().sendSuccess(() -> Component.literal(
+                environment.stationName() + " id=" + environment.stationId()
+                        + " orbit=" + environment.orbitBody()
+                        + (environment.orbitBodyAvailable() ? "" : " (unavailable)")
+                        + " gravity=" + gravity
+                        + " vacuum=" + environment.vacuum()
+                        + " solar=" + String.format(java.util.Locale.ROOT, "%.2f", environment.solarIntensity())
+                        + " sun_angle=" + String.format(java.util.Locale.ROOT, "%.1f", environment.sunAngleDegrees())
+        ), false);
+        return 1;
+    }
+
+    private static long percent(double multiplier) {
+        return Math.round(multiplier * 100.0D);
+    }
+
     /** {@code /execute as}, command blocks, functions and signs keep a different output source. */
     private static boolean issuedBy(CommandSourceStack source, ServerPlayer player) {
         return source.source == player;
     }
 
-    private static int expansionFailure(CommandContext<CommandSourceStack> context, StationExpansionResult result) {
+    private static int rejected(CommandContext<CommandSourceStack> context, String action,
+                                StationManagementResult result) {
         context.getSource().sendFailure(Component.literal(
-                "Station expansion rejected: " + result.code().description()
+                "Station " + action + " rejected: " + result.code().description()
         ));
         return 0;
     }

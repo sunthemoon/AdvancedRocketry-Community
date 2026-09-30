@@ -24,15 +24,15 @@ final class StationExpansionServiceTest {
     void onlyOwnerAndOperatorMayExpand() {
         assertNull(check(station, owner, false));
         assertNull(check(station, UUID.randomUUID(), true));
-        assertEquals(StationExpansionCode.UNAUTHORIZED, check(station, member, false));
-        assertEquals(StationExpansionCode.UNAUTHORIZED, check(station, invitee, false));
-        assertEquals(StationExpansionCode.UNAUTHORIZED, check(station, UUID.randomUUID(), false));
+        assertEquals(StationManagementCode.UNAUTHORIZED, check(station, member, false));
+        assertEquals(StationManagementCode.UNAUTHORIZED, check(station, invitee, false));
+        assertEquals(StationManagementCode.UNAUTHORIZED, check(station, UUID.randomUUID(), false));
     }
 
     @Test
     void onlyADirectlyCommandingConnectedPlayerIsAccepted() {
         for (boolean operator : new boolean[]{false, true}) {
-            assertEquals(StationExpansionCode.NOT_LOCAL_PLAYER, StationExpansionService.check(
+            assertEquals(StationManagementCode.NOT_LOCAL_PLAYER, StationExpansionService.check(
                     access, true, false, true, true, Optional.of(station), owner, operator));
         }
     }
@@ -41,13 +41,13 @@ final class StationExpansionServiceTest {
     void authorityAndLocationAreCheckedBeforePermission() {
         Optional<StationState> here = Optional.of(station);
         for (UUID actor : new UUID[]{owner, member, UUID.randomUUID()}) {
-            assertEquals(StationExpansionCode.AUTHORITY_UNAVAILABLE,
+            assertEquals(StationManagementCode.AUTHORITY_UNAVAILABLE,
                     StationExpansionService.check(access, false, true, true, true, here, actor, false));
-            assertEquals(StationExpansionCode.NOT_IN_SPACE,
+            assertEquals(StationManagementCode.NOT_IN_SPACE,
                     StationExpansionService.check(access, true, true, false, true, here, actor, false));
-            assertEquals(StationExpansionCode.CHUNK_UNLOADED,
+            assertEquals(StationManagementCode.CHUNK_UNLOADED,
                     StationExpansionService.check(access, true, true, true, false, here, actor, false));
-            assertEquals(StationExpansionCode.NOT_IN_STATION,
+            assertEquals(StationManagementCode.NOT_IN_STATION,
                     StationExpansionService.check(access, true, true, true, true, Optional.empty(), actor, false));
         }
     }
@@ -55,12 +55,12 @@ final class StationExpansionServiceTest {
     @Test
     void expandedStationIsIdempotentForManagersOnly() {
         StationState expanded = station.withExpandedRegion();
-        assertEquals(StationExpansionCode.ALREADY_EXPANDED, check(expanded, owner, false));
-        assertEquals(StationExpansionCode.ALREADY_EXPANDED, check(expanded, UUID.randomUUID(), true));
-        assertEquals(StationExpansionCode.UNAUTHORIZED, check(expanded, member, false));
+        assertEquals(StationManagementCode.ALREADY_EXPANDED, check(expanded, owner, false));
+        assertEquals(StationManagementCode.ALREADY_EXPANDED, check(expanded, UUID.randomUUID(), true));
+        assertEquals(StationManagementCode.UNAUTHORIZED, check(expanded, member, false));
     }
 
-    private StationExpansionCode check(StationState state, UUID actor, boolean operator) {
+    private StationManagementCode check(StationState state, UUID actor, boolean operator) {
         return StationExpansionService.check(access, true, true, true, true, Optional.of(state), actor, operator);
     }
 }

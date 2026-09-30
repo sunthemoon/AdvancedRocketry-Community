@@ -103,17 +103,20 @@ public final class StationRegistryModel {
         return update(requireStation(stationId).transferOwnership(ownerId));
     }
 
-    /** Publishes a checked expansion only while the station still equals the observed state. */
-    public synchronized StationState replaceExpanded(StationState expected, StationState expanded) {
+    /**
+     * Publishes a checked region/environment update only while the station still equals the
+     * observed state; identity, ownership and team fields cannot change this way.
+     */
+    public synchronized StationState replaceChecked(StationState expected, StationState replacement) {
         Objects.requireNonNull(expected, "expected");
-        Objects.requireNonNull(expanded, "expanded");
-        if (!expected.withExpandedRegion().equals(expanded) || expected.expanded()) {
-            throw new IllegalArgumentException("Replacement is not the expansion of the observed station");
+        Objects.requireNonNull(replacement, "replacement");
+        if (expected.equals(replacement) || !expected.sameAuthorityAs(replacement)) {
+            throw new IllegalArgumentException("Replacement is not a checked update of the observed station");
         }
         if (!expected.equals(stations.get(expected.stationId()))) {
-            throw new IllegalStateException("Station changed before its expansion was published");
+            throw new IllegalStateException("Station changed before its update was published");
         }
-        return update(expanded);
+        return update(replacement);
     }
 
     public synchronized Optional<StationState> find(UUID stationId) {

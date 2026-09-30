@@ -1,0 +1,87 @@
+{
+  "artifacts": {
+    "api_jar_unchanged": true,
+    "artifacts": [
+      {
+        "bytes": 48469,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf"
+      },
+      {
+        "bytes": 1219753,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "6c07534e6bb5b03eea87130e465730a8a42b97eb1a14e0552e89a5910cea85d3"
+      },
+      {
+        "bytes": 2689775,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "3aeb1e7050362e408f7cf9835c347027ca0779e93ada54f7e957342415b3db2f"
+      }
+    ],
+    "base_commit": "89600aed700a984cb078ca92236da7a5a02a4e36"
+  },
+  "base_commit": "89600aed700a984cb078ca92236da7a5a02a4e36",
+  "junit": {
+    "audit_codes_run_02": {
+      "EXPANSION:confirm:CONFIRMATION_MISMATCH": 1,
+      "EXPANSION:confirm:EXPANDED": 2,
+      "EXPANSION:confirm:NOT_LOCAL_PLAYER": 2,
+      "EXPANSION:confirm:NO_CONFIRMATION": 4,
+      "EXPANSION:confirm:STATION_CHANGED": 1,
+      "EXPANSION:request:ALREADY_EXPANDED": 1,
+      "EXPANSION:request:ISSUED": 5,
+      "EXPANSION:request:NOT_IN_SPACE": 1,
+      "EXPANSION:request:NOT_IN_STATION": 1,
+      "EXPANSION:request:NOT_LOCAL_PLAYER": 1,
+      "EXPANSION:request:UNAUTHORIZED": 3,
+      "GRAVITY:set:GRAVITY_SET": 1,
+      "GRAVITY:set:GRAVITY_UNCHANGED": 1,
+      "GRAVITY:set:NOT_LOCAL_PLAYER": 1,
+      "GRAVITY:set:UNAUTHORIZED": 1
+    },
+    "focused-junit": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 37,
+      "tests": 241
+    },
+    "full-junit-01-failed": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 174,
+      "tests": 967
+    },
+    "full-junit-02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 174,
+      "tests": 967
+    }
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "3740f5ea6099d1220f0a206b761b8a8a2c65806be4e939139ea48160bfbbf01e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityController.java": "78b58a153725dd793659d4e26779a2d618728b90eb44d3d014796c1aeb96f3f0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationExpansionGameTests.java": "c06cd10ca10a1cadb83ddb97e571f8955e0f7dd33366a2b09f28d10e1fd75825",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationOrbitGameTests.java": "0e2137a1e9223b5f139ccfd75887cdea15bc91a983e347141c6e73cc966b0fb8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java": "ebc0265116645e1cbf9c4ebad228f0b751768bc39f7937a2ccc0474bfa126b70",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationRegistryModel.java": "410cf48dad11c7983d8feeea45fcf46c1959fb9968f1265898a2a2293aa23586",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationState.java": "a3ae9ae4659acb3e363516231d2d79be0811fd3d18fab708c8c93b24be52ae2f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationOrbitEnvironment.java": "0d07cf53205e5f73cfc072922082a12633ae12a31f64a52a3cb09a507ea1f089",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationOrbitEnvironmentResolver.java": "9680fb556b719b2123e6020f02e7842515b5676eaf0fd40572d1411f13324dea",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "96ca571497d416d26630de6b3a659d1f652e2d94c3817d1456f253527061b59b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationAccessAction.java": "cda8248cbf04f01fc6fdde7614d2978c83097172b7212ca0dd7fe0d8ba6e06a8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionService.java": "57b1562572e43e5ca537ba9cfc8f45be52a0f50bd2c79adebd0ee0e1afc98134",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationGravityService.java": "3bb3113d1620971d2962a797701419101119b9fdd30e3994951c00ed1471abd4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationLocalActor.java": "b43a2f2eacee01f0f6e8b31e7b60d1c4d6566e81cee02aaba37e1017c635be5f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManagementCode.java": "e6c837873784084bba8f28962fd7712e47905cbf1569dbc4fd20a92988c6eab6",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManagementResult.java": "df9cd834eeafd25e1c71d3fc3bccda6c2d501f8ea97f3157849301e440acfd08",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "ca985edb661b6add11642e4f3c449179cb8a59f993befdc8b9054ce1159c3696",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationOrbitEnvironmentResolverTest.java": "c99709c83bf3004dbd047400dcc1b1eb6266fa07113936be9c2d6c823d0277c6",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateTest.java": "7bdb1e3bc2d1a3b56b4e582f9f86ef9779ccdcd024d3fe5ffc85aa6d3a4d0e55",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionServiceTest.java": "35fffde347ffbaf84012707aeb08f93c36e5cde312a10570cbb7040b972a555f"
+  }
+}

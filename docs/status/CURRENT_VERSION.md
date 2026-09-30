@@ -52,8 +52,10 @@ independently reviewed and its findings fixed
 ([verification](../work/v1.5.0-station-expansion/VERIFICATION.md)). STATION-04
 passed a native v1.4-world team/upgrade/expansion/restart check
 ([verification](../work/v1.5.0-station-native/VERIFICATION.md)). Both await an
-independent re-review. Next is the ORBIT-01 contract. Release status remains
-`IN_PROGRESS`, not `PASSED`.
+independent re-review; its findings are being fixed. ORBIT-02 station gravity and
+environment display are implemented under proposed ADR-041
+([verification](../work/v1.5.0-orbit-environment/VERIFICATION.md)). Release status
+remains `IN_PROGRESS`, not `PASSED`.
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and

@@ -12,12 +12,15 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatf
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironment;
+import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -41,6 +44,8 @@ public final class StationManager implements StationOperationService {
     private final StationCreationService creation;
     private final StationAccessService access = new StationAccessService();
     private final StationExpansionService expansion = new StationExpansionService(access);
+    private final StationGravityService gravity = new StationGravityService(access);
+    private final StationOrbitEnvironmentResolver orbitEnvironments;
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
 
     public StationManager(CelestialCatalogManager celestialCatalogs) {
@@ -52,6 +57,7 @@ public final class StationManager implements StationOperationService {
                         .filter(body -> body.capabilities().orbitable())
                         .isPresent()
         );
+        this.orbitEnvironments = new StationOrbitEnvironmentResolver(celestialCatalogs);
     }
 
     @Override
@@ -245,12 +251,28 @@ public final class StationManager implements StationOperationService {
                 && station.region().maximumZ() >= rocket.minimum().z();
     }
 
-    public StationExpansionResult requestExpansion(ServerPlayer player, boolean issuedByPlayer) {
+    public StationManagementResult requestExpansion(ServerPlayer player, boolean issuedByPlayer) {
         return expansion.request(player, issuedByPlayer);
     }
 
-    public StationExpansionResult confirmExpansion(ServerPlayer player, boolean issuedByPlayer, UUID stationId) {
+    public StationManagementResult confirmExpansion(ServerPlayer player, boolean issuedByPlayer, UUID stationId) {
         return expansion.confirm(player, issuedByPlayer, stationId);
+    }
+
+    public StationManagementResult setGravity(ServerPlayer player, boolean issuedByPlayer, int percent) {
+        return gravity.set(player, issuedByPlayer, percent);
+    }
+
+    /** ADR-041 effective environment of the committed station region at a position, if any. */
+    public Optional<StationOrbitEnvironment> environmentAt(ServerLevel level, BlockPos position) {
+        return orbitEnvironments.at(level.getServer(), level.dimension(), position.getX(), position.getZ());
+    }
+
+    /** Player-physics gravity for a station region; empty elsewhere so the Level profile applies. */
+    public OptionalDouble effectiveGravity(ServerLevel level, BlockPos position) {
+        return environmentAt(level, position)
+                .map(environment -> OptionalDouble.of(environment.effectiveGravity()))
+                .orElse(OptionalDouble.empty());
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {

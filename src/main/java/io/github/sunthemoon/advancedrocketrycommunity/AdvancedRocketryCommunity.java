@@ -152,7 +152,8 @@ public final class AdvancedRocketryCommunity {
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
         MinecraftForge.EVENT_BUS.addListener(rocketVisualSynchronizer::onStartTracking);
         lifeSupportNetwork = new LifeSupportNetwork();
-        CelestialGravityController gravityController = new CelestialGravityController(environments);
+        CelestialGravityController gravityController = new CelestialGravityController(environments,
+                stationManager::effectiveGravity);
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
         CelestialCommands celestialCommands = new CelestialCommands(
                 celestialCatalogs,

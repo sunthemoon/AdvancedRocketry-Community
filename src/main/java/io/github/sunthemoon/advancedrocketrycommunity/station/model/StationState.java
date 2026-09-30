@@ -205,6 +205,32 @@ public final class StationState {
         return region.width() == StationLimits.EXPANDED_REGION_SIZE;
     }
 
+    /** Stored (configured) gravity; the solar angle and vacuum flag are kept. */
+    public StationState withGravityMilli(int gravityMilli) {
+        if (gravityMilli == environment.gravityMilli()) {
+            return this;
+        }
+        StationEnvironmentProfile updated = new StationEnvironmentProfile(
+                gravityMilli, environment.vacuum(), environment.solarAngleMilliDegrees());
+        return new StationState(schemaVersion, stationId, ownerId, name, cell, region, landingPad,
+                orbitBody, createdAtGameTime, updated, members, invitations);
+    }
+
+    /** True when only the region or environment differs: the fields checked management may change. */
+    public boolean sameAuthorityAs(StationState other) {
+        Objects.requireNonNull(other, "other");
+        return schemaVersion == other.schemaVersion
+                && createdAtGameTime == other.createdAtGameTime
+                && stationId.equals(other.stationId)
+                && ownerId.equals(other.ownerId)
+                && name.equals(other.name)
+                && cell.equals(other.cell)
+                && landingPad.equals(other.landingPad)
+                && orbitBody.equals(other.orbitBody)
+                && members.equals(other.members)
+                && invitations.equals(other.invitations);
+    }
+
     private StationState copy(
             UUID updatedOwner,
             Collection<UUID> updatedMembers,

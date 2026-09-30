@@ -26,8 +26,18 @@ No candidate or release approval is assigned.
   No blocks are moved or removed and no chunks are loaded.
 - The expanded registry is written to a staged file, verified and atomically
   replaced before the new region takes effect. If saving fails the station
-  keeps its old region; if the result cannot be determined, further expansion
-  is disabled until restart.
+  keeps its old region; if the result cannot be determined, further station
+  changes are disabled until restart.
+- Stations now have their own gravity. Players inside a station's region use
+  the station's gravity; elsewhere in Space the shared Space gravity (zero)
+  still applies. Existing stations keep zero gravity. The owner, or an operator,
+  standing in the station can set it with `/arce station gravity <0-100>`
+  (percent of normal gravity), under the same rules as expansion and saved the
+  same checked way. Stored values above four times normal are limited to four
+  for movement; the public API still reports the stored value.
+- Add `/arce station environment`: shows the station you are in, its orbited
+  body (and whether it is still available), gravity, vacuum, solar intensity
+  of the orbited body and sun angle. The sky is not yet per-station.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.

@@ -1,0 +1,19 @@
+{
+  "archives": [
+    {
+      "bytes": 542901,
+      "manifest": "root-checks-files.json",
+      "members": 401,
+      "name": "root-checks.zip",
+      "sha256": "39595a09146f84caf49237f597d509bec7ba08076ff705899a1aea3dcb3bcd43"
+    }
+  ],
+  "base_commit": "89600aed700a984cb078ca92236da7a5a02a4e36",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-orbit-a59be71836d64d11a8c15d66a4c0b009"
+}

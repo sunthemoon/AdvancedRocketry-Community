@@ -216,6 +216,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [v1.5 准备验证](docs/work/v1.5.0-preparation/VERIFICATION.md)：站点契约、文档样例与未改动运行时的检查。
 - [v1.5 开发基线例外](docs/decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md)：本版开发与继承发布验收分离。
 - [空间站区域与迁移](docs/decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md)：稳定区域、有界扩建、独立 schema 与备份契约。
+- [空间站轨道环境](docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md)（PROPOSED）：站点区域有效重力、重力设置、环境显示与非目标。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。
