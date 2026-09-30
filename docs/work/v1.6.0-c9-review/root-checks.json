@@ -1,0 +1,55 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48476,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+      },
+      {
+        "bytes": 1558492,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "b557a04e31e192104dfc1a00e4512afd04c58874df24dfc18954bdccb5530304"
+      },
+      {
+        "bytes": 3443344,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "ebe2d9a00c68c8fa1528fc9dcb870c35d3e44868998625b18379b070d9212457"
+      }
+    ]
+  },
+  "base_commit": "ce55ee338316bfaa6062030c7a3251211e723c15",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 218,
+    "tests": 1157
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "41eb884c115f441b2b885e1d98f21cdf3c6bcf271ab23c29d5c29d61e58e91b8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ResourceMissionGameTests.java": "0bacd9af0782543b48f9dc5b8637cbf6f06203754dc8dbe2364711c3514263a4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/ReleaseTestCommands.java": "359aceb7ab9d83d7dacd436bdfbf6fe797bfa4d713930d1e44f9b8e425ebc1ab",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/SatelliteCommands.java": "25fa41470ce8eb638a892926585ee4c7696e35f223f9543f9b9d9c97eab62540",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/InstanceLedger.java": "dbbd7e8e65976409b3807f302735f4ff358399f161ad4abd63b92305b8b9c080",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionDeadlineScheduler.java": "8c064eb1cc47a2be2f606df354ca0076fe6513fac7fa437a1d001b281b8da5a4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionPayload.java": "f9704a1060c65d2b01bd0c3df4aa7661ad018f85e03f6368719c00a2da2ff7ad",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionRetention.java": "91f22ebbc91ad04897dced4303aaabc1165c6821096f7ad166dd6a9a044daf30",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/ResourceMissions.java": "fa2d7702d28102433bc2170306707a44c6063ceddcae6db3a9525f551cfcba28",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java": "9c328670be9c2b364a6581d02996c691205992b0031f2513f99a24e0743e86a4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/TerminalIndex.java": "22e84e354ff63b56985922a58337cbf373fd7c822b3fba4c04c101dcaad1cae2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifier.java": "0174c4d659c4564d59278a65437599531fe257ccdc85b9376719285156c0a075",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DeliveryTerminal.java": "586d1987d4fb0889203bbca3c96dc1124b36b9d6912ef71a250d575647efe46a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java": "1745300c6eaccb5c2cbeba94c013b297a7bcbfd8b9a17fd2238f210e96258559",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java": "3f0ece7f3d8290874fefebbeea100361b15ee558de338972f729cfd5f978c950",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteRuntime.java": "6de0fb1f2298aacee435195b154ee2dbdd407d9f05369cbd784a69eb61db6d84",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlock.java": "f4f13b09ac812e6d940412e799a3c2a62ef7d56ccc99e15fece0f553d59b601c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java": "d46e8a0a9334e15e4abe4ebaa23cb880e1790014043055569b62e2a44e6be6c7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/TerminalResourceActions.java": "e6633fdac6d5c0b32a0e8cf7e431794b58d7d2b2a6332931bdb7b61a79c2bd80",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/QueueBoundsTest.java": "c4bd4081a3c11a487b50138111182613f3d88766b2e157917bb5b3d66860bf37",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteWritePolicyTest.java": "611eb8cf98f0b071d1e27a82c47e9eefa99a7ded9bf949a6a33807398ebec671",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifierTest.java": "d2d98d12202e21a02031b7bc482c01fee3edcc5299fc89ca6f0c635bfda6590c",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/DeliveryCrashCutTest.java": "b356fd1f115a9f9246e213912d90bfc84339f2a136d720d43904abbe1aee50e9"
+  }
+}

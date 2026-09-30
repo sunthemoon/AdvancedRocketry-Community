@@ -753,6 +753,10 @@ public final class SatelliteMissionRegistry {
         return terminals.boundTo(terminal);
     }
 
+    List<UUID> awaiting(UUID terminal) {
+        return terminals.awaiting(terminal);
+    }
+
     void reoffer(List<MissionState> durable) {
         retention.epochAdvanced(durable, saveEpoch);
     }

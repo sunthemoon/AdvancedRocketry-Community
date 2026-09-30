@@ -16,8 +16,8 @@ public record DeliveryTerminal(UUID id, boolean persisted, ResourceKey<Level> le
         pos = Objects.requireNonNull(pos, "pos").immutable();
     }
 
-    /** Display-only location recorded with a bound mission (ADR-050 section 3). */
+    /** Display-only location recorded with a bound mission (ADR-050 section 3); empty for an over-long level ID. */
     public Optional<MissionPayload.TerminalLocation> display() {
-        return Optional.of(new MissionPayload.TerminalLocation(level.location(), pos));
+        return MissionPayload.TerminalLocation.of(level.location(), pos);
     }
 }

@@ -2,11 +2,10 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.mission;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Function;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +16,10 @@ import net.minecraft.resources.ResourceLocation;
  * durable). Pruning runs while more than 1,536 finished records exist, or while an owner holds more than its
  * limit, at most 64 removals and 128 inspections per pass. QUARANTINED records are never pruned automatically,
  * and the newest CLAIMED data mission that needed discovery is kept per target body as discovery evidence.
+ *
+ * <p>Each prunable record has exactly one entry, indexed by mission, in both the global and its owner's ordered
+ * set; every change re-files it and every removal takes it out of both (C9-M1), so a queue never holds more
+ * entries than there are records it serves.
  */
 final class MissionRetention {
     static final long ELIGIBLE_AFTER_TICKS = 1_200L;
@@ -32,9 +35,9 @@ final class MissionRetention {
     private int finished;
     private final Map<UUID, Integer> unfinishedByOwner = new HashMap<>();
     private final Map<UUID, Integer> finishedByOwner = new HashMap<>();
-    private final PriorityQueue<Entry> global = new PriorityQueue<>(ORDER);
-    private final Map<UUID, PriorityQueue<Entry>> byOwner = new HashMap<>();
-    private final Set<UUID> queued = new HashSet<>();
+    private final TreeSet<Entry> global = new TreeSet<>(ORDER);
+    private final Map<UUID, TreeSet<Entry>> byOwner = new HashMap<>();
+    private final Map<UUID, Entry> queued = new HashMap<>();
     private final Map<ResourceLocation, MissionState> evidence = new HashMap<>();
 
     /** Keeps counters, queues and evidence in step with one mission change; either side may be null. */
@@ -42,6 +45,7 @@ final class MissionRetention {
         if (previous != null) {
             count(previous, -1);
         }
+        dequeue((next != null ? next : previous).missionId());
         if (next != null) {
             count(next, 1);
             if (isEvidence(next)) {
@@ -49,12 +53,13 @@ final class MissionRetention {
                 if (current == null || newer(next, current)) {
                     evidence.put(next.targetBodyId(), next);
                     if (current != null && !current.missionId().equals(next.missionId())) {
+                        dequeue(current.missionId());
                         enqueue(current, saveEpoch);
                     }
                 }
             }
             enqueue(next, saveEpoch);
-        } else if (previous != null && isEvidence(previous)
+        } else if (isEvidence(previous)
                 && evidence.get(previous.targetBodyId()) != null
                 && evidence.get(previous.targetBodyId()).missionId().equals(previous.missionId())) {
             evidence.remove(previous.targetBodyId());
@@ -77,83 +82,90 @@ final class MissionRetention {
         return finishedByOwner.getOrDefault(owner, 0);
     }
 
+    /** Entries in the global set; the owner sets hold the same entries. */
+    int queued() {
+        return global.size();
+    }
+
     boolean exempt(MissionState mission) {
         MissionState current = isEvidence(mission) ? evidence.get(mission.targetBodyId()) : null;
         return current != null && current.missionId().equals(mission.missionId());
     }
 
     /**
-     * One bounded pruning pass. {@code lookup} returns the current record; {@code remove} deletes it. Returns the
-     * number of removed records.
+     * One bounded pruning pass. {@code lookup} returns the current record; {@code remove} deletes it (and, through
+     * the registry, reports the removal here). Returns the number of removed records.
      */
     int prune(long logicalTime, int finishedPerOwner, long saveEpoch, Function<UUID, MissionState> lookup,
               java.util.function.Consumer<MissionState> remove) {
-        int removed = 0;
-        int inspected = 0;
+        int[] budget = {0, 0};
         for (UUID owner : Set.copyOf(finishedByOwner.keySet())) {
-            PriorityQueue<Entry> queue = byOwner.get(owner);
-            while (queue != null && finished(owner) > finishedPerOwner && removed < MAX_REMOVALS_PER_PASS
-                    && inspected < MAX_INSPECTIONS_PER_PASS && !queue.isEmpty()) {
-                Entry head = queue.peek();
-                inspected++;
-                if (head.eligibleAt() > logicalTime) {
-                    break;
-                }
-                queue.remove();
-                if (tryRemove(head, lookup, remove, saveEpoch, logicalTime)) {
-                    removed++;
-                }
+            while (finished(owner) > finishedPerOwner && drain(byOwner.get(owner), logicalTime, lookup, remove,
+                    budget)) {
+                // One record per step; drain stops at the budget or the first entry not yet eligible.
             }
         }
-        while (finished > GLOBAL_FINISHED_THRESHOLD && removed < MAX_REMOVALS_PER_PASS
-                && inspected < MAX_INSPECTIONS_PER_PASS && !global.isEmpty()) {
-            Entry head = global.peek();
-            inspected++;
-            if (head.eligibleAt() > logicalTime) {
-                break;
-            }
-            global.remove();
-            if (tryRemove(head, lookup, remove, saveEpoch, logicalTime)) {
-                removed++;
-            }
+        while (finished > GLOBAL_FINISHED_THRESHOLD && drain(global, logicalTime, lookup, remove, budget)) {
+            // As above, for the global threshold.
         }
-        return removed;
+        return budget[0];
     }
 
-    private boolean tryRemove(Entry entry, Function<UUID, MissionState> lookup,
-                              java.util.function.Consumer<MissionState> remove, long saveEpoch, long logicalTime) {
-        MissionState mission = lookup.apply(entry.missionId());
-        if (mission == null || !queued.contains(entry.missionId())) {
+    /** Removes the head of {@code set} if it is eligible and the budget allows; false when the pass must stop. */
+    private boolean drain(TreeSet<Entry> set, long logicalTime, Function<UUID, MissionState> lookup,
+                          java.util.function.Consumer<MissionState> remove, int[] budget) {
+        if (set == null || set.isEmpty() || budget[0] >= MAX_REMOVALS_PER_PASS
+                || budget[1] >= MAX_INSPECTIONS_PER_PASS) {
             return false;
         }
-        long eligibleAt = eligibleAt(mission, saveEpoch);
-        if (eligibleAt == Long.MAX_VALUE || exempt(mission)) {
-            queued.remove(mission.missionId());
+        Entry head = set.first();
+        budget[1]++;
+        if (head.eligibleAt() > logicalTime) {
             return false;
         }
-        if (eligibleAt > logicalTime) {
-            return false;
+        MissionState mission = lookup.apply(head.missionId());
+        if (mission == null) {
+            dequeue(head.missionId());
+            return true;
         }
-        queued.remove(mission.missionId());
         remove.accept(mission);
+        dequeue(head.missionId());
+        budget[0]++;
         return true;
     }
 
     /** Re-offers records whose eligibility depends on the save epoch (acknowledged resource claims). */
     void epochAdvanced(Iterable<MissionState> waiting, long saveEpoch) {
         for (MissionState mission : waiting) {
+            dequeue(mission.missionId());
             enqueue(mission, saveEpoch);
         }
     }
 
     private void enqueue(MissionState mission, long saveEpoch) {
         long eligibleAt = eligibleAt(mission, saveEpoch);
-        if (eligibleAt == Long.MAX_VALUE || exempt(mission) || !queued.add(mission.missionId())) {
+        if (eligibleAt == Long.MAX_VALUE || exempt(mission)) {
             return;
         }
-        Entry entry = new Entry(eligibleAt, mission.missionId());
+        Entry entry = new Entry(eligibleAt, mission.missionId(), mission.ownerId());
+        queued.put(mission.missionId(), entry);
         global.add(entry);
-        byOwner.computeIfAbsent(mission.ownerId(), owner -> new PriorityQueue<>(ORDER)).add(entry);
+        byOwner.computeIfAbsent(mission.ownerId(), owner -> new TreeSet<>(ORDER)).add(entry);
+    }
+
+    private void dequeue(UUID missionId) {
+        Entry entry = queued.remove(missionId);
+        if (entry == null) {
+            return;
+        }
+        global.remove(entry);
+        TreeSet<Entry> owned = byOwner.get(entry.ownerId());
+        if (owned != null) {
+            owned.remove(entry);
+            if (owned.isEmpty()) {
+                byOwner.remove(entry.ownerId());
+            }
+        }
     }
 
     /** The logical time a finished record may be pruned, or {@code Long.MAX_VALUE} while it may not. */
@@ -186,13 +198,14 @@ final class MissionRetention {
     private static boolean newer(MissionState candidate, MissionState current) {
         long left = candidate.resolvedAtLogicalTime().orElse(0L);
         long right = current.resolvedAtLogicalTime().orElse(0L);
-        return left > right || left == right && ORDER.compare(new Entry(0L, candidate.missionId()),
-                new Entry(0L, current.missionId())) > 0;
+        return left > right || left == right && ORDER.compare(new Entry(0L, candidate.missionId(), candidate.ownerId()),
+                new Entry(0L, current.missionId(), current.ownerId())) > 0;
     }
 
-    private record Entry(long eligibleAt, UUID missionId) {
+    private record Entry(long eligibleAt, UUID missionId, UUID ownerId) {
         private Entry {
             Objects.requireNonNull(missionId, "missionId");
+            Objects.requireNonNull(ownerId, "ownerId");
         }
     }
 }

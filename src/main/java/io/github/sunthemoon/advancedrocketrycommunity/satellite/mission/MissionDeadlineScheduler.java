@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.PriorityQueue;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -17,11 +16,14 @@ public final class MissionDeadlineScheduler {
             .thenComparingLong(entry -> entry.missionId().getMostSignificantBits())
             .thenComparingLong(entry -> entry.missionId().getLeastSignificantBits());
 
-    private final PriorityQueue<Entry> queue = new PriorityQueue<>(ORDER);
+    private final java.util.TreeSet<Entry> queue = new java.util.TreeSet<>(ORDER);
+    /** One entry per scheduled mission (C9-L7): removal needs no scan. */
+    private final java.util.Map<UUID, Entry> byMission = new java.util.HashMap<>();
 
     public void rebuild(Collection<MissionState> missions) {
         Objects.requireNonNull(missions, "missions");
         queue.clear();
+        byMission.clear();
         for (MissionState mission : missions) {
             if (mission.status() == MissionStatus.ACTIVE) {
                 schedule(mission);
@@ -36,16 +38,22 @@ public final class MissionDeadlineScheduler {
         }
         // Admission bounds unfinished missions (ADR-050 section 6); a loaded over-limit root may hold up to the
         // record bound, and the queue never holds more entries than there are records it serves.
+        remove(mission.missionId());
         if (queue.size() >= SatelliteLimits.MAX_MISSIONS) {
             throw new IllegalStateException("Mission scheduler capacity reached");
         }
-        queue.add(new Entry(mission.completesAtLogicalTime(), mission.missionId()));
+        Entry entry = new Entry(mission.completesAtLogicalTime(), mission.missionId());
+        byMission.put(mission.missionId(), entry);
+        queue.add(entry);
     }
 
     /** ADR-050 section 5 queue integrity: a cancelled, quarantined or early-claimed mission leaves the queue. */
     public void remove(UUID missionId) {
         Objects.requireNonNull(missionId, "missionId");
-        queue.removeIf(entry -> entry.missionId().equals(missionId));
+        Entry entry = byMission.remove(missionId);
+        if (entry != null) {
+            queue.remove(entry);
+        }
     }
 
     public DrainResult drainDue(
@@ -68,15 +76,16 @@ public final class MissionDeadlineScheduler {
         int stale = 0;
         while (completed < completionBudget
                 && inspections < SatelliteLimits.MAX_QUEUE_INSPECTIONS_PER_PASS) {
-            Entry head = queue.peek();
-            if (head == null) {
+            if (queue.isEmpty()) {
                 break;
             }
+            Entry head = queue.first();
             inspections++;
             if (head.deadline() > logicalTime) {
                 break;
             }
-            queue.remove();
+            queue.pollFirst();
+            byMission.remove(head.missionId(), head);
             Optional<MissionState> current = lookup.apply(head.missionId());
             if (current.isEmpty()
                     || current.orElseThrow().status() != MissionStatus.ACTIVE
@@ -95,7 +104,7 @@ public final class MissionDeadlineScheduler {
     }
 
     public Optional<Long> earliestDeadline() {
-        return Optional.ofNullable(queue.peek()).map(Entry::deadline);
+        return queue.isEmpty() ? Optional.empty() : Optional.of(queue.first().deadline());
     }
 
     private record Entry(long deadline, UUID missionId) {

@@ -51,6 +51,9 @@ final class TerminalResourceActions {
     private int missionPage;
     private UUID registeredId;
     private boolean loadObservationPending = true;
+    /** The first pass after a load has completed; only it gates actions (C9-H1). */
+    private boolean initialPassDone;
+    private boolean failureReported;
 
     TerminalResourceActions(SatelliteTerminalBlockEntity terminal) {
         this.terminal = terminal;
@@ -59,15 +62,38 @@ final class TerminalResourceActions {
     /** A new root was read: its observation, directory entry and a reconciliation pass are due again. */
     void reloaded() {
         loadObservationPending = true;
+        initialPassDone = false;
     }
 
     void tick(ServerLevel level) {
         ResourceMissionService service = ResourceMissionRuntime.service().orElse(null);
-        TerminalDelivery delivery = terminal.delivery();
         if (service == null) {
             return;
         }
+        TerminalDelivery delivery = terminal.delivery();
         MinecraftServer server = level.getServer();
+        prepare(level, service);
+        if (level.getGameTime() % PERIOD_TICKS == 0L) {
+            if (delivery.unpersisted()) {
+                // ADR-051 section 5: keep the chunk dirty so the incremental save picks the terminal up.
+                terminal.setChanged();
+            }
+            if (!delivery.passActive()) {
+                delivery.startPass(service.awaitingDelivery(server, delivery.terminalId()));
+            }
+        }
+        step(server, service);
+        if (!delivery.passActive()) {
+            initialPassDone = true;
+        }
+    }
+
+    /**
+     * Registers the terminal under its current ID, consumes its chunk-load observation and starts the load pass:
+     * every receipt's mission and every claim this terminal paid without an acknowledgement (C9-H1).
+     */
+    private void prepare(ServerLevel level, ResourceMissionService service) {
+        TerminalDelivery delivery = terminal.delivery();
         if (!delivery.terminalId().equals(registeredId)) {
             unregister(level);
             service.directory().register(delivery.terminalId(), level.dimension(), terminal.getBlockPos());
@@ -77,19 +103,8 @@ final class TerminalResourceActions {
             loadObservationPending = false;
             service.observations().consume(delivery.terminalId(), terminal.getBlockPos())
                     .ifPresent(observation -> delivery.observed(delivery.terminalId(), observation.receipts()));
-            delivery.startPass(service.boundTo(server, delivery.terminalId()).stream().map(MissionState::missionId).toList());
+            delivery.startPass(service.awaitingDelivery(level.getServer(), delivery.terminalId()));
         }
-        long time = level.getGameTime();
-        if (time % PERIOD_TICKS == 0L) {
-            if (delivery.unpersisted()) {
-                // ADR-051 section 5: keep the chunk dirty so the incremental save picks the terminal up.
-                terminal.setChanged();
-            }
-            if (!delivery.passActive()) {
-                delivery.startPass(service.boundTo(server, delivery.terminalId()).stream().map(MissionState::missionId).toList());
-            }
-        }
-        step(server, service);
     }
 
     void unregister(Level level) {
@@ -105,13 +120,15 @@ final class TerminalResourceActions {
         if (service == null) {
             return SatelliteOperationCode.SERVER_ERROR;
         }
-        SatelliteOperationCode gate = gate(player.getServer(), service, chip.kind() != SatelliteKind.SURVEY);
+        SatelliteOperationCode gate = gate(player.getServer(), service, chip.kind() != SatelliteKind.SURVEY, null);
         if (gate != null) {
             return gate;
         }
         if (chip.kind() == SatelliteKind.SURVEY) {
             return service.startSurvey(player, chip).code();
         }
+        // C9-L9: a terminal that delivers rewards has an owner, so no other player can withdraw them.
+        terminal.setOwner(player.getUUID());
         SatelliteState satellite = SatelliteRuntime.satellite(player.getServer(), chip.satelliteId()).orElse(null);
         if (satellite == null) {
             return SatelliteOperationCode.SATELLITE_NOT_FOUND;
@@ -130,7 +147,8 @@ final class TerminalResourceActions {
         if (service == null) {
             return SatelliteOperationCode.SERVER_ERROR;
         }
-        SatelliteOperationCode gate = gate(player.getServer(), service, chip.kind() != SatelliteKind.SURVEY);
+        SatelliteOperationCode gate = gate(player.getServer(), service, chip.kind() != SatelliteKind.SURVEY,
+                currentMission(player, chip));
         if (gate != null) {
             return gate;
         }
@@ -139,7 +157,8 @@ final class TerminalResourceActions {
         }
         TerminalDelivery delivery = terminal.delivery();
         SatelliteOperationResult result = service.claimResource(player, chip, here(player), delivery::room);
-        if (result.success()) {
+        // C9-L1: only a claim that this call made pays; a replay or an already-claimed mission never does.
+        if (result.code() == SatelliteOperationCode.SUCCESS && result.changed()) {
             MissionState claimed = result.mission().orElseThrow();
             // ADR-051 section 6: the reward and an unpersisted receipt land in the same server tick.
             delivery.pay(claimed.missionId(), ((MissionPayload.Resource) claimed.payload()).reward());
@@ -153,7 +172,7 @@ final class TerminalResourceActions {
         if (service == null) {
             return SatelliteOperationCode.SERVER_ERROR;
         }
-        SatelliteOperationCode gate = gate(player.getServer(), service, true);
+        SatelliteOperationCode gate = gate(player.getServer(), service, true, currentMission(player, chip));
         if (gate != null) {
             return gate;
         }
@@ -271,21 +290,36 @@ final class TerminalResourceActions {
     }
 
     /**
-     * ADR-051 section 7: resource actions are refused while the registry is blocked, and a delivery action waits
-     * until this terminal's reconciliation pass is complete. Null when the action may proceed.
+     * ADR-051 section 7: resource actions are refused while the registry is blocked. A delivery action waits for
+     * the first reconciliation pass after the terminal loaded (at most a few ticks), then reconciles the row of
+     * the mission it acts on, so a receipt this terminal holds is applied before a claim or cancel (C9-H1).
+     * Later periodic passes never refuse an action. Null when the action may proceed.
      */
-    private SatelliteOperationCode gate(MinecraftServer server, ResourceMissionService service, boolean delivery) {
+    private SatelliteOperationCode gate(MinecraftServer server, ResourceMissionService service, boolean delivery,
+                                        UUID missionId) {
         if (!SatelliteMissionSavedData.get(server).operational()) {
             return SatelliteOperationCode.UNSUPPORTED_DATA;
         }
-        TerminalDelivery section = terminal.delivery();
-        if (delivery && !section.passActive()) {
-            section.startPass(service.boundTo(server, section.terminalId()).stream().map(MissionState::missionId).toList());
+        if (!delivery || !(terminal.getLevel() instanceof ServerLevel level)) {
+            return null;
         }
-        if (delivery) {
+        prepare(level, service);
+        if (!initialPassDone) {
             step(server, service);
+            if (terminal.delivery().passActive()) {
+                return SatelliteOperationCode.RECONCILING;
+            }
+            initialPassDone = true;
         }
-        return delivery && section.passActive() ? SatelliteOperationCode.RECONCILING : null;
+        if (missionId != null) {
+            apply(server, service, missionId);
+        }
+        return null;
+    }
+
+    private static UUID currentMission(ServerPlayer player, SatelliteIdentity chip) {
+        return SatelliteRuntime.satellite(player.getServer(), chip.satelliteId())
+                .flatMap(SatelliteState::currentMissionId).orElse(null);
     }
 
     private void step(MinecraftServer server, ResourceMissionService service) {
@@ -295,23 +329,35 @@ final class TerminalResourceActions {
         }
     }
 
-    /** One reconciliation row: the service applies the registry side, the delivery section the terminal side. */
+    /**
+     * One reconciliation row: the service applies the registry side, the delivery section the terminal side. A
+     * failing row is logged once per load and skipped, so the terminal keeps ticking (C9-L2).
+     */
     private void apply(MinecraftServer server, ResourceMissionService service, UUID missionId) {
-        TerminalDelivery delivery = terminal.delivery();
-        DeliveryTerminal here = here(server);
-        ResourceMissions.Reconciled reconciled = service.reconcile(server, here, missionId,
-                delivery.receipt(missionId));
-        String event = delivery.apply(reconciled.action(), missionId, reconciled.mission());
-        if (event == null) {
-            return;
-        }
-        if (event.equals("RECEIPT_DROPPED") || event.equals("REMATERIALIZED")) {
-            terminal.setChanged();
-        }
-        if (reconciled.mission().isPresent()) {
-            service.audit(server, event, reconciled.mission().orElseThrow(), here.id(), "");
-        } else {
-            service.auditAbsent(server, event, missionId, here.id(), terminal.ownerOrNil());
+        try {
+            TerminalDelivery delivery = terminal.delivery();
+            DeliveryTerminal here = here(server);
+            ResourceMissions.Reconciled reconciled = service.reconcile(server, here, missionId,
+                    delivery.receipt(missionId));
+            String event = delivery.apply(reconciled.action(), missionId, reconciled.mission());
+            if (event == null) {
+                return;
+            }
+            if (event.equals("RECEIPT_DROPPED") || event.equals("REMATERIALIZED")) {
+                terminal.setChanged();
+            }
+            if (reconciled.mission().isPresent()) {
+                service.audit(server, event, reconciled.mission().orElseThrow(), here.id(), "");
+            } else {
+                service.auditAbsent(server, event, missionId, here.id(), terminal.ownerOrNil());
+            }
+        } catch (RuntimeException exception) {
+            if (!failureReported) {
+                failureReported = true;
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.error(
+                        "Satellite terminal reconciliation failed for mission {} (reported once per load)",
+                        missionId, exception);
+            }
         }
     }
 

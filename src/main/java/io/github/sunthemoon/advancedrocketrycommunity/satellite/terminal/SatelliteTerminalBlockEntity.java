@@ -681,6 +681,20 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
 
     boolean canCarryData() { return preservedBlockedData == null || boundedRoot(preservedBlockedData); }
 
+    /**
+     * ADR-051 section 5 (C9-H2): a normally removed terminal carries its ID, reward buffer, receipts and owner with
+     * its root; its six slots drop as items, so the carried inventory is empty and nothing is copied.
+     */
+    CompoundTag carriedDeliveryData() {
+        CompoundTag parent = new CompoundTag();
+        saveAdditional(parent);
+        CompoundTag data = parent.getCompound(DATA_KEY);
+        CompoundTag emptied = data.getCompound("inventory");
+        emptied.put("Items", new net.minecraft.nbt.ListTag());
+        data.putInt("energy", 0);
+        return parent;
+    }
+
     CompoundTag carriedData() {
         if (!canCarryData()) { throw new IllegalStateException("Terminal root cannot be carried safely"); }
         CompoundTag data = new CompoundTag();

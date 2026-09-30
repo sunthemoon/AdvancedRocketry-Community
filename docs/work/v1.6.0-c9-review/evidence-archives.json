@@ -1,0 +1,19 @@
+{
+  "archives": [
+    {
+      "bytes": 264883,
+      "manifest": "root-checks-files.json",
+      "members": 229,
+      "name": "root-checks.zip",
+      "sha256": "db885f74b9ede3583210b5b69e57cda63ce54ef2811f10bd7fe381a58433dc54"
+    }
+  ],
+  "base_commit": "ce55ee338316bfaa6062030c7a3251211e723c15",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v160-c9fix-329d51211bc3443ab671e2a7278f1460"
+}

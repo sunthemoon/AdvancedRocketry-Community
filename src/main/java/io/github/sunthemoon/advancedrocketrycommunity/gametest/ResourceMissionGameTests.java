@@ -42,7 +42,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraftforge.common.MinecraftForge;
@@ -269,7 +271,7 @@ public final class ResourceMissionGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", batch = SatelliteRegistryFixture.RESOURCE_BATCH, timeoutTicks = 200)
+    @GameTest(template = "empty", batch = SatelliteRegistryFixture.RESOURCE_BATCH, timeoutTicks = 400)
     public static void moreThan256ClaimsAtOneTerminalReleaseReceiptsByAcknowledgement(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
@@ -284,7 +286,7 @@ public final class ResourceMissionGameTests {
             }
             miners.add(craft(data, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER, CelestialIds.EARTH_ID, server));
         }
-        int claims = 0;
+        int[] claims = {0};
         for (int round = 0; round < 17; round++) {
             // Eight surveys make the owner's sixteen live instances; sixteen miners take them.
             for (UUID survey : surveys) {
@@ -303,27 +305,93 @@ public final class ResourceMissionGameTests {
             advance(data, 72_000L);
             data.flush(server);
             if (round == 16) {
-                // 256 receipts wait for a chunk save: the next claim is refused whole.
-                helper.assertTrue(receipts(terminal).size() == 256, "The terminal does not hold 256 receipts");
-                act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM,
-                        SatelliteOperationCode.TERMINAL_RECEIPTS_FULL);
-                // The receipts are released by durable acknowledgement, not by pruning.
-                observeChunkSave(helper, terminal);
-                act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.MISSION_BUSY);
-                data.flush(server);
-                act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.MISSION_BUSY);
-                helper.assertTrue(receipts(terminal).isEmpty(), "Durable acknowledgements did not release the receipts");
+                break;
             }
-            for (UUID miner : miners) {
-                chip(helper, terminal.menuInventory(), identity(miner, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER));
-                act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.SUCCESS);
+            for (int index = 0; index < miners.size(); index++) {
+                chip(helper, terminal.menuInventory(), identity(miners.get(index), owner.getUUID(),
+                        SatelliteKind.ASTEROID_MINER, MINER));
+                if (round == 5 && index == 0) {
+                    // C9-H1: with 80 receipts pending (more than one 64-mission pass), a claim through the menu, with
+                    // its real intent limiter, succeeds at the first press.
+                    menuPress(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.SUCCESS);
+                } else {
+                    act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.SUCCESS);
+                }
                 drain(helper, terminal, owner);
-                claims++;
+                claims[0]++;
             }
         }
-        long finished = data.missions().stream().filter(mission -> !mission.status().unfinished()).count();
-        helper.assertTrue(claims == 272 && receipts(terminal).size() == 16 && finished < 1_536,
-                "More than 256 claims at one terminal did not complete below the pruning threshold");
+        // 256 receipts wait for a chunk save: the next claim is refused whole.
+        helper.assertTrue(receipts(terminal).size() == 256, "The terminal does not hold 256 receipts");
+        act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.TERMINAL_RECEIPTS_FULL);
+        // The receipts are released by durable acknowledgement, not by pruning, on the production schedule: the
+        // terminal's periodic passes acknowledge them, the coalesced flush makes that durable, the next passes drop them.
+        observeChunkSave(helper, terminal);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(receipts(terminal).isEmpty(), "Receipts not yet released"))
+                .thenExecute(() -> {
+                    for (UUID miner : miners) {
+                        chip(helper, terminal.menuInventory(), identity(miner, owner.getUUID(),
+                                SatelliteKind.ASTEROID_MINER, MINER));
+                        act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.SUCCESS);
+                        drain(helper, terminal, owner);
+                        claims[0]++;
+                    }
+                    long finished = data.missions().stream().filter(mission -> !mission.status().unfinished()).count();
+                    helper.assertTrue(claims[0] == 272 && receipts(terminal).size() == 16 && finished < 1_536,
+                            "More than 256 claims at one terminal did not complete below the pruning threshold");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "empty", batch = SatelliteRegistryFixture.RESOURCE_BATCH, timeoutTicks = 60)
+    public static void aBrokenTerminalCarriesItsDeliveryToItsNewPlace(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        SatelliteTerminalBlockEntity terminal = place(helper, new BlockPos(1, 2, 1));
+        FakePlayer owner = player(helper, terminal);
+        terminal.setOwner(owner.getUUID());
+        UUID paid = craft(data, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER, CelestialIds.EARTH_ID, server);
+        UUID waiting = craft(data, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER, CelestialIds.EARTH_ID, server);
+        surveyed(helper, data, owner, terminal, server);
+        persist(helper, terminal);
+        for (UUID miner : List.of(paid, waiting)) {
+            chip(helper, terminal.menuInventory(), identity(miner, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER));
+            act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.SUCCESS);
+        }
+        UUID waitingMission = current(data, waiting).missionId();
+        advance(data, 72_000L);
+        data.flush(server);
+        chip(helper, terminal.menuInventory(), identity(paid, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER));
+        act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.SUCCESS);
+        UUID terminalId = terminal.terminalId();
+        int buffered = bufferItems(terminal);
+        List<UUID> held = receipts(terminal);
+
+        // C9-H2 (ADR-051 section 5): breaking the terminal carries its ID, buffer, receipts and owner; the slots drop.
+        BlockPos from = helper.absolutePos(new BlockPos(1, 2, 1));
+        helper.getLevel().destroyBlock(from, true);
+        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(from).inflate(2.0D));
+        ItemStack carried = drops.stream().map(ItemEntity::getItem)
+                .filter(stack -> stack.is(ModBlocks.SATELLITE_TERMINAL.get().asItem())).findFirst().orElseThrow();
+        helper.assertTrue(drops.stream().anyMatch(entity -> entity.getItem().is(ModItems.SATELLITE_CONTROL_CHIP.get())),
+                "The chip in the slot did not drop as an item");
+        BlockPos next = new BlockPos(4, 2, 1);
+        helper.setBlock(next, ModBlocks.SATELLITE_TERMINAL.get().defaultBlockState()
+                .setValue(SatelliteTerminalBlock.FACING, Direction.NORTH).setValue(SatelliteTerminalBlock.LIT, false));
+        ModBlocks.SATELLITE_TERMINAL.get().setPlacedBy(helper.getLevel(), helper.absolutePos(next),
+                helper.getLevel().getBlockState(helper.absolutePos(next)), owner, carried.copy());
+        SatelliteTerminalBlockEntity placed = (SatelliteTerminalBlockEntity) helper.getBlockEntity(next);
+        helper.assertTrue(placed.terminalId().equals(terminalId) && bufferItems(placed) == buffered
+                        && receipts(placed).equals(held) && !placed.terminalIdPersisted()
+                        && placed.menuInventory().getStackInSlot(SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP).isEmpty(),
+                "The placed terminal did not carry its delivery section (unpersisted) without copying its slots");
+        // The mission still bound to this ID is claimed at the terminal's new place.
+        persist(helper, placed);
+        chip(helper, placed.menuInventory(), identity(waiting, owner.getUUID(), SatelliteKind.ASTEROID_MINER, MINER));
+        act(helper, placed, owner, SatelliteTerminalMenu.BUTTON_CLAIM, SatelliteOperationCode.SUCCESS);
+        helper.assertTrue(receipts(placed).contains(waitingMission) && bufferItems(placed) > buffered,
+                "The carried terminal could not deliver its bound mission");
         helper.succeed();
     }
 
@@ -421,7 +489,22 @@ public final class ResourceMissionGameTests {
         helper.assertTrue(bufferItems(terminal) == 0, "The reward buffer could not be withdrawn");
     }
 
-    /** Presses a resource action, repeating while the terminal is still reconciling (ADR-051 section 7). */
+    /** One press through the real menu: its validity check and the per-player intent limiter (C9-L8(a)). */
+    private static void menuPress(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player,
+                                  int button, SatelliteOperationCode expected) {
+        SatelliteTerminalMenu menu = new SatelliteTerminalMenu(7, player.getInventory(), terminal,
+                io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalTargets.current());
+        helper.assertTrue(menu.stillValid(player), "The terminal menu is not valid for the player");
+        menu.clickMenuButton(player, button);
+        int actual = terminal.saveWithoutMetadata().getCompound(KEY).getInt("last_result");
+        helper.assertTrue(actual == expected.ordinal(), "Menu button " + button + ": expected " + expected + " but got "
+                + SatelliteOperationCode.values()[actual]);
+    }
+
+    /**
+     * Presses a resource action directly (bypassing the menu limiter), repeating while the terminal completes its
+     * first reconciliation pass after load (ADR-051 section 7).
+     */
     private static void act(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player, int button,
                             SatelliteOperationCode expected) {
         int actual = SatelliteOperationCode.RECONCILING.ordinal();

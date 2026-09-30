@@ -112,6 +112,11 @@ public final class SatelliteRuntime {
         return current == null || current.allowIntent(player, selection);
     }
 
+    public static long[] postTickNanos() {
+        SatelliteManager current = manager;
+        return current == null ? new long[100] : current.postTickNanos();
+    }
+
     public static long coalescedFlushes() {
         SatelliteManager current = manager;
         return current == null ? 0L : current.coalescedFlushes();

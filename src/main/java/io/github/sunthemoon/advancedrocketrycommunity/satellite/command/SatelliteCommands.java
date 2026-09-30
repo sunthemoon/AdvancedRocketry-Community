@@ -105,7 +105,9 @@ public final class SatelliteCommands {
                                     .executes(this::releaseTestClaim)))
                     .then(Commands.literal("batch")
                             .then(Commands.argument("count", IntegerArgumentType.integer(1, 100))
-                                    .executes(this::releaseTestBatch))));
+                                    .executes(this::releaseTestBatch)
+                                    .then(Commands.argument("owners", IntegerArgumentType.integer(1, 64))
+                                            .executes(this::releaseTestBatch)))));
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
     }
@@ -344,7 +346,7 @@ public final class SatelliteCommands {
             return 0;
         }
         String line = data.diagnostics() + " flush_pending=" + data.flushPending()
-                + " coalesced_flushes=" + satellites.coalescedFlushes();
+                + " coalesced_flushes=" + satellites.coalescedFlushes() + " " + satellites.coalescedFlushTimes();
         AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_DIAGNOSTICS {}", line);
         context.getSource().sendSuccess(() -> Component.literal(line), false);
         return 1;
@@ -449,8 +451,14 @@ public final class SatelliteCommands {
 
     private int releaseTestBatch(CommandContext<CommandSourceStack> context) {
         int requested = IntegerArgumentType.getInteger(context, "count");
+        int owners;
+        try {
+            owners = IntegerArgumentType.getInteger(context, "owners");
+        } catch (IllegalArgumentException absent) {
+            owners = 2;
+        }
         SatelliteManager.ReleaseTestBatchResult result = satellites.releaseTestBatch(
-                context.getSource().getServer(), requested
+                context.getSource().getServer(), requested, owners
         );
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_RELEASE_TEST_SATELLITE_BATCH requested={} created={} rejected={} "

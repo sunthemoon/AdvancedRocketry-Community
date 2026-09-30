@@ -419,6 +419,13 @@ public final class ResourceMissions {
         }
     }
 
+    /** Claims paid at this terminal and not yet acknowledged, in ID order (C9-H1 reconciliation scope). */
+    public List<UUID> awaitingDelivery(UUID terminal) {
+        synchronized (registry) {
+            return registry.awaiting(terminal);
+        }
+    }
+
     public int liveInstances(UUID ownerId) {
         synchronized (registry) {
             return registry.ledger().live(ownerId);

@@ -7,7 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.DeliveryReconciliation;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RewardEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteBlueprint;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindState;
@@ -16,11 +25,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteS
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStats;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -69,6 +81,88 @@ final class SatelliteWritePolicyTest {
         expectClockOnly(data, 500L);
     }
 
+    private static final ResourceLocation SYSTEM = ModIdentity.id("sol");
+    private static final ResourceLocation TYPE = ModIdentity.id("small_asteroid");
+    private static final String VERSION = "0123456789abcdef";
+    private static final List<RewardEntry> YIELD = List.of(
+            new RewardEntry(new ResourceLocation("minecraft", "iron_ore"), 30));
+
+    /** C9-L8(c): every ADR-051 change also marks the registry and advances the save epoch (ADR-050 rev. 4 item 1). */
+    @Test
+    void everyResourceMissionChangeIsMarked() {
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.create(0L);
+        UUID owner = UUID.randomUUID();
+        UUID surveyor = UUID.randomUUID();
+        UUID miner = UUID.randomUUID();
+        UUID second = UUID.randomUUID();
+        data.launchIdle(time -> survey(surveyor, owner, time), 0L);
+        data.launchIdle(time -> craft(miner, owner, time), 0L);
+        data.launchIdle(time -> craft(second, owner, time), 0L);
+        UUID surveyMission = UUID.randomUUID();
+        List<UUID> instances = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        UUID here = UUID.randomUUID();
+        UUID there = UUID.randomUUID();
+
+        expectMarked(data, "survey start", d -> d.resources(m -> m.startSurvey(new ResourceMissions.SurveyStart(
+                surveyor, surveyMission, owner, SYSTEM, VERSION, 3, 100, 1L, (count, time) -> {
+                    List<AsteroidInstance> created = new ArrayList<>();
+                    for (int index = 0; index < count; index++) {
+                        created.add(new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, instances.get(index),
+                                owner, SYSTEM, TYPE, VERSION, VERSION, index, YIELD, time, OptionalLong.empty(),
+                                InstanceState.PENDING, surveyMission, Optional.empty()));
+                    }
+                    return created;
+                }), 0L)));
+        expectMarked(data, "survey claim", d -> d.resources(m -> m.claimSurvey(surveyMission, owner, 168_000L, 200L)));
+        UUID first = UUID.randomUUID();
+        expectMarked(data, "asteroid start", d -> d.resources(m -> m.startResource(start(miner, first, instances.get(0),
+                here, owner), 300L)));
+        expectMarked(data, "completion", d -> {
+            assertEquals(1, d.completeDue(1_400L).completed());
+            return null;
+        });
+        expectMarked(data, "rebind", d -> d.resources(m -> m.rebind(first, there, Optional.empty(), 1_401L)));
+        expectMarked(data, "claim", d -> d.resources(m -> m.claimResource(first, owner, there, reward -> null, 1_402L)));
+        expectMarked(data, "acknowledge", d -> {
+            assertTrue(d.reconcile(there, first, DeliveryReconciliation.ReceiptView.PERSISTED, Optional.empty(),
+                    1_403L).changed());
+            return null;
+        });
+        UUID returned = UUID.randomUUID();
+        expectMarked(data, "second start", d -> d.resources(m -> m.startResource(start(second, returned,
+                instances.get(1), here, owner), 1_500L)));
+        expectMarked(data, "owner cancel", d -> d.resources(m -> m.cancel(returned, owner, false, Optional.of(here),
+                1_501L)));
+        UUID held = UUID.randomUUID();
+        data.resources(m -> m.startResource(start(second, held, instances.get(1), here, owner), 1_600L));
+        expectMarked(data, "operator cancel", d -> d.cancel(held, UUID.randomUUID(), true, 1_601L));
+        expectMarked(data, "instance release", d -> d.resources(m -> m.releaseInstance(instances.get(1), 168_000L,
+                1_602L)));
+        UUID purged = UUID.randomUUID();
+        data.resources(m -> m.startResource(start(second, purged, instances.get(1), here, owner), 1_700L));
+        flush(data);
+        assertEquals(SatelliteOperationResult.class, data.resources(m -> m.claimResource(purged, owner, here,
+                reward -> null, 3_000L)).getClass());
+        assertTrue(data.mission(purged).orElseThrow().status().name().equals("CLAIMED"),
+                "the claim after a durable start settles the mission");
+        expectMarked(data, "purge", d -> d.resources(m -> m.purge(purged)));
+        data.applyLimits(new RegistryLimits(1_024, 64, 1, 3_072, 4_096, 256, 2_048, 16, 10, 2));
+        expectMarked(data, "expiry and pruning", d -> {
+            SchedulerPass pass = d.completeDue(200L + 168_000L + 1L);
+            assertTrue(pass.instanceChanges() > 0 && pass.pruned() > 0, "expected an expiry and a prune: " + pass);
+            return null;
+        });
+        // Before the expired instance's removal (1,200 ticks after its expiry) nothing is due: clock only.
+        expectClockOnly(data, 168_300L);
+    }
+
+    private static ResourceMissions.ResourceStart start(UUID satellite, UUID mission, UUID instance, UUID terminal,
+                                                         UUID owner) {
+        return new ResourceMissions.ResourceStart(satellite, mission, owner, MissionKind.ASTEROID, SYSTEM,
+                Optional.of(instance), YIELD, "asteroid-v1/" + TYPE + "/" + VERSION, 1_000, 9L, terminal,
+                Optional.empty());
+    }
+
     private void expectMarked(SatelliteMissionSavedData data, String what,
                               Function<SatelliteMissionSavedData, SatelliteOperationResult> change) {
         flush(data);
@@ -103,6 +197,11 @@ final class SatelliteWritePolicyTest {
     private static SatelliteState solar(UUID id, UUID owner, long time) {
         return SatelliteState.launchIdle(id, ModIdentity.id("solar_satellite"), owner, time, ModIdentity.id("earth"),
                 blueprint(), new SatelliteKindState.Solar(100, Optional.empty()));
+    }
+
+    private static SatelliteState craft(UUID id, UUID owner, long time) {
+        return SatelliteState.launchIdle(id, ModIdentity.id("asteroid_miner"), owner, time, ModIdentity.id("earth"),
+                blueprint(), new SatelliteKindState.Plain(SatelliteKind.ASTEROID_MINER));
     }
 
     private static SatelliteBlueprint blueprint() {

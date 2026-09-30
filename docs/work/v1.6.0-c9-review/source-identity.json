@@ -1,0 +1,143 @@
+{
+  "base_commit": "ce55ee338316bfaa6062030c7a3251211e723c15",
+  "files": [
+    {
+      "bytes": 25923,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "41eb884c115f441b2b885e1d98f21cdf3c6bcf271ab23c29d5c29d61e58e91b8",
+      "working_sha256": "41eb884c115f441b2b885e1d98f21cdf3c6bcf271ab23c29d5c29d61e58e91b8"
+    },
+    {
+      "bytes": 40234,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ResourceMissionGameTests.java",
+      "sha256": "0bacd9af0782543b48f9dc5b8637cbf6f06203754dc8dbe2364711c3514263a4",
+      "working_sha256": "0bacd9af0782543b48f9dc5b8637cbf6f06203754dc8dbe2364711c3514263a4"
+    },
+    {
+      "bytes": 21468,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/ReleaseTestCommands.java",
+      "sha256": "359aceb7ab9d83d7dacd436bdfbf6fe797bfa4d713930d1e44f9b8e425ebc1ab",
+      "working_sha256": "359aceb7ab9d83d7dacd436bdfbf6fe797bfa4d713930d1e44f9b8e425ebc1ab"
+    },
+    {
+      "bytes": 31352,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/SatelliteCommands.java",
+      "sha256": "25fa41470ce8eb638a892926585ee4c7696e35f223f9543f9b9d9c97eab62540",
+      "working_sha256": "25fa41470ce8eb638a892926585ee4c7696e35f223f9543f9b9d9c97eab62540"
+    },
+    {
+      "bytes": 5742,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/InstanceLedger.java",
+      "sha256": "dbbd7e8e65976409b3807f302735f4ff358399f161ad4abd63b92305b8b9c080",
+      "working_sha256": "dbbd7e8e65976409b3807f302735f4ff358399f161ad4abd63b92305b8b9c080"
+    },
+    {
+      "bytes": 4667,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionDeadlineScheduler.java",
+      "sha256": "8c064eb1cc47a2be2f606df354ca0076fe6513fac7fa437a1d001b281b8da5a4",
+      "working_sha256": "8c064eb1cc47a2be2f606df354ca0076fe6513fac7fa437a1d001b281b8da5a4"
+    },
+    {
+      "bytes": 5665,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionPayload.java",
+      "sha256": "f9704a1060c65d2b01bd0c3df4aa7661ad018f85e03f6368719c00a2da2ff7ad",
+      "working_sha256": "f9704a1060c65d2b01bd0c3df4aa7661ad018f85e03f6368719c00a2da2ff7ad"
+    },
+    {
+      "bytes": 9025,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionRetention.java",
+      "sha256": "91f22ebbc91ad04897dced4303aaabc1165c6821096f7ad166dd6a9a044daf30",
+      "working_sha256": "91f22ebbc91ad04897dced4303aaabc1165c6821096f7ad166dd6a9a044daf30"
+    },
+    {
+      "bytes": 30799,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/ResourceMissions.java",
+      "sha256": "fa2d7702d28102433bc2170306707a44c6063ceddcae6db3a9525f551cfcba28",
+      "working_sha256": "fa2d7702d28102433bc2170306707a44c6063ceddcae6db3a9525f551cfcba28"
+    },
+    {
+      "bytes": 38708,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java",
+      "sha256": "9c328670be9c2b364a6581d02996c691205992b0031f2513f99a24e0743e86a4",
+      "working_sha256": "9c328670be9c2b364a6581d02996c691205992b0031f2513f99a24e0743e86a4"
+    },
+    {
+      "bytes": 2718,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/TerminalIndex.java",
+      "sha256": "22e84e354ff63b56985922a58337cbf373fd7c822b3fba4c04c101dcaad1cae2",
+      "working_sha256": "22e84e354ff63b56985922a58337cbf373fd7c822b3fba4c04c101dcaad1cae2"
+    },
+    {
+      "bytes": 8181,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifier.java",
+      "sha256": "0174c4d659c4564d59278a65437599531fe257ccdc85b9376719285156c0a075",
+      "working_sha256": "0174c4d659c4564d59278a65437599531fe257ccdc85b9376719285156c0a075"
+    },
+    {
+      "bytes": 1019,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DeliveryTerminal.java",
+      "sha256": "586d1987d4fb0889203bbca3c96dc1124b36b9d6912ef71a250d575647efe46a",
+      "working_sha256": "586d1987d4fb0889203bbca3c96dc1124b36b9d6912ef71a250d575647efe46a"
+    },
+    {
+      "bytes": 25923,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java",
+      "sha256": "1745300c6eaccb5c2cbeba94c013b297a7bcbfd8b9a17fd2238f210e96258559",
+      "working_sha256": "1745300c6eaccb5c2cbeba94c013b297a7bcbfd8b9a17fd2238f210e96258559"
+    },
+    {
+      "bytes": 33555,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java",
+      "sha256": "3f0ece7f3d8290874fefebbeea100361b15ee558de338972f729cfd5f978c950",
+      "working_sha256": "3f0ece7f3d8290874fefebbeea100361b15ee558de338972f729cfd5f978c950"
+    },
+    {
+      "bytes": 7443,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteRuntime.java",
+      "sha256": "6de0fb1f2298aacee435195b154ee2dbdd407d9f05369cbd784a69eb61db6d84",
+      "working_sha256": "6de0fb1f2298aacee435195b154ee2dbdd407d9f05369cbd784a69eb61db6d84"
+    },
+    {
+      "bytes": 7961,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlock.java",
+      "sha256": "f4f13b09ac812e6d940412e799a3c2a62ef7d56ccc99e15fece0f553d59b601c",
+      "working_sha256": "f4f13b09ac812e6d940412e799a3c2a62ef7d56ccc99e15fece0f553d59b601c"
+    },
+    {
+      "bytes": 32006,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java",
+      "sha256": "d46e8a0a9334e15e4abe4ebaa23cb880e1790014043055569b62e2a44e6be6c7",
+      "working_sha256": "d46e8a0a9334e15e4abe4ebaa23cb880e1790014043055569b62e2a44e6be6c7"
+    },
+    {
+      "bytes": 21013,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/TerminalResourceActions.java",
+      "sha256": "e6633fdac6d5c0b32a0e8cf7e431794b58d7d2b2a6332931bdb7b61a79c2bd80",
+      "working_sha256": "e6633fdac6d5c0b32a0e8cf7e431794b58d7d2b2a6332931bdb7b61a79c2bd80"
+    },
+    {
+      "bytes": 10025,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/QueueBoundsTest.java",
+      "sha256": "c4bd4081a3c11a487b50138111182613f3d88766b2e157917bb5b3d66860bf37",
+      "working_sha256": "c4bd4081a3c11a487b50138111182613f3d88766b2e157917bb5b3d66860bf37"
+    },
+    {
+      "bytes": 12455,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteWritePolicyTest.java",
+      "sha256": "611eb8cf98f0b071d1e27a82c47e9eefa99a7ded9bf949a6a33807398ebec671",
+      "working_sha256": "611eb8cf98f0b071d1e27a82c47e9eefa99a7ded9bf949a6a33807398ebec671"
+    },
+    {
+      "bytes": 12423,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifierTest.java",
+      "sha256": "d2d98d12202e21a02031b7bc482c01fee3edcc5299fc89ca6f0c635bfda6590c",
+      "working_sha256": "d2d98d12202e21a02031b7bc482c01fee3edcc5299fc89ca6f0c635bfda6590c"
+    },
+    {
+      "bytes": 14074,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/DeliveryCrashCutTest.java",
+      "sha256": "b356fd1f115a9f9246e213912d90bfc84339f2a136d720d43904abbe1aee50e9",
+      "working_sha256": "b356fd1f115a9f9246e213912d90bfc84339f2a136d720d43904abbe1aee50e9"
+    }
+  ]
+}

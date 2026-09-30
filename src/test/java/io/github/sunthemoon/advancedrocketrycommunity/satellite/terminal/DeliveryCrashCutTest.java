@@ -22,6 +22,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteL
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStats;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.TerminalObservations;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,9 @@ final class DeliveryCrashCutTest {
     private static final List<RewardEntry> REWARD = List.of(new RewardEntry(new ResourceLocation("minecraft", "iron_ore"),
             30), new RewardEntry(new ResourceLocation("minecraft", "cobblestone"), 34));
     private static final UUID TERMINAL_OWNER = UUID.randomUUID();
+
+    private static final String BLOCK_ENTITY = "advancedrocketrycommunity:satellite_terminal";
+    private static final net.minecraft.core.BlockPos POSITION = new net.minecraft.core.BlockPos(4096, 70, -4096);
 
     @TempDir
     Path files;
@@ -175,10 +179,31 @@ final class DeliveryCrashCutTest {
         chunkAfter = write(terminal);
     }
 
+    /**
+     * A restart: the registry file is loaded, and the terminal's saved section goes through the production
+     * chunk-load path (C9-L8(d)): {@code TerminalChunkEvents.entries} parses the chunk tag into a
+     * {@code TerminalObservations} record, the block-entity load starts unpersisted, and the terminal then
+     * consumes the observation at its position.
+     */
     private Restart restart(CompoundTag registry, CompoundTag chunk) {
+        CompoundTag entry = new CompoundTag();
+        entry.putString("id", BLOCK_ENTITY);
+        entry.putInt("x", POSITION.getX());
+        entry.putInt("y", POSITION.getY());
+        entry.putInt("z", POSITION.getZ());
+        entry.put(SatelliteTerminalBlockEntity.DATA_KEY, chunk.copy());
+        net.minecraft.nbt.ListTag blockEntities = new net.minecraft.nbt.ListTag();
+        blockEntities.add(entry);
+        CompoundTag chunkTag = new CompoundTag();
+        chunkTag.put(TerminalChunkEvents.BLOCK_ENTITIES, blockEntities);
+        TerminalObservations observations = new TerminalObservations();
+        TerminalChunkEvents.entries(chunkTag, BLOCK_ENTITY).forEach(observed -> observations.record(
+                observed.terminalId(), observed.pos(), observed.receipts()));
         TerminalDelivery terminal = TerminalDelivery.read(chunk);
-        // ChunkDataEvent.Load: whatever the chunk tag on disk holds is persisted.
-        terminal.observed(terminal.terminalId(), terminal.receiptIds());
+        assertTrue(terminal.unpersisted(), "a block-entity load persists nothing by itself");
+        observations.consume(terminal.terminalId(), POSITION)
+                .ifPresent(observation -> terminal.observed(terminal.terminalId(), observation.receipts()));
+        assertTrue(terminal.idPersisted(), "the chunk-load observation persists the terminal ID");
         return new Restart(SatelliteMissionSavedData.load(registry.copy()), terminal);
     }
 

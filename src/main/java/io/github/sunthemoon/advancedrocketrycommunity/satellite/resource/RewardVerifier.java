@@ -98,9 +98,10 @@ public final class RewardVerifier {
             return new Report(Outcome.MISMATCH, "the reward is not the instance yield truncated to the cargo");
         }
         Report yield = verifyInstance(instance, tables);
-        return yield.outcome() == Outcome.MISMATCH ? yield
+        // C9-L6: a changed or removed type cannot be recomputed, so the mission cannot be MATCH either.
+        return yield.outcome() != Outcome.MATCH ? yield
                 : new Report(Outcome.MATCH, "truncated to cargo " + satellite.blueprint().stats().cargo()
-                        + "; instance yield " + yield.outcome());
+                        + "; instance yield MATCH");
     }
 
     private static Report verifyGas(MissionState mission, MissionPayload.Resource resource,

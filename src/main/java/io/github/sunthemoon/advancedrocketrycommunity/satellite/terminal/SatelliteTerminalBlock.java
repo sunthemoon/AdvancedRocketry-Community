@@ -80,12 +80,14 @@ public final class SatelliteTerminalBlock extends BaseEntityBlock {
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         List<ItemStack> drops = super.getDrops(state, params);
-        if (params.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof SatelliteTerminalBlockEntity terminal
-                && terminal.blocked()) {
-            if (!terminal.canCarryData()) { return List.of(); }
+        if (params.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof SatelliteTerminalBlockEntity terminal) {
+            if (terminal.blocked() && !terminal.canCarryData()) { return List.of(); }
+            // A quarantined root travels raw (ADR-029); a normal one carries its delivery section (ADR-051 section 5).
+            net.minecraft.nbt.CompoundTag carried = terminal.blocked() ? terminal.carriedData()
+                    : terminal.carriedDeliveryData();
             for (ItemStack drop : drops) {
                 if (drop.is(asItem())) {
-                    BlockItem.setBlockEntityData(drop, ModBlockEntities.SATELLITE_TERMINAL.get(), terminal.carriedData());
+                    BlockItem.setBlockEntityData(drop, ModBlockEntities.SATELLITE_TERMINAL.get(), carried);
                 }
             }
         }

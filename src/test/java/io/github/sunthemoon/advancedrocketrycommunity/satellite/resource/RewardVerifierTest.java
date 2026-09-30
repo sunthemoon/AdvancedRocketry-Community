@@ -100,6 +100,12 @@ final class RewardVerifierTest {
         MissionState inflated = mission(MissionKind.ASTEROID, EARTH, 5L, Optional.of(instance.instanceId()), version,
                 resource(MissionKind.ASTEROID, instance.yield()), miner.satelliteId());
         assertEquals(RewardVerifier.Outcome.MISMATCH, verify(inflated, instances, satellites, tables));
+        // C9-L6: a rebalanced or removed type cannot be recomputed, so the mission is not MATCH either.
+        AsteroidType rebalanced = type("t:small", "00000000000000ff");
+        assertEquals(RewardVerifier.Outcome.VERSION_CHANGED, verify(mission, instances, satellites,
+                tables(List.of(rebalanced), List.of())));
+        assertEquals(RewardVerifier.Outcome.INPUTS_UNAVAILABLE, verify(mission, instances, satellites,
+                tables(List.of(), List.of())));
     }
 
     @Test

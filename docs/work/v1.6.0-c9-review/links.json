@@ -1,0 +1,18 @@
+{
+  "links": [
+    {
+      "document": "docs/work/v1.6.0-c9-review/VERIFICATION.md",
+      "target": "../../decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-c9-review/VERIFICATION.md",
+      "target": "../../decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md"
+    },
+    {
+      "document": "docs/work/v1.6.0-c9-review/VERIFICATION.md",
+      "target": "../../decisions/ADR-052-RESOURCE-TABLES-AND-SEEDS.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

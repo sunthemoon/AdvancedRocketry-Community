@@ -102,11 +102,22 @@ public sealed interface MissionPayload {
         }
     }
 
-    /** Display-only position of a bound terminal. */
+    /** Display-only position of a bound terminal; the level ID is bounded like every stored ID (C9-M3). */
     record TerminalLocation(ResourceLocation level, BlockPos pos) {
+        public static final int MAX_LEVEL_CHARS = 128;
+
         public TerminalLocation {
             Objects.requireNonNull(level, "level");
             Objects.requireNonNull(pos, "pos");
+            if (level.toString().length() > MAX_LEVEL_CHARS) {
+                throw new IllegalArgumentException("Terminal level ID exceeds " + MAX_LEVEL_CHARS + " characters");
+            }
+        }
+
+        /** The location, or empty when the level ID is too long to store (it is display-only). */
+        public static Optional<TerminalLocation> of(ResourceLocation level, BlockPos pos) {
+            return level.toString().length() > MAX_LEVEL_CHARS ? Optional.empty()
+                    : Optional.of(new TerminalLocation(level, pos));
         }
     }
 }

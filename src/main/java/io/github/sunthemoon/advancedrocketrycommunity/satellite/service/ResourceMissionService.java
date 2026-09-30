@@ -259,7 +259,12 @@ public final class ResourceMissionService {
         ResourceMissions.Reconciled reconciled = data.reconcile(terminal.id(), missionId, receipt, terminal.display(),
                 gameTime(server));
         if (reconciled.barrier()) {
-            data.flush(server);
+            try {
+                data.flush(server);
+            } catch (RuntimeException exception) {
+                // C9-L2: the bind-back stays pending, so the coalesced flush retries it; the terminal keeps ticking.
+                SatelliteManager.logOperationFailure("REBIND_CONFLICT barrier flush (kept pending)", exception);
+            }
         }
         lastReconciliation.put(missionId, reconciled.action().name().toLowerCase(java.util.Locale.ROOT));
         String event = switch (reconciled.action()) {
@@ -308,6 +313,12 @@ public final class ResourceMissionService {
     public List<GasTable.Product> productsFor(SatelliteState satellite) {
         return satellite.orbitBody().flatMap(body -> tables.current().flatMap(current -> current.gasTable(body)))
                 .map(GasTable::products).orElse(List.of());
+    }
+
+    /** Claims this terminal paid that are not yet acknowledged; with the receipts, a pass's whole scope. */
+    public List<UUID> awaitingDelivery(MinecraftServer server, UUID terminal) {
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        return data.operational() ? data.resourceQuery(missions -> missions.awaitingDelivery(terminal)) : List.of();
     }
 
     public List<MissionState> boundTo(MinecraftServer server, UUID terminal) {
@@ -371,11 +382,15 @@ public final class ResourceMissionService {
                 .flatMap(catalog -> catalog.systemOf(body)));
     }
 
-    private static SatelliteOperationCode startRefusal(ServerPlayer player, SatelliteIdentity chip,
-                                                       SatelliteState satellite, DeliveryTerminal terminal) {
+    private SatelliteOperationCode startRefusal(ServerPlayer player, SatelliteIdentity chip,
+                                                SatelliteState satellite, DeliveryTerminal terminal) {
         return !chip.ownerId().equals(player.getUUID()) ? SatelliteOperationCode.UNAUTHORIZED
                 : satellite == null ? SatelliteOperationCode.SATELLITE_NOT_FOUND
                 : satellite.currentMissionId().isPresent() ? SatelliteOperationCode.MISSION_BUSY
+                // C9-L4 (ADR-050 section 11): a removed or changed kind definition refuses new starts.
+                : satelliteCatalogs.current().flatMap(catalog -> catalog.kindDefinition(satellite.definitionId()))
+                        .filter(definition -> definition.kind() == satellite.kind()).isEmpty()
+                ? SatelliteOperationCode.DEFINITION_NOT_FOUND
                 : !terminal.persisted() ? SatelliteOperationCode.AWAITING_WORLD_SAVE
                 : satellite.blueprint().stats().cargo() < 1 || satellite.blueprint().stats().rating() < 1
                 ? SatelliteOperationCode.INVALID_COMPONENTS : null;

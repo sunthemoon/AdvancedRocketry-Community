@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.SurveyScanService;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
@@ -51,6 +52,13 @@ public final class SatelliteManager {
     private static final int COALESCED_FLUSH_TICKS = 100;
     private int lastCoalescedFlush = Integer.MIN_VALUE / 2;
     private long coalescedFlushes;
+    private long coalescedFlushNanos;
+    private long coalescedFlushMaxNanos;
+    /**
+     * Satellite post-tick work per server tick, indexed like {@code MinecraftServer.tickTimes}. Forge fires the
+     * post-tick event after vanilla records the tick time, so this work is not in vanilla MSPT (C9 measurement).
+     */
+    private final long[] postTickNanos = new long[100];
     private boolean coalescedFailureReported;
     private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
     private boolean replayInitialized;
@@ -86,7 +94,21 @@ public final class SatelliteManager {
         if (event.phase != TickEvent.Phase.END) {
             return;
         }
-        MinecraftServer server = event.getServer();
+        long started = System.nanoTime();
+        try {
+            tickEnd(event.getServer());
+        } finally {
+            postTickNanos[Math.floorMod(event.getServer().getTickCount(), postTickNanos.length)] =
+                    System.nanoTime() - started;
+        }
+    }
+
+    /** The satellite post-tick work of the last 100 ticks, indexed like {@code MinecraftServer.tickTimes}. */
+    public long[] postTickNanos() {
+        return postTickNanos.clone();
+    }
+
+    private void tickEnd(MinecraftServer server) {
         try {
             scans.tick(server);
         } catch (RuntimeException exception) {
@@ -133,7 +155,11 @@ public final class SatelliteManager {
         }
         lastCoalescedFlush = now;
         try {
+            long started = System.nanoTime();
             data.flush(server);
+            long elapsed = System.nanoTime() - started;
+            coalescedFlushNanos += elapsed;
+            coalescedFlushMaxNanos = Math.max(coalescedFlushMaxNanos, elapsed);
             coalescedFlushes++;
             coalescedFailureReported = false;
         } catch (RuntimeException exception) {
@@ -147,6 +173,13 @@ public final class SatelliteManager {
     /** Coalesced flushes since the server started (ADR-050 section 2, reported by C9). */
     public long coalescedFlushes() {
         return coalescedFlushes;
+    }
+
+    /** Mean and maximum coalesced flush time in milliseconds since the server started (C9 cost measurement). */
+    public String coalescedFlushTimes() {
+        return String.format(java.util.Locale.ROOT, "coalesced_flush_mean_ms=%.3f coalesced_flush_max_ms=%.3f",
+                coalescedFlushes == 0 ? 0.0D : coalescedFlushNanos / 1_000_000.0D / coalescedFlushes,
+                coalescedFlushMaxNanos / 1_000_000.0D);
     }
 
     /**
@@ -318,6 +351,14 @@ public final class SatelliteManager {
 
     /** Bounded packaged-server stress hook using the production registry and scheduler. */
     public ReleaseTestBatchResult releaseTestBatch(MinecraftServer server, int requested) {
+        return releaseTestBatch(server, requested, 2);
+    }
+
+    /**
+     * The same, spreading the missions over {@code owners} stress owners. Two owners keep the historical v0.8
+     * owner keys; more owners stay within the ADR-050 per-owner limits for the C9 500/1,000-mission loads.
+     */
+    public ReleaseTestBatchResult releaseTestBatch(MinecraftServer server, int requested, int owners) {
         if (!Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)
                 || requested < 1 || requested > MAX_RELEASE_TEST_BATCH) {
             return new ReleaseTestBatchResult(
@@ -337,9 +378,9 @@ public final class SatelliteManager {
             long gameTime = server.overworld().getGameTime();
             for (int index = 0; index < requested; index++) {
                 UUID satelliteId = UUID.randomUUID();
-                UUID ownerId = UUID.nameUUIDFromBytes(
-                        ("arce:v080:stress-owner:" + (index % 2)).getBytes(StandardCharsets.UTF_8)
-                );
+                String ownerKey = owners == 2 ? "arce:v080:stress-owner:" + (index % 2)
+                        : "arce:v160:stress-owner:" + (index % owners);
+                UUID ownerId = UUID.nameUUIDFromBytes(ownerKey.getBytes(StandardCharsets.UTF_8));
                 ResourceLocation target = definition.allowedTargets().get(
                         index % definition.allowedTargets().size()
                 );
@@ -406,7 +447,7 @@ public final class SatelliteManager {
                     operator,
                     server.overworld().getGameTime()
             );
-            if (result.changed() || data.isDirty()) {
+            if (dataMission(result) && (result.changed() || data.isDirty())) {
                 data.flush(server);
             }
             return result;
@@ -429,7 +470,7 @@ public final class SatelliteManager {
                     true,
                     server.overworld().getGameTime()
             );
-            if (result.changed() || data.isDirty()) {
+            if (dataMission(result) && (result.changed() || data.isDirty())) {
                 data.flush(server);
             }
             return result;
@@ -554,6 +595,8 @@ public final class SatelliteManager {
         intents.clear();
         lastCoalescedFlush = Integer.MIN_VALUE / 2;
         coalescedFlushes = 0L;
+        coalescedFlushNanos = 0L;
+        coalescedFlushMaxNanos = 0L;
         coalescedFailureReported = false;
         receivers.clear();
         pendingDiscoveryReplay.clear();
@@ -676,6 +719,11 @@ public final class SatelliteManager {
             return failure(SatelliteOperationCode.TARGET_NOT_ALLOWED);
         }
         return null;
+    }
+
+    /** ADR-050 section 2: only the existing {@code data} paths keep their barrier; v1.6 kinds wait for the coalesced flush. */
+    private static boolean dataMission(SatelliteOperationResult result) {
+        return result.mission().map(mission -> mission.kind() == MissionKind.DATA).orElse(true);
     }
 
     static SatelliteOperationResult failure(SatelliteOperationCode code) {

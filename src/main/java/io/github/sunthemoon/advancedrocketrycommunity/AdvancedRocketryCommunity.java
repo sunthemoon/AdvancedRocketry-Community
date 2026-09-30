@@ -220,6 +220,9 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(terminalChunks::onSave);
         MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.satellite.command
                 .ResourceMissionCommands(resourceMissions)::register);
+        // C9 evidence hooks; they register nothing unless the release-test JVM flag is set.
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.satellite.command
+                .ReleaseTestCommands()::register);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
