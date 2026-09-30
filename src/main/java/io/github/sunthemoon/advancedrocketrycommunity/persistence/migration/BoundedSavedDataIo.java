@@ -16,8 +16,19 @@ import net.minecraft.nbt.Tag;
 /** Bounded disk codec for Minecraft's outer SavedData wrapper. */
 final class BoundedSavedDataIo {
     private static final String DATA_KEY = "data";
-    /** Heap-accounting quota as a multiple of the raw byte bound; measured ratio 5.67 at station capacity. */
-    static final long HEAP_ACCOUNTING_FACTOR = 8L;
+    /**
+     * A single NBT charge is made before the element is allocated: arrays charge 1, 4 or 8 bytes per
+     * element (equal to their raw size) and lists 4 per element (each element needs at least one raw
+     * byte). A declaration beyond this multiple of the remaining raw budget cannot be backed by data.
+     */
+    static final long DECLARED_BYTES_PER_REMAINING_RAW_BYTE = 4L;
+    /** Room for the fixed per-tag charges (at most 48 bytes in 1.20.1). */
+    static final long DECLARED_BYTES_SLACK = 64L;
+    /** Deflate expands at most about 1032:1, so unread compressed bytes bound the data still to come. */
+    static final long MAX_INFLATION_RATIO = 1_032L;
+    /** Compressed bytes already buffered by the gzip reader, and output it may still hold. */
+    static final long COMPRESSED_SLACK_BYTES = 1_024L;
+    static final long INFLATED_SLACK_BYTES = 64L * 1_024L;
 
     private BoundedSavedDataIo() {
     }
@@ -29,21 +40,24 @@ final class BoundedSavedDataIo {
                 throw oversized(type, "compressed file size is " + compressedBytes + " bytes");
             }
 
-            // The raw decompressed-byte quota below is the size bound. NbtAccounter estimates heap cost,
-            // about 5.7x the raw bytes for a full station registry, so its quota is a multiple of that
-            // bound; data the payload bound accepts must not be rejected by heap accounting.
+            // The raw decompressed-byte quota below is the size bound. NbtAccounter estimates heap cost;
+            // its quota is the raw bound times the type's measured factor (stations 8: about 5.7x at
+            // capacity), and no single declaration may exceed what the remaining raw bytes can back.
             long expandedLimit = type.maxCompressedBytes();
-            long heapLimit = Math.multiplyExact(expandedLimit, HEAP_ACCOUNTING_FACTOR);
-            NbtAccounter accounter = new NbtAccounter(heapLimit);
+            long heapLimit = Math.multiplyExact(expandedLimit, type.heapAccountingFactor());
             try (InputStream file = Files.newInputStream(path, StandardOpenOption.READ);
-                 GZIPInputStream gzip = new GZIPInputStream(file);
+                 CountingInputStream compressed = new CountingInputStream(file);
+                 GZIPInputStream gzip = new GZIPInputStream(compressed);
                  QuotaInputStream bounded = new QuotaInputStream(gzip, expandedLimit);
                  DataInputStream input = new DataInputStream(bounded)) {
+                BoundedAccounter accounter = new BoundedAccounter(heapLimit, () -> Math.min(bounded.remaining(),
+                        Math.max(0L, compressedBytes - compressed.count() + COMPRESSED_SLACK_BYTES)
+                                * MAX_INFLATION_RATIO + INFLATED_SLACK_BYTES));
                 CompoundTag outer;
                 try {
                     outer = NbtIo.read(input, accounter);
                 } catch (RuntimeException exception) {
-                    if (accounter.getUsage() > heapLimit || bounded.exceeded()) {
+                    if (accounter.getUsage() > heapLimit || accounter.refusedDeclaration() || bounded.exceeded()) {
                         throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
                     }
                     throw exception;
@@ -184,6 +198,70 @@ final class BoundedSavedDataIo {
         /** NbtIo may wrap the quota IOException in a runtime exception; this survives the wrapping. */
         private boolean exceeded() {
             return consumed > limit;
+        }
+
+        private long remaining() {
+            return Math.max(0L, limit - consumed);
+        }
+    }
+
+    /** Counts compressed bytes taken from the file (including the gzip reader's read-ahead). */
+    private static final class CountingInputStream extends java.io.FilterInputStream {
+        private long count;
+
+        private CountingInputStream(InputStream delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public int read() throws IOException {
+            int value = super.read();
+            if (value >= 0) {
+                count++;
+            }
+            return value;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            int read = super.read(buffer, offset, length);
+            if (read > 0) {
+                count += read;
+            }
+            return read;
+        }
+
+        private long count() {
+            return count;
+        }
+    }
+
+    /**
+     * Refuses a single declared charge that the remaining raw bytes cannot back, before Minecraft
+     * allocates the array or list for it; the cumulative heap quota still applies.
+     */
+    private static final class BoundedAccounter extends NbtAccounter {
+        private final java.util.function.LongSupplier remainingRaw;
+        private boolean refusedDeclaration;
+
+        private BoundedAccounter(long quota, java.util.function.LongSupplier remainingRaw) {
+            super(quota);
+            this.remainingRaw = remainingRaw;
+        }
+
+        @Override
+        public void accountBytes(long bytes) {
+            long backed = remainingRaw.getAsLong() * DECLARED_BYTES_PER_REMAINING_RAW_BYTE + DECLARED_BYTES_SLACK;
+            if (bytes > backed) {
+                refusedDeclaration = true;
+                throw new IllegalStateException("NBT element declares " + bytes
+                        + " bytes but at most " + backed + " can follow within the byte quota");
+            }
+            super.accountBytes(bytes);
+        }
+
+        private boolean refusedDeclaration() {
+            return refusedDeclaration;
         }
     }
 

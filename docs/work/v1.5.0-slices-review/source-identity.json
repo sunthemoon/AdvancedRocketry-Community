@@ -1,0 +1,101 @@
+{
+  "base_commit": "615a5f1",
+  "files": [
+    {
+      "bytes": 26587,
+      "path": "CHANGELOG.md",
+      "sha256": "621369a94f2169f2407ba83968f8b327c0f8f8939204a61d7bd2461f8e32589b",
+      "working_sha256": "621369a94f2169f2407ba83968f8b327c0f8f8939204a61d7bd2461f8e32589b"
+    },
+    {
+      "bytes": 19621,
+      "path": "docs/decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md",
+      "sha256": "eb783f93b98c2bc323f6728c58856f302b4c620de7db01b9b18873d934a291f1",
+      "working_sha256": "eb783f93b98c2bc323f6728c58856f302b4c620de7db01b9b18873d934a291f1"
+    },
+    {
+      "bytes": 33287,
+      "path": "docs/work/v1.5.0-implementation-log.md",
+      "sha256": "832a070f168b10f7268aa315081e1e360b004167c059c97719c859a71031bf04",
+      "working_sha256": "832a070f168b10f7268aa315081e1e360b004167c059c97719c859a71031bf04"
+    },
+    {
+      "bytes": 10492,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/BoundedSavedDataIo.java",
+      "sha256": "ae02f569d037102f75c1cf6f11a2120a9de7707b9fa1dd469ded44f37e8aebc2",
+      "working_sha256": "ae02f569d037102f75c1cf6f11a2120a9de7707b9fa1dd469ded44f37e8aebc2"
+    },
+    {
+      "bytes": 5630,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataType.java",
+      "sha256": "89bdd05f95685cd0083a1dd01ab1e6e14268f7e1813f8fe40372770ce90156cb",
+      "working_sha256": "89bdd05f95685cd0083a1dd01ab1e6e14268f7e1813f8fe40372770ce90156cb"
+    },
+    {
+      "bytes": 3351,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationLimits.java",
+      "sha256": "a05c7aa1bce6e7f15bfbe12e720d790a853ab42d1f7eb0e86047088e8502afa9",
+      "working_sha256": "a05c7aa1bce6e7f15bfbe12e720d790a853ab42d1f7eb0e86047088e8502afa9"
+    },
+    {
+      "bytes": 4275,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistryPayload.java",
+      "sha256": "90020ce2d9f11aedb3a1831afc57b54f5300f10d45586888dc299013b8487e1c",
+      "working_sha256": "90020ce2d9f11aedb3a1831afc57b54f5300f10d45586888dc299013b8487e1c"
+    },
+    {
+      "bytes": 27012,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java",
+      "sha256": "472f348bc6e58895552da041d59dae2469d2f76c0861d92c3a695c2e34251593",
+      "working_sha256": "472f348bc6e58895552da041d59dae2469d2f76c0861d92c3a695c2e34251593"
+    },
+    {
+      "bytes": 4402,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationGravityService.java",
+      "sha256": "54d7b2bb335b1182876498c51f3e73e2c016d98fe77bbde348d435f6552b21da",
+      "working_sha256": "54d7b2bb335b1182876498c51f3e73e2c016d98fe77bbde348d435f6552b21da"
+    },
+    {
+      "bytes": 9581,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/StarSystemContentTest.java",
+      "sha256": "957bc99b60d45ae58f4126af5533d8b0df0e321ab3fb1c3af68e23992c81fb88",
+      "working_sha256": "957bc99b60d45ae58f4126af5533d8b0df0e321ab3fb1c3af68e23992c81fb88"
+    },
+    {
+      "bytes": 23173,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/data/PlanetaryReloadTest.java",
+      "sha256": "6763113cc6e029862132fa425d2aeb9be8ba731d2a6df435d29ec697ddfc941b",
+      "working_sha256": "6763113cc6e029862132fa425d2aeb9be8ba731d2a6df435d29ec697ddfc941b"
+    },
+    {
+      "bytes": 8091,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/BoundedSavedDataIoCapacityTest.java",
+      "sha256": "b544c667bd51e057bffbb6aab37ff3658756d942a51a2a4e2ccf30a746fc8171",
+      "working_sha256": "b544c667bd51e057bffbb6aab37ff3658756d942a51a2a4e2ccf30a746fc8171"
+    },
+    {
+      "bytes": 6013,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistryStorageBoundTest.java",
+      "sha256": "33c8fa8c2bcf9e2016250e9e886a727cc5d26a8c7f654105879d15622f20bdad",
+      "working_sha256": "33c8fa8c2bcf9e2016250e9e886a727cc5d26a8c7f654105879d15622f20bdad"
+    },
+    {
+      "bytes": 22205,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationWarpRelocationTest.java",
+      "sha256": "b2f775e272586b4432ade03a7348a0f9c2859769f7a656497951f8e080347337",
+      "working_sha256": "b2f775e272586b4432ade03a7348a0f9c2859769f7a656497951f8e080347337"
+    },
+    {
+      "bytes": 10318,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationWarpSchemaTest.java",
+      "sha256": "3c25b41331df00266c6063efd4d510fd7d392bcdb7b2541931824f3b54c0fa56",
+      "working_sha256": "3c25b41331df00266c6063efd4d510fd7d392bcdb7b2541931824f3b54c0fa56"
+    },
+    {
+      "bytes": 817,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationGravityCooldownRuleTest.java",
+      "sha256": "a605e76fea3273fbc7a761d140064d0808e693e77b1a3fd71a2285438106c8ea",
+      "working_sha256": "a605e76fea3273fbc7a761d140064d0808e693e77b1a3fd71a2285438106c8ea"
+    }
+  ]
+}

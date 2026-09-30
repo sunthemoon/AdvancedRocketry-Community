@@ -360,6 +360,23 @@ class PlanetaryReloadTest {
     }
 
     @Test
+    void exactlySixteenStarSystemsAreAccepted() throws IOException {
+        reload();
+        int roots = manager.capture().orElseThrow().catalog().celestial().systems().size();
+        for (int index = 0; index < 16 - roots; index++) {
+            write(BODIES, "star_" + index, star("star_" + index).toString());
+        }
+        reload();
+        assertEquals(16, manager.capture().orElseThrow().catalog().celestial().systems().size(),
+                manager.status().message());
+        write(BODIES, "star_extra", star("star_extra").toString());
+        var sixteen = manager.capture().orElseThrow();
+        reload();
+        retained(sixteen);
+        assertTrue(manager.status().message().contains("too many root bodies"), manager.status().message());
+    }
+
+    @Test
     void tooManyStarSystemsRejectTheReload() throws IOException {
         reload();
         var before = manager.capture().orElseThrow();

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
@@ -304,36 +305,70 @@ final class StationWarpRelocationTest {
         assertFalse(blocked.isDirty());
     }
 
+    /**
+     * Review F5: candidate verification proves every other state, reservation and balance is unchanged.
+     * The test seam corrupts the encoded candidate; each corruption is refused before any write.
+     */
     @Test
-    void aNewBalanceEntryIsRefusedWhenTheRegistryIsNearItsBound() {
-        StationRegistrySavedData full = new StationRegistrySavedData();
-        long limit = (long) StationLimits.MAX_REGISTRY_NBT_BYTES - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES;
-        UUID first = null;
-        UUID last = null;
-        int index = 0;
-        while (StationNbtSize.uncompressedBytes(full.save(new CompoundTag())) <= limit) {
-            for (int batch = 0; batch < 64; batch++, index++) {
-                UUID stationId = new UUID(44, index);
-                full.reserve(stationId, UUID.randomUUID(), "S".repeat(StationLimits.MAX_NAME_LENGTH), EARTH, 0);
-                full.commit(stationId);
-                for (int member = 0; member < StationLimits.MAX_MEMBERS; member++) {
-                    full.invite(stationId, new UUID(45, index * 64L + member));
-                    full.acceptInvitation(stationId, new UUID(45, index * 64L + member));
-                    full.invite(stationId, new UUID(46, index * 64L + member));
+    void aCandidateThatChangesAnythingElseIsRefusedBeforeTheWrite() throws Exception {
+        UUID reservationId = UUID.randomUUID();
+        data.reserve(reservationId, UUID.randomUUID(), "Pending", EARTH, 0);
+        CheckedSavedDataFile.replace(file, TYPE, () -> data.save(new CompoundTag()));
+        data.setDirty(false);
+        byte[] before = Files.readAllBytes(file);
+        List<java.util.function.UnaryOperator<CompoundTag>> corruptions = List.of(
+                candidate -> balance(candidate, neighbor.stationId(), NEIGHBOR_BALANCE + 1),
+                candidate -> balance(candidate, station.stationId(), BALANCE - COST + 1),
+                candidate -> {
+                    record(candidate, neighbor.stationId()).putString("name", "Renamed");
+                    return candidate;
+                },
+                candidate -> {
+                    candidate.getList("reservations", CompoundTag.TAG_COMPOUND).clear();
+                    return candidate;
+                },
+                candidate -> {
+                    candidate.getList("warp_energy", CompoundTag.TAG_COMPOUND).clear();
+                    return candidate;
                 }
-                if (first == null) {
-                    first = stationId;
-                    assertEquals(1L, full.foldWarpCredits(Map.of(stationId, 1)).credited());
-                }
-                last = stationId;
+        );
+        for (var corruption : corruptions) {
+            data.candidateTransform = corruption;
+            assertThrows(IllegalStateException.class, () -> data.checkedRelocation(file, station, MOON, COST,
+                    (from, to) -> {
+                        throw new AssertionError("A corrupt candidate must not be written");
+                    }));
+            assertThrows(IllegalStateException.class, () -> data.checkedExpand(file, station, (from, to) -> {
+                throw new AssertionError("A corrupt candidate must not be written");
+            }));
+            assertArrayEquals(before, Files.readAllBytes(file));
+            assertUnwarped();
+            assertFalse(data.isDirty());
+            assertFalse(data.updatesQuarantined());
+        }
+        data.candidateTransform = java.util.function.UnaryOperator.identity();
+        assertEquals(CheckedUpdate.COMMITTED, data.checkedRelocation(file, station, MOON, COST,
+                CheckedSavedDataFile::atomicMove));
+    }
+
+    private static CompoundTag balance(CompoundTag candidate, UUID stationId, int energy) {
+        var list = candidate.getList("warp_energy", CompoundTag.TAG_COMPOUND);
+        for (int index = 0; index < list.size(); index++) {
+            if (list.getCompound(index).getUUID("station_id").equals(stationId)) {
+                list.getCompound(index).putInt("energy", energy);
             }
         }
-        assertTrue(StationNbtSize.uncompressedBytes(full.save(new CompoundTag())) <= StationLimits.MAX_REGISTRY_NBT_BYTES);
-        var fold = full.foldWarpCredits(Map.of(first, 10, last, 20));
-        assertEquals(10L, fold.credited(), "An existing entry is still credited");
-        assertEquals(20L, fold.refused(), "A new entry is refused inside the headroom");
-        assertEquals(11, full.warpEnergy(first));
-        assertEquals(0, full.warpEnergy(last));
+        return candidate;
+    }
+
+    private static CompoundTag record(CompoundTag candidate, UUID stationId) {
+        var list = candidate.getList("stations", CompoundTag.TAG_COMPOUND);
+        for (int index = 0; index < list.size(); index++) {
+            if (list.getCompound(index).getUUID("station_id").equals(stationId)) {
+                return list.getCompound(index);
+            }
+        }
+        throw new AssertionError("Station record missing from the candidate");
     }
 
     private void assertUnwarped() {

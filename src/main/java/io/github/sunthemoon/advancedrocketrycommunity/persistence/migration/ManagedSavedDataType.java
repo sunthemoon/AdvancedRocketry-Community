@@ -95,7 +95,7 @@ public enum ManagedSavedDataType {
         if (this == STATIONS && schema == StationLimits.ORBITAL_REGISTRY_SCHEMA_VERSION) {
             return "v1.5.0-orbital-station";
         }
-        if (this == STATIONS && schema == StationLimits.REGISTRY_SCHEMA_VERSION) {
+        if (this == STATIONS && schema == StationLimits.WARP_REGISTRY_SCHEMA_VERSION) {
             return "v1.5.0-station-warp";
         }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
@@ -104,6 +104,14 @@ public enum ManagedSavedDataType {
     /** Every root schema from the legacy one up to the current one is readable for migration. */
     public boolean supportsSchema(int schema) {
         return schema >= SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION && schema <= currentSchemaVersion();
+    }
+
+    /**
+     * Heap-accounting quota as a multiple of the raw byte bound. Stations were measured at 5.67 at
+     * capacity (ADR-041 capacity fix); the other types keep their earlier factor 1.
+     */
+    public long heapAccountingFactor() {
+        return this == STATIONS ? 8L : 1L;
     }
 
     public long maxUncompressedBytes() {
@@ -125,7 +133,7 @@ public enum ManagedSavedDataType {
         }
         if (this == STATIONS) {
             // Root 4 requires the warp energy list; older roots must not carry one (ADR-044 §6).
-            boolean warpRoot = schema >= StationLimits.REGISTRY_SCHEMA_VERSION;
+            boolean warpRoot = schema >= StationLimits.WARP_REGISTRY_SCHEMA_VERSION;
             if (warpRoot ? !payload.contains(WARP_ENERGY_KEY, Tag.TAG_LIST) : payload.contains(WARP_ENERGY_KEY)) {
                 throw new SavedDataMigrationException(
                         MigrationDiagnosticId.INVALID_SCHEMA,

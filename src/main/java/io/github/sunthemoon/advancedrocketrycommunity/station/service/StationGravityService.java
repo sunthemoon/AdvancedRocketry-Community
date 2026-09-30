@@ -56,13 +56,21 @@ public final class StationGravityService {
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };
-        if (code != StationManagementCode.GRAVITY_UNCHANGED && code != StationManagementCode.STATION_CHANGED
-                && code != StationManagementCode.AUTHORITY_UNAVAILABLE) {
+        if (startsCooldown(code)) {
             // Committed and failed writes both start the cooldown, so a failing disk is not retried every tick.
             cooldown.record(observed.stationId(), server.getTickCount());
         }
         return audit(player, StationManagementResult.of(code, code == StationManagementCode.GRAVITY_SET
                 ? data.find(observed.stationId()).orElse(null) : observed));
+    }
+
+    /**
+     * Committed writes and failed writes (including an unknown outcome) start the cooldown, so a
+     * failing disk is not retried every tick; refusals before any write do not (review F8).
+     */
+    static boolean startsCooldown(StationManagementCode code) {
+        return code == StationManagementCode.GRAVITY_SET || code == StationManagementCode.WRITE_FAILED
+                || code == StationManagementCode.OUTCOME_UNKNOWN;
     }
 
     public void clear() {

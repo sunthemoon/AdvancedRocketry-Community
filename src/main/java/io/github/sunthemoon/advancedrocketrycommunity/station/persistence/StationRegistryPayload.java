@@ -24,7 +24,7 @@ public final class StationRegistryPayload {
      * gains an empty warp energy list. All other original tags are preserved; stamping is the caller's.
      */
     public static CompoundTag upgrade(CompoundTag source, int rootSchema) {
-        if (rootSchema < 1 || rootSchema >= StationLimits.REGISTRY_SCHEMA_VERSION) {
+        if (rootSchema < 1 || rootSchema >= StationLimits.WARP_REGISTRY_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Station registry root " + rootSchema + " is not upgradable");
         }
         if (source.contains(WARP_ENERGY)) {

@@ -17,6 +17,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -24,13 +25,24 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.LevelResource;
 
-/** Overworld-owned station registry; invalid/future data is preserved fail-closed. */
+/**
+ * Overworld-owned station registry; invalid/future data is preserved fail-closed. Confined to the
+ * server thread: encoding reads stations, reservations and balances in separate calls, which is
+ * consistent only because every mutation and publish runs on that thread.
+ */
 public final class StationRegistrySavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_stations";
 
     private final StationRegistryModel registry;
     private CompoundTag preservedBlockedData;
     private boolean updatesQuarantined;
+    /** Test seam only: changes the encoded candidate before it is verified (review F5). */
+    UnaryOperator<CompoundTag> candidateTransform = UnaryOperator.identity();
+    /**
+     * Upper bound of the encoded size: the last exact measurement plus the maximum growth of every
+     * later mutation (shrinking is ignored). Negative while unmeasured.
+     */
+    private long encodedUpperBound = -1L;
 
     public StationRegistrySavedData() {
         this(new StationRegistryModel());
@@ -89,6 +101,7 @@ public final class StationRegistrySavedData extends SavedData {
             long createdAtGameTime
     ) {
         requireOperational();
+        requireStorageRoom(StationLimits.MAX_STATION_RECORD_NBT_BYTES);
         StationReservation result = registry.reserve(
                 stationId, ownerId, name, orbitBody, createdAtGameTime
         );
@@ -98,6 +111,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     public StationState commit(UUID stationId) {
         requireOperational();
+        requireStorageRoom(StationLimits.MAX_STATION_RECORD_NBT_BYTES);
         StationState result = registry.commit(stationId);
         setDirty();
         return result;
@@ -128,6 +142,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     public StationState addMember(UUID stationId, UUID memberId) {
         requireOperational();
+        requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.addMember(stationId, memberId);
         setDirty();
         return result;
@@ -142,6 +157,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     public StationState invite(UUID stationId, UUID playerId) {
         requireOperational();
+        requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.invite(stationId, playerId);
         setDirty();
         return result;
@@ -149,6 +165,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     public StationState acceptInvitation(UUID stationId, UUID playerId) {
         requireOperational();
+        requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.acceptInvitation(stationId, playerId);
         setDirty();
         return result;
@@ -163,6 +180,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     public StationState transferOwnership(UUID stationId, UUID ownerId) {
         requireOperational();
+        requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.transferOwnership(stationId, ownerId);
         setDirty();
         return result;
@@ -204,6 +222,15 @@ public final class StationRegistrySavedData extends SavedData {
      */
     public WarpCreditFold foldWarpCredits(Map<UUID, Integer> credits) {
         Objects.requireNonNull(credits, "credits");
+        // Validated as a whole first, so an invalid entry can never leave a partial, unsaved fold.
+        if (credits.size() > StationLimits.MAX_PENDING_WARP_CREDITS) {
+            throw new IllegalArgumentException("Too many warp credits in one fold");
+        }
+        credits.forEach((stationId, amount) -> {
+            if (stationId == null || amount == null || amount < 0 || amount > StationLimits.MAX_WARP_ENERGY) {
+                throw new IllegalArgumentException("Invalid warp credit");
+            }
+        });
         long offered = credits.values().stream().mapToLong(Integer::longValue).sum();
         if (!operational()) {
             return new WarpCreditFold(0L, offered);
@@ -211,7 +238,8 @@ public final class StationRegistrySavedData extends SavedData {
         long credited = 0L;
         Boolean entryHeadroom = null;
         for (Map.Entry<UUID, Integer> credit : new TreeMap<>(credits).entrySet()) {
-            if (registry.needsWarpEnergyEntry(credit.getKey())) {
+            boolean newEntry = registry.needsWarpEnergyEntry(credit.getKey());
+            if (newEntry) {
                 if (entryHeadroom == null) {
                     entryHeadroom = hasWarpEntryHeadroom();
                 }
@@ -219,7 +247,11 @@ public final class StationRegistrySavedData extends SavedData {
                     continue;
                 }
             }
-            credited += registry.creditWarpEnergy(credit.getKey(), credit.getValue());
+            int accepted = registry.creditWarpEnergy(credit.getKey(), credit.getValue());
+            credited += accepted;
+            if (newEntry && accepted > 0) {
+                grew(StationLimits.MAX_WARP_ENERGY_ENTRY_NBT_BYTES);
+            }
         }
         if (credited > 0L) {
             setDirty();
@@ -232,21 +264,45 @@ public final class StationRegistrySavedData extends SavedData {
         return new WarpCreditFold(credited, offered - credited);
     }
 
-    /** True while the encoded registry leaves the ADR-044 headroom; encodes only when the cheap bound fails. */
-    private boolean hasWarpEntryHeadroom() {
+    /**
+     * Review F2: refuses growth that would leave less than the ADR-044 balance headroom of the 4 MiB
+     * registry bound, so ordinary saves can never fail on size. Encodes only when the cheap bound fails.
+     */
+    private void requireStorageRoom(int growthBytes) {
+        if (!fitsUnderHeadroom(growthBytes)) {
+            throw new IllegalStateException("Station registry is at its storage bound");
+        }
+        grew(growthBytes);
+    }
+
+    private void grew(long growthBytes) {
+        if (encodedUpperBound >= 0L) {
+            encodedUpperBound += growthBytes;
+        }
+    }
+
+    /** Cheap bounds first; the registry is encoded only when the running upper bound would cross the limit. */
+    private boolean fitsUnderHeadroom(long growthBytes) {
         long limit = (long) StationLimits.MAX_REGISTRY_NBT_BYTES - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES;
-        long upperBound = 1_024L
+        long recordBound = 1_024L
                 + (long) (registry.stations().size() + registry.reservations().size())
                 * StationLimits.MAX_STATION_RECORD_NBT_BYTES
                 + (long) registry.warpEnergyBalances().size() * StationLimits.MAX_WARP_ENERGY_ENTRY_NBT_BYTES;
-        if (upperBound <= limit) {
+        if (recordBound + growthBytes <= limit
+                || (encodedUpperBound >= 0L && encodedUpperBound + growthBytes <= limit)) {
             return true;
         }
         try {
-            return StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null)) <= limit;
+            encodedUpperBound = StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null));
         } catch (IllegalStateException oversized) {
-            return false;
+            encodedUpperBound = StationLimits.MAX_REGISTRY_NBT_BYTES + 1L;
         }
+        return encodedUpperBound + growthBytes <= limit;
+    }
+
+    /** True while the encoded registry leaves the ADR-044 headroom; encodes only when the cheap bound fails. */
+    private boolean hasWarpEntryHeadroom() {
+        return fitsUnderHeadroom(0L);
     }
 
     /** Validates persisted orbit references without deleting recoverable station state. */
@@ -295,6 +351,11 @@ public final class StationRegistrySavedData extends SavedData {
     /**
      * ADR-044 warp: moves the observed station's orbit to {@code target} and debits {@code cost} from
      * its balance in one checked replacement of the station file, then one publish.
+     *
+     * <p>This checks authority, the observed state, an exact relocation and that the live balance
+     * covers the cost. The caller (the WARP-03 commit step) must first fold pending credits and check
+     * that the target is present, orbitable, known and not the current orbit, and that the cost and
+     * cost class equal the confirmed ones; this method accepts any target identifier.
      */
     public CheckedUpdate checkedRelocation(MinecraftServer server, StationState observed, ResourceLocation target,
                                            int cost) {
@@ -354,8 +415,12 @@ public final class StationRegistrySavedData extends SavedData {
         if (relocation && balance < cost) {
             return CheckedUpdate.INSUFFICIENT_ENERGY;
         }
+        if (relocation) {
+            requireStorageRoom(Math.max(0, replacement.orbitBody().toString().length()
+                    - observed.orbitBody().toString().length()));
+        }
         Integer debited = relocation ? balance - cost : null;
-        CompoundTag candidate = encode(new CompoundTag(), replacement, debited);
+        CompoundTag candidate = candidateTransform.apply(encode(new CompoundTag(), replacement, debited));
         requireValidCandidate(candidate, replacement, debited);
         boolean[] replacementAttempted = {false};
         try {

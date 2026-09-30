@@ -43,10 +43,17 @@ not physical isolation.
   - A zero, negative or over-bound value, a duplicate, an unknown station, or
     more than 4,096 entries blocks the registry (fail closed).
   - Each balance is at most 10,000,000 FE.
-  - Budget: each entry is at most 64 bytes, so the full list is at most 256 KiB,
-    inside the 4 MiB registry bound together with 4,096 records (measured 1.59 MB).
+  - Budget: each entry is at most 64 bytes, so the full list is at most 256 KiB.
     A credit that would add an entry while the encoded registry is within 256 KiB
     of the bound is refused.
+  - Growth admission (amended after the WARP-02 implementation review, F2):
+    4,096 records fit only when they are small (1.59 MB measured for minimal
+    records); records at their bounds (about 2.3 KB each) reach the 4 MiB bound
+    near 1,850 stations. Creating a station, committing a reservation, and adding
+    a member, invitation or owner transfer are therefore refused once the encoded
+    registry would leave less than 256 KiB of the bound, and so is a relocation to
+    a longer orbit identifier. The balance list always fits, and an ordinary save
+    never fails on size.
 - **Warp core.** `advancedrocketrycommunity:warp_core` is a stateless terminal.
   Its block entity exists only to expose the Forge Energy capability and stores
   nothing but its schema version (1). `receiveEnergy` accepts energy only when
@@ -92,8 +99,11 @@ not physical isolation.
 identity, owner, name, cell, pad, created time, members and invitations. It does
 not use `sameAuthorityAs`, which includes the orbit.
 
-**Commit check.** The registry-level `checkedRelocation(observed, target, cost)`
-requires all of the following:
+**Commit check.** A commit requires all of the following. The registry-level
+`checkedRelocation(observed, target, cost)` itself checks authority, the observed
+state, the exact relocation and the balance. The commit step (§4) must first fold
+and check the target and the confirmed cost; the registry method accepts any
+target identifier (clarified after the WARP-02 implementation review, F4).
 - the registry is operational and not quarantined;
 - the live state equals the observed state;
 - the target is valid at commit;
@@ -312,3 +322,11 @@ Restore the complete pre-upgrade backup (ADR-040), which also discards balances.
 
 Both reports are archived in `docs/work/v1.5.0-star-warp-contracts/`. Acceptance
 is not a Gate approval.
+
+- **Implementation review of WARP-02** (2026-09-30, `9969550`): accept with
+  changes. Two text corrections follow from it, and neither changes the decision:
+  - §2 growth admission (F2), which replaces the incorrect "4,096 records fit"
+    premise;
+  - §3 the split between registry and commit-step checks (F4).
+
+  See `docs/work/v1.5.0-slices-review/`.

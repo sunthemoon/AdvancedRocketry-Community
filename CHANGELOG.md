@@ -81,6 +81,12 @@ No candidate or release approval is assigned.
 - Station registries near the 4,096-station limit no longer fail the pre-start
   upgrade or a station change with a false "oversized" error; the size bound is
   the raw data size, and its heap estimate no longer rejects valid data.
+- A corrupt or crafted data file that declares huge contents is refused as
+  oversized before any memory is reserved for it, instead of risking an
+  out-of-memory crash at start.
+- Creating a station, inviting or adding members and transferring ownership are
+  refused once the station registry nears its 4 MiB storage bound (reached well
+  below 4,096 stations when teams are full), instead of later saves failing.
 - Keep the 4,096-station and 64-reservation limits independent. A failed commit
   at station capacity retains the pending reservation.
 

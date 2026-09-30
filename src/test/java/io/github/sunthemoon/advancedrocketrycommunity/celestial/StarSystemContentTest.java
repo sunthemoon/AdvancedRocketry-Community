@@ -73,6 +73,63 @@ final class StarSystemContentTest {
                 .id("missing"), body -> true));
     }
 
+    /** Review F6: the packaged route graph gives the rocket planner no way into the example system. */
+    @Test
+    void thePackagedPlannerCannotReachTheExampleSystem() {
+        CelestialCatalog catalog = catalog();
+        var ids = catalog.definitions().stream().map(CelestialBodyDefinition::id).toList();
+        RouteCatalog routes = RouteCatalog.create(PlanetaryContent.routes(), ids).getOrThrow(false, m -> { });
+        var stats = new io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats(
+                4, 200L, 1_000L, 1_000L, 1, 1, 1, 0);
+        var fuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(1_000L)
+                .fill(1_000L).state();
+        var earth = new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.BodySurface(
+                CelestialIds.EARTH_ID);
+        java.util.UUID stationId = java.util.UUID.randomUUID();
+        var tauStation = io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState.fromReservation(
+                new io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation(stationId,
+                        java.util.UUID.randomUUID(), "Tau orbit",
+                        new io.github.sunthemoon.advancedrocketrycommunity.station.model.StationGridCell(1, 1),
+                        StarSystemContent.TAU_CETI_E, 0L));
+        java.util.function.Function<java.util.UUID, java.util.Optional<
+                io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState>> stations =
+                id -> id.equals(stationId) ? java.util.Optional.of(tauStation) : java.util.Optional.empty();
+        var overworld = net.minecraft.world.level.Level.OVERWORLD.location();
+        var mars = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTargetFlightPlanner.plan(
+                stats, fuel, earth, overworld,
+                new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.BodySurface(
+                        PlanetaryContent.MARS),
+                catalog, routes, stations, java.util.UUID.randomUUID(), 0L);
+        assertTrue(mars.success(), "Control: the home system is routable: " + mars.code());
+        for (var target : List.<io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget>of(
+                new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.Orbit(
+                        StarSystemContent.TAU_CETI_E),
+                new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.Station(stationId))) {
+            var plan = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTargetFlightPlanner.plan(
+                    stats, fuel, earth, overworld, target, catalog, routes, stations, java.util.UUID.randomUUID(), 0L);
+            assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanCode
+                    .UNSUPPORTED_ROUTE, plan.code(), target.toString());
+        }
+    }
+
+    /** Review F6: the v1.5 data satellite surveys Tau Ceti e through the ordinary mission flow. */
+    @Test
+    void aSurveyMissionToTheExamplePlanetEndsInAPendingDiscovery() {
+        var missions = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData
+                .create(0);
+        java.util.UUID owner = java.util.UUID.randomUUID();
+        java.util.UUID mission = java.util.UUID.randomUUID();
+        var survey = StarSystemContent.surveySatellite();
+        assertTrue(missions.launch(java.util.UUID.randomUUID(), mission, owner, survey, StarSystemContent.TAU_CETI_E,
+                0, true).success());
+        assertEquals(1, missions.completeDue(survey.missionDurationTicks()).completed());
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode
+                .PENDING_DISCOVERY, missions.claim(mission, owner, survey.missionDurationTicks() + 1).code());
+        assertTrue(missions.finishDiscovery(mission).success());
+        assertFalse(missions.launch(java.util.UUID.randomUUID(), java.util.UUID.randomUUID(), owner, survey,
+                StarSystemContent.TAU_CETI, 0, true).success(), "The star is not a satellite target");
+    }
+
     private static CelestialCatalog catalog() {
         List<CelestialBodyDefinition> bodies = new ArrayList<>(CelestialDefaults.definitions());
         bodies.addAll(PlanetaryContent.definitions());

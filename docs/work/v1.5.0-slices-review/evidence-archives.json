@@ -1,0 +1,35 @@
+{
+  "archives": [
+    {
+      "bytes": 269109,
+      "manifest": "root-checks-files.json",
+      "members": 193,
+      "name": "root-checks.zip",
+      "sha256": "74483b7404807ae4b702376bc4364e36b2e4af8b91098f95f704c9f9171dfaea"
+    },
+    {
+      "bytes": 233357,
+      "excluded": [
+        "prev-review/"
+      ],
+      "manifest": "independent-review-files.json",
+      "members": 65,
+      "name": "independent-review.zip",
+      "reviewed_commits": [
+        "c5e213b",
+        "30b9b11",
+        "9969550"
+      ],
+      "sha256": "e5c1b71486e56d6495456bd7728df03d5ae2d581cfaaef10e347805384deda5e",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-slices-review-eae862c5d9880169dea4711a7e9ae86c"
+    }
+  ],
+  "base_commit": "615a5f1",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-reviewfix-be372850fa7342fb8e39eeeee1b3183a"
+}

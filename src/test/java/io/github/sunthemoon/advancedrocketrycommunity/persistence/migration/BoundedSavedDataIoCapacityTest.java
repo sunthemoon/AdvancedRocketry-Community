@@ -66,7 +66,8 @@ final class BoundedSavedDataIoCapacityTest {
     void rawBytesBeyondTheBoundAreStillRejected() throws Exception {
         CompoundTag payload = new CompoundTag();
         ListTag filler = new ListTag();
-        // Incompressible-enough filler just over the raw bound for the smallest managed type.
+        // Repetitive filler just over the raw bound; it compresses well, which only has to pass the
+        // compressed-size precheck so that the raw quota is what refuses it.
         long limit = ManagedSavedDataType.STATIONS.maxCompressedBytes();
         StringBuilder chunk = new StringBuilder();
         for (int index = 0; index < 30_000; index++) {
@@ -83,7 +84,61 @@ final class BoundedSavedDataIoCapacityTest {
             NbtIo.writeCompressed(outer, output);
         }
         assertTrue(Files.size(file) < limit, "Fixture must pass the compressed-size precheck");
-        assertThrows(SavedDataMigrationException.class, () -> BoundedSavedDataIo.read(file, ManagedSavedDataType.STATIONS));
+        SavedDataMigrationException refused = assertThrows(SavedDataMigrationException.class,
+                () -> BoundedSavedDataIo.read(file, ManagedSavedDataType.STATIONS));
+        assertEquals(MigrationDiagnosticId.OVERSIZED_DATA, refused.diagnosticId());
+    }
+
+    /**
+     * Review F1: a tiny crafted file declaring one huge array or list is refused as oversized before
+     * anything is allocated when the declaration exceeds what the file can back (deflate expands at
+     * most about 1032:1) or the type's heap quota. A smaller declaration still fails closed and can
+     * allocate at most that small amount. Checked for every managed type in the default test heap.
+     */
+    @Test
+    void aTinyFileDeclaringAHugeElementIsRefusedBeforeAllocation() throws Exception {
+        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            long quota = Math.multiplyExact(type.maxCompressedBytes(), type.heapAccountingFactor());
+            for (long declared : new long[]{quota - 1_024L, quota + 1L, 64L * 1_024L * 1_024L}) {
+                for (byte tagType : new byte[]{7, 11, 12, 9}) {
+                    Path file = root.resolve(type.fileName() + "-" + tagType + "-" + declared);
+                    writeDeclaration(file, tagType, Math.min(declared, Integer.MAX_VALUE - 64L));
+                    assertTrue(Files.size(file) < 128, "The fixture must be tiny");
+                    long backed = ((Files.size(file) + BoundedSavedDataIo.COMPRESSED_SLACK_BYTES)
+                            * BoundedSavedDataIo.MAX_INFLATION_RATIO + BoundedSavedDataIo.INFLATED_SLACK_BYTES)
+                            * BoundedSavedDataIo.DECLARED_BYTES_PER_REMAINING_RAW_BYTE
+                            + BoundedSavedDataIo.DECLARED_BYTES_SLACK;
+                    String label = type + " tag " + tagType + " declaring " + declared;
+                    SavedDataMigrationException refused = assertThrows(SavedDataMigrationException.class,
+                            () -> BoundedSavedDataIo.read(file, type), label);
+                    if (declared > backed || declared > quota) {
+                        assertEquals(MigrationDiagnosticId.OVERSIZED_DATA, refused.diagnosticId(), label);
+                    }
+                }
+            }
+        }
+        // The gzip-backed bound is what keeps the large types safe: it is far below their quotas.
+        assertTrue(Math.multiplyExact(ManagedSavedDataType.ROCKET_TRANSFERS.maxCompressedBytes(),
+                ManagedSavedDataType.ROCKET_TRANSFERS.heapAccountingFactor()) > 10L * 1_024L * 1_024L);
+    }
+
+    /** An outer compound whose "data" entry declares {@code declaredBytes} of accounted content. */
+    private static void writeDeclaration(Path file, byte tagType, long declaredBytes) throws Exception {
+        try (var output = new DataOutputStream(new java.util.zip.GZIPOutputStream(Files.newOutputStream(file)))) {
+            output.writeByte(10);
+            output.writeUTF("");
+            output.writeByte(tagType);
+            output.writeUTF("data");
+            if (tagType == 9) {
+                output.writeByte(1); // a list of bytes: 4 accounted bytes per element
+            }
+            long perElement = switch (tagType) {
+                case 11, 9 -> 4L;
+                case 12 -> 8L;
+                default -> 1L;
+            };
+            output.writeInt((int) (declaredBytes / perElement));
+        }
     }
 
     private static byte[] bytes(CompoundTag tag) throws Exception {

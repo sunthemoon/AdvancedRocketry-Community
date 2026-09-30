@@ -85,6 +85,12 @@ final class StationWarpSchemaTest {
                     root.putInt("warp_energy", 0);
                 }
         );
+        // Review F5: the root-shape guard itself names the refused field (the payload decoder repeats it).
+        CompoundTag carrying = rootThree();
+        carrying.put("warp_energy", new ListTag());
+        SavedDataMigrationException shape = assertThrows(SavedDataMigrationException.class,
+                () -> SavedDataSchemaMigrator.migrate(TYPE, carrying));
+        assertTrue(shape.getMessage().contains("schema 3 cannot carry warp_energy"), shape.getMessage());
         for (Consumer<CompoundTag> mutation : invalid) {
             CompoundTag source = rootThree();
             mutation.accept(source);
