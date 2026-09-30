@@ -59,15 +59,17 @@ with the Tau Ceti example are implemented under accepted ADR-043
 ([verification](../work/v1.5.0-star-systems/VERIFICATION.md)). Warp follows accepted
 ADR-044 revision 3; WARP-02 (station root schema 4, balances and the checked
 relocation) is implemented
-([verification](../work/v1.5.0-warp-schema/VERIFICATION.md)), while the warp core,
-commands and countdown are not. These slices await independent review. Release
+([verification](../work/v1.5.0-warp-schema/VERIFICATION.md)), and so is WARP-03
+(warp core, commands and countdown;
+[verification](../work/v1.5.0-warp-core/VERIFICATION.md)). Warps stay refused until
+WARP-04 connects the rocket safety check. These slices await independent review. Release
 status remains `IN_PROGRESS`, not `PASSED`.
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and
 pre-start migration contract, retaining old station identity/geometry. The
-per-station sky, the usable warp (core, commands, countdown, rocket authority),
-UI, elevator endpoint and acceptance remain unimplemented current-version work,
+per-station sky, the warp's rocket authority and restart evidence, UI, elevator
+endpoint and acceptance remain unimplemented current-version work,
 not metadata-only substitutes.
 
 The [v1.4 development handoff](../releases/v1.4.0/RELEASE-EVIDENCE.md) and

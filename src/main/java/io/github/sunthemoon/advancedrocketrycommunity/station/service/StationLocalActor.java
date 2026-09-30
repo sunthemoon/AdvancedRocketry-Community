@@ -16,12 +16,12 @@ import net.minecraft.server.level.ServerPlayer;
  * from their own source, standing in the station's committed region with their chunk loaded,
  * who is its owner or a permission-level-2 operator.
  */
-final class StationLocalActor {
+public final class StationLocalActor {
     private StationLocalActor() {
     }
 
     /** Checks the actor against the station at their position; {@code null} means allowed. */
-    static StationManagementCode check(
+    public static StationManagementCode check(
             StationAccessService access,
             boolean authorityAvailable,
             boolean localPlayer,
@@ -51,11 +51,11 @@ final class StationLocalActor {
     }
 
     /** A connected player (not a FakePlayer or detached entity) who issued the command directly. */
-    static boolean localPlayer(MinecraftServer server, ServerPlayer player, boolean issuedByPlayer) {
+    public static boolean localPlayer(MinecraftServer server, ServerPlayer player, boolean issuedByPlayer) {
         return issuedByPlayer && server.getPlayerList().getPlayer(player.getUUID()) == player;
     }
 
-    static Located locate(StationAccessService access, ServerPlayer player, boolean issuedByPlayer) {
+    public static Located locate(StationAccessService access, ServerPlayer player, boolean issuedByPlayer) {
         MinecraftServer server = player.getServer();
         if (server == null) {
             return new Located(StationManagementCode.AUTHORITY_UNAVAILABLE, null, null);
@@ -76,7 +76,7 @@ final class StationLocalActor {
         return new Located(code, station.orElse(null), data);
     }
 
-    static StationManagementResult audit(String kind, String action, ServerPlayer player,
+    public static StationManagementResult audit(String kind, String action, ServerPlayer player,
                                          StationManagementResult result) {
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_STATION_{} action={} code={} station={} actor={} width={} gravity_milli={}",
@@ -91,6 +91,6 @@ final class StationLocalActor {
         return result;
     }
 
-    record Located(StationManagementCode code, StationState station, StationRegistrySavedData authority) {
+    public record Located(StationManagementCode code, StationState station, StationRegistrySavedData authority) {
     }
 }

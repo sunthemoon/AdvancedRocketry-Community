@@ -57,11 +57,13 @@ Station storage now upgrades through a pre-start backup and validation step;
 existing station identities, permissions, coordinates and 512-square regions
 are retained. A station owner or operator standing in the station can grow it
 once from 512 to 768 blocks square with `/arce station expand` and a timed
-confirmation. Use only copies of backed-up worlds. Downgrading requires a
-complete pre-upgrade world backup, not editing a schema number. The
-[implementation log](docs/work/v1.5.0-implementation-log.md) tracks orbital
-environment and recoverable multi-star travel; those features are not yet
-available. This is not a stable release.
+confirmation. Stations have their own gravity (`/arce station gravity`), and
+the example Tau Ceti system can be discovered. Warp cores charge a station's warp
+balance and `/arce station warp` quotes and counts down a warp, but warps stay
+refused until the rocket safety check lands. Use only copies of backed-up worlds.
+Downgrading requires a complete pre-upgrade world backup, not editing a schema
+number. The [implementation log](docs/work/v1.5.0-implementation-log.md) tracks
+the remaining warp, sky, UI and acceptance work. This is not a stable release.
 
 ## What this project is
 

@@ -21,8 +21,14 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
 
         // Earlier version outputs (v1.4 and before) remain immutable resource inputs.
-        generator.addProvider(event.includeClient(), new V150StarSystemLanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new V150StarSystemLanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeClient(), new V150LanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new V150LanguageProvider(output, "zh_cn"));
         generator.addProvider(event.includeServer(), new V150StarSystemProvider(output));
+        generator.addProvider(event.includeClient(),
+                new V150WarpCoreProviders.Models(output, event.getExistingFileHelper()));
+        generator.addProvider(event.includeServer(), V150WarpCoreProviders.loot(output));
+        generator.addProvider(event.includeServer(), new V150WarpCoreProviders.Recipes(output));
+        generator.addProvider(event.includeServer(), new V150WarpCoreProviders.ToolTags(
+                output, event.getLookupProvider(), event.getExistingFileHelper()));
     }
 }

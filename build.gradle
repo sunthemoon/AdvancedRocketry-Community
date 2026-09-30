@@ -147,10 +147,13 @@ tasks.named('processResources') {
                 && details.path == currentSatelliteDefinition) {
             details.exclude()
         }
+        // ADR-044: the v1.5 tool tags add the warp core and supersede the v1.2 copies.
         boolean isHistoricalCopy = details.file.toPath().startsWith(
                 file('src/generated/resources').toPath()
         ) || details.file.toPath().startsWith(
                 file('src/generated/v0.8/resources').toPath()
+        ) || details.file.toPath().startsWith(
+                file('src/generated/v1.2/resources').toPath()
         )
         if (isHistoricalCopy && currentSupersededHistoricalBlockTags.contains(details.path)) {
             details.exclude()
@@ -170,10 +173,13 @@ tasks.named('sourcesJar') {
                 && details.path == currentSatelliteDefinition) {
             details.exclude()
         }
+        // ADR-044: the v1.5 tool tags add the warp core and supersede the v1.2 copies.
         boolean isHistoricalCopy = details.file.toPath().startsWith(
                 file('src/generated/resources').toPath()
         ) || details.file.toPath().startsWith(
                 file('src/generated/v0.8/resources').toPath()
+        ) || details.file.toPath().startsWith(
+                file('src/generated/v1.2/resources').toPath()
         )
         if (isHistoricalCopy && currentSupersededHistoricalBlockTags.contains(details.path)) {
             details.exclude()

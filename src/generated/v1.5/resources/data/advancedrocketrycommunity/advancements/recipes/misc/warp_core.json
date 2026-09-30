@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_data_storage_unit": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:data_storage_unit"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "advancedrocketrycommunity:warp_core"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_data_storage_unit",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "advancedrocketrycommunity:warp_core"
+    ]
+  },
+  "sends_telemetry_event": false
+}

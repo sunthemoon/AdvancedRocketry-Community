@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -116,6 +117,16 @@ public final class ModBlocks {
                 () -> new PrecisionAssemblerPortBlock(type, metalProperties())
         );
     }
+
+    /** ADR-044: stateless warp core; charges the balance of the station it stands in. */
+    public static final RegistryObject<Block> WARP_CORE = BLOCKS.register(
+            "warp_core",
+            () -> new WarpCoreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
+    );
 
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()

@@ -15,6 +15,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 /** Connected mock players (as GameTestHelper.makeMockServerPlayerInLevel) and reply capture for GameTests. */
 final class ConnectedTestPlayers {
+    static final String ACTION_BAR = "[action bar] ";
+
     private ConnectedTestPlayers() {
     }
 
@@ -40,6 +42,12 @@ final class ConnectedTestPlayers {
             @Override
             public void sendSystemMessage(Component message) {
                 replies.add(message.getString());
+            }
+
+            /** Chat and action-bar messages ({@code displayClientMessage}); the action bar is marked. */
+            @Override
+            public void sendSystemMessage(Component message, boolean overlay) {
+                replies.add(overlay ? ACTION_BAR + message.getString() : message.getString());
             }
         };
         Connection connection = new Connection(PacketFlow.SERVERBOUND);

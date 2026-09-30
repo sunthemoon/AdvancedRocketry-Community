@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "D": {
+      "item": "advancedrocketrycommunity:data_storage_unit"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    }
+  },
+  "pattern": [
+    "MAM",
+    "ADA",
+    "MAM"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:warp_core"
+  },
+  "show_notification": true
+}

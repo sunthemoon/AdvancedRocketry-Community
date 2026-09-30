@@ -56,8 +56,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisua
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.command.StationCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.station.command.StationWarpCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.command.SatelliteCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.api.satellite.RegisterSatellitePayloadsEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.satellite.SatellitePayloadRegistry;
@@ -98,6 +101,7 @@ public final class AdvancedRocketryCommunity {
     private PlayerLifeSupportService playerLifeSupport;
     private RocketManager rocketManager;
     private final StationManager stationManager;
+    private final StationWarpService stationWarp;
     private final SatelliteManager satelliteManager;
 
     public AdvancedRocketryCommunity(FMLJavaModLoadingContext context) {
@@ -138,6 +142,12 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
         stationManager = new StationManager(celestialCatalogs);
         StationRuntime.install(stationManager);
+        stationWarp = new StationWarpService(celestialCatalogs,
+                StationWarpService.routesInSystem(planetaryCatalogs), CommonConfig::warpSettings);
+        StationWarpRuntime.install(stationWarp);
+        MinecraftForge.EVENT_BUS.addListener(stationWarp::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(stationWarp::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(stationWarp::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
         EnvironmentQueryLifecycle environmentQueries = new EnvironmentQueryLifecycle(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(environmentQueries::onServerStarted);
@@ -147,6 +157,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
+        MinecraftForge.EVENT_BUS.addListener(new StationWarpCommands(stationWarp)::register);
         new RocketFlightNetwork();
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
@@ -301,6 +312,7 @@ public final class AdvancedRocketryCommunity {
             rocketManager.clear();
         }
         stationManager.clear();
+        stationWarp.clear();
         satelliteManager.clear();
         rollingMachines.clear();
         RollingMachineRuntime.clear();

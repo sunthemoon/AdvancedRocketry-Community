@@ -32,6 +32,21 @@ public final class StationLimits {
     public static final int MAX_WARP_ENERGY_ENTRY_NBT_BYTES = 64;
     /** A credit that adds a balance entry is refused while the registry is this close to its bound. */
     public static final int WARP_ENERGY_HEADROOM_NBT_BYTES = 256 * 1_024;
+    /** ADR-044 §2: energy one station's cores accept per server tick, in FE. */
+    public static final int WARP_CREDIT_PER_TICK = 200_000;
+    /** Pending credits are folded into the registry at least this often. */
+    public static final long WARP_CREDIT_FOLD_TICKS = 200L;
+    public static final int MAX_PENDING_WARP_CREDITS = MAX_STATIONS;
+    /** ADR-044 §4: confirmation window, countdown, cooldown and in-memory bounds. */
+    public static final long WARP_CONFIRMATION_TICKS = 200L;
+    public static final int MAX_PENDING_WARPS = 128;
+    public static final long WARP_COUNTDOWN_TICKS = 200L;
+    public static final int MAX_WARP_COUNTDOWNS = 64;
+    public static final long WARP_COOLDOWN_TICKS = 100L;
+    public static final double WARP_CORE_REACH = 5.0D;
+    /** COMMON config bounds for both warp costs; a cost of 0 is impossible. */
+    public static final int MIN_WARP_COST = 100_000;
+    public static final int MAX_WARP_COST = MAX_WARP_ENERGY;
 
     private StationLimits() {
     }

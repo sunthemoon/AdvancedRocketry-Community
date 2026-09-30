@@ -1,0 +1,19 @@
+{
+  "archives": [
+    {
+      "bytes": 342584,
+      "manifest": "root-checks-files.json",
+      "members": 198,
+      "name": "root-checks.zip",
+      "sha256": "e5356264b2590a8f44d202b7a9809afc175f38ae8e60779d020d302c3343a27d"
+    }
+  ],
+  "base_commit": "9969550",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-warp03-a3efe05bc7d340699a764a4dca3e3652"
+}

@@ -138,6 +138,7 @@ public final class ModItems {
             "satellite_terminal",
             ModBlocks.SATELLITE_TERMINAL
     );
+    public static final RegistryObject<Item> WARP_CORE = blockItem("warp_core", ModBlocks.WARP_CORE);
     public static final RegistryObject<Item> SATELLITE_CHASSIS = component("satellite_chassis");
     public static final RegistryObject<Item> SATELLITE_SOLAR_MODULE = component("satellite_solar_module");
     public static final RegistryObject<Item> SATELLITE_CONTROL_CHIP = ITEMS.register(

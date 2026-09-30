@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -97,6 +98,15 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             SatelliteTerminalBlockEntity::new,
                             ModBlocks.SATELLITE_TERMINAL.get()
+                    ).build(null)
+            );
+
+    public static final RegistryObject<BlockEntityType<WarpCoreBlockEntity>> WARP_CORE =
+            BLOCK_ENTITIES.register(
+                    "warp_core",
+                    () -> BlockEntityType.Builder.of(
+                            WarpCoreBlockEntity::new,
+                            ModBlocks.WARP_CORE.get()
                     ).build(null)
             );
 

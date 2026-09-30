@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
 import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.junit.jupiter.api.Test;
@@ -30,7 +32,28 @@ class CommonConfigTest {
     @Test
     void obsoleteUnconsumedLifecycleToggleIsNotExposed() {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
-        assertEquals(2, countValues(CommonConfig.SPEC.getValues()));
+        // Two atmosphere values and the three ADR-044 station warp values.
+        assertEquals(5, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void warpSettingsDefaultToEnabledAndCostsCannotBeZero() {
+        assertEquals(Boolean.TRUE, CommonConfig.WARP_ENABLED.getDefault());
+        for (var entry : java.util.Map.of(
+                "stations.warpCostInSystem", CommonConfig.WARP_COST_IN_SYSTEM,
+                "stations.warpCostInterstellar", CommonConfig.WARP_COST_INTERSTELLAR).entrySet()) {
+            ForgeConfigSpec.ValueSpec spec = assertInstanceOf(
+                    ForgeConfigSpec.ValueSpec.class, CommonConfig.SPEC.getSpec().get(entry.getKey()));
+            ForgeConfigSpec.Range<Integer> range = spec.getRange();
+            assertEquals(StationLimits.MIN_WARP_COST, range.getMin());
+            assertEquals(StationLimits.MAX_WARP_COST, range.getMax());
+            assertFalse(spec.test(0));
+            assertFalse(spec.test(StationLimits.MIN_WARP_COST - 1));
+            assertFalse(spec.test(StationLimits.MAX_WARP_COST + 1));
+        }
+        assertEquals(2_000_000, CommonConfig.WARP_COST_IN_SYSTEM.getDefault());
+        assertEquals(8_000_000, CommonConfig.WARP_COST_INTERSTELLAR.getDefault());
+        assertEquals(WarpSettings.DEFAULTS, CommonConfig.warpSettings(), "Defaults apply until the config loads");
     }
 
     private static void assertRange(

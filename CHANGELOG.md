@@ -51,8 +51,26 @@ No candidate or release approval is assigned.
   (none for every existing station). Worlds from earlier builds, including v1.5
   development worlds, are upgraded before start with another backup. A warp
   debits the balance and changes the orbit in one checked write; deleting a
-  station discards its balance. Warp cores and warp commands are not yet
-  available.
+  station discards its balance.
+- Add the warp core (four machine casings, four advanced circuits and a data
+  storage unit). Placed inside a station in Space, it accepts Forge Energy for
+  that station's warp balance (at most 200,000 FE per tick per station and
+  10,000,000 FE in total); it stores nothing itself, reports 0 stored and drops
+  as a plain block. Energy received is added to the balance every 10 seconds and
+  when the server stops; energy received in the last moments before a crash can
+  be lost.
+- Add `/arce station warp <body>`, `/arce station warp confirm <station_id>`,
+  `/arce station warp cancel` and `/arce station warp status`. The owner, or an
+  operator, standing in the station and looking at its warp core requests a
+  warp to a discovered, orbitable body; the reply shows the cost (2,000,000 FE
+  within a star system, 8,000,000 FE between systems, both configurable in the
+  common config between 100,000 and 10,000,000, with `stations.warpEnabled` as a
+  switch) and the balance, and warns when the target system has no rocket
+  routes. After confirmation a 10-second countdown is shown to online members;
+  it can be cancelled, and it aborts if the station, its owner, the target or
+  the cost changed. The commit moves only the orbit: blocks, players and gravity
+  stay as they are. Until the rocket safety check is connected, every warp is
+  refused with "rocket state is not yet known".
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.
