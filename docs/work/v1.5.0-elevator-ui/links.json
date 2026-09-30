@@ -1,0 +1,274 @@
+{
+  "links": [
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.2.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.1.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.0.2/INSTALLATION.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.2.0-machine-audit.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.0.0-core-baseline-audit.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-orbit-environment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-star-systems/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-slices-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-elevator-ui/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-elevator-ui/VERIFICATION.md",
+      "target": "../../decisions/ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-elevator-ui/VERIFICATION.md",
+      "target": "../../decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-elevator-ui/VERIFICATION.md",
+      "target": "PERMISSION-MATRIX.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../versions/V1.5.0-ORBITAL-STATION-WARP.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-043-STAR-SYSTEMS-AS-ROOT-TREES.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-slices-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-review-closure/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-elevator-ui/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-elevator-ui/PERMISSION-MATRIX.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-star-systems/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-elevator-ui/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-elevator-ui/PERMISSION-MATRIX.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-elevator-ui/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-mig-missing-orbit/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-orbit-environment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-capacity/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

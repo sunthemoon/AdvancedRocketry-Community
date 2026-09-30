@@ -78,6 +78,16 @@ No candidate or release approval is assigned.
 - Rockets docked at a station move with it: after a warp they launch from the
   station's new orbit. Station deletion is refused while rocket flight records
   cannot be read.
+- Station owners and operators can remove a member who is offline with
+  `/arce station remove <station_id> uuid <member_uuid>`.
+- Confirming a station expansion or warp as a player who cannot manage the
+  station from where they stand now says why (not in the station, not the owner
+  or an operator), instead of reporting that no confirmation is pending.
+- Operators: `/arce station admin elevator check <station_id> <body> <x> <z>`
+  checks whether a surface column could be a space elevator endpoint for a
+  station: the station's current orbit body, a landable surface on this server,
+  and a column inside the world border. It changes nothing and loads no chunks;
+  no elevator can be built yet.
 - Operators: `/arce station admin warp [station_id]` shows warp settings, pending
   energy, running countdowns, rocket flight record state and, for a station, its
   orbit, balance and whether a rocket blocks a warp. `/arce station admin inspect`

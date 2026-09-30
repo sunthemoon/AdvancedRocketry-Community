@@ -162,13 +162,14 @@ final class StationCheckedUpdateTest {
     /** WARP review R2 (M22): warp cores are not credited once checked updates are quarantined. */
     @Test
     void aQuarantinedRegistryRefusesWarpEnergy() throws Exception {
-        assertTrue(data.acceptsWarpEnergy());
+        assertTrue(data.acceptsWarpEnergy() && data.updatesAvailable());
         assertEquals(CheckedUpdate.OUTCOME_UNKNOWN, data.checkedExpand(file, station, (from, to) -> {
             Files.write(to, new byte[]{4, 5, 6});
             throw new java.io.IOException("injected torn replacement");
         }));
         assertTrue(data.operational() && data.updatesQuarantined());
         assertFalse(data.acceptsWarpEnergy(), "A quarantined registry accepted warp energy");
+        assertFalse(data.updatesAvailable(), "A quarantined registry reported checked updates as available");
     }
 
     @Test

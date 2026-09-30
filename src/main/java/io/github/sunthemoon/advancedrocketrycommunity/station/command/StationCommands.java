@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorEndpointValidator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
@@ -52,6 +53,11 @@ public final class StationCommands {
                                 .executes(context -> answerInvitation(context, false))))
                 .then(Commands.literal("remove")
                         .then(Commands.argument(STATION, UuidArgument.uuid())
+                                // ADR-046: an offline member is removed by UUID; the literal wins over a
+                                // player named "uuid", who can still be removed by UUID.
+                                .then(Commands.literal("uuid")
+                                        .then(Commands.argument("member", UuidArgument.uuid())
+                                                .executes(this::removeByUuid)))
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(this::remove))))
                 .then(Commands.literal("expand")
@@ -83,7 +89,20 @@ public final class StationCommands {
                 .then(Commands.literal("delete")
                         .then(Commands.argument(STATION, UuidArgument.uuid())
                                 .then(Commands.argument("confirmation", StringArgumentType.word())
-                                        .executes(this::delete))));
+                                        .executes(this::delete))))
+                // ADR-045: its own requirement, because Brigadier keeps the first registered admin node's.
+                .then(Commands.literal("elevator")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("check")
+                                .then(Commands.argument(STATION, UuidArgument.uuid())
+                                        .then(Commands.argument("body", ResourceLocationArgument.id())
+                                                .then(Commands.argument("x", IntegerArgumentType.integer(
+                                                                -ElevatorEndpointValidator.MAX_COORDINATE,
+                                                                ElevatorEndpointValidator.MAX_COORDINATE))
+                                                        .then(Commands.argument("z", IntegerArgumentType.integer(
+                                                                        -ElevatorEndpointValidator.MAX_COORDINATE,
+                                                                        ElevatorEndpointValidator.MAX_COORDINATE))
+                                                                .executes(this::checkElevator)))))));
         station.then(admin);
         event.getDispatcher().register(Commands.literal("arce").then(station));
     }
@@ -141,6 +160,19 @@ public final class StationCommands {
                 stationId,
                 target.getUUID()
         ), "Member removed immediately");
+    }
+
+    private int removeByUuid(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer actor = context.getSource().getPlayerOrException();
+        UUID member = UuidArgument.getUuid(context, "member");
+        UUID stationId = UuidArgument.getUuid(context, STATION);
+        return mutate(context, () -> stations.removeMember(
+                context.getSource().getServer(),
+                actor.getUUID(),
+                context.getSource().hasPermission(2),
+                stationId,
+                member
+        ), "Member " + member + " removed immediately");
     }
 
     private int requestExpansion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -281,6 +313,27 @@ public final class StationCommands {
                         .warpEnergy(station.stationId())
         ), false);
         return 1;
+    }
+
+    /** One bounded line: the first failing ADR-045 rule, or valid. Reads only. */
+    private int checkElevator(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        var request = new ElevatorEndpointValidator.Request(UuidArgument.getUuid(context, STATION),
+                ResourceLocationArgument.getId(context, "body"), IntegerArgumentType.getInteger(context, "x"),
+                IntegerArgumentType.getInteger(context, "z"));
+        var result = stations.checkElevatorEndpoint(source.getServer(), actor(source), source.hasPermission(2),
+                request);
+        String line = String.format(java.util.Locale.ROOT,
+                "Elevator endpoint check; station=%s body=%s column=%d,%d result=%s",
+                request.stationId(), request.bodyId(), request.x(), request.z(),
+                result.valid() ? "valid" : "rule " + result.code().rule() + " " + result.code() + ": "
+                        + result.code().description());
+        if (result.valid()) {
+            source.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+        source.sendFailure(Component.literal(line));
+        return 0;
     }
 
     private int dump(CommandContext<CommandSourceStack> context) {

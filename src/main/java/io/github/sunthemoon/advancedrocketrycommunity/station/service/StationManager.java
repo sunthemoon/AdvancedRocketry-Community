@@ -8,6 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorEndpointService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorEndpointValidator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -46,6 +48,7 @@ public final class StationManager implements StationOperationService {
     private final StationExpansionService expansion = new StationExpansionService(access);
     private final StationGravityService gravity = new StationGravityService(access);
     private final StationOrbitEnvironmentResolver orbitEnvironments;
+    private final ElevatorEndpointService elevatorEndpoints;
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
 
     public StationManager(CelestialCatalogManager celestialCatalogs) {
@@ -58,6 +61,7 @@ public final class StationManager implements StationOperationService {
                         .isPresent()
         );
         this.orbitEnvironments = new StationOrbitEnvironmentResolver(celestialCatalogs);
+        this.elevatorEndpoints = new ElevatorEndpointService(celestialCatalogs);
     }
 
     @Override
@@ -291,6 +295,13 @@ public final class StationManager implements StationOperationService {
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         expansion.forget(event.getEntity().getUUID());
+    }
+
+    /** ADR-045 read-only endpoint check; the caller has already required permission level 2. */
+    public ElevatorEndpointValidator.Result checkElevatorEndpoint(MinecraftServer server, UUID requesterId,
+                                                                  boolean operator,
+                                                                  ElevatorEndpointValidator.Request request) {
+        return elevatorEndpoints.check(server, requesterId, operator, request);
     }
 
     public int recoverReservations(MinecraftServer server) {

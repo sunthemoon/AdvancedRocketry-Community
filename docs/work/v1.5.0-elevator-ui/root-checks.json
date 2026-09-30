@@ -1,0 +1,50 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1298409,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "efbef8d9996bf7f6dfa0539f9f7999fd690ceefa33b329817a791cbff5a3c4f1"
+      },
+      {
+        "bytes": 2872162,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "b435f36b2fda0ed1a1bdb39de09c1a544931e1ef5e018b4b54b7b0a203d606df"
+      }
+    ]
+  },
+  "base_commit": "cd3233e510c54ad6edce32de732f1bb03cd6e3ec",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 189,
+    "tests": 1042
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "487a2c0c9f8505a12a06c1f3bbb4dd55638ae72aef78c4a865e82c5ef056eece",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/AuditLogCapture.java": "4e2802c551fc54055e3e588d6049920827823ec407e61084c2de0a0c3caecffc",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationElevatorGameTests.java": "bce46563fd597f992a8872da9af2f4258cbf8f7859e9e0d01ac66af420022d99",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationPermissionMatrix.java": "251b87dcd296a3504fb106afcdac89387f71e1fdebc744812239fd94e9167b25",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationPermissionMatrixGameTests.java": "b001f8a83b4f8fc69192a56e687dfe35a5a712b9da69507a899c0a00b1774a27",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java": "f653cba73b8b0c0aa7d64aa16bb31e9a44963da7c3315a0b17177daa72a88c2c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/elevator/ElevatorEndpointCode.java": "495c16bf449958f4ce78f1a71bc6f740cbdcb783cd35f7ea468b0de3f20a01b3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/elevator/ElevatorEndpointService.java": "a5f00606887d9a0bdc15fcc509951ee9050ca3e67e3accf97abe89cb135a86d1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/elevator/ElevatorEndpointValidator.java": "5097f46ea925163efdbcc572dbbc0ff81bea21f1d4a09f85cb7391723f241b64",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "022a81d5e5058098d6f1eda6f213c10cba88c1c61d3aad2bb9dd7ef798b18198",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionService.java": "c16f5d53d8462f9ff3073eb7679c8094b0a1af96e2115c09e63918c12242c2de",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "8ef035d4e80afb53c9a4795b155b9ccb62869afafe8732223d411e9d23078aaf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java": "83ba4b92f8ccc2f91cc942b00669c3a1cdb1b00f4ae311d7f8f2c3a050f7af6e",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/network/NetworkProtocolPinTest.java": "1cb6d9bf5ad54b0c9683cef497d3a00a995131fd487dc742daa6cff2da702593",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/elevator/ElevatorEndpointValidatorTest.java": "d68fec66284c74dd713491f7f9ee50cbd16942cdd4eff5ea60704bcc3aa27dfc",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/model/StationTeamCapsTest.java": "a55ee68baa557185474d9f0636e6feb018fbee6b45c398e0a204180c607398e3",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateTest.java": "8cfa30771dcf2ad683ee935be26948aa6ac353cde4b1c1195f159e8e48951548",
+    "src/test/resources/network-protocols.txt": "64ff487ad7cba12448ab459bfe2ed8fc82886285dd0dca933a4d39da970e90ae"
+  }
+}

@@ -68,6 +68,11 @@ public final class StationExpansionService {
             // Rejected before take(): another source cannot consume the player's confirmation.
             return audit("confirm", player, StationManagementResult.failure(StationManagementCode.NOT_LOCAL_PLAYER));
         }
+        // ADR-046 UI-03: an actor who could not act here now is refused before take(), with the reason.
+        StationLocalActor.Located actor = StationLocalActor.locate(access, player, issuedByPlayer);
+        if (actor.code() != null) {
+            return audit("confirm", player, StationManagementResult.of(actor.code(), actor.station()));
+        }
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
         var outcome = confirmations.take(player.getUUID(), stationId, data, server.getTickCount());
         StationManagementCode rejected = switch (outcome.status()) {

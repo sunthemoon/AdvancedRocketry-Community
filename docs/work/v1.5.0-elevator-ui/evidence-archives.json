@@ -1,0 +1,19 @@
+{
+  "archives": [
+    {
+      "bytes": 949160,
+      "manifest": "root-checks-files.json",
+      "members": 415,
+      "name": "root-checks.zip",
+      "sha256": "4b85548508fe0ce40279089bc62df88bbcfd72a04c8ebec2b7051858de0e8f36"
+    }
+  ],
+  "base_commit": "cd3233e510c54ad6edce32de732f1bb03cd6e3ec",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-elevator-ui-52ab93bfa2cd413f90cd37bd22f66590"
+}

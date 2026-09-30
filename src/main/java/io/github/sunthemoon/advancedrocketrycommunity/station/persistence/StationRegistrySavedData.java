@@ -115,12 +115,17 @@ public final class StationRegistrySavedData extends SavedData {
         return result;
     }
 
+    /** Operational and not quarantined: checked updates are possible (ADR-041/044/045 rule 1). */
+    public boolean updatesAvailable() {
+        return operational() && !updatesQuarantined;
+    }
+
     /**
      * ADR-044 §2: warp cores are credited only while the registry is operational and not quarantined
      * (a quarantined registry refuses every checked update, so it could never spend the energy).
      */
     public boolean acceptsWarpEnergy() {
-        return operational() && !updatesQuarantined;
+        return updatesAvailable();
     }
 
     public boolean release(UUID stationId) {

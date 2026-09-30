@@ -1,0 +1,9 @@
+# ADR-046 UI-01: every ARCE network channel, its protocol version and its registered messages.
+# A change to this table needs an ADR and a protocol version bump. Format:
+# channel | protocol | index | message class | direction
+advancedrocketrycommunity:life_support_status|1|0|LifeSupportStatusPacket|PLAY_TO_CLIENT
+advancedrocketrycommunity:celestial_snapshot|2|0|CelestialSnapshotPacket|PLAY_TO_CLIENT
+advancedrocketrycommunity:rocket_flight|8|0|RocketFlightIntentPacket|PLAY_TO_SERVER
+advancedrocketrycommunity:rocket_flight|8|1|RocketFlightPlanPacket|PLAY_TO_CLIENT
+advancedrocketrycommunity:rocket_flight|8|2|CelestialSnapshotPacket|PLAY_TO_CLIENT
+advancedrocketrycommunity:rocket_visual|1|0|RocketVisualChunkPacket|PLAY_TO_CLIENT
