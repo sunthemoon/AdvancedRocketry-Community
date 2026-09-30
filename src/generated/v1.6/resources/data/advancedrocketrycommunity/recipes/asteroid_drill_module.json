@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "C": {
+      "item": "minecraft:piston"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "item": "minecraft:diamond_pickaxe"
+    }
+  },
+  "pattern": [
+    "GTG",
+    "ACA",
+    "GRG"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:asteroid_drill_module"
+  },
+  "show_notification": true
+}

@@ -101,9 +101,11 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         }
     }
 
+    /** Format 2 (ADR-049 section 10): the unchanged format-1 content, then a flag that a terminal view follows. */
     public void writeMenuOpenData(FriendlyByteBuf buffer) {
         buffer.writeBlockPos(worldPosition);
         SatelliteTerminalTargets.current().write(buffer);
+        buffer.writeBoolean(true);
     }
 
     public boolean handleButton(ServerPlayer player, int buttonId) {
@@ -129,6 +131,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             case SatelliteTerminalMenu.BUTTON_LAUNCH -> launchOrStart(player);
             case SatelliteTerminalMenu.BUTTON_CLAIM -> claim(player);
             case SatelliteTerminalMenu.BUTTON_CANCEL -> cancel(player);
+            case SatelliteTerminalMenu.BUTTON_DECOMMISSION -> decommission(player);
             default -> {
                 return false;
             }
@@ -223,10 +226,14 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         ItemStack packageStack = inventory.getStackInSlot(SLOT_PACKAGE);
         SatelliteOperationResult result;
         if (!packageStack.isEmpty()) {
+            if (!SatelliteTerminalInventory.validPackage(packageStack)) {
+                updateResult(player, SatelliteOperationCode.RECEIVER_REQUIRED);
+                return;
+            }
             SatelliteIdentity satellitePackage = validOwnedIdentity(
                     player,
                     packageStack,
-                    ModItems.DATA_SATELLITE_PACKAGE.get()
+                    packageStack.getItem()
             ).orElse(null);
             if (satellitePackage == null || !satellitePackage.equals(chip)) {
                 updateResult(player, SatelliteOperationCode.RECEIVER_REQUIRED);
@@ -265,6 +272,26 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         SatelliteOperationResult result = SatelliteRuntime.cancel(player, chip);
+        updateResult(player, result.code());
+    }
+
+    /**
+     * ADR-049 section 7: the registry removes the idle satellite with a barrier flush, and only then is
+     * the chip blanked. A crash in between leaves an inert chip, never a second satellite.
+     */
+    private void decommission(ServerPlayer player) {
+        SatelliteIdentity chip = validOwnedIdentity(
+                player,
+                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
+                ModItems.SATELLITE_CONTROL_CHIP.get()
+        ).orElse(null);
+        if (chip == null) {
+            return;
+        }
+        SatelliteOperationResult result = SatelliteRuntime.decommission(player, chip);
+        if (result.success()) {
+            inventory.setStackInSlot(SLOT_CONTROL_CHIP, new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get()));
+        }
         updateResult(player, result.code());
     }
 
@@ -323,6 +350,10 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         player.displayClientMessage(Component.translatable(code.translationKey()), true);
     }
 
+    List<ResourceLocation> targetList() {
+        return targets();
+    }
+
     private List<ResourceLocation> targets() {
         ResourceLocation definition = selectedDefinition();
         return definition == null ? List.of() : SatelliteRuntime.targets(definition);
@@ -347,7 +378,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         return targets.get(selectedTargetIndex);
     }
 
-    private Optional<SatelliteIdentity> chipIdentity() {
+    Optional<SatelliteIdentity> chipIdentity() {
         return SatelliteItemData.read(inventory.getStackInSlot(SLOT_CONTROL_CHIP)).identity();
     }
 

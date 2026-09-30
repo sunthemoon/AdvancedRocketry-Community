@@ -20,10 +20,12 @@ class SatelliteTerminalTargetsTest {
         var buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             buffer.writeBlockPos(BlockPos.ZERO); original.write(buffer);
+            buffer.writeBoolean(true); // Format 2: the terminal-view flag follows the format-1 content.
             // NetworkHooks prefixes the complete additional buffer with its VarInt length.
             assertTrue(buffer.readableBytes() + FriendlyByteBuf.getVarIntSize(buffer.readableBytes()) <= 32600);
             assertEquals(BlockPos.ZERO, buffer.readBlockPos());
-            assertEquals(original, SatelliteTerminalTargets.read(buffer)); assertFalse(buffer.isReadable());
+            assertEquals(original, SatelliteTerminalTargets.read(buffer));
+            assertTrue(buffer.readBoolean()); assertFalse(buffer.isReadable());
             assertEquals(15, original.indexOf(id("definition15")));
             assertEquals(-1, original.indexOf(id("absent")));
             assertTrue(original.targets(-1).isEmpty()); assertTrue(original.targets(16).isEmpty());
@@ -44,15 +46,32 @@ class SatelliteTerminalTargetsTest {
         for (int count : new int[]{-1, 129, Integer.MAX_VALUE}) {
             var buffer = new FriendlyByteBuf(Unpooled.buffer());
             try {
-                buffer.writeVarInt(-1); buffer.writeVarInt(1); buffer.writeLong(1); buffer.writeVarInt(count);
+                buffer.writeVarInt(-1); buffer.writeVarInt(2); buffer.writeLong(1); buffer.writeVarInt(count);
                 assertThrows(IllegalArgumentException.class, () -> SatelliteTerminalTargets.read(buffer));
             } finally { buffer.release(); }
         }
         var buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
-            buffer.writeVarInt(-1); buffer.writeVarInt(1); buffer.writeLong(1); buffer.writeVarInt(1); buffer.writeUtf("a:b");
+            buffer.writeVarInt(-1); buffer.writeVarInt(2); buffer.writeLong(1); buffer.writeVarInt(1); buffer.writeUtf("a:b");
             buffer.writeVarInt(1); buffer.writeUtf("a:def"); buffer.writeVarInt(1); buffer.writeVarInt(1);
             assertThrows(IllegalArgumentException.class, () -> SatelliteTerminalTargets.read(buffer));
+        } finally { buffer.release(); }
+    }
+
+    @Test void formatOneMenuDataIsRejected() {
+        var entry = new SatelliteTerminalTargets.Entry(id("def"), List.of(id("target")));
+        var buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            new SatelliteTerminalTargets(3, List.of(entry)).write(buffer);
+            assertEquals(-1, buffer.readVarInt());
+            assertEquals(2, buffer.readVarInt());
+            buffer.readerIndex(0);
+            var legacy = new FriendlyByteBuf(Unpooled.buffer());
+            try {
+                legacy.writeVarInt(-1); legacy.writeVarInt(1);
+                legacy.writeBytes(buffer, 2, buffer.readableBytes() - 2);
+                assertThrows(IllegalArgumentException.class, () -> SatelliteTerminalTargets.read(legacy));
+            } finally { legacy.release(); }
         } finally { buffer.release(); }
     }
 

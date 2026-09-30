@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "RBR",
+    "IRI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:satellite_battery"
+  },
+  "show_notification": true
+}

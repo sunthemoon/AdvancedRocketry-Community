@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionS
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import java.util.List;
@@ -108,6 +109,46 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
             changed();
         }
         return result;
+    }
+
+    public SatelliteOperationResult launchIdle(
+            java.util.function.LongFunction<SatelliteState> factory,
+            long observedGameTime
+    ) {
+        requireOperational();
+        SatelliteOperationResult result = registry.launchIdle(factory, observedGameTime);
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    public SatelliteOperationResult decommission(
+            UUID satelliteId,
+            UUID requesterId,
+            boolean operator,
+            boolean receiverMissing
+    ) {
+        requireOperational();
+        SatelliteOperationResult result = registry.decommission(satelliteId, requesterId, operator, receiverMissing);
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    public SatelliteOperationResult updateKindState(UUID satelliteId, SatelliteKindState next) {
+        requireOperational();
+        SatelliteOperationResult result = registry.updateKindState(satelliteId, next);
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    public int ownerSatellites(UUID ownerId) {
+        requireOperational();
+        return registry.ownerSatellites(ownerId);
     }
 
     public SatelliteOperationResult startMission(

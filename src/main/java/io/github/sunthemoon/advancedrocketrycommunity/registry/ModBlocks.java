@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.builder.SatelliteBuilderBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlock;
 import net.minecraft.world.level.block.Block;
@@ -122,6 +123,16 @@ public final class ModBlocks {
     public static final RegistryObject<Block> WARP_CORE = BLOCKS.register(
             "warp_core",
             () -> new WarpCoreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
+    );
+
+    /** ADR-049 section 5: assembles the non-data satellite kinds from components. */
+    public static final RegistryObject<Block> SATELLITE_BUILDER = BLOCKS.register(
+            "satellite_builder",
+            () -> new SatelliteBuilderBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)

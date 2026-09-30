@@ -1,0 +1,623 @@
+{
+  "base_commit": "4b744c85e697ae44fda882b801f0086b21f62256",
+  "files": [
+    {
+      "bytes": 1030,
+      "path": ".gitignore",
+      "sha256": "75c22560e9d93adfbe5208593d7501578fba7585aa937d537281f46e4c76da1b",
+      "working_sha256": "75c22560e9d93adfbe5208593d7501578fba7585aa937d537281f46e4c76da1b"
+    },
+    {
+      "bytes": 30896,
+      "path": "CHANGELOG.md",
+      "sha256": "f5ec562da35b9a0d8337d16595831ee07ad48cc6a170900d96f9f13f32eabc3b",
+      "working_sha256": "f5ec562da35b9a0d8337d16595831ee07ad48cc6a170900d96f9f13f32eabc3b"
+    },
+    {
+      "bytes": 9911,
+      "path": "README.md",
+      "sha256": "935a87b339a2572baa2c885b9d3711b33df4bf06a2a47a09f99b2a2df38d7031",
+      "working_sha256": "935a87b339a2572baa2c885b9d3711b33df4bf06a2a47a09f99b2a2df38d7031"
+    },
+    {
+      "bytes": 8601,
+      "path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "5cad87b933219d43f70e6682c43b5b9cdcd036af08e524432c567ee32e3351e9",
+      "working_sha256": "5cad87b933219d43f70e6682c43b5b9cdcd036af08e524432c567ee32e3351e9"
+    },
+    {
+      "bytes": 19326,
+      "path": "build.gradle",
+      "sha256": "236c9474f2e284f55ec5c2c801d8cae2139fefda533fb0e0788890dc88c3058e",
+      "working_sha256": "236c9474f2e284f55ec5c2c801d8cae2139fefda533fb0e0788890dc88c3058e"
+    },
+    {
+      "bytes": 9213,
+      "path": "docs/PORTING_MATRIX.md",
+      "sha256": "4e963e9c915acdb4076a7d22f9da50ebf257a317aa0043f8ee5ae1656e13ed61",
+      "working_sha256": "4e963e9c915acdb4076a7d22f9da50ebf257a317aa0043f8ee5ae1656e13ed61"
+    },
+    {
+      "bytes": 21208,
+      "path": "docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md",
+      "sha256": "da22410d263dadff0e8a629e26251721c891bf97707fece59c67521a655e7fac",
+      "working_sha256": "da22410d263dadff0e8a629e26251721c891bf97707fece59c67521a655e7fac"
+    },
+    {
+      "bytes": 2281,
+      "path": "docs/provenance/v1.6.0-development-metadata.md",
+      "sha256": "3f0c4c09ba7e94bb65e046fb3ff487b57913903056ca87aed2a6dca7491c2f07",
+      "working_sha256": "3f0c4c09ba7e94bb65e046fb3ff487b57913903056ca87aed2a6dca7491c2f07"
+    },
+    {
+      "bytes": 7589,
+      "path": "docs/work/v1.6.0-implementation-log.md",
+      "sha256": "b7386ab1cb926735888a2bdfec9eb47df1e6d307f9b146f53c450d464352df7f",
+      "working_sha256": "b7386ab1cb926735888a2bdfec9eb47df1e6d307f9b146f53c450d464352df7f"
+    },
+    {
+      "bytes": 1925,
+      "path": "gradle.properties",
+      "sha256": "d3a7741337e25279e25526e0069d0b270f649a95862394b56652af17380a282e",
+      "working_sha256": "d3a7741337e25279e25526e0069d0b270f649a95862394b56652af17380a282e"
+    },
+    {
+      "bytes": 451,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/blockstates/satellite_builder.json",
+      "sha256": "d18cc9b0d1a43c16b6cee86e7a443ede3219e9dcf144edd301436132616ba6ab",
+      "working_sha256": "d18cc9b0d1a43c16b6cee86e7a443ede3219e9dcf144edd301436132616ba6ab"
+    },
+    {
+      "bytes": 249,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
+      "sha256": "329a369ce133364a54600f7a463bd575a7981daed5573f1da7e33be22799263f",
+      "working_sha256": "329a369ce133364a54600f7a463bd575a7981daed5573f1da7e33be22799263f"
+    },
+    {
+      "bytes": 62,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json",
+      "sha256": "18cf859fda239025f3bee1598af616631330da20dd3854d737149d98b414f5cd",
+      "working_sha256": "18cf859fda239025f3bee1598af616631330da20dd3854d737149d98b414f5cd"
+    },
+    {
+      "bytes": 45,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/asteroid_drill_module.json",
+      "sha256": "69d31332cdd3a0d8b99f27367735f1811cb0553ed1e8a28537de5593223a85af",
+      "working_sha256": "69d31332cdd3a0d8b99f27367735f1811cb0553ed1e8a28537de5593223a85af"
+    },
+    {
+      "bytes": 39,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/gas_intake_module.json",
+      "sha256": "8dea0af8e5419ecbffcf520de55ea3e13c6dd29950826784569ce2816edd735a",
+      "working_sha256": "8dea0af8e5419ecbffcf520de55ea3e13c6dd29950826784569ce2816edd735a"
+    },
+    {
+      "bytes": 47,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/large_satellite_battery.json",
+      "sha256": "d99f498b656308ac807ccfbc3670396b0e775bee132e09375ebabd1f6569d7cf",
+      "working_sha256": "d99f498b656308ac807ccfbc3670396b0e775bee132e09375ebabd1f6569d7cf"
+    },
+    {
+      "bytes": 47,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_battery.json",
+      "sha256": "5019c93bfe11ad13b1f444261d21d06b1174c7a4779497a4642971cb39ff6cc0",
+      "working_sha256": "5019c93bfe11ad13b1f444261d21d06b1174c7a4779497a4642971cb39ff6cc0"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_builder.json",
+      "sha256": "73c2f9078c412867f0fd06ae70009643445b11992abbb3ecb42f3a199f80aa6e",
+      "working_sha256": "73c2f9078c412867f0fd06ae70009643445b11992abbb3ecb42f3a199f80aa6e"
+    },
+    {
+      "bytes": 39,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_cargo_hold.json",
+      "sha256": "05c6df038f6526e549f417e199213ed8f43518c1d172590fbc4c9a523a0aee89",
+      "working_sha256": "05c6df038f6526e549f417e199213ed8f43518c1d172590fbc4c9a523a0aee89"
+    },
+    {
+      "bytes": 40,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_package.json",
+      "sha256": "2ffc05f96c9f54f5b83b80c6dddbce8a0e68681ab2dbf662b4e16ee1fb708c61",
+      "working_sha256": "2ffc05f96c9f54f5b83b80c6dddbce8a0e68681ab2dbf662b4e16ee1fb708c61"
+    },
+    {
+      "bytes": 46,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/solar_transmitter_module.json",
+      "sha256": "f5f21d1ef433ea41d3f0b4581f83d8860c319fa211ce474b114cb51a7dd8daa5",
+      "working_sha256": "f5f21d1ef433ea41d3f0b4581f83d8860c319fa211ce474b114cb51a7dd8daa5"
+    },
+    {
+      "bytes": 41,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/survey_scanner_module.json",
+      "sha256": "b0c5ea985d15c691fa3d4db08d560842a0626155922ea63ad6174a63a21fc3df",
+      "working_sha256": "b0c5ea985d15c691fa3d4db08d560842a0626155922ea63ad6174a63a21fc3df"
+    },
+    {
+      "bytes": 3353,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity_v160/lang/en_us.json",
+      "sha256": "42700f2c22bb8ec24edab9dc4e4fce0188e08ef67173d829c7c27b04280e1335",
+      "working_sha256": "42700f2c22bb8ec24edab9dc4e4fce0188e08ef67173d829c7c27b04280e1335"
+    },
+    {
+      "bytes": 3247,
+      "path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity_v160/lang/zh_cn.json",
+      "sha256": "f35bd017bb96442af317792122ba3488d64e03526adb79786671f94a2b73c23f",
+      "working_sha256": "f35bd017bb96442af317792122ba3488d64e03526adb79786671f94a2b73c23f"
+    },
+    {
+      "bytes": 738,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/advanced_solar_panel.json",
+      "sha256": "c8ef6f3ef27a8853bdb516313d71922cb596a2a30d96a80213251b55e6d32f20",
+      "working_sha256": "c8ef6f3ef27a8853bdb516313d71922cb596a2a30d96a80213251b55e6d32f20"
+    },
+    {
+      "bytes": 722,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/asteroid_drill_module.json",
+      "sha256": "8d8b5746bf6fc4dd16b9f581f6d916067189453ea4943587805cff52465a54b9",
+      "working_sha256": "8d8b5746bf6fc4dd16b9f581f6d916067189453ea4943587805cff52465a54b9"
+    },
+    {
+      "bytes": 714,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/gas_intake_module.json",
+      "sha256": "39a8d13b4fc02dec1cba7b0a6224ea3feda3dd692535520b4e86df0f0280fb0d",
+      "working_sha256": "39a8d13b4fc02dec1cba7b0a6224ea3feda3dd692535520b4e86df0f0280fb0d"
+    },
+    {
+      "bytes": 729,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/large_satellite_battery.json",
+      "sha256": "8daa27d3af50ffd49188c21e8288d6859e8604a6a2eb8ee6c468ec5d09151a96",
+      "working_sha256": "8daa27d3af50ffd49188c21e8288d6859e8604a6a2eb8ee6c468ec5d09151a96"
+    },
+    {
+      "bytes": 705,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_battery.json",
+      "sha256": "2055ac44b7ef8e660c640ac11d8b1d4ed777df5dce3335e415662c43621e4bc4",
+      "working_sha256": "2055ac44b7ef8e660c640ac11d8b1d4ed777df5dce3335e415662c43621e4bc4"
+    },
+    {
+      "bytes": 717,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_builder.json",
+      "sha256": "55ea8596977770b1bf9b672c5059bba920957cf92b171b540c4b5a7541e8de23",
+      "working_sha256": "55ea8596977770b1bf9b672c5059bba920957cf92b171b540c4b5a7541e8de23"
+    },
+    {
+      "bytes": 714,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/satellite_cargo_hold.json",
+      "sha256": "b6ad92d1e0b078fa0c54afb428c0fc8ce4ab4eed5d259cb72001b217ca8b463a",
+      "working_sha256": "b6ad92d1e0b078fa0c54afb428c0fc8ce4ab4eed5d259cb72001b217ca8b463a"
+    },
+    {
+      "bytes": 728,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/solar_transmitter_module.json",
+      "sha256": "9e75cdab05e0d3275786407afbbc46d55ec0f8b4648e0a9072bcb41db31ef01a",
+      "working_sha256": "9e75cdab05e0d3275786407afbbc46d55ec0f8b4648e0a9072bcb41db31ef01a"
+    },
+    {
+      "bytes": 722,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/advancements/recipes/misc/survey_scanner_module.json",
+      "sha256": "fc6222096d93b3150793b12fb7aae1a105beef33200f9c30de2b52e2566f6630",
+      "working_sha256": "fc6222096d93b3150793b12fb7aae1a105beef33200f9c30de2b52e2566f6630"
+    },
+    {
+      "bytes": 434,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/loot_tables/blocks/satellite_builder.json",
+      "sha256": "fdbee4645de35fda8d7394666a3e3a3256bcd70c5e0cd15777df55339c6a9268",
+      "working_sha256": "fdbee4645de35fda8d7394666a3e3a3256bcd70c5e0cd15777df55339c6a9268"
+    },
+    {
+      "bytes": 509,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/advanced_solar_panel.json",
+      "sha256": "1bea17a2067d4677b02fc2da468d2997cdcec44ab49411fc35f835bdb5192561",
+      "working_sha256": "1bea17a2067d4677b02fc2da468d2997cdcec44ab49411fc35f835bdb5192561"
+    },
+    {
+      "bytes": 532,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/asteroid_drill_module.json",
+      "sha256": "6fdc6163fd5c2da32491e0e6abf3f629a01a84c6556978c19e87600aca68cc36",
+      "working_sha256": "6fdc6163fd5c2da32491e0e6abf3f629a01a84c6556978c19e87600aca68cc36"
+    },
+    {
+      "bytes": 543,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/gas_intake_module.json",
+      "sha256": "bf42ddea53ccea119e576910298446fd84ca9a1decc0864bc5e0a340d71be47e",
+      "working_sha256": "bf42ddea53ccea119e576910298446fd84ca9a1decc0864bc5e0a340d71be47e"
+    },
+    {
+      "bytes": 456,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/large_satellite_battery.json",
+      "sha256": "e83801e9cbe9626e4d571e8acc1640982a0e3d2aa83001b2890d379a0418fef0",
+      "working_sha256": "e83801e9cbe9626e4d571e8acc1640982a0e3d2aa83001b2890d379a0418fef0"
+    },
+    {
+      "bytes": 414,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/satellite_battery.json",
+      "sha256": "9db69f92117876b94b768e5014adb9c3883592c1e7d0b864f326c10d06719266",
+      "working_sha256": "9db69f92117876b94b768e5014adb9c3883592c1e7d0b864f326c10d06719266"
+    },
+    {
+      "bytes": 635,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/satellite_builder.json",
+      "sha256": "86f52c36075eccb2c1bd5959d32a526c5b8bd25cd029eec5715696bc71a62c4b",
+      "working_sha256": "86f52c36075eccb2c1bd5959d32a526c5b8bd25cd029eec5715696bc71a62c4b"
+    },
+    {
+      "bytes": 418,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/satellite_cargo_hold.json",
+      "sha256": "430cff5d738faa1d291e8a11b7399ebbd5e48bcf2222d308fbcf3e2d08042eaa",
+      "working_sha256": "430cff5d738faa1d291e8a11b7399ebbd5e48bcf2222d308fbcf3e2d08042eaa"
+    },
+    {
+      "bytes": 544,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/solar_transmitter_module.json",
+      "sha256": "8c4ecf91ab4d7e88f706753578c7e09552e2b6d4c02a85bbf8c3025a8a9073e9",
+      "working_sha256": "8c4ecf91ab4d7e88f706753578c7e09552e2b6d4c02a85bbf8c3025a8a9073e9"
+    },
+    {
+      "bytes": 527,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/recipes/survey_scanner_module.json",
+      "sha256": "a8515f915aed82c2ef97402c8dd55fc780bdfd5f773fc5b2f369b03f74e377dc",
+      "working_sha256": "a8515f915aed82c2ef97402c8dd55fc780bdfd5f773fc5b2f369b03f74e377dc"
+    },
+    {
+      "bytes": 130,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/advanced_solar_panel.json",
+      "sha256": "da7398bb2d0f6843eb020542c2e698a59233d08131bd8b8ffccd6cc86330857e",
+      "working_sha256": "da7398bb2d0f6843eb020542c2e698a59233d08131bd8b8ffccd6cc86330857e"
+    },
+    {
+      "bytes": 159,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/asteroid_drill_module.json",
+      "sha256": "c11147d9f9925454b6f3f22f7294174b2e423fc6436115209d6ed6eff7084e32",
+      "working_sha256": "c11147d9f9925454b6f3f22f7294174b2e423fc6436115209d6ed6eff7084e32"
+    },
+    {
+      "bytes": 133,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/data_storage_unit.json",
+      "sha256": "8606c74bdd99e76b2e323577523e3ad5f61af4ad669c7d3cc0dfd5e983d03535",
+      "working_sha256": "8606c74bdd99e76b2e323577523e3ad5f61af4ad669c7d3cc0dfd5e983d03535"
+    },
+    {
+      "bytes": 154,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/gas_intake_module.json",
+      "sha256": "d9fbd7824c77ac8a4db39acc866362f99dfb2732080ddbbd6ff5e8303752c1d9",
+      "working_sha256": "d9fbd7824c77ac8a4db39acc866362f99dfb2732080ddbbd6ff5e8303752c1d9"
+    },
+    {
+      "bytes": 138,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/large_satellite_battery.json",
+      "sha256": "b09ac3d9f1c1b63aa26043569ac76d53c2b56ae3bff5cb53e16f10f9d1ea5085",
+      "working_sha256": "b09ac3d9f1c1b63aa26043569ac76d53c2b56ae3bff5cb53e16f10f9d1ea5085"
+    },
+    {
+      "bytes": 132,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/satellite_battery.json",
+      "sha256": "9ef48cdca2a4bcffcfed040642b7d9e75829983edfa5097f6e2066b2240f9c07",
+      "working_sha256": "9ef48cdca2a4bcffcfed040642b7d9e75829983edfa5097f6e2066b2240f9c07"
+    },
+    {
+      "bytes": 125,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/satellite_cargo_hold.json",
+      "sha256": "3a5a456bb4b2f7cee365bfc1aa159a47a4551245ba688ab6c89ad01054d4fece",
+      "working_sha256": "3a5a456bb4b2f7cee365bfc1aa159a47a4551245ba688ab6c89ad01054d4fece"
+    },
+    {
+      "bytes": 103,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/satellite_chassis.json",
+      "sha256": "758f86f99c7170fcc7620c123f28a33476ef4471e8eacfa432a86d6762d4fec0",
+      "working_sha256": "758f86f99c7170fcc7620c123f28a33476ef4471e8eacfa432a86d6762d4fec0"
+    },
+    {
+      "bytes": 131,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/satellite_solar_module.json",
+      "sha256": "29efd39c67f670863f3683b973a73974c175a2ce3891669b18f923af8df68738",
+      "working_sha256": "29efd39c67f670863f3683b973a73974c175a2ce3891669b18f923af8df68738"
+    },
+    {
+      "bytes": 153,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/solar_transmitter_module.json",
+      "sha256": "77729b606cfa98fd0c16ff68d35890808de014d0637d5b4656ed7622857bb3db",
+      "working_sha256": "77729b606cfa98fd0c16ff68d35890808de014d0637d5b4656ed7622857bb3db"
+    },
+    {
+      "bytes": 151,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_components/survey_scanner_module.json",
+      "sha256": "bb8fe8e3cc0cef81819de7899412acf506bec723bb988e2e29c9ff6d62210215",
+      "working_sha256": "bb8fe8e3cc0cef81819de7899412acf506bec723bb988e2e29c9ff6d62210215"
+    },
+    {
+      "bytes": 440,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_definitions/asteroid_miner.json",
+      "sha256": "0fc77cb3dd96a6bc919b1b88e91b7700c5e3c43ea78f39dcbdae9a8788d24aaa",
+      "working_sha256": "0fc77cb3dd96a6bc919b1b88e91b7700c5e3c43ea78f39dcbdae9a8788d24aaa"
+    },
+    {
+      "bytes": 279,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_definitions/gas_harvester.json",
+      "sha256": "d407f88c9f0f515bf9ef28f3e2003e98c4c16ade444eab9556c5242d879d35e1",
+      "working_sha256": "d407f88c9f0f515bf9ef28f3e2003e98c4c16ade444eab9556c5242d879d35e1"
+    },
+    {
+      "bytes": 427,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_definitions/solar_satellite.json",
+      "sha256": "3b373a5203078a50bfa9127f2454a98fd82a122474af5412050ca26c1e498966",
+      "working_sha256": "3b373a5203078a50bfa9127f2454a98fd82a122474af5412050ca26c1e498966"
+    },
+    {
+      "bytes": 614,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/satellite_definitions/survey_satellite.json",
+      "sha256": "e25ec550c400bf49e925a0e634a03a4d9f914bd646a316e9233a66b73cab440d",
+      "working_sha256": "e25ec550c400bf49e925a0e634a03a4d9f914bd646a316e9233a66b73cab440d"
+    },
+    {
+      "bytes": 790,
+      "path": "src/generated/v1.6/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "aa12af4d49c21a76646ad1d769f5173f3be933d9c664d107e30236b12d2e9080",
+      "working_sha256": "aa12af4d49c21a76646ad1d769f5173f3be933d9c664d107e30236b12d2e9080"
+    },
+    {
+      "bytes": 790,
+      "path": "src/generated/v1.6/resources/data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "aa12af4d49c21a76646ad1d769f5173f3be933d9c664d107e30236b12d2e9080",
+      "working_sha256": "aa12af4d49c21a76646ad1d769f5173f3be933d9c664d107e30236b12d2e9080"
+    },
+    {
+      "bytes": 24157,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "bccf1cfc11ee4801fa0fe9458b2663f0aa5288418bb10ef8cdced890db5c4d65",
+      "working_sha256": "bccf1cfc11ee4801fa0fe9458b2663f0aa5288418bb10ef8cdced890db5c4d65"
+    },
+    {
+      "bytes": 4221,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "sha256": "e487075ceb4183299df48f46d0cf81a35e58eb53ed21ecfee4c9f151ecb13932",
+      "working_sha256": "e487075ceb4183299df48f46d0cf81a35e58eb53ed21ecfee4c9f151ecb13932"
+    },
+    {
+      "bytes": 849,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientSatelliteEvents.java",
+      "sha256": "41053fa18de8e4c6d53088cb2920a44d2d8f1fb8c58b3442157562c774081e1b",
+      "working_sha256": "41053fa18de8e4c6d53088cb2920a44d2d8f1fb8c58b3442157562c774081e1b"
+    },
+    {
+      "bytes": 5347,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/SatelliteBuilderScreen.java",
+      "sha256": "6620a06b431a0e2fbca9ca22fe29d0f5ec6c185ffc9fdcc41fc7b4279a68ad10",
+      "working_sha256": "6620a06b431a0e2fbca9ca22fe29d0f5ec6c185ffc9fdcc41fc7b4279a68ad10"
+    },
+    {
+      "bytes": 11652,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/SatelliteTerminalScreen.java",
+      "sha256": "3dc77ea7f239845c5409c03eec97d03aa9a1e8eec9748c3c0646e61dc0232f11",
+      "working_sha256": "3dc77ea7f239845c5409c03eec97d03aa9a1e8eec9748c3c0646e61dc0232f11"
+    },
+    {
+      "bytes": 1785,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "d2b0c4bfb601e9b80d8860232a410aac07dd2adff0399dc3f33d5b51e06d662c",
+      "working_sha256": "d2b0c4bfb601e9b80d8860232a410aac07dd2adff0399dc3f33d5b51e06d662c"
+    },
+    {
+      "bytes": 8756,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/SatelliteLanguageProvider.java",
+      "sha256": "5fde96c6a69ff375293132d9852981781377e1fda8f1242427fb17a0646b7ada",
+      "working_sha256": "5fde96c6a69ff375293132d9852981781377e1fda8f1242427fb17a0646b7ada"
+    },
+    {
+      "bytes": 7198,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160LanguageProvider.java",
+      "sha256": "a76f70c1c6eea9c1f2720552a24472ecee1af4059866d2ca6edd5dafebae4580",
+      "working_sha256": "a76f70c1c6eea9c1f2720552a24472ecee1af4059866d2ca6edd5dafebae4580"
+    },
+    {
+      "bytes": 18437,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "sha256": "f829cd3e787ad142d755b4058fa86e92f307ddd570e9b9263f84fb942d2beff0",
+      "working_sha256": "f829cd3e787ad142d755b4058fa86e92f307ddd570e9b9263f84fb942d2beff0"
+    },
+    {
+      "bytes": 12891,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SatelliteBuilderGameTests.java",
+      "sha256": "75d1a79c2f48a125e9fe977219beffc78cace935690c84b4c72f957b9a9c1022",
+      "working_sha256": "75d1a79c2f48a125e9fe977219beffc78cace935690c84b4c72f957b9a9c1022"
+    },
+    {
+      "bytes": 17524,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SatelliteKindTerminalGameTests.java",
+      "sha256": "6a4ba80202a9d0990757b2fbddde4e5ee82b2c011504aa7158831b3a36587501",
+      "working_sha256": "6a4ba80202a9d0990757b2fbddde4e5ee82b2c011504aa7158831b3a36587501"
+    },
+    {
+      "bytes": 6746,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java",
+      "sha256": "ab3f350c7538be06f091c3d99136a9d65d6ef93c89a5e46409cd57a0b5a0bbd0",
+      "working_sha256": "ab3f350c7538be06f091c3d99136a9d65d6ef93c89a5e46409cd57a0b5a0bbd0"
+    },
+    {
+      "bytes": 7981,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "sha256": "4107b0f3f4beba9a85e0e78c855087e0336e1ca145bff196f179634a6ee690ad",
+      "working_sha256": "4107b0f3f4beba9a85e0e78c855087e0336e1ca145bff196f179634a6ee690ad"
+    },
+    {
+      "bytes": 4850,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java",
+      "sha256": "589c9aec99d530b4746832e9b851b092014261a9c0e40232475e77dc0ef61ca6",
+      "working_sha256": "589c9aec99d530b4746832e9b851b092014261a9c0e40232475e77dc0ef61ca6"
+    },
+    {
+      "bytes": 9416,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java",
+      "sha256": "d32450ae64e3c5143b0b0834116ec0ceb3028593a83bf4fdbfb7dd48f93a8ed2",
+      "working_sha256": "d32450ae64e3c5143b0b0834116ec0ceb3028593a83bf4fdbfb7dd48f93a8ed2"
+    },
+    {
+      "bytes": 2618,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java",
+      "sha256": "785221b8984a77f9af05be2cb49bb4d90cb40f1e12cae87df6c2022075bde35b",
+      "working_sha256": "785221b8984a77f9af05be2cb49bb4d90cb40f1e12cae87df6c2022075bde35b"
+    },
+    {
+      "bytes": 7162,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlock.java",
+      "sha256": "5b8cfb98276aa0f36f76f34e965fcc7e6076083540b6c27dc382657a91fa88c1",
+      "working_sha256": "5b8cfb98276aa0f36f76f34e965fcc7e6076083540b6c27dc382657a91fa88c1"
+    },
+    {
+      "bytes": 21123,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java",
+      "sha256": "58816ff7ba014e6d76c91a8de945b4c2c152ddd2d281f7ed29644aaa585591a7",
+      "working_sha256": "58816ff7ba014e6d76c91a8de945b4c2c152ddd2d281f7ed29644aaa585591a7"
+    },
+    {
+      "bytes": 6702,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderInventory.java",
+      "sha256": "d4eb5f7b949bfa949c5bd24ba51d0ef1534c9d7cab57e5f765e94f3729889286",
+      "working_sha256": "d4eb5f7b949bfa949c5bd24ba51d0ef1534c9d7cab57e5f765e94f3729889286"
+    },
+    {
+      "bytes": 10607,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderMenu.java",
+      "sha256": "7c89101df96d2daa008df1ad2b4455b00f47e3bf5bad9e4f84da316fcc34a3c3",
+      "working_sha256": "7c89101df96d2daa008df1ad2b4455b00f47e3bf5bad9e4f84da316fcc34a3c3"
+    },
+    {
+      "bytes": 19074,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/SatelliteCommands.java",
+      "sha256": "63f0d879dc8a9c1ff4c49e2f02fd9e14b8fb3f07e9c8f845d8b7f2107c08f308",
+      "working_sha256": "63f0d879dc8a9c1ff4c49e2f02fd9e14b8fb3f07e9c8f845d8b7f2107c08f308"
+    },
+    {
+      "bytes": 1928,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/content/DataSatellitePackageItem.java",
+      "sha256": "c2351c5a4f2c51b2f10c2faf9e769e2396b5edf2e17a99d06c021fd6cd70e174",
+      "working_sha256": "c2351c5a4f2c51b2f10c2faf9e769e2396b5edf2e17a99d06c021fd6cd70e174"
+    },
+    {
+      "bytes": 28997,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java",
+      "sha256": "003004569452013851b8a1ffb8e26a2a85d2523e1b1472afe43c178059d3d913",
+      "working_sha256": "003004569452013851b8a1ffb8e26a2a85d2523e1b1472afe43c178059d3d913"
+    },
+    {
+      "bytes": 3900,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteLimits.java",
+      "sha256": "5e8449cc864a5090b7d7fd50706e6f27fceef964d020f5df4ae7377bf3977273",
+      "working_sha256": "5e8449cc864a5090b7d7fd50706e6f27fceef964d020f5df4ae7377bf3977273"
+    },
+    {
+      "bytes": 1970,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SatelliteNetwork.java",
+      "sha256": "86e21d231aed929ff16f6a48678f3cae782aa0ed65df550970be799dc701f490",
+      "working_sha256": "86e21d231aed929ff16f6a48678f3cae782aa0ed65df550970be799dc701f490"
+    },
+    {
+      "bytes": 966,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SatelliteTerminalViewCache.java",
+      "sha256": "b2288ef5eadea0ae6628e8c06b627344a3bc8737ecfa7a40f1fe63480c4b659c",
+      "working_sha256": "b2288ef5eadea0ae6628e8c06b627344a3bc8737ecfa7a40f1fe63480c4b659c"
+    },
+    {
+      "bytes": 13011,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SatelliteTerminalViewPacket.java",
+      "sha256": "50620e5ba8f898331b41115c4c9867583d9cacd967ce68743a0c15020f349792",
+      "working_sha256": "50620e5ba8f898331b41115c4c9867583d9cacd967ce68743a0c15020f349792"
+    },
+    {
+      "bytes": 11324,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java",
+      "sha256": "f8ff2fcdbdda8e31b67e283661820d8294f23e615c19ba151bd29c7206fec4d4",
+      "working_sha256": "f8ff2fcdbdda8e31b67e283661820d8294f23e615c19ba151bd29c7206fec4d4"
+    },
+    {
+      "bytes": 8452,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteKindLifecycle.java",
+      "sha256": "e4f5a9523a8e9811a8273731d00107162fd13b874e2989d1057a7bfe23cd5bf9",
+      "working_sha256": "e4f5a9523a8e9811a8273731d00107162fd13b874e2989d1057a7bfe23cd5bf9"
+    },
+    {
+      "bytes": 25479,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java",
+      "sha256": "5f4acac7ac1816c1d12afb4d0c65d42b9258f97512ad69af553e825ccba59392",
+      "working_sha256": "5f4acac7ac1816c1d12afb4d0c65d42b9258f97512ad69af553e825ccba59392"
+    },
+    {
+      "bytes": 4702,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteRuntime.java",
+      "sha256": "2ac0bd5acea3227f8c856fedfbfef59b9217fdadb798f81cbccf2fffeabbc9c5",
+      "working_sha256": "2ac0bd5acea3227f8c856fedfbfef59b9217fdadb798f81cbccf2fffeabbc9c5"
+    },
+    {
+      "bytes": 27309,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java",
+      "sha256": "e88fe2f2d71d713f68e4d5da960e3996792e557856ec773d0750d433ea3e52d6",
+      "working_sha256": "e88fe2f2d71d713f68e4d5da960e3996792e557856ec773d0750d433ea3e52d6"
+    },
+    {
+      "bytes": 5856,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalInventory.java",
+      "sha256": "252fb9ffb663edc5f46da732fa2e4b16408712fce0fe4f52de95e9a5432be829",
+      "working_sha256": "252fb9ffb663edc5f46da732fa2e4b16408712fce0fe4f52de95e9a5432be829"
+    },
+    {
+      "bytes": 11015,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalMenu.java",
+      "sha256": "e7fbc663d7bff670818b3276fd92edeef58dd6588f47160bcd13385fa0f73b8f",
+      "working_sha256": "e7fbc663d7bff670818b3276fd92edeef58dd6588f47160bcd13385fa0f73b8f"
+    },
+    {
+      "bytes": 5456,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalTargets.java",
+      "sha256": "38ce45ce7f3f8496b3a9b7156b130b9ca0aaa0e3f14f0731d5a486d271ff6903",
+      "working_sha256": "38ce45ce7f3f8496b3a9b7156b130b9ca0aaa0e3f14f0731d5a486d271ff6903"
+    },
+    {
+      "bytes": 4264,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalViews.java",
+      "sha256": "dc26723b38e446ba95e2d06e91f0691584b6af77c5ba8af5bfa272ba9f28399f",
+      "working_sha256": "dc26723b38e446ba95e2d06e91f0691584b6af77c5ba8af5bfa272ba9f28399f"
+    },
+    {
+      "bytes": 2100,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java",
+      "sha256": "c1c659a37c4a34a3597b1253707fec7607f80d71a7ab05d2aa50497fafe9d5d8",
+      "working_sha256": "c1c659a37c4a34a3597b1253707fec7607f80d71a7ab05d2aa50497fafe9d5d8"
+    },
+    {
+      "bytes": 4289,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/network/NetworkProtocolPinTest.java",
+      "sha256": "b93c08df9f8ce2795b13636b7c014a66407045cb7ef5967c770335720d317ed2",
+      "working_sha256": "b93c08df9f8ce2795b13636b7c014a66407045cb7ef5967c770335720d317ed2"
+    },
+    {
+      "bytes": 7103,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/GeneratedSatelliteContentTest.java",
+      "sha256": "0db8fd12d68e7b6849f3c6258f26d4dba111f13a0e2f2843746159473d7d57f0",
+      "working_sha256": "0db8fd12d68e7b6849f3c6258f26d4dba111f13a0e2f2843746159473d7d57f0"
+    },
+    {
+      "bytes": 12745,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteLifecycleRegistryTest.java",
+      "sha256": "286fc2ed773e7581fadb3bdc696d0cde2ef4a05cda38f645c44e0db159e21c4d",
+      "working_sha256": "286fc2ed773e7581fadb3bdc696d0cde2ef4a05cda38f645c44e0db159e21c4d"
+    },
+    {
+      "bytes": 8949,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/network/SatelliteTerminalViewPacketTest.java",
+      "sha256": "9703143c6a8500a20e770bb3b65ee07178dc24b36d28d0843d1e4a8a1e3a7702",
+      "working_sha256": "9703143c6a8500a20e770bb3b65ee07178dc24b36d28d0843d1e4a8a1e3a7702"
+    },
+    {
+      "bytes": 4718,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalTargetsTest.java",
+      "sha256": "47e868637f0afd7700f4096b49229ead8206ef9ee191fc90063ed96fff9ab9c6",
+      "working_sha256": "47e868637f0afd7700f4096b49229ead8206ef9ee191fc90063ed96fff9ab9c6"
+    },
+    {
+      "bytes": 961,
+      "path": "src/test/resources/network-protocols.txt",
+      "sha256": "76a758cceeabbfc853dcc4ad7d94460b22e5842de6ec2e6d88ad443e1718cf60",
+      "working_sha256": "76a758cceeabbfc853dcc4ad7d94460b22e5842de6ec2e6d88ad443e1718cf60"
+    }
+  ]
+}

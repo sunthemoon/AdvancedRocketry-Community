@@ -1,0 +1,10 @@
+{
+  "id": "advancedrocketrycommunity:gas_harvester",
+  "kind": "gas_harvester",
+  "launch_targets": [
+    "advancedrocketrycommunity:gas_giant"
+  ],
+  "primary_component": "advancedrocketrycommunity:gas_intake_module",
+  "required_lifetime_research": 360,
+  "schema_version": 2
+}

@@ -67,6 +67,11 @@ public final class SatelliteRuntime {
                 : current.cancelCurrent(player, identity, player.hasPermissions(2));
     }
 
+    public static SatelliteOperationResult decommission(ServerPlayer player, SatelliteIdentity identity) {
+        SatelliteManager current = manager;
+        return current == null ? unavailable() : current.decommission(player, identity, player.hasPermissions(2));
+    }
+
     public static Optional<MissionState> currentMission(MinecraftServer server, SatelliteIdentity identity) {
         SatelliteManager current = manager;
         return current == null
@@ -74,9 +79,21 @@ public final class SatelliteRuntime {
                 : current.currentMission(server, identity.satelliteId());
     }
 
+    public static Optional<io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState> satellite(
+            MinecraftServer server, java.util.UUID satelliteId) {
+        SatelliteManager current = manager;
+        return current == null ? Optional.empty() : current.satellite(server, satelliteId);
+    }
+
     public static int researchBalance(MinecraftServer server, java.util.UUID ownerId) {
         SatelliteManager current = manager;
         return current == null ? 0 : current.researchBalance(server, ownerId);
+    }
+
+    /** Monotonic lifetime research, the unlock measure of ADR-049 section 7. */
+    public static long lifetimeResearch(MinecraftServer server, java.util.UUID ownerId) {
+        SatelliteManager current = manager;
+        return current == null ? 0L : current.lifetimeResearch(server, ownerId);
     }
 
     public static boolean discovered(MinecraftServer server, ResourceLocation target) {

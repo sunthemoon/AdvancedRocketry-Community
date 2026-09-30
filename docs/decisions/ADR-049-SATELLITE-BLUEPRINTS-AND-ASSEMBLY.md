@@ -12,6 +12,7 @@ accepted_by: sunthemoon
 accepted_at: 2026-09-30
 acceptance_basis: maintainer standing authorization to proceed with recommended solutions
 related: [ADR-010, ADR-029, ADR-037, ADR-043, ADR-050, ADR-051, ADR-052]
+pending_amendment: revision 4 (proposed 2026-10-01 in C7b; decided by the C7 independent review)
 ```
 
 Revision 2 answers the first independent review (H3, M4, M9, M10, M11, M14,
@@ -375,3 +376,33 @@ final Low findings are applied in this text. Reports and dispositions are in the
 Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
+
+## Proposed amendment — revision 4 (C7b, 2026-10-01)
+
+Status: **PROPOSED**. Revision 3 stays the accepted contract until the C7
+independent review accepts or rejects this amendment. The C7b implementation
+already follows it; if it is rejected, C7 is reworked before it closes.
+
+1. **Builder charge slot.** The mod has no FE generator, and ADR-010 already
+   charges the terminal from redstone (2,000 FE per item). The builder therefore
+   gets an eleventh slot (index 10) that accepts only plain redstone, with the
+   same 2,000 FE per item, up to the 10,000 FE buffer. Energy still arrives from
+   any side as well. Root schema 1 holds **exactly 11 slots** (§5 said 10).
+   Automation may insert redstone into slot 10 and still extracts only slot 9.
+2. **Terminal view contents.** Besides the §10 sections, the view carries the
+   selected satellite kind (one byte) and the orbit body of the chip's
+   registered satellite (≤ 131 bytes), so a non-`data` satellite can be shown
+   without a data mission. With every section at its maximum and 128-character
+   IDs, the measured worst case is 8,405 bytes (≤ 12 KiB), pinned by a test. In C7b the
+   definition and launch target come from the chip; the instance, product,
+   mission-page and reward-buffer sections stay empty until ADR-051 missions
+   exist (C8b), and the wire format does not change then.
+3. **Blank-chip command.** The command is `/arce satellite admin blank-chip
+   <player>` (permission level 2) and blanks that player's main-hand chip. It
+   refuses a chip whose satellite is still registered, so an operator cannot
+   strand a live satellite; `recover-chip` stays the way to replace a lost
+   chip, and now writes the satellite's kind and components. The audit line is
+   `ARCE_SATELLITE_BLANK_CHIP`.
+4. **Data mission start for other kinds.** The existing data-mission start
+   returns `DEFINITION_NOT_FOUND` for a non-`data` chip; resource missions get
+   their own starts (ADR-051).

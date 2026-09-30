@@ -1,0 +1,20 @@
+{
+  "id": "advancedrocketrycommunity:survey_satellite",
+  "instances_per_survey": 2,
+  "kind": "survey",
+  "launch_targets": [
+    "advancedrocketrycommunity:earth",
+    "advancedrocketrycommunity:moon",
+    "advancedrocketrycommunity:mars",
+    "advancedrocketrycommunity:venus",
+    "advancedrocketrycommunity:gas_giant",
+    "advancedrocketrycommunity:tau_ceti_e"
+  ],
+  "mission_duration_ticks": 6000,
+  "primary_component": "advancedrocketrycommunity:survey_scanner_module",
+  "required_lifetime_research": 0,
+  "scan_cell_blocks": 8,
+  "scan_energy": 1000,
+  "scan_radius_blocks": 32,
+  "schema_version": 2
+}

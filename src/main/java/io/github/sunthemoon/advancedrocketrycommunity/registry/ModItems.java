@@ -150,6 +150,21 @@ public final class ModItems {
             () -> new DataSatellitePackageItem(new Item.Properties().stacksTo(1))
     );
 
+    // v1.6 (ADR-049): the Satellite Builder, the generic package and the satellite components.
+    public static final RegistryObject<Item> SATELLITE_BUILDER = blockItem("satellite_builder", ModBlocks.SATELLITE_BUILDER);
+    public static final RegistryObject<Item> SATELLITE_PACKAGE = ITEMS.register(
+            "satellite_package",
+            () -> new DataSatellitePackageItem(new Item.Properties().stacksTo(1))
+    );
+    public static final RegistryObject<Item> ADVANCED_SOLAR_PANEL = component("advanced_solar_panel");
+    public static final RegistryObject<Item> SATELLITE_BATTERY = component("satellite_battery");
+    public static final RegistryObject<Item> LARGE_SATELLITE_BATTERY = component("large_satellite_battery");
+    public static final RegistryObject<Item> SATELLITE_CARGO_HOLD = component("satellite_cargo_hold");
+    public static final RegistryObject<Item> SURVEY_SCANNER_MODULE = component("survey_scanner_module");
+    public static final RegistryObject<Item> SOLAR_TRANSMITTER_MODULE = component("solar_transmitter_module");
+    public static final RegistryObject<Item> ASTEROID_DRILL_MODULE = component("asteroid_drill_module");
+    public static final RegistryObject<Item> GAS_INTAKE_MODULE = component("gas_intake_module");
+
     private ModItems() {
     }
 

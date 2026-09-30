@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "C": {
+      "item": "minecraft:daylight_detector"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "item": "minecraft:lightning_rod"
+    }
+  },
+  "pattern": [
+    "GTG",
+    "ACA",
+    "GRG"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:solar_transmitter_module"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,7 @@
+{
+  "item": "advancedrocketrycommunity:asteroid_drill_module",
+  "kind": "asteroid_miner",
+  "primary_rating": 10,
+  "role": "primary",
+  "schema_version": 1
+}

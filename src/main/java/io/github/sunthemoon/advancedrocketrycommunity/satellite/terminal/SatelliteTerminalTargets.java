@@ -12,7 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 /** Detached menu catalog. Target interning keeps maximum inputs below Forge's open-screen limit. */
 public record SatelliteTerminalTargets(long generation, List<Entry> definitions) {
     private static final int FORMAT_MARKER = -1;
-    private static final int FORMAT_VERSION = 1;
+    /** 2: ADR-049 section 10 appends a terminal-view flag after the unchanged format-1 content. */
+    private static final int FORMAT_VERSION = 2;
 
     public SatelliteTerminalTargets {
         definitions = List.copyOf(definitions);

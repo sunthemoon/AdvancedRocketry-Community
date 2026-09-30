@@ -1,0 +1,14 @@
+{
+  "id": "advancedrocketrycommunity:solar_satellite",
+  "kind": "solar",
+  "launch_targets": [
+    "advancedrocketrycommunity:earth",
+    "advancedrocketrycommunity:moon",
+    "advancedrocketrycommunity:mars",
+    "advancedrocketrycommunity:venus"
+  ],
+  "output_multiplier_percent": 100,
+  "primary_component": "advancedrocketrycommunity:solar_transmitter_module",
+  "required_lifetime_research": 120,
+  "schema_version": 2
+}

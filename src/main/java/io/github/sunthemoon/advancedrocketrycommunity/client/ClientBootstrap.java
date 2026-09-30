@@ -50,6 +50,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.SATELLITE_TERMINAL.get(),
                 SatelliteTerminalScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.SATELLITE_BUILDER.get(),
+                SatelliteBuilderScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 

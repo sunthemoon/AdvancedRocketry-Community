@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "C": {
+      "item": "advancedrocketrycommunity:satellite_chassis"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "T": {
+      "item": "minecraft:smithing_table"
+    }
+  },
+  "pattern": [
+    "ACA",
+    "MTM",
+    "IRI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:satellite_builder"
+  },
+  "show_notification": true
+}

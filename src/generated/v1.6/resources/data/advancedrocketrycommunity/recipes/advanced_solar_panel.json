@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "advancedrocketrycommunity:satellite_solar_module"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "GAG",
+    "GRG"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:advanced_solar_panel"
+  },
+  "show_notification": true
+}

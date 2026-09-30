@@ -65,12 +65,15 @@ Downgrading requires a complete pre-upgrade world backup, not editing a schema
 number. The [implementation log](docs/work/v1.5.0-implementation-log.md) tracks
 the remaining warp, sky, UI and acceptance work. This is not a stable release.
 
-**v1.6 Satellites & Resource Missions is in preparation.** Its contracts are
-accepted: satellite kinds assembled from components, a bounded offline mission
-scheduler, and asteroid and gas-giant missions with reproducible rewards. The
+**v1.6 Satellites & Resource Missions is in development** (`1.20.1-1.6.0-dev`).
+Its contracts are accepted: satellite kinds assembled from components, a bounded
+offline mission scheduler, and asteroid and gas-giant missions with reproducible
+rewards. The Satellite Builder now assembles survey, solar, asteroid-miner and
+gas-harvester satellites from component items, and the terminal launches them
+into orbit or decommissions idle ones. Survey scans, solar receivers and
+resource missions are not available yet. Opening a world upgrades its satellite
+registry and blocks a return to v1.5 builds; use copies of backed-up worlds. The
 [implementation log](docs/work/v1.6.0-implementation-log.md) tracks the work.
-None of these features is available yet; the runtime build remains
-`1.20.1-1.5.0-dev` until implementation begins.
 
 ## What this project is
 

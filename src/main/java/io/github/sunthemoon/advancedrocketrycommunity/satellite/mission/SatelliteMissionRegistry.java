@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.mission;
 
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStatus;
@@ -26,6 +28,8 @@ public final class SatelliteMissionRegistry {
     private final Map<UUID, MissionState> missions = new LinkedHashMap<>();
     private final Map<UUID, ResearchAccount> accounts = new LinkedHashMap<>();
     private final Map<UUID, AsteroidInstance> instances = new LinkedHashMap<>();
+    /** ADR-050 §5: maintained incrementally; derived on restore, never persisted. */
+    private final Map<UUID, Integer> satellitesByOwner = new java.util.HashMap<>();
     private final MissionDeadlineScheduler scheduler = new MissionDeadlineScheduler();
     private final MonotonicMissionClock clock;
     /**
@@ -67,6 +71,7 @@ public final class SatelliteMissionRegistry {
         if (satellites.putIfAbsent(state.satelliteId(), state) != null) {
             throw new IllegalArgumentException("Duplicate satellite id " + state.satelliteId());
         }
+        satellitesByOwner.merge(state.ownerId(), 1, Integer::sum);
     }
 
     public synchronized void restoreMission(MissionState state) {
@@ -160,11 +165,10 @@ public final class SatelliteMissionRegistry {
         SatelliteState existing = satellites.get(satelliteId);
         if (existing != null) {
             MissionState existingMission = missions.get(missionId);
+            // ADR-049 section 6 (R2-L6): a replayed package is consumed whatever the satellite has done since.
             if (existing.ownerId().equals(ownerId)
                     && existing.definitionId().equals(definition.id())
-                    && existingMission != null
-                    && existingMission.satelliteId().equals(satelliteId)
-                    && existingMission.ownerId().equals(ownerId)) {
+                    && existing.kind() == SatelliteKind.DATA) {
                 return result(SatelliteOperationCode.IDEMPOTENT, false, existing, existingMission);
             }
             return result(SatelliteOperationCode.IDENTITY_CONFLICT, false, existing, existingMission);
@@ -177,6 +181,9 @@ public final class SatelliteMissionRegistry {
         }
         if (!hasCapacityFor(ownerId)) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
+        }
+        if (ownerSatellites(ownerId) >= SatelliteLimits.MAX_SATELLITES_PER_OWNER) {
+            return result(SatelliteOperationCode.OWNER_LIMIT, false, null, null);
         }
 
         SatelliteState satellite = SatelliteState.launch(
@@ -199,10 +206,97 @@ public final class SatelliteMissionRegistry {
         }
         satellite = satellite.startMission(missionId);
         satellites.put(satelliteId, satellite);
+        satellitesByOwner.merge(ownerId, 1, Integer::sum);
         missions.put(missionId, mission);
         accounts.computeIfAbsent(ownerId, ResearchAccount::empty);
         scheduler.schedule(mission);
         return result(SatelliteOperationCode.SUCCESS, true, satellite, mission);
+    }
+
+    /**
+     * Registers a non-data satellite idle in its orbit body (ADR-049 section 6). The caller validated the
+     * definition, blueprint, research and orbit body. Replays of the same identity are idempotent.
+     */
+    public synchronized SatelliteOperationResult launchIdle(
+            java.util.function.LongFunction<SatelliteState> factory,
+            long observedGameTime
+    ) {
+        Objects.requireNonNull(factory, "factory");
+        long logicalTime = clock.advance(observedGameTime);
+        SatelliteState candidate = Objects.requireNonNull(factory.apply(logicalTime), "candidate");
+        if (candidate.kind() == SatelliteKind.DATA || candidate.currentMissionId().isPresent()
+                || candidate.status() != SatelliteStatus.OPERATIONAL) {
+            throw new IllegalArgumentException("An idle launch needs an operational non-data satellite");
+        }
+        SatelliteState existing = satellites.get(candidate.satelliteId());
+        if (existing != null) {
+            boolean same = existing.ownerId().equals(candidate.ownerId())
+                    && existing.definitionId().equals(candidate.definitionId())
+                    && existing.kind() == candidate.kind();
+            return result(same ? SatelliteOperationCode.IDEMPOTENT : SatelliteOperationCode.IDENTITY_CONFLICT,
+                    false, existing, null);
+        }
+        if (satellites.size() >= SatelliteLimits.MAX_SATELLITES
+                || !accounts.containsKey(candidate.ownerId()) && accounts.size() >= SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
+            return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
+        }
+        if (ownerSatellites(candidate.ownerId()) >= SatelliteLimits.MAX_SATELLITES_PER_OWNER) {
+            return result(SatelliteOperationCode.OWNER_LIMIT, false, null, null);
+        }
+        satellites.put(candidate.satelliteId(), candidate);
+        satellitesByOwner.merge(candidate.ownerId(), 1, Integer::sum);
+        accounts.computeIfAbsent(candidate.ownerId(), ResearchAccount::empty);
+        return result(SatelliteOperationCode.SUCCESS, true, candidate, null);
+    }
+
+    /**
+     * Removes an idle satellite (ADR-049 section 7): no unfinished mission and no live receiver link.
+     * Finished missions keep referencing it (ADR-050 section 9). Nothing is refunded.
+     */
+    public synchronized SatelliteOperationResult decommission(
+            UUID satelliteId,
+            UUID requesterId,
+            boolean operator,
+            boolean receiverMissing
+    ) {
+        Objects.requireNonNull(satelliteId, "satelliteId");
+        Objects.requireNonNull(requesterId, "requesterId");
+        SatelliteState satellite = satellites.get(satelliteId);
+        if (satellite == null) {
+            return result(SatelliteOperationCode.SATELLITE_NOT_FOUND, false, null, null);
+        }
+        if (!operator && !satellite.ownerId().equals(requesterId)) {
+            return result(SatelliteOperationCode.UNAUTHORIZED, false, satellite, null);
+        }
+        if (satellite.currentMissionId().isPresent()) {
+            return result(SatelliteOperationCode.MISSION_BUSY, false, satellite,
+                    missions.get(satellite.currentMissionId().orElseThrow()));
+        }
+        if (satellite.kindState() instanceof SatelliteKindState.Solar solar
+                && solar.receiver().isPresent() && !receiverMissing) {
+            return result(SatelliteOperationCode.MISSION_BUSY, false, satellite, null);
+        }
+        satellites.remove(satelliteId);
+        satellitesByOwner.computeIfPresent(satellite.ownerId(), (owner, count) -> count <= 1 ? null : count - 1);
+        return result(SatelliteOperationCode.SUCCESS, true, null, null);
+    }
+
+    /** Replaces an existing satellite's kind state (lazy charge, receiver link); kind and identity stay. */
+    public synchronized SatelliteOperationResult updateKindState(UUID satelliteId, SatelliteKindState next) {
+        SatelliteState satellite = satellites.get(Objects.requireNonNull(satelliteId, "satelliteId"));
+        if (satellite == null) {
+            return result(SatelliteOperationCode.SATELLITE_NOT_FOUND, false, null, null);
+        }
+        if (satellite.kindState().equals(next)) {
+            return result(SatelliteOperationCode.IDEMPOTENT, false, satellite, null);
+        }
+        SatelliteState updated = satellite.withKindState(next);
+        satellites.put(satelliteId, updated);
+        return result(SatelliteOperationCode.SUCCESS, true, updated, null);
+    }
+
+    public synchronized int ownerSatellites(UUID ownerId) {
+        return satellitesByOwner.getOrDefault(ownerId, 0);
     }
 
     public synchronized SatelliteOperationResult startMission(

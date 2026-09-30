@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemData;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatellitePayloadRuntime;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,11 +48,24 @@ final class SatelliteTerminalInventory extends ItemStackHandler {
             case 2 -> SatellitePayloadRuntime.definitionFor(stack) != null;
             case 3 -> stack.is(ModItems.SATELLITE_CONTROL_CHIP.get())
                     && SatelliteItemData.read(stack).status() != SatelliteItemData.DecodeStatus.INVALID;
-            case 4 -> stack.is(ModItems.DATA_SATELLITE_PACKAGE.get())
-                    && SatelliteItemData.read(stack).status() == SatelliteItemData.DecodeStatus.VALID;
+            case 4 -> validPackage(stack);
             case 5 -> stack.is(Items.REDSTONE) && plain(nativeItem);
             default -> false;
         };
+    }
+
+    /**
+     * ADR-049 section 6: a data package holds a data identity and the generic package a non-data identity,
+     * so neither item can launch the other kind.
+     */
+    static boolean validPackage(ItemStack stack) {
+        boolean generic = stack.is(ModItems.SATELLITE_PACKAGE.get());
+        if (!generic && !stack.is(ModItems.DATA_SATELLITE_PACKAGE.get())) {
+            return false;
+        }
+        return SatelliteItemData.read(stack).identity()
+                .map(identity -> generic == (identity.kind() != SatelliteKind.DATA))
+                .orElse(false);
     }
 
     private static boolean plain(CompoundTag data) { return !data.contains("tag") && !data.contains("ForgeCaps"); }

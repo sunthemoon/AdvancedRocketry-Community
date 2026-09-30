@@ -1,0 +1,7 @@
+{
+  "item": "advancedrocketrycommunity:gas_intake_module",
+  "kind": "gas_harvester",
+  "primary_rating": 10,
+  "role": "primary",
+  "schema_version": 1
+}

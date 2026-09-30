@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_satellite_solar_module": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:satellite_solar_module"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "advancedrocketrycommunity:advanced_solar_panel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_satellite_solar_module",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "advancedrocketrycommunity:advanced_solar_panel"
+    ]
+  },
+  "sends_telemetry_event": false
+}

@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import java.util.List;
@@ -56,6 +57,9 @@ public final class SatelliteCommands {
                                 .then(Commands.argument("satellite_id", UuidArgument.uuid())
                                         .then(Commands.argument("player", EntityArgument.player())
                                                 .executes(this::recoverChip))))
+                        .then(Commands.literal("blank-chip")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(this::blankChip)))
                         .then(Commands.literal("evidence").executes(this::evidence)));
         if (Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             root.then(Commands.literal("release-test")
@@ -151,15 +155,53 @@ public final class SatelliteCommands {
         }
         ServerPlayer player = EntityArgument.getPlayer(context, "player");
         ItemStack chip = new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get());
+        // A recovered chip carries the satellite's kind and blueprint, as the assembled chip did (ADR-049 section 6).
         SatelliteItemData.write(chip, new SatelliteIdentity(
                 state.satelliteId(),
                 state.ownerId(),
-                state.definitionId()
+                state.definitionId(),
+                state.kind(),
+                state.kind() == SatelliteKind.DATA ? List.of() : state.blueprint().components()
         ));
         ItemHandlerHelper.giveItemToPlayer(player, chip);
         context.getSource().sendSuccess(() -> Component.literal(
                 "Recovered bound chip for " + satelliteId + " to " + player.getScoreboardName()
         ), true);
+        return 1;
+    }
+
+    /**
+     * ADR-049 section 7: blanks the control chip in the player's main hand when its satellite no longer
+     * exists (decommissioned, or unreadable). A chip of a registered satellite is refused, so an operator
+     * cannot strand a live satellite; recover-chip stays the way to replace a lost chip.
+     */
+    private int blankChip(CommandContext<CommandSourceStack> context)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(context, "player");
+        ItemStack held = player.getMainHandItem();
+        if (!held.is(ModItems.SATELLITE_CONTROL_CHIP.get())) {
+            context.getSource().sendFailure(Component.literal("The player is not holding a satellite control chip"));
+            return 0;
+        }
+        SatelliteItemData.DecodeResult decoded = SatelliteItemData.read(held);
+        if (decoded.status() == SatelliteItemData.DecodeStatus.EMPTY) {
+            context.getSource().sendFailure(Component.literal("The held chip is already blank"));
+            return 0;
+        }
+        UUID satelliteId = decoded.identity().map(SatelliteIdentity::satelliteId).orElse(null);
+        if (satelliteId != null && satellites.satellite(context.getSource().getServer(), satelliteId).isPresent()) {
+            context.getSource().sendFailure(Component.literal(
+                    "Satellite " + satelliteId + " is still registered; decommission it first"));
+            return 0;
+        }
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get(), held.getCount()));
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_SATELLITE_BLANK_CHIP player={} satellite={} decode={} by={}",
+                player.getUUID(), satelliteId == null ? "unreadable" : satelliteId, decoded.status(),
+                actor(context.getSource()));
+        context.getSource().sendSuccess(() -> Component.literal(
+                "Blanked the control chip held by " + player.getScoreboardName()), true);
         return 1;
     }
 
@@ -282,6 +324,8 @@ public final class SatelliteCommands {
         return Component.literal("satellite=" + state.satelliteId()
                 + " owner=" + state.ownerId()
                 + " type=" + state.definitionId()
+                + " kind=" + state.kind().id()
+                + state.orbitBody().map(body -> " orbit=" + body).orElse("")
                 + " status=" + state.status()
                 + " mission=" + state.currentMissionId().map(UUID::toString).orElse("none"));
     }

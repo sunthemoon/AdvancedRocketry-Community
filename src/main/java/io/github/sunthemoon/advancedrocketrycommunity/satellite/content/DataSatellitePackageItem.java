@@ -30,6 +30,11 @@ public final class DataSatellitePackageItem extends Item {
             ).withStyle(ChatFormatting.GOLD));
             tooltip.add(Component.literal(identity.definitionId().toString())
                     .withStyle(ChatFormatting.DARK_GRAY));
+            if (identity.kind() != io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind.DATA) {
+                tooltip.add(Component.translatable("tooltip.advancedrocketrycommunity.satellite_package.kind",
+                        Component.translatable("satellite_kind.advancedrocketrycommunity." + identity.kind().id()))
+                        .withStyle(ChatFormatting.GRAY));
+            }
         }, () -> tooltip.add(Component.translatable(
                 "tooltip.advancedrocketrycommunity.satellite_item.unsupported"
         ).withStyle(ChatFormatting.RED)));

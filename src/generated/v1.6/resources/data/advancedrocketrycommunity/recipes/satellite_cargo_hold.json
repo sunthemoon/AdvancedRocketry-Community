@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "forge:chests/wooden"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "CMC",
+    "ICI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:satellite_cargo_hold"
+  },
+  "show_notification": true
+}

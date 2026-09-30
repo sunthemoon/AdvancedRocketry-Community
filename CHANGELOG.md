@@ -17,7 +17,20 @@ No candidate or release approval is assigned.
 - Add a data-driven satellite component catalog (`satellite_components`) and
   schema-2 satellite kind definitions (survey, solar, asteroid miner, gas
   harvester) to the definition catalog (ADR-049). The data satellite and its
-  terminal recipe are unchanged, and no new satellite can be built yet.
+  terminal recipe are unchanged.
+- Add the Satellite Builder, the generic satellite package and eight component
+  items (advanced solar panel, two batteries, cargo hold and four primary
+  modules). The builder checks the blueprint, its stat caps and kind
+  requirements, and lifetime research, then binds a blank chip and outputs a
+  package. It charges from redstone like the terminal.
+- The Satellite Terminal launches the new kinds idle into a chosen orbit body
+  (discovery rules apply) and consumes a replayed package exactly once. It can
+  decommission an idle satellite and blank its chip; nothing is refunded.
+- Add `/arce satellite admin blank-chip <player>` for chips of satellites that no
+  longer exist. `recover-chip` now restores the satellite's kind and components.
+- Add the `advancedrocketrycommunity:satellite` network channel (protocol 1) for
+  the terminal view; a client without it cannot join. The terminal menu data
+  moves to format 2.
 - The operator report adds `satellite_root_schema=3`.
 - A world opened by this build cannot be opened by a v1.5 build. Keep the
   pre-upgrade backup, or a full world backup, before testing.

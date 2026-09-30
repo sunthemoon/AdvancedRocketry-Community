@@ -58,6 +58,16 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.SATELLITE_CONTROL_CHIP.get());
                         output.accept(ModItems.DATA_SATELLITE_PACKAGE.get());
                         output.accept(ModItems.WARP_CORE.get());
+                        output.accept(ModItems.SATELLITE_BUILDER.get());
+                        output.accept(ModItems.SATELLITE_PACKAGE.get());
+                        output.accept(ModItems.ADVANCED_SOLAR_PANEL.get());
+                        output.accept(ModItems.SATELLITE_BATTERY.get());
+                        output.accept(ModItems.LARGE_SATELLITE_BATTERY.get());
+                        output.accept(ModItems.SATELLITE_CARGO_HOLD.get());
+                        output.accept(ModItems.SURVEY_SCANNER_MODULE.get());
+                        output.accept(ModItems.SOLAR_TRANSMITTER_MODULE.get());
+                        output.accept(ModItems.ASTEROID_DRILL_MODULE.get());
+                        output.accept(ModItems.GAS_INTAKE_MODULE.get());
                     })
                     .build()
     );

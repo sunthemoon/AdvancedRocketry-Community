@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/satellite_builder",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/satellite_builder"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/satellite_builder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/satellite_builder",
+      "y": 270
+    }
+  }
+}

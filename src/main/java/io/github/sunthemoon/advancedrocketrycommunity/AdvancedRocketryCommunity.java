@@ -75,6 +75,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteNetwork;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -202,6 +203,7 @@ public final class AdvancedRocketryCommunity {
                 snapshotSynchronizer
         );
         SatelliteRuntime.install(satelliteManager);
+        SatelliteNetwork.install(new SatelliteNetwork());
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(new SatelliteCommands(satelliteManager)::register);

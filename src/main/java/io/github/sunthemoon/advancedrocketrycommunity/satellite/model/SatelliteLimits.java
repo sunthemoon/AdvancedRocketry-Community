@@ -42,6 +42,8 @@ public final class SatelliteLimits {
     public static final int MAX_INSTANCES_PER_SURVEY = 4;
 
     public static final int MAX_SATELLITES = 4_096;
+    /** ADR-049 section 7, ADR-050 section 6: checked when a satellite is launched. */
+    public static final int MAX_SATELLITES_PER_OWNER = 256;
     /** Load bound; v1.6 admission limits are separate (ADR-050 §6, §10). */
     public static final int MAX_MISSIONS = 8_192;
     public static final int MAX_RESEARCH_ACCOUNTS = 4_096;

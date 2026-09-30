@@ -12,6 +12,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
@@ -37,6 +39,7 @@ public final class SatelliteManager {
     private final SatelliteCatalogManager satelliteCatalogs;
     private final CelestialCatalogManager celestialCatalogs;
     private final Consumer<MinecraftServer> snapshots;
+    private final SatelliteKindLifecycle kinds;
     private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
     private boolean replayInitialized;
     private int replayBackoffTicks;
@@ -55,6 +58,7 @@ public final class SatelliteManager {
         this.satelliteCatalogs = Objects.requireNonNull(satelliteCatalogs, "satelliteCatalogs");
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
         this.snapshots = Objects.requireNonNull(snapshots, "snapshots");
+        this.kinds = new SatelliteKindLifecycle(satelliteCatalogs, celestialCatalogs);
     }
 
     public void onServerStarted(ServerStartedEvent event) {
@@ -101,6 +105,9 @@ public final class SatelliteManager {
         if (rejected != null) {
             return rejected;
         }
+        if (identity.kind() != SatelliteKind.DATA) {
+            return kinds.launchIdle(player, identity, targetBodyId);
+        }
         SatelliteDefinition definition = definition(identity.definitionId()).orElse(null);
         SatelliteOperationResult definitionFailure = validateDefinitionAndTarget(definition, targetBodyId);
         if (definitionFailure != null) {
@@ -140,6 +147,10 @@ public final class SatelliteManager {
         if (rejected != null) {
             return rejected;
         }
+        if (identity.kind() != SatelliteKind.DATA) {
+            // A data mission needs a data satellite; resource missions have their own starts (ADR-051).
+            return failure(SatelliteOperationCode.DEFINITION_NOT_FOUND);
+        }
         SatelliteDefinition definition = definition(identity.definitionId()).orElse(null);
         SatelliteOperationResult definitionFailure = validateDefinitionAndTarget(definition, targetBodyId);
         if (definitionFailure != null) {
@@ -168,6 +179,11 @@ public final class SatelliteManager {
             logOperationFailure("start", exception);
             return failure(SatelliteOperationCode.UNSUPPORTED_DATA);
         }
+    }
+
+    /** ADR-049 section 7: see {@link SatelliteKindLifecycle#decommission}. */
+    public SatelliteOperationResult decommission(ServerPlayer player, SatelliteIdentity identity, boolean operator) {
+        return kinds.decommission(player, identity, operator);
     }
 
     public SatelliteOperationResult claimCurrent(ServerPlayer player, SatelliteIdentity identity) {
@@ -364,8 +380,16 @@ public final class SatelliteManager {
         return satelliteCatalogs.current().flatMap(catalog -> catalog.get(definitionId));
     }
 
+    /** Mission targets of a data definition, or launch targets of a kind definition. */
     public List<ResourceLocation> targets(ResourceLocation definitionId) {
-        return definition(definitionId).map(SatelliteDefinition::allowedTargets).orElse(List.of());
+        Optional<SatelliteDefinition> data = definition(definitionId);
+        if (data.isPresent()) {
+            return data.orElseThrow().allowedTargets();
+        }
+        return satelliteCatalogs.current()
+                .flatMap(catalog -> catalog.kindDefinition(definitionId))
+                .map(SatelliteKindDefinition::launchTargets)
+                .orElse(List.of());
     }
 
     public Optional<SatelliteCatalog> catalog() { return satelliteCatalogs.current(); }
@@ -396,6 +420,11 @@ public final class SatelliteManager {
     public int researchBalance(MinecraftServer server, UUID ownerId) {
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
         return data.operational() ? data.account(ownerId).balance() : 0;
+    }
+
+    public long lifetimeResearch(MinecraftServer server, UUID ownerId) {
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        return data.operational() ? data.account(ownerId).lifetimeEarned() : 0L;
     }
 
     public boolean discovered(MinecraftServer server, ResourceLocation targetBodyId) {
@@ -525,11 +554,11 @@ public final class SatelliteManager {
         return null;
     }
 
-    private static SatelliteOperationResult failure(SatelliteOperationCode code) {
+    static SatelliteOperationResult failure(SatelliteOperationCode code) {
         return new SatelliteOperationResult(code, false, Optional.empty(), Optional.empty(), 0);
     }
 
-    private static void logOperationFailure(String operation, RuntimeException exception) {
+    static void logOperationFailure(String operation, RuntimeException exception) {
         AdvancedRocketryCommunity.LOGGER.error("Satellite {} operation failed", operation, exception);
     }
 

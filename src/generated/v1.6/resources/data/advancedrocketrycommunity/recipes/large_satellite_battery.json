@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "B": {
+      "item": "advancedrocketrycommunity:satellite_battery"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "BRB",
+    "RAR",
+    "BRB"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:large_satellite_battery"
+  },
+  "show_notification": true
+}

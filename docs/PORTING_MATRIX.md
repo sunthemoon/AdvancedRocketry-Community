@@ -32,7 +32,7 @@
 | 站点重力/光照 | stations/client | 渲染/逻辑耦合 | profile/state separation | `v0.7.x+` | reload + visual | NOT_AUDITED |
 | 研究数据 | unit/item/machine | 旧 GUI/数值 | progression service | `v0.8.0` | deterministic persistence | PASSED |
 | 卫星 | satellite/mission | chunk load、计时 | SavedData async mission | `v0.8.0` | no forced chunks | PASSED |
-| 多类型卫星与组装 | `tile/satellite/TileSatelliteBuilder.java`、`api/SatelliteRegistry.java`、`satellite/*`、`TileMicrowaveReciever.java` | 静态注册表、每 tick 卫星对象、客户端坐标扫描 | 组件目录、蓝图、卫星组装机、有界扫描与太阳能接收器（ADR-049） | `v1.6.0` | C7 A0/A1 + C9 S1 | PLANNED |
+| 多类型卫星与组装 | `tile/satellite/TileSatelliteBuilder.java`、`api/SatelliteRegistry.java`、`satellite/*`、`TileMicrowaveReciever.java` | 静态注册表、每 tick 卫星对象、客户端坐标扫描 | 组件目录、蓝图、卫星组装机、有界扫描与太阳能接收器（ADR-049） | `v1.6.0` | C7 A0/A1 + C9 S1 | IN_PROGRESS |
 | 资源任务（小行星/气态巨行星） | `mission/*`、`util/Asteroid.java`、`tile/multiblock/TileObservatory.java` | 火箭托管、`Math.random`、强制加载维度 | 逻辑任务、无坐标实例、绑定终端交付、SplitMix64 可重现奖励（ADR-050/051/052） | `v1.6.0` | C8 A0/A1 + C9 S1/S2 与 500 任务 | PLANNED |
 | 火箭卫星舱部署 | `EntityRocket.unpackSatellites`、satellite bay | 火箭携带卫星物品 | v1.6 仅终端逻辑发射（ADR-049 处置） | `v1.8.0` | 独立 ADR | DEFERRED |
 | 物理小行星场/天文台/火箭采矿 | `world/ChunkProviderAsteroids.java`、`TileObservatory.java`、`EntityStationDeployedRocket.java` | 动态维度、火箭托管 | v1.6 使用逻辑实例（ADR-051 处置） | `v1.8.0` | 独立 ADR | DEFERRED |

@@ -1,0 +1,14 @@
+{
+  "id": "advancedrocketrycommunity:asteroid_miner",
+  "kind": "asteroid_miner",
+  "launch_targets": [
+    "advancedrocketrycommunity:earth",
+    "advancedrocketrycommunity:moon",
+    "advancedrocketrycommunity:mars",
+    "advancedrocketrycommunity:venus",
+    "advancedrocketrycommunity:tau_ceti_e"
+  ],
+  "primary_component": "advancedrocketrycommunity:asteroid_drill_module",
+  "required_lifetime_research": 240,
+  "schema_version": 2
+}

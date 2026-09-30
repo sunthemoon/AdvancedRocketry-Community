@@ -2,15 +2,20 @@ package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteTerminalViewCache;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteTerminalViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import java.util.Locale;
+import java.util.Optional;
 
 /** Community-authored telemetry console with visible mission and discovery progress. */
 public final class SatelliteTerminalScreen extends AbstractContainerScreen<SatelliteTerminalMenu> {
@@ -40,18 +45,35 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         super.init();
         addRenderableWidget(button(10, 83, 18, "<", SatelliteTerminalMenu.BUTTON_PREVIOUS));
         addRenderableWidget(button(196, 83, 18, ">", SatelliteTerminalMenu.BUTTON_NEXT));
-        addRenderableWidget(button(20, 105, 55,
+        addRenderableWidget(button(6, 105, 44,
                 "screen.advancedrocketrycommunity.satellite.assemble",
                 SatelliteTerminalMenu.BUTTON_ASSEMBLE));
-        addRenderableWidget(button(77, 105, 45,
+        addRenderableWidget(button(52, 105, 40,
                 "screen.advancedrocketrycommunity.satellite.launch",
                 SatelliteTerminalMenu.BUTTON_LAUNCH));
-        addRenderableWidget(button(124, 105, 41,
+        addRenderableWidget(button(94, 105, 34,
                 "screen.advancedrocketrycommunity.satellite.claim",
                 SatelliteTerminalMenu.BUTTON_CLAIM));
-        addRenderableWidget(button(167, 105, 47,
+        addRenderableWidget(button(130, 105, 40,
                 "screen.advancedrocketrycommunity.satellite.cancel",
                 SatelliteTerminalMenu.BUTTON_CANCEL));
+        Button decommission = button(172, 105, 46,
+                "screen.advancedrocketrycommunity.satellite.decommission",
+                SatelliteTerminalMenu.BUTTON_DECOMMISSION);
+        decommission.setTooltip(Tooltip.create(
+                Component.translatable("tooltip.advancedrocketrycommunity.satellite.decommission")));
+        addRenderableWidget(decommission);
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        SatelliteTerminalViewCache.clear();
+    }
+
+    /** The server-selected view for this menu, once it has arrived (ADR-049 section 10). */
+    private Optional<SatelliteTerminalViewPacket> view() {
+        return SatelliteTerminalViewCache.view(menu.containerId);
     }
 
     private Button button(int x, int y, int width, String label, int buttonId) {
@@ -139,7 +161,9 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 false
         );
 
-        ResourceLocation target = menu.selectedTarget().orElse(null);
+        ResourceLocation target = menu.selectedTarget()
+                .or(() -> view().flatMap(value -> value.target().id()))
+                .orElse(null);
         Component targetName = target == null
                 ? Component.translatable("screen.advancedrocketrycommunity.satellite.no_target")
                 : Component.translatable("body." + target.getNamespace() + "." + target.getPath());
@@ -165,6 +189,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                                 + status.name().toLowerCase(Locale.ROOT),
                         Math.max(0, menu.remainingSeconds())
                 ))
+                .or(this::kindLine)
                 .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite.mission.none"));
         graphics.drawString(font, mission, 10, 72, MUTED, false);
 
@@ -177,6 +202,20 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 isError(status) || !menu.ownedByViewer() ? RED : MUTED,
                 false
         );
+    }
+
+    /** A non-data satellite has no data mission: show its kind and orbit instead. */
+    private Optional<Component> kindLine() {
+        SatelliteTerminalViewPacket current = view().orElse(null);
+        if (current == null || current.kind().isEmpty() || current.kind().orElseThrow() == SatelliteKind.DATA) {
+            return Optional.empty();
+        }
+        Component kind = Component.translatable("satellite_kind.advancedrocketrycommunity."
+                + current.kind().orElseThrow().id());
+        return Optional.of(current.orbitBody()
+                .<Component>map(body -> Component.translatable("screen.advancedrocketrycommunity.satellite.kind_orbit",
+                        kind, Component.translatable("body." + body.getNamespace() + "." + body.getPath())))
+                .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite.kind_idle", kind)));
     }
 
     private static void drawSlot(GuiGraphics graphics, int x, int y) {

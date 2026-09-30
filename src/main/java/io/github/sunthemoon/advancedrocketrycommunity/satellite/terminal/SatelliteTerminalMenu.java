@@ -32,6 +32,8 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     public static final int BUTTON_LAUNCH = 3;
     public static final int BUTTON_CLAIM = 4;
     public static final int BUTTON_CANCEL = 5;
+    /** ADR-049 section 7: remove an idle satellite and blank its chip. */
+    public static final int BUTTON_DECOMMISSION = 6;
 
     private static final int PLAYER_SLOT_START = SatelliteTerminalBlockEntity.SLOT_COUNT;
     private static final int PLAYER_SLOT_END = PLAYER_SLOT_START + 27;
@@ -40,13 +42,16 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final ContainerData data;
     private final SatelliteTerminalTargets catalog;
+    private final boolean viewFollows;
     @Nullable
     private final SatelliteTerminalBlockEntity terminal;
+    @Nullable
+    private final SatelliteTerminalViews views;
 
     public SatelliteTerminalMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, new ItemStackHandler(SatelliteTerminalBlockEntity.SLOT_COUNT),
                 new SimpleContainerData(SatelliteTerminalBlockEntity.MENU_DATA_COUNT),
-                ContainerLevelAccess.NULL, null, readCatalog(buffer));
+                ContainerLevelAccess.NULL, null, readOpenData(buffer));
     }
 
     public SatelliteTerminalMenu(
@@ -62,7 +67,7 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
                 new SatelliteTerminalMenuData(terminal, playerInventory.player.getUUID(), catalog),
                 ContainerLevelAccess.create(terminal.getLevel(), terminal.getBlockPos()),
                 terminal,
-                catalog
+                new OpenData(catalog, true)
         );
     }
 
@@ -73,14 +78,17 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
             ContainerData data,
             ContainerLevelAccess access,
             @Nullable SatelliteTerminalBlockEntity terminal,
-            SatelliteTerminalTargets catalog
+            OpenData openData
     ) {
         super(ModMenuTypes.SATELLITE_TERMINAL.get(), id);
         checkContainerDataCount(data, SatelliteTerminalBlockEntity.MENU_DATA_COUNT);
         this.data = data;
         this.access = access;
         this.terminal = terminal;
-        this.catalog = catalog;
+        this.catalog = openData.catalog();
+        this.viewFollows = openData.viewFollows();
+        this.views = terminal != null && playerInventory.player instanceof ServerPlayer serverPlayer
+                ? new SatelliteTerminalViews(serverPlayer, id) : null;
 
         addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_CHASSIS, 18, 54));
         addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_SOLAR_MODULE, 44, 54));
@@ -92,9 +100,27 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
         addDataSlots(data);
     }
 
-    private static SatelliteTerminalTargets readCatalog(FriendlyByteBuf buffer) {
+    private static OpenData readOpenData(FriendlyByteBuf buffer) {
         buffer.readBlockPos(); // Position is display metadata only; no client chunk/BE lookup.
-        return SatelliteTerminalTargets.read(buffer);
+        SatelliteTerminalTargets catalog = SatelliteTerminalTargets.read(buffer);
+        byte flag = buffer.readByte();
+        if (flag != 0 && flag != 1) {
+            throw new IllegalArgumentException("Invalid satellite terminal view flag");
+        }
+        return new OpenData(catalog, flag == 1);
+    }
+
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+        if (views != null && terminal != null && !terminal.isRemoved()) {
+            views.tick(terminal);
+        }
+    }
+
+    /** Whether the host announced a terminal view for this menu (open-data format 2). */
+    public boolean viewFollows() {
+        return viewFollows;
     }
 
     private void addPlayerInventory(Inventory inventory) {
@@ -167,7 +193,7 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
         if (stack.is(ModItems.SATELLITE_CONTROL_CHIP.get())) {
             return SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP;
         }
-        if (stack.is(ModItems.DATA_SATELLITE_PACKAGE.get())) {
+        if (stack.is(ModItems.DATA_SATELLITE_PACKAGE.get()) || stack.is(ModItems.SATELLITE_PACKAGE.get())) {
             return SatelliteTerminalBlockEntity.SLOT_PACKAGE;
         }
         return stack.is(Items.REDSTONE) ? SatelliteTerminalBlockEntity.SLOT_CHARGE : -1;
@@ -236,5 +262,8 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
 
     public boolean ownedByViewer() {
         return data.get(9) != 0;
+    }
+
+    private record OpenData(SatelliteTerminalTargets catalog, boolean viewFollows) {
     }
 }

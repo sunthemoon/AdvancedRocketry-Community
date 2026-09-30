@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "C": {
+      "item": "minecraft:observer"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "item": "minecraft:spyglass"
+    }
+  },
+  "pattern": [
+    "GTG",
+    "ACA",
+    "GRG"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:survey_scanner_module"
+  },
+  "show_notification": true
+}
