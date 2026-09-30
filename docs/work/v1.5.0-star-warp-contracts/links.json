@@ -254,6 +254,10 @@
     },
     {
       "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-star-systems/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
       "target": "v1.5.0-preparation/VERIFICATION.md"
     },
     {
@@ -301,5 +305,6 @@
       "target": "../v1.5.0-station-capacity/VERIFICATION.md"
     }
   ],
-  "result": "PASS"
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
 }

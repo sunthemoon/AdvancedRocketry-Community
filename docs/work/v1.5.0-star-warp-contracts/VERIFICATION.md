@@ -1,7 +1,8 @@
 # Star-system and warp contract review record
 
 Date: 2026-09-30. Branch: `codex/v1.5.0-orbital-station-warp`.
-Reviewed commit: `82568b85f5b5f088fad6a6488bebe00043204b18` (ADR-043/044 drafts).
+Reviewed commits: `82568b85f5b5f088fad6a6488bebe00043204b18` (ADR-043/044 drafts) and
+`7180885` (ADR-044 revision 2, re-review).
 This is a documentation and contract record, not runtime evidence or a Gate approval.
 
 An independent contract reviewer read the drafts against the v1.5 plan,
@@ -52,3 +53,34 @@ reviewer ran Gradle only in a deleted export of `2fb9bce` (Part B).
   **Revision 2 is PROPOSED and needs re-review before any warp runtime code.**
 - Part B confirmed `2fb9bce` with only Low/Info notes. Those notes are applied
   in `30b9b11` ([capacity verification](../v1.5.0-station-capacity/VERIFICATION.md)).
+
+## ADR-044 re-review (revision 2) and acceptance of revision 3
+
+A second independent reviewer re-reviewed revision 2 at `7180885`, read-only (no
+Gradle, no build, no repository writes). Its unmodified report is in
+`independent-review-2.zip`.
+
+- **Verdict: accept with changes.** No Critical or High finding remains. The
+  earlier High findings H1-H3 are resolved. Five Medium findings (N1-N5) and
+  several Low findings needed contract text only.
+- **Revision 3 applies all nine required changes:**
+  - N1: a registry-level `isOrbitRelocationOf` transition and
+    `checkedRelocation`, with one synchronized publish (no half-published
+    commit path);
+  - N2: charge is folded into the balance every 200 ticks, not dirtied every
+    tick;
+  - N3: settled `PREPARED` records do not block, and warps fail closed only
+    until recovery has classified every record;
+  - N4: one commit per server tick, a 100-tick cooldown, confirmation caps and
+    a minimum cost of 100,000 FE;
+  - N5: cores accept energy only in the Space Level, on the server thread,
+    honour `simulate`, and report 0 stored;
+  - N6: a schema table for roots 1-4 (amends ADR-040);
+  - N7: consent to cost and class, an actor recheck at commit, and a no-route
+    warning;
+  - N8-N13: a corrected crash-cut matrix and disclosure, removal of the stale
+    quote rule, the restated invariant, and "gravity does not follow";
+  - a plan traceability table, the warp core recipe and a COMMON config.
+- **ADR-044 revision 3 is ACCEPTED** with an acceptance record in the ADR. WARP-01
+  is verified as a contract. WARP-02 (root schema 4, balances, relocation
+  transition, crash-cut tests) may start. No runtime code exists yet.

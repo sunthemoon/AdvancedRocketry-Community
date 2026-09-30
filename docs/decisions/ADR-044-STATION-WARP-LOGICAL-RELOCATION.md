@@ -1,220 +1,314 @@
-# ADR-044 — Station warp as logical orbit relocation (revision 2)
+# ADR-044 — Station warp as logical orbit relocation (revision 3)
 
 ```yaml
-status: PROPOSED
-revision: 2
+status: ACCEPTED
+revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
+acceptance_basis: maintainer standing goal to complete the project with recommended solutions, after independent re-review of revision 2 ("accept with changes"); all nine required changes applied in this revision
 target_version: v1.5.0
 development_dependency: ADR-040, ADR-041, ADR-043
-amends: ADR-040 (warp fields; "no speculative warp fields yet"), ADR-041 (adds the named transition "orbit relocation")
+amends: ADR-040 (warp fields; "no speculative warp fields yet"; "current root 3 accepts only record 2" becomes the schema table in §6), ADR-041 (adds the named transition "orbit relocation" and balance invariance for existing transitions)
 implements: V150-WARP-01 contract for WARP-02..05 and UI-01..03
-station_registry_schema: 4 (proposed; record 2 and reservation 1 unchanged)
+station_registry_schema: 4 (record 2 and reservation 1 unchanged)
 ```
 
-Revision 1 was rejected by independent contract review (three High findings:
-energy paid after the commit, core identity, and the rocket rule). This revision
-replaces the energy mechanism and the rocket rule; the relocation architecture
-is kept.
+Revision 1 was rejected (energy paid after the commit, core identity, rocket
+rule). Revision 2 kept logical relocation with energy in the station registry and
+was accepted with changes. This revision applies those changes; see §9.
 
-## Context
-
-The v1.5 plan asks for a costed, multi-stage, recoverable warp with a warp core,
-energy or fuel, a target and a countdown. Passengers and docked rockets must be
-kept, and assets must survive failure. Stations are fixed cells in one shared
-Space Level; their context comes from `orbit_body` (ADR-040/041). A physical copy
-would move up to 768×768 columns of blocks and entities across Levels, which is
-unbounded, and ADR-040 forbids scans. The rocket transfer journal
-(`RocketTransferSavedData`) records every flight in motion, from `PREPARED`
-through `COMMITTED`. Committed records are kept as landed reservations until the
-rocket launches again or is disassembled.
-
-## Decision
-
-### 1. Logical relocation
+## 1. Logical relocation
 
 Warp changes only the station's `orbit_body`. Cell, region, pad, blocks,
-entities and players stay where they are. Environment, gravity, routes, quotes
-and discovery follow on the next query. No block, chunk or entity is moved,
-loaded, scanned or queried. The plan's "target copy / source delete" wording is
-resolved as relocation, which plan section 17 allows.
+entities, players and the station's configured gravity stay exactly as they are;
+gravity is stored per station and does not change with the orbit. The
+orbit-derived context changes on the next query: the orbited body, solar
+intensity, and routes, quotes and discovery of the orbit. No block, chunk or
+entity is moved, loaded, scanned or queried. The plan's "target copy / source
+delete" wording is resolved as relocation (plan §17).
 
-Disclosure: every system is a label over the same Space Level, and cells of
-different systems are separated by at least 256 unclaimed columns. Players,
-blocks and disassembled rockets can physically cross that gap. Warp buys an
-orbit context (environment, routes, quotes), not physical isolation.
+Disclosure: every system is a label over the same Space Level. Cells of different
+systems are at least 256 unclaimed columns apart, and players, blocks and
+disassembled rockets can physically cross that gap. Warp buys an orbit context,
+not physical isolation.
 
-### 2. Energy lives in one store: the station registry
+## 2. Energy: one store, folded credits
 
-- New registry root field `warp_energy`: a list of `{station_id, energy}`, one
-  entry per station with a non-zero balance, stored in the same file as the
-  station records. Each balance is a long from 0 to 10,000,000 FE. The list has
-  at most 4,096 entries and each entry at most 64 bytes.
-- **The warp core is a stateless terminal.** Block `advancedrocketrycommunity:warp_core`
-  has a block entity only to expose the Forge Energy capability. It stores no
-  energy, sequence or identity. `receiveEnergy` credits the station whose
-  committed region contains the core, looked up with one indexed `findAt`. In a
-  gap, in a blocked registry or in a station at capacity it accepts 0. There is
-  no extraction. Crediting is an ordinary in-memory registry mutation (dirty,
-  saved by ordinary saves, like membership). It is not a checked write. At most
-  200,000 FE per station per server tick are accepted, tracked in memory per
-  tick.
-- The balance is kept outside `StationState`, so charging never makes an
-  expansion or gravity confirmation stale.
-- **Warp commit is one checked write.** It debits the cost from the balance and
-  sets the new `orbit_body` in the same candidate registry, through the ADR-041
-  checked path (validate, stage, force, read back, atomic replace, publish). This
-  adds exactly one named transition to ADR-041, **orbit relocation**: only
-  `orbit_body` changes on the record, the station's balance falls by exactly the
-  cost, and nothing else changes. The same guard rejects any other change before
-  writing.
-- Cores have no identity, so any number of cores in one region feed the same
-  balance. A core in a gap or a foreign station credits nothing, or credits the
-  station it is actually in. It drops as a plain item (loot: itself, with no
-  block-entity data). Station deletion discards the balance (audited). A reused
-  cell starts at zero, and a core carried over carries nothing.
-- Cost (server config, bounds 0..10,000,000, defaults): 2,000,000 FE within a
-  system, 8,000,000 FE between systems or away from an unavailable orbit body.
-  The cost is computed from the catalog captured at commit, never from the client.
+- **Balance.** New registry root field `warp_energy`: a list of
+  `{station_id, energy}` entries.
+  - Only positive balances are stored; an entry that reaches 0 is removed.
+  - A zero, negative or over-bound value, a duplicate, an unknown station, or
+    more than 4,096 entries blocks the registry (fail closed).
+  - Each balance is at most 10,000,000 FE.
+  - Budget: each entry is at most 64 bytes, so the full list is at most 256 KiB,
+    inside the 4 MiB registry bound together with 4,096 records (measured 1.59 MB).
+    A credit that would add an entry while the encoded registry is within 256 KiB
+    of the bound is refused.
+- **Warp core.** `advancedrocketrycommunity:warp_core` is a stateless terminal.
+  Its block entity exists only to expose the Forge Energy capability and stores
+  nothing but its schema version (1). `receiveEnergy` accepts energy only when
+  all of these hold:
+  - the core's Level is the fixed Space Level;
+  - the call is on the server thread;
+  - the core is inside a committed station region (one `findAt`);
+  - the registry is operational and not quarantined;
+  - the station's balance plus its pending credit is below the cap;
+  - the station's per-tick allowance of 200,000 FE is not used up.
 
-**Crash-cut matrix.** The only warp write is the single atomic replacement:
+  In every other case it accepts 0.
+  - `simulate=true` changes nothing and does not use up the allowance.
+  - `canExtract` is false and `canReceive` is true.
+  - `getEnergyStored` returns 0, so no station's balance is exposed to probes;
+    `getMaxEnergyStored` returns the cap.
+  - Loot is the plain block with no block-entity data.
+  - Several cores in one region feed the same balance. A core in a gap, in
+    another Level or in a foreign station credits nothing, or credits the station
+    whose region it is actually in.
+- **Folding.** Accepted energy goes into a bounded pending-credit map on the
+  server thread (at most 4,096 entries, cleared at stop after the final fold). The
+  map is folded into the registry every 200 server ticks, immediately before
+  every warp request and commit check, and in `ServerStoppingEvent` before the
+  stop save. A fold is an ordinary registry mutation (dirty, ordinary save),
+  never a flush. A continuously charging station therefore dirties the registry
+  at most once per 10 s, not every tick (plan §13.3).
+- **Deletion and reuse.** Deleting a station removes its balance (audited). A
+  reused cell starts at 0, and a carried core carries nothing.
+- **Cost.** COMMON config (the mod's existing config type, integrator-registered):
+  - `stations.warpCostInSystem`, default 2,000,000 FE;
+  - `stations.warpCostInterstellar`, default 8,000,000 FE;
+  - both bounded to 100,000..10,000,000, so a cost of 0 is impossible (plan §4).
 
-| Cut | Result |
-|---|---|
-| Before the checked replacement | Old orbit, old balance: no warp, no charge |
-| During replacement (caught failure) | Old file kept or restored (ADR-041): no warp, no charge |
-| Replacement outcome unreadable | Updates quarantined; the acknowledged (old) authority is re-saved; no warp, no charge |
-| After replacement | New orbit, debited balance: warp charged exactly once |
-| Countdown in progress (memory only) | No warp, no charge |
+  Interstellar cost applies between systems and when leaving an unavailable orbit
+  body. The cost is computed from the catalog and config captured at commit,
+  never from the client.
 
-Charging has the usual cross-store rollback class of Forge Energy between
-separately saved stores: a crash can re-supply or lose at most the energy
-credited since the last save of the registry or of the energy source. This is
-bounded by 200,000 FE per tick times the autosave interval. The warp itself
-cannot be duplicated or made free.
+## 3. Registry-level commit
 
-### 3. Entry point, confirmation and countdown
+**Predicate.** `StationState.isOrbitRelocationOf(previous)` is true only when
+`orbit_body` differs and every other field is equal: region, environment,
+identity, owner, name, cell, pad, created time, members and invitations. It does
+not use `sameAuthorityAs`, which includes the orbit.
 
-- `/arce station warp <body_id>` must be run by the connected player's own
-  non-silent command source (ADR-040/041 local-actor rule). The player must be
-  the owner or an operator, stand in the committed region with their chunk
-  loaded, and be **looking at a warp core** in that region (server-side ray pick
-  within 5 blocks; no client coordinates). The reply names the station, the
-  current and target body, whether the move is within a system or interstellar,
-  the cost and the balance. It warns that docked rockets move with the station
-  and that the warp cannot be undone for free. It then requires
-  `/arce station warp confirm <station_id>` within 10 seconds (one-shot, bound to
-  the actor, the observed station state and the target, like expansion).
-- Confirmation starts a **countdown** of 200 ticks, reported to online members.
-  Only one countdown per station is allowed, with at most 64 globally. Countdowns
-  are memory-only. `/arce station warp cancel` (owner or operator, local) cancels
-  one. A countdown is discarded at server stop; the owner logging out does not
-  cancel it.
-- **At commit**, on the server thread, the countdown aborts with a reason if any
-  of these fails:
+**Commit check.** The registry-level `checkedRelocation(observed, target, cost)`
+requires all of the following:
+- the registry is operational and not quarantined;
+- the live state equals the observed state;
+- the target is valid at commit;
+- the live balance after a fold is at least `cost`;
+- `cost` equals the confirmed cost (§4);
+- the transition is exactly one orbit relocation.
+
+**Candidate and publish.**
+- The candidate is the live registry with the relocated state substituted and this
+  station's balance set to `live - cost`; an entry that reaches 0 is removed.
+- Verification decodes the candidate and checks that the relocated state and this
+  station's balance are as expected, and that every other balance and every other
+  state is unchanged.
+- The write uses ADR-041's checked path.
+- Publish is **one** synchronized model method that swaps the state and the
+  balance together, with no fallible step between them. A publish failure after
+  the write is quarantined and reported as an unknown outcome (ADR-041).
+- The existing growth and gravity transitions now also verify that the
+  candidate's balance list equals the live one.
+
+**Crash-cut matrix** (the warp is one atomic file replacement):
+
+| Cut | On disk after the cut | Outcome |
+|---|---|---|
+| Before replacement | Old orbit, old balance | No warp, no charge |
+| Caught failure, file is not the candidate | Old file | No warp, no charge; registry marked dirty to re-save it |
+| Caught failure, file equals the candidate (replaced despite error) | New orbit, debited | Warp published, charged once |
+| Outcome unreadable, then an ordinary save | Old orbit, old balance (memory re-saved) | No warp, no charge; updates quarantined until restart |
+| Outcome unreadable, crash before any save | New orbit and debit if the move happened, otherwise old | Consistent: warped and charged, or neither |
+| Publish failure after replacement | New orbit, debited | Quarantined. Memory is re-saved on the next save, giving old orbit and no charge, unless a crash comes first. Consistent either way |
+| Torn ordinary save (non-atomic vanilla write) | Unreadable registry | Start refused, fail closed (pre-existing class); restore from backup |
+| After replacement | New orbit, debited | Warp charged exactly once |
+| Countdown in progress (memory only) | Unchanged | No warp, no charge |
+
+A warp can never be charged twice, and never happen without being charged.
+
+**Disclosure (charging).** Forge Energy moves between separately saved stores.
+For each station and each crash:
+- energy accepted but not yet folded is lost, bounded by 200,000 FE × 200 ticks
+  and capped at 10,000,000 FE;
+- energy folded into the registry after the energy source's last chunk save can
+  be supplied again after the crash, capped at 10,000,000 FE.
+
+ARCE flushes save the registry often, while source chunks are saved on unrelated
+schedules, so duplication is the likelier direction. Restoring the pre-upgrade
+backup discards all balances.
+
+## 4. Entry point, confirmation, countdown and limits
+
+- **Request.** `/arce station warp <body_id>` requires:
+  - the connected player's own non-silent command source (ADR-040/041);
+  - the owner or an operator, in the committed region with their chunk loaded;
+  - that the player is looking at a warp core in that region (server ray pick
+    within 5 blocks);
+  - warp enabled, the station not in cooldown, and the in-motion rule (§5)
+    passing.
+
+  The reply shows the station, the current body and the target, the cost class,
+  the cost and the balance (after a fold). It warns that docked rockets move with
+  the station, that the target system has no rocket routes when that is true, and
+  that the warp cannot be undone for free.
+- **Confirmation.** `/arce station warp confirm <station_id>` within 10 seconds.
+  - At most one pending confirmation per player and 128 globally.
+  - Each expires after 200 ticks and is cleared on logout and at stop.
+  - It is bound to the actor, the observed state, the target, the cost and the
+    cost class.
+- **Countdown.** 200 ticks, reported to online members.
+  - At most one per station and 64 globally, held in memory only.
+  - `/arce station warp cancel` (owner or operator, local rule) cancels it.
+  - It is discarded at stop; the owner logging out does not cancel it.
+  - An upgrade during a warp is trivial, because nothing persists before commit.
+- **Commit.** At most one commit per server tick; others due in the same tick
+  wait for the next tick and are fully rechecked. The countdown aborts, with the
+  reason shown to online members, if any of these fails:
   - warp is enabled;
   - the registry is operational and not quarantined;
-  - the station still equals the confirmed state (`STALE` on any change);
-  - the target is still present, orbitable, known and different from the current
-    orbit;
-  - the balance covers the cost from the commit-time catalog;
-  - the rocket rule (§4) passes.
-  Otherwise it performs the checked write.
-- Allowed targets: any orbitable, known body (ADR-043) other than the current
-  orbit, in the same system (relocation) or another system (interstellar). A
-  station whose orbit body is unavailable may warp to any valid target
-  (evacuation, interstellar cost).
-- **Kill switch:** server config `stations.warpEnabled` (default true). When it is
-  false, requests, confirmations and pending commits are refused. Charging still
-  works. Stations and their access are unaffected.
+  - the station equals the confirmed state (`STALE` on any change);
+  - the confirming actor is still the owner, or still an operator according to
+    the server ops list (a de-op or an ownership transfer cancels);
+  - the target is present, orbitable, known and not the current orbit;
+  - the cost and cost class equal the confirmed ones (a catalog or config reload,
+    or a removed orbit body, cancels and requires new consent);
+  - the balance covers the cost after a fold;
+  - the in-motion rule passes.
+- **Cooldown.** 100 ticks per station after a commit or a failed write (as in
+  ADR-041).
+- **Kill switch.** `stations.warpEnabled` (COMMON config, default true) refuses
+  requests, confirmations and commits. Charging, stations and access are
+  unaffected.
+- **Evacuation.** A station whose orbit body is unavailable may warp to any valid
+  target at interstellar cost.
 
-### 4. Rockets and passengers
+## 5. Rockets and passengers
 
 - **Passengers** stay in place and see the new context. There is no teleport.
-- **Docked rockets** move with the station. For a `TravelTarget.Station` source,
-  launch admission takes the source body from the station record, and no longer
-  requires the rocket's saved `current_body` to equal it. These existing checks
-  are kept:
-  - `currentTarget() == Station(id)`;
-  - the station found at the rocket's position has that ID;
-  - the live Level equals `currentDimension` and matches the snapshot's source
-    dimension.
-  New flight and transfer records written at launch store the station's current
-  orbit body as `current_body`. A plan quoted before a warp is stale: admission
-  requires the plan's source anchor to be the station's current orbit anchor,
-  otherwise the player re-quotes.
-- **Rule for rockets in motion** (in memory, no entity query, no chunk load),
-  checked when the warp is requested and again in the same server operation as
-  the commit. Warp is denied if:
-  1. the transfer journal is not operational (fail closed); or
-  2. a record whose source or destination snapshot overlaps the region is in
-     `PREPARED`, `DESTINATION_SPAWNED`, `PASSENGERS_TRANSFERRED` or
-     `SOURCE_REMOVED`; or
-  3. a `COMMITTED` record overlapping the region is still descending: game time
-     is below its destination state start plus `DESCENT_TICKS` plus 20.
+- **Docked rockets move with the station.** For a `TravelTarget.Station` source,
+  launch admission no longer compares the rocket's saved `current_body`
+  (`PlanetaryFlightAdmission.allows` lines 48-52). The planner already takes the
+  source body from the station record, plans are recomputed at launch, and the
+  client never sends a quote, so no stale-quote rule is needed. These existing
+  checks stay: the current target is the station, the station at the rocket's
+  position has that ID, and the Level and snapshot dimension match. New flight
+  and transfer records store the station's current orbit body as `current_body`.
+- **In-motion rule.** Exposed through the port
+  `StationRocketAuthority.inMotion(station)`, implemented by the rocket module and
+  wired at startup (the ADR-041 pattern; no new cross-module imports). It works in
+  memory, with no entity query and no chunk load. It **blocks** (returns true)
+  when any of these hold:
+  1. the transfer journal is not operational;
+  2. the post-start recovery pass has not yet classified every journal record;
+  3. a record overlapping the region is in `DESTINATION_SPAWNED`,
+     `PASSENGERS_TRANSFERRED` or `SOURCE_REMOVED`, or in `PREPARED` without
+     having been returned to a stationary source by recovery
+     (`WAITING_FOR_PASSENGERS` does not block);
+  4. a `COMMITTED` record overlapping the region is still descending: game time
+     is below its scheduled arrival (countdown start + 160) plus `DESCENT_TICKS`
+     plus 20.
 
-  Landed reservations (other `COMMITTED` records) do not block. Invariant, to be
-  tested including migrated legacy flights: every flight from countdown through
-  descent has a journal record. Assembly transactions do not block; assembly
-  derives its target from position when it completes.
-- The existing fail-open in station deletion (journal not operational) is fixed
-  in the same slice. Deletion also fails closed.
-- **Module direction:** warp code reaches rocket state only through a port
-  interface in the station module (`StationRocketAuthority`), implemented by the
-  rocket module and wired at startup. This follows the ADR-041 pattern and adds
-  no new cross-module imports. The existing station↔rocket import cycle
-  (`StationManager` imports rocket classes, rocket classes import station
-  classes) is recorded as pre-existing technical debt.
+  Landed reservations do not block. Invariant: every flight that can still move
+  has a journal record. Crash windows can leave orphaned rocket entities with no
+  record; those cannot fly and do not affect warp. Assembly transactions do not
+  block.
+- **Deletion.** Station deletion's rocket guard now fails closed when the journal
+  is not operational (same slice).
 
-### 5. Persistence and migration
+## 6. Persistence and migration (amends ADR-040)
 
-- Registry root schema 4, epoch `v1.5.0-station-warp`, requires `warp_energy`.
-  Records stay schema 2 and reservations schema 1. Root 3 migrates to 4 by adding
-  an empty `warp_energy` list, through the existing pre-start backup migration
-  (ADR-040), recorded per file in the manifest. Legacy roots 1 and 2 chain to 4.
-  Root 4 accepts only record 2 and reservation 1. A balance list with duplicates,
-  unknown stations, a negative or over-bound balance, or too many entries blocks
-  the whole registry, fail-closed as before. Older builds refuse root 4. Restore
-  uses the complete pre-upgrade backup.
-- The warp core block entity has schema version 1 with no other fields.
-- No journal file: the countdown is memory-only and the commit is one atomic
-  write. The plan's "journal" maps to this state machine: `REQUESTED` (memory),
-  `COUNTDOWN` (memory), `COMMITTED` (one write), plus audit log lines
-  `ARCE_STATION_WARP phase=... station=... target=... cost=... balance=...`.
-  `/arce station admin inspect` shows the balance.
+Station registry acceptance by root schema:
 
-### 6. Sky, UI and elevator
+| Root | Epoch | Accepted content |
+|---|---|---|
+| 1 | (legacy) | legacy record 1, reservation 1 |
+| 2 | `v0.9.0-beta` | legacy record 1, reservation 1 |
+| 3 | `v1.5.0-orbital-station` | record 2, reservation 1 |
+| 4 | `v1.5.0-station-warp` (current) | record 2, reservation 1, **required** `warp_energy` |
 
-- The sky after a warp is the generic Space sky until ORBIT-03, which has its own
-  ADR.
-- A warp screen (UI-01) needs its own bounded, versioned payload. It is optional
-  on top of the commands.
-- The elevator is out of scope here.
+- Root-shape validation is chosen by schema.
+- The pre-start migration (ADR-040) upgrades root 3 to 4 by adding an empty
+  `warp_energy` list, and chains roots 1 and 2 to 4 through record 1→2. The
+  backup manifest records the source and target schema of each file.
+- Older builds refuse root 4; restore uses the complete pre-upgrade backup.
+- The plan's `save_schema` line becomes "station root 4 / record 2 /
+  reservation 1; other managed roots 2".
+- Native evidence: the STATION-04 root-3 world upgrades to root 4 and restarts; a
+  second restart is idempotent.
 
-## Plan traceability (sections 9–15)
+## 7. Content, UI and sky
+
+- **Warp core.** Original block, model and recipe; no imported art or code.
+  - The model uses the existing machine-casing textures.
+  - The recipe (v1.5 DataGen) is four machine casings, four advanced circuits and
+    one data storage unit, so the core follows the existing machine progression.
+  - Generated assets and data go in `src/generated/v1.5/resources`, and name keys
+    in the `advancedrocketrycommunity_v150` language namespace.
+- **UI.** Commands are the interface. Feedback uses chat and action-bar messages:
+  request, confirm, countdown at 10, 5, 3, 2 and 1 seconds, commit, and abort
+  reasons. A screen (UI-01) needs its own bounded, versioned payload. GUI scale
+  does not apply without a screen.
+- **Sky.** The generic Space sky stays until ORBIT-03.
+
+## 8. Plan traceability (sections 8–15)
 
 | Plan item | Where |
 |---|---|
-| WarpState legal/illegal transitions; each stage recoverable; resources charged once | WARP-02 unit tests; the crash-cut matrix above as a JUnit fault-injection matrix |
-| Multi-star routes and discovery requirements | STAR-02/03 (ADR-043) |
-| Two stations warping at once to different targets | WARP-05 GameTest and MIG-02 native |
-| Owner disconnect/reconnect; passengers online/offline | WARP-04 GameTest (countdown survives logout; offline player data untouched) |
-| Docked rocket saved and restored across a warp | WARP-04 GameTest and native |
-| Catalog reload or target removal during countdown aborts safely | WARP-03 GameTest |
-| Non-member, forged or stale requests; no client energy or cost | UI-03 and WARP-03 tests (local-actor rule, server-computed cost) |
-| No arbitrary chunk loading; bounded work | Design (§1, §4); UI-03 checks loaded-chunk counts |
-| 10/100-station performance; warp preparation bounded per tick | ORBIT-04 scale test (checked write), WARP-05 |
-| Real-client cache and position before/after warp; sky; multiplayer; video | V1/V2 in ACC-02 (not available in this environment; stays open) |
-| Warp can be disabled independently | `stations.warpEnabled` (§3) |
+| §8 Upgrade during warp | Trivial: countdowns are memory-only (§4) |
+| §8/§9/§14.5 v1.4 and root-3 fixture migration to root 4, lossless | WARP-02 unit fixtures; native STATION-04 world → root 4 (§6) |
+| §9 WarpState transitions; each stage recoverable; charged once | WARP-02 unit tests, including the crash-cut matrix as JUnit fault injection |
+| §9 Multi-star routes and discovery requirements | STAR-02/03 (done, ADR-043) |
+| §10 Two stations warping at once to different targets | WARP-05 GameTest (commits serialized, one per tick) and MIG-02 native |
+| §10 Owner disconnect and reconnect; passengers online and offline | WARP-04 GameTest (countdown survives logout; offline data untouched) |
+| §10 Docked rocket saved and restored across a warp | WARP-04 GameTest and native |
+| §10 Catalog reload or target removal during countdown aborts safely | WARP-03 GameTest (a cost-class change and target removal both cancel) |
+| §10/§12 Non-member, forged or stale requests; no client-supplied energy or cost | UI-03 and WARP-03 tests |
+| §11.2 Countdown and failure feedback | WARP-03 GameTest capturing member messages |
+| §11.3 No data mixed between stations | WARP-05 two-station GameTest (balances and orbits independent) |
+| §11.5 GUI scale | Not applicable (no screen) |
+| §12.4 Region coordinates never load chunks | By design; UI-03 checks loaded-chunk counts |
+| §12.5 Orbital weapons and elevator write interfaces | Not applicable (none exposed) |
+| §13.2/§13.3 Bounded preparation; no full dirty every tick | §2 folding. WARP-05 test: ten charging stations dirty the registry at most once per 200 ticks. Plus a measured ordinary save at 4,096 stations |
+| §13.4 10/100-station performance | ORBIT-04 scale test (done) and WARP-05 commit timing |
+| §14 Stations around any data body; two systems warp end to end | WARP-03 GameTest and native (Earth orbit ↔ Tau Ceti e) |
+| §14 Each stage force-stopped without loss or duplication | Crash-cut matrix tests (WARP-02) and native restarts (§6) |
+| §15 Migration report; multiplayer permission report | WARP acceptance packet: migration VERIFICATION, and the permission matrix from UI-03 tests |
+| Stateless-core cases (two cores, gap, other Level, foreign station, carried core, cell reuse, deletion drops the balance, simulate, off-thread) | WARP-02/03 unit tests and GameTests |
+| §11.4/§11.1 Real-client cache, position and sky; multiplayer; video | V1/V2 in ACC-02 (not available in this environment; stays open) |
 
 ## Non-goals
 
 Physical copies, other Levels, warp without a core or energy, remote initiation,
-fuel items, per-system time, physical isolation of systems, space-elevator
-logistics, and warping rockets or players separately from a station.
+fuel items, per-system time, physical isolation of systems, elevator logistics,
+and warping rockets or players separately from a station.
 
 ## Rollback
 
-Warp commits are ordinary root-4 registry changes. Older builds refuse root 4.
-Restore the complete pre-upgrade backup (ADR-040). No other migration exists.
+Warp commits are ordinary root-4 registry changes, and older builds refuse root 4.
+Restore the complete pre-upgrade backup (ADR-040), which also discards balances.
+
+## 9. Review history
+
+- **Revision 1** was rejected: energy was paid after the commit, cores had no
+  identity, and the rocket rule was wrong.
+- **Revision 2** was accepted with changes. The re-review found no Critical or
+  High issues and confirmed feasibility: the journal has the needed fields, and
+  the admission change is one filter.
+- **Revision 3** applies all nine required changes:
+  - N1: registry-level predicate, candidate checks and a single publish;
+  - N2: folding;
+  - N3: settled PREPARED records do not block, and the rule fails closed until
+    recovery has classified every record;
+  - N4: one commit per tick, cooldown, caps and a minimum cost;
+  - N5: Level, thread and simulate rules, and no exposure to probes;
+  - N6: schema table and migration;
+  - N7: consent and authority rechecks, and the no-route warning;
+  - N8–N11 and N13: text corrections;
+  - N12: traceability and content.
+
+Both reports are archived in `docs/work/v1.5.0-star-warp-contracts/`. Acceptance
+is not a Gate approval.

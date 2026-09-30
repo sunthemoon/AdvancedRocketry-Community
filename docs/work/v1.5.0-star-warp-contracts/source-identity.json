@@ -1,30 +1,23 @@
 {
-  "base_commit": "30b9b11",
+  "base_commit": "c5e213b",
   "files": [
     {
-      "bytes": 20099,
+      "bytes": 20136,
       "path": "DOCUMENT-INDEX.md",
-      "sha256": "a5aceefcc0bd2a22c560e6da8873415ac7d8ddd2c383b7e92b7488d4d4de1c76"
+      "sha256": "181b8d7ae86ffda8be555d6c87ccebb3e0b4857bf7e4f29aa334740946c77883",
+      "working_sha256": "181b8d7ae86ffda8be555d6c87ccebb3e0b4857bf7e4f29aa334740946c77883"
     },
     {
-      "bytes": 9173,
-      "path": "docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md",
-      "sha256": "d2d5e7e583c98d409dfda860450d33047bb2e856633e2e5529aa138f98119fb3"
-    },
-    {
-      "bytes": 7267,
-      "path": "docs/decisions/ADR-043-STAR-SYSTEMS-AS-ROOT-TREES.md",
-      "sha256": "a78c02dc4821a4fc207feacb96015b1f345af8fafd115769b7ed4d8eaf94bdab"
-    },
-    {
-      "bytes": 12608,
+      "bytes": 18478,
       "path": "docs/decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md",
-      "sha256": "0eae162b93767a92f4b022da641bb42a66a21dc06ecc5c424df818a858e9441f"
+      "sha256": "d2f6f86b949f9cd37244ca8aa118b9f2a968b374137393bb64829bdd5180bd44",
+      "working_sha256": "d2f6f86b949f9cd37244ca8aa118b9f2a968b374137393bb64829bdd5180bd44"
     },
     {
-      "bytes": 27261,
+      "bytes": 27596,
       "path": "docs/work/v1.5.0-implementation-log.md",
-      "sha256": "bb86dd976cb52693ffd8a647f6e005226ebddea1614ca4bc5922d2b25a6a31d8"
+      "sha256": "32101eb0e9862365114337abea2cec99c6f1b6e2d19b7ae5b99b46451ae424e6",
+      "working_sha256": "32101eb0e9862365114337abea2cec99c6f1b6e2d19b7ae5b99b46451ae424e6"
     }
   ]
 }

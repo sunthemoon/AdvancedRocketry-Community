@@ -5,10 +5,21 @@
       "manifest": "independent-review-files.json",
       "members": 15,
       "name": "independent-review.zip",
-      "sha256": "050c291373bb017dba8f89bedf7a05c034a1a3acfb0eb97a812078087f5d479e"
+      "reviewed_commit": "82568b85f5b5f088fad6a6488bebe00043204b18",
+      "sha256": "050c291373bb017dba8f89bedf7a05c034a1a3acfb0eb97a812078087f5d479e",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-contract-review-12c278811ced4d2f89ce0c599fc6a335",
+      "subject": "ADR-043 and ADR-044 revision 1; Part B 2fb9bce"
+    },
+    {
+      "bytes": 10798,
+      "manifest": "independent-review-2-files.json",
+      "members": 1,
+      "name": "independent-review-2.zip",
+      "reviewed_commit": "7180885",
+      "sha256": "43d924c46f78b63e677be8ea5d374c99d0e756334ff009a99337128fc31e5450",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-warp-rereview-241e8c7952c34cb097e7b4fde5c3a687",
+      "subject": "ADR-044 revision 2 re-review"
     }
   ],
-  "reviewed_commit": "82568b85f5b5f088fad6a6488bebe00043204b18",
-  "schema_version": 1,
-  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-contract-review-12c278811ced4d2f89ce0c599fc6a335"
+  "schema_version": 2
 }

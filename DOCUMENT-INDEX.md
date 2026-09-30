@@ -219,7 +219,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [空间站轨道环境](docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md)：站点区域有效重力、重力设置（冷却）、环境显示、太阳范围与非目标。
 - [STATION-04 原生覆盖范围](docs/decisions/ADR-042-STATION-04-NATIVE-SCOPE.md)：火箭身份与缺失轨道天体原生用例移交 MIG-01，ACC-02 前到期。
 - [恒星系即根天体树](docs/decisions/ADR-043-STAR-SYSTEMS-AS-ROOT-TREES.md)：恒星系身份、航线不跨系、已知判定与示例星系。
-- [空间站跃迁为逻辑重定位](docs/decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md)（PROPOSED，第 2 版）：能量只存于站点注册表、单次受控写入扣费、无状态核心、在途火箭规则。
+- [空间站跃迁为逻辑重定位](docs/decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md)（第 3 版，已接受）：能量只存于站点注册表、充能定期入账、单次受控写入扣费、无状态核心、在途火箭规则、根 schema 4。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。
