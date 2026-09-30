@@ -1,0 +1,785 @@
+{
+ "purpose": "Reference vectors for ADR-049..052 integer rules; not NBT, runtime data or built-in balance",
+ "splitmix64_seed0": [
+  "e220a8397b1dcdaf",
+  "6e789e6aa1b965f4",
+  "06c45d188009454f"
+ ],
+ "splitmix64": [
+  {
+   "seed": "0123456789abcdef",
+   "outputs": [
+    "157a3807a48faa9d",
+    "d573529b34a1d093",
+    "2f90b72e996dccbe"
+   ]
+  },
+  {
+   "seed": "ffffffffffffffff",
+   "outputs": [
+    "e4d971771b652c20",
+    "e99ff867dbf682c9",
+    "382ff84cb27281e9"
+   ]
+  }
+ ],
+ "bounded": [
+  {
+   "seed": "0000000000000000",
+   "n": 100,
+   "values": [
+    67,
+    50,
+    39,
+    22,
+    73
+   ]
+  },
+  {
+   "seed": "5355525645593031",
+   "n": 51,
+   "values": [
+    26,
+    10,
+    18,
+    17,
+    19
+   ]
+  }
+ ],
+ "asteroid_types": [
+  {
+   "id": "example:small",
+   "weight": 20,
+   "systems": [],
+   "mass": 200,
+   "mass_variability_pct": 50,
+   "richness_pct": 30,
+   "richness_variability_pct": 50,
+   "base_item": "minecraft:cobblestone",
+   "ores": [
+    {
+     "item": "minecraft:iron_ore",
+     "weight": 15
+    },
+    {
+     "item": "minecraft:gold_ore",
+     "weight": 10
+    },
+    {
+     "item": "minecraft:redstone_ore",
+     "weight": 10
+    }
+   ],
+   "time_multiplier_pct": 100
+  },
+  {
+   "id": "example:light",
+   "weight": 15,
+   "systems": [],
+   "mass": 200,
+   "mass_variability_pct": 50,
+   "richness_pct": 20,
+   "richness_variability_pct": 50,
+   "base_item": "minecraft:cobblestone",
+   "ores": [
+    {
+     "item": "minecraft:copper_ore",
+     "weight": 20
+    },
+    {
+     "item": "minecraft:lapis_ore",
+     "weight": 10
+    },
+    {
+     "item": "minecraft:nether_quartz_ore",
+     "weight": 5
+    }
+   ],
+   "time_multiplier_pct": 100
+  },
+  {
+   "id": "example:dense",
+   "weight": 2,
+   "systems": [],
+   "mass": 75,
+   "mass_variability_pct": 50,
+   "richness_pct": 20,
+   "richness_variability_pct": 30,
+   "base_item": "minecraft:cobblestone",
+   "ores": [
+    {
+     "item": "minecraft:iron_ore",
+     "weight": 25
+    },
+    {
+     "item": "minecraft:diamond_ore",
+     "weight": 5
+    }
+   ],
+   "time_multiplier_pct": 150
+  },
+  {
+   "id": "example:strange_tau",
+   "weight": 1,
+   "systems": [
+    "advancedrocketrycommunity:tau_ceti"
+   ],
+   "mass": 50,
+   "mass_variability_pct": 50,
+   "richness_pct": 20,
+   "richness_variability_pct": 50,
+   "base_item": "minecraft:cobblestone",
+   "ores": [
+    {
+     "item": "minecraft:emerald_ore",
+     "weight": 5
+    },
+    {
+     "item": "minecraft:copper_ore",
+     "weight": 20
+    }
+   ],
+   "time_multiplier_pct": 100
+  }
+ ],
+ "survey": [
+  {
+   "system": "advancedrocketrycommunity:earth",
+   "mission_seed": "0123456789abcdef",
+   "count": 4,
+   "instances": [
+    [
+     "example:light",
+     "fe12a2c82985ef0f",
+     [
+      [
+       "minecraft:copper_ore",
+       48
+      ],
+      [
+       "minecraft:lapis_ore",
+       18
+      ],
+      [
+       "minecraft:nether_quartz_ore",
+       14
+      ],
+      [
+       "minecraft:cobblestone",
+       170
+      ]
+     ]
+    ],
+    [
+     "example:small",
+     "12f86d0de95a283c",
+     [
+      [
+       "minecraft:iron_ore",
+       14
+      ],
+      [
+       "minecraft:gold_ore",
+       13
+      ],
+      [
+       "minecraft:redstone_ore",
+       16
+      ],
+      [
+       "minecraft:cobblestone",
+       187
+      ]
+     ]
+    ],
+    [
+     "example:light",
+     "75a81557870c5add",
+     [
+      [
+       "minecraft:cobblestone",
+       208
+      ]
+     ]
+    ],
+    [
+     "example:small",
+     "7a0fea8070d60962",
+     [
+      [
+       "minecraft:iron_ore",
+       18
+      ],
+      [
+       "minecraft:gold_ore",
+       8
+      ],
+      [
+       "minecraft:redstone_ore",
+       10
+      ],
+      [
+       "minecraft:cobblestone",
+       158
+      ]
+     ]
+    ]
+   ]
+  },
+  {
+   "system": "advancedrocketrycommunity:tau_ceti",
+   "mission_seed": "fedcba9876543210",
+   "count": 2,
+   "instances": [
+    [
+     "example:small",
+     "991a532b6b093b41",
+     [
+      [
+       "minecraft:iron_ore",
+       56
+      ],
+      [
+       "minecraft:gold_ore",
+       34
+      ],
+      [
+       "minecraft:redstone_ore",
+       39
+      ],
+      [
+       "minecraft:cobblestone",
+       111
+      ]
+     ]
+    ],
+    [
+     "example:small",
+     "7a9871af03b9d450",
+     [
+      [
+       "minecraft:iron_ore",
+       39
+      ],
+      [
+       "minecraft:gold_ore",
+       27
+      ],
+      [
+       "minecraft:redstone_ore",
+       18
+      ],
+      [
+       "minecraft:cobblestone",
+       88
+      ]
+     ]
+    ]
+   ]
+  },
+  {
+   "system": "advancedrocketrycommunity:earth",
+   "mission_seed": "0000000000000000",
+   "count": 1,
+   "instances": [
+    [
+     "example:light",
+     "8d4bbf134edba81c",
+     [
+      [
+       "minecraft:copper_ore",
+       15
+      ],
+      [
+       "minecraft:lapis_ore",
+       9
+      ],
+      [
+       "minecraft:nether_quartz_ore",
+       3
+      ],
+      [
+       "minecraft:cobblestone",
+       187
+      ]
+     ]
+    ]
+   ]
+  }
+ ],
+ "truncation": [
+  {
+   "entries": [
+    [
+     "minecraft:iron_ore",
+     30
+    ],
+    [
+     "minecraft:gold_ore",
+     20
+    ],
+    [
+     "minecraft:cobblestone",
+     150
+    ]
+   ],
+   "cargo": 1,
+   "delivered": [
+    [
+     "minecraft:iron_ore",
+     30
+    ],
+    [
+     "minecraft:gold_ore",
+     20
+    ],
+    [
+     "minecraft:cobblestone",
+     14
+    ]
+   ]
+  },
+  {
+   "entries": [
+    [
+     "minecraft:iron_ore",
+     30
+    ],
+    [
+     "minecraft:gold_ore",
+     20
+    ],
+    [
+     "minecraft:cobblestone",
+     150
+    ]
+   ],
+   "cargo": 27,
+   "delivered": [
+    [
+     "minecraft:iron_ore",
+     30
+    ],
+    [
+     "minecraft:gold_ore",
+     20
+    ],
+    [
+     "minecraft:cobblestone",
+     150
+    ]
+   ]
+  },
+  {
+   "entries": [
+    [
+     "minecraft:diamond_ore",
+     100
+    ]
+   ],
+   "cargo": 1,
+   "delivered": [
+    [
+     "minecraft:diamond_ore",
+     64
+    ]
+   ]
+  }
+ ],
+ "asteroid_duration": [
+  {
+   "time_multiplier_pct": 100,
+   "config_pct": 100,
+   "rating": 10,
+   "duration": 12000
+  },
+  {
+   "time_multiplier_pct": 100,
+   "config_pct": 100,
+   "rating": 100,
+   "duration": 1200
+  },
+  {
+   "time_multiplier_pct": 100,
+   "config_pct": 100,
+   "rating": 1,
+   "duration": 72000
+  },
+  {
+   "time_multiplier_pct": 1000,
+   "config_pct": 1000,
+   "rating": 1,
+   "duration": 72000
+  },
+  {
+   "time_multiplier_pct": 10,
+   "config_pct": 10,
+   "rating": 100,
+   "duration": 200
+  },
+  {
+   "time_multiplier_pct": 150,
+   "config_pct": 100,
+   "rating": 7,
+   "duration": 25715
+  }
+ ],
+ "gas": [
+  {
+   "amount_per_1000_ticks": 8,
+   "rating": 10,
+   "cargo": 9,
+   "config_pct": 100,
+   "expected": {
+    "rate": 8,
+    "base": 72000,
+    "amount": 576,
+    "duration": 72000
+   }
+  },
+  {
+   "amount_per_1000_ticks": 8,
+   "rating": 100,
+   "cargo": 1,
+   "config_pct": 100,
+   "expected": {
+    "rate": 80,
+    "base": 800,
+    "amount": 64,
+    "duration": 800
+   }
+  },
+  {
+   "amount_per_1000_ticks": 1,
+   "rating": 1,
+   "cargo": 27,
+   "config_pct": 100,
+   "expected": {
+    "rate": 1,
+    "base": 72000,
+    "amount": 72,
+    "duration": 72000
+   }
+  },
+  {
+   "amount_per_1000_ticks": 64,
+   "rating": 100,
+   "cargo": 1,
+   "config_pct": 50,
+   "expected": {
+    "rate": 640,
+    "base": 200,
+    "amount": 64,
+    "duration": 200
+   }
+  },
+  {
+   "amount_per_1000_ticks": 8,
+   "rating": 10,
+   "cargo": 3,
+   "config_pct": 250,
+   "expected": {
+    "rate": 8,
+    "base": 24000,
+    "amount": 192,
+    "duration": 60000
+   }
+  }
+ ],
+ "components": {
+  "chassis": {
+   "role": "chassis"
+  },
+  "solar_module": {
+   "role": "power",
+   "power_generation": 4
+  },
+  "advanced_solar": {
+   "role": "power",
+   "power_generation": 40
+  },
+  "reactor_test": {
+   "role": "power",
+   "power_generation": 1000
+  },
+  "battery_small": {
+   "role": "battery",
+   "battery_capacity": 10000
+  },
+  "battery_large": {
+   "role": "battery",
+   "battery_capacity": 40000
+  },
+  "data_unit": {
+   "role": "data_storage",
+   "data_capacity": 1000
+  },
+  "cargo_hold": {
+   "role": "cargo",
+   "cargo_stacks": 9
+  },
+  "survey_primary": {
+   "role": "primary",
+   "kind": "survey",
+   "primary_rating": 10
+  },
+  "drill_primary": {
+   "role": "primary",
+   "kind": "asteroid_miner",
+   "primary_rating": 10
+  },
+  "intake_primary": {
+   "role": "primary",
+   "kind": "gas_harvester",
+   "primary_rating": 10
+  },
+  "solar_primary": {
+   "role": "primary",
+   "kind": "solar",
+   "primary_rating": 10
+  }
+ },
+ "blueprints": [
+  {
+   "name": "legacy data recipe",
+   "kind": "data",
+   "components": [
+    "chassis",
+    "solar_module",
+    "data_unit"
+   ],
+   "expected": {
+    "power": 4,
+    "battery": 720,
+    "data": 1000,
+    "cargo": 0,
+    "rating": 0
+   }
+  },
+  {
+   "name": "survey",
+   "kind": "survey",
+   "scan_energy": 5000,
+   "components": [
+    "chassis",
+    "survey_primary",
+    "advanced_solar",
+    "battery_small",
+    "data_unit"
+   ],
+   "expected": {
+    "power": 40,
+    "battery": 10720,
+    "data": 1000,
+    "cargo": 0,
+    "rating": 10
+   }
+  },
+  {
+   "name": "survey battery below scan energy",
+   "kind": "survey",
+   "scan_energy": 5000,
+   "components": [
+    "chassis",
+    "survey_primary",
+    "solar_module",
+    "data_unit"
+   ],
+   "expected": "REQUIREMENT_UNMET"
+  },
+  {
+   "name": "miner at cargo cap",
+   "kind": "asteroid_miner",
+   "components": [
+    "chassis",
+    "drill_primary",
+    "advanced_solar",
+    "cargo_hold",
+    "cargo_hold",
+    "cargo_hold"
+   ],
+   "expected": {
+    "power": 40,
+    "battery": 720,
+    "data": 0,
+    "cargo": 27,
+    "rating": 10
+   }
+  },
+  {
+   "name": "miner over cargo cap",
+   "kind": "asteroid_miner",
+   "components": [
+    "chassis",
+    "drill_primary",
+    "solar_module",
+    "cargo_hold",
+    "cargo_hold",
+    "cargo_hold",
+    "cargo_hold"
+   ],
+   "expected": "STAT_LIMIT"
+  },
+  {
+   "name": "harvester without power",
+   "kind": "gas_harvester",
+   "components": [
+    "chassis",
+    "intake_primary",
+    "cargo_hold"
+   ],
+   "expected": "REQUIREMENT_UNMET"
+  },
+  {
+   "name": "two primaries",
+   "kind": "asteroid_miner",
+   "components": [
+    "chassis",
+    "drill_primary",
+    "intake_primary",
+    "solar_module",
+    "cargo_hold"
+   ],
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "seven modules",
+   "kind": "solar",
+   "components": [
+    "chassis",
+    "solar_primary",
+    "solar_module",
+    "solar_module",
+    "solar_module",
+    "solar_module",
+    "solar_module",
+    "solar_module",
+    "solar_module"
+   ],
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "primary of another kind",
+   "kind": "gas_harvester",
+   "components": [
+    "chassis",
+    "drill_primary",
+    "solar_module",
+    "cargo_hold"
+   ],
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "solar six panels",
+   "kind": "solar",
+   "components": [
+    "chassis",
+    "solar_primary",
+    "advanced_solar",
+    "advanced_solar",
+    "advanced_solar",
+    "advanced_solar",
+    "advanced_solar",
+    "advanced_solar"
+   ],
+   "expected": {
+    "power": 240,
+    "battery": 720,
+    "data": 0,
+    "cargo": 0,
+    "rating": 10
+   }
+  },
+  {
+   "name": "power over cap",
+   "kind": "solar",
+   "components": [
+    "chassis",
+    "solar_primary",
+    "reactor_test",
+    "reactor_test"
+   ],
+   "expected": "STAT_LIMIT"
+  }
+ ],
+ "scheduler_backlog": [
+  {
+   "due": 1024,
+   "passes": 32,
+   "ticks": 640
+  },
+  {
+   "due": 1000,
+   "passes": 32,
+   "ticks": 640
+  },
+  {
+   "due": 500,
+   "passes": 16,
+   "ticks": 320
+  },
+  {
+   "due": 33,
+   "passes": 2,
+   "ticks": 40
+  }
+ ],
+ "reconciliation": [
+  {
+   "registry": "ACTIVE",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "ACTIVE",
+   "receipt": "SERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS"
+  },
+  {
+   "registry": "READY",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "READY",
+   "receipt": "SERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS"
+  },
+  {
+   "registry": "CLAIMED",
+   "receipt": "SERIALIZED",
+   "action": "ACKNOWLEDGE"
+  },
+  {
+   "registry": "CLAIMED",
+   "receipt": "UNSERIALIZED",
+   "action": "WAIT"
+  },
+  {
+   "registry": "CLAIMED",
+   "receipt": "NONE",
+   "action": "REMATERIALIZE"
+  },
+  {
+   "registry": "CLAIMED_ACK",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "CLAIMED_ACK",
+   "receipt": "SERIALIZED",
+   "action": "NONE"
+  },
+  {
+   "registry": "ABSENT",
+   "receipt": "SERIALIZED",
+   "action": "DROP_RECEIPT"
+  },
+  {
+   "registry": "ABSENT",
+   "receipt": "NONE",
+   "action": "NONE"
+  }
+ ]
+}
