@@ -1,0 +1,14 @@
+{
+  "archives": [
+    {
+      "bytes": 33023,
+      "manifest": "independent-review-files.json",
+      "members": 15,
+      "name": "independent-review.zip",
+      "sha256": "050c291373bb017dba8f89bedf7a05c034a1a3acfb0eb97a812078087f5d479e"
+    }
+  ],
+  "reviewed_commit": "82568b85f5b5f088fad6a6488bebe00043204b18",
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-contract-review-12c278811ced4d2f89ce0c599fc6a335"
+}

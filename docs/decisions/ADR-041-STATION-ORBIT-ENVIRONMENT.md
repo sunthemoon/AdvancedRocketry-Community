@@ -101,8 +101,8 @@ command; existing larger values are preserved until changed.
 `/arce station environment`, for any player in Space, reports either "outside
 any station" or: the orbit body (and whether it is available), effective gravity
 (with the configured value when clamped), vacuum, solar intensity and sun angle.
-The station's name and UUID are shown only to its owner, members and operators,
-matching `/arce station list`. It reads only the resolver and sends literal text,
+The station's name and UUID are shown only to its owner, members and operators
+(`/arce station list` additionally shows invitees their invitations). It reads only the resolver and sends literal text,
 like the other station commands. No new packet, translation key or client state.
 
 ### Solar scope in v1.5

@@ -1,0 +1,77 @@
+[
+  {
+    "bytes": 1399,
+    "path": "evidence/gradle-test-rerun-after-restore.log",
+    "sha256": "e5170cd67b7489801c35ad17f4793994abacb76e58a614f1d831b35a1949fcc0"
+  },
+  {
+    "bytes": 7337,
+    "path": "evidence/gradle-test.log",
+    "sha256": "19c3716a34c080ed3afdb003f380c2f2d8332cf22943c0b9148d3cfb5a3e6953"
+  },
+  {
+    "bytes": 1726,
+    "path": "evidence/junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolverTest.xml",
+    "sha256": "e66b112bc6baae10d9316c850c4ebfe7fed6cc609e67a114dce1d1b00eb77ba1"
+  },
+  {
+    "bytes": 97406,
+    "path": "evidence/junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationCheckedUpdateTest.xml",
+    "sha256": "73f97c040434ed6d31ab3a25ecdce85201140fed9b375b3584f83c0fc5ab3887"
+  },
+  {
+    "bytes": 1352,
+    "path": "evidence/junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionConfirmationsTest.xml",
+    "sha256": "8b55427aa1623dc4c0f9849ff785b6684c2ca317fe548dcd1a6892089942cf70"
+  },
+  {
+    "bytes": 1109,
+    "path": "evidence/junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionServiceTest.xml",
+    "sha256": "018a3f20b1774f069956163238eeb8e82a946aa82e946643d4cd4ad46eb8401d"
+  },
+  {
+    "bytes": 724,
+    "path": "evidence/junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteCooldownTest.xml",
+    "sha256": "46c92ce7b968ad282e06c12d23ee96c8fffe7d96d60b07de071dd0bf852dcf07"
+  },
+  {
+    "bytes": 1508,
+    "path": "evidence/mut-A_no_prewrite_check.log",
+    "sha256": "3ef0a0a30f4dd1aad5dd5bf07db9bbfd12d94b2dc480f4f4d7c542f10bf905ca"
+  },
+  {
+    "bytes": 2091,
+    "path": "evidence/mut-B_old_checked_semantics.log",
+    "sha256": "9490b0173ab645c1f529ac5b72e30dcffef571f06bd85ae3b0ad97f3f9c8ef00"
+  },
+  {
+    "bytes": 2071,
+    "path": "evidence/mut-C_cooldown_always_ready.log",
+    "sha256": "f65508bc0dba3f00e83231af0387f41b99d27ef596ab1b7f4f76c1575fce10b8"
+  },
+  {
+    "bytes": 1972,
+    "path": "evidence/mut-D_no_eviction.log",
+    "sha256": "ebb7b59896b96887784997aab8cd77537cfd760686e4b65e6a4de8f89877ae82"
+  },
+  {
+    "bytes": 2026,
+    "path": "evidence/mut-E_resolveAt_no_level_check.log",
+    "sha256": "9e9c9f8b31dbaa372708b6242747177eea6520072127e232a97458b3ecfe1005"
+  },
+  {
+    "bytes": 1613,
+    "path": "evidence/mutate.py",
+    "sha256": "b4f9f568457777ca0bfe63845763dfa948f10a113f823cf4d689d55641bfb768"
+  },
+  {
+    "bytes": 1107,
+    "path": "evidence/mutation-results.txt",
+    "sha256": "8ae5d37bfc8af42e6eb73c31d25a2c2dea4c49326011aa446eca663cd3ca6477"
+  },
+  {
+    "bytes": 39709,
+    "path": "REVIEW.md",
+    "sha256": "9e60f51a45f7820ee89a2c4cce4e8769dae2fb75930a6a6c52642f7d3296f441"
+  }
+]

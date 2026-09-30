@@ -1,10 +1,13 @@
 # ADR-043 — Star systems as celestial root trees
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
+accepted_by: sunthemoon
+accepted_at: 2026-09-30
+acceptance_basis: maintainer standing goal to complete the project with recommended solutions, after independent contract review ("accept with changes"); all six required changes applied
 target_version: v1.5.0
 development_dependency: ADR-031, ADR-037, ADR-041
 implements: V150-STAR-01 contract for STAR-02 and STAR-03
@@ -36,6 +39,17 @@ targets come from satellite definitions.
 - Bounds: at most 16 root bodies per catalog (new validation, in addition to
   the 128-body cap); root lookup is a bounded parent walk (depth ≤ 128), and
   the catalog precomputes each body's system once per reload.
+- **Compatibility impact.** The 16-root limit and the cross-system route rule
+  (below) can reject a data pack that is valid today, and they reject it as a
+  whole.
+  - On a reload the previous catalog stays active.
+  - On the initial load the server refuses to start, because
+    `PlanetaryDefinitionReloadListener` has no valid pair to apply. The log names
+    the rule (`too many root bodies: N > 16`, or
+    `route <id> connects systems <a> and <b>`). Operators remove or merge roots,
+    or split the route, and restart.
+  - A test covers initial-load refusal. The packaged data has one root and no
+    cross-system route.
 - The fixed baseline is unchanged: Earth must be a root mapped to the
   Overworld, and Moon and Space must be under Earth.
 
@@ -52,7 +66,12 @@ targets come from satellite definitions.
 
 - No new persistence. A body is **known** when it does not require discovery or
   has a recorded discovery (ADR-037). A system is known when any of its bodies is
-  known. Warp may target only an orbitable, known body in another system.
+  known. Warp targets follow ADR-044: any orbitable, known body other than the
+  current orbit, in the same system (relocation) or another one (interstellar).
+- System membership is **derived at each reload and never persisted**. A data pack
+  that re-parents a body moves existing stations between systems without a warp.
+  It can also change a pending warp's cost class, so ADR-044 computes the cost from
+  the catalog captured at commit.
 - The existing data-satellite research is the unlock path: a system's bodies are
   discovered like Mars. Their satellite definition targets are data (STAR-03).
 
@@ -61,14 +80,25 @@ targets come from satellite definitions.
 Add one original example system:
 
 - `advancedrocketrycommunity:tau_ceti`: root star, no Level, not landable or
-  orbitable, solar intensity 0, discovery required;
+  orbitable, solar intensity 0. **No discovery required**: the star is public and
+  is not a satellite target, so requiring discovery would lock it forever.
 - `advancedrocketrycommunity:tau_ceti_e`: planet under it, orbitable, not
   landable, no Level, solar intensity 0.5, discovery required.
 
-The system uses an existing visual profile; no art is imported, and the facts
-are public astronomy. The data satellite's allowed targets include `tau_ceti_e`.
-Generated data lands in a new `src/generated/v1.5/resources` directory. Earlier
-generated directories are unchanged inputs.
+The system uses an existing visual profile, and no art is imported. The star's
+real properties cannot be represented: temperature is bounded at 2,000 K and
+gravity at 4.0. The definitions therefore use **placeholder values** inside the
+schema bounds (gravity 0, a vacuum atmosphere profile, and a temperature within
+bounds). They are not literal astronomy. The system has no rocket routes, so a
+rocket docked at a station there cannot fly anywhere (disclosed; nothing is
+landable there).
+
+Packaging: the data satellite's allowed targets gain `tau_ceti_e` through a v1.5
+copy of `satellite_definitions/data_satellite.json` in the new
+`src/generated/v1.5/resources`. The integrator excludes the v1.4 copy (as the v0.8
+copy is already excluded) in `processResources` and `sourcesJar`, adds v1.4 to the
+DataGen `--existing` list, and reruns the one-authoritative-copy-per-resource audit
+(ADR-031/037). Earlier generated directories are otherwise unchanged inputs.
 
 ### Client
 
@@ -98,4 +128,20 @@ interstellar routes.
 Remove the example data and validation. No save or schema migration exists.
 Stations moved to another system by warp would reference a body that is missing
 after rollback. That is the existing unknown-orbit-body case: the station is
-retained, not remapped.
+retained, not remapped, and ADR-044 allows it an evacuation warp to any valid
+target.
+
+## Acceptance record
+
+An independent contract review found ADR-043 sound and feasible:
+
+- several roots are already accepted;
+- the star map lays out each root as its own row;
+- the snapshot codec has no single-root assumption;
+- the cross-system check can run inside the existing atomic reload pair.
+
+Its verdict was "accept with changes". All six required changes are applied
+above: target alignment with ADR-044, compatibility impact with a test,
+reload-derived membership, satellite packaging, placeholder star values and no
+discovery for the star, and evacuation for a missing orbit body. This is not a
+Gate approval.
