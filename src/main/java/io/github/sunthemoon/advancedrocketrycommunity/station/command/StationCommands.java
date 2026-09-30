@@ -219,9 +219,14 @@ public final class StationCommands {
         return Math.round(multiplier * 100.0D);
     }
 
-    /** {@code /execute as}, command blocks, functions and signs keep a different output source. */
-    private static boolean issuedBy(CommandSourceStack source, ServerPlayer player) {
-        return source.source == player;
+    /**
+     * The player's own, non-silent command source. {@code /execute as}, command blocks and signs
+     * keep a different output source; functions (including {@code /function} and advancement
+     * rewards) and silent mod calls run with suppressed output. For a player source,
+     * {@code withSuppressedOutput()} returns the same object exactly when it is already silent.
+     */
+    static boolean issuedBy(CommandSourceStack source, ServerPlayer player) {
+        return source.source == player && source.withSuppressedOutput() != source;
     }
 
     private static int rejected(CommandContext<CommandSourceStack> context, String action,

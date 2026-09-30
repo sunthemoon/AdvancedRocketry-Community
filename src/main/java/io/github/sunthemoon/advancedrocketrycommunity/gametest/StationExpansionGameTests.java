@@ -27,6 +27,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -100,6 +101,24 @@ public final class StationExpansionGameTests {
             expect(helper, owner, StationManagementCode.NO_CONFIRMATION,
                     "arce station expand confirm " + station.stationId(), "confirmation after /execute");
 
+            // Functions, advancement rewards and silent mod calls use the player's own source silently.
+            helper.assertTrue(run(dispatcher, owner.player().createCommandSourceStack().withSuppressedOutput(),
+                    "arce station expand") == 0, "A silent own-source request was accepted");
+            expect(helper, owner, StationManagementCode.NO_CONFIRMATION,
+                    "arce station expand confirm " + station.stationId(), "confirmation after silent request");
+            // A FakePlayer with the owner's UUID is not the connected player-list entity.
+            List<String> fakeReplies = new ArrayList<>();
+            FakePlayer fake = new FakePlayer(space, new GameProfile(ownerId, "expanderFake")) {
+                @Override
+                public void sendSystemMessage(Component message) {
+                    fakeReplies.add(message.getString());
+                }
+            };
+            fake.setPos(pad.getX() + 0.5D, pad.getY(), pad.getZ() + 0.5D);
+            helper.assertTrue(run(dispatcher, fake.createCommandSourceStack(), "arce station expand") == 0
+                    && fakeReplies.size() == 1 && fakeReplies.get(0).contains(notLocal),
+                    "A FakePlayer was accepted: " + fakeReplies);
+
             expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
             helper.assertTrue(owner.last().contains("expand confirm " + station.stationId()),
                     "Warning does not name the confirm command");
@@ -119,9 +138,12 @@ public final class StationExpansionGameTests {
             expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
             server.getPlayerList().remove(owner.player());
             online.remove(owner);
+            Mock stale = owner;
             owner = join(server, online, ownerId, false, space, pad);
             expect(helper, owner, StationManagementCode.NO_CONFIRMATION,
                     "arce station expand confirm " + station.stationId(), "confirmation after logout");
+            // The logged-out player object is no longer the connected entity for that UUID.
+            expect(helper, stale, StationManagementCode.NOT_LOCAL_PLAYER, "arce station expand", "stale player object");
 
             expect(helper, owner, StationManagementCode.ISSUED, "arce station expand", "owner request");
             data.declineInvitation(station.stationId(), inviteeId);

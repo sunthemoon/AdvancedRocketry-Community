@@ -1,0 +1,212 @@
+{
+  "archives": [
+    {
+      "bytes": 391155,
+      "excluded": [
+        "station-server/",
+        "attempt-01-failed/station-server/",
+        "__pycache__/",
+        "packaging/out/"
+      ],
+      "manifest": "native-checks-2-files.json",
+      "members": 258,
+      "name": "native-checks-2.zip",
+      "sha256": "c48160ff51dc575ee121dcfa277d574650d86b4154d96a2e41cf0ab0935373ad",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-native2-4e9521bbae2045b4b808f3cf37181cc8"
+    },
+    {
+      "bytes": 206378,
+      "excluded": [
+        "tree-89600ae/",
+        "mutA/",
+        "mutB/",
+        "fixchecks/",
+        "native/"
+      ],
+      "manifest": "independent-review-2-files.json",
+      "members": 33,
+      "name": "independent-review-2.zip",
+      "sha256": "506a4882d4a87905168fa2f4b8bfe2b5657995609291b006505ef4c677773a2a",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-station-rereview-3b46757017f240af9c1fe0632b7a9ec9"
+    }
+  ],
+  "fix_base": "f27b11a46f4897e12df93ea0bc1bf05fc0e30832",
+  "fix_tested_files": {
+    "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/StationExpansionProbe.java": "1cb2a64a518e8fc1baa151896efb729c009646fc7d18b4dd406d03df6f7809e1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationExpansionGameTests.java": "d620fb283eed223758f4a5d565c52dfbf4c38627b2ed201e15a25d57c3bbfcf3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java": "b26e2181d1929b1a6a10404cc1f1ace90b20ae39df43793f4d06683a01a19bd9"
+  },
+  "junit": {
+    "full_run": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "suites": 174,
+      "tests": 967
+    },
+    "gametests_required_passed": 239,
+    "test_task": "executed"
+  },
+  "native_summary": {
+    "celestial_visit_records_from_probe_players": {
+      "restart": {
+        "game_times": [],
+        "new_bodies": []
+      },
+      "upgrade": {
+        "game_times": [],
+        "new_bodies": []
+      },
+      "v14": {
+        "game_times": [
+          933
+        ],
+        "new_bodies": [
+          "advancedrocketrycommunity:space"
+        ]
+      }
+    },
+    "cycles": [
+      {
+        "exit_code": 0,
+        "expansion_lines": [],
+        "log_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 16
+        },
+        "migration_lines": [
+          "[08:21:20] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1001] Beta world data check complete: managed=4, migrated=0, backup=none"
+        ],
+        "observations": {
+          "markers_placed": "4 markers intact"
+        },
+        "phase": "v14-team",
+        "result": "PASS"
+      },
+      {
+        "exit_code": 0,
+        "expansion_lines": [
+          "[08:21:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=UNAUTHORIZED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=00000000-0000-0000-0000-000000001502 width=512 gravity_milli=0",
+          "[08:21:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=NOT_LOCAL_PLAYER station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=00000000-0000-0000-0000-000000001501 width=512 gravity_milli=0",
+          "[08:21:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=UNAUTHORIZED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=2947eae7-c1cb-415c-88df-236ec4c297e7 width=512 gravity_milli=0",
+          "[08:21:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=ISSUED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=00000000-0000-0000-0000-000000001501 width=512 gravity_milli=0",
+          "[08:21:43] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=confirm code=EXPANDED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=00000000-0000-0000-0000-000000001501 width=768 gravity_milli=0",
+          "[08:21:44] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=ALREADY_EXPANDED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=00000000-0000-0000-0000-000000001501 width=768 gravity_milli=0"
+        ],
+        "log_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 11
+        },
+        "migration_lines": [
+          "[08:21:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1002] Beta world data check complete: managed=4, migrated=1, backup=20260930T002139.137Z-managed"
+        ],
+        "observations": {
+          "checked_write_before_save": "matches expected expanded registry",
+          "console": "rejected",
+          "execute_as_owner": "rejected as non-local",
+          "markers_after_expansion": "4 markers intact",
+          "markers_after_migration": "4 markers intact",
+          "neighbor_after": "[08:21:43] [Server thread/INFO] [minecraft/MinecraftServer]: region=768,-256..1279,255 pad=1024,128,0 orbit=advancedrocketrycommunity:mars gravity_milli=0 vacuum=true",
+          "neighbor_before": "[08:21:42] [Server thread/INFO] [minecraft/MinecraftServer]: region=768,-256..1279,255 pad=1024,128,0 orbit=advancedrocketrycommunity:mars gravity_milli=0 vacuum=true",
+          "target_after": "[08:21:43] [Server thread/INFO] [minecraft/MinecraftServer]: region=-384,-384..383,383 pad=0,128,0 orbit=advancedrocketrycommunity:moon gravity_milli=0 vacuum=true",
+          "target_before": "[08:21:42] [Server thread/INFO] [minecraft/MinecraftServer]: region=-256,-256..255,255 pad=0,128,0 orbit=advancedrocketrycommunity:moon gravity_milli=0 vacuum=true"
+        },
+        "phase": "upgrade",
+        "result": "PASS"
+      },
+      {
+        "exit_code": 0,
+        "expansion_lines": [
+          "[08:22:01] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=ALREADY_EXPANDED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=00000000-0000-0000-0000-000000001501 width=768 gravity_milli=0",
+          "[08:22:01] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_STATION_EXPANSION action=request code=UNAUTHORIZED station=30499d22-70c4-43d8-bdfc-2f400eeea04e actor=2947eae7-c1cb-415c-88df-236ec4c297e7 width=768 gravity_milli=0"
+        ],
+        "log_counts": {
+          "client_linkage_failure_count": 0,
+          "error_count": 0,
+          "fatal_count": 0,
+          "project_error_count": 0,
+          "project_fatal_count": 0,
+          "project_warning_count": 0,
+          "warning_count": 10
+        },
+        "migration_lines": [
+          "[08:21:57] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-1001] Beta world data check complete: managed=4, migrated=0, backup=none"
+        ],
+        "observations": {
+          "markers_after_restart": "4 markers intact",
+          "neighbor_restart": "[08:22:00] [Server thread/INFO] [minecraft/MinecraftServer]: region=768,-256..1279,255 pad=1024,128,0 orbit=advancedrocketrycommunity:mars gravity_milli=0 vacuum=true",
+          "target_restart": "[08:22:00] [Server thread/INFO] [minecraft/MinecraftServer]: region=-384,-384..383,383 pad=0,128,0 orbit=advancedrocketrycommunity:moon gravity_milli=0 vacuum=true"
+        },
+        "phase": "restart",
+        "result": "PASS"
+      }
+    ],
+    "invitee": "00000000-0000-0000-0000-000000001502",
+    "java": "C:/Program Files/Java/jdk-17.0.7/bin/java.exe",
+    "markers": [
+      [
+        300,
+        128,
+        0,
+        "minecraft:gold_block"
+      ],
+      [
+        -320,
+        130,
+        40,
+        "minecraft:diamond_block"
+      ],
+      [
+        10,
+        129,
+        -370,
+        "minecraft:emerald_block"
+      ],
+      [
+        500,
+        128,
+        0,
+        "minecraft:lapis_block"
+      ]
+    ],
+    "member": "2947eae7-c1cb-415c-88df-236ec4c297e7",
+    "neighbor_station": "bca68d47-9961-4f2d-b798-26ffab48a74e",
+    "regions": {
+      "after": [
+        -384,
+        -384,
+        383,
+        383
+      ],
+      "before": [
+        -256,
+        -256,
+        255,
+        255
+      ]
+    },
+    "result": "PASS",
+    "scope": "v1.4-written team (player invite + admin transfer) and ring/gap block markers -> v1.5 migration + expansion by connected mock players (embedded channel) -> restart; no real clients, rocket data, unknown orbit body, crash cuts, power loss or load test",
+    "source_world": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v140-mig-worlds-608e947bd8c34249bc523f49858267b8\\server-final\\world",
+    "source_world_unchanged": true,
+    "successor_owner": "00000000-0000-0000-0000-000000001501",
+    "target_station": "30499d22-70c4-43d8-bdfc-2f400eeea04e"
+  },
+  "review_sha256": "770b4117821ef274f7cd78160a7413df71b783a3254a0a3a16c8a2fcb8c9b3b4",
+  "reviewed_commits": [
+    "e3d136f264e881b2da4516c94d0446242179ea77",
+    "89600aed700a984cb078ca92236da7a5a02a4e36"
+  ],
+  "schema_version": 1,
+  "scope": "Second review and its fixes; confirmation review pending"
+}

@@ -41,8 +41,10 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 final class StationExpansionProbe {
     private static final ResourceKey<Level> SPACE = ResourceKey.create(Registries.DIMENSION,
             ResourceLocation.tryParse("advancedrocketrycommunity:space"));
-    private static final Pattern ALLOWED = Pattern.compile(
-            "arce station expand( confirm [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?");
+    private static final String UUID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+    /** Expansion, and inviting another connected probe player (to write a native team). */
+    private static final Pattern ALLOWED = Pattern.compile("arce station expand( confirm " + UUID_PATTERN + ")?"
+            + "|arce station invite " + UUID_PATTERN + " probe[0-3]");
     private static final int MAX_PLAYERS = 4;
     private static final int MAX_MESSAGES = 16;
     private static final Map<UUID, Probe> PLAYERS = new LinkedHashMap<>();

@@ -1,0 +1,354 @@
+{
+  "links": [
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/18-V1PLUS-SOURCES.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/MACHINE-KERNEL-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.0.0-planning-integration/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/provenance/v1.0.0-v1plus-planning.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-machine-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-contract-draft.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-test-design.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-audit/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-process-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-port-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-pattern-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-lifecycle-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/05-v1.0-release-validation.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/06-implement-post-1.0-version.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/07-audit-post-1.0-version.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/08-remote-linux-environment-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.0.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/check-debian12-dev-host.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/tmux-arce-layout.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/start-xvfb-visual-smoke.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/validate_v1plus_planning.py"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/PUBLIC-API-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "compat-test-mod/README.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.3.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-033-PLANETARY-WORLDS-AND-SURFACE-ADMISSION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../src/adapterTest/"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_adapter_recovery_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_adapter_flight_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_atmosphere_boundary_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_suit_equipment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_component_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_fuel_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_environment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_satellite_payload_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_component_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_suit_equipment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_satellite_payload_smoke.py"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../versions/V1.5.0-ORBITAL-STATION-WARP.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-orbit-environment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "../decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-implementation-log.md",
+      "target": "v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-expansion/VERIFICATION.md",
+      "target": "../../decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-expansion/VERIFICATION.md",
+      "target": "../../provenance/v1.5.0-development-metadata.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-expansion/VERIFICATION.md",
+      "target": "../v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-native/VERIFICATION.md",
+      "target": "../../../compat-test-mod/README.md"
+    },
+    {
+      "document": "docs/work/v1.5.0-station-native/VERIFICATION.md",
+      "target": "../../decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

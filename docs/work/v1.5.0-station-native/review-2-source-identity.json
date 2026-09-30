@@ -1,0 +1,53 @@
+{
+  "base_commit": "f27b11a46f4897e12df93ea0bc1bf05fc0e30832",
+  "files": [
+    {
+      "bytes": 19709,
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "2df1160f9a7991633f6047223cd6ca56eae8f645d0f5eb99adeadd5f1b1d1802",
+      "working_sha256": "2df1160f9a7991633f6047223cd6ca56eae8f645d0f5eb99adeadd5f1b1d1802"
+    },
+    {
+      "bytes": 14405,
+      "path": "compat-test-mod/README.md",
+      "sha256": "ff1408d695ccff66854d51eeb14b541c749482e55f965aebd5c99cca001ce80d",
+      "working_sha256": "ff1408d695ccff66854d51eeb14b541c749482e55f965aebd5c99cca001ce80d"
+    },
+    {
+      "bytes": 2592,
+      "path": "docs/decisions/ADR-042-STATION-04-NATIVE-SCOPE.md",
+      "sha256": "845d89595f86b4333bbf2b19eaa5762ffff341ca0fb4f7e3f4db56b483993345",
+      "working_sha256": "845d89595f86b4333bbf2b19eaa5762ffff341ca0fb4f7e3f4db56b483993345"
+    },
+    {
+      "bytes": 25463,
+      "path": "docs/work/v1.5.0-implementation-log.md",
+      "sha256": "b9790f1d1d170388217e5251baf4f45ccec9684005d6e429fdb0a45f626ba33a",
+      "working_sha256": "b9790f1d1d170388217e5251baf4f45ccec9684005d6e429fdb0a45f626ba33a"
+    },
+    {
+      "bytes": 15347,
+      "path": "docs/work/v1.5.0-station-expansion/VERIFICATION.md",
+      "sha256": "4e9f21f8335d4ffbd169e3b2276b0b23530ea8100c2e0cf0f99f40278be446a5",
+      "working_sha256": "4e9f21f8335d4ffbd169e3b2276b0b23530ea8100c2e0cf0f99f40278be446a5"
+    },
+    {
+      "bytes": 9809,
+      "path": "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/StationExpansionProbe.java",
+      "sha256": "1cb2a64a518e8fc1baa151896efb729c009646fc7d18b4dd406d03df6f7809e1",
+      "working_sha256": "1cb2a64a518e8fc1baa151896efb729c009646fc7d18b4dd406d03df6f7809e1"
+    },
+    {
+      "bytes": 17201,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationExpansionGameTests.java",
+      "sha256": "d620fb283eed223758f4a5d565c52dfbf4c38627b2ed201e15a25d57c3bbfcf3",
+      "working_sha256": "d620fb283eed223758f4a5d565c52dfbf4c38627b2ed201e15a25d57c3bbfcf3"
+    },
+    {
+      "bytes": 19720,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java",
+      "sha256": "b26e2181d1929b1a6a10404cc1f1ace90b20ae39df43793f4d06683a01a19bd9",
+      "working_sha256": "b26e2181d1929b1a6a10404cc1f1ace90b20ae39df43793f4d06683a01a19bd9"
+    }
+  ]
+}

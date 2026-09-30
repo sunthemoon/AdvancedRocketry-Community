@@ -16,8 +16,9 @@ the world. `-Darce_adapter_test.stationSmoke=true` enables the permission-level-
 `arce_station_probe join|run|leave` commands for native station checks. `join`
 connects a mock player with the given UUID over an embedded channel (as vanilla
 GameTest does), loads only that player's own chunk and moves it into Space;
-`run` executes only `arce station expand` or `arce station expand confirm <id>`
-from that player's own command source; `leave` disconnects it. At most four probe
+`run` executes only `arce station expand`, `arce station expand confirm <id>` or
+`arce station invite <id> probe<0-3>` (another probe player) from that player's
+own command source; `leave` disconnects it. At most four probe
 players exist and all leave at server stop. Replies and the loaded-chunk count
 around the host command are logged. It uses no host internals and never writes
 host data itself; connecting players does write their normal player data.

@@ -213,5 +213,11 @@ NOT_IN_STATION 1, NOT_LOCAL_PLAYER 1, ALREADY_EXPANDED 1; confirm EXPANDED 2,
 NO_CONFIRMATION 4, NOT_LOCAL_PLAYER 2, CONFIRMATION_MISMATCH 1, STATION_CHANGED 1.
 Both failed runs are retained; their failures were test-assertion errors, and
 no assertion was weakened: each now checks the actual observable outcome.
+
+A second independent review then found that `/function`, advancement-reward
+functions and silent mod calls still used the player's own source. Expansion now
+also requires a non-silent source, and GameTests reject a FakePlayer, a stale
+player object and a silent own source. Details and evidence are in the
+[STATION-04 verification](../v1.5.0-station-native/VERIFICATION.md#independent-re-review-and-second-native-run).
 Development JARs from run 03: main `5225de27c1095858e7cff10ec830f38a5dbc18fb3d46e6e03e7ccb0cbaa6ea17`
 (2666519 bytes), API unchanged `50cc9ba02bc979c31e1579a840431247ffe8401114aff013ddf478f0765010bf`.

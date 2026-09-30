@@ -71,7 +71,7 @@ to be unchanged (satellite mission clock excepted, as before).
 | native harness attempt 01 | Exit 1; v1.4 phase passed; harness bug (method name shadowed by a field) at the first `join` |
 | native harness attempt 02 | Exit 1; all expansion checks passed; the "other authorities unchanged" oracle rejected the probe players' visit records |
 | native harness attempt 03 | Exit 0; PASS as above |
-| `gradlew clean build test runData runGameTestServer` | Exit 0, 139 s; 961 JUnit / 173 suites, 0 failures; all 238 GameTests passed; generated files unchanged |
+| `gradlew clean build test runData runGameTestServer` | Exit 0, 139 s; 961 JUnit / 173 suites, 0 failures, **restored FROM-CACHE** (`src/main` and `src/test` were unchanged since the STATION-03 fix round, whose run executed them); all 238 GameTests executed and passed; generated files unchanged |
 | `git diff --check` and the repository/planning/provenance validators | See the evidence archive |
 
 Both failed attempts are retained with their logs and native outputs. Attempt 02's
@@ -111,12 +111,63 @@ edits, `validate_repository.py --require-approved-identity` (45 passed),
 regression suite (15) and `git diff --check` all exited 0 (logs in `packaging/out/`,
 not in the ZIP).
 
-## Not covered; risks
+## Not covered; risks (first run)
 
-- No real networked client, invitations, multiplayer UI or long load. Native
-  invitations stay empty because only players can invite; synthetic fixtures cover them.
-- Rocket entities in chunk data are not compared; only managed authorities are.
-- Block contents of the added ring were not inspected natively; production code
-  never touches blocks (unit/GameTest evidence), and the platform check is GameTest-only.
+The first run above left invitations and ring blocks uncovered. Both are covered
+by the second run below. Rocket identities and the missing-orbit-body case are
+reassigned to V150-MIG-01 by
+[ADR-042](../../decisions/ADR-042-STATION-04-NATIVE-SCOPE.md), because this fixture
+world contains neither.
+
+- No real networked client, multiplayer UI or long load.
 - Crash cuts and power loss during the checked write are not exercised.
-- Independent review of this slice is pending; G0-G9 remain open.
+
+## Independent re-review and second native run
+
+A second independent review of `e3d136f` and `89600ae` (unmodified report, logs,
+mutation runs and evidence re-verification archived in `independent-review-2.zip`)
+found no Critical or High issues, and confirmed the evidence hashes and that the
+harness oracles are not vacuous. Findings and handling:
+
+| ID | Severity | Finding | Handling |
+|---|---|---|---|
+| M1 | Medium | STATION-04 native acceptance only partly covered; the rocket/context TODO was dropped | Second run adds a v1.4-written invitation and ring/gap block markers; rocket identities and the missing-orbit-body case moved to MIG-01 by ADR-042; TODO restored as a MIG-01 obligation |
+| L1 | Low | The player's own source is also used silently by `/function`, advancement-reward functions and silent mod calls | Expansion and gravity now also require a non-silent source. For a player source, `withSuppressedOutput()` returns the same object exactly when it is already silent. A mod calling a command non-silently as the player remains trusted code |
+| L2 | Low | No test of the player-list check | The GameTest now rejects a FakePlayer with the owner's UUID, the logged-out owner's stale player object and a silent own source (all `NOT_LOCAL_PLAYER`) |
+| L3 | Low | "961 JUnit passed" was restored from cache | Stated in the table above; the second run executed `:test` |
+
+Second native run (`native-checks-2.zip`), same retained v1.4 world copy:
+
+1. **v14-team** (pinned v1.4 host, rebuilt fixture): the connected owner ran the
+   v1.4 host's `arce station invite <station> probe1` for a second connected player
+   (reply "Invitation recorded for probe1"). The console placed four markers
+   (gold, diamond and emerald blocks in the ring at 300,128,0, -320,130,40 and
+   10,129,-370; a lapis block in the gap at 500,128,0) using forceload and setblock.
+   Then the admin transfer made the old owner a member. The v1.4-written payload has
+   owner = successor, members = [old owner], invitations = [invitee], and no other
+   change. The only celestial change is the probe players' visit records (time 933).
+2. **upgrade**: migration 1; all markers pass `execute if block` after migration
+   and after expansion; the invitee's and the member's requests are rejected; the
+   console and `execute as <owner>` are rejected; the owner expands and the file is
+   expanded before save-all. The stored payload equals the v1.4-written payload with
+   versions bumped and only the target region widened, invitation included.
+3. **restart**: no migration or backup; markers intact; region, members and
+   invitation retained; the repeat is idempotent and the member is rejected.
+
+Every phase has 0 ERROR and 0 project WARN; the source world is unchanged. One
+earlier attempt failed because `setblock` needs a loaded chunk; it is retained in
+`attempt-01-failed/`. Forceload replies were read from the log: "Marked chunk" /
+"Unmarked chunk" / "No chunks were marked" only, never "not loaded".
+
+`independent-review-2.zip` excludes the reviewer's three full repository exports
+(`tree-89600ae/`, `mutA/`, `mutB/` with their build output, about 1.5 GB) and
+its re-extracted copies of already committed evidence ZIPs (`fixchecks/`,
+`native/`). The exports can be regenerated from the commit and the archived
+`mutate.py`; the mutation logs and summaries are included. `review-2.json` records
+both archives. `review-2-source-identity.json` and `review-2-links.json` bind this
+fix commit, whose base is `f27b11a`.
+
+Full required run for this fix: exit 0, 172 s; `:test` executed, 967 JUnit /
+174 suites, 0 failures; all 239 GameTests passed; generated files unchanged. The
+main JAR `8f2d12347e21998083585c2aaa32f950d7d40adfd720a51e3bb24a0f4c0b0a29` equals
+the one used by the native run; the API JAR is unchanged.
