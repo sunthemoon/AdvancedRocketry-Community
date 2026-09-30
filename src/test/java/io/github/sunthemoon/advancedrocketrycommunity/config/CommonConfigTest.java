@@ -35,8 +35,21 @@ class CommonConfigTest {
     void obsoleteUnconsumedLifecycleToggleIsNotExposed() {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
         // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing,
-        // the three ADR-049 survey scan limits and the ten ADR-050 registry limits.
-        assertEquals(19, countValues(CommonConfig.SPEC.getValues()));
+        // the three ADR-049 survey scan limits, the ten ADR-050 registry limits and the three ADR-051/052
+        // resource mission values.
+        assertEquals(22, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void resourceMissionValuesHaveTheirContractRanges() {
+        assertRangeAndDefault("satellites.asteroidInstanceTtlTicks", CommonConfig.ASTEROID_INSTANCE_TTL_TICKS, 24_000,
+                1_728_000, 168_000);
+        assertRangeAndDefault("satellites.asteroidMissionTimePercent", CommonConfig.ASTEROID_MISSION_TIME_PERCENT, 10,
+                1_000, 100);
+        assertRangeAndDefault("satellites.gasMissionTimePercent", CommonConfig.GAS_MISSION_TIME_PERCENT, 10, 1_000, 100);
+        assertEquals(168_000, CommonConfig.asteroidInstanceTtlTicks(), "the default applies until the config loads");
+        assertEquals(100, CommonConfig.asteroidMissionTimePercent());
+        assertEquals(100, CommonConfig.gasMissionTimePercent());
     }
 
     @Test
@@ -129,6 +142,18 @@ class CommonConfigTest {
         assertEquals(maximum, value.getDefault());
         assertTrue(spec.test(minimum));
         assertTrue(spec.test(maximum));
+        assertFalse(spec.test(minimum - 1));
+        assertFalse(spec.test(maximum + 1));
+    }
+
+    private static void assertRangeAndDefault(String path, ForgeConfigSpec.IntValue value, int minimum, int maximum,
+                                              int defaultValue) {
+        ForgeConfigSpec.ValueSpec spec = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get(path));
+        ForgeConfigSpec.Range<Integer> range = spec.getRange();
+        assertEquals(minimum, range.getMin());
+        assertEquals(maximum, range.getMax());
+        assertEquals(defaultValue, value.getDefault());
         assertFalse(spec.test(minimum - 1));
         assertFalse(spec.test(maximum + 1));
     }

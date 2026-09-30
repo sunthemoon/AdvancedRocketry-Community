@@ -9,8 +9,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.gametest.GameTestHolder;
 
 /**
- * Serial, batch-owned satellite registries: a fresh one for the flush-failure batch and a blocked one (a future
- * root, ADR-050 section 9) for the fail-closed batch. The original registry is restored and saved afterwards,
+ * Serial, batch-owned satellite registries: a fresh one for the flush-failure and resource batches and a blocked one
+ * (a future root, ADR-050 section 9) for the fail-closed batch. The original registry is restored and saved afterwards,
  * even after a failed test.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
@@ -18,6 +18,8 @@ public final class SatelliteRegistryFixture {
     public static final String FLUSH_FAILURE_BATCH = "satellite_flush_failure";
     public static final String BLOCKED_BATCH = "satellite_blocked";
     public static final String LIFECYCLE_BATCH = "satellite_lifecycle";
+    /** ADR-051 A1: a fresh registry whose logical clock the resource tests advance. */
+    public static final String RESOURCE_BATCH = "satellite_resources";
     /** In the lifecycle batch: a mission whose satellite is gone, and a satellite whose mission is gone. */
     static java.util.UUID orphanMission;
     static java.util.UUID strandedSatellite;
@@ -94,6 +96,16 @@ public final class SatelliteRegistryFixture {
 
     @AfterBatch(batch = LIFECYCLE_BATCH)
     public static void afterLifecycle(ServerLevel level) {
+        restore(level);
+    }
+
+    @BeforeBatch(batch = RESOURCE_BATCH)
+    public static void beforeResources(ServerLevel level) {
+        install(level, SatelliteMissionSavedData.create(level.getServer().overworld().getGameTime()));
+    }
+
+    @AfterBatch(batch = RESOURCE_BATCH)
+    public static void afterResources(ServerLevel level) {
         restore(level);
     }
 

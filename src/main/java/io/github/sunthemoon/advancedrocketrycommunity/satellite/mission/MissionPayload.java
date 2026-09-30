@@ -83,6 +83,23 @@ public sealed interface MissionPayload {
                 throw new IllegalArgumentException("Acknowledgement epoch cannot be negative");
             }
         }
+
+        /** Paid at this terminal and not yet acknowledged (ADR-051 section 6). */
+        public Resource paidAt(UUID terminal) {
+            return new Resource(kind, reward, boundTerminal, boundTerminalDisplay, rebound, Optional.of(terminal), false,
+                    OptionalLong.empty());
+        }
+
+        /** The paying terminal saw its receipt persisted at this epoch (ADR-051 section 7). */
+        public Resource acknowledgedAt(long epoch) {
+            return new Resource(kind, reward, boundTerminal, boundTerminalDisplay, rebound, paidTerminal, true,
+                    OptionalLong.of(epoch));
+        }
+
+        /** Bound to another terminal (an operator rebind, or the bind-back of section 7). */
+        public Resource boundTo(UUID terminal, Optional<TerminalLocation> display, boolean reboundNow) {
+            return new Resource(kind, reward, terminal, display, reboundNow, paidTerminal, acknowledged, ackEpoch);
+        }
     }
 
     /** Display-only position of a bound terminal. */

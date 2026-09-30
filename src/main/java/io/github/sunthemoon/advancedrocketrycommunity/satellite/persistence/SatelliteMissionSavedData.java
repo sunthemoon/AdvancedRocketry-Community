@@ -118,6 +118,41 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         return result;
     }
 
+    /** ADR-051 operations: one registry mutation; a changed record waits for the coalesced flush (ADR-050 §2). */
+    public SatelliteOperationResult resources(
+            java.util.function.Function<io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions,
+                    SatelliteOperationResult> operation) {
+        requireOperational();
+        SatelliteOperationResult result = operation.apply(registry.resources());
+        if (result.changed()) {
+            changed();
+        }
+        return result;
+    }
+
+    /** ADR-051 section 7 for one mission; a blocked registry changes nothing and refuses resource actions. */
+    public io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions.Reconciled reconcile(
+            UUID terminal, UUID missionId,
+            io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.DeliveryReconciliation.ReceiptView receipt,
+            Optional<io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionPayload.TerminalLocation> display,
+            long observedGameTime) {
+        if (!operational()) {
+            return io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions.Reconciled.blocked();
+        }
+        var reconciled = registry.resources().reconcile(terminal, missionId, receipt, display, observedGameTime);
+        if (reconciled.changed()) {
+            changed();
+        }
+        return reconciled;
+    }
+
+    /** A read of the ADR-051 indexes (bound missions, instances); refused on a blocked registry. */
+    public <T> T resourceQuery(java.util.function.Function<
+            io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions, T> query) {
+        requireOperational();
+        return query.apply(registry.resources());
+    }
+
     public Optional<AsteroidInstance> instance(UUID instanceId) {
         return operational() ? registry.instance(instanceId) : Optional.empty();
     }

@@ -210,6 +210,16 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(new SatelliteCommands(satelliteManager, resourceTables)::register);
+        // ADR-051: resource missions, terminal delivery and the chunk-tag persistence signal.
+        var resourceMissions = new io.github.sunthemoon.advancedrocketrycommunity.satellite.service
+                .ResourceMissionService(satelliteCatalogs, celestialCatalogs, resourceTables);
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.service.ResourceMissionRuntime.install(resourceMissions);
+        var terminalChunks = new io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.TerminalChunkEvents(
+                ModIdentity.id("satellite_terminal").toString());
+        MinecraftForge.EVENT_BUS.addListener(terminalChunks::onLoad);
+        MinecraftForge.EVENT_BUS.addListener(terminalChunks::onSave);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.satellite.command
+                .ResourceMissionCommands(resourceMissions)::register);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
@@ -361,6 +371,7 @@ public final class AdvancedRocketryCommunity {
         multiblockPatterns.clear();
         StationRuntime.clear();
         SatelliteRuntime.clear();
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.service.ResourceMissionRuntime.clear();
         planetaryCatalogs.clear();
         satelliteComponents.clear();
         resourceTables.clear();

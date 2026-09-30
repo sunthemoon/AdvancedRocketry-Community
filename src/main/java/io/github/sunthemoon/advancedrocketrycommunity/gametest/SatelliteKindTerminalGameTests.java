@@ -93,8 +93,12 @@ public final class SatelliteKindTerminalGameTests {
                 "A replayed package was not consumed");
         helper.assertTrue(data.satellites().stream().filter(value -> value.satelliteId().equals(identity.satelliteId()))
                 .count() == 1, "A replay registered a second satellite");
-        // Without a package, a survey chip has no data mission to start.
-        press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.DEFINITION_NOT_FOUND);
+        // C8b (ADR-051 section 3): without a package, a survey chip starts a survey of its orbit's system.
+        press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.SUCCESS);
+        helper.assertTrue(data.satellite(identity.satelliteId()).orElseThrow().currentMissionId()
+                        .flatMap(data::mission).filter(mission -> mission.kind()
+                                == io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind.SURVEY)
+                        .isPresent(), "A survey chip without a package did not start a survey");
         helper.succeed();
     }
 

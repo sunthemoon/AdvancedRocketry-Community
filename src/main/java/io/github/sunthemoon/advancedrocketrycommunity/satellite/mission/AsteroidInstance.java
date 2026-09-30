@@ -75,4 +75,10 @@ public record AsteroidInstance(
                 candidateFingerprint, seed, yield, createdAt, expiresAt, InstanceState.QUARANTINED, sourceMission,
                 allocatedMission);
     }
+
+    /** A lifecycle transition (ADR-051 section 2); the record constructor checks the combination. */
+    public AsteroidInstance transition(InstanceState next, OptionalLong nextExpiresAt, Optional<UUID> nextAllocation) {
+        return new AsteroidInstance(schemaVersion, instanceId, ownerId, system, asteroidType, tableVersion,
+                candidateFingerprint, seed, yield, createdAt, nextExpiresAt, next, sourceMission, nextAllocation);
+    }
 }

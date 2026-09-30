@@ -8,10 +8,11 @@ public record SchedulerPass(
         int inspectedEntries,
         int staleEntries,
         int remainingScheduled,
-        int pruned
+        int pruned,
+        int instanceChanges
 ) {
     /** Whether the pass changed records (not only the clock). */
     public boolean changed() {
-        return completed > 0 || pruned > 0;
+        return completed > 0 || pruned > 0 || instanceChanges > 0;
     }
 }

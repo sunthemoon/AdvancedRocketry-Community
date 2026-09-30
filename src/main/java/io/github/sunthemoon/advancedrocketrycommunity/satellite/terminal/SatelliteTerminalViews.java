@@ -19,7 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Composes and paces the ADR-049 section 10 terminal view for one open menu: sent on open and on change,
- * at most once per 5 ticks. Resource-mission sections stay empty until their missions exist (ADR-051).
+ * at most once per 5 ticks, with the ADR-051 instance, product, bound-mission and reward-buffer sections.
  */
 public final class SatelliteTerminalViews {
     public static final int SEND_INTERVAL_TICKS = 5;
@@ -76,8 +76,10 @@ public final class SatelliteTerminalViews {
         Optional<ResourceLocation> orbitBody = server == null ? Optional.empty()
                 : chip.flatMap(identity -> SatelliteRuntime.satellite(server, identity.satelliteId()))
                         .flatMap(SatelliteState::orbitBody);
+        TerminalResourceActions.Sections sections = terminal.resourceSections(server);
         return new SatelliteTerminalViewPacket(containerId, Optional.of(kind), definition, target, orbitBody,
-                Selection.NONE, Optional.empty(), Selection.NONE, 0, 0, List.of(), List.of());
+                sections.instance(), sections.instanceView(), sections.product(), sections.page(), sections.pages(),
+                sections.missions(), sections.buffer());
     }
 
     private static Selection definitionSelection(ResourceLocation id, SatelliteKind kind,

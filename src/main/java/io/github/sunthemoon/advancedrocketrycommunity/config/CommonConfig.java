@@ -118,6 +118,16 @@ public final class CommonConfig {
             .defineInRange("satellites.selectionIntervalTicks", RegistryLimits.MIN_SELECTION_TICKS,
                     RegistryLimits.MIN_SELECTION_TICKS, RegistryLimits.MAX_INTERVAL_TICKS);
 
+    public static final ForgeConfigSpec.IntValue ASTEROID_INSTANCE_TTL_TICKS = BUILDER
+            .comment("Logical ticks a surveyed asteroid instance stays AVAILABLE (ADR-051; 24,000..1,728,000).")
+            .defineInRange("satellites.asteroidInstanceTtlTicks", 168_000, 24_000, 1_728_000);
+    public static final ForgeConfigSpec.IntValue ASTEROID_MISSION_TIME_PERCENT = BUILDER
+            .comment("Asteroid mission duration in percent of the asteroid-v1 formula (ADR-052; 10..1,000).")
+            .defineInRange("satellites.asteroidMissionTimePercent", 100, 10, 1_000);
+    public static final ForgeConfigSpec.IntValue GAS_MISSION_TIME_PERCENT = BUILDER
+            .comment("Gas mission duration in percent of the gas-v1 base duration (ADR-052; 10..1,000).")
+            .defineInRange("satellites.gasMissionTimePercent", 100, 10, 1_000);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-050 section 6 admission limits; the defaults (also the maxima) until the COMMON config is loaded. */
@@ -143,6 +153,19 @@ public final class CommonConfig {
         }
         return new ScanSettings(SURVEY_SCAN_JOB_LIMIT.get(), SURVEY_SCAN_COOLDOWN_TICKS.get(),
                 SURVEY_SCAN_READS_PER_TICK.get());
+    }
+
+    /** ADR-051/052 resource mission settings; the defaults until the COMMON config is loaded. */
+    public static int asteroidInstanceTtlTicks() {
+        return SPEC.isLoaded() ? ASTEROID_INSTANCE_TTL_TICKS.get() : ASTEROID_INSTANCE_TTL_TICKS.getDefault();
+    }
+
+    public static int asteroidMissionTimePercent() {
+        return SPEC.isLoaded() ? ASTEROID_MISSION_TIME_PERCENT.get() : ASTEROID_MISSION_TIME_PERCENT.getDefault();
+    }
+
+    public static int gasMissionTimePercent() {
+        return SPEC.isLoaded() ? GAS_MISSION_TIME_PERCENT.get() : GAS_MISSION_TIME_PERCENT.getDefault();
     }
 
     /** Current warp settings; defaults until the COMMON config is loaded. */

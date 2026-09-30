@@ -85,11 +85,47 @@ public final class V160LanguageProvider extends LanguageProvider {
         add("screen.advancedrocketrycommunity.satellite.kind_idle",
                 chinese ? "%s：等待发射" : "%s  AWAITING LAUNCH");
 
+        addDelivery();
         for (SatelliteOperationCode code : SatelliteOperationCode.values()) {
             if (code.ordinal() > SatelliteOperationCode.SERVER_ERROR.ordinal()) {
                 add(code.translationKey(), chinese ? chinese(code) : english(code));
             }
         }
+    }
+
+    /** ADR-051 terminal delivery panel, mission kinds and the built-in asteroid types. */
+    private void addDelivery() {
+        String prefix = "screen.advancedrocketrycommunity.satellite.delivery.";
+        add(prefix + "title", chinese ? "资源交付" : "DELIVERY");
+        add(prefix + "withdraw", chinese ? "取出" : "WITHDRAW");
+        add(prefix + "page", chinese ? "翻页" : "PAGE");
+        add(prefix + "instance", chinese ? "%s（%s/%s）" : "%s (%s/%s)");
+        add(prefix + "product", chinese ? "%s（%s/%s）" : "%s (%s/%s)");
+        add(prefix + "expires", chinese ? "%s 秒后过期" : "Expires in %ss");
+        add(prefix + "none", chinese ? "无可选实例或产物" : "No instance or product");
+        add(prefix + "entry", "%s × %s");
+        add(prefix + "more", chinese ? "……另有 %s 项" : "... %s more");
+        add(prefix + "buffer", chinese ? "缓冲区 %s/%s" : "BUFFER %s/%s");
+        add(prefix + "missions", chinese ? "绑定任务 %s/%s" : "MISSIONS %s/%s");
+        add(prefix + "mission", chinese ? "%s %s %s秒 %s件" : "%s %s %ss %s items");
+        add(prefix + "no_missions", chinese ? "没有绑定到此终端的任务" : "No missions bound here");
+        for (String kind : new String[]{"data", "survey", "asteroid", "gas"}) {
+            add("mission_kind.advancedrocketrycommunity." + kind, chinese ? switch (kind) {
+                case "data" -> "数据";
+                case "survey" -> "勘测";
+                case "asteroid" -> "小行星";
+                default -> "气体";
+            } : switch (kind) {
+                case "data" -> "Data";
+                case "survey" -> "Survey";
+                case "asteroid" -> "Asteroid";
+                default -> "Gas";
+            });
+        }
+        add("asteroid_type.advancedrocketrycommunity.small_asteroid", chinese ? "小型小行星" : "Small asteroid");
+        add("asteroid_type.advancedrocketrycommunity.light_asteroid", chinese ? "轻质小行星" : "Light asteroid");
+        add("asteroid_type.advancedrocketrycommunity.rich_asteroid", chinese ? "富矿小行星" : "Rich asteroid");
+        add("asteroid_type.advancedrocketrycommunity.strange_asteroid", chinese ? "奇异小行星" : "Strange asteroid");
     }
 
     private static String english(SatelliteKind kind) {
@@ -127,6 +163,9 @@ public final class V160LanguageProvider extends LanguageProvider {
             case TERMINAL_MISSING -> "The bound terminal is missing";
             case NO_ASTEROID_TYPES -> "No asteroid types match this system";
             case BODY_UNAVAILABLE -> "The satellite's orbit body is unavailable";
+            case WRONG_TERMINAL -> "This mission is bound to another terminal";
+            case RECONCILING -> "The terminal is reconciling its missions; try again";
+            case INSTANCE_NOT_FOUND -> "No such asteroid instance";
             default -> throw new IllegalArgumentException("Translated before v1.6: " + code);
         };
     }
@@ -146,6 +185,9 @@ public final class V160LanguageProvider extends LanguageProvider {
             case TERMINAL_MISSING -> "绑定的终端已丢失";
             case NO_ASTEROID_TYPES -> "没有适用于该星系的小行星类型";
             case BODY_UNAVAILABLE -> "卫星所绕天体不可用";
+            case WRONG_TERMINAL -> "该任务绑定在另一个终端";
+            case RECONCILING -> "终端正在核对任务，请稍后再试";
+            case INSTANCE_NOT_FOUND -> "没有该小行星实例";
             default -> throw new IllegalArgumentException("Translated before v1.6: " + code);
         };
     }

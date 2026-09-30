@@ -169,6 +169,12 @@ public final class SatelliteCommands {
                 missionId,
                 actor(context.getSource())
         );
+        if (result.success() && result.mission().filter(mission -> mission.kind().resource()).isPresent()) {
+            // ADR-051 section 10: an operator cancel of an asteroid or gas mission is a delivery event too.
+            io.github.sunthemoon.advancedrocketrycommunity.satellite.service.ResourceMissionRuntime.service()
+                    .ifPresent(service -> service.audit(context.getSource().getServer(), "CANCEL",
+                            result.mission().orElseThrow(), null, "by=operator"));
+        }
         return audit(context, "mission_cancel", missionId, result);
     }
 
@@ -485,10 +491,33 @@ public final class SatelliteCommands {
         return Component.literal("mission=" + state.missionId()
                 + " satellite=" + state.satelliteId()
                 + " owner=" + state.ownerId()
+                + " kind=" + state.kind().id()
                 + " target=" + state.targetBodyId()
                 + " status=" + state.status()
                 + " deadline=" + state.completesAtLogicalTime()
-                + " research=" + state.researchYield());
+                + state.quarantine().map(held -> " quarantine=" + held.reason() + " receipt_seen="
+                        + held.receiptSeen()).orElse("")
+                + payloadSummary(state));
+    }
+
+    /** Kind payload fields; for asteroid and gas the ADR-051 section 10 delivery state. */
+    private static String payloadSummary(MissionState state) {
+        if (state.payload() instanceof io.github.sunthemoon.advancedrocketrycommunity.satellite.mission
+                .MissionPayload.Resource resource) {
+            return " bound_terminal=" + resource.boundTerminal() + " rebound=" + resource.rebound()
+                    + " paid_terminal=" + resource.paidTerminal().map(UUID::toString).orElse("none")
+                    + " acknowledged=" + resource.acknowledged()
+                    + " ack_epoch=" + (resource.ackEpoch().isPresent() ? resource.ackEpoch().getAsLong() : "none")
+                    + " reward_items=" + resource.reward().stream().mapToInt(entry -> entry.count()).sum()
+                    + " last_reconciliation=" + io.github.sunthemoon.advancedrocketrycommunity.satellite.service
+                    .ResourceMissionRuntime.service().flatMap(service -> service.lastReconciliation(state.missionId()))
+                    .orElse("none");
+        }
+        if (state.payload() instanceof io.github.sunthemoon.advancedrocketrycommunity.satellite.mission
+                .MissionPayload.Survey survey) {
+            return " instances=" + survey.instances().size() + " fingerprint=" + survey.candidateFingerprint();
+        }
+        return " research=" + state.researchYield();
     }
 
     private static UUID actor(CommandSourceStack source) {

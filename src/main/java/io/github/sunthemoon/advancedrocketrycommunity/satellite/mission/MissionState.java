@@ -281,4 +281,39 @@ public record MissionState(
             case QUARANTINED -> throw new IllegalArgumentException("Quarantine phase must use its previous status");
         }
     }
+
+    /** Replaces the kind payload (same kind); status and times are unchanged. */
+    public MissionState withPayload(MissionPayload next) {
+        if (next.kind() != kind) {
+            throw new IllegalArgumentException("A payload cannot change the mission kind");
+        }
+        return new MissionState(schemaVersion, missionId, satelliteId, ownerId, definitionId, kind, targetBodyId,
+                instanceId, seed, startedAtLogicalTime, completesAtLogicalTime, startEpoch, status, readyAtLogicalTime,
+                resolvedAtLogicalTime, rewardVersion, quarantine, next);
+    }
+
+    /**
+     * ADR-051 sections 6–7: an ACTIVE or READY mission becomes CLAIMED with this payload. A mission claimed while the
+     * registry still said ACTIVE (the chunk was ahead) is recorded as ready at its deadline.
+     */
+    public MissionState claimWith(long logicalTime, MissionPayload next) {
+        if (status != MissionStatus.ACTIVE && status != MissionStatus.READY) {
+            throw new IllegalStateException("Only an active or ready mission can be claimed");
+        }
+        long ready = readyAtLogicalTime.orElse(completesAtLogicalTime);
+        return new MissionState(schemaVersion, missionId, satelliteId, ownerId, definitionId, kind, targetBodyId,
+                instanceId, seed, startedAtLogicalTime, completesAtLogicalTime, startEpoch, MissionStatus.CLAIMED,
+                OptionalLong.of(ready), OptionalLong.of(Math.max(ready, logicalTime)), rewardVersion, Optional.empty(),
+                next);
+    }
+
+    /** ADR-051 section 7: a terminal reported a receipt for this quarantined mission. */
+    public MissionState markReceiptSeen() {
+        requireStatus(MissionStatus.QUARANTINED);
+        MissionQuarantine held = quarantine.orElseThrow();
+        return new MissionState(schemaVersion, missionId, satelliteId, ownerId, definitionId, kind, targetBodyId,
+                instanceId, seed, startedAtLogicalTime, completesAtLogicalTime, startEpoch, status, readyAtLogicalTime,
+                resolvedAtLogicalTime, rewardVersion,
+                Optional.of(new MissionQuarantine(held.reason(), held.previousStatus(), true)), payload);
+    }
 }

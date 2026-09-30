@@ -9,8 +9,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.DeliveryEndpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatellitePayloadRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
 import java.util.List;
@@ -43,7 +45,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 
-public final class SatelliteTerminalBlockEntity extends BlockEntity implements MenuProvider {
+public final class SatelliteTerminalBlockEntity extends BlockEntity implements MenuProvider, DeliveryEndpoint {
     public static final int SLOT_CHASSIS = 0;
     public static final int SLOT_SOLAR_MODULE = 1;
     public static final int SLOT_DATA_STORAGE = 2;
@@ -57,12 +59,17 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     public static final int ASSEMBLY_ENERGY = 1_000;
     public static final int LAUNCH_POWER_THRESHOLD = 2_000;
 
-    private static final int SCHEMA_VERSION = 1;
+    /** Root schema 2 adds the ADR-051 delivery section; schema-1 roots load with empty sections. */
+    private static final int SCHEMA_VERSION = 2;
+    private static final java.util.Set<String> SCALAR_KEYS = java.util.Set.of(
+            "schema_version", "inventory", "energy", "selected_target", "last_result", "owner_id");
     private static final int MAX_TERMINAL_NBT_BYTES = 64 * 1024;
     static final String DATA_KEY = "SatelliteTerminal";
 
     private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(), this::inventoryChanged);
     private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage();
+    private TerminalDelivery delivery = TerminalDelivery.create();
+    private final TerminalResourceActions resources = new TerminalResourceActions(this);
     private LazyOptional<net.minecraftforge.items.IItemHandler> itemCapability = LazyOptional.empty();
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.empty();
 
@@ -95,6 +102,54 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         if (state.getValue(SatelliteTerminalBlock.LIT) != lit) {
             level.setBlock(position, state.setValue(SatelliteTerminalBlock.LIT, lit), Block.UPDATE_CLIENTS);
         }
+        if (!terminal.blocked() && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            terminal.resources.tick(serverLevel);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && !level.isClientSide) {
+            resources.unregister(level);
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        if (level != null && !level.isClientSide) {
+            resources.unregister(level);
+        }
+    }
+
+    @Override
+    public UUID terminalId() {
+        return delivery.terminalId();
+    }
+
+    @Override
+    public boolean terminalIdPersisted() {
+        return delivery.idPersisted();
+    }
+
+    TerminalDelivery delivery() {
+        return delivery;
+    }
+
+    TerminalResourceActions.Sections resourceSections(MinecraftServer server) {
+        return resources.sections(server, chipIdentity());
+    }
+
+    /** ADR-051 section 5: this terminal's entry of a chunk save tag held this ID and these receipts. */
+    void observedPersisted(UUID id, java.util.Collection<UUID> receipts) {
+        if (!blocked()) {
+            delivery.observed(id, receipts);
+        }
+    }
+
+    UUID ownerOrNil() {
+        return ownerId == null ? new UUID(0L, 0L) : ownerId;
     }
 
     public void setOwner(UUID owner) {
@@ -130,6 +185,11 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         switch (buttonId) {
             case SatelliteTerminalMenu.BUTTON_PREVIOUS -> selectTarget(-1);
             case SatelliteTerminalMenu.BUTTON_NEXT -> selectTarget(1);
+            case SatelliteTerminalMenu.BUTTON_OPTION_PREVIOUS, SatelliteTerminalMenu.BUTTON_OPTION_NEXT ->
+                    chipFor(player).ifPresent(chip -> updateResult(player, resources.select(player, chip,
+                            buttonId == SatelliteTerminalMenu.BUTTON_OPTION_NEXT ? 1 : -1)));
+            case SatelliteTerminalMenu.BUTTON_WITHDRAW -> updateResult(player, resources.withdraw(player));
+            case SatelliteTerminalMenu.BUTTON_PAGE -> resources.nextPage(player.getServer());
             case SatelliteTerminalMenu.BUTTON_ASSEMBLE -> assemble(player);
             case SatelliteTerminalMenu.BUTTON_LAUNCH -> launchOrStart(player);
             case SatelliteTerminalMenu.BUTTON_CLAIM -> claim(player);
@@ -220,12 +280,12 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             updateResult(player, SatelliteOperationCode.NO_POWER);
             return;
         }
-        SatelliteIdentity chip = validOwnedIdentity(
-                player,
-                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
-                ModItems.SATELLITE_CONTROL_CHIP.get()
-        ).orElse(null);
+        SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip == null) {
+            return;
+        }
+        if (inventory.getStackInSlot(SLOT_PACKAGE).isEmpty() && chip.kind() != SatelliteKind.DATA) {
+            updateResult(player, resources.start(player, chip));
             return;
         }
         ResourceLocation target = selectedTarget();
@@ -261,29 +321,21 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     }
 
     private void claim(ServerPlayer player) {
-        SatelliteIdentity chip = validOwnedIdentity(
-                player,
-                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
-                ModItems.SATELLITE_CONTROL_CHIP.get()
-        ).orElse(null);
+        SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip == null) {
             return;
         }
-        SatelliteOperationResult result = SatelliteRuntime.claim(player, chip);
-        updateResult(player, result.code());
+        updateResult(player, chip.kind() == SatelliteKind.DATA ? SatelliteRuntime.claim(player, chip).code()
+                : resources.claim(player, chip));
     }
 
     private void cancel(ServerPlayer player) {
-        SatelliteIdentity chip = validOwnedIdentity(
-                player,
-                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
-                ModItems.SATELLITE_CONTROL_CHIP.get()
-        ).orElse(null);
+        SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip == null) {
             return;
         }
-        SatelliteOperationResult result = SatelliteRuntime.cancel(player, chip);
-        updateResult(player, result.code());
+        boolean delivered = chip.kind() == SatelliteKind.ASTEROID_MINER || chip.kind() == SatelliteKind.GAS_HARVESTER;
+        updateResult(player, delivered ? resources.cancel(player, chip) : SatelliteRuntime.cancel(player, chip).code());
     }
 
     /**
@@ -291,11 +343,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
      * the chip blanked. A crash in between leaves an inert chip, never a second satellite.
      */
     private void decommission(ServerPlayer player) {
-        SatelliteIdentity chip = validOwnedIdentity(
-                player,
-                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
-                ModItems.SATELLITE_CONTROL_CHIP.get()
-        ).orElse(null);
+        SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip == null) {
             return;
         }
@@ -307,14 +355,14 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     }
 
     private void unlink(ServerPlayer player) {
-        SatelliteIdentity chip = validOwnedIdentity(
-                player,
-                inventory.getStackInSlot(SLOT_CONTROL_CHIP),
-                ModItems.SATELLITE_CONTROL_CHIP.get()
-        ).orElse(null);
+        SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip != null) {
             updateResult(player, SatelliteRuntime.unlink(player, chip).code());
         }
+    }
+
+    private Optional<SatelliteIdentity> chipFor(ServerPlayer player) {
+        return validOwnedIdentity(player, inventory.getStackInSlot(SLOT_CONTROL_CHIP), ModItems.SATELLITE_CONTROL_CHIP.get());
     }
 
     private Optional<SatelliteIdentity> validOwnedIdentity(
@@ -534,6 +582,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         if (ownerId != null) {
             data.putUUID("owner_id", ownerId);
         }
+        delivery.write(data);
         if (!boundedRoot(data)) {
             throw new IllegalStateException("Satellite terminal exceeds its fixed NBT bound");
         }
@@ -569,9 +618,11 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         try {
-            if (schema != SCHEMA_VERSION
-                    || !java.util.Set.of("schema_version", "inventory", "energy", "selected_target", "last_result", "owner_id")
-                            .containsAll(data.getAllKeys())
+            java.util.Set<String> allowed = new java.util.HashSet<>(SCALAR_KEYS);
+            if (schema == SCHEMA_VERSION) {
+                allowed.addAll(TerminalDelivery.KEYS);
+            }
+            if (schema < 1 || !allowed.containsAll(data.getAllKeys())
                     || data.contains("owner_id") && !data.hasUUID("owner_id")
                     || !data.contains("inventory", Tag.TAG_COMPOUND)
                     || !data.contains("energy", Tag.TAG_INT)
@@ -587,7 +638,9 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
                     || result < 0 || result >= SatelliteOperationCode.values().length) {
                 throw new IllegalArgumentException("Satellite terminal scalar is outside fixed bounds");
             }
+            TerminalDelivery loaded = schema == SCHEMA_VERSION ? TerminalDelivery.read(data) : TerminalDelivery.create();
             inventory.loadValidated(data.getCompound("inventory"));
+            delivery = loaded;
             energyStorage.set(energy);
             targetDefinition = selectedDefinition();
             selectedTargetIndex = target;
@@ -616,6 +669,8 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         futureSchemaBlocked = false;
         invalidDataBlocked = false;
         preservedBlockedData = null;
+        delivery = TerminalDelivery.create();
+        resources.reloaded();
     }
 
     boolean blocked() {

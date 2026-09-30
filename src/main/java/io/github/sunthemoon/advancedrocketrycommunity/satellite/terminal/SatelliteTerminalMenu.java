@@ -36,6 +36,11 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
     public static final int BUTTON_DECOMMISSION = 6;
     /** ADR-049 section 9: clear the link of a solar satellite whose receiver is confirmed missing. */
     public static final int BUTTON_UNLINK = 7;
+    /** ADR-051: previous/next asteroid instance or gas product, withdraw one stack, next bound-mission page. */
+    public static final int BUTTON_OPTION_PREVIOUS = 8;
+    public static final int BUTTON_OPTION_NEXT = 9;
+    public static final int BUTTON_WITHDRAW = 10;
+    public static final int BUTTON_PAGE = 11;
 
     private static final int PLAYER_SLOT_START = SatelliteTerminalBlockEntity.SLOT_COUNT;
     private static final int PLAYER_SLOT_END = PLAYER_SLOT_START + 27;
@@ -146,7 +151,8 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
         if (!(player instanceof ServerPlayer serverPlayer) || terminal == null || !stillValid(player)) {
             return false;
         }
-        boolean selection = buttonId == BUTTON_PREVIOUS || buttonId == BUTTON_NEXT;
+        boolean selection = buttonId == BUTTON_PREVIOUS || buttonId == BUTTON_NEXT || buttonId == BUTTON_OPTION_PREVIOUS
+                || buttonId == BUTTON_OPTION_NEXT || buttonId == BUTTON_PAGE;
         if (!SatelliteRuntime.allowIntent(serverPlayer, selection)) {
             terminal.reportRateLimited(serverPlayer);
             return false;

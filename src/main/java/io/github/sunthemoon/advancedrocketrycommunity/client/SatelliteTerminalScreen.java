@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RewardEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteTerminalViewCache;
@@ -14,6 +15,11 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -29,10 +35,14 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
     private static final int GOLD = 0xFFFFC857;
     private static final int GREEN = 0xFF6DDB9C;
     private static final int RED = 0xFFFF6B66;
+    /** ADR-051 delivery panel to the right of the console. */
+    private static final int PANEL_X = 228;
+    private static final int PANEL_WIDTH = 118;
+    private static final String DELIVERY = "screen.advancedrocketrycommunity.satellite.delivery.";
 
     public SatelliteTerminalScreen(SatelliteTerminalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 224;
+        imageWidth = 352;
         imageHeight = 234;
         titleLabelX = 9;
         titleLabelY = 7;
@@ -69,6 +79,10 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         unlink.setTooltip(Tooltip.create(
                 Component.translatable("tooltip.advancedrocketrycommunity.satellite.unlink")));
         addRenderableWidget(unlink);
+        addRenderableWidget(button(PANEL_X, 18, 16, "<", SatelliteTerminalMenu.BUTTON_OPTION_PREVIOUS));
+        addRenderableWidget(button(PANEL_X + PANEL_WIDTH - 16, 18, 16, ">", SatelliteTerminalMenu.BUTTON_OPTION_NEXT));
+        addRenderableWidget(button(PANEL_X, 128, 58, DELIVERY + "withdraw", SatelliteTerminalMenu.BUTTON_WITHDRAW));
+        addRenderableWidget(button(PANEL_X + 60, 128, 58, DELIVERY + "page", SatelliteTerminalMenu.BUTTON_PAGE));
     }
 
     @Override
@@ -118,6 +132,8 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
         graphics.fill(x + 6, y + 17, x + 218, y + 79, 0xC9081116);
         graphics.renderOutline(x + 6, y + 17, 212, 62, 0xFF355D67);
+        graphics.fill(x + PANEL_X - 3, y + 4, x + PANEL_X + PANEL_WIDTH + 3, y + imageHeight - 4, 0xC9081116);
+        graphics.renderOutline(x + PANEL_X - 3, y + 4, PANEL_WIDTH + 6, imageHeight - 8, 0xFF355D67);
 
         drawOrbit(graphics, x + 149, y + 34);
         drawEnergy(graphics, x + 181, y + 19);
@@ -208,6 +224,72 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 isError(status) || !menu.ownedByViewer() ? RED : MUTED,
                 false
         );
+        view().ifPresent(current -> renderDelivery(graphics, current));
+    }
+
+    /** ADR-051: the selected instance or product, the reward buffer and this terminal's bound missions. */
+    private void renderDelivery(GuiGraphics graphics, SatelliteTerminalViewPacket view) {
+        text(graphics, Component.translatable(DELIVERY + "title"), 7, CYAN);
+        int y = 38;
+        if (view.instanceView().isPresent()) {
+            ResourceLocation type = view.instance().id().orElseThrow();
+            centered(graphics, Component.translatable(DELIVERY + "instance", Component.translatableWithFallback(
+                    "asteroid_type." + type.getNamespace() + "." + type.getPath(), type.toString()),
+                    view.instance().position() + 1, view.instance().size()), 22, TEXT);
+            text(graphics, Component.translatable(DELIVERY + "expires", view.instanceView().orElseThrow().expiresInSeconds()),
+                    y, MUTED);
+            y = entries(graphics, view.instanceView().orElseThrow().yield(), y + 9, 4);
+        } else if (view.product().id().isPresent()) {
+            centered(graphics, Component.translatable(DELIVERY + "product", itemName(view.product().id().orElseThrow()),
+                    view.product().position() + 1, view.product().size()), 22, TEXT);
+        } else {
+            centered(graphics, Component.translatable(DELIVERY + "none"), 22, MUTED);
+        }
+        int items = view.buffer().stream().mapToInt(RewardEntry::count).sum();
+        text(graphics, Component.translatable(DELIVERY + "buffer", items, SatelliteTerminalViewPacket.MAX_BUFFER_ITEMS), 88,
+                items > 0 ? GOLD : MUTED);
+        entries(graphics, view.buffer(), 99, 3);
+        text(graphics, Component.translatable(DELIVERY + "missions", view.missionPages() == 0 ? 0 : view.missionPage() + 1,
+                view.missionPages()), 148, CYAN);
+        if (view.missions().isEmpty()) {
+            text(graphics, Component.translatable(DELIVERY + "no_missions"), 159, MUTED);
+        }
+        int line = 159;
+        for (SatelliteTerminalViewPacket.MissionSummary mission : view.missions()) {
+            text(graphics, Component.translatable(DELIVERY + "mission",
+                    Component.translatable("mission_kind.advancedrocketrycommunity." + mission.kind().id()),
+                    mission.status().name(), mission.remainingSeconds(), mission.rewardItems()), line,
+                    mission.status() == MissionStatus.READY ? GOLD : TEXT);
+            line += 9;
+        }
+    }
+
+    private int entries(GuiGraphics graphics, List<RewardEntry> entries, int y, int maximum) {
+        for (int index = 0; index < Math.min(maximum, entries.size()); index++) {
+            text(graphics, Component.translatable(DELIVERY + "entry", entries.get(index).count(),
+                    itemName(entries.get(index).item())), y, TEXT);
+            y += 9;
+        }
+        if (entries.size() > maximum) {
+            text(graphics, Component.translatable(DELIVERY + "more", entries.size() - maximum), y, MUTED);
+            y += 9;
+        }
+        return y;
+    }
+
+    private void text(GuiGraphics graphics, Component component, int y, int color) {
+        graphics.drawString(font, font.substrByWidth(component, PANEL_WIDTH).getString(), PANEL_X, y, color, false);
+    }
+
+    private void centered(GuiGraphics graphics, Component component, int y, int color) {
+        String value = font.substrByWidth(component, PANEL_WIDTH - 36).getString();
+        graphics.drawString(font, value, PANEL_X + (PANEL_WIDTH - font.width(value)) / 2, y, color, false);
+    }
+
+    private static Component itemName(ResourceLocation id) {
+        Item item = ForgeRegistries.ITEMS.getValue(id);
+        return item == null || item == Items.AIR ? Component.literal(id.toString())
+                : new ItemStack(item).getHoverName();
     }
 
     /** A non-data satellite has no data mission: show its kind and orbit instead. */

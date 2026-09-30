@@ -39,7 +39,12 @@ public enum SatelliteOperationCode {
     TERMINAL_RECEIPTS_FULL,
     TERMINAL_MISSING,
     NO_ASTEROID_TYPES,
-    BODY_UNAVAILABLE;
+    BODY_UNAVAILABLE,
+    // C8b (ADR-051): a claim or cancel at a terminal the mission is not bound to, a terminal still reconciling,
+    // and an asteroid instance that does not exist.
+    WRONG_TERMINAL,
+    RECONCILING,
+    INSTANCE_NOT_FOUND;
 
     public String translationKey() {
         return "status.advancedrocketrycommunity.satellite."

@@ -37,6 +37,10 @@ public final class SatelliteMissionRegistry {
     /** ADR-050 sections 5–7: counters, pruning queues, byte budgets and admission limits. */
     private final MissionRetention retention = new MissionRetention();
     private final StorageBudget budget = new StorageBudget();
+    /** ADR-051 sections 2 and 7: live instances, the expiry queue and the terminal → mission index. */
+    private final InstanceLedger ledger = new InstanceLedger();
+    private final TerminalIndex terminals = new TerminalIndex();
+    private final ResourceMissions resources = new ResourceMissions(this);
     private final RecordSizer sizer;
     private RegistryLimits limits = RegistryLimits.DEFAULTS;
     private RestoreReport restoreReport = new RestoreReport(0, 0, 0, 0);
@@ -119,6 +123,7 @@ public final class SatelliteMissionRegistry {
         }
         putMission(state);
         budget.reserve(StorageBudget.Section.MISSIONS, state.missionId(), sizer.missionBytes(state));
+        resources.restored(state);
     }
 
     public synchronized void restoreAccount(ResearchAccount account) {
@@ -141,6 +146,7 @@ public final class SatelliteMissionRegistry {
             throw new IllegalArgumentException("Duplicate asteroid instance " + instance.instanceId());
         }
         budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceBytes(instance));
+        ledger.changed(null, instance);
     }
 
     /**
@@ -162,7 +168,7 @@ public final class SatelliteMissionRegistry {
         RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances);
         plan.missionQuarantines().forEach((id, reason) -> putMission(missions.get(id).quarantine(reason, false)));
         plan.recoveries().forEach(id -> satellites.put(id, satellites.get(id).requireRecovery()));
-        plan.instanceQuarantines().forEach(id -> instances.put(id, instances.get(id).quarantine()));
+        plan.instanceQuarantines().forEach(id -> storeInstance(instances.get(id).quarantine()));
         scheduler.rebuild(missions.values());
         RestoreReport report = new RestoreReport(plan.missionQuarantines().size(), plan.recoveries().size(),
                 plan.instanceQuarantines().size(), accountsAdded);
@@ -173,20 +179,10 @@ public final class SatelliteMissionRegistry {
         return report;
     }
 
-    public synchronized SatelliteOperationResult launch(
-            UUID satelliteId,
-            UUID missionId,
-            UUID ownerId,
-            SatelliteDefinition definition,
-            ResourceLocation targetBodyId,
-            long observedGameTime,
-            boolean discoveryRequired
-    ) {
-        Objects.requireNonNull(satelliteId, "satelliteId");
-        Objects.requireNonNull(missionId, "missionId");
-        Objects.requireNonNull(ownerId, "ownerId");
-        Objects.requireNonNull(definition, "definition");
-        Objects.requireNonNull(targetBodyId, "targetBodyId");
+    public synchronized SatelliteOperationResult launch(UUID satelliteId, UUID missionId, UUID ownerId,
+            SatelliteDefinition definition, ResourceLocation targetBodyId, long observedGameTime,
+            boolean discoveryRequired) {
+        requireAll(satelliteId, missionId, ownerId, definition, targetBodyId);
         long logicalTime = clock.advance(observedGameTime);
 
         SatelliteState existing = satellites.get(satelliteId);
@@ -206,21 +202,11 @@ public final class SatelliteMissionRegistry {
         if (missions.containsKey(missionId)) {
             return result(SatelliteOperationCode.IDENTITY_CONFLICT, false, null, missions.get(missionId));
         }
-        SatelliteState satellite = SatelliteState.launch(
-                satelliteId, definition.id(), ownerId, logicalTime
-        );
+        SatelliteState satellite = SatelliteState.launch(satelliteId, definition.id(), ownerId, logicalTime);
         MissionState mission;
         try {
-            mission = MissionState.start(
-                    missionId,
-                    satelliteId,
-                    ownerId,
-                    SatelliteDefinitionSnapshot.from(definition),
-                    targetBodyId,
-                    logicalTime,
-                    discoveryRequired,
-                    saveEpoch
-            );
+            mission = MissionState.start(missionId, satelliteId, ownerId, SatelliteDefinitionSnapshot.from(definition),
+                    targetBodyId, logicalTime, discoveryRequired, saveEpoch);
         } catch (ArithmeticException exception) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
         }
@@ -243,10 +229,8 @@ public final class SatelliteMissionRegistry {
      * Registers a non-data satellite idle in its orbit body (ADR-049 section 6). The caller validated the
      * definition, blueprint, research and orbit body. Replays of the same identity are idempotent.
      */
-    public synchronized SatelliteOperationResult launchIdle(
-            java.util.function.LongFunction<SatelliteState> factory,
-            long observedGameTime
-    ) {
+    public synchronized SatelliteOperationResult launchIdle(java.util.function.LongFunction<SatelliteState> factory,
+                                                           long observedGameTime) {
         Objects.requireNonNull(factory, "factory");
         long logicalTime = clock.advance(observedGameTime);
         SatelliteState candidate = Objects.requireNonNull(factory.apply(logicalTime), "candidate");
@@ -278,14 +262,9 @@ public final class SatelliteMissionRegistry {
      * Removes an idle satellite (ADR-049 section 7): no unfinished mission and no live receiver link.
      * Finished missions keep referencing it (ADR-050 section 9). Nothing is refunded.
      */
-    public synchronized SatelliteOperationResult decommission(
-            UUID satelliteId,
-            UUID requesterId,
-            boolean operator,
-            boolean receiverMissing
-    ) {
-        Objects.requireNonNull(satelliteId, "satelliteId");
-        Objects.requireNonNull(requesterId, "requesterId");
+    public synchronized SatelliteOperationResult decommission(UUID satelliteId, UUID requesterId, boolean operator,
+                                                             boolean receiverMissing) {
+        requireAll(satelliteId, requesterId);
         SatelliteState satellite = satellites.get(satelliteId);
         if (satellite == null) {
             return result(SatelliteOperationCode.SATELLITE_NOT_FOUND, false, null, null);
@@ -327,14 +306,9 @@ public final class SatelliteMissionRegistry {
      * ADR-049 section 8: pays one area scan from the survey satellite's lazy battery. Only a paid scan changes
      * the record; a refused one leaves it untouched.
      */
-    public synchronized SatelliteOperationResult payScan(
-            UUID satelliteId,
-            UUID requesterId,
-            boolean operator,
-            long observedGameTime
-    ) {
-        Objects.requireNonNull(satelliteId, "satelliteId");
-        Objects.requireNonNull(requesterId, "requesterId");
+    public synchronized SatelliteOperationResult payScan(UUID satelliteId, UUID requesterId, boolean operator,
+                                                        long observedGameTime) {
+        requireAll(satelliteId, requesterId);
         long logicalTime = clock.advance(observedGameTime);
         SatelliteState satellite = satellites.get(satelliteId);
         if (satellite == null) {
@@ -356,44 +330,14 @@ public final class SatelliteMissionRegistry {
         return result(SatelliteOperationCode.SUCCESS, true, paid, null);
     }
 
-    /**
-     * ADR-050 sections 4 and 9: an operator returns a QUARANTINED mission to its previous status once its
-     * invariants hold again; otherwise the mission stays quarantined.
-     */
+    /** ADR-050 sections 4 and 9: see {@link OperatorRecovery#releaseQuarantine}. */
     public synchronized SatelliteOperationResult releaseQuarantine(UUID missionId) {
-        MissionState mission = missions.get(Objects.requireNonNull(missionId, "missionId"));
-        if (mission == null) {
-            return result(SatelliteOperationCode.MISSION_NOT_FOUND, false, null, null);
-        }
-        SatelliteState satellite = satellites.get(mission.satelliteId());
-        if (mission.status() != MissionStatus.QUARANTINED) {
-            return result(SatelliteOperationCode.IDEMPOTENT, false, satellite, mission);
-        }
-        MissionState released = mission.releaseQuarantine();
-        boolean bound = satellite != null && satellite.ownerId().equals(mission.ownerId())
-                && satellite.currentMissionId().filter(missionId::equals).isPresent();
-        if (!bound || RegistryInvariants.instanceProblem(released, instances) != null) {
-            return result(SatelliteOperationCode.RECOVERY_REQUIRED, false, satellite, mission);
-        }
-        putMission(released);
-        if (released.status() == MissionStatus.ACTIVE) {
-            scheduler.schedule(released);
-        }
-        return result(SatelliteOperationCode.SUCCESS, true, satellite, released);
+        return OperatorRecovery.releaseQuarantine(this, Objects.requireNonNull(missionId, "missionId"));
     }
 
-    /** ADR-050 section 8: an operator returns a RECOVERY_REQUIRED satellite to service. */
+    /** ADR-050 section 8: see {@link OperatorRecovery#recoverSatellite}. */
     public synchronized SatelliteOperationResult recoverSatellite(UUID satelliteId) {
-        SatelliteState satellite = satellites.get(Objects.requireNonNull(satelliteId, "satelliteId"));
-        if (satellite == null) {
-            return result(SatelliteOperationCode.SATELLITE_NOT_FOUND, false, null, null);
-        }
-        if (satellite.status() != SatelliteStatus.RECOVERY_REQUIRED) {
-            return result(SatelliteOperationCode.IDEMPOTENT, false, satellite, null);
-        }
-        SatelliteState recovered = satellite.recover();
-        satellites.put(satelliteId, recovered);
-        return result(SatelliteOperationCode.SUCCESS, true, recovered, null);
+        return OperatorRecovery.recoverSatellite(this, Objects.requireNonNull(satelliteId, "satelliteId"));
     }
 
     public synchronized Optional<AsteroidInstance> instance(UUID instanceId) {
@@ -409,20 +353,10 @@ public final class SatelliteMissionRegistry {
         return satellitesByOwner.getOrDefault(ownerId, 0);
     }
 
-    public synchronized SatelliteOperationResult startMission(
-            UUID satelliteId,
-            UUID missionId,
-            UUID ownerId,
-            SatelliteDefinition definition,
-            ResourceLocation targetBodyId,
-            long observedGameTime,
-            boolean discoveryRequired
-    ) {
-        Objects.requireNonNull(satelliteId, "satelliteId");
-        Objects.requireNonNull(missionId, "missionId");
-        Objects.requireNonNull(ownerId, "ownerId");
-        Objects.requireNonNull(definition, "definition");
-        Objects.requireNonNull(targetBodyId, "targetBodyId");
+    public synchronized SatelliteOperationResult startMission(UUID satelliteId, UUID missionId, UUID ownerId,
+            SatelliteDefinition definition, ResourceLocation targetBodyId, long observedGameTime,
+            boolean discoveryRequired) {
+        requireAll(satelliteId, missionId, ownerId, definition, targetBodyId);
         long logicalTime = clock.advance(observedGameTime);
         SatelliteState satellite = satellites.get(satelliteId);
         if (satellite == null) {
@@ -452,16 +386,8 @@ public final class SatelliteMissionRegistry {
         }
         MissionState mission;
         try {
-            mission = MissionState.start(
-                    missionId,
-                    satelliteId,
-                    ownerId,
-                    SatelliteDefinitionSnapshot.from(definition),
-                    targetBodyId,
-                    logicalTime,
-                    discoveryRequired,
-                    saveEpoch
-            );
+            mission = MissionState.start(missionId, satelliteId, ownerId, SatelliteDefinitionSnapshot.from(definition),
+                    targetBodyId, logicalTime, discoveryRequired, saveEpoch);
         } catch (ArithmeticException exception) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, satellite, null);
         }
@@ -480,35 +406,22 @@ public final class SatelliteMissionRegistry {
     public synchronized SchedulerPass completeDue(long observedGameTime) {
         long before = clock.logicalGameTime();
         long logicalTime = clock.advance(observedGameTime);
-        MissionDeadlineScheduler.DrainResult drained = scheduler.drainDue(
-                logicalTime,
-                SatelliteLimits.MAX_COMPLETIONS_PER_PASS,
-                id -> Optional.ofNullable(missions.get(id)),
-                mission -> putMission(mission.complete(logicalTime))
-        );
+        MissionDeadlineScheduler.DrainResult drained = scheduler.drainDue(logicalTime,
+                SatelliteLimits.MAX_COMPLETIONS_PER_PASS, id -> Optional.ofNullable(missions.get(id)),
+                mission -> putMission(mission.complete(logicalTime)));
         int pruned = retention.prune(logicalTime, limits.finishedPerOwner(), saveEpoch, missions::get,
                 this::removeMission);
-        if (drained.completed() > 0 || pruned > 0) {
+        int expired = ledger.pass(logicalTime, instances::get, this::storeInstance,
+                instance -> dropInstance(instance.instanceId()));
+        if (drained.completed() > 0 || pruned > 0 || expired > 0) {
             changedSinceEpoch = true;
         }
-        return new SchedulerPass(
-                logicalTime,
-                logicalTime != before,
-                drained.completed(),
-                drained.inspectedEntries(),
-                drained.staleEntries(),
-                drained.remainingScheduled(),
-                pruned
-        );
+        return new SchedulerPass(logicalTime, logicalTime != before, drained.completed(), drained.inspectedEntries(),
+                drained.staleEntries(), drained.remainingScheduled(), pruned, expired);
     }
 
-    public synchronized SatelliteOperationResult claim(
-            UUID missionId,
-            UUID ownerId,
-            long observedGameTime
-    ) {
-        Objects.requireNonNull(missionId, "missionId");
-        Objects.requireNonNull(ownerId, "ownerId");
+    public synchronized SatelliteOperationResult claim(UUID missionId, UUID ownerId, long observedGameTime) {
+        requireAll(missionId, ownerId);
         long logicalTime = clock.advance(observedGameTime);
         MissionState mission = missions.get(missionId);
         if (mission == null) {
@@ -517,6 +430,10 @@ public final class SatelliteMissionRegistry {
         SatelliteState satellite = satellites.get(mission.satelliteId());
         if (!mission.ownerId().equals(ownerId)) {
             return result(SatelliteOperationCode.UNAUTHORIZED, false, satellite, mission);
+        }
+        if (mission.kind() != MissionKind.DATA) {
+            // Survey, asteroid and gas missions are claimed through resources() (ADR-051).
+            return result(SatelliteOperationCode.DEFINITION_NOT_FOUND, false, satellite, mission);
         }
         boolean completedNow = false;
         if (mission.status() == MissionStatus.ACTIVE
@@ -558,15 +475,9 @@ public final class SatelliteMissionRegistry {
         if (claimed.status() == MissionStatus.CLAIMED) {
             satellite = finishSatelliteMission(satellite, missionId);
         }
-        return new SatelliteOperationResult(
-                claimed.status() == MissionStatus.CLAIM_PENDING_DISCOVERY
-                        ? SatelliteOperationCode.PENDING_DISCOVERY
-                        : SatelliteOperationCode.SUCCESS,
-                true,
-                Optional.ofNullable(satellite),
-                Optional.of(claimed),
-                updated.balance()
-        );
+        return new SatelliteOperationResult(claimed.status() == MissionStatus.CLAIM_PENDING_DISCOVERY
+                ? SatelliteOperationCode.PENDING_DISCOVERY : SatelliteOperationCode.SUCCESS, true,
+                Optional.ofNullable(satellite), Optional.of(claimed), updated.balance());
     }
 
     public synchronized SatelliteOperationResult finishDiscovery(UUID missionId) {
@@ -588,16 +499,15 @@ public final class SatelliteMissionRegistry {
         return result(SatelliteOperationCode.SUCCESS, true, satellite, claimed);
     }
 
-    public synchronized SatelliteOperationResult cancel(
-            UUID missionId,
-            UUID requesterId,
-            boolean operator,
-            long observedGameTime
-    ) {
-        Objects.requireNonNull(missionId, "missionId");
-        Objects.requireNonNull(requesterId, "requesterId");
-        long logicalTime = clock.advance(observedGameTime);
+    /** Cancels by ID; survey, asteroid and gas missions follow ADR-051 (no bound terminal on this path). */
+    public synchronized SatelliteOperationResult cancel(UUID missionId, UUID requesterId, boolean operator,
+                                                       long observedGameTime) {
+        requireAll(missionId, requesterId);
         MissionState mission = missions.get(missionId);
+        if (mission != null && mission.kind() != MissionKind.DATA) {
+            return resources.cancel(missionId, requesterId, operator, Optional.empty(), observedGameTime);
+        }
+        long logicalTime = clock.advance(observedGameTime);
         if (mission == null) {
             return result(SatelliteOperationCode.MISSION_NOT_FOUND, false, null, null);
         }
@@ -637,21 +547,15 @@ public final class SatelliteMissionRegistry {
     }
 
     public synchronized List<SatelliteState> satellites() {
-        List<SatelliteState> values = new ArrayList<>(satellites.values());
-        values.sort((left, right) -> UUID_ORDER.compare(left.satelliteId(), right.satelliteId()));
-        return Collections.unmodifiableList(values);
+        return sorted(satellites);
     }
 
     public synchronized List<MissionState> missions() {
-        List<MissionState> values = new ArrayList<>(missions.values());
-        values.sort((left, right) -> UUID_ORDER.compare(left.missionId(), right.missionId()));
-        return Collections.unmodifiableList(values);
+        return sorted(missions);
     }
 
     public synchronized List<ResearchAccount> accounts() {
-        List<ResearchAccount> values = new ArrayList<>(accounts.values());
-        values.sort((left, right) -> UUID_ORDER.compare(left.ownerId(), right.ownerId()));
-        return Collections.unmodifiableList(values);
+        return sorted(accounts);
     }
 
     public synchronized List<MissionState> pendingDiscoveries() {
@@ -661,8 +565,14 @@ public final class SatelliteMissionRegistry {
     }
 
     public synchronized List<AsteroidInstance> instances() {
-        List<AsteroidInstance> values = new ArrayList<>(instances.values());
-        values.sort((left, right) -> UUID_ORDER.compare(left.instanceId(), right.instanceId()));
+        return sorted(instances);
+    }
+
+    private static <T> List<T> sorted(Map<UUID, T> records) {
+        List<UUID> ids = new ArrayList<>(records.keySet());
+        ids.sort(UUID_ORDER);
+        List<T> values = new ArrayList<>(ids.size());
+        ids.forEach(id -> values.add(records.get(id)));
         return Collections.unmodifiableList(values);
     }
 
@@ -685,6 +595,7 @@ public final class SatelliteMissionRegistry {
         if (changedSinceEpoch) {
             saveEpoch = Math.addExact(saveEpoch, 1L);
             changedSinceEpoch = false;
+            resources.epochAdvanced();
         }
     }
 
@@ -717,7 +628,7 @@ public final class SatelliteMissionRegistry {
      * ADR-050 sections 6–7 admission of new records: counts first, then the lifecycle byte reservations.
      * {@code satellite} and {@code mission} are the records about to be admitted, either may be null.
      */
-    private SatelliteOperationCode admission(UUID ownerId, SatelliteState satellite, MissionState mission) {
+    SatelliteOperationCode admission(UUID ownerId, SatelliteState satellite, MissionState mission) {
         boolean newAccount = !accounts.containsKey(ownerId);
         if (newAccount && accounts.size() >= SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
             return SatelliteOperationCode.CAPACITY_REACHED;
@@ -754,16 +665,114 @@ public final class SatelliteMissionRegistry {
         }
     }
 
-    /** Every mission write goes through here, so counters and pruning queues never drift. */
-    private void putMission(MissionState next) {
+    /** Every mission write goes through here, so counters, queues and indexes never drift. */
+    void putMission(MissionState next) {
         MissionState previous = missions.put(next.missionId(), next);
         retention.changed(previous, next, saveEpoch);
+        terminals.changed(previous, next);
     }
 
-    private void removeMission(MissionState mission) {
+    void removeMission(MissionState mission) {
         missions.remove(mission.missionId());
         retention.changed(mission, null, saveEpoch);
+        terminals.changed(mission, null);
         budget.release(StorageBudget.Section.MISSIONS, mission.missionId());
+    }
+
+    // --- Package primitives for ResourceMissions (ADR-051); callers hold this registry's lock. ---
+
+    long advanceClock(long observedGameTime) {
+        return clock.advance(observedGameTime);
+    }
+
+    MissionState missionRecord(UUID missionId) {
+        return missions.get(missionId);
+    }
+
+    SatelliteState satelliteRecord(UUID satelliteId) {
+        return satellites.get(satelliteId);
+    }
+
+    AsteroidInstance instanceRecord(UUID instanceId) {
+        return instances.get(instanceId);
+    }
+
+    void storeSatellite(SatelliteState satellite) {
+        receiverLinks.update(satellites.put(satellite.satelliteId(), satellite), satellite);
+    }
+
+    void storeInstance(AsteroidInstance instance) {
+        ledger.changed(instances.put(instance.instanceId(), instance), instance);
+    }
+
+    void dropInstance(UUID instanceId) {
+        AsteroidInstance previous = instances.remove(instanceId);
+        if (previous != null) {
+            ledger.changed(previous, null);
+            budget.release(StorageBudget.Section.INSTANCES, instanceId);
+        }
+    }
+
+    /** Admits new records: unfinished mission (scheduled) and its instances, with their byte reservations. */
+    void admit(MissionState mission, List<AsteroidInstance> created) {
+        created.forEach(instance -> {
+            storeInstance(instance);
+            budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceBytes(instance));
+        });
+        putMission(mission);
+        budget.reserve(StorageBudget.Section.MISSIONS, mission.missionId(), sizer.missionBytes(mission));
+        scheduler.schedule(mission);
+    }
+
+    boolean instancesFit(List<AsteroidInstance> created) {
+        return budget.fits(StorageBudget.Section.INSTANCES,
+                created.stream().mapToInt(sizer::instanceBytes).sum());
+    }
+
+    void unschedule(UUID missionId) {
+        scheduler.remove(missionId);
+    }
+
+    void schedule(MissionState mission) {
+        scheduler.schedule(mission);
+    }
+
+    Map<UUID, AsteroidInstance> instanceMap() {
+        return Collections.unmodifiableMap(instances);
+    }
+
+    int instanceCount() {
+        return instances.size();
+    }
+
+    InstanceLedger ledger() {
+        return ledger;
+    }
+
+    List<UUID> boundTo(UUID terminal) {
+        return terminals.boundTo(terminal);
+    }
+
+    void reoffer(List<MissionState> durable) {
+        retention.epochAdvanced(durable, saveEpoch);
+    }
+
+    /** Releases the satellite only if it names this mission (ADR-050 section 8). */
+    SatelliteState release(MissionState mission) {
+        SatelliteState satellite = satellites.get(mission.satelliteId());
+        return satellite != null && satellite.currentMissionId().filter(mission.missionId()::equals).isPresent()
+                ? finishSatelliteMission(satellite, mission.missionId()) : satellite;
+    }
+
+    /** ADR-051 survey, asteroid and gas missions, instances and delivery; all calls hold this registry's lock. */
+    public ResourceMissions resources() {
+        return resources;
+    }
+
+    private static void requireAll(Object... values) {
+        for (Object value : values) {
+            Objects.requireNonNull(value);
+        }
     }
 
     private SatelliteState finishSatelliteMission(SatelliteState satellite, UUID missionId) {
@@ -775,20 +784,11 @@ public final class SatelliteMissionRegistry {
         return updated;
     }
 
-    private SatelliteOperationResult result(
-            SatelliteOperationCode code,
-            boolean changed,
-            SatelliteState satellite,
-            MissionState mission
-    ) {
+    SatelliteOperationResult result(SatelliteOperationCode code, boolean changed, SatelliteState satellite,
+                                    MissionState mission) {
         UUID owner = mission != null ? mission.ownerId() : satellite == null ? null : satellite.ownerId();
         int balance = owner == null ? 0 : account(owner).balance();
-        return new SatelliteOperationResult(
-                code,
-                changed,
-                Optional.ofNullable(satellite),
-                Optional.ofNullable(mission),
-                balance
-        );
+        return new SatelliteOperationResult(code, changed, Optional.ofNullable(satellite), Optional.ofNullable(mission),
+                balance);
     }
 }
