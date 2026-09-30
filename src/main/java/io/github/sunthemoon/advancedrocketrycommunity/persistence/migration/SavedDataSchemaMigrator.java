@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistryPayload;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryPayload;
 import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -68,6 +69,21 @@ public final class SavedDataSchemaMigrator {
             } catch (RuntimeException exception) {
                 throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
                         type.dataName() + " has invalid legacy station data", exception);
+            }
+        }
+
+        if (type == ManagedSavedDataType.SATELLITE_MISSIONS) {
+            try {
+                CompoundTag migrated = SatelliteRegistryPayload.upgrade(source, schema);
+                stampCurrent(type, migrated);
+                if (schema == LEGACY_SCHEMA_VERSION && !migrated.contains(MIGRATED_FROM_KEY)) {
+                    migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
+                }
+                SatelliteRegistryPayload.decodeCurrent(migrated);
+                return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
+            } catch (RuntimeException exception) {
+                throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                        type.dataName() + " has invalid legacy satellite data", exception);
             }
         }
 

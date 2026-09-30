@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 
-/** Immutable logical satellite state; it has no entity, Level, or chunk identity. */
+/** Immutable logical satellite state (schema 2); it has no entity, Level, or chunk identity. */
 public record SatelliteState(
         int schemaVersion,
         UUID satelliteId,
@@ -13,7 +13,11 @@ public record SatelliteState(
         UUID ownerId,
         long launchedAtLogicalTime,
         SatelliteStatus status,
-        Optional<UUID> currentMissionId
+        Optional<UUID> currentMissionId,
+        SatelliteKind kind,
+        Optional<ResourceLocation> orbitBody,
+        SatelliteBlueprint blueprint,
+        SatelliteKindState kindState
 ) {
     public SatelliteState {
         Objects.requireNonNull(satelliteId, "satelliteId");
@@ -21,6 +25,10 @@ public record SatelliteState(
         Objects.requireNonNull(ownerId, "ownerId");
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(currentMissionId, "currentMissionId");
+        Objects.requireNonNull(kind, "kind");
+        Objects.requireNonNull(orbitBody, "orbitBody");
+        Objects.requireNonNull(blueprint, "blueprint");
+        Objects.requireNonNull(kindState, "kindState");
         if (schemaVersion != SatelliteLimits.SATELLITE_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported satellite schema " + schemaVersion);
         }
@@ -30,8 +38,18 @@ public record SatelliteState(
         if (status != SatelliteStatus.OPERATIONAL && currentMissionId.isPresent()) {
             throw new IllegalArgumentException("Only operational satellites may retain a mission");
         }
+        if (kindState.kind() != kind) {
+            throw new IllegalArgumentException("Satellite kind state does not match its kind");
+        }
+        if ((kind == SatelliteKind.DATA) == orbitBody.isPresent()) {
+            throw new IllegalArgumentException("Only non-data satellites have an orbit body");
+        }
+        if (blueprint.legacy() && kind != SatelliteKind.DATA) {
+            throw new IllegalArgumentException("Only data satellites may carry the legacy blueprint");
+        }
     }
 
+    /** A {@code data} satellite from the terminal's fixed recipe or an ADR-029 payload. */
     public static SatelliteState launch(
             UUID satelliteId,
             ResourceLocation definitionId,
@@ -45,7 +63,40 @@ public record SatelliteState(
                 ownerId,
                 logicalTime,
                 SatelliteStatus.OPERATIONAL,
-                Optional.empty()
+                Optional.empty(),
+                SatelliteKind.DATA,
+                Optional.empty(),
+                SatelliteBlueprint.LEGACY_DATA,
+                new SatelliteKindState.Plain(SatelliteKind.DATA)
+        );
+    }
+
+    /** A non-{@code data} satellite, launched idle into a fixed orbit body (ADR-049 §6). */
+    public static SatelliteState launchIdle(
+            UUID satelliteId,
+            ResourceLocation definitionId,
+            UUID ownerId,
+            long logicalTime,
+            ResourceLocation orbitBody,
+            SatelliteBlueprint blueprint,
+            SatelliteKindState kindState
+    ) {
+        Objects.requireNonNull(kindState, "kindState");
+        if (kindState.kind() == SatelliteKind.DATA) {
+            throw new IllegalArgumentException("Data satellites use launch()");
+        }
+        return new SatelliteState(
+                SatelliteLimits.SATELLITE_SCHEMA_VERSION,
+                satelliteId,
+                definitionId,
+                ownerId,
+                logicalTime,
+                SatelliteStatus.OPERATIONAL,
+                Optional.empty(),
+                kindState.kind(),
+                Optional.of(Objects.requireNonNull(orbitBody, "orbitBody")),
+                blueprint,
+                kindState
         );
     }
 
@@ -57,56 +108,45 @@ public record SatelliteState(
         if (currentMissionId.isPresent()) {
             throw new IllegalStateException("Satellite already has an unfinished mission");
         }
-        return new SatelliteState(
-                schemaVersion,
-                satelliteId,
-                definitionId,
-                ownerId,
-                launchedAtLogicalTime,
-                status,
-                Optional.of(missionId)
-        );
+        return with(status, Optional.of(missionId), kindState);
     }
 
     public SatelliteState finishMission(UUID missionId) {
         if (!currentMissionId.filter(missionId::equals).isPresent()) {
             throw new IllegalStateException("Mission does not own this satellite");
         }
-        return new SatelliteState(
-                schemaVersion,
-                satelliteId,
-                definitionId,
-                ownerId,
-                launchedAtLogicalTime,
-                status,
-                Optional.empty()
-        );
+        return with(status, Optional.empty(), kindState);
     }
 
     public SatelliteState requireRecovery() {
-        return new SatelliteState(
-                schemaVersion,
-                satelliteId,
-                definitionId,
-                ownerId,
-                launchedAtLogicalTime,
-                SatelliteStatus.RECOVERY_REQUIRED,
-                Optional.empty()
-        );
+        return with(SatelliteStatus.RECOVERY_REQUIRED, Optional.empty(), kindState);
     }
 
     public SatelliteState recover() {
         if (status != SatelliteStatus.RECOVERY_REQUIRED) {
             throw new IllegalStateException("Satellite does not require recovery");
         }
+        return with(SatelliteStatus.OPERATIONAL, Optional.empty(), kindState);
+    }
+
+    public SatelliteState withKindState(SatelliteKindState next) {
+        Objects.requireNonNull(next, "next");
+        return with(status, currentMissionId, next);
+    }
+
+    private SatelliteState with(SatelliteStatus nextStatus, Optional<UUID> nextMission, SatelliteKindState nextState) {
         return new SatelliteState(
                 schemaVersion,
                 satelliteId,
                 definitionId,
                 ownerId,
                 launchedAtLogicalTime,
-                SatelliteStatus.OPERATIONAL,
-                Optional.empty()
+                nextStatus,
+                nextMission,
+                kind,
+                orbitBody,
+                blueprint,
+                nextState
         );
     }
 }

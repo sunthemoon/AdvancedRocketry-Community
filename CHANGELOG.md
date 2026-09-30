@@ -4,6 +4,24 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.6.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.6.0-dev`.
+No candidate or release approval is assigned.
+
+- Upgrade the satellite registry to root schema 3 before world startup, with a
+  byte-exact backup (ADR-050). Existing satellites and missions keep their IDs,
+  owners, times, research values and status. They are labelled as legacy `data`
+  satellites and missions; extra stored tags are kept.
+- Registries larger than the new mission limits (up to 8,192 missions) still load.
+- Add a data-driven satellite component catalog (`satellite_components`) and
+  schema-2 satellite kind definitions (survey, solar, asteroid miner, gas
+  harvester) to the definition catalog (ADR-049). The data satellite and its
+  terminal recipe are unchanged, and no new satellite can be built yet.
+- The operator report adds `satellite_root_schema=3`.
+- A world opened by this build cannot be opened by a v1.5 build. Keep the
+  pre-upgrade backup, or a full world backup, before testing.
+
 ## v1.5.0 — in development
 
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.5.0-dev`.

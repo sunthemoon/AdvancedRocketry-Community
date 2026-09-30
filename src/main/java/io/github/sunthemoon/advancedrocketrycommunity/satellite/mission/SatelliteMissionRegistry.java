@@ -25,20 +25,37 @@ public final class SatelliteMissionRegistry {
     private final Map<UUID, SatelliteState> satellites = new LinkedHashMap<>();
     private final Map<UUID, MissionState> missions = new LinkedHashMap<>();
     private final Map<UUID, ResearchAccount> accounts = new LinkedHashMap<>();
+    private final Map<UUID, AsteroidInstance> instances = new LinkedHashMap<>();
     private final MissionDeadlineScheduler scheduler = new MissionDeadlineScheduler();
     private final MonotonicMissionClock clock;
+    /**
+     * ADR-050 §2 save epoch. A write carries {@link #epochToWrite()}; the epoch advances only when that write
+     * returned without error and carried a change, so an unchanged reload writes the same bytes. A mission started
+     * at epoch s is therefore present in every file whose epoch is greater than s.
+     */
+    private long saveEpoch;
+    private boolean changedSinceEpoch;
 
-    private SatelliteMissionRegistry(MonotonicMissionClock clock) {
+    private SatelliteMissionRegistry(MonotonicMissionClock clock, long saveEpoch) {
         this.clock = Objects.requireNonNull(clock, "clock");
+        if (saveEpoch < 1L) {
+            throw new IllegalArgumentException("Save epoch starts at 1");
+        }
+        this.saveEpoch = saveEpoch;
     }
 
     public static SatelliteMissionRegistry create(long observedGameTime) {
-        return new SatelliteMissionRegistry(MonotonicMissionClock.create(observedGameTime));
+        return new SatelliteMissionRegistry(MonotonicMissionClock.create(observedGameTime), 1L);
     }
 
     public static SatelliteMissionRegistry restore(long logicalGameTime, long lastObservedGameTime) {
+        return restore(logicalGameTime, lastObservedGameTime, 1L);
+    }
+
+    public static SatelliteMissionRegistry restore(long logicalGameTime, long lastObservedGameTime, long saveEpoch) {
         return new SatelliteMissionRegistry(
-                MonotonicMissionClock.restore(logicalGameTime, lastObservedGameTime)
+                MonotonicMissionClock.restore(logicalGameTime, lastObservedGameTime),
+                saveEpoch
         );
     }
 
@@ -72,6 +89,16 @@ public final class SatelliteMissionRegistry {
         }
     }
 
+    public synchronized void restoreInstance(AsteroidInstance instance) {
+        Objects.requireNonNull(instance, "instance");
+        if (instances.size() >= SatelliteLimits.MAX_INSTANCES) {
+            throw new IllegalArgumentException("Asteroid instance registry exceeds its fixed bound");
+        }
+        if (instances.putIfAbsent(instance.instanceId(), instance) != null) {
+            throw new IllegalArgumentException("Duplicate asteroid instance " + instance.instanceId());
+        }
+    }
+
     public synchronized void finishRestore() {
         long unfinished = missions.values().stream().filter(state -> state.status().unfinished()).count();
         if (unfinished > SatelliteLimits.MAX_ACTIVE_MISSIONS) {
@@ -95,8 +122,14 @@ public final class SatelliteMissionRegistry {
         }
         for (MissionState mission : missions.values()) {
             SatelliteState satellite = satellites.get(mission.satelliteId());
-            if (satellite == null
-                    || !satellite.ownerId().equals(mission.ownerId())
+            if (satellite == null) {
+                // ADR-050 §9: finished records may outlive a decommissioned satellite.
+                if (mission.status().unfinished()) {
+                    throw new IllegalArgumentException("Unfinished mission has no satellite");
+                }
+                continue;
+            }
+            if (!satellite.ownerId().equals(mission.ownerId())
                     || !satellite.definitionId().equals(mission.definitionId())) {
                 throw new IllegalArgumentException("Mission has an invalid satellite reference");
             }
@@ -158,7 +191,8 @@ public final class SatelliteMissionRegistry {
                     SatelliteDefinitionSnapshot.from(definition),
                     targetBodyId,
                     logicalTime,
-                    discoveryRequired
+                    discoveryRequired,
+                    saveEpoch
             );
         } catch (ArithmeticException exception) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
@@ -226,7 +260,8 @@ public final class SatelliteMissionRegistry {
                     SatelliteDefinitionSnapshot.from(definition),
                     targetBodyId,
                     logicalTime,
-                    discoveryRequired
+                    discoveryRequired,
+                    saveEpoch
             );
         } catch (ArithmeticException exception) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, satellite, null);
@@ -403,6 +438,34 @@ public final class SatelliteMissionRegistry {
         return missions().stream()
                 .filter(mission -> mission.status() == MissionStatus.CLAIM_PENDING_DISCOVERY)
                 .toList();
+    }
+
+    public synchronized List<AsteroidInstance> instances() {
+        List<AsteroidInstance> values = new ArrayList<>(instances.values());
+        values.sort((left, right) -> UUID_ORDER.compare(left.instanceId(), right.instanceId()));
+        return Collections.unmodifiableList(values);
+    }
+
+    public synchronized long saveEpoch() {
+        return saveEpoch;
+    }
+
+    /** Records that the registry state changed since the last persisted epoch. */
+    public synchronized void markChanged() {
+        changedSinceEpoch = true;
+    }
+
+    /** The epoch value the next write carries. */
+    public synchronized long epochToWrite() {
+        return changedSinceEpoch ? Math.addExact(saveEpoch, 1L) : saveEpoch;
+    }
+
+    /** Called once a write carrying {@link #epochToWrite()} has returned without error. */
+    public synchronized void markPersisted() {
+        if (changedSinceEpoch) {
+            saveEpoch = Math.addExact(saveEpoch, 1L);
+            changedSinceEpoch = false;
+        }
     }
 
     public synchronized long logicalGameTime() {

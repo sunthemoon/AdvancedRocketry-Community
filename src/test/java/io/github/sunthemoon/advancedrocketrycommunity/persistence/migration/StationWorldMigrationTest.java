@@ -74,8 +74,11 @@ final class StationWorldMigrationTest {
                 assertFalse(row.has("targetSchema"));
             } else {
                 assertEquals("authority", row.get("role").getAsString());
-                assertEquals(2, row.get("sourceSchema").getAsInt());
-                assertEquals(name.equals(STATIONS.fileName()) ? 4 : 2, row.get("targetSchema").getAsInt());
+                // v1.6: the satellite registry's current root is 3 (ADR-050 §10); stations migrate 2 -> 4.
+                boolean satellites = name.equals(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
+                assertEquals(satellites ? 3 : 2, row.get("sourceSchema").getAsInt());
+                assertEquals(name.equals(STATIONS.fileName()) ? 4 : satellites ? 3 : 2,
+                        row.get("targetSchema").getAsInt());
             }
         }
         var migrated = capture(world);

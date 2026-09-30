@@ -51,6 +51,8 @@ public enum ManagedSavedDataType {
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
     private static final String WARP_ENERGY_KEY = "warp_energy";
+    private static final String SATELLITE_INSTANCES_KEY = "instances";
+    private static final String SATELLITE_SAVE_EPOCH_KEY = "save_epoch";
 
     private final String introducedIn;
     private final String dataName;
@@ -82,8 +84,11 @@ public enum ManagedSavedDataType {
     }
 
     public int currentSchemaVersion() {
-        return this == STATIONS ? StationLimits.REGISTRY_SCHEMA_VERSION
-                : SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
+        return switch (this) {
+            case STATIONS -> StationLimits.REGISTRY_SCHEMA_VERSION;
+            case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
+            default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
+        };
     }
 
     public String formatEpoch() {
@@ -97,6 +102,9 @@ public enum ManagedSavedDataType {
         }
         if (this == STATIONS && schema == StationLimits.WARP_REGISTRY_SCHEMA_VERSION) {
             return "v1.5.0-station-warp";
+        }
+        if (this == SATELLITE_MISSIONS && schema == SatelliteLimits.REGISTRY_SCHEMA_VERSION) {
+            return SatelliteLimits.REGISTRY_FORMAT_EPOCH;
         }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
@@ -141,6 +149,22 @@ public enum ManagedSavedDataType {
                         MigrationDiagnosticId.INVALID_SCHEMA,
                         dataName + " schema " + schema + (warpRoot ? " is missing required " : " cannot carry ")
                                 + WARP_ENERGY_KEY
+                );
+            }
+        }
+        if (this == SATELLITE_MISSIONS) {
+            // Root 3 requires the instance list and save epoch; older roots must not carry them (ADR-050 §10).
+            boolean v160Root = schema >= SatelliteLimits.REGISTRY_SCHEMA_VERSION;
+            boolean hasInstances = payload.contains(SATELLITE_INSTANCES_KEY, Tag.TAG_LIST);
+            boolean hasEpoch = payload.contains(SATELLITE_SAVE_EPOCH_KEY, Tag.TAG_LONG);
+            boolean valid = v160Root
+                    ? hasInstances && hasEpoch
+                    : !payload.contains(SATELLITE_INSTANCES_KEY) && !payload.contains(SATELLITE_SAVE_EPOCH_KEY);
+            if (!valid) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (v160Root ? " is missing its v1.6 sections"
+                                : " cannot carry v1.6 sections")
                 );
             }
         }

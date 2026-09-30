@@ -100,6 +100,19 @@ public final class SatelliteLanguageProvider extends LanguageProvider {
             case OUT_OF_RANGE -> "Move closer to the loaded terminal";
             case RECOVERY_REQUIRED -> "Satellite requires operator recovery";
             case SERVER_ERROR -> "Satellite service is unavailable";
+            case STAT_LIMIT -> "Component stats exceed a satellite cap";
+            case REQUIREMENT_UNMET -> "This satellite kind needs more power, data or cargo";
+            case RESEARCH_LOCKED -> "More lifetime research is required";
+            case COMPONENT_UNAVAILABLE -> "A satellite component is no longer defined";
+            case RATE_LIMITED -> "Please wait before the next request";
+            case OWNER_LIMIT -> "Your satellite or mission limit is reached";
+            case STORAGE_BUDGET -> "Satellite storage budget is full";
+            case AWAITING_WORLD_SAVE -> "Waiting for the next world save";
+            case DELIVERY_BUFFER_FULL -> "Terminal reward buffer is full";
+            case TERMINAL_RECEIPTS_FULL -> "Terminal receipt list is full";
+            case TERMINAL_MISSING -> "The bound terminal is missing";
+            case NO_ASTEROID_TYPES -> "No asteroid types match this system";
+            case BODY_UNAVAILABLE -> "The satellite's orbit body is unavailable";
         };
     }
 
@@ -129,6 +142,19 @@ public final class SatelliteLanguageProvider extends LanguageProvider {
             case OUT_OF_RANGE -> "请靠近已加载的终端";
             case RECOVERY_REQUIRED -> "卫星需要管理员恢复";
             case SERVER_ERROR -> "卫星服务不可用";
+            case STAT_LIMIT -> "组件属性超过卫星上限";
+            case REQUIREMENT_UNMET -> "该卫星类型需要更多能量、数据或货舱";
+            case RESEARCH_LOCKED -> "累计研究数据不足";
+            case COMPONENT_UNAVAILABLE -> "某个卫星组件已不再定义";
+            case RATE_LIMITED -> "请稍候再发出请求";
+            case OWNER_LIMIT -> "已达到你的卫星或任务上限";
+            case STORAGE_BUDGET -> "卫星存储预算已满";
+            case AWAITING_WORLD_SAVE -> "等待下一次世界保存";
+            case DELIVERY_BUFFER_FULL -> "终端奖励缓冲区已满";
+            case TERMINAL_RECEIPTS_FULL -> "终端回执列表已满";
+            case TERMINAL_MISSING -> "绑定的终端已丢失";
+            case NO_ASTEROID_TYPES -> "没有适用于该星系的小行星类型";
+            case BODY_UNAVAILABLE -> "卫星所绕天体不可用";
         };
     }
 }

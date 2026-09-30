@@ -171,12 +171,23 @@ final class PopulatedWorldDataPreservationTest {
         return world;
     }
 
-    /** The current payload as a legacy root can express it: a station root before 4 has no balances. */
+    /**
+     * The current payload as a legacy root can express it: a station root before 4 has no balances; a satellite
+     * root before 3 has no v1.6 fields, so its missions carry the legacy label and the save epoch restarts at 1.
+     */
     private static CompoundTag legacyRepresentable(ManagedSavedDataType type, CompoundTag current) {
         CompoundTag representable = current.copy();
         if (type == ManagedSavedDataType.STATIONS) {
             assertEquals(1, current.getList("warp_energy", CompoundTag.TAG_COMPOUND).size());
             representable.put("warp_energy", new ListTag());
+        }
+        if (type == ManagedSavedDataType.SATELLITE_MISSIONS) {
+            representable.putLong("save_epoch", 1L);
+            representable.getList("missions", CompoundTag.TAG_COMPOUND).forEach(record -> {
+                CompoundTag mission = (CompoundTag) record;
+                mission.putLong("start_epoch", 0L);
+                mission.putString("reward_version", "legacy-data-v1");
+            });
         }
         return representable;
     }
@@ -190,6 +201,20 @@ final class PopulatedWorldDataPreservationTest {
         payloads.get(ManagedSavedDataType.STATIONS).remove("warp_energy");
         payloads.get(ManagedSavedDataType.STATIONS).getList("stations", CompoundTag.TAG_COMPOUND)
                 .forEach(record -> ((CompoundTag) record).putInt("schema_version", 1));
+        CompoundTag satellites = payloads.get(ManagedSavedDataType.SATELLITE_MISSIONS);
+        satellites.remove("instances");
+        satellites.remove("save_epoch");
+        satellites.getList("satellites", CompoundTag.TAG_COMPOUND).forEach(record -> {
+            CompoundTag satellite = (CompoundTag) record;
+            satellite.putInt("schema_version", 1);
+            java.util.List.of("kind", "orbit_body", "blueprint", "kind_state").forEach(satellite::remove);
+        });
+        satellites.getList("missions", CompoundTag.TAG_COMPOUND).forEach(record -> {
+            CompoundTag mission = (CompoundTag) record;
+            mission.putInt("schema_version", 1);
+            java.util.List.of("kind", "seed", "start_epoch", "reward_version", "instance_id", "quarantine")
+                    .forEach(mission::remove);
+        });
         return payloads;
     }
 

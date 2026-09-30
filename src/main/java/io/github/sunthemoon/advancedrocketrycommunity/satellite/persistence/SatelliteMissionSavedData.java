@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Mana
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
@@ -16,7 +17,6 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 
@@ -60,31 +60,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
             if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
                 throw new IllegalArgumentException("Satellite registry uses a future root schema");
             }
-            CompoundTag payload = migration.payload();
-            CompoundTag clock = requireCompound(payload, "clock");
-            SatelliteMissionRegistry restored = SatelliteMissionRegistry.restore(
-                    requireNonNegativeLong(clock, "logical_game_time"),
-                    requireNonNegativeLong(clock, "last_observed_game_time")
-            );
-            ListTag satellites = requireList(payload, "satellites");
-            ListTag missions = requireList(payload, "missions");
-            ListTag accounts = requireList(payload, "research_accounts");
-            if (satellites.size() > SatelliteLimits.MAX_SATELLITES
-                    || missions.size() > SatelliteLimits.MAX_MISSIONS
-                    || accounts.size() > SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
-                throw new IllegalArgumentException("Satellite registry lists exceed fixed bounds");
-            }
-            for (Tag raw : satellites) {
-                restored.restoreSatellite(SatelliteNbtCodec.decodeSatellite((CompoundTag) raw));
-            }
-            for (Tag raw : missions) {
-                restored.restoreMission(SatelliteNbtCodec.decodeMission((CompoundTag) raw));
-            }
-            for (Tag raw : accounts) {
-                restored.restoreAccount(SatelliteNbtCodec.decodeAccount((CompoundTag) raw));
-            }
-            restored.finishRestore();
-            data = new SatelliteMissionSavedData(restored);
+            data = new SatelliteMissionSavedData(SatelliteRegistryPayload.decodeCurrent(migration.payload()));
             if (migration.changed()) {
                 data.setDirty();
             }
@@ -92,6 +68,11 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
             data.preservedBlockedData = preserved;
         }
         return data;
+    }
+
+    private void changed() {
+        setDirty();
+        registry.markChanged();
     }
 
     public boolean operational() {
@@ -124,7 +105,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
                 discoveryRequired
         );
         if (result.changed()) {
-            setDirty();
+            changed();
         }
         return result;
     }
@@ -149,7 +130,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
                 discoveryRequired
         );
         if (result.changed()) {
-            setDirty();
+            changed();
         }
         return result;
     }
@@ -158,7 +139,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         requireOperational();
         SatelliteMissionRegistry.SchedulerPass result = registry.completeDue(observedGameTime);
         if (result.clockAdvanced() || result.completed() > 0) {
-            setDirty();
+            changed();
         }
         return result;
     }
@@ -167,7 +148,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         requireOperational();
         SatelliteOperationResult result = registry.claim(missionId, ownerId, observedGameTime);
         if (result.changed()) {
-            setDirty();
+            changed();
         }
         return result;
     }
@@ -176,7 +157,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         requireOperational();
         SatelliteOperationResult result = registry.finishDiscovery(missionId);
         if (result.changed()) {
-            setDirty();
+            changed();
         }
         return result;
     }
@@ -192,7 +173,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
                 missionId, requesterId, operator, observedGameTime
         );
         if (result.changed()) {
-            setDirty();
+            changed();
         }
         return result;
     }
@@ -237,6 +218,8 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         clock.putLong("logical_game_time", registry.logicalGameTime());
         clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
         target.put("clock", clock);
+        // ADR-050 §2: the epoch advances only after a changed write succeeds (onPersisted).
+        target.putLong(SatelliteRegistryPayload.SAVE_EPOCH, registry.epochToWrite());
         ListTag satellites = new ListTag();
         registry.satellites().forEach(state -> satellites.add(SatelliteNbtCodec.encodeSatellite(state)));
         target.put("satellites", satellites);
@@ -246,42 +229,34 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         ListTag accounts = new ListTag();
         registry.accounts().forEach(account -> accounts.add(SatelliteNbtCodec.encodeAccount(account)));
         target.put("research_accounts", accounts);
+        ListTag instances = new ListTag();
+        registry.instances().forEach(instance -> instances.add(SatelliteNbtCodec.encodeInstance(instance)));
+        target.put(SatelliteRegistryPayload.INSTANCES, instances);
         if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
             throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
         }
         return target;
     }
 
+    @Override
+    protected void onPersisted() {
+        if (preservedBlockedData == null) {
+            registry.markPersisted();
+        }
+    }
+
+    public long saveEpoch() {
+        requireOperational();
+        return registry.saveEpoch();
+    }
+
+    public List<AsteroidInstance> instances() {
+        return operational() ? registry.instances() : List.of();
+    }
+
     private void requireOperational() {
         if (!operational()) {
             throw new IllegalStateException("Satellite registry is blocked by invalid or future data");
         }
-    }
-
-    private static long requireNonNegativeLong(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_LONG)) {
-            throw new IllegalArgumentException("Missing satellite registry long " + key);
-        }
-        long value = source.getLong(key);
-        if (value < 0L) {
-            throw new IllegalArgumentException("Satellite registry long " + key + " cannot be negative");
-        }
-        return value;
-    }
-
-    private static CompoundTag requireCompound(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_COMPOUND)) {
-            throw new IllegalArgumentException("Missing satellite registry compound " + key);
-        }
-        return source.getCompound(key);
-    }
-
-    private static ListTag requireList(CompoundTag source, String key) {
-        Tag raw = source.get(key);
-        if (!(raw instanceof ListTag list)
-                || (!list.isEmpty() && list.getElementType() != Tag.TAG_COMPOUND)) {
-            throw new IllegalArgumentException("Missing or invalid satellite registry list " + key);
-        }
-        return list;
     }
 }

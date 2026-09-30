@@ -20,10 +20,10 @@ class ModMetadataTest {
             assertTrue(metadata.contains("modId=\"advancedrocketrycommunity\""));
             assertTrue(metadata.contains("displayName=\"Advanced Rocketry: Community Edition\""));
             assertTrue(metadata.contains("license=\"MIT\""));
-            assertTrue(metadata.contains("version=\"1.20.1-1.5.0-dev\""));
-            assertTrue(metadata.contains("This v1.5.0 development build"));
-            assertTrue(metadata.contains("confirmed owner/operator station expansion to the planetary development baseline. "
-                    + "Orbit systems, warp and release validation remain in progress"));
+            assertTrue(metadata.contains("version=\"1.20.1-1.6.0-dev\""));
+            assertTrue(metadata.contains("This v1.6.0 development build"));
+            assertTrue(metadata.contains("backed-up satellite registry upgrade to the station and warp development baseline. "
+                    + "Satellite assembly, resource missions and release validation remain in progress"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));

@@ -7,6 +7,7 @@ import com.mojang.serialization.DataResult;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.component.SatelliteComponentCatalog;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -20,14 +21,17 @@ public final class SatelliteDefinitionReloadListener extends SimpleJsonResourceR
 
     private final SatelliteCatalogManager manager;
     private final CelestialCatalogManager celestialCatalogs;
+    private final SatelliteComponentReloadListener.Manager components;
 
     public SatelliteDefinitionReloadListener(
             SatelliteCatalogManager manager,
-            CelestialCatalogManager celestialCatalogs
+            CelestialCatalogManager celestialCatalogs,
+            SatelliteComponentReloadListener.Manager components
     ) {
         super(GSON, DIRECTORY);
         this.manager = manager;
         this.celestialCatalogs = celestialCatalogs;
+        this.components = components;
     }
 
     @Override
@@ -43,7 +47,8 @@ public final class SatelliteDefinitionReloadListener extends SimpleJsonResourceR
                 : SatelliteCatalogDecoder.decode(
                         resources,
                         celestial.definitions().stream().map(definition -> definition.id()).toList(),
-                        SatellitePayloadRuntime.defaults()
+                        SatellitePayloadRuntime.defaults(),
+                        components.current().orElse(SatelliteComponentCatalog.EMPTY)
                 );
         if (manager.applyCandidate(candidate)) {
             SatelliteCatalogManager.ReloadStatus status = manager.status();

@@ -2,52 +2,78 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.mission;
 
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 
-/** Immutable mission snapshot with explicit, replay-safe terminal phases. */
+/** Immutable mission snapshot (schema 2) with explicit, replay-safe terminal phases (ADR-050 §3). */
 public record MissionState(
         int schemaVersion,
         UUID missionId,
         UUID satelliteId,
         UUID ownerId,
         ResourceLocation definitionId,
+        MissionKind kind,
         ResourceLocation targetBodyId,
+        Optional<UUID> instanceId,
+        long seed,
         long startedAtLogicalTime,
         long completesAtLogicalTime,
-        int researchYield,
-        int discoveryCost,
-        boolean discoveryRequired,
+        long startEpoch,
         MissionStatus status,
         OptionalLong readyAtLogicalTime,
-        OptionalLong resolvedAtLogicalTime
+        OptionalLong resolvedAtLogicalTime,
+        String rewardVersion,
+        Optional<MissionQuarantine> quarantine,
+        MissionPayload payload
 ) {
+    /** Reward version of a {@code data} mission started by v1.6 or later. */
+    public static final String DATA_REWARD_VERSION = "data-v1";
+    /** Reward version given to schema-1 missions by the root-3 migration (ADR-050 §3). */
+    public static final String LEGACY_DATA_REWARD_VERSION = "legacy-data-v1";
+
     public MissionState {
         Objects.requireNonNull(missionId, "missionId");
         Objects.requireNonNull(satelliteId, "satelliteId");
         Objects.requireNonNull(ownerId, "ownerId");
         Objects.requireNonNull(definitionId, "definitionId");
+        Objects.requireNonNull(kind, "kind");
         Objects.requireNonNull(targetBodyId, "targetBodyId");
+        Objects.requireNonNull(instanceId, "instanceId");
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(readyAtLogicalTime, "readyAtLogicalTime");
         Objects.requireNonNull(resolvedAtLogicalTime, "resolvedAtLogicalTime");
+        Objects.requireNonNull(rewardVersion, "rewardVersion");
+        Objects.requireNonNull(quarantine, "quarantine");
+        Objects.requireNonNull(payload, "payload");
         if (schemaVersion != SatelliteLimits.MISSION_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported mission schema " + schemaVersion);
         }
-        if (startedAtLogicalTime < 0L || completesAtLogicalTime <= startedAtLogicalTime) {
+        if (startedAtLogicalTime < 0L || completesAtLogicalTime <= startedAtLogicalTime || startEpoch < 0L) {
             throw new IllegalArgumentException("Mission times are invalid");
         }
-        if (researchYield <= 0 || researchYield > SatelliteLimits.MAX_RESEARCH_PER_MISSION) {
-            throw new IllegalArgumentException("Mission research yield is outside fixed bounds");
+        if (payload.kind() != kind) {
+            throw new IllegalArgumentException("Mission payload does not match its kind");
         }
-        if (discoveryCost <= 0 || discoveryCost > researchYield) {
-            throw new IllegalArgumentException("Mission discovery cost is invalid");
+        if ((kind == MissionKind.ASTEROID) != instanceId.isPresent()) {
+            throw new IllegalArgumentException("Only asteroid missions name an instance");
         }
-        validatePhase(status, startedAtLogicalTime, completesAtLogicalTime,
-                readyAtLogicalTime, resolvedAtLogicalTime);
+        if (rewardVersion.isEmpty() || rewardVersion.length() > SatelliteLimits.MAX_REWARD_VERSION_CHARS) {
+            throw new IllegalArgumentException("Mission reward version is outside its bound");
+        }
+        if ((status == MissionStatus.QUARANTINED) != quarantine.isPresent()) {
+            throw new IllegalArgumentException("Only a quarantined mission carries a quarantine");
+        }
+        if (status == MissionStatus.CLAIM_PENDING_DISCOVERY
+                && !(payload instanceof MissionPayload.Data data && data.discoveryRequired())) {
+            throw new IllegalArgumentException("Only data missions that need discovery can wait for it");
+        }
+        MissionStatus phase = quarantine.map(MissionQuarantine::previousStatus).orElse(status);
+        validatePhase(phase, startedAtLogicalTime, completesAtLogicalTime, readyAtLogicalTime, resolvedAtLogicalTime);
     }
 
+    /** Starts a {@code data} mission with no persisted epoch (tests and pure callers). */
     public static MissionState start(
             UUID missionId,
             UUID satelliteId,
@@ -56,6 +82,20 @@ public record MissionState(
             ResourceLocation targetBodyId,
             long logicalTime,
             boolean discoveryRequired
+    ) {
+        return start(missionId, satelliteId, ownerId, definition, targetBodyId, logicalTime, discoveryRequired, 0L);
+    }
+
+    /** Starts a {@code data} mission; its seed is unused and recorded as 0. */
+    public static MissionState start(
+            UUID missionId,
+            UUID satelliteId,
+            UUID ownerId,
+            SatelliteDefinitionSnapshot definition,
+            ResourceLocation targetBodyId,
+            long logicalTime,
+            boolean discoveryRequired,
+            long startEpoch
     ) {
         Objects.requireNonNull(definition, "definition");
         Objects.requireNonNull(targetBodyId, "targetBodyId");
@@ -69,16 +109,32 @@ public record MissionState(
                 satelliteId,
                 ownerId,
                 definition.definitionId(),
+                MissionKind.DATA,
                 targetBodyId,
+                Optional.empty(),
+                0L,
                 logicalTime,
                 completion,
-                definition.researchYield(),
-                definition.discoveryCost(),
-                discoveryRequired,
+                startEpoch,
                 MissionStatus.ACTIVE,
                 OptionalLong.empty(),
-                OptionalLong.empty()
+                OptionalLong.empty(),
+                DATA_REWARD_VERSION,
+                Optional.empty(),
+                new MissionPayload.Data(definition.researchYield(), definition.discoveryCost(), discoveryRequired)
         );
+    }
+
+    public int researchYield() {
+        return data().researchYield();
+    }
+
+    public int discoveryCost() {
+        return data().discoveryCost();
+    }
+
+    public boolean discoveryRequired() {
+        return payload instanceof MissionPayload.Data data && data.discoveryRequired();
     }
 
     public MissionState complete(long logicalTime) {
@@ -95,7 +151,7 @@ public record MissionState(
             throw new IllegalArgumentException("Claim time precedes mission readiness");
         }
         return with(
-                discoveryRequired ? MissionStatus.CLAIM_PENDING_DISCOVERY : MissionStatus.CLAIMED,
+                discoveryRequired() ? MissionStatus.CLAIM_PENDING_DISCOVERY : MissionStatus.CLAIMED,
                 readyAtLogicalTime,
                 OptionalLong.of(logicalTime)
         );
@@ -117,7 +173,14 @@ public record MissionState(
     }
 
     public int netResearchCredit() {
-        return researchYield - (discoveryRequired ? discoveryCost : 0);
+        return researchYield() - (discoveryRequired() ? discoveryCost() : 0);
+    }
+
+    private MissionPayload.Data data() {
+        if (payload instanceof MissionPayload.Data data) {
+            return data;
+        }
+        throw new IllegalStateException("Mission " + missionId + " is not a data mission");
     }
 
     private MissionState with(
@@ -131,15 +194,19 @@ public record MissionState(
                 satelliteId,
                 ownerId,
                 definitionId,
+                kind,
                 targetBodyId,
+                instanceId,
+                seed,
                 startedAtLogicalTime,
                 completesAtLogicalTime,
-                researchYield,
-                discoveryCost,
-                discoveryRequired,
+                startEpoch,
                 nextStatus,
                 nextReadyAt,
-                nextResolvedAt
+                nextResolvedAt,
+                rewardVersion,
+                quarantine,
+                payload
         );
     }
 
@@ -184,6 +251,7 @@ public record MissionState(
                     throw new IllegalArgumentException("Cancelled mission requires a resolution time");
                 }
             }
+            case QUARANTINED -> throw new IllegalArgumentException("Quarantine phase must use its previous status");
         }
     }
 }

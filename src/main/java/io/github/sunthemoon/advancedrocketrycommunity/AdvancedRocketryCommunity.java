@@ -71,6 +71,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.api.satellite.RegisterSate
 import io.github.sunthemoon.advancedrocketrycommunity.compat.satellite.SatellitePayloadRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatellitePayloadRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteComponentReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
@@ -96,6 +97,8 @@ public final class AdvancedRocketryCommunity {
     private final PlanetaryCatalogManager planetaryCatalogs = new PlanetaryCatalogManager();
     private final CelestialCatalogManager celestialCatalogs = planetaryCatalogs.celestialView();
     private final SatelliteCatalogManager satelliteCatalogs = new SatelliteCatalogManager();
+    private final SatelliteComponentReloadListener.Manager satelliteComponents =
+            new SatelliteComponentReloadListener.Manager();
     private final MultiblockPatternCatalogManager multiblockPatterns =
             new MultiblockPatternCatalogManager();
     private final RollingMachineManager rollingMachines = new RollingMachineManager(multiblockPatterns);
@@ -278,7 +281,9 @@ public final class AdvancedRocketryCommunity {
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new PlanetaryDefinitionReloadListener(planetaryCatalogs));
-        event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs));
+        // ADR-049 §2: components load before the definitions that name their primary component.
+        event.addListener(new SatelliteComponentReloadListener(satelliteComponents));
+        event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs, satelliteComponents));
         event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
     }
 

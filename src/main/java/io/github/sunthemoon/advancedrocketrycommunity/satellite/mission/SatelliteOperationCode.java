@@ -25,7 +25,21 @@ public enum SatelliteOperationCode {
     UNLOADED_CHUNK,
     OUT_OF_RANGE,
     RECOVERY_REQUIRED,
-    SERVER_ERROR;
+    SERVER_ERROR,
+    // v1.6 (ADR-049..051); persisted by ordinal, so new codes are only appended.
+    STAT_LIMIT,
+    REQUIREMENT_UNMET,
+    RESEARCH_LOCKED,
+    COMPONENT_UNAVAILABLE,
+    RATE_LIMITED,
+    OWNER_LIMIT,
+    STORAGE_BUDGET,
+    AWAITING_WORLD_SAVE,
+    DELIVERY_BUFFER_FULL,
+    TERMINAL_RECEIPTS_FULL,
+    TERMINAL_MISSING,
+    NO_ASTEROID_TYPES,
+    BODY_UNAVAILABLE;
 
     public String translationKey() {
         return "status.advancedrocketrycommunity.satellite."

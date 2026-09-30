@@ -1,0 +1,80 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1347776,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "e649e44e5207ae72b1d2e25060d996a3d16897c1635976fee3cd833da7a68bb8"
+      },
+      {
+        "bytes": 2986025,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "cdaa6a58d3609d1aca9b1a23d5847e0d7d8398242ac51d7f4002e1b32f2ec2c9"
+      }
+    ]
+  },
+  "base_commit": "2752776516752c45cd10a3766b5d2a19e51c5c8a",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 200,
+    "tests": 1071
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "c0b39096555a1e29e25d2111590aac7cb07abf15042f4820c2d852b5805d258d",
+    "gradle.properties": "033f7f572618e6b82b1dfa4d4861dfe97e0352cceee68cce52d6b81aff00e32a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "23a26353400a7d24b24aef2ac5998cc11a3272bf215e87130956d419622c4f32",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/SatelliteLanguageProvider.java": "97cdcba06650b1d85a709a3e1fea2bfff9c481457a2887a0547525e0aca6c211",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/diagnostics/BetaOperationalReport.java": "c0b91b3a71c21f0458aeefcc64d2f6981478384acee7f725bbd43215b71692fd",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/AtomicSavedData.java": "b663ccb6e33c55866bcce8b0757e56617361e033395795e06103e49db8c234a8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataType.java": "a30ee24175143152f1e76a9f6a2da54f2bbf329f9ccdb445ea2450a65034a0a3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/SavedDataSchemaMigrator.java": "a48e249e66f48105434fadba76ee9559653fbf4aa7460f2f5369beb24d1fe75a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteBlueprints.java": "0f12aa60acf9bebda69f83cd47d5f6eeab2be682616f78006ce39af7379a179a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteComponentCatalog.java": "c1a05afd681c1ea9331aa7dcf8395e5e05f58906ddc3357d3d3dab791deb5787",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteComponentDefinition.java": "4ba54a8b204edcf630606db923117f1e21c0e084dfc185019407d1db93de0581",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteComponentRole.java": "16d1d168c1e6d1104734eaf308c3ce31c85d547d700b1ec7ba719e0b93c32bb9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/content/SatelliteIdentity.java": "fb437bc158d481d0764c072b9f06657b997cafc75b87362d52b61ec573dfce0d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/content/SatelliteItemData.java": "6825a38f9d78fd54e2e4c33ada8795e4d5454c8b48bb449ae4748334026deb33",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/AsteroidInstance.java": "16ca9c11aa9d2ac81c41ce258a70296ed4fe3a9334e59325cda07e2f1294f166",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/InstanceState.java": "df7ec4bfea8ca10daafd26f55fe3b414fb209916c07ff020805f2f3dca112114",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionKind.java": "0e3e4a389c0923522933da88cdc54c007f22d3e71a2216a00f1b5763cf09fcf6",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionPayload.java": "d2f1307f872920334b05d14d518eac5da9c944fbb90cf456059482b9baba5265",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionQuarantine.java": "8e11346d1a7c2c744b6a2bbba5a07adb68754ceb4d4bc88be662bc992373f719",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionState.java": "0dc46abd106f9fb50e37e142e80ba6fcdd0e98bff829db8877e1fc64f91453b6",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MissionStatus.java": "191a471d087de4b8366523ebe884eaa0cc6fcbec6b0561cb20ee78d7ba0cea51",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/RewardEntry.java": "7f6a30c10522dd496dbcec78e171563468e237fd11fdab26aa79454f4a242759",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java": "0b811bd70294f58023438eafc10104f6d857b69c1134bc9e02343564fd0c5598",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteOperationCode.java": "364faea43479a246fd17b6e5d50028353e73634dc649fbdeaed6b80e7661fd79",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteBlueprint.java": "8451c5dd4d9b25d2db581df1ddf9c770610f6da9028144bacce7c02f18c24f65",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKind.java": "d929d6f784e7ac4198df2d73cc3604a31664449549abd47a374f4b099cd796dd",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKindDefinition.java": "1600dff11a178678090b76ec0061e0e555b054bcee23ba48ba5f394890031f70",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKindState.java": "dc4d7121a728cda4a7cf74a61a7e9c7adc140e26b72e5bece59979e1298f732b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteLimits.java": "f5dfef09aa2c9b9bf714e613a76298a6bd5992cd3634b60d7fa50f2eb750b5e9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteState.java": "155b94217e4eb2c30e5c212a566323d3575a64a9365445812d2d78dba7fee689",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteStats.java": "366771e7264a44fd22e6505b91d6bca965f9044e62ef2d4facb150fd4a8c9c40",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java": "0db1f38f3eb895efd5daf99b5d89df9b8bb9185986364e0aec16bbf2a1cfff5c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteNbtCodec.java": "e57ddb4b6dc1708dd523b91ea85c3cf531cf88778831afa492cb6dd1dc0ec68c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRegistryPayload.java": "03f2f7c34a7f01ff2a670fc9fbdd3dddf681a3b933647005c2089c7dfb4cc792",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteCatalog.java": "86524ae97808e02887c44a8cb0c05a74019640f84bba684ef71a7564817fc91f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteCatalogDecoder.java": "fe08a03fb33025bc422ffe90df1bb11d21dbca35abfb54a0c0518a7feca04593",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteComponentReloadListener.java": "893a43acf7830cf3423d242002bdc0512cb24d97d43943b5ab21a01c7147801e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteDefinitionReloadListener.java": "d79db69a9fe4af0a903efde2528035c219c3f6630ffe4c9b674b019f029ace4e",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java": "4edbad2f45df5bbb41bdac98408351cfc134b4fc8578866809ee7e59428fb5be",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/diagnostics/BetaOperationalReportTest.java": "94d3d3b5ccf5cc1e60b2f0f3da41db0ac6e608673ba1a75c042c7fccbd65d6ba",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/PopulatedWorldDataPreservationTest.java": "519852e27d74adb1391769d3efe91b0905faea5a5662794980da7e7c2e1653fb",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/SavedDataSchemaMigratorTest.java": "ae1a76bf8ef9838857cc310a0bb27aed1f9d9f4e7222a4bf35a543f7a7bc0817",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/StationWorldMigrationTest.java": "f7d16d034f18dd40f1c33bcd99c9dd2aecbad18331d2b5bb7a9dfafd167fafc1",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteBlueprintsTest.java": "825f5b9b461dbe7fd96abeeba0463cf8666dce7366e2336bc1a19725743a5c29",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteComponentDefinitionTest.java": "79889b1276ae3c8e0a77b2bdc3bc13ac01733973ef5f468fafdb9865a5b76a91",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/content/SatelliteItemDataSchemaTwoTest.java": "5ea1e09dad07528bcf1f952be429a5eeeddfed1810af9389dc9a148b9149903d",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKindDefinitionTest.java": "4bf16c1ef4b17838ec40c9083f88d29b61349f87081b4470330767b6744a839a",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRootThreeTest.java": "0737b4e2464a08dec555a9718388e00da530c9e8b753cead734a98dc750b8c38"
+  }
+}

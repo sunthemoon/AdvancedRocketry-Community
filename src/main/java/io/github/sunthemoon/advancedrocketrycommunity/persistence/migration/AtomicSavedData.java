@@ -49,5 +49,10 @@ public abstract class AtomicSavedData extends SavedData {
         // No fallible operation follows replacement before acknowledgment.
         setDirty(false);
         saveFailureReported = false;
+        onPersisted();
+    }
+
+    /** Called after a write of the current snapshot returned without error (ADR-050 §2 save epoch). */
+    protected void onPersisted() {
     }
 }

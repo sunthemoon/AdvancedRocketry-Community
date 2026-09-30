@@ -84,6 +84,7 @@ public record BetaOperationalReport(
                 + " jei=" + runtime.jei()
                 + " default_root_schema=" + SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION
                 + " station_root_schema=" + ManagedSavedDataType.STATIONS.currentSchemaVersion()
+                + " satellite_root_schema=" + ManagedSavedDataType.SATELLITE_MISSIONS.currentSchemaVersion()
                 + " operational=" + roots.operational()
                 + " roots=" + roots.flags()
                 + " bodies=" + roots.bodies()
