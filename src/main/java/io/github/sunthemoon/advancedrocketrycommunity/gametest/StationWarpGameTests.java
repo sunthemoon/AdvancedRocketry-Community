@@ -37,6 +37,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
@@ -56,6 +57,9 @@ public final class StationWarpGameTests {
     private static final ResourceLocation MOON = CelestialIds.MOON_ID;
     private static final StationRocketAuthority NOTHING_IN_MOTION = (server, station) -> false;
     private static final int COMMIT_DELAY = (int) StationLimits.WARP_COUNTDOWN_TICKS + 3;
+    /** Keeps a fixture's pad chunk loaded across ticks (test setup only; production never loads chunks). */
+    private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
+            "arce_gametest_station_warp", java.util.Comparator.comparing(UUID::toString), 0);
 
     private StationWarpGameTests() {
     }
@@ -405,6 +409,69 @@ public final class StationWarpGameTests {
         helper.succeed();
     }
 
+    /**
+     * WARP-05 (ADR-044 §2/§8, plan §13.3): ten stations charged every tick dirty the registry only when
+     * credits are folded, at most once per 200-tick window; the operator diagnostics show the state.
+     */
+    @GameTest(template = "empty", batch = "station_warp_fold", timeoutTicks = 600)
+    public static void tenChargingStationsDirtyTheRegistryOnlyOncePerFoldWindow(GameTestHelper helper) {
+        List<Fixture> fixtures = new ArrayList<>();
+        List<IEnergyStorage> cores = new ArrayList<>();
+        for (int index = 0; index < 10; index++) {
+            Fixture fixture = new Fixture(helper, "Charging " + index, CelestialIds.EARTH_ID, 0);
+            fixtures.add(fixture);
+            // Without a player, the chunk would unload and remove the core's block entity after a few ticks.
+            fixture.keepLoaded();
+            cores.add(fixture.core(fixture.pad.east(2)));
+        }
+        StationRegistrySavedData data = fixtures.get(0).data;
+        StationWarpService warp = fixtures.get(0).warp;
+        long[] accepted = {0L};
+        int[] dirtyTicks = {0};
+        data.setDirty(false);
+        boolean scheduled = false;
+        try {
+            helper.onEachTick(() -> {
+                if (data.isDirty()) {
+                    dirtyTicks[0]++;
+                    data.setDirty(false);
+                }
+                for (IEnergyStorage core : cores) {
+                    accepted[0] += core.receiveEnergy(1_000, false);
+                }
+            });
+            scheduled = true;
+            helper.runAfterDelay(401, () -> {
+                try {
+                    long folded = fixtures.stream().mapToLong(fixture -> fixture.data.warpEnergy(fixture.id())).sum();
+                    long pending = fixtures.stream().mapToLong(fixture -> warp.pendingCredit(fixture.id())).sum();
+                    helper.assertTrue(accepted[0] >= 10L * 400L * 1_000L, "Cores stopped accepting: " + accepted[0]);
+                    helper.assertTrue(folded + pending == accepted[0], "Credits were lost or duplicated: folded="
+                            + folded + " pending=" + pending + " accepted=" + accepted[0]);
+                    helper.assertTrue(folded > 0L, "Nothing was folded in 400 ticks");
+                    helper.assertTrue(dirtyTicks[0] >= 1 && dirtyTicks[0] <= 3,
+                            "The registry was dirtied " + dirtyTicks[0] + " times in 400 ticks of charging");
+                    List<String> console = new ArrayList<>();
+                    UUID first = fixtures.get(0).id();
+                    fixtures.get(0).run(fixtures.get(0).server.createCommandSourceStack()
+                            .withSource(ConnectedTestPlayers.capture(console)), "arce station admin warp " + first);
+                    helper.assertTrue(console.size() == 3 && console.get(0).startsWith("warp enabled=true")
+                                    && console.get(1).startsWith("transfer_journal=")
+                                    && console.get(2).startsWith("station=" + first + " orbit=" + CelestialIds.EARTH_ID
+                                    + " balance=" + fixtures.get(0).data.warpEnergy(first)),
+                            "Operator diagnostics differ: " + console);
+                } finally {
+                    fixtures.forEach(Fixture::close);
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                fixtures.forEach(Fixture::close);
+            }
+        }
+    }
+
     private static void expect(GameTestHelper helper, List<String> replies, StationManagementCode code, String label) {
         helper.assertTrue(!replies.isEmpty() && last(replies).contains(code.description()),
                 label + ": expected " + code + " but got " + replies);
@@ -441,6 +508,7 @@ public final class StationWarpGameTests {
         final BlockPos pad;
         final List<ServerPlayer> online = new ArrayList<>();
         final List<BlockPos> cores = new ArrayList<>();
+        net.minecraft.world.level.ChunkPos ticket;
 
         Fixture(GameTestHelper helper, String name, ResourceLocation orbit, int balance) {
             this.helper = helper;
@@ -461,6 +529,11 @@ public final class StationWarpGameTests {
 
         UUID id() {
             return created.stationId();
+        }
+
+        void keepLoaded() {
+            ticket = new net.minecraft.world.level.ChunkPos(pad);
+            space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticket, 2, id());
         }
 
         void leave(UUID playerId) {
@@ -518,6 +591,10 @@ public final class StationWarpGameTests {
             data.delete(id());
             platforms.removeTemplate(space, created.cell());
             data.flush(server);
+            if (ticket != null) {
+                space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, ticket, 2, id());
+                ticket = null;
+            }
         }
     }
 }

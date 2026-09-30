@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.warp;
 
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import java.util.Optional;
 import net.minecraft.server.MinecraftServer;
 
 /**
@@ -14,4 +15,9 @@ public interface StationRocketAuthority {
     StationRocketAuthority FAIL_CLOSED = (server, station) -> true;
 
     boolean inMotion(MinecraftServer server, StationState station);
+
+    /** One bounded line for operators, e.g. the transfer journal's classification counts. */
+    default Optional<String> diagnostics(MinecraftServer server) {
+        return Optional.empty();
+    }
 }

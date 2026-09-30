@@ -518,6 +518,10 @@ final class RocketFlightService {
         return transfers.stationRegionInMotion(server, minX, minZ, maxX, maxZ);
     }
 
+    String transferJournalDiagnostics(net.minecraft.server.MinecraftServer server) {
+        return transfers.journalDiagnostics(server);
+    }
+
     int activeTransferCount(net.minecraft.server.MinecraftServer server) {
         return transfers.activeCount(server);
     }

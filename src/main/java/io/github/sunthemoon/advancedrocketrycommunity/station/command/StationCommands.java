@@ -277,6 +277,8 @@ public final class StationCommands {
                         + " orbit=" + station.orbitBody()
                         + " gravity_milli=" + station.environment().gravityMilli()
                         + " vacuum=" + station.environment().vacuum()
+                        + " warp_energy=" + StationRegistrySavedData.get(context.getSource().getServer())
+                        .warpEnergy(station.stationId())
         ), false);
         return 1;
     }

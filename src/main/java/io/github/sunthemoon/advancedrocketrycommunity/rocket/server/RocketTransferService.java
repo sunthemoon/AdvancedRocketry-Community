@@ -259,6 +259,20 @@ final class RocketTransferService {
         );
     }
 
+    /** Operator line for the warp in-motion rule: journal state and this session's classification. */
+    String journalDiagnostics(MinecraftServer server) {
+        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        if (!journal.operational()) {
+            return "transfer_journal=blocked";
+        }
+        List<RocketTransferRecord> records = journal.entries();
+        long live = records.stream().filter(record -> liveTransfers.contains(record.transferId())).count();
+        long settled = records.stream().filter(record -> settledTransfers.contains(record.transferId())).count();
+        return String.format(java.util.Locale.ROOT,
+                "transfer_journal=operational records=%d live=%d settled=%d unclassified=%d",
+                records.size(), live, settled, records.size() - live - settled);
+    }
+
     int activeCount(MinecraftServer server) {
         RocketTransferSavedData journal = RocketTransferSavedData.get(server);
         return journal.operational() ? journal.entries().size() : -1;

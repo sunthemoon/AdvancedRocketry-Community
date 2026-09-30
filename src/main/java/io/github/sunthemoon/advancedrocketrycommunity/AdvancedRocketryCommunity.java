@@ -56,6 +56,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisua
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
@@ -228,9 +230,18 @@ public final class AdvancedRocketryCommunity {
             MinecraftForge.EVENT_BUS.addListener(new RocketCommands(manager)::register);
             rocketManager = manager;
             // ADR-044 §5: the rocket module's journal rule replaces the fail-closed default.
-            stationWarp.installRocketAuthority((server, station) -> manager.stationRegionInMotion(server,
-                    station.region().minimumX(), station.region().minimumZ(),
-                    station.region().maximumX(), station.region().maximumZ()));
+            stationWarp.installRocketAuthority(new StationRocketAuthority() {
+                @Override
+                public boolean inMotion(net.minecraft.server.MinecraftServer server, StationState station) {
+                    return manager.stationRegionInMotion(server, station.region().minimumX(),
+                            station.region().minimumZ(), station.region().maximumX(), station.region().maximumZ());
+                }
+
+                @Override
+                public java.util.Optional<String> diagnostics(net.minecraft.server.MinecraftServer server) {
+                    return java.util.Optional.of(manager.transferJournalDiagnostics(server));
+                }
+            });
         }
     }
 

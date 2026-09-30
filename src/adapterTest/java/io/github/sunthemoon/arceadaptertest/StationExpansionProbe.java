@@ -3,6 +3,7 @@ package io.github.sunthemoon.arceadaptertest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
@@ -29,24 +31,31 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 
 /**
  * Opt-in native stand-in for local players in Space. It connects a mock player the way vanilla
- * GameTest does, runs only the host's public station-expansion command as that player, and
- * records the replies. It uses no host internals and never writes host data itself.
+ * GameTest does, runs only the host's public station expansion and warp commands as that player,
+ * turns the player to look at a block, and pushes Forge Energy into a block as any producer mod
+ * would, recording the replies. It uses no host internals and never writes host data itself.
  */
 final class StationExpansionProbe {
     private static final ResourceKey<Level> SPACE = ResourceKey.create(Registries.DIMENSION,
             ResourceLocation.tryParse("advancedrocketrycommunity:space"));
     private static final String UUID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-    /** Expansion, and inviting another connected probe player (to write a native team). */
+    /** Expansion, warp, and inviting another connected probe player (to write a native team). */
     private static final Pattern ALLOWED = Pattern.compile("arce station expand( confirm " + UUID_PATTERN + ")?"
-            + "|arce station invite " + UUID_PATTERN + " probe[0-3]");
+            + "|arce station invite " + UUID_PATTERN + " probe[0-3]"
+            + "|arce station warp (confirm " + UUID_PATTERN + "|cancel|status|[a-z0-9_.-]+:[a-z0-9_./-]+)");
+    private static final int MAX_ENERGY_PER_CALL = 1_000_000;
     private static final int MAX_PLAYERS = 4;
-    private static final int MAX_MESSAGES = 16;
+    private static final int MAX_MESSAGES = 32;
     private static final Map<UUID, Probe> PLAYERS = new LinkedHashMap<>();
 
     private StationExpansionProbe() { }
@@ -73,7 +82,62 @@ final class StationExpansionProbe {
                 .then(Commands.literal("leave")
                         .then(Commands.argument("label", StringArgumentType.word())
                                 .then(Commands.argument("actor", UuidArgument.uuid())
-                                        .executes(StationExpansionProbe::leave)))));
+                                        .executes(StationExpansionProbe::leave))))
+                .then(Commands.literal("look")
+                        .then(Commands.argument("label", StringArgumentType.word())
+                                .then(Commands.argument("actor", UuidArgument.uuid())
+                                        .then(Commands.argument("position", BlockPosArgument.blockPos())
+                                                .executes(StationExpansionProbe::look)))))
+                .then(Commands.literal("energy")
+                        .then(Commands.argument("label", StringArgumentType.word())
+                                .then(Commands.argument("position", BlockPosArgument.blockPos())
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(1,
+                                                        MAX_ENERGY_PER_CALL))
+                                                .executes(StationExpansionProbe::energy))))));
+    }
+
+    /** Turns a connected probe player to look at the center of a block, as a real player aims. */
+    private static int look(CommandContext<CommandSourceStack> context) {
+        String label = label(context);
+        UUID actor = UuidArgument.getUuid(context, "actor");
+        BlockPos position = BlockPosArgument.getBlockPos(context, "position");
+        Probe probe = PLAYERS.get(actor);
+        if (probe == null) {
+            throw new IllegalArgumentException("Station probe player is not connected");
+        }
+        probe.player().lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(position));
+        JsonObject report = report("look", label, actor);
+        report.addProperty("x", position.getX());
+        report.addProperty("y", position.getY());
+        report.addProperty("z", position.getZ());
+        LogUtils.getLogger().info("ARCE_STATION_PROBE {}", report);
+        return 1;
+    }
+
+    /**
+     * Pushes Forge Energy into the block entity at a Space position through its public capability, as
+     * a producer mod would: first simulated, then for real. Reports both accepted amounts.
+     */
+    private static int energy(CommandContext<CommandSourceStack> context) {
+        String label = label(context);
+        BlockPos position = BlockPosArgument.getBlockPos(context, "position");
+        int amount = IntegerArgumentType.getInteger(context, "amount");
+        ServerLevel space = context.getSource().getServer().getLevel(SPACE);
+        BlockEntity entity = space == null || !space.hasChunkAt(position) ? null : space.getBlockEntity(position);
+        IEnergyStorage storage = entity == null ? null
+                : entity.getCapability(ForgeCapabilities.ENERGY, null).orElse(null);
+        JsonObject report = new JsonObject();
+        report.addProperty("label", label);
+        report.addProperty("action", "energy");
+        report.addProperty("capability", storage != null);
+        if (storage != null) {
+            report.addProperty("simulated", storage.receiveEnergy(amount, true));
+            report.addProperty("accepted", storage.receiveEnergy(amount, false));
+            report.addProperty("stored_reported", storage.getEnergyStored());
+            report.addProperty("can_extract", storage.canExtract());
+        }
+        LogUtils.getLogger().info("ARCE_STATION_PROBE {}", report);
+        return 1;
     }
 
     private static int join(CommandContext<CommandSourceStack> context) {
@@ -104,6 +168,13 @@ final class StationExpansionProbe {
             public void sendSystemMessage(Component message) {
                 if (messages.size() < MAX_MESSAGES) {
                     messages.add(message.getString());
+                }
+            }
+
+            @Override
+            public void sendSystemMessage(Component message, boolean overlay) {
+                if (messages.size() < MAX_MESSAGES) {
+                    messages.add((overlay ? "[action bar] " : "") + message.getString());
                 }
             }
         };

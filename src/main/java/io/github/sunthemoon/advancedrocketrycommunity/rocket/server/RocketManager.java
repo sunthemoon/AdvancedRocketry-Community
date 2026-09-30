@@ -238,6 +238,11 @@ public final class RocketManager implements RocketOperationService {
         return flights.stationRegionInMotion(server, minX, minZ, maxX, maxZ);
     }
 
+    /** Operator diagnostics for the warp in-motion rule (journal state and recovery classification). */
+    public String transferJournalDiagnostics(MinecraftServer server) {
+        return flights.transferJournalDiagnostics(server);
+    }
+
     public int activeTransferCount(MinecraftServer server) {
         return flights.activeTransferCount(server);
     }

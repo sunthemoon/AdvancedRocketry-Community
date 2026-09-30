@@ -117,6 +117,39 @@ public final class StationWarpService {
         return settings.get();
     }
 
+    /**
+     * Operator diagnostics (WARP-05), bounded: one summary line, the rocket port's line, at most 64
+     * countdown lines and, for a station, its warp state. Reads only; folds nothing.
+     */
+    public java.util.List<String> diagnostics(MinecraftServer server, Optional<UUID> stationId) {
+        Objects.requireNonNull(server, "server");
+        WarpSettings current = settings.get();
+        StationRegistrySavedData data = StationRegistrySavedData.get(server);
+        long now = server.getTickCount();
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        lines.add(String.format(java.util.Locale.ROOT,
+                "warp enabled=%s cost_in_system=%d cost_interstellar=%d registry_operational=%s quarantined=%s"
+                        + " pending_stations=%d pending_energy=%d confirmations=%d countdowns=%d",
+                current.enabled(), current.inSystemCost(), current.interstellarCost(), data.operational(),
+                data.updatesQuarantined(), credits.size(), credits.total(), confirmations.size(), countdowns.size()));
+        StationRocketAuthority authority = rocketAuthority;
+        lines.add(authority.diagnostics(server).orElse(authority == StationRocketAuthority.FAIL_CLOSED
+                ? "rocket_authority=fail_closed" : "rocket_authority=installed"));
+        for (StationWarpCountdowns.Countdown countdown : countdowns.all()) {
+            WarpQuote quote = countdown.quote();
+            lines.add(String.format(java.util.Locale.ROOT,
+                    "countdown station=%s target=%s ticks_left=%d actor=%s class=%s cost=%d",
+                    quote.stationId(), quote.target(), countdown.ticksLeft(now), quote.actorId(),
+                    quote.costClass().label(), quote.cost()));
+        }
+        stationId.ifPresent(id -> lines.add(data.find(id).map(station -> String.format(java.util.Locale.ROOT,
+                "station=%s orbit=%s balance=%d pending=%d cooldown_ready=%s rockets_in_motion=%s countdown=%s",
+                id, station.orbitBody(), data.warpEnergy(id), credits.pending(id), cooldown.ready(id, now),
+                authority.inMotion(server, station), countdowns.get(id).isPresent()))
+                .orElse("station=" + id + " missing")));
+        return lines;
+    }
+
     /** {@code /arce station warp <body>}: quote and issue a one-shot confirmation. */
     public StationWarpResult request(ServerPlayer player, boolean issuedByPlayer, ResourceLocation target) {
         Objects.requireNonNull(player, "player");

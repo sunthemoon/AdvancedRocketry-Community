@@ -62,6 +62,10 @@ public final class StationWarpCredits {
         return pending.size();
     }
 
+    public long total() {
+        return pending.values().stream().mapToLong(Integer::longValue).sum();
+    }
+
     public void clear() {
         pending.clear();
         acceptedThisTick.clear();

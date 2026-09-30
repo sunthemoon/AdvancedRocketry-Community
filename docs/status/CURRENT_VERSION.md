@@ -62,15 +62,19 @@ relocation) is implemented
 ([verification](../work/v1.5.0-warp-schema/VERIFICATION.md)), and so is WARP-03
 (warp core, commands and countdown;
 [verification](../work/v1.5.0-warp-core/VERIFICATION.md)), and WARP-04 (rocket
-authority; [verification](../work/v1.5.0-warp-rockets/VERIFICATION.md)). These slices
-await independent review. Release
+authority; [verification](../work/v1.5.0-warp-rockets/VERIFICATION.md)) and WARP-05
+(diagnostics and native warp restarts;
+[verification](../work/v1.5.0-warp-native/VERIFICATION.md)). An independent review
+of STAR, capacity and WARP-02 was applied
+([record](../work/v1.5.0-slices-review/VERIFICATION.md)); the later slices await
+review. Release
 status remains `IN_PROGRESS`, not `PASSED`.
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and
 pre-start migration contract, retaining old station identity/geometry. The
-per-station sky, the warp's rocket authority and restart evidence, UI, elevator
-endpoint and acceptance remain unimplemented current-version work,
+per-station sky, UI screens, the elevator endpoint, the MIG recovery matrix and
+acceptance remain unimplemented current-version work,
 not metadata-only substitutes.
 
 The [v1.4 development handoff](../releases/v1.4.0/RELEASE-EVIDENCE.md) and

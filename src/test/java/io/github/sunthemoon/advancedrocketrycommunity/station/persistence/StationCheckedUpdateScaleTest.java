@@ -61,6 +61,45 @@ final class StationCheckedUpdateScaleTest {
         }
     }
 
+    /**
+     * WARP-05 (ADR-044 §8, plan §13.2-13.4): a checked warp commit, and an ordinary save of a registry
+     * whose 4,096 stations all hold a balance, at 10, 100 and the station limit.
+     */
+    @Test
+    void warpCommitAndFullBalanceSaveStayWithinTheSpikeBudget() throws Exception {
+        for (int count : new int[]{10, 100, StationLimits.MAX_STATIONS}) {
+            Path directory = Files.createDirectory(root.resolve("warp-" + count));
+            Path file = directory.resolve(ManagedSavedDataType.STATIONS.fileName());
+            StationRegistrySavedData data = registry(count);
+            java.util.Map<UUID, Integer> credits = new java.util.LinkedHashMap<>();
+            data.stations().forEach(station -> credits.put(station.stationId(), StationLimits.MAX_WARP_ENERGY));
+            assertEquals((long) count * StationLimits.MAX_WARP_ENERGY, data.foldWarpCredits(credits).credited());
+            long saveStart = System.nanoTime();
+            CompoundTag saved = data.save(new CompoundTag());
+            long saveNanos = System.nanoTime() - saveStart;
+            CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, () -> saved);
+            StationState target = data.stations().get(count / 2);
+            long[] samples = new long[3];
+            String[] bodies = {"moon", "earth", "moon"};
+            for (int run = 0; run < samples.length; run++) {
+                StationState observed = data.find(target.stationId()).orElseThrow();
+                long start = System.nanoTime();
+                CheckedUpdate result = data.checkedRelocation(file, observed, ModIdentity.id(bodies[run]), 100_000,
+                        CheckedSavedDataFile::atomicMove);
+                samples[run] = System.nanoTime() - start;
+                assertEquals(CheckedUpdate.COMMITTED, result);
+            }
+            Arrays.sort(samples);
+            System.out.printf("ARCE_WARP05_SCALE stations=%d balances=%d file_bytes=%d save_ms=%.1f"
+                            + " commit_median_ms=%.1f commit_max_ms=%.1f%n", count, data.warpEnergyBalances().size(),
+                    Files.size(file), saveNanos / 1e6, samples[1] / 1e6, samples[2] / 1e6);
+            assertTrue(samples[1] < SPIKE_BUDGET_NANOS, count + " stations: median warp commit " + samples[1] / 1e6 + " ms");
+            assertTrue(saveNanos < SPIKE_BUDGET_NANOS, count + " stations: ordinary save " + saveNanos / 1e6 + " ms");
+            assertEquals(StationLimits.MAX_WARP_ENERGY - 300_000, data.warpEnergy(target.stationId()));
+            assertEquals(ModIdentity.id("moon"), data.find(target.stationId()).orElseThrow().orbitBody());
+        }
+    }
+
     @Test
     void regionLookupIsConstantTimeAtTheStationLimit() {
         StationRegistrySavedData data = registry(StationLimits.MAX_STATIONS);

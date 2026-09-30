@@ -38,7 +38,23 @@ public final class StationWarpCommands {
                 .then(Commands.literal("cancel").executes(this::cancel))
                 .then(Commands.literal("status").executes(this::status))
                 .then(Commands.argument("body", ResourceLocationArgument.id()).executes(this::request));
-        event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("station").then(tree)));
+        var admin = Commands.literal("admin")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("warp")
+                        .executes(context -> diagnostics(context, java.util.Optional.empty()))
+                        .then(Commands.argument(STATION, UuidArgument.uuid())
+                                .executes(context -> diagnostics(context,
+                                        java.util.Optional.of(UuidArgument.getUuid(context, STATION))))));
+        event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("station")
+                .then(tree).then(admin)));
+    }
+
+    /** Operator-only warp diagnostics; read-only. */
+    private int diagnostics(CommandContext<CommandSourceStack> context, java.util.Optional<java.util.UUID> station) {
+        for (String line : warp.diagnostics(context.getSource().getServer(), station)) {
+            context.getSource().sendSuccess(() -> Component.literal(line), false);
+        }
+        return 1;
     }
 
     private int request(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

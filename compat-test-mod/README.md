@@ -13,15 +13,25 @@ Earth/Moon/unresolved and unloaded locations, and verifies expiration at stoppin
 `arce_env_probe <label> <dimension> <position>` observation command. It logs the
 configured snapshot and loaded-chunk state before/after the query without changing
 the world. `-Darce_adapter_test.stationSmoke=true` enables the permission-level-2
-`arce_station_probe join|run|leave` commands for native station checks. `join`
-connects a mock player with the given UUID over an embedded channel (as vanilla
-GameTest does), loads only that player's own chunk and moves it into Space;
-`run` executes only `arce station expand`, `arce station expand confirm <id>` or
-`arce station invite <id> probe<0-3>` (another probe player) from that player's
-own command source; `leave` disconnects it. At most four probe
-players exist and all leave at server stop. Replies and the loaded-chunk count
-around the host command are logged. It uses no host internals and never writes
-host data itself; connecting players does write their normal player data.
+`arce_station_probe join|run|leave|look|energy` commands for native station
+checks.
+- `join` connects a mock player with the given UUID over an embedded channel (as
+  vanilla GameTest does), loads only that player's own chunk and moves it into
+  Space.
+- `run` executes, from that player's own command source, only:
+  - `arce station expand` or `arce station expand confirm <id>`;
+  - `arce station invite <id> probe<0-3>` (another probe player);
+  - `arce station warp <body>`, `confirm <id>`, `cancel` or `status`.
+- `look` turns the player to aim at a block, as a real player aims.
+- `energy` pushes at most 1,000,000 Forge Energy into the block entity at a Space
+  position through its public capability, as a producer mod would. It is
+  simulated first and then sent for real.
+- `leave` disconnects the player.
+
+At most four probe players exist, and all leave at server stop. Replies, including
+action-bar messages, and the loaded-chunk count around the host command are
+logged. It uses no host internals and never writes host data itself; connecting
+players does write their normal player data.
 Do not use the compatibility fixture in a normal player installation.
 
 ## Build

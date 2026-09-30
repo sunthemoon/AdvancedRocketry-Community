@@ -75,6 +75,10 @@ No candidate or release approval is assigned.
 - Rockets docked at a station move with it: after a warp they launch from the
   station's new orbit. Station deletion is refused while rocket flight records
   cannot be read.
+- Operators: `/arce station admin warp [station_id]` shows warp settings, pending
+  energy, running countdowns, rocket flight record state and, for a station, its
+  orbit, balance and whether a rocket blocks a warp. `/arce station admin inspect`
+  shows the warp balance.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.
