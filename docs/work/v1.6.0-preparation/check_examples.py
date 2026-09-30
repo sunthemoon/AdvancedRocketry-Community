@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Reference projections of ADR-049..052 arithmetic, not production code or runtime behavior.
+"""Reference projections of ADR-049..052 (revision 2) arithmetic, not production code or runtime behavior.
 
 The functions below restate the frozen integer rules so that the Java slices (C7/C8)
 can be checked against the same vectors in examples.json.
 """
 
+import hashlib
+import itertools
 import json
 from pathlib import Path
 import unittest
@@ -73,22 +75,30 @@ def asteroid_yield(asteroid_type, seed):
     return result
 
 
-def survey(types, system, mission_seed, count):
-    """ADR-052 section 4, survey-v1: returns [type id, instance seed, yield] per instance."""
-    candidates = sorted(
-        (t for t in types if not t["systems"] or system in t["systems"]), key=lambda t: t["id"]
-    )
-    if not candidates:
+def candidates(types, system, key=lambda t: t["id"]):
+    """Full-string order (String.compareTo on toString()); `key` lets a test show the path-first trap."""
+    return sorted((t for t in types if not t["systems"] or system in t["systems"]), key=key)
+
+
+def fingerprint(sorted_candidates):
+    lines = "".join(f"{t['id']}\t{t['weight']}\t{t['table_version']}\n" for t in sorted_candidates)
+    return hashlib.sha256(lines.encode("utf-8")).hexdigest()[:16]
+
+
+def survey(types, system, mission_seed, count, key=lambda t: t["id"]):
+    """ADR-052 section 4, survey-v1: returns (fingerprint, [type id, instance seed, yield] per instance)."""
+    chosen_from = candidates(types, system, key)
+    if not chosen_from:
         raise ValueError("NO_ASTEROID_TYPES")
     stream = SplitMix64(mission_seed ^ SURVEY01)
     instances = []
     for _ in range(count):
         instance_seed = stream.next()
         chooser = SplitMix64(instance_seed ^ ASTTYPE1)
-        chosen = candidates[pick([t["weight"] for t in candidates],
-                                 chooser.bounded(sum(t["weight"] for t in candidates)))]
+        chosen = chosen_from[pick([t["weight"] for t in chosen_from],
+                                  chooser.bounded(sum(t["weight"] for t in chosen_from)))]
         instances.append([chosen["id"], f"{instance_seed:016x}", asteroid_yield(chosen, instance_seed)])
-    return instances
+    return fingerprint(chosen_from), instances
 
 
 def truncate(entries, cargo):
@@ -116,27 +126,30 @@ def gas(amount_per_1000_ticks, rating, cargo, config_pct):
 
 
 CAPS = {"power": 1_000, "battery": 1_000_000, "data": 100_000, "cargo": 27, "rating": 100}
-FIELD = {"power": "power_generation", "battery": "battery_capacity", "data": "data_capacity",
-         "cargo": "cargo_stacks"}
+MODULE_STAT = {"power": ("power", "power_generation"), "battery": ("battery", "battery_capacity"),
+               "data_storage": ("data", "data_capacity"), "cargo": ("cargo", "cargo_stacks")}
 
 
-def blueprint(components, kind, scan_energy=0):
-    """ADR-049 section 4; components are catalog entries in slot order."""
-    roles = [c["role"] for c in components]
-    if roles.count("chassis") != 1 or roles.count("primary") > 1:
+def blueprint(slots, kind, catalog, scan_energy=0):
+    """ADR-049 section 4: slot 0 chassis, slot 1 primary (None only for the legacy data label),
+    slots 2..7 modules. Returns stats or the first refusal code in the section-4 order."""
+    chassis, primary, modules = slots["chassis"], slots["primary"], slots["modules"]
+    chassis = catalog.get(chassis) if chassis else None
+    primary = catalog.get(primary) if primary else None
+    modules = [catalog[name] for name in modules]
+    if (chassis is None or chassis["role"] != "chassis" or len(modules) > 6
+            or any(m["role"] not in MODULE_STAT for m in modules)):
         return "INVALID_LAYOUT"
-    modules = [c for c in components if c["role"] not in ("chassis", "primary")]
-    if len(modules) > 6:
-        return "INVALID_LAYOUT"
-    primary = [c for c in components if c["role"] == "primary"]
-    if (kind != "data" and not primary) or (primary and primary[0]["kind"] != kind):
+    if kind == "data":
+        if primary is not None:
+            return "INVALID_LAYOUT"
+    elif primary is None or primary["role"] != "primary" or primary["kind"] != kind:
         return "INVALID_LAYOUT"
     stats = {"power": 0, "battery": 720, "data": 0, "cargo": 0,
-             "rating": primary[0]["primary_rating"] if primary else 0}
-    for component in modules:
-        role_stat = {"power": "power", "battery": "battery", "data_storage": "data", "cargo": "cargo"}
-        stat = role_stat[component["role"]]
-        stats[stat] += component[FIELD[stat]]
+             "rating": primary["primary_rating"] if primary else 0}
+    for module in modules:
+        stat, field = MODULE_STAT[module["role"]]
+        stats[stat] += module[field]
     if any(stats[name] > cap for name, cap in CAPS.items()):
         return "STAT_LIMIT"
     if stats["power"] < 1:
@@ -154,18 +167,34 @@ def drain_passes(due, per_pass=32):
     return ceil_div(due, per_pass)
 
 
+REGISTRY_STATES = ("UNAVAILABLE", "ABSENT", "ACTIVE_HERE", "READY_HERE", "ACTIVE_ELSEWHERE",
+                   "READY_ELSEWHERE", "CLAIMED_HERE", "CLAIMED_ACK_PENDING", "CLAIMED_ACK_DURABLE",
+                   "CLAIMED_ELSEWHERE", "CANCELLED", "QUARANTINED")
+RECEIPT_STATES = ("NONE", "UNSERIALIZED", "SERIALIZED")
+
+
 def reconcile(registry, receipt):
-    """ADR-051 section 6: registry in {ACTIVE, READY, CLAIMED, CLAIMED_ACK, ABSENT};
-    receipt in {NONE, UNSERIALIZED, SERIALIZED}."""
-    if registry in ("ACTIVE", "READY"):
-        return "SET_CLAIMED_NO_ITEMS" if receipt != "NONE" else "NONE"
-    if registry == "CLAIMED":
+    """ADR-051 revision 2, section 7: total over REGISTRY_STATES x RECEIPT_STATES."""
+    if registry not in REGISTRY_STATES or receipt not in RECEIPT_STATES:
+        raise ValueError((registry, receipt))
+    if registry == "UNAVAILABLE":
+        return "NONE_REGISTRY_BLOCKED"
+    if registry == "CLAIMED_HERE":
         return {"SERIALIZED": "ACKNOWLEDGE", "UNSERIALIZED": "WAIT", "NONE": "REMATERIALIZE"}[receipt]
-    if registry == "CLAIMED_ACK":
+    if receipt == "NONE":
         return "NONE"
-    if registry == "ABSENT":
-        return "DROP_RECEIPT" if receipt != "NONE" else "NONE"
-    raise ValueError(registry)
+    return {
+        "ABSENT": "DROP_RECEIPT",
+        "ACTIVE_HERE": "SET_CLAIMED_NO_ITEMS",
+        "READY_HERE": "SET_CLAIMED_NO_ITEMS",
+        "ACTIVE_ELSEWHERE": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT",
+        "READY_ELSEWHERE": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT",
+        "CLAIMED_ACK_PENDING": "WAIT",
+        "CLAIMED_ACK_DURABLE": "DROP_RECEIPT",
+        "CLAIMED_ELSEWHERE": "KEEP_AUDIT_DOUBLE_PAY",
+        "CANCELLED": "KEEP_AUDIT_PAID_THEN_CANCELLED",
+        "QUARANTINED": "KEEP_MARK_RECEIPT_SEEN",
+    }[registry]
 
 
 class ExampleTests(unittest.TestCase):
@@ -186,17 +215,26 @@ class ExampleTests(unittest.TestCase):
             SplitMix64(0).bounded(0)
 
     def test_survey_and_yield_vectors(self):
-        types = EXAMPLES["asteroid_types"]
         for case in EXAMPLES["survey"]:
-            result = survey(types, case["system"], int(case["mission_seed"], 16), case["count"])
+            types = EXAMPLES[case["types"]]
+            found, result = survey(types, case["system"], int(case["mission_seed"], 16), case["count"])
+            self.assertEqual(found, case["candidate_fingerprint"])
             self.assertEqual(result, case["instances"])
             for _, _, entries in result:
                 self.assertLessEqual(sum(count for _, count in entries), 4096)
                 self.assertLessEqual(len(entries), 17)
-        scoped = [t for t in types if t["systems"]]
+        scoped = [t for t in EXAMPLES["asteroid_types"] if t["systems"]]
         self.assertTrue(scoped)
         with self.assertRaises(ValueError):
             survey(scoped, "example:elsewhere", 1, 1)
+
+    def test_mixed_namespace_order_differs_from_path_first_order(self):
+        case = next(c for c in EXAMPLES["survey"] if c["types"] == "mixed_namespace_types")
+        types = EXAMPLES["mixed_namespace_types"]
+        path_first = survey(types, case["system"], int(case["mission_seed"], 16), case["count"],
+                            key=lambda t: (t["id"].split(":", 1)[1], t["id"].split(":", 1)[0]))
+        self.assertNotEqual(path_first[1], case["instances"])
+        self.assertNotEqual(path_first[0], case["candidate_fingerprint"])
 
     def test_yield_is_reproducible_and_seed_sensitive(self):
         small = EXAMPLES["asteroid_types"][0]
@@ -211,6 +249,7 @@ class ExampleTests(unittest.TestCase):
         for case in EXAMPLES["asteroid_duration"]:
             self.assertEqual(asteroid_duration(case["time_multiplier_pct"], case["config_pct"],
                                                case["rating"]), case["duration"])
+        self.assertGreater(12_000 * 1000 * 1000 * 10, 2**31 - 1)  # 32-bit int would overflow (ADR-052 L3)
 
     def test_gas(self):
         for case in EXAMPLES["gas"]:
@@ -220,8 +259,7 @@ class ExampleTests(unittest.TestCase):
     def test_blueprints(self):
         catalog = EXAMPLES["components"]
         for case in EXAMPLES["blueprints"]:
-            components = [catalog[name] for name in case["components"]]
-            self.assertEqual(blueprint(components, case["kind"], case.get("scan_energy", 0)),
+            self.assertEqual(blueprint(case["slots"], case["kind"], catalog, case.get("scan_energy", 0)),
                              case["expected"], case["name"])
 
     def test_scheduler_backlog(self):
@@ -229,9 +267,11 @@ class ExampleTests(unittest.TestCase):
             self.assertEqual(drain_passes(case["due"]), case["passes"])
             self.assertEqual(drain_passes(case["due"]) * 20, case["ticks"])
 
-    def test_reconciliation_table(self):
-        for case in EXAMPLES["reconciliation"]:
-            self.assertEqual(reconcile(case["registry"], case["receipt"]), case["action"])
+    def test_reconciliation_table_is_total(self):
+        rows = {(case["registry"], case["receipt"]): case["action"] for case in EXAMPLES["reconciliation"]}
+        self.assertEqual(set(rows), set(itertools.product(REGISTRY_STATES, RECEIPT_STATES)))
+        for (registry, receipt), action in rows.items():
+            self.assertEqual(reconcile(registry, receipt), action, (registry, receipt))
 
 
 if __name__ == "__main__":

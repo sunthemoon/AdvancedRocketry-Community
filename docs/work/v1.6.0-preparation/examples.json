@@ -1,5 +1,5 @@
 {
- "purpose": "Reference vectors for ADR-049..052 integer rules; not NBT, runtime data or built-in balance",
+ "purpose": "Reference vectors for ADR-049..052 revision 2 integer rules; not NBT, runtime data or built-in balance",
  "splitmix64_seed0": [
   "e220a8397b1dcdaf",
   "6e789e6aa1b965f4",
@@ -71,7 +71,8 @@
      "weight": 10
     }
    ],
-   "time_multiplier_pct": 100
+   "time_multiplier_pct": 100,
+   "table_version": "0000000000000a01"
   },
   {
    "id": "example:light",
@@ -96,7 +97,8 @@
      "weight": 5
     }
    ],
-   "time_multiplier_pct": 100
+   "time_multiplier_pct": 100,
+   "table_version": "0000000000000a02"
   },
   {
    "id": "example:dense",
@@ -117,7 +119,8 @@
      "weight": 5
     }
    ],
-   "time_multiplier_pct": 150
+   "time_multiplier_pct": 150,
+   "table_version": "0000000000000a03"
   },
   {
    "id": "example:strange_tau",
@@ -140,14 +143,55 @@
      "weight": 20
     }
    ],
-   "time_multiplier_pct": 100
+   "time_multiplier_pct": 100,
+   "table_version": "0000000000000a04"
+  }
+ ],
+ "mixed_namespace_types": [
+  {
+   "id": "zeta:alpha",
+   "weight": 1,
+   "systems": [],
+   "mass": 40,
+   "mass_variability_pct": 0,
+   "richness_pct": 50,
+   "richness_variability_pct": 0,
+   "base_item": "minecraft:cobblestone",
+   "ores": [
+    {
+     "item": "minecraft:iron_ore",
+     "weight": 1
+    }
+   ],
+   "time_multiplier_pct": 100,
+   "table_version": "0000000000000b01"
+  },
+  {
+   "id": "alpha:zeta",
+   "weight": 3,
+   "systems": [],
+   "mass": 40,
+   "mass_variability_pct": 0,
+   "richness_pct": 50,
+   "richness_variability_pct": 0,
+   "base_item": "minecraft:cobblestone",
+   "ores": [
+    {
+     "item": "minecraft:gold_ore",
+     "weight": 1
+    }
+   ],
+   "time_multiplier_pct": 100,
+   "table_version": "0000000000000b02"
   }
  ],
  "survey": [
   {
+   "types": "asteroid_types",
    "system": "advancedrocketrycommunity:earth",
    "mission_seed": "0123456789abcdef",
    "count": 4,
+   "candidate_fingerprint": "a5f21d1626a4b74b",
    "instances": [
     [
      "example:light",
@@ -228,9 +272,11 @@
    ]
   },
   {
+   "types": "asteroid_types",
    "system": "advancedrocketrycommunity:tau_ceti",
    "mission_seed": "fedcba9876543210",
    "count": 2,
+   "candidate_fingerprint": "1f926d5c43fa617c",
    "instances": [
     [
      "example:small",
@@ -279,9 +325,11 @@
    ]
   },
   {
+   "types": "asteroid_types",
    "system": "advancedrocketrycommunity:earth",
    "mission_seed": "0000000000000000",
    "count": 1,
+   "candidate_fingerprint": "a5f21d1626a4b74b",
    "instances": [
     [
      "example:light",
@@ -302,6 +350,71 @@
       [
        "minecraft:cobblestone",
        187
+      ]
+     ]
+    ]
+   ]
+  },
+  {
+   "types": "mixed_namespace_types",
+   "system": "advancedrocketrycommunity:earth",
+   "mission_seed": "0000000000000007",
+   "count": 4,
+   "candidate_fingerprint": "17084859989b3213",
+   "instances": [
+    [
+     "alpha:zeta",
+     "c67f132a252ef3c6",
+     [
+      [
+       "minecraft:gold_ore",
+       20
+      ],
+      [
+       "minecraft:cobblestone",
+       20
+      ]
+     ]
+    ],
+    [
+     "alpha:zeta",
+     "8fed7b02903c7703",
+     [
+      [
+       "minecraft:gold_ore",
+       20
+      ],
+      [
+       "minecraft:cobblestone",
+       20
+      ]
+     ]
+    ],
+    [
+     "zeta:alpha",
+     "45e52d0ad25555a1",
+     [
+      [
+       "minecraft:iron_ore",
+       20
+      ],
+      [
+       "minecraft:cobblestone",
+       20
+      ]
+     ]
+    ],
+    [
+     "alpha:zeta",
+     "301f4dbe10c5dbd9",
+     [
+      [
+       "minecraft:gold_ore",
+       20
+      ],
+      [
+       "minecraft:cobblestone",
+       20
       ]
      ]
     ]
@@ -542,13 +655,16 @@
  },
  "blueprints": [
   {
-   "name": "legacy data recipe",
+   "name": "legacy data label",
    "kind": "data",
-   "components": [
-    "chassis",
-    "solar_module",
-    "data_unit"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": null,
+    "modules": [
+     "solar_module",
+     "data_unit"
+    ]
+   },
    "expected": {
     "power": 4,
     "battery": 720,
@@ -561,13 +677,15 @@
    "name": "survey",
    "kind": "survey",
    "scan_energy": 5000,
-   "components": [
-    "chassis",
-    "survey_primary",
-    "advanced_solar",
-    "battery_small",
-    "data_unit"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "survey_primary",
+    "modules": [
+     "advanced_solar",
+     "battery_small",
+     "data_unit"
+    ]
+   },
    "expected": {
     "power": 40,
     "battery": 10720,
@@ -580,25 +698,29 @@
    "name": "survey battery below scan energy",
    "kind": "survey",
    "scan_energy": 5000,
-   "components": [
-    "chassis",
-    "survey_primary",
-    "solar_module",
-    "data_unit"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "survey_primary",
+    "modules": [
+     "solar_module",
+     "data_unit"
+    ]
+   },
    "expected": "REQUIREMENT_UNMET"
   },
   {
    "name": "miner at cargo cap",
    "kind": "asteroid_miner",
-   "components": [
-    "chassis",
-    "drill_primary",
-    "advanced_solar",
-    "cargo_hold",
-    "cargo_hold",
-    "cargo_hold"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "drill_primary",
+    "modules": [
+     "advanced_solar",
+     "cargo_hold",
+     "cargo_hold",
+     "cargo_hold"
+    ]
+   },
    "expected": {
     "power": 40,
     "battery": 720,
@@ -610,79 +732,167 @@
   {
    "name": "miner over cargo cap",
    "kind": "asteroid_miner",
-   "components": [
-    "chassis",
-    "drill_primary",
-    "solar_module",
-    "cargo_hold",
-    "cargo_hold",
-    "cargo_hold",
-    "cargo_hold"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "drill_primary",
+    "modules": [
+     "solar_module",
+     "cargo_hold",
+     "cargo_hold",
+     "cargo_hold",
+     "cargo_hold"
+    ]
+   },
+   "expected": "STAT_LIMIT"
+  },
+  {
+   "name": "stat limit is reported before an unmet requirement",
+   "kind": "asteroid_miner",
+   "slots": {
+    "chassis": "chassis",
+    "primary": "drill_primary",
+    "modules": [
+     "cargo_hold",
+     "cargo_hold",
+     "cargo_hold",
+     "cargo_hold"
+    ]
+   },
    "expected": "STAT_LIMIT"
   },
   {
    "name": "harvester without power",
    "kind": "gas_harvester",
-   "components": [
-    "chassis",
-    "intake_primary",
-    "cargo_hold"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "intake_primary",
+    "modules": [
+     "cargo_hold"
+    ]
+   },
    "expected": "REQUIREMENT_UNMET"
   },
   {
-   "name": "two primaries",
+   "name": "second primary in a module slot",
    "kind": "asteroid_miner",
-   "components": [
-    "chassis",
-    "drill_primary",
-    "intake_primary",
-    "solar_module",
-    "cargo_hold"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "drill_primary",
+    "modules": [
+     "intake_primary",
+     "solar_module",
+     "cargo_hold"
+    ]
+   },
    "expected": "INVALID_LAYOUT"
   },
   {
    "name": "seven modules",
    "kind": "solar",
-   "components": [
-    "chassis",
-    "solar_primary",
-    "solar_module",
-    "solar_module",
-    "solar_module",
-    "solar_module",
-    "solar_module",
-    "solar_module",
-    "solar_module"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "solar_primary",
+    "modules": [
+     "solar_module",
+     "solar_module",
+     "solar_module",
+     "solar_module",
+     "solar_module",
+     "solar_module",
+     "solar_module"
+    ]
+   },
    "expected": "INVALID_LAYOUT"
   },
   {
    "name": "primary of another kind",
    "kind": "gas_harvester",
-   "components": [
-    "chassis",
-    "drill_primary",
-    "solar_module",
-    "cargo_hold"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "drill_primary",
+    "modules": [
+     "solar_module",
+     "cargo_hold"
+    ]
+   },
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "missing chassis",
+   "kind": "solar",
+   "slots": {
+    "chassis": null,
+    "primary": "solar_primary",
+    "modules": [
+     "solar_module"
+    ]
+   },
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "module in the chassis slot",
+   "kind": "solar",
+   "slots": {
+    "chassis": "solar_module",
+    "primary": "solar_primary",
+    "modules": [
+     "solar_module"
+    ]
+   },
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "second chassis in a module slot",
+   "kind": "solar",
+   "slots": {
+    "chassis": "chassis",
+    "primary": "solar_primary",
+    "modules": [
+     "solar_module",
+     "chassis"
+    ]
+   },
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "module in the primary slot",
+   "kind": "solar",
+   "slots": {
+    "chassis": "chassis",
+    "primary": "solar_module",
+    "modules": [
+     "solar_module"
+    ]
+   },
+   "expected": "INVALID_LAYOUT"
+  },
+  {
+   "name": "missing primary for a non-data kind",
+   "kind": "solar",
+   "slots": {
+    "chassis": "chassis",
+    "primary": null,
+    "modules": [
+     "solar_module"
+    ]
+   },
    "expected": "INVALID_LAYOUT"
   },
   {
    "name": "solar six panels",
    "kind": "solar",
-   "components": [
-    "chassis",
-    "solar_primary",
-    "advanced_solar",
-    "advanced_solar",
-    "advanced_solar",
-    "advanced_solar",
-    "advanced_solar",
-    "advanced_solar"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "solar_primary",
+    "modules": [
+     "advanced_solar",
+     "advanced_solar",
+     "advanced_solar",
+     "advanced_solar",
+     "advanced_solar",
+     "advanced_solar"
+    ]
+   },
    "expected": {
     "power": 240,
     "battery": 720,
@@ -694,12 +904,14 @@
   {
    "name": "power over cap",
    "kind": "solar",
-   "components": [
-    "chassis",
-    "solar_primary",
-    "reactor_test",
-    "reactor_test"
-   ],
+   "slots": {
+    "chassis": "chassis",
+    "primary": "solar_primary",
+    "modules": [
+     "reactor_test",
+     "reactor_test"
+    ]
+   },
    "expected": "STAT_LIMIT"
   }
  ],
@@ -727,49 +939,29 @@
  ],
  "reconciliation": [
   {
-   "registry": "ACTIVE",
+   "registry": "UNAVAILABLE",
    "receipt": "NONE",
-   "action": "NONE"
+   "action": "NONE_REGISTRY_BLOCKED"
   },
   {
-   "registry": "ACTIVE",
-   "receipt": "SERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS"
-  },
-  {
-   "registry": "READY",
-   "receipt": "NONE",
-   "action": "NONE"
-  },
-  {
-   "registry": "READY",
-   "receipt": "SERIALIZED",
-   "action": "SET_CLAIMED_NO_ITEMS"
-  },
-  {
-   "registry": "CLAIMED",
-   "receipt": "SERIALIZED",
-   "action": "ACKNOWLEDGE"
-  },
-  {
-   "registry": "CLAIMED",
+   "registry": "UNAVAILABLE",
    "receipt": "UNSERIALIZED",
-   "action": "WAIT"
+   "action": "NONE_REGISTRY_BLOCKED"
   },
   {
-   "registry": "CLAIMED",
-   "receipt": "NONE",
-   "action": "REMATERIALIZE"
-  },
-  {
-   "registry": "CLAIMED_ACK",
-   "receipt": "NONE",
-   "action": "NONE"
-  },
-  {
-   "registry": "CLAIMED_ACK",
+   "registry": "UNAVAILABLE",
    "receipt": "SERIALIZED",
+   "action": "NONE_REGISTRY_BLOCKED"
+  },
+  {
+   "registry": "ABSENT",
+   "receipt": "NONE",
    "action": "NONE"
+  },
+  {
+   "registry": "ABSENT",
+   "receipt": "UNSERIALIZED",
+   "action": "DROP_RECEIPT"
   },
   {
    "registry": "ABSENT",
@@ -777,9 +969,154 @@
    "action": "DROP_RECEIPT"
   },
   {
-   "registry": "ABSENT",
+   "registry": "ACTIVE_HERE",
    "receipt": "NONE",
    "action": "NONE"
+  },
+  {
+   "registry": "ACTIVE_HERE",
+   "receipt": "UNSERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS"
+  },
+  {
+   "registry": "ACTIVE_HERE",
+   "receipt": "SERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS"
+  },
+  {
+   "registry": "READY_HERE",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "READY_HERE",
+   "receipt": "UNSERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS"
+  },
+  {
+   "registry": "READY_HERE",
+   "receipt": "SERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS"
+  },
+  {
+   "registry": "ACTIVE_ELSEWHERE",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "ACTIVE_ELSEWHERE",
+   "receipt": "UNSERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+  },
+  {
+   "registry": "ACTIVE_ELSEWHERE",
+   "receipt": "SERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+  },
+  {
+   "registry": "READY_ELSEWHERE",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "READY_ELSEWHERE",
+   "receipt": "UNSERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+  },
+  {
+   "registry": "READY_ELSEWHERE",
+   "receipt": "SERIALIZED",
+   "action": "SET_CLAIMED_NO_ITEMS_REBIND_CONFLICT"
+  },
+  {
+   "registry": "CLAIMED_HERE",
+   "receipt": "NONE",
+   "action": "REMATERIALIZE"
+  },
+  {
+   "registry": "CLAIMED_HERE",
+   "receipt": "UNSERIALIZED",
+   "action": "WAIT"
+  },
+  {
+   "registry": "CLAIMED_HERE",
+   "receipt": "SERIALIZED",
+   "action": "ACKNOWLEDGE"
+  },
+  {
+   "registry": "CLAIMED_ACK_PENDING",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "CLAIMED_ACK_PENDING",
+   "receipt": "UNSERIALIZED",
+   "action": "WAIT"
+  },
+  {
+   "registry": "CLAIMED_ACK_PENDING",
+   "receipt": "SERIALIZED",
+   "action": "WAIT"
+  },
+  {
+   "registry": "CLAIMED_ACK_DURABLE",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "CLAIMED_ACK_DURABLE",
+   "receipt": "UNSERIALIZED",
+   "action": "DROP_RECEIPT"
+  },
+  {
+   "registry": "CLAIMED_ACK_DURABLE",
+   "receipt": "SERIALIZED",
+   "action": "DROP_RECEIPT"
+  },
+  {
+   "registry": "CLAIMED_ELSEWHERE",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "CLAIMED_ELSEWHERE",
+   "receipt": "UNSERIALIZED",
+   "action": "KEEP_AUDIT_DOUBLE_PAY"
+  },
+  {
+   "registry": "CLAIMED_ELSEWHERE",
+   "receipt": "SERIALIZED",
+   "action": "KEEP_AUDIT_DOUBLE_PAY"
+  },
+  {
+   "registry": "CANCELLED",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "CANCELLED",
+   "receipt": "UNSERIALIZED",
+   "action": "KEEP_AUDIT_PAID_THEN_CANCELLED"
+  },
+  {
+   "registry": "CANCELLED",
+   "receipt": "SERIALIZED",
+   "action": "KEEP_AUDIT_PAID_THEN_CANCELLED"
+  },
+  {
+   "registry": "QUARANTINED",
+   "receipt": "NONE",
+   "action": "NONE"
+  },
+  {
+   "registry": "QUARANTINED",
+   "receipt": "UNSERIALIZED",
+   "action": "KEEP_MARK_RECEIPT_SEEN"
+  },
+  {
+   "registry": "QUARANTINED",
+   "receipt": "SERIALIZED",
+   "action": "KEEP_MARK_RECEIPT_SEEN"
   }
  ]
 }

@@ -49,7 +49,10 @@ components, kinds, assembly), [ADR-050](ADR-050-MISSION-SCHEDULER-AND-RECOVERY.m
 gas harvesting, reward delivery) and
 [ADR-052](ADR-052-RESOURCE-TABLES-AND-SEEDS.md) (resource tables, seeds and
 versioned rewards). The third prerequisite is satisfied only when those four are
-ACCEPTED; the first two remain unchecked release prerequisites.
+ACCEPTED; the first two remain unchecked release prerequisites. The
+[coverage table](../work/v1.6.0-contract-coverage.md) maps every version-document
+test and acceptance item to a contract section or a recorded disposition. The
+deferred and rejected items are rows in `PORTING_MATRIX.md`.
 
 All player-visible outcomes remain required: at least three satellite kinds and
 two resource-mission kinds that are completely playable; recovery of in-flight

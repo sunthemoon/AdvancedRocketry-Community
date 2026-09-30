@@ -2,6 +2,7 @@
 
 ```yaml
 status: PROPOSED
+revision: 2
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -11,6 +12,9 @@ algorithm_versions: [survey-v1, asteroid-v1, gas-v1]
 related: [ADR-029, ADR-043, ADR-049, ADR-050, ADR-051]
 reference_vectors: docs/work/v1.6.0-preparation/examples.json
 ```
+
+Revision 2 answers the first independent review (M12, M13, L3, L6, L15 and the
+record-fit part of H3); see the [preparation evidence](../work/v1.6.0-preparation/VERIFICATION.md).
 
 ## Context
 
@@ -48,8 +52,10 @@ per body. `products`: 1..8 entries {`item` existing plain item,
 
 Both kinds of table reload together with the celestial catalog and item registry.
 An invalid reload keeps the last complete tables and logs one aggregated error
-(≤ 32 lines); an invalid initial load fails loading, like ADR-029. A table's
-**version** is the first 16 hex characters of the SHA-256 of its raw resource bytes.
+(≤ 32 lines); an invalid initial load fails loading, like ADR-029. A type or table
+is also rejected at load if its worst-case instance or mission record would
+exceed the ADR-050 §3 bounds. A table's **version** is the first 16 hex characters
+of the SHA-256 of its raw resource bytes.
 
 ### 3. Seeds
 
@@ -62,15 +68,26 @@ An invalid reload keeps the last complete tables and logs one aggregated error
 - `bounded(n)` for 1 ≤ n ≤ 2³¹: `(next() >>> 1) % n`.
 - Domain constants (ASCII): `SURVEY01 = 0x5355525645593031`,
   `ASTTYPE1 = 0x4153545459504531`, `ASTYIELD = 0x4153545949454C44`.
+- All other arithmetic in this ADR uses signed 64-bit integers (`long`). No
+  intermediate value exceeds 2⁴⁰, so none overflows; 32-bit `int` would overflow
+  in the duration formula.
 
 ### 4. `survey-v1`: instance generation
 
-For a survey with seed `m` over system `S`: the candidate types are those whose
-`systems` is empty or contains `S`, sorted by ID string (ascending, ordinal). With
-the stream `A = SplitMix64(m ^ SURVEY01)`, instance `i` (0-based) has
+For a survey with seed `m` over system `S`, the candidate types are those whose
+`systems` is empty or contains `S`. They are sorted by the full ID string,
+`ResourceLocation.toString()` compared with `String.compareTo` (UTF-16 code-unit
+order). This is **not** `ResourceLocation.compareTo`, which compares the path
+before the namespace.
+
+With the stream `A = SplitMix64(m ^ SURVEY01)`, instance `i` (0-based) has
 `seed_i = A.next()`. Its type is picked with `T = SplitMix64(seed_i ^ ASTTYPE1)`:
-`r = T.bounded(Σ weight)`, taking the first type whose cumulative weight
-exceeds `r`. Its yield comes from `asteroid-v1` with `seed_i`.
+`r = T.bounded(Σ weight)`, taking the first type whose cumulative weight exceeds
+`r`. Its yield comes from `asteroid-v1` with `seed_i`.
+
+The survey's `candidate_fingerprint` is the first 16 hex characters of the SHA-256
+of the UTF-8 lines `<id>\t<weight>\t<table version>\n` for the sorted candidates.
+It is stored with the survey mission and with every instance it creates.
 
 ### 5. `asteroid-v1`: yield
 
@@ -100,7 +117,8 @@ duration = clamp(d, 200, 72_000)
 
 `config_pct` is the server config `asteroid_mission_time_percent` (10..1,000,
 default 100). With rating 10 and both percentages at 100, a mission takes
-12,000 ticks.
+12,000 ticks. This is a deliberate rebalance: the legacy rocket took 36,000 ticks
+with one drill and also had to fly. The logical mission has no flight.
 
 ### 6. `gas-v1`: amount and duration
 
@@ -116,21 +134,25 @@ duration  = clamp(ceil(base × config_pct / 100), 200, 72_000) # gas_mission_tim
 
 ### 7. Versioned, auditable rewards
 
-- Asteroid instances store `asteroid_type`, `table_version`, `seed` and the full
-  yield at generation. Asteroid and gas missions store the reward snapshot at start.
+- Asteroid instances store `asteroid_type`, `table_version`,
+  `candidate_fingerprint`, `seed` and the full yield at generation. Asteroid and
+  gas missions store the reward snapshot at start.
 - `reward_version`: `survey-v1`, `asteroid-v1/<type id>/<table version>` or
   `gas-v1/<table id>/<table version>`; `legacy-data-v1` for migrated data missions.
 - Operator `mission verify <id>` recomputes an instance or mission reward from its
-  stored seed and inputs. It reports `MATCH`, `VERSION_CHANGED` (the current table
-  hash differs, so it cannot recompute) or `MISMATCH` (a defect, logged once).
-  Verification never changes state.
+  stored seed and inputs. Verification never changes state. It reports:
+  - `MATCH`;
+  - `VERSION_CHANGED`: a current table version or the candidate fingerprint
+    differs, so it cannot recompute;
+  - `INPUTS_UNAVAILABLE`: the instance was pruned or the table is gone;
+  - `MISMATCH`: a defect, logged once.
 - A new algorithm version gets a new name; `v1` results are never reinterpreted.
 
 ### 8. Built-in data
 
 Four asteroid types use the legacy defaults as numeric reference: weights 20, 15,
-2 and 1; masses 200, 200, 75 and 50; richness 30, 20, 20 and 20; variability 50.
-The base item is cobblestone. LibVulpes ores are replaced by existing vanilla or
+2 and 1; masses 200, 200, 75 and 50; richness 30, 20, 20 and 20; mass variability
+50 for all four; richness variability 50, 50, 30 and 50. The base item is cobblestone. LibVulpes ores are replaced by existing vanilla or
 host items; no XML text is copied. One gas table maps the gas giant to hydrogen
 canisters (`amount_per_1000_ticks` 8). Rebalancing later needs only a data change,
 which gives a new table version.
@@ -147,8 +169,10 @@ which gives a new table version.
 ## Verification
 
 - A0: SplitMix64 against the published seed-0 outputs; `bounded`; the
-  `examples.json` vectors for type selection, yield, truncation, asteroid and gas
-  durations; table codec bounds; reload keeps the last complete table; version
-  hashing; `mission verify` outcomes.
+  `examples.json` vectors for type selection (including a mixed-namespace case
+  where path order and full-string order disagree), fingerprints, yield,
+  truncation, and asteroid and gas durations; table codec bounds and the
+  record-fit check; reload keeps the last complete table; version hashing; every
+  `mission verify` outcome.
 - A1: a survey generates instances identical to the vectors; the reward snapshot
   is unchanged after a table reload; a new seed is not accepted from the client.

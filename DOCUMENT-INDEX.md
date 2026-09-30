@@ -227,6 +227,7 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [按站点天空上下文](docs/decisions/ADR-047-PER-STATION-SKY-CONTEXT.md)（第 3 版，已接受，修订 ADR-036、ADR-046）：服务端按玩家位置推导所绕天体 ID、变化时发送、天体圆盘避开太阳、天体协议 3。
 - [v1.6 实施日志](docs/work/v1.6.0-implementation-log.md)：卫星与资源任务的分块任务、契约状态与实际验证范围。
 - [v1.6 旧版卫星/任务审计](docs/work/v1.6.0-legacy-audit.md)：固定 MIT commit 的只读行为与算法审计、旧版缺陷与现代处置，未导入任何上游文件。
+- [v1.6 契约覆盖表](docs/work/v1.6.0-contract-coverage.md)：版本文档第 8–14 节每一项对应的契约条款、测试等级、分块或处置。
 - [v1.6 开发基线例外](docs/decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md)（提议）：本版开发与继承发布验收分离。
 - [卫星蓝图、组件与组装](docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md)（提议）：五种卫星类型、组件目录、蓝图属性上限、卫星组装机、有界区域扫描与太阳能接收器。
 - [任务调度与恢复](docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md)（提议）：单一注册表与逻辑时钟、状态机、预算与保留、取消与超时、隔离与启动前迁移。
