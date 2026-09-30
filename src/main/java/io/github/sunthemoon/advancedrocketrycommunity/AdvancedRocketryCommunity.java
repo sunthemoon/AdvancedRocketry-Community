@@ -75,6 +75,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.ResourceTableReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteNetwork;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -100,6 +101,7 @@ public final class AdvancedRocketryCommunity {
     private final SatelliteCatalogManager satelliteCatalogs = new SatelliteCatalogManager();
     private final SatelliteComponentReloadListener.Manager satelliteComponents =
             new SatelliteComponentReloadListener.Manager();
+    private final ResourceTableReloadListener.Manager resourceTables = new ResourceTableReloadListener.Manager();
     private final MultiblockPatternCatalogManager multiblockPatterns =
             new MultiblockPatternCatalogManager();
     private final RollingMachineManager rollingMachines = new RollingMachineManager(multiblockPatterns);
@@ -207,7 +209,7 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onPlayerLoggedOut);
-        MinecraftForge.EVENT_BUS.addListener(new SatelliteCommands(satelliteManager)::register);
+        MinecraftForge.EVENT_BUS.addListener(new SatelliteCommands(satelliteManager, resourceTables)::register);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
@@ -287,6 +289,7 @@ public final class AdvancedRocketryCommunity {
         // ADR-049 §2: components load before the definitions that name their primary component.
         event.addListener(new SatelliteComponentReloadListener(satelliteComponents));
         event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs, satelliteComponents));
+        event.addListener(new ResourceTableReloadListener(resourceTables, celestialCatalogs));
         event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
     }
 

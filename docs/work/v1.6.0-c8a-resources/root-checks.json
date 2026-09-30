@@ -1,0 +1,55 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48476,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+      },
+      {
+        "bytes": 1472487,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "4498ae5ab3744d7e73d647fa022790cfd4d6b3107d2089b5734ef27f5d08b1f0"
+      },
+      {
+        "bytes": 3246520,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "b5f02455443a4ce4972727807eb6983e275ccc440c02f6493eb4fd905a2f2b57"
+      }
+    ]
+  },
+  "base_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 209,
+    "tests": 1115
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "84d68cddbcc0f5bf1a526db61c2c7ed5a1f1f8afb370ffa72917d515deecab3e",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/light_asteroid.json": "fa916372db6176bf1e655fab12a47ba7305eecdc9952bf3071f2712190af7111",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/rich_asteroid.json": "b43519317ed4f5250013bf4fd28521518e7827897ff3e4c0347860640b758892",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/small_asteroid.json": "083458662a9719a772c0d040120097466a37263beefbdaababfda786c1de5ae4",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/strange_asteroid.json": "eeaa7e51fa79f8d7a69fa0296a345fa01d357d11de134395a9cd44315f016b1d",
+    "src/generated/v1.6/resources/data/advancedrocketrycommunity/gas_harvest/gas_giant.json": "e12afcf5eba82cdbb8d91080f23f8890191cdb801e6afcf85f0f38df8587e657",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "ee9a11aae9dddf9cf61fc44e86118f102aff2b1c5fc0a3ec554d7ef9cc94f4db",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java": "bd0df4bff4516413fc60e656df63e2d472a319bed163d5d29e722947dd96da56",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160ResourceTableProvider.java": "b6c6683b3d524e02d4d8e275835aa4bb83bac2ca8496c9857b23f60afd87e6ef",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/SatelliteCommands.java": "d93a3b38773667044ced86eb6b95b9f7975440a685efb6b095f65f270d2da167",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRecordFit.java": "170cf6289d4ebd6e58e9d7218fb2aa3bcc776b8dddf0498e20ccbc5cf0f4eed4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/AsteroidType.java": "04ed50c3f0e788fefed263b0b57e628341554e3fb5e847570582e508f9fe9dbb",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/GasTable.java": "32eafdbd4cd9e89809c51ee869b6496c1b313e2097ef2b640d45383e149d90e8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/MissionSeeds.java": "dce755e433f3df751402c047c3d52e3ad042f34873efcd93ccb1962f7d427e7c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java": "f107e27f9be2c0831269f3b54e0fd00aca19fe294704f2a6bee12dea09eebb0c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTableCodec.java": "772df7e656cdec5ea8f4add392c2eda9d68fe242fc7b4d862f5ede556422f3f0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTableReloadListener.java": "b8acdc9a82e6af26279b2cdb527e724512cba8eadb18a307001933016cc34167",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTables.java": "2b73133f526c4f335da0564d3912bfe710f160ffbd6884f7ccd1c7226e6c433a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifier.java": "564fdf4de85be7347d86299c6b305453be58b35e387cc5eb7c0a1063865c2882",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/SplitMix64.java": "28d6a8755b2895bd1cbb3afb36fc771017a9cb26705e34518cff89c4857835f0",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithmsTest.java": "3fb339cc91fe5d4019bb57a66ba878b7d3e01127697d02bc8934ce1ac87c4633",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTablesTest.java": "51f72a7a59c43b16223ac49ac54e659b887f183a719fc8c29e6b021f2c57fe8d",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifierTest.java": "44f24a1da64483327cd0281ec2942d0fb78efe62bb25200c22c15d04a87fb5b8"
+  }
+}

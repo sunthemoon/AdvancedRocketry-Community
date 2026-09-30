@@ -1,0 +1,30 @@
+{
+  "base_item": "minecraft:cobblestone",
+  "id": "advancedrocketrycommunity:light_asteroid",
+  "mass": 200,
+  "mass_variability_pct": 50,
+  "ores": [
+    {
+      "item": "minecraft:iron_ore",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:gold_ore",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:redstone_ore",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:lapis_ore",
+      "weight": 3
+    }
+  ],
+  "richness_pct": 20,
+  "richness_variability_pct": 50,
+  "schema_version": 1,
+  "systems": [],
+  "time_multiplier_pct": 100,
+  "weight": 15
+}

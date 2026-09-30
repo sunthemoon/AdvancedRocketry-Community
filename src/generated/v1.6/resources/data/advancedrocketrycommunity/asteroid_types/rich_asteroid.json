@@ -1,0 +1,26 @@
+{
+  "base_item": "minecraft:cobblestone",
+  "id": "advancedrocketrycommunity:rich_asteroid",
+  "mass": 75,
+  "mass_variability_pct": 50,
+  "ores": [
+    {
+      "item": "minecraft:gold_ore",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:diamond_ore",
+      "weight": 4
+    },
+    {
+      "item": "minecraft:emerald_ore",
+      "weight": 1
+    }
+  ],
+  "richness_pct": 20,
+  "richness_variability_pct": 30,
+  "schema_version": 1,
+  "systems": [],
+  "time_multiplier_pct": 150,
+  "weight": 2
+}

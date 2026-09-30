@@ -40,6 +40,14 @@ No candidate or release approval is assigned.
   is produced while unloaded. Breaking the receiver clears its links. The
   terminal can unlink a satellite whose receiver is confirmed missing, and
   operators can use `/arce satellite admin unlink <satellite_id>`.
+- Add data-driven asteroid types (`asteroid_types`) and gas-giant tables
+  (`gas_harvest`) with four built-in asteroid types and one hydrogen table for
+  the gas giant (ADR-052). Each table is versioned by the hash of its file, and
+  an invalid reload keeps the last complete tables. Resource missions that use
+  them are not available yet.
+- Add `/arce satellite admin mission verify <id>`, which recomputes a mission's
+  or asteroid instance's reward from its stored seed and inputs without changing
+  anything.
 - Add the `advancedrocketrycommunity:satellite` network channel (protocol 1) for
   the terminal view; a client without it cannot join. The terminal menu data
   moves to format 2.

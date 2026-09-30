@@ -10,11 +10,17 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.ResourceTableReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.ResourceTables;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.RewardVerifier;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -33,9 +39,11 @@ public final class SatelliteCommands {
     private static final String RELEASE_TEST_HOOK_PROPERTY =
             "advancedrocketrycommunity.releaseTestHooks";
     private final SatelliteManager satellites;
+    private final ResourceTableReloadListener.Manager resourceTables;
 
-    public SatelliteCommands(SatelliteManager satellites) {
+    public SatelliteCommands(SatelliteManager satellites, ResourceTableReloadListener.Manager resourceTables) {
         this.satellites = Objects.requireNonNull(satellites, "satellites");
+        this.resourceTables = Objects.requireNonNull(resourceTables, "resourceTables");
     }
 
     public void register(RegisterCommandsEvent event) {
@@ -48,6 +56,9 @@ public final class SatelliteCommands {
                 .then(Commands.literal("admin")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("mission")
+                                .then(Commands.literal("verify")
+                                        .then(Commands.argument("id", UuidArgument.uuid())
+                                                .executes(this::verify)))
                                 .then(Commands.argument("mission_id", UuidArgument.uuid())
                                         .executes(this::mission)))
                         .then(Commands.literal("cancel")
@@ -220,6 +231,40 @@ public final class SatelliteCommands {
         context.getSource().sendSuccess(() -> Component.literal("Satellite link cleared: " + satelliteId
                 + " (" + result.code() + ")"), true);
         return 1;
+    }
+
+    /**
+     * ADR-052 section 7: recomputes a mission's or an instance's reward from its stored seed and inputs. Read-only;
+     * one bounded audit line, and a mismatch is logged as a defect.
+     */
+    private int verify(CommandContext<CommandSourceStack> context) {
+        UUID id = UuidArgument.getUuid(context, "id");
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(context.getSource().getServer());
+        ResourceTables tables = resourceTables.current().orElse(ResourceTables.EMPTY);
+        Optional<MissionState> mission = data.mission(id);
+        Optional<AsteroidInstance> instance = data.instances().stream()
+                .filter(candidate -> candidate.instanceId().equals(id)).findFirst();
+        if (mission.isEmpty() && instance.isEmpty()) {
+            context.getSource().sendFailure(Component.literal("No mission or instance " + id));
+            return 0;
+        }
+        RewardVerifier.Report report = mission.isPresent()
+                ? RewardVerifier.verifyMission(mission.get(),
+                        instanceId -> data.instances().stream()
+                                .filter(candidate -> candidate.instanceId().equals(instanceId)).findFirst(),
+                        data::satellite, tables)
+                : RewardVerifier.verifyInstance(instance.get(), tables);
+        String kind = mission.map(value -> "mission/" + value.kind().id()).orElse("instance");
+        if (report.outcome() == RewardVerifier.Outcome.MISMATCH) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_SATELLITE_VERIFY id={} record={} outcome={} detail={} by={}",
+                    id, kind, report.outcome(), report.detail(), actor(context.getSource()));
+        } else {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_VERIFY id={} record={} outcome={} detail={} by={}",
+                    id, kind, report.outcome(), report.detail(), actor(context.getSource()));
+        }
+        context.getSource().sendSuccess(() -> Component.literal(
+                kind + " " + id + ": " + report.outcome() + " (" + report.detail() + ")"), false);
+        return report.outcome() == RewardVerifier.Outcome.MATCH ? 1 : 0;
     }
 
     private int evidence(CommandContext<CommandSourceStack> context) {

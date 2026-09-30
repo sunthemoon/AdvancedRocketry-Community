@@ -31,5 +31,6 @@ public final class BootstrapDataGenerators {
                 output, event.getLookupProvider(), event.getExistingFileHelper()));
         generator.addProvider(event.includeServer(), new V160SatelliteProviders.Components(output));
         generator.addProvider(event.includeServer(), new V160SatelliteProviders.KindDefinitions(output));
+        generator.addProvider(event.includeServer(), new V160ResourceTableProvider(output));
     }
 }

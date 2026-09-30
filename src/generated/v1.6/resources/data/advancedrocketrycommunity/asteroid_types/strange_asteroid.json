@@ -1,0 +1,26 @@
+{
+  "base_item": "minecraft:cobblestone",
+  "id": "advancedrocketrycommunity:strange_asteroid",
+  "mass": 50,
+  "mass_variability_pct": 50,
+  "ores": [
+    {
+      "item": "minecraft:nether_quartz_ore",
+      "weight": 10
+    },
+    {
+      "item": "minecraft:nether_gold_ore",
+      "weight": 5
+    },
+    {
+      "item": "minecraft:ancient_debris",
+      "weight": 1
+    }
+  ],
+  "richness_pct": 20,
+  "richness_variability_pct": 50,
+  "schema_version": 1,
+  "systems": [],
+  "time_multiplier_pct": 200,
+  "weight": 1
+}

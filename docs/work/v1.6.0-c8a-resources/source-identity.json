@@ -1,0 +1,155 @@
+{
+  "base_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+  "files": [
+    {
+      "bytes": 32325,
+      "path": "CHANGELOG.md",
+      "sha256": "84d68cddbcc0f5bf1a526db61c2c7ed5a1f1f8afb370ffa72917d515deecab3e",
+      "working_sha256": "84d68cddbcc0f5bf1a526db61c2c7ed5a1f1f8afb370ffa72917d515deecab3e"
+    },
+    {
+      "bytes": 3327,
+      "path": "docs/provenance/v1.6.0-development-metadata.md",
+      "sha256": "d8e657e33dab1b1e5ae86c15581098bfb72627585460fb39a998935722aeb4d1",
+      "working_sha256": "d8e657e33dab1b1e5ae86c15581098bfb72627585460fb39a998935722aeb4d1"
+    },
+    {
+      "bytes": 8188,
+      "path": "docs/work/v1.6.0-implementation-log.md",
+      "sha256": "654d2541b0055fa473d6adb335e0df39adec89d8ae4a5d1783301ee975ecdb5e",
+      "working_sha256": "654d2541b0055fa473d6adb335e0df39adec89d8ae4a5d1783301ee975ecdb5e"
+    },
+    {
+      "bytes": 570,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/light_asteroid.json",
+      "sha256": "fa916372db6176bf1e655fab12a47ba7305eecdc9952bf3071f2712190af7111",
+      "working_sha256": "fa916372db6176bf1e655fab12a47ba7305eecdc9952bf3071f2712190af7111"
+    },
+    {
+      "bytes": 501,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/rich_asteroid.json",
+      "sha256": "b43519317ed4f5250013bf4fd28521518e7827897ff3e4c0347860640b758892",
+      "working_sha256": "b43519317ed4f5250013bf4fd28521518e7827897ff3e4c0347860640b758892"
+    },
+    {
+      "bytes": 502,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/small_asteroid.json",
+      "sha256": "083458662a9719a772c0d040120097466a37263beefbdaababfda786c1de5ae4",
+      "working_sha256": "083458662a9719a772c0d040120097466a37263beefbdaababfda786c1de5ae4"
+    },
+    {
+      "bytes": 521,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/asteroid_types/strange_asteroid.json",
+      "sha256": "eeaa7e51fa79f8d7a69fa0296a345fa01d357d11de134395a9cd44315f016b1d",
+      "working_sha256": "eeaa7e51fa79f8d7a69fa0296a345fa01d357d11de134395a9cd44315f016b1d"
+    },
+    {
+      "bytes": 201,
+      "path": "src/generated/v1.6/resources/data/advancedrocketrycommunity/gas_harvest/gas_giant.json",
+      "sha256": "e12afcf5eba82cdbb8d91080f23f8890191cdb801e6afcf85f0f38df8587e657",
+      "working_sha256": "e12afcf5eba82cdbb8d91080f23f8890191cdb801e6afcf85f0f38df8587e657"
+    },
+    {
+      "bytes": 24567,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "ee9a11aae9dddf9cf61fc44e86118f102aff2b1c5fc0a3ec554d7ef9cc94f4db",
+      "working_sha256": "ee9a11aae9dddf9cf61fc44e86118f102aff2b1c5fc0a3ec554d7ef9cc94f4db"
+    },
+    {
+      "bytes": 1878,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "bd0df4bff4516413fc60e656df63e2d472a319bed163d5d29e722947dd96da56",
+      "working_sha256": "bd0df4bff4516413fc60e656df63e2d472a319bed163d5d29e722947dd96da56"
+    },
+    {
+      "bytes": 5824,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160ResourceTableProvider.java",
+      "sha256": "b6c6683b3d524e02d4d8e275835aa4bb83bac2ca8496c9857b23f60afd87e6ef",
+      "working_sha256": "b6c6683b3d524e02d4d8e275835aa4bb83bac2ca8496c9857b23f60afd87e6ef"
+    },
+    {
+      "bytes": 23159,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/command/SatelliteCommands.java",
+      "sha256": "d93a3b38773667044ced86eb6b95b9f7975440a685efb6b095f65f270d2da167",
+      "working_sha256": "d93a3b38773667044ced86eb6b95b9f7975440a685efb6b095f65f270d2da167"
+    },
+    {
+      "bytes": 4395,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRecordFit.java",
+      "sha256": "170cf6289d4ebd6e58e9d7218fb2aa3bcc776b8dddf0498e20ccbc5cf0f4eed4",
+      "working_sha256": "170cf6289d4ebd6e58e9d7218fb2aa3bcc776b8dddf0498e20ccbc5cf0f4eed4"
+    },
+    {
+      "bytes": 3222,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/AsteroidType.java",
+      "sha256": "04ed50c3f0e788fefed263b0b57e628341554e3fb5e847570582e508f9fe9dbb",
+      "working_sha256": "04ed50c3f0e788fefed263b0b57e628341554e3fb5e847570582e508f9fe9dbb"
+    },
+    {
+      "bytes": 1610,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/GasTable.java",
+      "sha256": "32eafdbd4cd9e89809c51ee869b6496c1b313e2097ef2b640d45383e149d90e8",
+      "working_sha256": "32eafdbd4cd9e89809c51ee869b6496c1b313e2097ef2b640d45383e149d90e8"
+    },
+    {
+      "bytes": 518,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/MissionSeeds.java",
+      "sha256": "dce755e433f3df751402c047c3d52e3ad042f34873efcd93ccb1962f7d427e7c",
+      "working_sha256": "dce755e433f3df751402c047c3d52e3ad042f34873efcd93ccb1962f7d427e7c"
+    },
+    {
+      "bytes": 8410,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java",
+      "sha256": "f107e27f9be2c0831269f3b54e0fd00aca19fe294704f2a6bee12dea09eebb0c",
+      "working_sha256": "f107e27f9be2c0831269f3b54e0fd00aca19fe294704f2a6bee12dea09eebb0c"
+    },
+    {
+      "bytes": 7494,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTableCodec.java",
+      "sha256": "772df7e656cdec5ea8f4add392c2eda9d68fe242fc7b4d862f5ede556422f3f0",
+      "working_sha256": "772df7e656cdec5ea8f4add392c2eda9d68fe242fc7b4d862f5ede556422f3f0"
+    },
+    {
+      "bytes": 7227,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTableReloadListener.java",
+      "sha256": "b8acdc9a82e6af26279b2cdb527e724512cba8eadb18a307001933016cc34167",
+      "working_sha256": "b8acdc9a82e6af26279b2cdb527e724512cba8eadb18a307001933016cc34167"
+    },
+    {
+      "bytes": 5561,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTables.java",
+      "sha256": "2b73133f526c4f335da0564d3912bfe710f160ffbd6884f7ccd1c7226e6c433a",
+      "working_sha256": "2b73133f526c4f335da0564d3912bfe710f160ffbd6884f7ccd1c7226e6c433a"
+    },
+    {
+      "bytes": 8092,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifier.java",
+      "sha256": "564fdf4de85be7347d86299c6b305453be58b35e387cc5eb7c0a1063865c2882",
+      "working_sha256": "564fdf4de85be7347d86299c6b305453be58b35e387cc5eb7c0a1063865c2882"
+    },
+    {
+      "bytes": 1060,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/SplitMix64.java",
+      "sha256": "28d6a8755b2895bd1cbb3afb36fc771017a9cb26705e34518cff89c4857835f0",
+      "working_sha256": "28d6a8755b2895bd1cbb3afb36fc771017a9cb26705e34518cff89c4857835f0"
+    },
+    {
+      "bytes": 8962,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithmsTest.java",
+      "sha256": "3fb339cc91fe5d4019bb57a66ba878b7d3e01127697d02bc8934ce1ac87c4633",
+      "working_sha256": "3fb339cc91fe5d4019bb57a66ba878b7d3e01127697d02bc8934ce1ac87c4633"
+    },
+    {
+      "bytes": 9977,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTablesTest.java",
+      "sha256": "51f72a7a59c43b16223ac49ac54e659b887f183a719fc8c29e6b021f2c57fe8d",
+      "working_sha256": "51f72a7a59c43b16223ac49ac54e659b887f183a719fc8c29e6b021f2c57fe8d"
+    },
+    {
+      "bytes": 11938,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/RewardVerifierTest.java",
+      "sha256": "44f24a1da64483327cd0281ec2942d0fb78efe62bb25200c22c15d04a87fb5b8",
+      "working_sha256": "44f24a1da64483327cd0281ec2942d0fb78efe62bb25200c22c15d04a87fb5b8"
+    }
+  ]
+}
