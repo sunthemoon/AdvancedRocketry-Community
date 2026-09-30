@@ -55,7 +55,9 @@ public final class StationGravityService {
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };
-        if (code == StationManagementCode.GRAVITY_SET) {
+        if (code != StationManagementCode.GRAVITY_UNCHANGED && code != StationManagementCode.STATION_CHANGED
+                && code != StationManagementCode.AUTHORITY_UNAVAILABLE) {
+            // Committed and failed writes both start the cooldown, so a failing disk is not retried every tick.
             cooldown.record(observed.stationId(), server.getTickCount());
         }
         return audit(player, StationManagementResult.of(code, code == StationManagementCode.GRAVITY_SET

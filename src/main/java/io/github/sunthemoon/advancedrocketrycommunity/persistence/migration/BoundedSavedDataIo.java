@@ -16,6 +16,8 @@ import net.minecraft.nbt.Tag;
 /** Bounded disk codec for Minecraft's outer SavedData wrapper. */
 final class BoundedSavedDataIo {
     private static final String DATA_KEY = "data";
+    /** Heap-accounting quota as a multiple of the raw byte bound; measured ratio 5.67 at station capacity. */
+    static final long HEAP_ACCOUNTING_FACTOR = 8L;
 
     private BoundedSavedDataIo() {
     }
@@ -27,8 +29,12 @@ final class BoundedSavedDataIo {
                 throw oversized(type, "compressed file size is " + compressedBytes + " bytes");
             }
 
+            // The raw decompressed-byte quota below is the size bound. NbtAccounter estimates heap cost,
+            // about 5.7x the raw bytes for a full station registry, so its quota is a multiple of that
+            // bound; data the payload bound accepts must not be rejected by heap accounting.
             long expandedLimit = type.maxCompressedBytes();
-            NbtAccounter accounter = new NbtAccounter(expandedLimit);
+            long heapLimit = Math.multiplyExact(expandedLimit, HEAP_ACCOUNTING_FACTOR);
+            NbtAccounter accounter = new NbtAccounter(heapLimit);
             try (InputStream file = Files.newInputStream(path, StandardOpenOption.READ);
                  GZIPInputStream gzip = new GZIPInputStream(file);
                  QuotaInputStream bounded = new QuotaInputStream(gzip, expandedLimit);
@@ -37,7 +43,7 @@ final class BoundedSavedDataIo {
                 try {
                     outer = NbtIo.read(input, accounter);
                 } catch (RuntimeException exception) {
-                    if (accounter.getUsage() > expandedLimit) {
+                    if (accounter.getUsage() > heapLimit || bounded.exceeded()) {
                         throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
                     }
                     throw exception;
@@ -173,6 +179,11 @@ final class BoundedSavedDataIo {
             if (consumed > limit) {
                 throw new QuotaExceededException();
             }
+        }
+
+        /** NbtIo may wrap the quota IOException in a runtime exception; this survives the wrapping. */
+        private boolean exceeded() {
+            return consumed > limit;
         }
     }
 

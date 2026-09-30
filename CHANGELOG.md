@@ -42,6 +42,9 @@ No candidate or release approval is assigned.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.
+- Station registries near the 4,096-station limit no longer fail the pre-start
+  upgrade or a station change with a false "oversized" error; the size bound is
+  the raw data size, and its heap estimate no longer rejects valid data.
 - Keep the 4,096-station and 64-reservation limits independent. A failed commit
   at station capacity retains the pending reservation.
 

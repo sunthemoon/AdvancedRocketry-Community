@@ -214,7 +214,7 @@ final class StationCheckedUpdateTest {
     }
 
     @Test
-    void onlyGrowthOrAGravityOnlyChangeIsACheckedUpdate() {
+    void onlyGrowthOrAGravityOnlyChangeIsACheckedUpdate() throws Exception {
         StationState expanded = station.withExpandedRegion();
         assertTrue(expanded.isCheckedUpdateOf(station));
         assertTrue(station.withGravityMilli(300).isCheckedUpdateOf(station));
@@ -228,6 +228,15 @@ final class StationCheckedUpdateTest {
         assertThrows(IllegalArgumentException.class, () -> model.replaceChecked(expanded, station));
         assertThrows(IllegalArgumentException.class,
                 () -> model.replaceChecked(expanded, environment(expanded, 9_999, false, 0)));
+        // A disallowed transition reaching the checked path is refused before any write.
+        byte[] before = Files.readAllBytes(file);
+        StationRegistrySavedData growing = data;
+        assertThrows(IllegalArgumentException.class, () -> growing.checkedReplace(file, station,
+                environment(station, 0, false, 270_000), (from, to) -> {
+                    throw new AssertionError("Replacement must not be attempted");
+                }));
+        assertArrayEquals(before, Files.readAllBytes(file));
+        assertEquals(station, data.find(station.stationId()).orElseThrow());
         // Gravity outside the stored bound is refused before any write.
         assertThrows(IllegalArgumentException.class, () -> data.checkedSetGravity(file, station, 10_001,
                 CheckedSavedDataFile::atomicMove));

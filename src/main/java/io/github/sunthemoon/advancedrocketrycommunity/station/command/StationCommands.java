@@ -203,7 +203,7 @@ public final class StationCommands {
         String gravity = percent(environment.effectiveGravity()) + "%"
                 + (environment.gravityClamped() ? " (configured " + percent(environment.configuredGravity())
                 + "%, limited to " + percent(environment.effectiveGravity()) + "%)" : "");
-        // Like /arce station list, identity is shown only to the owner, members and operators.
+        // Identity is shown only to the owner, members and operators (/arce station list also shows invitees).
         String identity = stations.canIdentify(player, environment.stationId())
                 ? environment.stationName() + " id=" + environment.stationId()
                 : "A station you are not a member of;";

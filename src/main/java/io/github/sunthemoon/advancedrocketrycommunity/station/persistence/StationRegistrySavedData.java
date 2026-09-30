@@ -233,7 +233,8 @@ public final class StationRegistrySavedData extends SavedData {
      * Replaces the station file with the complete candidate registry, then publishes the update.
      * The live registry is not changed unless the candidate is known to be the replaced authority.
      */
-    private CheckedUpdate checkedReplace(Path file, StationState observed, StationState replacement,
+    /** Package-private for tests; production callers go through the named transitions above. */
+    CheckedUpdate checkedReplace(Path file, StationState observed, StationState replacement,
                                          CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(file, "file");
         Objects.requireNonNull(committer, "committer");

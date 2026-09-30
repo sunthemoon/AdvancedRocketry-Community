@@ -81,7 +81,7 @@ final class StationOrbitEnvironmentResolverTest {
     }
 
     @Test
-    void positionLookupCoversRegionEdgesNegativeCellsOtherLevelsAndBlockedRegistries() {
+    void positionLookupCoversRegionEdgesNegativeCoordinatesOtherLevelsAndBlockedRegistries() {
         StationRegistrySavedData registry = new StationRegistrySavedData();
         UUID id = UUID.randomUUID();
         registry.reserve(id, UUID.randomUUID(), "Lookup", CelestialIds.MOON_ID, 0);

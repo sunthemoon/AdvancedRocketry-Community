@@ -1,0 +1,59 @@
+{
+  "base_commit": "82568b85f5b5f088fad6a6488bebe00043204b18",
+  "files": [
+    {
+      "bytes": 23591,
+      "path": "CHANGELOG.md",
+      "sha256": "b7f9f5fc6874bd1ad3ab5fa6a5b969a0a1488199379f1a19033eb8b01cea0f32",
+      "working_sha256": "b7f9f5fc6874bd1ad3ab5fa6a5b969a0a1488199379f1a19033eb8b01cea0f32"
+    },
+    {
+      "bytes": 7290,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/BoundedSavedDataIo.java",
+      "sha256": "ea92d491ccc5e6c360884b03c7426c3e16ed4534aa7266160c27ffd85cdeca5b",
+      "working_sha256": "ea92d491ccc5e6c360884b03c7426c3e16ed4534aa7266160c27ffd85cdeca5b"
+    },
+    {
+      "bytes": 19995,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/command/StationCommands.java",
+      "sha256": "701b9a48ab7867e3d6a3c285903ecb28c5859c058bb29528f3f9c562b7f98d32",
+      "working_sha256": "701b9a48ab7867e3d6a3c285903ecb28c5859c058bb29528f3f9c562b7f98d32"
+    },
+    {
+      "bytes": 16378,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java",
+      "sha256": "8c45aee58b3a13722fb657fe87ca8295e9440fd942d212614dc8d018ce94743f",
+      "working_sha256": "8c45aee58b3a13722fb657fe87ca8295e9440fd942d212614dc8d018ce94743f"
+    },
+    {
+      "bytes": 3990,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationGravityService.java",
+      "sha256": "63e5b37d48f1ca2b9f3edcf722f862d11940f9fc77bc27e5fcd267fe27ed213f",
+      "working_sha256": "63e5b37d48f1ca2b9f3edcf722f862d11940f9fc77bc27e5fcd267fe27ed213f"
+    },
+    {
+      "bytes": 4714,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/BoundedSavedDataIoCapacityTest.java",
+      "sha256": "e9d8393e7072b06bb5d167ea27fa34df60b4787c8b8fe89ecaab0df54c6592d2",
+      "working_sha256": "e9d8393e7072b06bb5d167ea27fa34df60b4787c8b8fe89ecaab0df54c6592d2"
+    },
+    {
+      "bytes": 7415,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationOrbitEnvironmentResolverTest.java",
+      "sha256": "0d7439beee5d2fa5150e922d8f8c67d5d602bdb2b0d0add3f52be3772cbaf1d1",
+      "working_sha256": "0d7439beee5d2fa5150e922d8f8c67d5d602bdb2b0d0add3f52be3772cbaf1d1"
+    },
+    {
+      "bytes": 4871,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateScaleTest.java",
+      "sha256": "d422d5f59161212ae350367843e52bc52d1b4610da1f7df8405e765338e8aec3",
+      "working_sha256": "d422d5f59161212ae350367843e52bc52d1b4610da1f7df8405e765338e8aec3"
+    },
+    {
+      "bytes": 14926,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateTest.java",
+      "sha256": "4e91f5e8e6f23e7d1fa0d48e5326c7f74888aea7f1f1e865bddc5987394ec4cc",
+      "working_sha256": "4e91f5e8e6f23e7d1fa0d48e5326c7f74888aea7f1f1e865bddc5987394ec4cc"
+    }
+  ]
+}

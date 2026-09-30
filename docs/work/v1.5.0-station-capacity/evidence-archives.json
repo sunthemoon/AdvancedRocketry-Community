@@ -1,0 +1,19 @@
+{
+  "archives": [
+    {
+      "bytes": 298281,
+      "manifest": "root-checks-files.json",
+      "members": 232,
+      "name": "root-checks.zip",
+      "sha256": "d0ec1ff49d4f00747124a328207616a9abefb30a306e5c400afa8a190e9704cd"
+    }
+  ],
+  "base_commit": "82568b85f5b5f088fad6a6488bebe00043204b18",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-contracts-64b7d308c0af484e9d82bd5dc3b3a7db"
+}

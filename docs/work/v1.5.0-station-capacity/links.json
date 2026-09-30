@@ -1,0 +1,30 @@
+{
+  "links": [
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.2.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.1.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.0.2/INSTALLATION.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}
