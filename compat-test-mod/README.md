@@ -24,6 +24,7 @@ checks.
     probe player), and `remove <id> uuid <member>`;
   - `arce station accept <id>` or `decline <id>`;
   - `arce station environment` or `list`;
+  - `arce station gravity <percent>`;
   - `arce station admin inspect <id>`, so native checks can show that a
     non-operator never reaches an admin command;
   - `arce station warp <body>`, `confirm <id>`, `cancel` or `status`.

@@ -50,11 +50,17 @@ final class NetworkProtocolPinTest {
                 Matcher message = MESSAGE.matcher(source);
                 int messages = 0;
                 while (message.find()) {
+                    // Every handler runs on the main thread (ADR-047 relies on it for message ordering).
+                    int end = source.indexOf(".add()", message.end());
+                    assertTrue(end > 0 && source.substring(message.end(), end).contains(".consumerMainThread("),
+                            "Not handled on the main thread: " + message.group(1) + " in " + file);
                     actual.add(String.join("|", ModIdentity.id(channel.group(1)).toString(), protocol.group(1),
                             message.group(2), message.group(1), message.group(3)));
                     messages++;
                 }
                 assertTrue(messages > 0, "A channel without messages: " + file);
+                assertEquals(source.split("messageBuilder\\(", -1).length - 1, messages,
+                        "A message registration the pin table cannot read (for example a non-literal index): " + file);
             }
         }
         assertEquals(4, channelSources.size(), "Channel sources changed: " + channelSources);

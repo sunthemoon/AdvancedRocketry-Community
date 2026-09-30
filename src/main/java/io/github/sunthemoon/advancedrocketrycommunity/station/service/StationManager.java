@@ -45,14 +45,21 @@ public final class StationManager implements StationOperationService {
     private final CelestialCatalogManager celestialCatalogs;
     private final StationCreationService creation;
     private final StationAccessService access = new StationAccessService();
-    private final StationExpansionService expansion = new StationExpansionService(access);
-    private final StationGravityService gravity = new StationGravityService(access);
+    private final StationExpansionService expansion;
+    private final StationGravityService gravity;
     private final StationOrbitEnvironmentResolver orbitEnvironments;
     private final ElevatorEndpointService elevatorEndpoints;
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
 
     public StationManager(CelestialCatalogManager celestialCatalogs) {
+        this(celestialCatalogs, StationWriteBudget.unbounded());
+    }
+
+    /** {@code writeBudget} is shared with the warp service: one server-wide spacing for checked writes. */
+    public StationManager(CelestialCatalogManager celestialCatalogs, StationWriteBudget writeBudget) {
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
+        this.expansion = new StationExpansionService(access, writeBudget);
+        this.gravity = new StationGravityService(access, writeBudget);
         this.creation = new StationCreationService(
                 platforms,
                 bodyId -> celestialCatalogs.current()
@@ -306,6 +313,14 @@ public final class StationManager implements StationOperationService {
 
     public int recoverReservations(MinecraftServer server) {
         return creation.recoverReservations(server);
+    }
+
+    /**
+     * The mod instance outlives integrated-server worlds, and ServerStoppedEvent clears the bridge, so
+     * each server start reinstalls it (as the machine and satellite runtimes do).
+     */
+    public void onServerAboutToStart(net.minecraftforge.event.server.ServerAboutToStartEvent event) {
+        StationRuntime.install(this);
     }
 
     public void onServerStarted(ServerStartedEvent event) {

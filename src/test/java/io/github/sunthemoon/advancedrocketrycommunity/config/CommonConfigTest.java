@@ -32,8 +32,8 @@ class CommonConfigTest {
     @Test
     void obsoleteUnconsumedLifecycleToggleIsNotExposed() {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
-        // Two atmosphere values and the three ADR-044 station warp values.
-        assertEquals(5, countValues(CommonConfig.SPEC.getValues()));
+        // Two atmosphere values, the three ADR-044 station warp values and the ADR-041 rev. 2 write spacing.
+        assertEquals(6, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -54,6 +54,19 @@ class CommonConfigTest {
         assertEquals(2_000_000, CommonConfig.WARP_COST_IN_SYSTEM.getDefault());
         assertEquals(8_000_000, CommonConfig.WARP_COST_INTERSTELLAR.getDefault());
         assertEquals(WarpSettings.DEFAULTS, CommonConfig.warpSettings(), "Defaults apply until the config loads");
+    }
+
+    @Test
+    void checkedWriteSpacingDefaultsToThreeTicksPerHundredStations() {
+        ForgeConfigSpec.ValueSpec spec = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("stations.checkedWriteTicksPer100Stations"));
+        ForgeConfigSpec.Range<Integer> range = spec.getRange();
+        assertEquals(0, range.getMin());
+        assertEquals(100, range.getMax());
+        assertEquals(3, CommonConfig.CHECKED_WRITE_TICKS_PER_100_STATIONS.getDefault());
+        assertEquals(3, CommonConfig.checkedWriteTicksPer100Stations(), "The default applies until the config loads");
+        assertFalse(spec.test(-1));
+        assertFalse(spec.test(101));
     }
 
     private static void assertRange(

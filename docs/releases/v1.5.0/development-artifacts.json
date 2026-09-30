@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "bytes": 48471,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+      "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+    },
+    {
+      "bytes": 1318311,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+      "sha256": "c31709bdb3048b5b8e842a46ce6f1f5b5d082d0a615d74f40f2e00ee31140e6e"
+    },
+    {
+      "bytes": 2910020,
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+      "sha256": "26a25d024cdf33b31ec96be9534b34f47ab73099458472da7e751faba4060433"
+    }
+  ],
+  "build": "1.20.1-1.5.0-dev",
+  "candidate_commit": null,
+  "development_parent_commit": "d45534ebc55a4005df511935ed34adf62a8a7b2e",
+  "legacy_native_inputs": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.4.0-dev.jar",
+      "sha256": "576eaaf8a5e23df1b049fd5fa5029f1cd6d6ffcfd0cf50bd5980fc280c31d475"
+    },
+    {
+      "name": "arce-adapter-compat-test-1.0.0.jar (v1.4 build)",
+      "sha256": "e58de48ff038ff42fa1173bfd210d9e8321cfcfa66849ba1c13a0e31c1c02a47"
+    }
+  ],
+  "native_fixture": {
+    "built_against": "1.20.1-1.5.0-dev",
+    "bytes": 96772,
+    "mod_id": "arce_adapter_test",
+    "name": "arce-adapter-compat-test-1.0.0.jar",
+    "sha256": "765735d1254ed6f66049f45cc740208882195bff7a00bfd29e2245e264976fa4"
+  },
+  "schema_version": 1,
+  "scope": "Bytes built and tested by the closure run 01 and both closure native harnesses. Development artifacts, not a release candidate or a download."
+}

@@ -2,6 +2,7 @@
 
 ```yaml
 status: ACCEPTED
+revision: 2
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -73,7 +74,20 @@ A committed gravity write rewrites the whole station file with fsync on the serv
 thread. There is at most one such write per station per 100 server ticks (5 s,
 `StationGravityService.WRITE_COOLDOWN_TICKS`). A repeated unchanged value writes
 nothing and does not start the cooldown. ORBIT-04 measures the commit time with a
-4,096-station registry against the tick budget. The cost is one indexed
+4,096-station registry against the tick budget.
+
+Revision 2 (final v1.5 review B9): the per-station cooldown alone does not bound the
+server. About 176 ms per write at 4,096 stations lets a few owners break the P99
+tick budget of docs/17 §4. So every checked station write (expansion, gravity and a
+warp commit) also shares one **server-wide spacing** (`StationWriteBudget`): after
+any such write attempt, the next one waits `floor(records × N / 100)` ticks, with
+`N` the COMMON config value `stations.checkedWriteTicksPer100Stations` (default 3,
+0..100, 0 disables).
+- With the default, a 4,096-station registry allows one such write about every
+  6 seconds (under 1% of ticks), and registries under 34 stations are not spaced.
+- Expansion and gravity refuse a request inside the spacing with `REGISTRY_BUSY`,
+  before an expansion confirmation is taken.
+- A due warp countdown stays due and commits at the first free tick (ADR-044 §4). The cost is one indexed
 lookup per player tick in Space, the same lookup build protection already uses.
 Stored values above 4,000 stay valid storage and are clamped only for physics;
 `EnvironmentQueries` keeps returning the configured value (0..10), preserving
@@ -89,8 +103,10 @@ A station owner, or an operator, may set gravity with
 `/arce station gravity <percent>`, 0..100 in steps of 1 (0..1,000 milli). The
 same rules as expansion apply: the command must come from the connected
 player's own command source while they stand in the station's committed region
-with their chunk loaded; members, invitees, console, `/execute`, command blocks,
-functions, signs and FakePlayers cannot. It is a direct, reversible setting
+with their chunk loaded. Members, invitees, the console, command blocks,
+functions, signs, FakePlayers and `/execute` run by anyone else cannot. A player's
+own non-silent `/execute as @s …` keeps their source and is accepted
+(revision 2, review B12). It is a direct, reversible setting
 (no confirmation) written through the same checked candidate commit as
 expansion: validate, stage, force, read back, atomically replace, then publish.
 A failed write keeps the old gravity. Values above 1,000 are not settable by
@@ -168,3 +184,9 @@ It also noted that ORBIT-02 was committed before this acceptance. The fix commit
 that applies these changes is the first acceptance-bound implementation. The
 review report is archived with the ORBIT evidence. Acceptance of this ADR is not
 a Gate approval.
+
+**Revision 2** (2026-09-30): the final independent v1.5 review found that the
+per-station cooldown does not bound the server (B9, Medium), and that the text
+overclaimed about `/execute` (B12, Low). This revision adds the server-wide
+checked-write spacing and corrects the wording; nothing else changes. The report is
+archived in `docs/work/v1.5.0-closure/`. Acceptance is not a Gate approval.

@@ -51,8 +51,8 @@ STATION-03, confirmed owner/operator expansion with a checked commit, was
 independently reviewed and its findings fixed
 ([verification](../work/v1.5.0-station-expansion/VERIFICATION.md)). STATION-04
 passed a native v1.4-world team/upgrade/expansion/restart check
-([verification](../work/v1.5.0-station-native/VERIFICATION.md)). Both await an
-independent re-review; its findings are being fixed. ORBIT-02 station gravity and
+([verification](../work/v1.5.0-station-native/VERIFICATION.md)). Both were
+re-reviewed and then confirmed by the final review. ORBIT-02 station gravity and
 environment display are implemented under accepted ADR-041
 ([verification](../work/v1.5.0-orbit-environment/VERIFICATION.md)). Star systems
 with the Tau Ceti example are implemented under accepted ADR-043
@@ -66,9 +66,16 @@ authority; [verification](../work/v1.5.0-warp-rockets/VERIFICATION.md)) and WARP
 (diagnostics and native warp restarts;
 [verification](../work/v1.5.0-warp-native/VERIFICATION.md)). An independent review
 of STAR, capacity and WARP-02 was applied
-([record](../work/v1.5.0-slices-review/VERIFICATION.md)); the later slices await
-review. Release
-status remains `IN_PROGRESS`, not `PASSED`.
+([record](../work/v1.5.0-slices-review/VERIFICATION.md)), then a review of WARP-03/04
+([record](../work/v1.5.0-review-closure/VERIFICATION.md)), and two final reviews of
+the remaining slices ([closure](../work/v1.5.0-closure/VERIFICATION.md)). The one
+High finding (WARP review R1) was fixed; the final reviews found no Critical or High
+issue, and every Medium finding is fixed. The
+[v1.5 development handoff](../releases/v1.5.0/RELEASE-EVIDENCE.md) (ACC-01) lists
+the evidence and the open acceptance: V0/V1/V2, S2, reference-hardware performance,
+ORBIT-04's native load items, the candidate-bound matrix (ACC-02) and the final audit
+and human decision (ACC-03). Release status remains `IN_PROGRESS`, not `PASSED`.
+The next development chunk is v1.6 (C6 in [COMPLETION-PLAN](COMPLETION-PLAN.md)).
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and

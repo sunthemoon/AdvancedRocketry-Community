@@ -110,9 +110,9 @@ public final class StationElevatorGameTests {
             helper.assertTrue(chunks.equals(loadedChunks(levels)), "An elevator check loaded or unloaded chunks: "
                     + chunks + " -> " + loadedChunks(levels));
 
-            // A non-operator never reaches the command. The shared "admin" node may be visible (Brigadier
-            // keeps the first registered requirement), so the leaf's own requirement is what refuses it.
-            // (Joining loads the player's chunks, so this runs after the chunk comparison above.)
+            // A non-operator never reaches the command: today the shared "admin" node already refuses it,
+            // and the "elevator" leaf carries its own requirement too (checked directly below, final
+            // review A5). (Joining loads the player's chunks, so this runs after the chunk comparison.)
             List<String> playerReplies = new ArrayList<>();
             var player = ConnectedTestPlayers.join(server, ownerId, "elevatorOwner", space,
                     BlockPos.containing(station.landingPad().x(), 80, station.landingPad().z()), playerReplies);
@@ -124,6 +124,12 @@ public final class StationElevatorGameTests {
                 helper.assertTrue(unreachable && result == 0 && !playerReplies.isEmpty()
                                 && playerReplies.stream().noneMatch(line -> line.contains("Elevator endpoint check")),
                         "A non-operator reached the elevator check: " + playerReplies);
+                // The leaf's own requirement, independent of the shared "admin" node (ADR-045).
+                var root = server.getCommands().getDispatcher().getRoot();
+                var leaf = root.getChild("arce").getChild("station").getChild("admin").getChild("elevator");
+                helper.assertTrue(leaf != null && !leaf.getRequirement().test(source)
+                                && leaf.getRequirement().test(server.createCommandSourceStack()),
+                        "The elevator node does not carry its own permission-level-2 requirement");
             } finally {
                 server.getPlayerList().remove(player);
             }
@@ -157,7 +163,14 @@ public final class StationElevatorGameTests {
     private static void expectRule(GameTestHelper helper, MinecraftServer server, String command,
                                    ElevatorEndpointCode code) {
         List<String> replies = new ArrayList<>();
-        int result = run(server, replies, command);
+        int result;
+        List<String> audits;
+        try (AuditLogCapture audit = new AuditLogCapture()) {
+            result = run(server, replies, command);
+            audits = audit.lines().stream().filter(line -> line.startsWith("ARCE_STATION_ELEVATOR_CHECK ")).toList();
+        }
+        helper.assertTrue(audits.size() == 1 && audits.get(0).endsWith(" result=" + code),
+                command + ": expected one audit line with result " + code + " but got " + audits);
         String expected = code == ElevatorEndpointCode.VALID ? "result=valid"
                 : "result=rule " + code.rule() + " " + code + ": ";
         helper.assertTrue(replies.size() == 1 && replies.get(0).contains(expected)

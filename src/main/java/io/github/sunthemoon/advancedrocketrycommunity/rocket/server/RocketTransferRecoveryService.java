@@ -60,6 +60,7 @@ final class RocketTransferRecoveryService {
     private final Set<UUID> liveTransfers;
     private final Set<UUID> settledTransfers;
     private final RocketPassengerReconnectQueue reconnects = new RocketPassengerReconnectQueue();
+    private int recoveryCursor;
 
     RocketTransferRecoveryService(Set<UUID> liveTransfers, Set<UUID> settledTransfers) {
         this.liveTransfers = Objects.requireNonNull(liveTransfers, "liveTransfers");
@@ -68,37 +69,37 @@ final class RocketTransferRecoveryService {
 
     Result recoverNext(MinecraftServer server, RocketTransferSavedData journal) {
         List<RocketTransferRecord> entries = journal.entries();
-        RocketTransferRecord record = nextRecoverable(entries, liveTransfers, settledTransfers,
-                candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate)).orElse(null);
-        if (record != null) {
-            return recover(server, journal, record);
+        Step step = step(entries, liveTransfers, settledTransfers, recoveryCursor,
+                candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate));
+        recoveryCursor = step.cursor();
+        if (step.candidate() == null) {
+            return Result.notFound(null);
         }
-        return firstUnclassified(entries, liveTransfers, settledTransfers)
-                .map(RocketTransferRecoveryService::retryLater)
-                .orElseGet(() -> Result.notFound(null));
+        return step.ready() ? recover(server, journal, step.candidate()) : retryLater(step.candidate());
     }
 
     /**
-     * WARP review R7: the first unclassified record whose recovery chunks are loaded, so that a record
-     * whose ends cannot be loaded (for example, its Level is gone) never starves the records behind it.
-     * Bounded by the journal's record limit; the loaded check reads loaded chunks only.
+     * WARP review R7 and final review A1: one unclassified record per call, chosen round-robin by a
+     * cursor. Its ends are checked with {@code loaded}, which may add a chunk ticket and load them, so
+     * only one record is checked per call, as before R7. A record whose ends cannot be loaded (for
+     * example, its Level is gone) advances the cursor, so it never starves the records behind it.
      */
-    static java.util.Optional<RocketTransferRecord> nextRecoverable(List<RocketTransferRecord> entries,
-                                                                    Set<UUID> live, Set<UUID> settled,
-                                                                    java.util.function.Predicate<RocketTransferRecord> loaded) {
-        return entries.stream()
+    static Step step(List<RocketTransferRecord> entries, Set<UUID> live, Set<UUID> settled, int cursor,
+                     java.util.function.Predicate<RocketTransferRecord> loaded) {
+        List<RocketTransferRecord> unclassified = entries.stream()
                 .filter(candidate -> !live.contains(candidate.transferId()))
                 .filter(candidate -> !settled.contains(candidate.transferId()))
-                .filter(loaded)
-                .findFirst();
+                .toList();
+        if (unclassified.isEmpty()) {
+            return new Step(null, false, 0);
+        }
+        int index = Math.floorMod(cursor, unclassified.size());
+        RocketTransferRecord candidate = unclassified.get(index);
+        return loaded.test(candidate) ? new Step(candidate, true, index) : new Step(candidate, false, index + 1);
     }
 
-    private static java.util.Optional<RocketTransferRecord> firstUnclassified(List<RocketTransferRecord> entries,
-                                                                             Set<UUID> live, Set<UUID> settled) {
-        return entries.stream()
-                .filter(candidate -> !live.contains(candidate.transferId()))
-                .filter(candidate -> !settled.contains(candidate.transferId()))
-                .findFirst();
+    /** The record this call handles, whether its ends are loaded, and the cursor for the next call. */
+    record Step(RocketTransferRecord candidate, boolean ready, int cursor) {
     }
 
     Result recoverById(MinecraftServer server, UUID transferId) {

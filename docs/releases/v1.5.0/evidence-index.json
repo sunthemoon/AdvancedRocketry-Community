@@ -1,0 +1,304 @@
+{
+  "candidate_commit": null,
+  "development_parent_commit": "d45534ebc55a4005df511935ed34adf62a8a7b2e",
+  "manifest_bytes_checked": 16722899,
+  "manifest_count": 18,
+  "manifest_failures": [],
+  "manifest_files_checked": 168,
+  "not_indexed": {
+    "packet": "docs/work/v1.5.0-closure",
+    "reason": "Committed with this handoff. Its source-identity.json and SHA256SUMS.txt bind this directory, so indexing it here would be circular."
+  },
+  "records": [
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1113011,
+      "files_checked": 8,
+      "manifest": {
+        "bytes": 676,
+        "path": "docs/work/v1.5.0-elevator-ui/SHA256SUMS.txt",
+        "sha256": "7d4c8a8336b0ea10baf692df5d8b83db704876b02957a7e9b4feb04252b90b47"
+      },
+      "packet": "docs/work/v1.5.0-elevator-ui",
+      "report": {
+        "bytes": 8096,
+        "path": "docs/work/v1.5.0-elevator-ui/VERIFICATION.md",
+        "sha256": "c8e9b72fe2b32dd806f50b3d1d3395014ca4b17732a2cb91ff3dc3edb475fcd1"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 183222,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-mig-missing-orbit/SHA256SUMS.txt",
+        "sha256": "9b75462f5583afcf257602a5ccf7b11095547cb5b2b38ccea99713418dd9ecc9"
+      },
+      "packet": "docs/work/v1.5.0-mig-missing-orbit",
+      "report": {
+        "bytes": 3758,
+        "path": "docs/work/v1.5.0-mig-missing-orbit/VERIFICATION.md",
+        "sha256": "7640eb54be3e9a0b0f4ccd9d164348533bc7c2a79b6023e422f364677ea168ed"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1784119,
+      "files_checked": 9,
+      "manifest": {
+        "bytes": 757,
+        "path": "docs/work/v1.5.0-mig-native/SHA256SUMS.txt",
+        "sha256": "8df7843b626e8ead038809474bb65f054a111a39bd6f6526895deb6e1fe0ec0d"
+      },
+      "packet": "docs/work/v1.5.0-mig-native",
+      "report": {
+        "bytes": 6327,
+        "path": "docs/work/v1.5.0-mig-native/VERIFICATION.md",
+        "sha256": "a10420d211184241ab93d869fee54bd876f1851d37806d84771d1c25a9bcb3b2"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1193421,
+      "files_checked": 14,
+      "manifest": {
+        "bytes": 1211,
+        "path": "docs/work/v1.5.0-orbit-environment/SHA256SUMS.txt",
+        "sha256": "9de370435e8f2d479da95342a7c3a8419a16d7fcf2be214ad91dc59908bb2b5f"
+      },
+      "packet": "docs/work/v1.5.0-orbit-environment",
+      "report": {
+        "bytes": 9168,
+        "path": "docs/work/v1.5.0-orbit-environment/VERIFICATION.md",
+        "sha256": "a51ab7b578e5c06599b19a9d8d36edf3b3726eb0c334d8a8527cd4e62b912903"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 565217,
+      "files_checked": 9,
+      "manifest": {
+        "bytes": 782,
+        "path": "docs/work/v1.5.0-orbit-sky/SHA256SUMS.txt",
+        "sha256": "4443a53059eee091a3809a12a7757cabb7b207c03eeddb73a3708afc00c5c1e9"
+      },
+      "packet": "docs/work/v1.5.0-orbit-sky",
+      "report": {
+        "bytes": 4830,
+        "path": "docs/work/v1.5.0-orbit-sky/VERIFICATION.md",
+        "sha256": "450789b94425d74c8ec4cd2bf523f10eaa3e7e387f278554223fe42ca03bdbaa"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1765100,
+      "files_checked": 9,
+      "manifest": {
+        "bytes": 769,
+        "path": "docs/work/v1.5.0-preparation/SHA256SUMS.txt",
+        "sha256": "120b7f13ef48238aefaffd68f87d5aca2e076a81988900019e7db171741e2ad8"
+      },
+      "packet": "docs/work/v1.5.0-preparation",
+      "report": {
+        "bytes": 10377,
+        "path": "docs/work/v1.5.0-preparation/VERIFICATION.md",
+        "sha256": "bec84d7281bffd2a161d17093418e15775d154370e0fcaeb582b518fab5455dd"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1700244,
+      "files_checked": 11,
+      "manifest": {
+        "bytes": 989,
+        "path": "docs/work/v1.5.0-review-closure/SHA256SUMS.txt",
+        "sha256": "2d6b45c1f8428c2e5a01ad1b41650514ea9535dcf208525ab2739666be77bed3"
+      },
+      "packet": "docs/work/v1.5.0-review-closure",
+      "report": {
+        "bytes": 11131,
+        "path": "docs/work/v1.5.0-review-closure/VERIFICATION.md",
+        "sha256": "3c0bb6a696f630f117bab144bf0acdb8ba9ae0e18f7cccda2b7a850fbfa456f1"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 577347,
+      "files_checked": 9,
+      "manifest": {
+        "bytes": 774,
+        "path": "docs/work/v1.5.0-slices-review/SHA256SUMS.txt",
+        "sha256": "5ca538871f011e762708350651c2a6297112faf10b2987466f8698b3e615ace0"
+      },
+      "packet": "docs/work/v1.5.0-slices-review",
+      "report": {
+        "bytes": 6982,
+        "path": "docs/work/v1.5.0-slices-review/VERIFICATION.md",
+        "sha256": "dc082ee21f41da162dc1648d5a573aed47f28da510762481768c351a6efe7001"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 820125,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-star-systems/SHA256SUMS.txt",
+        "sha256": "3982e7b15e57795d3acf8fcdb56230ccdfb7d3ab96384469a950d6f8a683d6c7"
+      },
+      "packet": "docs/work/v1.5.0-star-systems",
+      "report": {
+        "bytes": 5398,
+        "path": "docs/work/v1.5.0-star-systems/VERIFICATION.md",
+        "sha256": "68d63c8038e18364bf19efd777070161de0ec12ad783e006c8332e96b33a9490"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 62209,
+      "files_checked": 8,
+      "manifest": {
+        "bytes": 709,
+        "path": "docs/work/v1.5.0-star-warp-contracts/SHA256SUMS.txt",
+        "sha256": "c48c3ac7eb8526c043d867444af928724ebd2a0bd1e3d9e6f1c030ad95cb4785"
+      },
+      "packet": "docs/work/v1.5.0-star-warp-contracts",
+      "report": {
+        "bytes": 4480,
+        "path": "docs/work/v1.5.0-star-warp-contracts/VERIFICATION.md",
+        "sha256": "a013488a4b38bb92268003dd5f479a692c6dcff496ce49cb325a042c4e6f653c"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 364027,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-station-capacity/SHA256SUMS.txt",
+        "sha256": "1d0e974e847fbbf3d7521c7e5f8e0aa353f7c8545637a2d95da9f603f3798d49"
+      },
+      "packet": "docs/work/v1.5.0-station-capacity",
+      "report": {
+        "bytes": 5283,
+        "path": "docs/work/v1.5.0-station-capacity/VERIFICATION.md",
+        "sha256": "180bfa948da6412c07ce82ddd39986d10900f0e7784fa30d1ee16bcda95de885"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 2556232,
+      "files_checked": 15,
+      "manifest": {
+        "bytes": 1304,
+        "path": "docs/work/v1.5.0-station-expansion/SHA256SUMS.txt",
+        "sha256": "600b970730c2489bdc21b8c62405150c66be9ce380d03d28e9c204a79d737485"
+      },
+      "packet": "docs/work/v1.5.0-station-expansion",
+      "report": {
+        "bytes": 15347,
+        "path": "docs/work/v1.5.0-station-expansion/VERIFICATION.md",
+        "sha256": "4e9f21f8335d4ffbd169e3b2276b0b23530ea8100c2e0cf0f99f40278be446a5"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1234035,
+      "files_checked": 15,
+      "manifest": {
+        "bytes": 1309,
+        "path": "docs/work/v1.5.0-station-native/SHA256SUMS.txt",
+        "sha256": "28cc5ab6ea9b8072930f8748f2fc382b8c2128cde1654ea09ded55dd1fd63131"
+      },
+      "packet": "docs/work/v1.5.0-station-native",
+      "report": {
+        "bytes": 11070,
+        "path": "docs/work/v1.5.0-station-native/VERIFICATION.md",
+        "sha256": "15c268756f6b8989475c2cbe0f84f329a00f303894c2f0a12db0951c0ee90143"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1081104,
+      "files_checked": 12,
+      "manifest": {
+        "bytes": 1028,
+        "path": "docs/work/v1.5.0-station-schema/SHA256SUMS.txt",
+        "sha256": "528ad4da38a2b7412ab9acd2cfd8b13e92340e645332f37d075084e35fe61acb"
+      },
+      "packet": "docs/work/v1.5.0-station-schema",
+      "report": {
+        "bytes": 15593,
+        "path": "docs/work/v1.5.0-station-schema/VERIFICATION.md",
+        "sha256": "0d4aad7f94d2005ddab0bb41b54c8b34fe31a1eae556a5e37d51317d5942b836"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 427567,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-warp-core/SHA256SUMS.txt",
+        "sha256": "553d3e182f6c424c3c5101b16145673014fb62a556bd799f9bd2507a1da7e785"
+      },
+      "packet": "docs/work/v1.5.0-warp-core",
+      "report": {
+        "bytes": 9948,
+        "path": "docs/work/v1.5.0-warp-core/VERIFICATION.md",
+        "sha256": "dce7753c1516a8994a80c60b462522769765487a54b6e4b6ce34e22c0dedf2dd"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 551662,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-warp-native/SHA256SUMS.txt",
+        "sha256": "2b24c31c5fbf14e4edf18e9c70ff87c3b4d2607e856b05e281a4091f217126d9"
+      },
+      "packet": "docs/work/v1.5.0-warp-native",
+      "report": {
+        "bytes": 6991,
+        "path": "docs/work/v1.5.0-warp-native/VERIFICATION.md",
+        "sha256": "68bcc20536cf7bd737119d2a6383ba16cf769d63d0e60acffedf3a2f9ef48d55"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 334553,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-warp-rockets/SHA256SUMS.txt",
+        "sha256": "b617c83d8519f3b3f8358acf5d87474580171ed848895f51837a9486317db015"
+      },
+      "packet": "docs/work/v1.5.0-warp-rockets",
+      "report": {
+        "bytes": 5749,
+        "path": "docs/work/v1.5.0-warp-rockets/VERIFICATION.md",
+        "sha256": "25b75cc8ad1289baab01b8b9e5b12403bae6368d0fccebb1177ce34b35fd8241"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 409704,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.5.0-warp-schema/SHA256SUMS.txt",
+        "sha256": "a30d2395d1427a1ca9f184b80cbb23f813968b678c06dd98329c1b64db9d3392"
+      },
+      "packet": "docs/work/v1.5.0-warp-schema",
+      "report": {
+        "bytes": 8424,
+        "path": "docs/work/v1.5.0-warp-schema/VERIFICATION.md",
+        "sha256": "40424c102b50263d9c1304ed70443bb07eea911c6cff9591baaf63386f2e28f1"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Verifies each earlier v1.5 packet against its own SHA256SUMS. It does not relabel historical runs as tests of the current artifacts."
+}

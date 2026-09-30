@@ -1,0 +1,55 @@
+{
+  "archives": [
+    {
+      "bytes": 1072225,
+      "manifest": "root-checks-files.json",
+      "members": 444,
+      "name": "root-checks.zip",
+      "sha256": "f08dcb6e03f86dc97d9b190fa1f24d667d89437efdb88c7ee8c0a7a954e214fb"
+    },
+    {
+      "bytes": 1230586,
+      "excluded": [
+        "tree-",
+        "ev/",
+        "gen-orig/"
+      ],
+      "manifest": "independent-review-final-a-files.json",
+      "members": 52,
+      "name": "independent-review-final-a.zip",
+      "scope": "Final review area A (authority and persistence): report, mutation tables and logs, probes, scripts. Excluded: exported trees, re-extracted evidence copies, generated-file copies.",
+      "sha256": "a0c304e81f058ccd260772222d17ef8ddaa7edd0bc07589af9ba13741ee65939",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-final-a-review-6572801cef844e679252e3ea7bd650e4"
+    },
+    {
+      "bytes": 303301,
+      "excluded": [
+        "tree-",
+        "mut/",
+        "forge-src/",
+        "mc/",
+        "gen-pristine/",
+        "sky-root/",
+        "sky-review/",
+        "station-review2/",
+        "orbit-review/",
+        "mig/",
+        "native2/"
+      ],
+      "manifest": "independent-review-final-b-files.json",
+      "members": 35,
+      "name": "independent-review-final-b.zip",
+      "scope": "Final review area B (sky, MIG-01a, ORBIT-02/04, STATION-03/04): report, mutation tables and logs, scripts. Excluded: exported trees, the mutation tree, decompiled Minecraft/Forge sources and re-extracted evidence.",
+      "sha256": "50e88d351b788af0b418df025e7231a960e3732e86c5fa84a9fe08ee2f84e8ae",
+      "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-final-b-review-bafb0541855b40a4aeea9990e4e52684"
+    }
+  ],
+  "base_commit": "d45534ebc55a4005df511935ed34adf62a8a7b2e",
+  "excluded": [
+    "packaging/out/",
+    "__pycache__/",
+    "station-server/"
+  ],
+  "schema_version": 1,
+  "source_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v150-closure-d95cd36780924befbdea0321233c2187"
+}

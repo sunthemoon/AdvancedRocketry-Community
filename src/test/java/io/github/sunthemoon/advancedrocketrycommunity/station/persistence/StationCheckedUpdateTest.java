@@ -172,6 +172,26 @@ final class StationCheckedUpdateTest {
         assertFalse(data.updatesAvailable(), "A quarantined registry reported checked updates as available");
     }
 
+    /** ADR-047 / final review B3: a quarantined registry still resolves the station sky context. */
+    @Test
+    void aQuarantinedRegistryStillResolvesTheSkyContext() throws Exception {
+        int x = station.cell().centerX();
+        int z = station.cell().centerZ();
+        assertEquals(java.util.Optional.of(station.orbitBody()),
+                io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService.contextFor(
+                        data, true, x, z));
+        assertEquals(CheckedUpdate.OUTCOME_UNKNOWN, data.checkedExpand(file, station, (from, to) -> {
+            Files.write(to, new byte[]{7, 8, 9});
+            throw new java.io.IOException("injected torn replacement");
+        }));
+        assertTrue(data.updatesQuarantined());
+        assertEquals(java.util.Optional.of(station.orbitBody()),
+                io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService.contextFor(
+                        data, true, x, z), "A quarantined registry must still resolve reads");
+        assertTrue(io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService.contextFor(
+                data, false, x, z).isEmpty(), "Outside Space there is no context");
+    }
+
     @Test
     void gravityUsesTheSameCheckedCommitAndKeepsEverythingElse() throws Exception {
         assertEquals(CheckedUpdate.COMMITTED, data.checkedSetGravity(file, station, 400, (from, to) -> {

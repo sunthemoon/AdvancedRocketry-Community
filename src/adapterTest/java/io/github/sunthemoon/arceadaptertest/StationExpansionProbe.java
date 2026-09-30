@@ -58,6 +58,7 @@ final class StationExpansionProbe {
             + "|arce station remove " + UUID_PATTERN + " uuid " + UUID_PATTERN
             + "|arce station (accept|decline) " + UUID_PATTERN
             + "|arce station (environment|list)"
+            + "|arce station gravity [0-9]{1,3}"
             + "|arce station admin inspect " + UUID_PATTERN
             + "|arce station warp (confirm " + UUID_PATTERN + "|cancel|status|[a-z0-9_.-]+:[a-z0-9_./-]+)");
     private static final int MAX_ENERGY_PER_CALL = 1_000_000;

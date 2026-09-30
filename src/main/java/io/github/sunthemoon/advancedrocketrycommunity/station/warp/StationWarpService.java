@@ -16,6 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAcc
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationLocalActor;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteCooldown;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -51,9 +52,17 @@ public final class StationWarpService {
     private final StationWarpCountdowns countdowns = new StationWarpCountdowns();
     private final StationWriteCooldown cooldown = new StationWriteCooldown(StationLimits.WARP_COOLDOWN_TICKS);
     private volatile StationRocketAuthority rocketAuthority = StationRocketAuthority.FAIL_CLOSED;
+    private final StationWriteBudget writeBudget;
 
     public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
                               Supplier<WarpSettings> settings) {
+        this(catalogs, systemHasRoutes, settings, StationWriteBudget.unbounded());
+    }
+
+    /** {@code writeBudget} is shared with station expansion and gravity (review B9). */
+    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
+                              Supplier<WarpSettings> settings, StationWriteBudget writeBudget) {
+        this.writeBudget = Objects.requireNonNull(writeBudget, "writeBudget");
         this.catalogs = Objects.requireNonNull(catalogs, "catalogs");
         this.systemHasRoutes = Objects.requireNonNull(systemHasRoutes, "systemHasRoutes");
         this.settings = Objects.requireNonNull(settings, "settings");
@@ -302,10 +311,13 @@ public final class StationWarpService {
             announce(server, announcement.countdown().quote(), announcement.secondsLeft());
         }
         // ADR-044 §4: at most one commit per server tick; others due now wait and are fully rechecked.
-        countdowns.nextDue(now).ifPresent(countdown -> {
-            countdowns.cancel(countdown.quote().stationId());
-            commit(server, countdown.quote());
-        });
+        // A due countdown also waits for the server-wide write spacing (review B9); it stays due.
+        countdowns.nextDue(now)
+                .filter(countdown -> writeBudget.ready(now, StationRegistrySavedData.get(server).recordCount()))
+                .ifPresent(countdown -> {
+                    countdowns.cancel(countdown.quote().stationId());
+                    commit(server, countdown.quote());
+                });
     }
 
     /** Final fold before the stop save (ADR-044 §2); countdowns are discarded, nothing was persisted. */
@@ -336,6 +348,7 @@ public final class StationWarpService {
                 || code == StationManagementCode.OUTCOME_UNKNOWN) {
             // A failing disk is not retried every tick (ADR-041 cooldown).
             cooldown.record(confirmed.stationId(), server.getTickCount());
+            writeBudget.record(server.getTickCount());
         }
         Component message = code == StationManagementCode.WARP_COMMITTED
                 ? Component.literal(String.format(java.util.Locale.ROOT,

@@ -15,10 +15,12 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class StationExpansionService {
     private final StationAccessService access;
+    private final StationWriteBudget budget;
     private final StationExpansionConfirmations confirmations = new StationExpansionConfirmations();
 
-    public StationExpansionService(StationAccessService access) {
+    public StationExpansionService(StationAccessService access, StationWriteBudget budget) {
         this.access = Objects.requireNonNull(access, "access");
+        this.budget = Objects.requireNonNull(budget, "budget");
     }
 
     /** The shared local-actor rule plus idempotent growth; {@code null} means allowed. */
@@ -73,6 +75,11 @@ public final class StationExpansionService {
         if (actor.code() != null) {
             return audit("confirm", player, StationManagementResult.of(actor.code(), actor.station()));
         }
+        // Server-wide write spacing (review B9): refused before take(), so the confirmation stays usable.
+        if (!budget.ready(server.getTickCount(), actor.authority().recordCount())) {
+            return audit("confirm", player, StationManagementResult.of(StationManagementCode.REGISTRY_BUSY,
+                    actor.station()));
+        }
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
         var outcome = confirmations.take(player.getUUID(), stationId, data, server.getTickCount());
         StationManagementCode rejected = switch (outcome.status()) {
@@ -111,6 +118,10 @@ public final class StationExpansionService {
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };
+        if (code == StationManagementCode.EXPANDED || code == StationManagementCode.WRITE_FAILED
+                || code == StationManagementCode.OUTCOME_UNKNOWN) {
+            budget.record(server.getTickCount()); // A write was attempted.
+        }
         return audit("confirm", player, StationManagementResult.of(code,
                 code == StationManagementCode.EXPANDED ? data.find(stationId).orElse(null) : observed));
     }

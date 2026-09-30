@@ -37,11 +37,21 @@ public final class StationSkyContextService {
     public static Optional<ResourceLocation> contextFor(MinecraftServer server, StationRegistrySavedData data,
                                                         ServerPlayer player) {
         ServerLevel level = player.serverLevel();
-        if (!data.operational() || !level.dimension().equals(CelestialIds.SPACE_LEVEL)
-                || server.getLevel(CelestialIds.SPACE_LEVEL) != level) {
+        boolean inSpace = level.dimension().equals(CelestialIds.SPACE_LEVEL)
+                && server.getLevel(CelestialIds.SPACE_LEVEL) == level;
+        return contextFor(data, inSpace, player.getBlockX(), player.getBlockZ());
+    }
+
+    /**
+     * The same rule without a server: none outside Space or while the registry is blocked. A
+     * quarantined registry still resolves stations, as every read does (quarantine blocks checked
+     * updates only).
+     */
+    public static Optional<ResourceLocation> contextFor(StationRegistrySavedData data, boolean inSpace, int x, int z) {
+        if (!inSpace || !data.operational()) {
             return Optional.empty();
         }
-        return data.findAt(player.getBlockX(), player.getBlockZ()).map(StationState::orbitBody);
+        return data.findAt(x, z).map(StationState::orbitBody);
     }
 
     public void onServerTick(TickEvent.ServerTickEvent event) {
@@ -50,7 +60,11 @@ public final class StationSkyContextService {
         }
     }
 
-    /** One pass over the online players; returns the number of messages sent. */
+    /**
+     * One pass over the online players; returns the number of messages sent. Nothing in the loop can
+     * throw for a valid registry (orbit IDs are already bounded by the station record), so there is
+     * no per-player isolation (final review B3, rev-1 F8).
+     */
     public int pass(MinecraftServer server) {
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
         int messages = 0;
@@ -87,5 +101,16 @@ public final class StationSkyContextService {
 
     public int trackedPlayers() {
         return sent.size();
+    }
+
+    /** Whether the player has an entry, i.e. a pass has run since their login, respawn or Level change. */
+    public boolean tracked(UUID playerId) {
+        return sent.containsKey(playerId);
+    }
+
+    /** The last context sent to (or recorded for) the player; empty when untracked or "none". */
+    public Optional<ResourceLocation> lastSent(UUID playerId) {
+        Optional<ResourceLocation> last = sent.get(playerId);
+        return last == null ? Optional.empty() : last;
     }
 }

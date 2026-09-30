@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1318311,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "c31709bdb3048b5b8e842a46ce6f1f5b5d082d0a615d74f40f2e00ee31140e6e"
+      },
+      {
+        "bytes": 2910020,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "26a25d024cdf33b31ec96be9534b34f47ab73099458472da7e751faba4060433"
+      }
+    ]
+  },
+  "base_commit": "d45534ebc55a4005df511935ed34adf62a8a7b2e",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 195,
+    "tests": 1058
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "178383ad15e4a97d42df3a2db60dc55b634bbfe7c1d7bca14c85679167542b16",
+    "DOCUMENT-INDEX.md": "73076cf33bd88424577fa000a9d5a9b537ee0f81d9eef12c16ae980c2cdfd6dc",
+    "compat-test-mod/README.md": "eaee2b813ae508920bdde0132e09f209da8355f7ecdf5d30df3d5c9af0b03417",
+    "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/StationExpansionProbe.java": "f882e0f30c3f5ea395ab994e69d9908195f952288e13a9c32affd04a6e122b4f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "11015e57097f970b7b834fa89f91c9fb3ad0911d07a039eae9221272e2f464b7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/network/CelestialNetwork.java": "a951aa22a1b586d814ea5bb5da0afd366345f0e79a8d26720900bf74e8ff605f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java": "9024933de429ab951075248927c8ab2c68b840855add3f03318bff3fe158e483",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationElevatorGameTests.java": "aec6b9be11a1f9a5b844e919019211af26729b5025ff065c32a0553cac96c24e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationPermissionMatrixGameTests.java": "e230071136ea14c200a590eee0e6c1c277ebe659d4ec9295bb29f75d90109810",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationSkyContextGameTests.java": "1701da2e00fe34fe19bf4f14b03834f78b6864e3b5f95ed7d38c193efd669ecf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpAbortGameTests.java": "4e8b5ea0a554b70875927508120c7c7624f61f2cce168fb27d992c3d30b9fdf1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpGameTests.java": "5379b2c13e0039d8a6ee465e702cecf4ffec540d20f8ac51eaa0cf5f6763ca82",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWriteBudgetGameTests.java": "2dd698075feb17500cc00fc6d197a76be0f3c7c564025d4bb6bd25cc4baf45b1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService.java": "a47afe98eed8663caced325f2561535d407b1c0b3b19e31baf0485906a489766",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationSkyContextRuntime.java": "9ace9e225283f94be6273cd1fc8e0b1e91a873f3c49c9de0bba56a2b9b8775f1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationSkyContextService.java": "48220ff52e056ac9204443f19f782e79de6c9544a01a6e3d770bbb0542c817ae",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationRegistrySavedData.java": "a3fb2a38f770511a125e3d464fbb039cba1b0839e9a5bc46eef47311706766b2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationExpansionService.java": "e78762e62c6fb8d8ce4a4febc52742378187efabd035468c35c7eff284328852",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationGravityService.java": "1e3397afa0c6723e08d26a17fa700266d86cb0cde5918eab1e01c14e65ae9aa7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManagementCode.java": "716e849a8b226b3a6d0b5e539648c2e81a46feff38449e3a141a75c88a323b2b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "2194b6eed189414af756a8a2725049a001486e7bdfe664e353cae94db7a52c68",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationRuntime.java": "02e5920528b1851eefcadf8926194f6a98f2472305c475e0d30461b229bd41dd",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationWriteBudget.java": "67c34bc90a60f7d1956e554667006a5e16551f256913d3604e2cefc42f712b43",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java": "b9d45387b939254967ebf0e5e4f6d0dc0e3f13273a21d6875833081077c2cafa",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java": "c5ce99cd19d518408c4855e21f1173face0a429dcb6720dd3f7cc9ba788a107d",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigWiringTest.java": "e8cfde84ebe1f8434ddb42fb6756fcebe83419ce8b6cd16674cea2484e0146e4",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/network/NetworkProtocolPinTest.java": "a7fcc7e6dbd92616188753be825d88855ce0170edbcc5f06dc360ecdc668c96a",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoverySelectionTest.java": "9ad65ae339577e64212f55c829c8f18161d95b59a6fc361ff75f00a49481b7f2",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationCheckedUpdateTest.java": "7fc4bfbe4c336d018323b5b449a987a7e2a20352fa60d73514fa74f96c00837f",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationRuntimeLifecycleTest.java": "bf937a2d8dae29aa694a7f608bde3405f34d546de58d7c89b98fd4afc05730b1",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationWriteBudgetTest.java": "289043be88766bfc2bfaf71855395bfade3110692d3972d10bd5325fc633669e"
+  }
+}

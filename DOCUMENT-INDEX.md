@@ -214,16 +214,17 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [v1.4 开发交接](docs/releases/v1.4.0/RELEASE-EVIDENCE.md)：已实现行星能力、精确制品、短测与恢复边界、尚未完成的 G0–G9；不是发布批准。
 - [v1.4 准备验证](docs/work/v1.4.0-preparation/VERIFICATION.md)：数据样例、独立契约审核及未改动运行时的检查。
 - [v1.5 实施日志](docs/work/v1.5.0-implementation-log.md)：空间站、轨道环境、多恒星与跃迁的任务及验证范围。
+- [v1.5 开发交接](docs/releases/v1.5.0/RELEASE-EVIDENCE.md)：已实现空间站/跃迁能力、精确制品、最终独立审核、恢复矩阵与尚未完成的 G0–G9；不是发布批准。
 - [v1.5 准备验证](docs/work/v1.5.0-preparation/VERIFICATION.md)：站点契约、文档样例与未改动运行时的检查。
 - [v1.5 开发基线例外](docs/decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md)：本版开发与继承发布验收分离。
 - [空间站区域与迁移](docs/decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md)：稳定区域、有界扩建、独立 schema 与备份契约。
-- [空间站轨道环境](docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md)：站点区域有效重力、重力设置（冷却）、环境显示、太阳范围与非目标。
+- [空间站轨道环境](docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md)（第 2 版，已接受）：站点区域有效重力、重力设置（冷却与全服受控写入间隔）、环境显示、太阳范围与非目标。
 - [STATION-04 原生覆盖范围](docs/decisions/ADR-042-STATION-04-NATIVE-SCOPE.md)：火箭身份与缺失轨道天体原生用例移交 MIG-01，ACC-02 前到期。
 - [恒星系即根天体树](docs/decisions/ADR-043-STAR-SYSTEMS-AS-ROOT-TREES.md)：恒星系身份、航线不跨系、已知判定与示例星系。
 - [空间站跃迁为逻辑重定位](docs/decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md)（第 4 版，已接受）：能量只存于站点注册表、充能定期入账、单次受控写入扣费、无状态核心、在途火箭规则、根 schema 4。
 - [太空电梯端点契约（v1.5 最小版）](docs/decisions/ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md)（第 2 版，已接受）：端点对、先鉴权的只读校验规则、不持久化、交给 v1.7 的约束（解绑、跃迁互锁）。
 - [v1.5 空间站控制即服务端命令](docs/decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md)（第 2 版，已接受，修订 ADR-039）：命令即界面、四个通道协议固定、预期结果表与 A1/S1/V2 权限报告、速率上限。
-- [按站点天空上下文](docs/decisions/ADR-047-PER-STATION-SKY-CONTEXT.md)（第 2 版，已接受，修订 ADR-036、ADR-046）：服务端按玩家位置推导所绕天体 ID、变化时发送、天体圆盘避开太阳、天体协议 3。
+- [按站点天空上下文](docs/decisions/ADR-047-PER-STATION-SKY-CONTEXT.md)（第 3 版，已接受，修订 ADR-036、ADR-046）：服务端按玩家位置推导所绕天体 ID、变化时发送、天体圆盘避开太阳、天体协议 3。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。

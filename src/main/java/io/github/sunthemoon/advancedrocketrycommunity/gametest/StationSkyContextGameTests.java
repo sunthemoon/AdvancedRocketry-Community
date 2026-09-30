@@ -153,7 +153,65 @@ public final class StationSkyContextGameTests {
         service.pass(server);
         helper.assertTrue(service.trackedPlayers() == server.getPlayerList().getPlayerCount(),
                 "A logged-out player stayed in the last-sent map");
+        service.onServerStopping(null);
+        helper.assertTrue(service.trackedPlayers() == 0, "The server stop did not clear the last-sent map");
         helper.succeed();
+    }
+
+    /**
+     * Final review B1: the production-registered service, driven by its registered listeners only: the
+     * tick pass, a real respawn, a real Level round trip and a real logout.
+     */
+    @GameTest(template = "empty", batch = "station_sky_context_wiring", timeoutTicks = 200)
+    public static void theRegisteredServiceFollowsARealRespawnLevelRoundTripAndLogout(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
+        StationSkyContextService service = io.github.sunthemoon.advancedrocketrycommunity.station.orbit
+                .StationSkyContextRuntime.service().orElseThrow();
+        StationRegistrySavedData data = StationRegistrySavedData.get(server);
+        StationPlatformGenerator platforms = new StationPlatformGenerator();
+        StationState station = new StationCreationService(platforms, body -> true)
+                .create(server, UUID.randomUUID(), "Sky wiring", CelestialIds.EARTH_ID, false).station().orElseThrow();
+        BlockPos pad = pad(station);
+        space.getChunkAt(pad); // Test setup only.
+        UUID viewerId = UUID.randomUUID();
+        ServerPlayer viewer = ConnectedTestPlayers.join(server, viewerId, "skyWiring", space, pad, new ArrayList<>());
+        java.util.concurrent.atomic.AtomicReference<ServerPlayer> current = new java.util.concurrent.atomic.AtomicReference<>(viewer);
+        Runnable cleanup = () -> {
+            ServerPlayer online = server.getPlayerList().getPlayer(viewerId);
+            if (online != null) {
+                server.getPlayerList().remove(online);
+            }
+            data.delete(station.stationId());
+            platforms.removeTemplate(space, station.cell());
+            data.flush(server);
+        };
+        helper.runAfterDelay(2 * StationSkyContextService.PASS_TICKS + 1, () -> {
+            try {
+                helper.assertTrue(service.lastSent(viewerId).equals(Optional.of(CelestialIds.EARTH_ID)),
+                        "The registered tick pass did not send the station's body");
+                ServerPlayer respawned = server.getPlayerList().respawn(current.get(), false);
+                current.set(respawned);
+                helper.assertTrue(!service.tracked(viewerId), "The registered respawn listener did not forget the player");
+                respawned.teleportTo(space, pad.getX() + 0.5, pad.getY(), pad.getZ() + 0.5, 0, 0);
+                helper.assertTrue(!service.tracked(viewerId),
+                        "The registered Level-change listener did not forget the player");
+            } catch (RuntimeException | Error failure) {
+                cleanup.run();
+                throw failure;
+            }
+            helper.runAfterDelay(2 * StationSkyContextService.PASS_TICKS + 1, () -> {
+                try {
+                    helper.assertTrue(service.lastSent(viewerId).equals(Optional.of(CelestialIds.EARTH_ID)),
+                            "The context was not re-sent after the respawn and the Level round trip");
+                    server.getPlayerList().remove(current.get());
+                    helper.assertTrue(!service.tracked(viewerId), "The registered logout listener did not forget the player");
+                } finally {
+                    cleanup.run();
+                }
+                helper.succeed();
+            });
+        });
     }
 
     private static BlockPos pad(StationState station) {

@@ -207,18 +207,25 @@ public final class StationPermissionMatrixGameTests {
                     executed++;
                     CompoundTag before = data.save(new CompoundTag());
                     Map<ResourceKey<Level>, Integer> chunks = loadedChunks();
+                    var forced = forcedChunks();
                     audit.clear();
                     String actual = observe(action, actor, audit);
                     CompoundTag after = data.save(new CompoundTag());
                     Map<ResourceKey<Level>, Integer> delta = delta(chunks, loadedChunks());
+                    boolean forcedChanged = !forced.equals(forcedChunks());
                     boolean changed = !before.equals(after);
                     boolean mutates = action == Action.ADMIN_CREATE_DELETE || StationPermissionMatrix.ALLOWED
                             .equals(actual) && (action.kind == StationPermissionMatrix.Kind.TEAM
                             || action.kind == StationPermissionMatrix.Kind.ANSWER);
+                    // Final review A3: an allowed team cell must have its own effect, checked before the reset.
+                    String effect = mutates && action != Action.ADMIN_CREATE_DELETE ? effectProblem(action, changed)
+                            : null;
                     reset(action, actual);
                     int cellFull = createdCellFullChunks;
                     String problem = !expected.equals(actual) ? "expected " + expected
                             : changed && !mutates ? "the registry changed"
+                            : effect != null ? effect
+                            : forcedChanged ? "force-loaded chunks changed"
                             : !chunksAllowed(action, delta) ? "chunks changed " + delta
                             : mutates && action != Action.ADMIN_CREATE_DELETE
                             && !before.equals(data.save(new CompoundTag())) ? "the reset did not restore the registry"
@@ -383,6 +390,30 @@ public final class StationPermissionMatrixGameTests {
                 case SILENT_OWNER, FAKE_PLAYER_OWNER -> new ArrayList<>();
                 default -> replies.get(actor);
             };
+        }
+
+        /** The allowed team cell's own effect on the station (null when it holds), before the reset. */
+        private String effectProblem(Action action, boolean changed) {
+            if (!changed) {
+                return "an allowed change did not change the registry";
+            }
+            StationState now = data.find(station.stationId()).orElseThrow();
+            UUID invitee = ids.get(Actor.INVITEE);
+            boolean holds = switch (action) {
+                case INVITE -> now.invitations().contains(candidate);
+                case REMOVE -> !now.members().contains(victim) && now.members().contains(offlineMember);
+                case REMOVE_UUID -> !now.members().contains(offlineMember) && now.members().contains(victim);
+                case ACCEPT -> now.members().contains(invitee) && !now.invitations().contains(invitee);
+                case DECLINE -> !now.invitations().contains(invitee) && !now.members().contains(invitee);
+                default -> true;
+            };
+            return holds ? null : "the allowed change had the wrong effect";
+        }
+
+        private java.util.Map<ResourceKey<Level>, java.util.Set<Long>> forcedChunks() {
+            java.util.Map<ResourceKey<Level>, java.util.Set<Long>> forced = new LinkedHashMap<>();
+            levels.forEach(level -> forced.put(level.dimension(), new java.util.HashSet<>(level.getForcedChunks())));
+            return forced;
         }
 
         /** Restores the registry after an allowed team cell, so every cell starts from the same state. */

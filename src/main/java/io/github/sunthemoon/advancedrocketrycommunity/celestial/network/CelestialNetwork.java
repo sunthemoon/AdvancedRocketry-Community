@@ -26,6 +26,8 @@ public final class CelestialNetwork {
                 .decoder(CelestialSnapshotPacket::decode)
                 .consumerMainThread(CelestialSnapshotPacket::handle)
                 .add();
+        // ADR-047: must run on the client main thread, so it is queued after the vanilla respawn handling
+        // that fires ClientPlayerNetworkEvent.Clone (which clears the context); NetworkProtocolPinTest pins it.
         channel.messageBuilder(StationSkyContextPacket.class, 1, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(StationSkyContextPacket::encode)
                 .decoder(StationSkyContextPacket::decode)

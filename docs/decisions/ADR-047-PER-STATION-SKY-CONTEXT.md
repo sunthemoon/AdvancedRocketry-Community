@@ -2,7 +2,7 @@
 
 ```yaml
 status: ACCEPTED
-revision: 2
+revision: 3
 date: 2026-09-30
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -87,9 +87,22 @@ visitor see a warp commit as it happens (review F11).
 The client clears its context on logout and on `ClientPlayerNetworkEvent.Clone`,
 which fires on a respawn or a Level change. The server forgets the player on
 `PlayerRespawnEvent` and `PlayerChangedDimensionEvent`, so the next pass re-sends the
-current context after the client's reset. The reset and the re-send travel on the
-same ordered connection. The client applies a context only while its Level is the
-Space Level; anywhere else the stored value is ignored.
+current context after the client's reset. The client applies a context only while
+its Level is the Space Level; anywhere else the stored value is ignored.
+
+**Main-thread invariant** (revision 3, final review B2). Transmission order alone is
+not enough: vanilla defers the respawn handling, which fires `Clone`, to the client
+main thread. Message 1 must therefore be handled on the main thread
+(`consumerMainThread`), so it is queued behind that respawn handling. Handling it on
+the network thread could apply a re-sent context and then have `Clone` erase it,
+while the server believes it is sent. `NetworkProtocolPinTest` requires
+main-thread handling for every registered message.
+
+**Dispositions** (revision 3, final review B3 on revision-1 F8):
+- The pass has no per-player isolation. Nothing in it throws for a valid registry,
+  because the station record already bounds orbit IDs.
+- No defensive clear at login is added: the client clears on logout, and a new
+  session starts with nothing sent.
 
 ### Protocol
 
@@ -180,7 +193,12 @@ Space Level; anywhere else the stored value is ignored.
   - leaving and entering a region;
   - respawn in a station;
   - resource reload;
-  - two clients in two stations.
+  - two clients in two stations;
+  - no OpenGL errors in the client log;
+  - frame time against a baseline without a station;
+  - sky state released on logout (revision 3, final review B3).
+
+  A client launched unattended by an agent is not V1 evidence.
 
 ORBIT-03 therefore stays `implemented-unverified`. Automated tests are not visual
 acceptance (AGENTS.md §8).
@@ -232,3 +250,11 @@ protocol to 2 (or bump it again). No save data is involved.
 
   The report is archived in `docs/work/v1.5.0-orbit-sky/`. Acceptance is not a Gate
   approval.
+- **Revision 3** (2026-09-30), from the final independent v1.5 review (area B):
+  - the main-thread invariant is stated and pinned (B2);
+  - the F8 dispositions are recorded (B3);
+  - the V1 cases are completed (B3).
+
+  In tests, a GameTest now drives the production-registered service through a real
+  respawn, Level round trip and logout (B1). Quarantine and stop-clearing are tested
+  (B3). The report is archived in `docs/work/v1.5.0-closure/`.

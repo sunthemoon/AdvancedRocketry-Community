@@ -14,10 +14,12 @@ public final class StationGravityService {
     public static final long WRITE_COOLDOWN_TICKS = 100L;
 
     private final StationAccessService access;
+    private final StationWriteBudget budget;
     private final StationWriteCooldown cooldown = new StationWriteCooldown(WRITE_COOLDOWN_TICKS);
 
-    public StationGravityService(StationAccessService access) {
+    public StationGravityService(StationAccessService access, StationWriteBudget budget) {
         this.access = Objects.requireNonNull(access, "access");
+        this.budget = Objects.requireNonNull(budget, "budget");
     }
 
     public StationManagementResult set(ServerPlayer player, boolean issuedByPlayer, int percent) {
@@ -39,6 +41,9 @@ public final class StationGravityService {
         if (!cooldown.ready(observed.stationId(), server.getTickCount())) {
             return audit(player, StationManagementResult.of(StationManagementCode.GRAVITY_COOLDOWN, observed));
         }
+        if (!budget.ready(server.getTickCount(), data.recordCount())) {
+            return audit(player, StationManagementResult.of(StationManagementCode.REGISTRY_BUSY, observed));
+        }
         StationRegistrySavedData.CheckedUpdate written;
         try {
             written = data.checkedSetGravity(server, observed, percent * 10);
@@ -59,6 +64,7 @@ public final class StationGravityService {
         if (startsCooldown(code)) {
             // Committed and failed writes both start the cooldown, so a failing disk is not retried every tick.
             cooldown.record(observed.stationId(), server.getTickCount());
+            budget.record(server.getTickCount());
         }
         return audit(player, StationManagementResult.of(code, code == StationManagementCode.GRAVITY_SET
                 ? data.find(observed.stationId()).orElse(null) : observed));

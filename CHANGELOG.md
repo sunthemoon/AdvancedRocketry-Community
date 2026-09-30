@@ -86,6 +86,14 @@ No candidate or release approval is assigned.
 - After a restart, rocket flight recovery no longer waits on a record whose ends
   cannot be loaded; it recovers the other records first. Station deletion is refused while rocket flight records
   cannot be read.
+- On large servers, station expansions, gravity changes and warp commits are
+  spaced server-wide, because each one rewrites the whole station file. The
+  common config value `stations.checkedWriteTicksPer100Stations` sets the spacing
+  (default 3, which is about 6 seconds at 4,096 stations; small registries are not
+  spaced). A request inside the spacing is refused with "busy, try again"; a due
+  warp waits and then commits.
+- The station deployment item keeps working in a second singleplayer world
+  opened in the same game session.
 - Station owners and operators can remove a member who is offline with
   `/arce station remove <station_id> uuid <member_uuid>`.
 - Confirming a station expansion or warp as a player who cannot manage the

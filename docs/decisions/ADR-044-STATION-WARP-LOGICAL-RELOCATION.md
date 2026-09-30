@@ -199,7 +199,8 @@ backup discards all balances.
   - the balance covers the cost after a fold;
   - the in-motion rule passes.
 - **Cooldown.** 100 ticks per station after a commit or a failed write (as in
-  ADR-041).
+  ADR-041). A due commit also waits for ADR-041 revision 2's server-wide checked-write
+  spacing and stays due until then (final v1.5 review B9).
 - **Kill switch.** `stations.warpEnabled` (COMMON config, default true) refuses
   requests, confirmations and commits. Charging, stations and access are
   unaffected.

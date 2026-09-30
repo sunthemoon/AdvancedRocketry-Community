@@ -60,6 +60,14 @@ public final class CommonConfig {
                     StationLimits.MAX_WARP_COST
             );
 
+    public static final ForgeConfigSpec.IntValue CHECKED_WRITE_TICKS_PER_100_STATIONS = BUILDER
+            .comment(
+                    "Server-wide spacing between checked station writes (expansion, gravity, warp commit),",
+                    "in ticks per 100 registry records: each such write rewrites the whole station file.",
+                    "3 allows one write about every 6 seconds at 4,096 stations; 0 disables the spacing."
+            )
+            .defineInRange("stations.checkedWriteTicksPer100Stations", 3, 0, 100);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** Current warp settings; defaults until the COMMON config is loaded. */
@@ -68,6 +76,12 @@ public final class CommonConfig {
             return WarpSettings.DEFAULTS;
         }
         return new WarpSettings(WARP_ENABLED.get(), WARP_COST_IN_SYSTEM.get(), WARP_COST_INTERSTELLAR.get());
+    }
+
+    /** Current checked-write spacing; the default until the COMMON config is loaded. */
+    public static int checkedWriteTicksPer100Stations() {
+        return SPEC.isLoaded() ? CHECKED_WRITE_TICKS_PER_100_STATIONS.get()
+                : CHECKED_WRITE_TICKS_PER_100_STATIONS.getDefault();
     }
 
     private CommonConfig() {

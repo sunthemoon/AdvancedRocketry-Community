@@ -5,7 +5,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.CelestialCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.PlanetaryRouteCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
@@ -105,6 +107,7 @@ public final class AdvancedRocketryCommunity {
     private RocketManager rocketManager;
     private final StationManager stationManager;
     private final StationWarpService stationWarp;
+    private final StationWriteBudget stationWriteBudget;
     private final SatelliteManager satelliteManager;
 
     public AdvancedRocketryCommunity(FMLJavaModLoadingContext context) {
@@ -143,14 +146,16 @@ public final class AdvancedRocketryCommunity {
         CelestialVisitTracker visitTracker = new CelestialVisitTracker(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerLoggedIn);
         MinecraftForge.EVENT_BUS.addListener(visitTracker::onPlayerChangedDimension);
-        stationManager = new StationManager(celestialCatalogs);
+        stationWriteBudget = new StationWriteBudget(CommonConfig::checkedWriteTicksPer100Stations);
+        stationManager = new StationManager(celestialCatalogs, stationWriteBudget);
         StationRuntime.install(stationManager);
         stationWarp = new StationWarpService(celestialCatalogs,
-                StationWarpService.routesInSystem(planetaryCatalogs), CommonConfig::warpSettings);
+                StationWarpService.routesInSystem(planetaryCatalogs), CommonConfig::warpSettings, stationWriteBudget);
         StationWarpRuntime.install(stationWarp);
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onPlayerLoggedOut);
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
         EnvironmentQueryLifecycle environmentQueries = new EnvironmentQueryLifecycle(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(environmentQueries::onServerStarted);
@@ -182,6 +187,7 @@ public final class AdvancedRocketryCommunity {
         );
         MinecraftForge.EVENT_BUS.addListener(snapshotSynchronizer::onDatapackSync);
         StationSkyContextService skyContexts = new StationSkyContextService(celestialNetwork::sendSkyContext);
+        StationSkyContextRuntime.install(skyContexts);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerChangedDimension);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerRespawn);
@@ -335,6 +341,7 @@ public final class AdvancedRocketryCommunity {
         }
         stationManager.clear();
         stationWarp.clear();
+        stationWriteBudget.clear();
         satelliteManager.clear();
         rollingMachines.clear();
         RollingMachineRuntime.clear();

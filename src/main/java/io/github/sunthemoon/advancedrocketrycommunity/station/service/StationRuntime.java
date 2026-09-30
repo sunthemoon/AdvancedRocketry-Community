@@ -26,4 +26,8 @@ public final class StationRuntime {
     public static void clear() {
         service = null;
     }
+
+    public static boolean installed() {
+        return service != null;
+    }
 }

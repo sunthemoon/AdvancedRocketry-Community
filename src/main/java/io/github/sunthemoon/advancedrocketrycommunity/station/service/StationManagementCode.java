@@ -10,7 +10,9 @@ public enum StationManagementCode {
     ALREADY_EXPANDED(false, "the station already uses its largest region"),
     AUTHORITY_UNAVAILABLE(false, "station authority is unavailable"),
     NOT_LOCAL_PLAYER(false, "run this command yourself as a connected player;"
-            + " command blocks, functions, signs and /execute cannot manage stations"),
+            + " command blocks, functions, signs, the console and /execute run by anyone else cannot"
+            + " manage stations"),
+    REGISTRY_BUSY(false, "the station registry is saving another change; try again in a few seconds"),
     NOT_IN_SPACE(false, "stand inside the station in Space"),
     NOT_IN_STATION(false, "stand inside the station's current region"),
     CHUNK_UNLOADED(false, "your current chunk is not loaded"),

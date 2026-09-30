@@ -292,7 +292,8 @@ public final class StationRegistrySavedData extends SavedData {
         }
     }
 
-    private int recordCount() {
+    /** Committed stations plus pending reservations (0 while blocked). */
+    public int recordCount() {
         return registry.stations().size() + registry.reservations().size();
     }
 
