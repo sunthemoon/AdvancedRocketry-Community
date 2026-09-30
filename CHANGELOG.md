@@ -76,7 +76,10 @@ No candidate or release approval is assigned.
   descending onto the station, and while the server has not yet finished
   checking interrupted rocket flights after a restart.
 - Rockets docked at a station move with it: after a warp they launch from the
-  station's new orbit. Station deletion is refused while rocket flight records
+  station's new orbit. A rocket docked at a station or in flight when a world is
+  upgraded from an earlier version keeps its identity and fuel.
+- After a restart, rocket flight recovery no longer waits on a record whose ends
+  cannot be loaded; it recovers the other records first. Station deletion is refused while rocket flight records
   cannot be read.
 - Station owners and operators can remove a member who is offline with
   `/arce station remove <station_id> uuid <member_uuid>`.

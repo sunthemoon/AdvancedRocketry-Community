@@ -20,7 +20,12 @@ checks.
   Space.
 - `run` executes, from that player's own command source, only:
   - `arce station expand` or `arce station expand confirm <id>`;
-  - `arce station invite <id> probe<0-3>` (another probe player);
+  - `arce station invite <id> probe<0-3>` or `remove <id> probe<0-3>` (another
+    probe player), and `remove <id> uuid <member>`;
+  - `arce station accept <id>` or `decline <id>`;
+  - `arce station environment` or `list`;
+  - `arce station admin inspect <id>`, so native checks can show that a
+    non-operator never reaches an admin command;
   - `arce station warp <body>`, `confirm <id>`, `cancel` or `status`.
 - `look` turns the player to aim at a block, as a real player aims.
 - `energy` pushes at most 1,000,000 Forge Energy into the block entity at a Space
@@ -28,7 +33,8 @@ checks.
   simulated first and then sent for real.
 - `leave` disconnects the player.
 
-At most four probe players exist, and all leave at server stop. Replies, including
+At most four probe players exist, and all leave at server stop. At most 256 replies
+are kept per player. Replies, including
 action-bar messages, and the loaded-chunk count around the host command are
 logged. It uses no host internals and never writes host data itself; connecting
 players does write their normal player data.

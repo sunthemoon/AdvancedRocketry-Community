@@ -67,18 +67,38 @@ final class RocketTransferRecoveryService {
     }
 
     Result recoverNext(MinecraftServer server, RocketTransferSavedData journal) {
-        RocketTransferRecord record = journal.entries().stream()
-                .filter(candidate -> !liveTransfers.contains(candidate.transferId()))
-                .filter(candidate -> !settledTransfers.contains(candidate.transferId()))
-                .findFirst()
-                .orElse(null);
-        if (record == null) {
-            return Result.notFound(null);
+        List<RocketTransferRecord> entries = journal.entries();
+        RocketTransferRecord record = nextRecoverable(entries, liveTransfers, settledTransfers,
+                candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate)).orElse(null);
+        if (record != null) {
+            return recover(server, journal, record);
         }
-        if (!RocketTransferEntities.recoveryEntityChunksLoaded(server, record)) {
-            return retryLater(record);
-        }
-        return recover(server, journal, record);
+        return firstUnclassified(entries, liveTransfers, settledTransfers)
+                .map(RocketTransferRecoveryService::retryLater)
+                .orElseGet(() -> Result.notFound(null));
+    }
+
+    /**
+     * WARP review R7: the first unclassified record whose recovery chunks are loaded, so that a record
+     * whose ends cannot be loaded (for example, its Level is gone) never starves the records behind it.
+     * Bounded by the journal's record limit; the loaded check reads loaded chunks only.
+     */
+    static java.util.Optional<RocketTransferRecord> nextRecoverable(List<RocketTransferRecord> entries,
+                                                                    Set<UUID> live, Set<UUID> settled,
+                                                                    java.util.function.Predicate<RocketTransferRecord> loaded) {
+        return entries.stream()
+                .filter(candidate -> !live.contains(candidate.transferId()))
+                .filter(candidate -> !settled.contains(candidate.transferId()))
+                .filter(loaded)
+                .findFirst();
+    }
+
+    private static java.util.Optional<RocketTransferRecord> firstUnclassified(List<RocketTransferRecord> entries,
+                                                                             Set<UUID> live, Set<UUID> settled) {
+        return entries.stream()
+                .filter(candidate -> !live.contains(candidate.transferId()))
+                .filter(candidate -> !settled.contains(candidate.transferId()))
+                .findFirst();
     }
 
     Result recoverById(MinecraftServer server, UUID transferId) {

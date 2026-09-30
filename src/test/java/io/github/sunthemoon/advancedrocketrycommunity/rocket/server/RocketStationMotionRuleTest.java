@@ -178,7 +178,8 @@ final class RocketStationMotionRuleTest {
         return record(MOON_ORIGIN);
     }
 
-    private static RocketTransferRecord record(RocketPosition destinationOrigin) {
+    /** Also used by other tests in this package. */
+    static RocketTransferRecord record(RocketPosition destinationOrigin) {
         UUID transfer = UUID.randomUUID();
         UUID logical = UUID.randomUUID();
         ResourceLocation iron = ResourceLocation.tryParse("minecraft:iron_block");

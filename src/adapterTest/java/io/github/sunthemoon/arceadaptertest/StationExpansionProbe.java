@@ -49,13 +49,20 @@ final class StationExpansionProbe {
     private static final ResourceKey<Level> SPACE = ResourceKey.create(Registries.DIMENSION,
             ResourceLocation.tryParse("advancedrocketrycommunity:space"));
     private static final String UUID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-    /** Expansion, warp, and inviting another connected probe player (to write a native team). */
+    /**
+     * Expansion, warp, team management between connected probe players (including removal by UUID),
+     * the read-only station views, and one admin command that non-operators must not reach (ADR-046 S1).
+     */
     private static final Pattern ALLOWED = Pattern.compile("arce station expand( confirm " + UUID_PATTERN + ")?"
-            + "|arce station invite " + UUID_PATTERN + " probe[0-3]"
+            + "|arce station (invite|remove) " + UUID_PATTERN + " probe[0-3]"
+            + "|arce station remove " + UUID_PATTERN + " uuid " + UUID_PATTERN
+            + "|arce station (accept|decline) " + UUID_PATTERN
+            + "|arce station (environment|list)"
+            + "|arce station admin inspect " + UUID_PATTERN
             + "|arce station warp (confirm " + UUID_PATTERN + "|cancel|status|[a-z0-9_.-]+:[a-z0-9_./-]+)");
     private static final int MAX_ENERGY_PER_CALL = 1_000_000;
     private static final int MAX_PLAYERS = 4;
-    private static final int MAX_MESSAGES = 32;
+    private static final int MAX_MESSAGES = 256;
     private static final Map<UUID, Probe> PLAYERS = new LinkedHashMap<>();
 
     private StationExpansionProbe() { }
@@ -201,7 +208,7 @@ final class StationExpansionProbe {
         String command = StringArgumentType.getString(context, "command");
         Probe probe = PLAYERS.get(actor);
         if (!ALLOWED.matcher(command).matches() || probe == null) {
-            throw new IllegalArgumentException("Station probe accepts only expansion commands for its players");
+            throw new IllegalArgumentException("Station probe accepts only its allowed station commands for its players");
         }
         ServerLevel level = probe.player().serverLevel();
         int before = probe.messages().size();

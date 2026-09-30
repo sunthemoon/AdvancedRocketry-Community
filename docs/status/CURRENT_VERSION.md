@@ -73,11 +73,12 @@ status remains `IN_PROGRESS`, not `PASSED`.
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active
 tasks. The first runtime slice implements the accepted station model and
 pre-start migration contract, retaining old station identity/geometry. The
-per-station sky, the native S1 permission subset, the MIG recovery matrix and
-acceptance remain unimplemented current-version work. The elevator endpoint
-validator and the A1 permission matrix are implemented
+per-station sky and acceptance remain unimplemented current-version work. The
+elevator endpoint validator and the A1 permission matrix
 ([verification](../work/v1.5.0-elevator-ui/VERIFICATION.md); ADR-046 records that
-v1.5 has no control screen),
+v1.5 has no control screen), and native rocket identity, concurrent warp,
+interruption and the S1 subset with the recovery matrix
+([verification](../work/v1.5.0-mig-native/VERIFICATION.md)) are implemented,
 not metadata-only substitutes.
 
 The [v1.4 development handoff](../releases/v1.4.0/RELEASE-EVIDENCE.md) and

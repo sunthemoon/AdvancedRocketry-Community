@@ -268,13 +268,15 @@ public final class StationWarpGameTests {
             fixture.data.foldWarpCredits(Map.of(fixture.id(), 3_000_000));
             fixture.run(fixture.ownerId, warpMoon);
             expect(helper, owner, StationManagementCode.WARP_ROCKETS_IN_MOTION, "unwired rocket authority");
-            CommonConfig.WARP_ENABLED.set(false);
-            try {
-                fixture.run(fixture.ownerId, warpMoon);
-                expect(helper, owner, StationManagementCode.WARP_DISABLED, "disabled warp");
-            } finally {
-                CommonConfig.WARP_ENABLED.set(true);
-            }
+            // The kill switch through a private service: setting the shared config value rewrites its file,
+            // and Forge's file watcher can re-apply a stale value on another thread after it is restored.
+            StationWarpService disabled = new StationWarpService(new CelestialCatalogManager(), system -> false,
+                    () -> new WarpSettings(false, WarpSettings.DEFAULTS.inSystemCost(),
+                            WarpSettings.DEFAULTS.interstellarCost()));
+            helper.assertTrue(disabled.request(fixture.server.getPlayerList().getPlayer(fixture.ownerId), true, MOON)
+                    .code() == StationManagementCode.WARP_DISABLED, "A disabled warp was not refused");
+            helper.assertTrue(CommonConfig.warpSettings().equals(WarpSettings.DEFAULTS),
+                    "The server's warp settings do not come from the default common config");
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             expect(helper, owner, StationManagementCode.WARP_NO_CONFIRMATION, "confirm without request");
             fixture.run(fixture.ownerId, "arce station warp cancel");
@@ -507,34 +509,44 @@ public final class StationWarpGameTests {
     @GameTest(template = "empty", batch = "station_warp_killswitch", timeoutTicks = 400)
     public static void theKillSwitchAbortsARunningCountdown(GameTestHelper helper) {
         Fixture fixture = new Fixture(helper, "Kill switch", CelestialIds.EARTH_ID, 2_500_000);
-        StationRocketAuthority previous = fixture.warp.installRocketAuthority(NOTHING_IN_MOTION);
+        // A private service whose settings the test switches; the shared config file is never written
+        // (Forge's file watcher can re-apply a stale value on another thread).
+        CelestialCatalogManager catalogs = new CelestialCatalogManager();
+        java.util.concurrent.atomic.AtomicReference<WarpSettings> settings =
+                new java.util.concurrent.atomic.AtomicReference<>(WarpSettings.DEFAULTS);
+        StationWarpService isolated = new StationWarpService(catalogs, system -> false, settings::get);
+        isolated.installRocketAuthority(NOTHING_IN_MOTION);
         boolean scheduled = false;
         try {
+            helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(bodies(false))),
+                    "The private catalog was rejected");
             fixture.core(fixture.pad.east(2));
             List<String> owner = fixture.join(fixture.ownerId, "killOwner");
             fixture.look(fixture.ownerId, fixture.pad.east(2));
-            fixture.run(fixture.ownerId, "arce station warp " + MOON);
-            fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
-            helper.assertTrue(last(owner).startsWith("Warp countdown started"), "Countdown did not start: " + owner);
-            CommonConfig.WARP_ENABLED.set(false);
+            ServerPlayer player = fixture.server.getPlayerList().getPlayer(fixture.ownerId);
+            helper.assertTrue(isolated.request(player, true, MOON).code() == StationManagementCode.WARP_ISSUED,
+                    "Request differs: " + owner);
+            helper.assertTrue(isolated.confirm(player, true, fixture.id()).code() == StationManagementCode.WARP_STARTED,
+                    "Countdown did not start: " + owner);
+            settings.set(new WarpSettings(false, WarpSettings.DEFAULTS.inSystemCost(),
+                    WarpSettings.DEFAULTS.interstellarCost()));
+            helper.onEachTick(() -> isolated.onServerTick(
+                    new TickEvent.ServerTickEvent(TickEvent.Phase.END, () -> true, fixture.server)));
             scheduled = true;
             helper.runAfterDelay(COMMIT_DELAY, () -> {
                 try {
+                    helper.assertTrue(isolated.countdown(fixture.id()).isEmpty(), "The countdown never ended");
                     helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
                             && fixture.data.warpEnergy(fixture.id()) == 2_500_000, "A disabled warp committed");
                     helper.assertTrue(owner.contains("Station warp aborted: "
                             + StationManagementCode.WARP_DISABLED.description() + "."), "Abort differs: " + owner);
                 } finally {
-                    CommonConfig.WARP_ENABLED.set(true);
-                    fixture.warp.installRocketAuthority(previous);
                     fixture.close();
                 }
                 helper.succeed();
             });
         } finally {
             if (!scheduled) {
-                CommonConfig.WARP_ENABLED.set(true);
-                fixture.warp.installRocketAuthority(previous);
                 fixture.close();
             }
         }

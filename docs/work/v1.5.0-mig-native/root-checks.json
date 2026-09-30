@@ -1,0 +1,39 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1299013,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "eb14d801183b3eeb5306f6105734e246df8c07323260875e9cdec7cd49b4537f"
+      },
+      {
+        "bytes": 2873113,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "a12db9de4ed0c2e549ebbf4abbabd84bbb7b8e2106bccd9e0fa71d308162fb6d"
+      }
+    ]
+  },
+  "base_commit": "b3d4cf3973efafbb4f9036d0f94f3d589118e3b2",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 190,
+    "tests": 1044
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "1905acc3c240b608611e7b5788816191b89e08b84f5349ad5b55fdeff4773491",
+    "compat-test-mod/README.md": "bdcc0fb5ef1f59805f638dd2d8fd568756735fc939e74e959ddebd9df1035fcb",
+    "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/StationExpansionProbe.java": "babe635954b7cc2a8de9eb8e698772d8f7ed3365cdd32766edfbe636f50f8228",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpGameTests.java": "5f4c34de20b8069678b8f659f0949d9ec7278ff3c1d837e0c0e0fc9a0dbc0793",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoveryService.java": "68c5661c8c33ea308beba5032e1bfb49684b225410534bfb0941c92d8b12beb2",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketStationMotionRuleTest.java": "1d054772f2d2e35716371d8f8b8c38032eab278fb6a8e5cbfc514c2940d14dd2",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferRecoverySelectionTest.java": "7ef671918cb969fa4df3af860cbda81766a5e46a2d49f6bbfb618c59583f8759"
+  }
+}
