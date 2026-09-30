@@ -240,6 +240,25 @@ final class RocketTransferService {
         recovery.onPlayerLoggedOut(playerId);
     }
 
+    /**
+     * ADR-044 §5 in-motion rule for one station region in the Space Level: journal records plus this
+     * session's classification (live launches and descents, settled sources and landings).
+     */
+    boolean stationRegionInMotion(MinecraftServer server, int minX, int minZ, int maxX, int maxZ) {
+        Objects.requireNonNull(server, "server");
+        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        return RocketStationMotionRule.blocks(
+                journal.operational(),
+                journal.entries(),
+                transferId -> liveTransfers.contains(transferId) || settledTransfers.contains(transferId),
+                liveTransfers::contains,
+                server.overworld().getGameTime(),
+                new RocketStationMotionRule.Region(
+                        io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.SPACE_LEVEL.location(),
+                        minX, minZ, maxX, maxZ)
+        );
+    }
+
     int activeCount(MinecraftServer server) {
         RocketTransferSavedData journal = RocketTransferSavedData.get(server);
         return journal.operational() ? journal.entries().size() : -1;

@@ -93,13 +93,24 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 snapshot.stats().fuelCapacity(),
                 boundedSeats(snapshot),
                 currentTarget instanceof io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.BodySurface surface
-                        ? surface.bodyId() : bodyForDimension(dimension),
+                        ? surface.bodyId() : currentTarget instanceof io.github.sunthemoon.advancedrocketrycommunity
+                        .travel.model.TravelTarget.Station station
+                        ? stationOrbit(serverLevel, station.instanceId(), dimension) : bodyForDimension(dimension),
                 dimension,
                 origin,
                 level().getGameTime(),
                 currentTarget
         );
         initializeTransferred(snapshot, assemblyTransactionId, ownerId, initialFlightData);
+    }
+
+    /** ADR-044 §5: a rocket built on a station records the station's current orbit body. */
+    private static ResourceLocation stationOrbit(ServerLevel level, java.util.UUID stationId,
+                                                 ResourceLocation dimension) {
+        return io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData
+                .get(level.getServer()).find(stationId)
+                .map(io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState::orbitBody)
+                .orElseGet(() -> bodyForDimension(dimension));
     }
 
     public void initializeTransferred(

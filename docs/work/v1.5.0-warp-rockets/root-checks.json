@@ -1,0 +1,43 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48471,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-api.jar",
+        "sha256": "97d1aaad82c5ecf02342aa2f5e9d8f30689290a76c2ffd118bd04e421fa6ee64"
+      },
+      {
+        "bytes": 1270075,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev-sources.jar",
+        "sha256": "14fe47b9f73cf44e132a2be0f59b3b05fb8f7501431e63cb41a55d4245d3be90"
+      },
+      {
+        "bytes": 2802343,
+        "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+        "sha256": "d1b021f7294d3baa37b6fd82e05cb14c80eba0ffa2ef782cf44d5b612a0d8295"
+      }
+    ]
+  },
+  "base_commit": "0416455",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 182,
+    "tests": 1013
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "67c98a9c448f38f953d7f17af513eb8ef72611219a7d221c04bf0613ca26a34b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java": "885ddb3c4ef869f8293b8653406ff1105f3e37214078856609bff60c953ad0ff",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpGameTests.java": "44ae743cdde36e977006243e8e2bdbfcbedd4cb29141302cd210a7ec264972af",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.java": "bc451f5a3b7430cb9126bc3297cd5558fcbc3b9d524091f56e3651f73d2df0f7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/PlanetaryFlightAdmission.java": "c09c2dbbb3b574a63ca693c2e0da5d8e94871cf29b8759605560ab66253a0ee3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java": "32f611d583963d304f147b36fdefbebbaaa12660627c03df33ba4a800614adb7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java": "c20f2d24954f2c13e3d1fffe8f71550ca18babce684055a679a942e56526d7fb",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketStationMotionRule.java": "19e895a0a6ae484d1fd7904b69910f01509eb3a013b42673c163d55c4b68200d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferService.java": "a44270a563bf1e4aa47027ada34e946393e14599a110b9c868e15c22eb474bec",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java": "4c9aa552016365753053fb8f817d703d28b392902087934b910ec307a8fa0763",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketStationMotionRuleTest.java": "ba1e2d157b13326c800171958ee426b4f3b7cba1e91ae6c556e3824def1c2bc8"
+  }
+}

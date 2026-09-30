@@ -45,11 +45,12 @@ final class PlanetaryFlightAdmission {
             if (!live.dimension().equals(CelestialIds.SPACE_LEVEL)) {
                 return false;
             }
+            // ADR-044 §5: docked rockets move with the station, so the rocket's saved current_body
+            // (the orbit when it arrived or was built) is not compared; the station record is the
+            // source body, and the planner recomputes the plan from it at launch.
             var committed = stations.findAt(rocket.blockPosition().getX(), rocket.blockPosition().getZ())
                     .filter(state -> state.stationId().equals(station.instanceId()))
-                    .filter(state -> catalog.get(state.orbitBody()).isPresent())
-                    .filter(state -> flight.currentBody().equals(state.orbitBody())
-                            || flight.currentBody().equals(CelestialIds.SPACE_ID));
+                    .filter(state -> catalog.get(state.orbitBody()).isPresent());
             if (committed.isEmpty()) {
                 return false;
             }

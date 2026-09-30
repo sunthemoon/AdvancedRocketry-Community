@@ -513,6 +513,11 @@ final class RocketFlightService {
         navigation.remove(playerId);
     }
 
+    boolean stationRegionInMotion(net.minecraft.server.MinecraftServer server, int minX, int minZ,
+                                  int maxX, int maxZ) {
+        return transfers.stationRegionInMotion(server, minX, minZ, maxX, maxZ);
+    }
+
     int activeTransferCount(net.minecraft.server.MinecraftServer server) {
         return transfers.activeCount(server);
     }

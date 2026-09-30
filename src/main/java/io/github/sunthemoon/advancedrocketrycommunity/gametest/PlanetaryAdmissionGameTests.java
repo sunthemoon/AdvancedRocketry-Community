@@ -196,6 +196,79 @@ public final class PlanetaryAdmissionGameTests {
         });
     }
 
+    /**
+     * ADR-044 §5: a docked rocket moves with its station. After the station's orbit is relocated (the
+     * warp commit primitive), the rocket's saved current_body is stale, and launch admission must
+     * take the source body from the station record instead.
+     */
+    @GameTest(template = "rocket_test", batch = "planetary_admission_warp", timeoutTicks = 100)
+    public static void dockedRocketDepartsFromTheStationsNewOrbitAfterRelocation(GameTestHelper helper) {
+        helper.runAtTickTime(1, () -> {
+            var catalogs = catalogs(true, true, true, List.of(new RouteDefinition(1, ModIdentity.id("test_moon_orbit"),
+                    RouteAnchor.bodySurface(CelestialIds.MOON_ID), RouteAnchor.orbit(CelestialIds.MOON_ID), 25, true)));
+            var manager = new RocketManager(catalogs.celestialView(), catalogs);
+            var server = helper.getLevel().getServer();
+            var space = server.getLevel(CelestialIds.SPACE_LEVEL);
+            helper.assertTrue(space != null, "Space is unavailable");
+            UUID ownerId = UUID.randomUUID();
+            var stations = StationRegistrySavedData.get(server);
+            UUID stationId = UUID.randomUUID();
+            var rocket = new RocketEntity(ModEntities.ROCKET.get(), space);
+            var ticketChunk = new AtomicReference<ChunkPos>();
+            Runnable cleanup = () -> {
+                manager.clear();
+                rocket.discard();
+                stations.release(stationId);
+                stations.delete(stationId);
+                stations.flush(server);
+                if (ticketChunk.get() != null) {
+                    space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
+                }
+            };
+            try {
+                stations.reserve(stationId, ownerId, "Warped dock fixture", CelestialIds.EARTH_ID,
+                        helper.getLevel().getGameTime());
+                var station = stations.commit(stationId);
+                stations.foldWarpCredits(java.util.Map.of(stationId, 100_000));
+                var original = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), ownerId);
+                try {
+                    var old = original.flightData().orElseThrow();
+                    var pad = station.landingPad();
+                    var origin = new RocketPosition(pad.x(), pad.y(), pad.z());
+                    var snapshot = original.snapshot().orElseThrow().relocated(UUID.randomUUID(),
+                            CelestialIds.SPACE_LEVEL.location(), origin, space.getGameTime());
+                    // Docked while the station orbited Earth: the saved current_body is Earth.
+                    var flight = RocketFlightData.restore(old.schemaVersion(), old.logicalRocketId(), old.state(), old.fuel(),
+                            null, old.passengers(), CelestialIds.EARTH_ID, CelestialIds.SPACE_LEVEL.location(), origin,
+                            space.getGameTime(), null, new TravelTarget.Station(stationId));
+                    rocket.initializeTransferred(snapshot, old.logicalRocketId(), ownerId, flight);
+                } finally {
+                    original.discard();
+                }
+                ticketChunk.set(new ChunkPos(rocket.blockPosition()));
+                space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
+                space.getChunkAt(rocket.blockPosition());
+                helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
+                awaitVisible(helper, space, rocket, () -> {
+                    var owner = player(space, ownerId);
+                    owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
+                    var committed = stations.checkedRelocation(server, stations.find(stationId).orElseThrow(),
+                            CelestialIds.MOON_ID, 100_000);
+                    helper.assertTrue(committed == StationRegistrySavedData.CheckedUpdate.COMMITTED,
+                            "Relocation did not commit: " + committed);
+                    helper.assertTrue(rocket.flightData().orElseThrow().currentBody().equals(CelestialIds.EARTH_ID),
+                            "The fixture must carry the stale pre-warp body");
+                    launchAndCancel(helper, manager, rocket, owner, MOON);
+                    helper.assertTrue(stations.find(stationId).orElseThrow().orbitBody().equals(CelestialIds.MOON_ID),
+                            "Departure rewrote the relocated orbit");
+                }, cleanup);
+            } catch (RuntimeException | Error exception) {
+                cleanup.run();
+                throw exception;
+            }
+        });
+    }
+
     private static void awaitVisible(GameTestHelper helper, ServerLevel level, RocketEntity rocket,
             Runnable assertions, Runnable cleanup) {
         helper.runAfterDelay(1, () -> {
@@ -250,6 +323,11 @@ public final class PlanetaryAdmissionGameTests {
     }
 
     private static PlanetaryCatalogManager catalogs(boolean earthLandable, boolean moonLandable, boolean earthOrbitable) {
+        return catalogs(earthLandable, moonLandable, earthOrbitable, List.of());
+    }
+
+    private static PlanetaryCatalogManager catalogs(boolean earthLandable, boolean moonLandable, boolean earthOrbitable,
+                                                    List<RouteDefinition> extraRoutes) {
         var definitions = new ArrayList<>(CelestialDefaults.definitions());
         for (int index = 0; index < 2; index++) {
             var body = definitions.get(index);
@@ -258,11 +336,12 @@ public final class PlanetaryAdmissionGameTests {
                     new CelestialCapabilities(index == 0 ? earthLandable : moonLandable, index != 0 || earthOrbitable, false), 1, 0));
         }
         var manager = new PlanetaryCatalogManager();
-        var routes = List.of(
+        var routes = new ArrayList<>(List.of(
                 new RouteDefinition(1, ModIdentity.id("test_surface"), RouteAnchor.bodySurface(CelestialIds.EARTH_ID),
                         RouteAnchor.bodySurface(CelestialIds.MOON_ID), 50, true),
                 new RouteDefinition(1, ModIdentity.id("test_orbit"), RouteAnchor.bodySurface(CelestialIds.EARTH_ID),
-                        RouteAnchor.orbit(CelestialIds.EARTH_ID), 25, true));
+                        RouteAnchor.orbit(CelestialIds.EARTH_ID), 25, true)));
+        routes.addAll(extraRoutes);
         if (!manager.applyCandidate(CelestialCatalog.create(definitions).flatMap(CelestialCatalog::requireFixedBaseline)
                 .flatMap(bodies -> RouteCatalog.create(routes, definitions.stream().map(CelestialBodyDefinition::id).toList())
                         .flatMap(graph -> PlanetaryCatalog.create(bodies, graph))))) {

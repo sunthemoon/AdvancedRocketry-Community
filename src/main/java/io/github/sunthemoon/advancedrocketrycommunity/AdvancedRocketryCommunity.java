@@ -227,6 +227,10 @@ public final class AdvancedRocketryCommunity {
             MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedOut);
             MinecraftForge.EVENT_BUS.addListener(new RocketCommands(manager)::register);
             rocketManager = manager;
+            // ADR-044 §5: the rocket module's journal rule replaces the fail-closed default.
+            stationWarp.installRocketAuthority((server, station) -> manager.stationRegionInMotion(server,
+                    station.region().minimumX(), station.region().minimumZ(),
+                    station.region().maximumX(), station.region().maximumZ()));
         }
     }
 

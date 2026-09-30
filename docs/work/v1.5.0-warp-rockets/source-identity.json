@@ -1,0 +1,95 @@
+{
+  "base_commit": "0416455",
+  "files": [
+    {
+      "bytes": 26171,
+      "path": "CHANGELOG.md",
+      "sha256": "54a57d9b001111615453be2466ed8410bc93bbd8b99b4c00a08cfd67486ae2eb",
+      "working_sha256": "54a57d9b001111615453be2466ed8410bc93bbd8b99b4c00a08cfd67486ae2eb"
+    },
+    {
+      "bytes": 9199,
+      "path": "README.md",
+      "sha256": "8e6f5dc5876d546970b41c2c04779c2ea708003cb22d7ffde11e054dc8bb2253",
+      "working_sha256": "8e6f5dc5876d546970b41c2c04779c2ea708003cb22d7ffde11e054dc8bb2253"
+    },
+    {
+      "bytes": 4353,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "a4c7663d30408cf53062e5fa947790fb031a9c7c20f687db9749f840acb10014",
+      "working_sha256": "a4c7663d30408cf53062e5fa947790fb031a9c7c20f687db9749f840acb10014"
+    },
+    {
+      "bytes": 32323,
+      "path": "docs/work/v1.5.0-implementation-log.md",
+      "sha256": "7c8500f28ca06bc459c97015e44055baf93d87db2d5a95280fa9ffde87610f82",
+      "working_sha256": "7c8500f28ca06bc459c97015e44055baf93d87db2d5a95280fa9ffde87610f82"
+    },
+    {
+      "bytes": 21793,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "67c98a9c448f38f953d7f17af513eb8ef72611219a7d221c04bf0613ca26a34b",
+      "working_sha256": "67c98a9c448f38f953d7f17af513eb8ef72611219a7d221c04bf0613ca26a34b"
+    },
+    {
+      "bytes": 22741,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryAdmissionGameTests.java",
+      "sha256": "885ddb3c4ef869f8293b8653406ff1105f3e37214078856609bff60c953ad0ff",
+      "working_sha256": "885ddb3c4ef869f8293b8653406ff1105f3e37214078856609bff60c953ad0ff"
+    },
+    {
+      "bytes": 31345,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpGameTests.java",
+      "sha256": "44ae743cdde36e977006243e8e2bdbfcbedd4cb29141302cd210a7ec264972af",
+      "working_sha256": "44ae743cdde36e977006243e8e2bdbfcbedd4cb29141302cd210a7ec264972af"
+    },
+    {
+      "bytes": 21832,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/entity/RocketEntity.java",
+      "sha256": "bc451f5a3b7430cb9126bc3297cd5558fcbc3b9d524091f56e3651f73d2df0f7",
+      "working_sha256": "bc451f5a3b7430cb9126bc3297cd5558fcbc3b9d524091f56e3651f73d2df0f7"
+    },
+    {
+      "bytes": 4445,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/PlanetaryFlightAdmission.java",
+      "sha256": "c09c2dbbb3b574a63ca693c2e0da5d8e94871cf29b8759605560ab66253a0ee3",
+      "working_sha256": "c09c2dbbb3b574a63ca693c2e0da5d8e94871cf29b8759605560ab66253a0ee3"
+    },
+    {
+      "bytes": 25565,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketFlightService.java",
+      "sha256": "32f611d583963d304f147b36fdefbebbaaa12660627c03df33ba4a800614adb7",
+      "working_sha256": "32f611d583963d304f147b36fdefbebbaaa12660627c03df33ba4a800614adb7"
+    },
+    {
+      "bytes": 12046,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketManager.java",
+      "sha256": "c20f2d24954f2c13e3d1fffe8f71550ca18babce684055a679a942e56526d7fb",
+      "working_sha256": "c20f2d24954f2c13e3d1fffe8f71550ca18babce684055a679a942e56526d7fb"
+    },
+    {
+      "bytes": 3506,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketStationMotionRule.java",
+      "sha256": "19e895a0a6ae484d1fd7904b69910f01509eb3a013b42673c163d55c4b68200d",
+      "working_sha256": "19e895a0a6ae484d1fd7904b69910f01509eb3a013b42673c163d55c4b68200d"
+    },
+    {
+      "bytes": 30128,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferService.java",
+      "sha256": "a44270a563bf1e4aa47027ada34e946393e14599a110b9c868e15c22eb474bec",
+      "working_sha256": "a44270a563bf1e4aa47027ada34e946393e14599a110b9c868e15c22eb474bec"
+    },
+    {
+      "bytes": 19107,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManager.java",
+      "sha256": "4c9aa552016365753053fb8f817d703d28b392902087934b910ec307a8fa0763",
+      "working_sha256": "4c9aa552016365753053fb8f817d703d28b392902087934b910ec307a8fa0763"
+    },
+    {
+      "bytes": 9990,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketStationMotionRuleTest.java",
+      "sha256": "ba1e2d157b13326c800171958ee426b4f3b7cba1e91ae6c556e3824def1c2bc8",
+      "working_sha256": "ba1e2d157b13326c800171958ee426b4f3b7cba1e91ae6c556e3824def1c2bc8"
+    }
+  ]
+}

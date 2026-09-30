@@ -69,8 +69,12 @@ No candidate or release approval is assigned.
   routes. After confirmation a 10-second countdown is shown to online members;
   it can be cancelled, and it aborts if the station, its owner, the target or
   the cost changed. The commit moves only the orbit: blocks, players and gravity
-  stay as they are. Until the rocket safety check is connected, every warp is
-  refused with "rocket state is not yet known".
+  stay as they are. A warp waits while a rocket is launching from, arriving at or
+  descending onto the station, and while the server has not yet finished
+  checking interrupted rocket flights after a restart.
+- Rockets docked at a station move with it: after a warp they launch from the
+  station's new orbit. Station deletion is refused while rocket flight records
+  cannot be read.
 - Reject malformed, mixed-version or unsupported station data without replacing
   it. If station authority is unavailable, deny player placement and breaking
   in Space, including ordinary operator building; other Levels are unaffected.

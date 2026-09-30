@@ -230,7 +230,12 @@ public final class StationManager implements StationOperationService {
         if (!space.getEntitiesOfClass(RocketEntity.class, region).isEmpty()) {
             return true;
         }
-        return RocketTransferSavedData.get(server).entries().stream().anyMatch(record ->
+        RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        if (!journal.operational()) {
+            // ADR-044 §5: a blocked journal hides its records, so deletion fails closed.
+            return true;
+        }
+        return journal.entries().stream().anyMatch(record ->
                 usesStationRegion(station, record.sourceSnapshot())
                         || usesStationRegion(station, record.destinationSnapshot())
         );

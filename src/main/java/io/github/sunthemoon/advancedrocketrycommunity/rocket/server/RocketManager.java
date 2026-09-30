@@ -230,6 +230,14 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
+    /**
+     * ADR-044 §5: true while a rocket that can still move uses the given Space station region, or
+     * while the transfer journal or its recovery cannot tell (fail closed). Server thread only.
+     */
+    public boolean stationRegionInMotion(MinecraftServer server, int minX, int minZ, int maxX, int maxZ) {
+        return flights.stationRegionInMotion(server, minX, minZ, maxX, maxZ);
+    }
+
     public int activeTransferCount(MinecraftServer server) {
         return flights.activeTransferCount(server);
     }

@@ -61,8 +61,9 @@ ADR-044 revision 3; WARP-02 (station root schema 4, balances and the checked
 relocation) is implemented
 ([verification](../work/v1.5.0-warp-schema/VERIFICATION.md)), and so is WARP-03
 (warp core, commands and countdown;
-[verification](../work/v1.5.0-warp-core/VERIFICATION.md)). Warps stay refused until
-WARP-04 connects the rocket safety check. These slices await independent review. Release
+[verification](../work/v1.5.0-warp-core/VERIFICATION.md)), and WARP-04 (rocket
+authority; [verification](../work/v1.5.0-warp-rockets/VERIFICATION.md)). These slices
+await independent review. Release
 status remains `IN_PROGRESS`, not `PASSED`.
 
 Use the [v1.5 implementation log](../work/v1.5.0-implementation-log.md) for active

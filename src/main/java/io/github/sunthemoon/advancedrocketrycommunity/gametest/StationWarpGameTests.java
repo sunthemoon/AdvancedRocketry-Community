@@ -9,13 +9,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.Cele
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
@@ -325,6 +328,83 @@ public final class StationWarpGameTests {
         }
     }
 
+    @GameTest(template = "empty", batch = "station_warp_logout", timeoutTicks = 400)
+    public static void countdownSurvivesOwnerLogoutAndTheRocketRuleIsWired(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper, "Logout warp", CelestialIds.EARTH_ID, 2_500_000);
+        StationRocketAuthority production = fixture.warp.installRocketAuthority(NOTHING_IN_MOTION);
+        boolean scheduled = false;
+        try {
+            helper.assertTrue(production != StationRocketAuthority.FAIL_CLOSED,
+                    "The rocket module did not wire its in-motion rule (ADR-044 §5)");
+            fixture.core(fixture.pad.east(2));
+            UUID memberId = UUID.randomUUID();
+            fixture.data.invite(fixture.id(), memberId);
+            fixture.data.acceptInvitation(fixture.id(), memberId);
+            List<String> member = fixture.join(memberId, "logoutMember");
+            List<String> owner = fixture.join(fixture.ownerId, "logoutOwner");
+            fixture.look(fixture.ownerId, fixture.pad.east(2));
+            fixture.run(fixture.ownerId, "arce station warp " + MOON);
+            // Logging out drops a pending confirmation.
+            fixture.leave(fixture.ownerId);
+            owner = fixture.join(fixture.ownerId, "logoutOwner");
+            fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
+            expect(helper, owner, StationManagementCode.WARP_NO_CONFIRMATION, "confirmation after logout");
+            fixture.look(fixture.ownerId, fixture.pad.east(2));
+            fixture.run(fixture.ownerId, "arce station warp " + MOON);
+            fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
+            helper.assertTrue(last(owner).startsWith("Warp countdown started"), "Countdown did not start: " + owner);
+            // ...but never cancels a running countdown.
+            fixture.leave(fixture.ownerId);
+            scheduled = true;
+            helper.runAfterDelay(COMMIT_DELAY, () -> {
+                try {
+                    helper.assertTrue(fixture.station().orbitBody().equals(MOON)
+                            && fixture.data.warpEnergy(fixture.id()) == 500_000, "The countdown did not survive logout");
+                    helper.assertTrue(member.stream().anyMatch(line -> line.startsWith("Station warped: ")),
+                            "The online member was not told: " + member);
+                } finally {
+                    fixture.warp.installRocketAuthority(production);
+                    fixture.close();
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                fixture.warp.installRocketAuthority(production);
+                fixture.close();
+            }
+        }
+    }
+
+    @GameTest(template = "empty", batch = "station_warp_delete", timeoutTicks = 100)
+    public static void stationDeletionFailsClosedWhileTheTransferJournalIsBlocked(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper, "Blocked journal", CelestialIds.EARTH_ID, 0);
+        var storage = fixture.server.overworld().getDataStorage();
+        RocketTransferSavedData journal = RocketTransferSavedData.get(fixture.server);
+        CompoundTag future = new CompoundTag();
+        future.putInt("schema_version", 99);
+        RocketTransferSavedData blocked = RocketTransferSavedData.load(future);
+        try {
+            helper.assertTrue(journal.operational() && !blocked.operational() && !blocked.isDirty(),
+                    "Journal fixture differs");
+            storage.set(RocketTransferSavedData.DATA_NAME, blocked);
+            StationManager manager = new StationManager(new CelestialCatalogManager());
+            try {
+                manager.delete(fixture.server, UUID.randomUUID(), true, fixture.id(), "confirm");
+                helper.fail("A station was deleted while the transfer journal hid its records");
+            } catch (IllegalStateException expected) {
+                helper.assertTrue(expected.getMessage().contains("rocket authority"),
+                        "Deletion failed for the wrong reason: " + expected.getMessage());
+            }
+            helper.assertTrue(fixture.data.find(fixture.id()).isPresent(), "The station was removed");
+        } finally {
+            storage.set(RocketTransferSavedData.DATA_NAME, journal);
+            fixture.close();
+        }
+        helper.assertTrue(RocketTransferSavedData.get(fixture.server) == journal, "The journal was not restored");
+        helper.succeed();
+    }
+
     private static void expect(GameTestHelper helper, List<String> replies, StationManagementCode code, String label) {
         helper.assertTrue(!replies.isEmpty() && last(replies).contains(code.description()),
                 label + ": expected " + code + " but got " + replies);
@@ -381,6 +461,12 @@ public final class StationWarpGameTests {
 
         UUID id() {
             return created.stationId();
+        }
+
+        void leave(UUID playerId) {
+            ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+            online.remove(player);
+            server.getPlayerList().remove(player);
         }
 
         StationState station() {
