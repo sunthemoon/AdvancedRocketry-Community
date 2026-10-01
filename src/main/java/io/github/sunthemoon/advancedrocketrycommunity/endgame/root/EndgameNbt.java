@@ -47,6 +47,20 @@ public final class EndgameNbt {
         return source.getLong(key);
     }
 
+    public static boolean requireBoolean(CompoundTag source, String key) {
+        require(source, key, Tag.TAG_BYTE);
+        byte value = source.getByte(key);
+        if (value != 0 && value != 1) {
+            throw new IllegalArgumentException(key + " is not a boolean");
+        }
+        return value == 1;
+    }
+
+    public static CompoundTag requireCompound(CompoundTag source, String key) {
+        require(source, key, Tag.TAG_COMPOUND);
+        return source.getCompound(key);
+    }
+
     public static String requireString(CompoundTag source, String key, int maxChars) {
         require(source, key, Tag.TAG_STRING);
         String value = source.getString(key);

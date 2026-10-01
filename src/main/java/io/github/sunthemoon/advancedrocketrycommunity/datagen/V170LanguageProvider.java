@@ -26,6 +26,7 @@ public final class V170LanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         add("block.advancedrocketrycommunity.endgame_casing", chinese ? "终局机械外壳" : "Endgame Casing");
         add("item.advancedrocketrycommunity.laser_lens", chinese ? "激光透镜" : "Laser Lens");
+        add("advancedrocketrycommunity.endgame.status_line", "%s [%s]");
         Map<EndgameCode, String[]> codes = codes();
         for (EndgameCode code : EndgameCode.values()) {
             String[] text = codes.get(code);

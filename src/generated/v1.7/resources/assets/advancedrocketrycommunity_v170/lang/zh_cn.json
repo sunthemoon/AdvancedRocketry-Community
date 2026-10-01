@@ -38,6 +38,7 @@
   "advancedrocketrycommunity.endgame.code.zone_invalid": "保护区名称或大小无效",
   "advancedrocketrycommunity.endgame.code.zone_limit": "已达保护区数量上限",
   "advancedrocketrycommunity.endgame.code.zone_not_found": "没有该保护区",
+  "advancedrocketrycommunity.endgame.status_line": "%s [%s]",
   "block.advancedrocketrycommunity.endgame_casing": "终局机械外壳",
   "item.advancedrocketrycommunity.laser_lens": "激光透镜"
 }

@@ -5,6 +5,8 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
@@ -40,9 +42,11 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 public final class EndgameCommands {
     private static final UUID CONSOLE = new UUID(0L, 0L);
     private final EndgameService service;
+    private final EndgameDevices devices;
 
-    public EndgameCommands(EndgameService service) {
+    public EndgameCommands(EndgameService service, EndgameDevices devices) {
         this.service = Objects.requireNonNull(service, "service");
+        this.devices = Objects.requireNonNull(devices, "devices");
     }
 
     public void register(RegisterCommandsEvent event) {
@@ -83,6 +87,13 @@ public final class EndgameCommands {
                                 .then(Commands.argument("id", UuidArgument.uuid()).executes(this::retire)))
                         .then(Commands.literal("forget")
                                 .then(Commands.argument("id", UuidArgument.uuid()).executes(this::forget))))
+                .then(Commands.literal("device")
+                        .then(op(Commands.literal("inspect"))
+                                .then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(this::inspect)))
+                        .then(op(Commands.literal("owner"))
+                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                        .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                                                .executes(this::assignOwner)))))
                 .then(Commands.literal("tombstone")
                         .then(op(Commands.literal("evict"))
                                 .then(Commands.argument("player", GameProfileArgument.gameProfile())
@@ -97,7 +108,48 @@ public final class EndgameCommands {
 
     private int status(CommandContext<CommandSourceStack> context) {
         context.getSource().sendSuccess(() -> Component.literal(service.status()), false);
+        context.getSource().sendSuccess(() -> Component.literal(devices.status()), false);
         return 1;
+    }
+
+    /** Refused for an unloaded chunk, because reading the position would load it. */
+    private int inspect(CommandContext<CommandSourceStack> context) {
+        BlockPos pos = BlockPosArgument.getBlockPos(context, "pos");
+        Optional<EndgameDeviceBlockEntity> device = loadedDevice(context, pos);
+        if (device.isEmpty()) {
+            return reply(context, "device_inspect", loadedChunk(context, pos) ? EndgameCode.DEVICE_CHANGED
+                    : EndgameCode.CHUNK_UNLOADED, null, "pos=" + pos.toShortString());
+        }
+        context.getSource().sendSuccess(() -> Component.literal(device.get().describe()), false);
+        return 1;
+    }
+
+    private int assignOwner(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        BlockPos pos = BlockPosArgument.getBlockPos(context, "pos");
+        UUID owner = single(context);
+        Optional<EndgameDeviceBlockEntity> device = loadedDevice(context, pos);
+        String fields = "pos=" + pos.toShortString() + " new_owner=" + owner;
+        if (device.isEmpty()) {
+            return reply(context, "device_owner", loadedChunk(context, pos) ? EndgameCode.DEVICE_CHANGED
+                    : EndgameCode.CHUNK_UNLOADED, null, fields);
+        }
+        if (!device.get().assignOwner(owner)) {
+            return reply(context, "device_owner", EndgameCode.DEVICE_QUARANTINED, null, fields);
+        }
+        return reply(context, "device_owner", EndgameCode.OK, device.get().deviceId().orElse(null), fields);
+    }
+
+    private static boolean loadedChunk(CommandContext<CommandSourceStack> context, BlockPos pos) {
+        return context.getSource().getLevel().getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
+    }
+
+    private static Optional<EndgameDeviceBlockEntity> loadedDevice(CommandContext<CommandSourceStack> context,
+                                                                   BlockPos pos) {
+        if (!loadedChunk(context, pos)) {
+            return Optional.empty();
+        }
+        return context.getSource().getLevel().getBlockEntity(pos) instanceof EndgameDeviceBlockEntity device
+                ? Optional.of(device) : Optional.empty();
     }
 
     private int audit(CommandContext<CommandSourceStack> context, String system, int page) {

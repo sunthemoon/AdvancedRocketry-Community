@@ -38,6 +38,7 @@
   "advancedrocketrycommunity.endgame.code.zone_invalid": "Invalid zone name or size",
   "advancedrocketrycommunity.endgame.code.zone_limit": "Zone limit reached",
   "advancedrocketrycommunity.endgame.code.zone_not_found": "No such zone",
+  "advancedrocketrycommunity.endgame.status_line": "%s [%s]",
   "block.advancedrocketrycommunity.endgame_casing": "Endgame Casing",
   "item.advancedrocketrycommunity.laser_lens": "Laser Lens"
 }

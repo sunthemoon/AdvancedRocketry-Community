@@ -226,7 +226,8 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.satellite.command
                 .ReleaseTestCommands()::register);
         // v1.7 (ADR-054): the endgame framework's root, observations, audit and commands.
-        io.github.sunthemoon.advancedrocketrycommunity.endgame.EndgameModule.install();
+        io.github.sunthemoon.advancedrocketrycommunity.endgame.EndgameModule.install(multiblockPatterns, celestialCatalogs,
+                laserDrillTables);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
