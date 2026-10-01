@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
@@ -7,13 +8,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -140,6 +144,50 @@ public final class LaserTargetGameTests {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         }
         helper.succeed();
+    }
+
+    /**
+     * Review C11R-M2: {@code /arce endgame device owner} moves a registered marker's endpoint record to the new owner
+     * with the block entity, and the marker drops the old owner's link.
+     */
+    @GameTest(template = "empty", batch = "endgame_laser_target_owner", timeoutTicks = 300)
+    public static void anOwnerChangeMovesTheEndpointRecordAndDropsTheLink(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
+        UUID oldOwner = UUID.randomUUID();
+        helper.assertTrue(target.assignOwner(oldOwner), "The fixture owner was not assigned");
+        UUID id = target.deviceId().orElseThrow();
+        ServerPlayer newOwner = ConnectedTestPlayers.join(server, UUID.randomUUID(), "markerNewOwner", level,
+                pos.east(3), new ArrayList<>());
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    chunkSaved(level, pos);
+                    helper.assertTrue(target.endpointActive(), "The marker did not register: " + target.describe());
+                })
+                .thenExecute(() -> {
+                    target.adopt(UUID.randomUUID(), UUID.randomUUID());
+                    int result;
+                    try {
+                        result = server.getCommands().getDispatcher().execute("arce endgame device owner "
+                                + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " @a[name=markerNewOwner]",
+                                server.createCommandSourceStack().withSuppressedOutput());
+                    } catch (CommandSyntaxException exception) {
+                        result = -1;
+                    }
+                    EndpointRecord record = root().endpoint(id).orElseThrow();
+                    boolean blockEntityMoved = target.ownerId().filter(newOwner.getUUID()::equals).isPresent();
+                    boolean recordMoved = record.owner().equals(newOwner.getUUID());
+                    boolean linkDropped = target.linkedController().isEmpty() && target.generation() == 1;
+                    server.getPlayerList().remove(newOwner);
+                    level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                    helper.assertTrue(result == 1 && blockEntityMoved && recordMoved && linkDropped,
+                            "result=" + result + " block_entity=" + blockEntityMoved + " record=" + recordMoved
+                                    + " link_dropped=" + linkDropped);
+                })
+                .thenSucceed();
     }
 
     /**

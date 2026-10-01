@@ -204,9 +204,17 @@ public abstract class EndgameDeviceBlockEntity extends BlockEntity {
             return false;
         }
         ensureIdentity();
+        UUID previous = ownerId;
         ownerId = owner;
         setChanged();
+        if (previous != null && !previous.equals(owner)) {
+            ownerChanged(previous);
+        }
         return true;
+    }
+
+    /** An owned device was given to another owner; a device whose state belongs to its old owner drops it. */
+    protected void ownerChanged(UUID previous) {
     }
 
     public Optional<UUID> deviceId() {

@@ -322,8 +322,10 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
      * The owner's reset: the marker serves no controller any more and its generation grows, so no earlier link is
      * adopted again. Its {@code ops_done} is audited, because a debt its old controller held is forgiven (ADR-055
      * section 3, a residual of at most a few layers' energy).
+     *
+     * @param actor the resetting player, or null for an owner change
      */
-    public EndgameCode reset(UUID actor) {
+    public EndgameCode reset(@Nullable UUID actor) {
         generation = Math.addExact(generation, 1L);
         setChanged();
         if (linkedController == null) {
@@ -341,6 +343,15 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
                     "controller=" + previous + " ops_done=" + done + " generation=" + generation));
         }
         return EndgameCode.OK;
+    }
+
+    /**
+     * Review C11R-M2: a marker an operator gave to another owner serves none of the old owner's links; the new
+     * owner's drill links it again.
+     */
+    @Override
+    protected void ownerChanged(UUID previous) {
+        reset(null);
     }
 
     public ItemStackHandler buffer() {

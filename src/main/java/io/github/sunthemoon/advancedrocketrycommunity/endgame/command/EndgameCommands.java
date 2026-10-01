@@ -133,6 +133,21 @@ public final class EndgameCommands {
             return reply(context, "device_owner", loadedChunk(context, pos) ? EndgameCode.DEVICE_CHANGED
                     : EndgameCode.CHUNK_UNLOADED, null, fields);
         }
+        if (device.get().quarantined()) {
+            return reply(context, "device_owner", EndgameCode.DEVICE_QUARANTINED, null, fields);
+        }
+        if (service.root().isEmpty()) {
+            return reply(context, "device_owner", EndgameCode.ROOT_UNAVAILABLE, null, fields);
+        }
+        Optional<UUID> id = device.get().deviceId();
+        if (id.isPresent() && service.root().get().endpoint(id.get()).isPresent()) {
+            // Section 13: an endpoint's record follows first, as a barrier, within the new owner's limit (C11R-M2).
+            EndgameCode code = service.barrier(root -> root.reassign(id.get(), owner,
+                    service.settings().endpointsPerOwner()));
+            if (code != EndgameCode.OK) {
+                return reply(context, "device_owner", code, id.get(), fields);
+            }
+        }
         if (!device.get().assignOwner(owner)) {
             return reply(context, "device_owner", EndgameCode.DEVICE_QUARANTINED, null, fields);
         }
