@@ -707,8 +707,13 @@ def jump_height(multiplier, v0=0.42, drag=0.98, gravity=0.08):
 
 
 def field_affects(case):
-    """R1-M9: inside a station region everyone; elsewhere the owner and the allow list."""
-    return case["in_station"] or case["player"] == case["owner"] or case["player"] in case["allow"]
+    """R2-M1: inside a station region everyone; elsewhere the owner and players who trust the owner."""
+    return case["in_station"] or case["player"] == case["owner"] or case["owner"] in case["player_trusts"]
+
+
+def field_value(case):
+    """R2-L6: inside a station region the value is capped at 1.00 g (100 hundredths)."""
+    return min(case["m"], 100) if case["in_station"] else case["m"]
 
 
 # --- ADR-054 authority and protection order ---------------------------------------------------
@@ -960,6 +965,7 @@ class Vectors(unittest.TestCase):
             self.assertEqual(jump_height(multiplier) >= 1.0, can_step_up, multiplier)
         for case in data["consent"]:
             self.assertEqual(field_affects(case), case["affected"], case)
+            self.assertEqual(field_value(case), case["value"], case)
 
     def test_authority_matrix(self):
         for case in EXAMPLES["authority"]:

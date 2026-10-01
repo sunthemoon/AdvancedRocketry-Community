@@ -127,12 +127,17 @@ the station or Level value on the next tick.
   damage. Therefore:
   - inside a committed station region the field affects every player in its
     clipped box, as the station's own gravity does: it is the station owner's
-    space and the field must belong to the station owner (§3);
-  - everywhere else a field affects only its owner and the players on its
-    **allow list** (at most 16 UUIDs, stored in the controller's root). The
-    owner edits it with `/arce endgame field allow <player>` and `field deny
-    <player>` from their own connected command source while looking at the
-    controller within 5 blocks (the warp-core rule, ADR-044 §4). Everyone else
+    space and the field must belong to the station owner (§3). Its effective
+    value there is capped at 1.00 g, the top of ADR-041's station command range,
+    so a field can never impose more than the station owner could already set
+    for the whole station (review R2-L6);
+  - everywhere else a field affects only its owner and players who **trust**
+    that owner (review R2-M1): consent is the affected player's own choice. A
+    player manages it with `/arce endgame field trust <player>`, `field untrust
+    <player>` and `field trusted`, from their own connected command source only;
+    the list holds at most 32 owner UUIDs and is stored under
+    `Player.PERSISTED_NBT_TAG` in the player's persistent data, which Forge
+    keeps across death. Untrusting takes effect on the next tick. Everyone else
     keeps the station or Level gravity inside the box.
 - Mobs, items and projectiles are **deferred** (v1.8 matrix): the attribute does
   not cover non-living entities, and per-entity motion scans are what made the
@@ -157,7 +162,7 @@ the station or Level value on the next tick.
 
 | Threat | Control |
 |---|---|
-| Trapping or hurting players (2.00 g blocks a one-block jump, 0.10 g jumps cost fall damage) | Outside stations only the owner and an allow list are affected; inside stations only the station owner's own fields; no lateral force; box ≤ 33³ |
+| Trapping or hurting players (2.00 g blocks a one-block jump, 0.10 g jumps cost fall damage) | Outside stations only the owner and players who trust the owner, by their own command, are affected; inside stations only the station owner's own fields, capped at 1.00 g; no lateral force; box ≤ 33³ |
 | Overriding a station's gravity without consent | `MANAGE_STATION` inside stations; box clipped to the region |
 | Fields over spawn, zones or claims | Chain steps 2–6 including spawn protection, zones and the API event |
 | Server load | Chunk-bucketed index, ≤ 16 candidates per lookup, active caps, no entity scans |
@@ -183,10 +188,10 @@ reconsidered with the v1.8 matrix).
   consent rule and jump-height thresholds (reference vectors), per-owner density,
   arithmetic, index caps and buckets, winner selection with nested, equal and
   overlapping boxes (reference vectors), composition with the station override.
-- A1: on a planet, the owner and an allowed player get the field's value and
-  another player in the same box keeps the Level gravity; `field allow|deny`
-  edits the list only from the owner looking at the controller; on a station,
-  every player in the box gets it; a member
+- A1: on a planet, the owner and a player who trusts the owner get the field's
+  value and another player in the same box keeps the Level gravity; `field
+  trust|untrust` changes only the issuing player's own list and survives death;
+  on a station, every player in the box gets the value capped at 1.00 g; a member
   cannot activate on a station, the station owner can; spawn-area and zone
   refusals; ownership transfer of the station deactivates a field owned by the
   previous owner; API cancellation; out of energy drops the field the same tick;

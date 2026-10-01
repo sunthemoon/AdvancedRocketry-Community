@@ -1505,31 +1505,59 @@
     "in_station": true,
     "owner": "a",
     "player": "b",
-    "allow": [],
-    "affected": true
+    "player_trusts": [],
+    "m": 200,
+    "affected": true,
+    "value": 100
+   },
+   {
+    "in_station": true,
+    "owner": "a",
+    "player": "b",
+    "player_trusts": [],
+    "m": 50,
+    "affected": true,
+    "value": 50
    },
    {
     "in_station": false,
     "owner": "a",
     "player": "a",
-    "allow": [],
-    "affected": true
+    "player_trusts": [],
+    "m": 200,
+    "affected": true,
+    "value": 200
    },
    {
     "in_station": false,
     "owner": "a",
     "player": "b",
-    "allow": [],
-    "affected": false
+    "player_trusts": [],
+    "m": 200,
+    "affected": false,
+    "value": 200
    },
    {
     "in_station": false,
     "owner": "a",
     "player": "b",
-    "allow": [
-     "b"
+    "player_trusts": [
+     "a"
     ],
-    "affected": true
+    "m": 10,
+    "affected": true,
+    "value": 10
+   },
+   {
+    "in_station": false,
+    "owner": "a",
+    "player": "b",
+    "player_trusts": [
+     "c"
+    ],
+    "m": 10,
+    "affected": false,
+    "value": 10
    }
   ]
  },
