@@ -1,0 +1,246 @@
+{
+  "links": [
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.2.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.1.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.0.2/INSTALLATION.md"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../src/adapterTest/"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_adapter_recovery_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_adapter_flight_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_atmosphere_boundary_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_suit_equipment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_component_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_fuel_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_environment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_satellite_payload_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_component_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_suit_equipment_smoke.py"
+    },
+    {
+      "document": "compat-test-mod/README.md",
+      "target": "../scripts/run_v130_satellite_payload_smoke.py"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "PUBLIC-API-GUIDE.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "../compat-test-mod/README.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-adapter-registration/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-external-flight/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-external-recovery/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-compatibility/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-atmosphere-boundaries/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-suit-equipment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-rocket-components/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-rocket-fuels/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-environment-queries/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "work/v1.3.0-satellite-payloads/VERIFICATION.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md"
+    },
+    {
+      "document": "docs/API-COMPATIBILITY.md",
+      "target": "decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "API-COMPATIBILITY.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-024-STATE-BASED-ATMOSPHERE-BOUNDARIES.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-025-SUIT-OXYGEN-PROVIDERS.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-026-ROCKET-COMPONENT-DEFINITIONS.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-027-ROCKET-ITEM-FUELS.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-028-READ-ONLY-ENVIRONMENT-QUERIES.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-029-SATELLITE-PAYLOAD-MISSIONS.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "../src/adapterTest/"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "document": "docs/PUBLIC-API-GUIDE.md",
+      "target": "../compat-test-mod/README.md"
+    },
+    {
+      "document": "docs/provenance/v1.7.0-development-metadata.md",
+      "target": "v0.0.2-forge-mdk-and-gradle-wrapper.md"
+    },
+    {
+      "document": "docs/provenance/v1.7.0-development-metadata.md",
+      "target": "../../THIRD-PARTY-NOTICES.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-c11a-framework/VERIFICATION.md",
+      "target": "../v1.7.0-implementation-log.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-c11a-framework/VERIFICATION.md",
+      "target": "../../provenance/v1.7.0-development-metadata.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-04-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c11a-framework/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "../status/COMPLETION-PLAN.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

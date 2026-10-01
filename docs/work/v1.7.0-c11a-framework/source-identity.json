@@ -1,0 +1,515 @@
+{
+  "base_commit": "9d30892d53f800e8b1e7815b5ee47479cb441432",
+  "files": [
+    {
+      "bytes": 1067,
+      "path": ".gitignore",
+      "sha256": "994d2e410dccee37fcff05b3778f41a4137bd136759516a3b546018b7e8a0ccb",
+      "working_sha256": "994d2e410dccee37fcff05b3778f41a4137bd136759516a3b546018b7e8a0ccb"
+    },
+    {
+      "bytes": 34950,
+      "path": "CHANGELOG.md",
+      "sha256": "37417f9df608fce8f6cc61ae7c3676933a3335fccc3fab44009fd1ed185673d5",
+      "working_sha256": "37417f9df608fce8f6cc61ae7c3676933a3335fccc3fab44009fd1ed185673d5"
+    },
+    {
+      "bytes": 20691,
+      "path": "build.gradle",
+      "sha256": "4ab297db01bbd7572a91ed19ea476926b07eed88c6f998c61620855bbb5ffdbc",
+      "working_sha256": "4ab297db01bbd7572a91ed19ea476926b07eed88c6f998c61620855bbb5ffdbc"
+    },
+    {
+      "bytes": 15378,
+      "path": "compat-test-mod/README.md",
+      "sha256": "f0e8f81f472826f9fa5d3e8abefabda5edba808830ea2d66608e1c1a19b2f389",
+      "working_sha256": "f0e8f81f472826f9fa5d3e8abefabda5edba808830ea2d66608e1c1a19b2f389"
+    },
+    {
+      "bytes": 12351,
+      "path": "compat-test-mod/build.gradle",
+      "sha256": "7b3896834b64fecd5d85b1f168d4f660280d0b97c4e4a88f6a84e2dd2de32306",
+      "working_sha256": "7b3896834b64fecd5d85b1f168d4f660280d0b97c4e4a88f6a84e2dd2de32306"
+    },
+    {
+      "bytes": 10031,
+      "path": "docs/API-COMPATIBILITY.md",
+      "sha256": "d06aeddbbe545ed2680f67fa4a082f08fd9230ce93a20b1d24a27b212203af75",
+      "working_sha256": "d06aeddbbe545ed2680f67fa4a082f08fd9230ce93a20b1d24a27b212203af75"
+    },
+    {
+      "bytes": 29373,
+      "path": "docs/PUBLIC-API-GUIDE.md",
+      "sha256": "6b47561ef760807de0b7d6d925cb8b59d9e9bd1b42e830b96f582cdaa6cdb981",
+      "working_sha256": "6b47561ef760807de0b7d6d925cb8b59d9e9bd1b42e830b96f582cdaa6cdb981"
+    },
+    {
+      "bytes": 2147,
+      "path": "docs/provenance/v1.7.0-development-metadata.md",
+      "sha256": "55daeaf14fbffd8952ccd723df58b106502f09b7e48d2d13810ee31d5b10f809",
+      "working_sha256": "55daeaf14fbffd8952ccd723df58b106502f09b7e48d2d13810ee31d5b10f809"
+    },
+    {
+      "bytes": 9279,
+      "path": "docs/work/v1.7.0-implementation-log.md",
+      "sha256": "7cfbbf5402af2e1e110db7dbfcc80f2a83a124bd15c5073a947c7c8e4493e164",
+      "working_sha256": "7cfbbf5402af2e1e110db7dbfcc80f2a83a124bd15c5073a947c7c8e4493e164"
+    },
+    {
+      "bytes": 1998,
+      "path": "gradle.properties",
+      "sha256": "4115b9ecdbf630bcb1ac22b07aac7f2d2d9447cb2bec13239f8297da03682707",
+      "working_sha256": "4115b9ecdbf630bcb1ac22b07aac7f2d2d9447cb2bec13239f8297da03682707"
+    },
+    {
+      "bytes": 9467,
+      "path": "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/AdapterTestMod.java",
+      "sha256": "b6ac7a6de326740b685a351531f6a8eb07305a698df7965375e86b480eaf4569",
+      "working_sha256": "b6ac7a6de326740b685a351531f6a8eb07305a698df7965375e86b480eaf4569"
+    },
+    {
+      "bytes": 868,
+      "path": "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/EndgameEffectFixture.java",
+      "sha256": "f2f40e3446c92c1eccfca90a3e9e7f70a39f38d62f3e52a53b05c2fab093f20e",
+      "working_sha256": "f2f40e3446c92c1eccfca90a3e9e7f70a39f38d62f3e52a53b05c2fab093f20e"
+    },
+    {
+      "bytes": 2259,
+      "path": "src/adapterTest/java/io/github/sunthemoon/arceadaptertest/EndgameEffectGameTests.java",
+      "sha256": "44bc962457bbb0d08a58ed5eed089f2f24621dd351ca5d602010b69cdaa767cc",
+      "working_sha256": "44bc962457bbb0d08a58ed5eed089f2f24621dd351ca5d602010b69cdaa767cc"
+    },
+    {
+      "bytes": 103,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/endgame_casing.json",
+      "sha256": "8bc8b6a3d0ecdd902059b08731d57f42b88ba5a70a2aaf321e974985b10b1974",
+      "working_sha256": "8bc8b6a3d0ecdd902059b08731d57f42b88ba5a70a2aaf321e974985b10b1974"
+    },
+    {
+      "bytes": 171,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/endgame_casing.json",
+      "sha256": "262b279a688dfdef53285d9e30f045a21d42e8627b73a923c7c69601017c257a",
+      "working_sha256": "262b279a688dfdef53285d9e30f045a21d42e8627b73a923c7c69601017c257a"
+    },
+    {
+      "bytes": 64,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/endgame_casing.json",
+      "sha256": "dd9c2c6debc67ab83b7d1f3497c0a92ad2638c890de497ab9c3d91bf14128239",
+      "working_sha256": "dd9c2c6debc67ab83b7d1f3497c0a92ad2638c890de497ab9c3d91bf14128239"
+    },
+    {
+      "bytes": 47,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/laser_lens.json",
+      "sha256": "a91cc6d3c3764eba68d827b2a6651d0b7d60fac91143f4026e7c5f2ee4d60df0",
+      "working_sha256": "a91cc6d3c3764eba68d827b2a6651d0b7d60fac91143f4026e7c5f2ee4d60df0"
+    },
+    {
+      "bytes": 3010,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/en_us.json",
+      "sha256": "75493b3bfb80830458044413ee281182ebff5c411abc5d3d780d0dfc4d7853e9",
+      "working_sha256": "75493b3bfb80830458044413ee281182ebff5c411abc5d3d780d0dfc4d7853e9"
+    },
+    {
+      "bytes": 2990,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/zh_cn.json",
+      "sha256": "5285650a6e2bd1b4ffe98a8524253a134af5a7d3423b13358eb80525bd209106",
+      "working_sha256": "5285650a6e2bd1b4ffe98a8524253a134af5a7d3423b13358eb80525bd209106"
+    },
+    {
+      "bytes": 702,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/advancements/recipes/building_blocks/endgame_casing.json",
+      "sha256": "caaf84c2467f7240ea42a8e60750f7d5ad3aa695bc9c30209450464c93f7a2cd",
+      "working_sha256": "caaf84c2467f7240ea42a8e60750f7d5ad3aa695bc9c30209450464c93f7a2cd"
+    },
+    {
+      "bytes": 691,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/advancements/recipes/misc/laser_lens.json",
+      "sha256": "0516d7137180e7bbac595502e4815d8f604031ae462ddbd831dc93d88d569b39",
+      "working_sha256": "0516d7137180e7bbac595502e4815d8f604031ae462ddbd831dc93d88d569b39"
+    },
+    {
+      "bytes": 428,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/loot_tables/blocks/endgame_casing.json",
+      "sha256": "3eb8bde4a74ad5a6663033af3eb208e15c9e4bfa11a1dde7dfee60595efeb3fb",
+      "working_sha256": "3eb8bde4a74ad5a6663033af3eb208e15c9e4bfa11a1dde7dfee60595efeb3fb"
+    },
+    {
+      "bytes": 416,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/recipes/endgame_casing.json",
+      "sha256": "19bbfa5e0205902370fba38be9e23a9ce660b8d57261fbed3e09f0ad36ade037",
+      "working_sha256": "19bbfa5e0205902370fba38be9e23a9ce660b8d57261fbed3e09f0ad36ade037"
+    },
+    {
+      "bytes": 400,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/recipes/laser_lens.json",
+      "sha256": "6dfb4fc4c9e4dbda527b0a0766a12e23f91204421a63c7ee9721930a402e2abe",
+      "working_sha256": "6dfb4fc4c9e4dbda527b0a0766a12e23f91204421a63c7ee9721930a402e2abe"
+    },
+    {
+      "bytes": 890,
+      "path": "src/generated/v1.7/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "fab6660804486a5247da3bae7b28aab2996fb4c790f05a8a33eefad4598846b1",
+      "working_sha256": "fab6660804486a5247da3bae7b28aab2996fb4c790f05a8a33eefad4598846b1"
+    },
+    {
+      "bytes": 890,
+      "path": "src/generated/v1.7/resources/data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "fab6660804486a5247da3bae7b28aab2996fb4c790f05a8a33eefad4598846b1",
+      "working_sha256": "fab6660804486a5247da3bae7b28aab2996fb4c790f05a8a33eefad4598846b1"
+    },
+    {
+      "bytes": 26102,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "407c6ea950bad7d666cd8057098690047b30ed1b5deff2ea98a52f1b6e5b9567",
+      "working_sha256": "407c6ea950bad7d666cd8057098690047b30ed1b5deff2ea98a52f1b6e5b9567"
+    },
+    {
+      "bytes": 409,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/api/endgame/EndgameEffect.java",
+      "sha256": "19cb549841fa254cba3b2200cfda12d80f386c96c205e1178d8c9891103a617e",
+      "working_sha256": "19cb549841fa254cba3b2200cfda12d80f386c96c205e1178d8c9891103a617e"
+    },
+    {
+      "bytes": 2948,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/api/endgame/EndgameEffectEvent.java",
+      "sha256": "4a8aa4ed4b3819db4959f75e8e00980438831850d5797ee5289590b1e76fe245",
+      "working_sha256": "4a8aa4ed4b3819db4959f75e8e00980438831850d5797ee5289590b1e76fe245"
+    },
+    {
+      "bytes": 1081,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersions.java",
+      "sha256": "0c75006cc5cdd3a08e55615fca98818c24a2bcd4bf12f32280975ec9a16f28df",
+      "working_sha256": "0c75006cc5cdd3a08e55615fca98818c24a2bcd4bf12f32280975ec9a16f28df"
+    },
+    {
+      "bytes": 14580,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java",
+      "sha256": "85524fc35cabbe56246249fb7f7384fe4c47e82b933569c9a45d7871384b8472",
+      "working_sha256": "85524fc35cabbe56246249fb7f7384fe4c47e82b933569c9a45d7871384b8472"
+    },
+    {
+      "bytes": 1570,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "0bb01a88eb8da5ca5e52fb793762af69138b1dfee66f699c0d5342a780a3d302",
+      "working_sha256": "0bb01a88eb8da5ca5e52fb793762af69138b1dfee66f699c0d5342a780a3d302"
+    },
+    {
+      "bytes": 5882,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "sha256": "6009020eacc2b9b1590e759752f5a251a7ecd459d0abee1fa6ea2503dca9b5c3",
+      "working_sha256": "6009020eacc2b9b1590e759752f5a251a7ecd459d0abee1fa6ea2503dca9b5c3"
+    },
+    {
+      "bytes": 5545,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java",
+      "sha256": "20b6a5215887c19836a6ca4372275408efb1c0fa44713c24de3cfbb7f03a6ed8",
+      "working_sha256": "20b6a5215887c19836a6ca4372275408efb1c0fa44713c24de3cfbb7f03a6ed8"
+    },
+    {
+      "bytes": 1600,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java",
+      "sha256": "ad7ee0e5a21209aa5932bb58b1890848d53d5aed35522060cf58f3e3b4ec335a",
+      "working_sha256": "ad7ee0e5a21209aa5932bb58b1890848d53d5aed35522060cf58f3e3b4ec335a"
+    },
+    {
+      "bytes": 6856,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/audit/EndgameAudit.java",
+      "sha256": "76a8111cf405557fbee280f9b4ab5759feabbf079477ab9d03a425b5591dd0ab",
+      "working_sha256": "76a8111cf405557fbee280f9b4ab5759feabbf079477ab9d03a425b5591dd0ab"
+    },
+    {
+      "bytes": 6223,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/authority/EndgameAuthority.java",
+      "sha256": "743a35ac2dd6c7c24931e1a05e2bff0fb2f56152931a4b1f8b25c984818a38f8",
+      "working_sha256": "743a35ac2dd6c7c24931e1a05e2bff0fb2f56152931a4b1f8b25c984818a38f8"
+    },
+    {
+      "bytes": 15154,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/EndgameCommands.java",
+      "sha256": "b24e426f88ba7714920fd0218f04e0ed71bd4fae1dde2704d21f335c084b31e9",
+      "working_sha256": "b24e426f88ba7714920fd0218f04e0ed71bd4fae1dde2704d21f335c084b31e9"
+    },
+    {
+      "bytes": 743,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDeviceTags.java",
+      "sha256": "eee7192c61be1a852a76ebead2eae9dcb3290d96d12af35998b0cf5fe554951e",
+      "working_sha256": "eee7192c61be1a852a76ebead2eae9dcb3290d96d12af35998b0cf5fe554951e"
+    },
+    {
+      "bytes": 481,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameAction.java",
+      "sha256": "1e311d9bdf8266e4136dd46d78e4c9e2a9cb04bf1e1dbf61218abf120b036802",
+      "working_sha256": "1e311d9bdf8266e4136dd46d78e4c9e2a9cb04bf1e1dbf61218abf120b036802"
+    },
+    {
+      "bytes": 1955,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameCode.java",
+      "sha256": "04d99947081806eb46efa9753cc4acaf76bf42f5bd98aba031ad0d4133328e07",
+      "working_sha256": "04d99947081806eb46efa9753cc4acaf76bf42f5bd98aba031ad0d4133328e07"
+    },
+    {
+      "bytes": 617,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameIdOrder.java",
+      "sha256": "e637977ac774426e6159731045b6cdbc21e004931b97af2f9d82e7206e159760",
+      "working_sha256": "e637977ac774426e6159731045b6cdbc21e004931b97af2f9d82e7206e159760"
+    },
+    {
+      "bytes": 3679,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameLimits.java",
+      "sha256": "b169b637efc629a655a195b199e45abed30072e5a6dd3adccc38520b7f436d2d",
+      "working_sha256": "b169b637efc629a655a195b199e45abed30072e5a6dd3adccc38520b7f436d2d"
+    },
+    {
+      "bytes": 2258,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameSettings.java",
+      "sha256": "c84494e621ddf9fee6804717a15f94c81c2349dc07ee3d7159af78dce7e6b840",
+      "working_sha256": "c84494e621ddf9fee6804717a15f94c81c2349dc07ee3d7159af78dce7e6b840"
+    },
+    {
+      "bytes": 1003,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameSystem.java",
+      "sha256": "c7b2487e36444d3566587fda92338000e43c8fc51aad073105fb47c3c1de281e",
+      "working_sha256": "c7b2487e36444d3566587fda92338000e43c8fc51aad073105fb47c3c1de281e"
+    },
+    {
+      "bytes": 5353,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/protection/EndgameProtection.java",
+      "sha256": "89fe5ffa61227959f86c3d7a2e658417fa0ee909dd00f591dfaa4516abb72d83",
+      "working_sha256": "89fe5ffa61227959f86c3d7a2e658417fa0ee909dd00f591dfaa4516abb72d83"
+    },
+    {
+      "bytes": 3794,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/protection/ForgeProtectionView.java",
+      "sha256": "035403bcac62807217b988a1eadccb09ce91afe7b980a05811df5884f6b659a1",
+      "working_sha256": "035403bcac62807217b988a1eadccb09ce91afe7b980a05811df5884f6b659a1"
+    },
+    {
+      "bytes": 2943,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/protection/ProtectedZone.java",
+      "sha256": "3832182693e189572c4b7b6b52a97eef00db9e96c95858ea74ec4fabdfff4a21",
+      "working_sha256": "3832182693e189572c4b7b6b52a97eef00db9e96c95858ea74ec4fabdfff4a21"
+    },
+    {
+      "bytes": 3625,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameNbt.java",
+      "sha256": "7bc0b4620c9807e907c6a03544e7091068a4bc3d9e565934abe9f49bb25c50e2",
+      "working_sha256": "7bc0b4620c9807e907c6a03544e7091068a4bc3d9e565934abe9f49bb25c50e2"
+    },
+    {
+      "bytes": 18654,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameRoot.java",
+      "sha256": "81cc9f8ae4157dd1667b6900f96c5902e525af820d4b1236f9846a00e7088e54",
+      "working_sha256": "81cc9f8ae4157dd1667b6900f96c5902e525af820d4b1236f9846a00e7088e54"
+    },
+    {
+      "bytes": 11025,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameRootCodec.java",
+      "sha256": "60b111264fb352f5358f321a535d3aca7a93c07347ce4fd5ac6f121520312352",
+      "working_sha256": "60b111264fb352f5358f321a535d3aca7a93c07347ce4fd5ac6f121520312352"
+    },
+    {
+      "bytes": 4096,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameSavedData.java",
+      "sha256": "154a3f8c2216e7c25b3806e803c33e0a89941b8667b496b2f0ec9d9fd3489748",
+      "working_sha256": "154a3f8c2216e7c25b3806e803c33e0a89941b8667b496b2f0ec9d9fd3489748"
+    },
+    {
+      "bytes": 1934,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndpointRecord.java",
+      "sha256": "858b06afc767cb761793ddfdb394385b325b55012d4ae91dd589ae57463117b2",
+      "working_sha256": "858b06afc767cb761793ddfdb394385b325b55012d4ae91dd589ae57463117b2"
+    },
+    {
+      "bytes": 2177,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/Tombstone.java",
+      "sha256": "7368e7dc7d6c0a4876d8b56f33862abdda0d97f40d50c0e97695e10884393d7c",
+      "working_sha256": "7368e7dc7d6c0a4876d8b56f33862abdda0d97f40d50c0e97695e10884393d7c"
+    },
+    {
+      "bytes": 877,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameRuntime.java",
+      "sha256": "3c5a7628fc6b9f5648931f87211980cca5ca6d79a2db495871bac9e59adc8e50",
+      "working_sha256": "3c5a7628fc6b9f5648931f87211980cca5ca6d79a2db495871bac9e59adc8e50"
+    },
+    {
+      "bytes": 15494,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameService.java",
+      "sha256": "da6804a1c5b9e9fc5943c2eef45f1af4bea63cd2e1df4aa304a752ab6fb13d63",
+      "working_sha256": "da6804a1c5b9e9fc5943c2eef45f1af4bea63cd2e1df4aa304a752ab6fb13d63"
+    },
+    {
+      "bytes": 2591,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndpointObservations.java",
+      "sha256": "5c2480644227fb14cdc668270c4b88c65490f8c9692cbed718711372e436e82c",
+      "working_sha256": "5c2480644227fb14cdc668270c4b88c65490f8c9692cbed718711372e436e82c"
+    },
+    {
+      "bytes": 7128,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/EndgameFrameworkGameTests.java",
+      "sha256": "0059db503a970c2485322c285caeb2fdeaeedc67ef449186585610c276508479",
+      "working_sha256": "0059db503a970c2485322c285caeb2fdeaeedc67ef449186585610c276508479"
+    },
+    {
+      "bytes": 2383,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/AtomicSavedData.java",
+      "sha256": "fcd067ed453aa5e5d7ea13a93605db73076b698f4e792d524dca0e016904d155",
+      "working_sha256": "fcd067ed453aa5e5d7ea13a93605db73076b698f4e792d524dca0e016904d155"
+    },
+    {
+      "bytes": 2132,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataPayloadValidator.java",
+      "sha256": "a31f9bdcc64253c31ca53b3e240ca64cbd97327ecd14463c0bc6e363646b1ad4",
+      "working_sha256": "a31f9bdcc64253c31ca53b3e240ca64cbd97327ecd14463c0bc6e363646b1ad4"
+    },
+    {
+      "bytes": 8805,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataType.java",
+      "sha256": "eedb3bc306d9b1cf0e75e62f0588d02ece660acc8788e3e4897907d45875da24",
+      "working_sha256": "eedb3bc306d9b1cf0e75e62f0588d02ece660acc8788e3e4897907d45875da24"
+    },
+    {
+      "bytes": 5429,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/SavedDataSchemaMigrator.java",
+      "sha256": "3a265db73271981bb5986a288915cf51d11334f50207461421f4ecc6ff2b47fc",
+      "working_sha256": "3a265db73271981bb5986a288915cf51d11334f50207461421f4ecc6ff2b47fc"
+    },
+    {
+      "bytes": 9051,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "sha256": "d4b6da79f7d09e03686f7fd4955a4dec6fd53a7140eab7e54de2d4bb34305b6d",
+      "working_sha256": "d4b6da79f7d09e03686f7fd4955a4dec6fd53a7140eab7e54de2d4bb34305b6d"
+    },
+    {
+      "bytes": 5060,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java",
+      "sha256": "4079c980b6710710d1e6ed77815d7be8e97fa9b008dc71a176f22266570f2951",
+      "working_sha256": "4079c980b6710710d1e6ed77815d7be8e97fa9b008dc71a176f22266570f2951"
+    },
+    {
+      "bytes": 9951,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java",
+      "sha256": "d52789cc39e1e059b820ef4c5c3a132f24b8bc44b549ce77ebe60b6b5a66d3c7",
+      "working_sha256": "d52789cc39e1e059b820ef4c5c3a132f24b8bc44b549ce77ebe60b6b5a66d3c7"
+    },
+    {
+      "bytes": 2095,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java",
+      "sha256": "fb5094721e3239572be8429fa4de66444cd22e1e1e3dd19bd621908564b98feb",
+      "working_sha256": "fb5094721e3239572be8429fa4de66444cd22e1e1e3dd19bd621908564b98feb"
+    },
+    {
+      "bytes": 18722,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiArtifactTest.java",
+      "sha256": "146e533c42790176a483d1ad08f1c5daaaba92a724bad4a2bc24be9ce3c1a147",
+      "working_sha256": "146e533c42790176a483d1ad08f1c5daaaba92a724bad4a2bc24be9ce3c1a147"
+    },
+    {
+      "bytes": 4458,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/api/version/ApiVersionsTest.java",
+      "sha256": "c2ae5de3b188f642ea06dc271141579739b421d010ba5f54d3a87031b22303e6",
+      "working_sha256": "c2ae5de3b188f642ea06dc271141579739b421d010ba5f54d3a87031b22303e6"
+    },
+    {
+      "bytes": 10554,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java",
+      "sha256": "3c0be2bf59bdf242a3bda001addd3cb4eeb6f343ef3d6865e22ace3083645a8d",
+      "working_sha256": "3c0be2bf59bdf242a3bda001addd3cb4eeb6f343ef3d6865e22ace3083645a8d"
+    },
+    {
+      "bytes": 3989,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/audit/EndgameAuditTest.java",
+      "sha256": "6c24e0b03e51892324c8789a98f39795a59dbc4f5cbd828c1c954c5d3d0b0f72",
+      "working_sha256": "6c24e0b03e51892324c8789a98f39795a59dbc4f5cbd828c1c954c5d3d0b0f72"
+    },
+    {
+      "bytes": 7519,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/authority/EndgameAuthorityTest.java",
+      "sha256": "636c78a057e8a35db0a04562a7c19bbd8ce188f3e756702fb509ec16d07ab112",
+      "working_sha256": "636c78a057e8a35db0a04562a7c19bbd8ce188f3e756702fb509ec16d07ab112"
+    },
+    {
+      "bytes": 4232,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameModelTest.java",
+      "sha256": "237faabc8b3359a8bfe6d891c9ee6d4b431faa1d1497572b67be13f0040501c7",
+      "working_sha256": "237faabc8b3359a8bfe6d891c9ee6d4b431faa1d1497572b67be13f0040501c7"
+    },
+    {
+      "bytes": 8044,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/protection/EndgameProtectionTest.java",
+      "sha256": "9525818a8fd7c5ff0c7f93a85be61ac98f33a1be47a987412e1e15b4290cddf2",
+      "working_sha256": "9525818a8fd7c5ff0c7f93a85be61ac98f33a1be47a987412e1e15b4290cddf2"
+    },
+    {
+      "bytes": 3568,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/protection/ProtectedZoneTest.java",
+      "sha256": "580f9d04f3cc40d4d044b46db81ff4d0f1d4400a05fe051529639c7df948cd86",
+      "working_sha256": "580f9d04f3cc40d4d044b46db81ff4d0f1d4400a05fe051529639c7df948cd86"
+    },
+    {
+      "bytes": 12660,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameRootCodecTest.java",
+      "sha256": "3aa54f89c9093e837f1b38e614f70a1fd574c427ec754d5eb2151b4972016812",
+      "working_sha256": "3aa54f89c9093e837f1b38e614f70a1fd574c427ec754d5eb2151b4972016812"
+    },
+    {
+      "bytes": 11335,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameRootTest.java",
+      "sha256": "41a57b182d07d15dfbd668fd4b4e5c57689c2269f68e65b5dff209d4b5d6f7c8",
+      "working_sha256": "41a57b182d07d15dfbd668fd4b4e5c57689c2269f68e65b5dff209d4b5d6f7c8"
+    },
+    {
+      "bytes": 7518,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameServiceTest.java",
+      "sha256": "b1d8572a449600242037af1ff4ab47c1747779b6fce9f8ec62dc79be6278f453",
+      "working_sha256": "b1d8572a449600242037af1ff4ab47c1747779b6fce9f8ec62dc79be6278f453"
+    },
+    {
+      "bytes": 7974,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/ManagedSavedDataLoaderMigrationTest.java",
+      "sha256": "b1baf5e20a74a0c8717d7b3dd45f96786651c741f79c3afdebdd6931bb4f4ebc",
+      "working_sha256": "b1baf5e20a74a0c8717d7b3dd45f96786651c741f79c3afdebdd6931bb4f4ebc"
+    },
+    {
+      "bytes": 9982,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/PopulatedManagedDataFixture.java",
+      "sha256": "01c98bbe81ac2eee6c7feb59a8501e369d6e5bc9bebbfe0ac6f97b4719f0fa45",
+      "working_sha256": "01c98bbe81ac2eee6c7feb59a8501e369d6e5bc9bebbfe0ac6f97b4719f0fa45"
+    },
+    {
+      "bytes": 14405,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/PopulatedWorldDataPreservationTest.java",
+      "sha256": "f326f75c7bfade10bb48540df1d53b0cb0b669ac7798e25a820357e4ce4fff42",
+      "working_sha256": "f326f75c7bfade10bb48540df1d53b0cb0b669ac7798e25a820357e4ce4fff42"
+    },
+    {
+      "bytes": 13799,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/StationWorldMigrationTest.java",
+      "sha256": "a0ec1957b80270ad710b3f0d3a1de7e8a3d3bfeb31ca73aadacd8b3aae402d28",
+      "working_sha256": "a0ec1957b80270ad710b3f0d3a1de7e8a3d3bfeb31ca73aadacd8b3aae402d28"
+    },
+    {
+      "bytes": 15994,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/WorldDataMigrationServiceTest.java",
+      "sha256": "ada382548757a322857c733dd05875e7737aeb96cb0e60e62e23a2ed80335d5e",
+      "working_sha256": "ada382548757a322857c733dd05875e7737aeb96cb0e60e62e23a2ed80335d5e"
+    },
+    {
+      "bytes": 799,
+      "path": "src/test/resources/api-consumer/ApiConsumer.java",
+      "sha256": "9858f8ef236d422faee987baff7593b001379bba9dfadb9fa044ae3870d5f6a4",
+      "working_sha256": "9858f8ef236d422faee987baff7593b001379bba9dfadb9fa044ae3870d5f6a4"
+    },
+    {
+      "bytes": 722,
+      "path": "src/test/resources/api-consumer/EndgameApiConsumer.java",
+      "sha256": "4c1e01a4ccb2d1136d0906f271a35e2ce8a7146d25ac56243e1f55a937864587",
+      "working_sha256": "4c1e01a4ccb2d1136d0906f271a35e2ce8a7146d25ac56243e1f55a937864587"
+    },
+    {
+      "bytes": 200,
+      "path": "src/test/resources/api-consumer/EndgameInternalConsumer.java",
+      "sha256": "e7092b6da29201839eaefc0b37e47f39c4f6f84e427325bd489a020df2915de9",
+      "working_sha256": "e7092b6da29201839eaefc0b37e47f39c4f6f84e427325bd489a020df2915de9"
+    }
+  ]
+}
