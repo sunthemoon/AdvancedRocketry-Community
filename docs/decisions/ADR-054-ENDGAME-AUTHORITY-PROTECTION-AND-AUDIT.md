@@ -352,7 +352,11 @@ An **endpoint** is a device that other devices can address: `laser_target`
   escrowing at a source and claiming at a destination all require the
   endpoint's registration to be **durable** (§11). So a copy that comes back
   after its tombstone was evicted (§11) is frozen like a retired one, and the
-  retirement no longer depends on keeping tombstones.
+  retirement no longer depends on keeping tombstones. An ID frozen this way stays
+  frozen for good, as a retired one does: the block entity records the freeze in
+  its own root, so it never registers again, even after `resolve` (below) has
+  emptied it, and the player places a new device with a new ID. It has no index
+  record and no tombstone, so it counts toward no limit or cap (review R4-L3).
 - **Removal.** Removing an endpoint removes its record and **retires** its ID
   (§9.1). Breaking is refused for non-operators while it holds an outbox entry,
   an incoming payload, an unacknowledged receipt or an elevator pair
@@ -579,7 +583,7 @@ fields): `source`, `seq`, `system`, `owner_id`, `destination`,
 decreases; it is what keeps a pruned transfer from being registered again. It
 is 0 from S's registration, so every endpoint's tombstone records it (review
 R4-L2).
-When S's endpoint record is removed (by any cause, §9, or by an operator purge)
+When S's endpoint record is removed (by any cause, §9, or by `endpoint retire`)
 `dispatched_through[S]` stays as a **tombstone** until S's absence is persisted:
 a `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of S's chunk whose
 block-entity list holds no entry with S's ID at the recorded position, observed
@@ -741,7 +745,11 @@ changes no outcome, with or without a lost source write.
 
 **Operator actions** (barrier flushes, audited with a SHA-256 prefix of the
 payload): `endpoint retire <id>` retires an endpoint that is lost but not
-`MISSING` (for example in a chunk that will never load again);
+`MISSING` (for example in a chunk that will never load again); it is refused
+while the endpoint's chunk is loaded, where breaking the block settles it from
+live state instead (§9.1). An earlier `endpoint purge`, which removed only the
+index record, is folded into it, because removing a live endpoint's record
+would freeze it at its next save (review R4-L3);
 `transfer redirect <source> <seq> <endpoint>` moves an `IN_TRANSIT` or `ARRIVED`
 record to another endpoint, but only once its destination's **index removal**
 is durable (by removal, `MISSING` or `endpoint retire`), so ADR-051 §9's
@@ -815,9 +823,8 @@ count tickets by type before and after every system and after every ride.
   `device inspect <pos>` and `device owner <pos> <player>` (both refuse a
   position whose chunk is not loaded, because reading it would load it);
   `endpoint list
-  [<player>]`; `endpoint purge <id>` (removes the index record only, refused
-  while referenced; the §11 tombstone stays until the absence is persisted);
-  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11; owners may resolve
+  [<player>]`; `endpoint retire <id>` (refused while the endpoint's chunk is
+  loaded) and `endpoint resolve <id>` (§9, §11; owners may resolve
   their own retired endpoints); `tombstone
   evict <player>` and `tombstone settle <id>` (§11); `transfer
   resettle <source> <seq>` (§9.1);
