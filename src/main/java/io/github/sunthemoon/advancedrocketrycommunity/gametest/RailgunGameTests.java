@@ -50,9 +50,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.level.ChunkDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -95,8 +92,7 @@ public final class RailgunGameTests {
         TransitKey key = new TransitKey(source.deviceId().orElseThrow(), 1L);
         // Vanilla also saves dirty chunks on its own, so every save of the two chunks is recorded and the 40-tick
         // rule is checked against the saves that really happened.
-        SaveWatcher saves = new SaveWatcher(level, sourcePos, targetPos);
-        MinecraftForge.EVENT_BUS.register(saves);
+        ChunkSaveWatcher saves = ChunkSaveWatcher.start(level, sourcePos, targetPos);
         long[] at = new long[2];
         helper.startSequence()
                 .thenWaitUntil(() -> registered(helper, level, source, target))
@@ -150,7 +146,7 @@ public final class RailgunGameTests {
                     helper.assertTrue(TicketCounts.near(level, new ChunkPos(sourcePos), 2).equals(tickets),
                             "A railgun changed the chunk tickets: " + TicketCounts.near(level,
                                     new ChunkPos(sourcePos), 2));
-                    MinecraftForge.EVENT_BUS.unregister(saves);
+                    saves.stop();
                     target.storage().receive().setStackInSlot(0, ItemStack.EMPTY);
                     demolish(level, sourcePos);
                     demolish(level, targetPos);
@@ -542,7 +538,8 @@ public final class RailgunGameTests {
         }
         for (RailgunBlockEntity railgun : railguns) {
             helper.assertTrue(railgun.endpointActive() && railgun.structureCode() == EndgameCode.OK,
-                    "Not registered and formed: " + railgun.describe());
+                    "Not registered and formed: " + railgun.describe() + " cells:"
+                            + mismatches(level, railgun.getBlockPos()));
         }
     }
 
@@ -561,21 +558,17 @@ public final class RailgunGameTests {
 
     /**
      * The 3 × 6 × 3 railgun for a north-facing controller in the middle of the base's front edge: a casing base, an
-     * iron barrel four blocks high in the middle and a casing muzzle; the cells around the barrel stay air. The volume
-     * is cleared first, because earlier batches may have left blocks around the shared test origin.
+     * iron barrel four blocks high in the middle and a casing muzzle. The cells around the barrel, which the pattern
+     * allows to be air or casing, are casing here: the volume is solid, so no fluid left near the shared test origin
+     * by the terrain or earlier batches can flow into it.
      */
     static RailgunBlockEntity build(ServerLevel level, BlockPos controller, UUID owner) {
         BlockState casing = ModBlocks.ENDGAME_CASING.get().defaultBlockState();
         for (int x = -1; x <= 1; x++) {
             for (int y = 0; y <= 5; y++) {
                 for (int z = 0; z <= 2; z++) {
-                    level.setBlockAndUpdate(controller.offset(x, y, z), Blocks.AIR.defaultBlockState());
+                    level.setBlockAndUpdate(controller.offset(x, y, z), casing);
                 }
-            }
-        }
-        for (int x = -1; x <= 1; x++) {
-            for (int z = 0; z <= 2; z++) {
-                level.setBlockAndUpdate(controller.offset(x, 0, z), casing);
             }
         }
         for (int y = 1; y <= 4; y++) {
@@ -613,34 +606,30 @@ public final class RailgunGameTests {
         return service().root().orElseThrow();
     }
 
-    /** Records the game time of every save of the watched chunks, real or posted by the test. */
-    public static final class SaveWatcher {
-        private final ServerLevel level;
-        private final Map<Long, List<Long>> saves = new java.util.HashMap<>();
-
-        SaveWatcher(ServerLevel level, BlockPos... watched) {
-            this.level = level;
-            for (BlockPos pos : watched) {
-                saves.put(new ChunkPos(pos).toLong(), new java.util.ArrayList<>());
+    /** The cells of a railgun's volume that differ from the pattern, for a failure message. */
+    private static String mismatches(ServerLevel level, BlockPos controller) {
+        StringBuilder found = new StringBuilder();
+        for (int x = -1; x <= 1; x++) {
+            for (int y = 0; y <= 5; y++) {
+                for (int z = 0; z <= 2; z++) {
+                    BlockPos pos = controller.offset(x, y, z);
+                    BlockState state = level.getBlockState(pos);
+                    boolean expected;
+                    if (y == 0) {
+                        expected = x == 0 && z == 0 ? state.is(ModBlocks.RAILGUN.get())
+                                : state.is(ModBlocks.ENDGAME_CASING.get());
+                    } else if (x == 0 && z == 1) {
+                        expected = y < 5 ? state.is(Blocks.IRON_BLOCK) : state.is(ModBlocks.ENDGAME_CASING.get());
+                    } else {
+                        expected = state.isAir() || state.is(ModBlocks.ENDGAME_CASING.get());
+                    }
+                    if (!expected) {
+                        found.append(' ').append(x).append(',').append(y).append(',').append(z).append('=')
+                                .append(net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(state.getBlock()));
+                    }
+                }
             }
         }
-
-        @SubscribeEvent
-        public void onSave(ChunkDataEvent.Save event) {
-            List<Long> ticks = saves.get(event.getChunk().getPos().toLong());
-            if (event.getLevel() == level && ticks != null) {
-                ticks.add(level.getGameTime());
-            }
-        }
-
-        /** A save of this position's chunk at or after {@code from} and at or before {@code to}. */
-        boolean between(BlockPos pos, long from, long to) {
-            return saves.get(new ChunkPos(pos).toLong()).stream().anyMatch(tick -> tick >= from && tick <= to);
-        }
-
-        @Override
-        public String toString() {
-            return saves.toString();
-        }
+        return found.length() == 0 ? " no mismatching cell" : found.toString();
     }
 }
