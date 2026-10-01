@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
@@ -188,6 +189,23 @@ public final class CommonConfig {
             "endgame.laserDrill.layersPerTick", "Physical laser shaft layers per server tick (ADR-055).",
             LaserDrillSettings.MAX_LAYERS_PER_TICK);
 
+    // ADR-058 section 4: area gravity field caps.
+    public static final ForgeConfigSpec.IntValue GRAVITY_FIELDS_PER_CHUNK = limit(
+            "endgame.gravityField.perChunk", "Active gravity fields listed in one chunk (ADR-058).",
+            GravityFieldLimits.MAX_PER_CHUNK);
+    public static final ForgeConfigSpec.IntValue GRAVITY_FIELDS_PER_OWNER_PER_CHUNK = limit(
+            "endgame.gravityField.perOwnerPerChunk", "Active gravity fields of one owner in one chunk (ADR-058).",
+            GravityFieldLimits.MAX_PER_OWNER_PER_CHUNK);
+    public static final ForgeConfigSpec.IntValue GRAVITY_FIELDS_ACTIVE_PER_OWNER = limit(
+            "endgame.gravityField.activePerOwner", "Active gravity fields per owner (ADR-058).",
+            GravityFieldLimits.MAX_ACTIVE_PER_OWNER);
+    public static final ForgeConfigSpec.IntValue GRAVITY_FIELDS_ACTIVE_PER_LEVEL = limit(
+            "endgame.gravityField.activePerLevel", "Active gravity fields per Level (ADR-058).",
+            GravityFieldLimits.MAX_ACTIVE_PER_LEVEL);
+    public static final ForgeConfigSpec.IntValue GRAVITY_FIELDS_ACTIVE_GLOBAL = limit(
+            "endgame.gravityField.activeGlobal", "Active gravity fields on the server (ADR-058).",
+            GravityFieldLimits.MAX_ACTIVE_GLOBAL);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -199,6 +217,16 @@ public final class CommonConfig {
                 ENDGAME_BLACK_HOLE_GENERATOR.get(), ENDGAME_GRAVITY_FIELD.get(), ENDGAME_SPACE_ELEVATOR.get(),
                 ENDGAME_INTENT_INTERVAL_TICKS.get(), ENDGAME_SELECTION_INTERVAL_TICKS.get(),
                 ENDGAME_ENDPOINTS_GLOBAL.get(), ENDGAME_ENDPOINTS_PER_OWNER.get(), ENDGAME_ZONES.get());
+    }
+
+    /** ADR-058 section 4 gravity field caps; the defaults until the COMMON config is loaded. */
+    public static GravityFieldLimits gravityFieldLimits() {
+        if (!SPEC.isLoaded()) {
+            return GravityFieldLimits.DEFAULTS;
+        }
+        return new GravityFieldLimits(GRAVITY_FIELDS_PER_CHUNK.get(), GRAVITY_FIELDS_PER_OWNER_PER_CHUNK.get(),
+                GRAVITY_FIELDS_ACTIVE_PER_OWNER.get(), GRAVITY_FIELDS_ACTIVE_PER_LEVEL.get(),
+                GRAVITY_FIELDS_ACTIVE_GLOBAL.get());
     }
 
     /** ADR-055 section 4 laser drill budgets; the defaults until the COMMON config is loaded. */

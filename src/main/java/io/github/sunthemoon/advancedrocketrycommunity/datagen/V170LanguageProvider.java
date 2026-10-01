@@ -140,6 +140,10 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.ENERGY_DEBT, "Paying for layers already dug", "正在补付已挖掘层的能量");
         put(codes, EndgameCode.COMPLETE, "Shaft complete", "竖井已完成");
         put(codes, EndgameCode.BODY_UNAVAILABLE, "No celestial body here", "此处没有天体");
+        put(codes, EndgameCode.STATION_OWNER_REQUIRED, "Only the station owner's field can run here",
+                "此处只能运行空间站所有者的力场");
+        put(codes, EndgameCode.FIELD_OUTSIDE_STATION, "The field lies outside the station", "力场位于空间站之外");
+        put(codes, EndgameCode.FIELD_DENSITY, "Too many fields here", "此处力场过多");
         return codes;
     }
 

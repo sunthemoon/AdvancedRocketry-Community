@@ -36,8 +36,9 @@ class CommonConfigTest {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
         // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing,
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
-        // resource mission values, the eleven ADR-054 framework values and the seven ADR-055 laser drill values.
-        assertEquals(40, countValues(CommonConfig.SPEC.getValues()));
+        // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values and
+        // the five ADR-058 gravity field caps.
+        assertEquals(45, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -72,6 +73,17 @@ class CommonConfigTest {
         assertRange("endgame.laserDrill.layersPerTick", CommonConfig.LASER_DRILL_LAYERS_PER_TICK, 1, 7);
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings.DEFAULTS,
                 CommonConfig.laserDrillSettings(), "the defaults apply until the config loads");
+    }
+
+    @Test
+    void gravityFieldCapsCanOnlyBeLowered() {
+        assertRange("endgame.gravityField.perChunk", CommonConfig.GRAVITY_FIELDS_PER_CHUNK, 1, 16);
+        assertRange("endgame.gravityField.perOwnerPerChunk", CommonConfig.GRAVITY_FIELDS_PER_OWNER_PER_CHUNK, 1, 4);
+        assertRange("endgame.gravityField.activePerOwner", CommonConfig.GRAVITY_FIELDS_ACTIVE_PER_OWNER, 1, 8);
+        assertRange("endgame.gravityField.activePerLevel", CommonConfig.GRAVITY_FIELDS_ACTIVE_PER_LEVEL, 1, 256);
+        assertRange("endgame.gravityField.activeGlobal", CommonConfig.GRAVITY_FIELDS_ACTIVE_GLOBAL, 1, 1024);
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldLimits.DEFAULTS,
+                CommonConfig.gravityFieldLimits(), "the defaults apply until the config loads");
     }
 
     @Test

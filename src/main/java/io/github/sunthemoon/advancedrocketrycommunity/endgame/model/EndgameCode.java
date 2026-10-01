@@ -72,7 +72,11 @@ public enum EndgameCode {
     ENERGY_DEBT,
     COMPLETE,
     /** ADR-054 section 9: no body context for an endpoint's position. */
-    BODY_UNAVAILABLE;
+    BODY_UNAVAILABLE,
+    // ADR-058: the area gravity field.
+    STATION_OWNER_REQUIRED,
+    FIELD_OUTSIDE_STATION,
+    FIELD_DENSITY;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 
