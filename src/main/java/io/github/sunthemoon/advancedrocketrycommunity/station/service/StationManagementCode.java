@@ -45,7 +45,9 @@ public enum StationManagementCode {
     WARP_NO_CONFIRMATION(false, "no warp confirmation is pending; run /arce station warp <body> first"),
     WARP_CONFIRMATION_EXPIRED(false, "the confirmation expired; run /arce station warp <body> again"),
     WARP_QUOTE_CHANGED(false, "the warp cost or its class changed; request the warp again"),
-    WARP_ACTOR_CHANGED(false, "the confirming player is no longer the owner or an operator");
+    WARP_ACTOR_CHANGED(false, "the confirming player is no longer the owner or an operator"),
+    ELEVATOR_BOUND(false, "a space elevator is bound to this station; unbind it first"),
+    ENDGAME_UNAVAILABLE(false, "endgame data is unavailable, so station warps are refused until it loads");
 
     private final boolean success;
     private final String description;

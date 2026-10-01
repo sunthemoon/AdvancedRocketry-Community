@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.StarSystemKnowledge;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
@@ -415,6 +416,18 @@ public final class StationWarpService {
      */
     private Quoted quote(MinecraftServer server, StationRegistrySavedData data, StationState station,
                          ResourceLocation target, com.mojang.authlib.GameProfile actor) {
+        // ADR-059 section 5: request, confirmation and commit all quote here, so each reads the live pair set; the
+        // commit does so in the tick of its checked relocation.
+        switch (ElevatorStationGuard.Installed.current().warp(server, station)) {
+            case BOUND -> {
+                return Quoted.failed(StationManagementCode.ELEVATOR_BOUND);
+            }
+            case UNAVAILABLE -> {
+                return Quoted.failed(StationManagementCode.ENDGAME_UNAVAILABLE);
+            }
+            default -> {
+            }
+        }
         if (countdowns.get(station.stationId()).isPresent()) {
             return Quoted.failed(StationManagementCode.WARP_COUNTDOWN_ACTIVE);
         }

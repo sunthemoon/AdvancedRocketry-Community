@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHol
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.TransitCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
@@ -15,6 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRun
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import java.util.Set;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -35,6 +37,8 @@ public final class EndgameModule {
                 patterns, celestial, laserTables, blackHoleData);
         service.transitOperations().route(EndgameSystem.RAILGUN, new RailgunRedirectRule(service,
                 EndgameRuntime::devices));
+        // ADR-059 section 5: the station module reaches the pair set only through this port.
+        ElevatorStationGuard.Installed.install(new ElevatorGuard(service));
         EndgameRuntime.installDevices(devices);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStopping);

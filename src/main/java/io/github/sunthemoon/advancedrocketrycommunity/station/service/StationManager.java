@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorE
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironment;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolver;
@@ -200,6 +201,15 @@ public final class StationManager implements StationOperationService {
         }
         if (hasRocketAuthority(server, space, state)) {
             throw new IllegalStateException("Station deletion is blocked while a rocket authority uses its region");
+        }
+        // ADR-059 section 5: pairs and transit records that reference the station keep it; fail closed without them.
+        switch (ElevatorStationGuard.Installed.current().delete(server, state)) {
+            case BOUND -> throw new IllegalStateException("ELEVATOR_REFERENCES: an elevator pair or endgame cargo"
+                    + " references this station; unbind and settle them first");
+            case UNAVAILABLE -> throw new IllegalStateException("ENDGAME_UNAVAILABLE: endgame data is unavailable,"
+                    + " so station deletion is refused until it loads");
+            default -> {
+            }
         }
         AdvancedRocketryCommunity.LOGGER.warn(
                 "ARCE_STATION_DELETE_BACKUP station={} owner={} members={} cell={},{} region={},{},{},{}",
