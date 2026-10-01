@@ -364,7 +364,9 @@ never triggers:
 
 - **Local buffers** drop as items, as for any container.
 - **Outbox entries never drop.** Entries with `seq ≤ dispatched_through[S]` are
-  delivered by the ledger. Unregistered entries are destroyed with one
+  delivered by the ledger; if the record of any of them is not yet durable, the
+  removal runs a **barrier flush** in the same tick, so the record reaches disk
+  before the removal can (review R2-H2). Unregistered entries are destroyed with one
   `OUTBOX_LOST_ON_REMOVAL` line naming the payload hash: an audited loss, never a
   duplicate. Dropping them could duplicate, because dropped item entities are
   saved in the entity storage, separately from the block entity, and a crash
@@ -581,7 +583,7 @@ removes it.
 | Ledger flushed, release not saved | Outbox entry, durable record | Entry dropped; delivered once |
 | Claim: D saved, ledger not | Receipt, record `ARRIVED` | `CLAIM_RECOVERED`; paid once |
 | Endpoint removed by a non-player cause, removal not yet saved | Endpoint back with its entries, incoming payload and receipt | Registered entries delivered; the incoming claim, returned to `ARRIVED` by the barrier flush, is re-claimed once |
-| Endpoint removed, removal saved | No endpoint | Registered entries delivered; unregistered entries lost and audited; incoming claims redirected (`DESTINATION_MISSING`) |
+| Endpoint removed, removal saved | No endpoint | Registered entries delivered (their records were made durable by the removal's barrier flush); unregistered entries lost and audited; incoming claims redirected (`DESTINATION_MISSING`) |
 | Claim: ledger flushed, D not | `CLAIMED`, no receipt | Rematerialized once into incoming; nothing was withdrawable before the lost save |
 | Claim persisted, payload moved and withdrawn, player file saved, D's chunk not saved again | D's incoming or buffer still holds the payload; the player holds it too | **Residual**, the ordinary container/player torn save of every vanilla chest; the model shows no other duplicate or loss path |
 | S removed (and its tombstone kept), ledger flushed, S's chunk not saved | S restored with an entry `seq ≤ dispatched_through` | Dropped (`OUTBOX_STALE_DROPPED`); delivered once |

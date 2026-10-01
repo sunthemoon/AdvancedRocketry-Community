@@ -221,10 +221,15 @@ class Transit:
                                           present, absence_seen)), crashes_left, faults_left)
         if present and s_input == 0:
             # R1-H3: removal by any cause. Escrowed entries never drop as items: registered ones are delivered
-            # by the ledger, unregistered ones are destroyed (audited loss). The input buffer is a plain
-            # container, so the model removes S only when it is empty.
+            # by the ledger, unregistered ones are destroyed (audited loss). R2-H2: if a registered entry's
+            # record is not yet durable, the removal writes the ledger with a barrier flush in the same tick.
+            # The input buffer is a plain container, so the model removes S only when it is empty.
+            unregistered = sum(1 for seq in out_seqs if seq > hw_value)
+            pending = any(rec(seq) is not None and not e > rec(seq)[2] for seq in out_seqs if seq <= hw_value)
+            barrier = dict(l_live=(records, hw, e + 1), l_dur=(records, hw, e + 1)) if pending else {}
             yield ("REMOVE_S", make(s_live=(0, frozenset(), next_seq, False, False),
-                                    destroyed=(destroyed[0] + len(outbox), destroyed[1])), crashes_left, faults_left)
+                                    destroyed=(destroyed[0] + unregistered, destroyed[1]), **barrier),
+                   crashes_left, faults_left)
         new_outbox = frozenset((o[0], True, o[2]) for o in outbox)
         saved = (s_input, frozenset(out_seqs), next_seq, present)
         observed = absence_seen if absence_seen or present else "seen"
@@ -704,8 +709,8 @@ class Vectors(unittest.TestCase):
         for buffer, destroyed, rollback, faulted in outcomes:
             self.assertFalse(rollback or faulted)
             self.assertLessEqual(buffer, 2)  # never a duplicate
-            # A loss only where a forced removal destroyed escrowed cargo (R1-H3, audited).
-            self.assertGreaterEqual(buffer + destroyed, 2)
+            # Every payload is delivered or audited as destroyed by a forced removal (R1-H3, R2-H2).
+            self.assertEqual(buffer + destroyed, 2)
         self.assertEqual(states, EXAMPLES["transit"]["states_two_payloads_two_crashes"])
 
     def test_transit_lost_write_residual_is_detected(self):

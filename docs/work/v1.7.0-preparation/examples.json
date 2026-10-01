@@ -779,9 +779,9 @@
   }
  ],
  "transit": {
-  "states_two_payloads_two_crashes": 86112,
-  "states_one_payload_two_crashes_one_lost_write": 22060,
-  "states_tombstone_removal_one_lost_write": 34158,
+  "states_two_payloads_two_crashes": 54701,
+  "states_one_payload_two_crashes_one_lost_write": 15753,
+  "states_tombstone_removal_one_lost_write": 22273,
   "named_cuts": [
    {
     "name": "escrow not saved",
@@ -968,7 +968,24 @@
     ],
     "expected": [
      1,
+     0,
+     false
+    ]
+   },
+   {
+    "name": "R2-H2: forced removal before the record was durable, removal saved: delivered once",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "REMOVE_S",
+     "SAVE_S",
+     "CRASH"
+    ],
+    "expected": [
      1,
+     0,
      false
     ]
    },
