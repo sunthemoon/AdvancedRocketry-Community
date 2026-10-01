@@ -186,11 +186,13 @@ device keeps its state and reports the code.
    unless the device owner is on that zone's allow list, else `TARGET_PROTECTED`.
 4. **Stations.** In the Space Level, every touched position is inside a committed
    region where the device owner has `BUILD` access, else `TARGET_PROTECTED`.
-5. **Spawn protection.** The batch box does not intersect the vanilla spawn
-   protection square (a dedicated server's configured radius around the
-   Overworld spawn), tested once per box, else `TARGET_PROTECTED`. Unlike the
-   vanilla player check it is not bypassed when the device owner is an
-   operator, and it does not depend on the operator list being empty.
+5. **Spawn protection.** On a dedicated server the batch box does not intersect
+   the vanilla spawn protection square (the configured `spawn-protection`
+   radius around the Overworld spawn), tested once per box, else
+   `TARGET_PROTECTED`. Unlike the vanilla player check it is not bypassed when
+   the device owner is an operator, and it does not depend on the operator list
+   being empty. Integrated and LAN servers have no protected square, as in
+   vanilla, whose check always passes there (review R2-L9).
 6. **Extension event.** The public, cancellable
    `api.endgame.EndgameEffectEvent` (§5.1) is not cancelled, else
    `TARGET_PROTECTED`.
@@ -212,7 +214,10 @@ API minor 1.7 → **1.8** (ADR-021) adds
   ADR-055, for `ENTITY_GRAVITY` by ADR-058 and for `TELEPORT` at every elevator
   ride commit by ADR-059 §8), posted on
   `MinecraftForge.EVENT_BUS` on the server thread only, with `systemId()`
-  (`ResourceLocation`), `effect()`, `ownerId()` (`UUID`), `level()`
+  (`ResourceLocation`), `effect()`, `ownerId()` (`UUID`: the owner of the device
+  that causes the effect; for `TELEPORT` the departing endpoint's owner),
+  `actorId()` (`Optional<UUID>`: the player whose intent caused it, such as
+  the rider of a ride, or empty for autonomous work; review R2-L5), `level()`
   (`ResourceKey<Level>`), `min()` and `max()` (`BlockPos`, the batch box).
 
 It exposes no internal type, no device object and no way to change the effect.
@@ -285,12 +290,20 @@ a writer thread with separate snapshot and durable epochs, as ADR-050 §2
 requires for the satellite registry. The Windows development host gives
 provisional numbers; the reference hardware run is `[H]`.
 
-**Barrier spacing.** Player-triggered barrier flushes (elevator bind and
-unbind) share one server-wide spacing of 20 ticks and a per-station cooldown of
-100 ticks; a request inside either is refused with `ROOT_BUSY` before anything
-changes, as ADR-041's checked-write spacing does for stations. Barrier flushes
-that cannot wait (removal settlement, §9.1) and operator actions are exempt and
-counted in `/arce endgame status`.
+**Barrier spacing.** Player-triggered barrier flushes that grow or change
+state (elevator binds and owner redirects) share one server-wide spacing of 20
+ticks and a per-station cooldown of 100 ticks; a request inside either is
+refused with `ROOT_BUSY` before anything changes, as ADR-041's checked-write
+spacing does for stations. **Unbinding is never refused** (ADR-045 requires it
+to be always possible; it only shrinks the root): it is exempt from the
+spacing and cooldown but counts toward the spacing of the next bind (review
+R2-L10). Barrier flushes that cannot wait (removal settlement, §9.1) and
+operator actions are exempt and counted in `/arce endgame status`. A removal
+runs a barrier only when something must be settled (an incoming payload, an
+unacknowledged receipt or a registered entry whose record is not durable);
+because endpoints refuse pistons and opt out of the common movers, removals of
+busy endpoints in bulk come only from operator tools such as `/fill`, one
+flush each (review R2-L2).
 
 ### 8. Energy
 
@@ -445,7 +458,9 @@ entry of the managed-SavedData allowlist (review R1-M2):
 - written through the checked atomic file path: `AtomicSavedData` widens its
   constructor allowlist from the two discovery authorities to also accept
   `ENDGAME`, so ordinary saves, barrier flushes and the save epoch use the same
-  replace-and-read-back path;
+  replace-and-read-back path; the migrator's `format_epoch` check, which today
+  starts at the global schema 2, becomes type-aware so that the `ENDGAME` root's
+  epoch is checked at its schema 1 (review R2-L7);
 
 - root `schema_version` 1, `save_epoch`, and the sections `endpoints` (§9),
   `dispatched_through` (§11), `transits` (§11), `elevator_pairs` (ADR-059) and

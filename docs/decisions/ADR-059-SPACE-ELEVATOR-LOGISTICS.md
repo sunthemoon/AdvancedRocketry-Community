@@ -149,7 +149,10 @@ operators.
 - **Request:** a `ride` intent from a player whose feet are on the departure
   endpoint's platform, with §7 access, not riding anything and carrying no
   passengers (`DISMOUNT_FIRST`), and no other pending ride. At most 4 pending
-  rides per endpoint and 64 on the server.
+  rides per endpoint and 64 on the server. Before adding the pre-load ticket the
+  request re-derives the pair's validity (§3); after a cancelled ride the rider
+  waits 100 ticks before the next request, so stepping on and off the platform
+  cannot churn chunk loads (review R2-L4).
 - **Arrival pre-load** (review R1-M4): the request adds one region ticket of
   the dedicated type `advancedrocketrycommunity:elevator_arrival` at the arrival
   chunk, at distance 0 (the chunk becomes `FULL`, nothing around it ticks), with
