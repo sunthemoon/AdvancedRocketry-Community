@@ -252,6 +252,36 @@ chunk as unavailable, because `Level.getBlockState` and `getBlockEntity` load
 chunks. C13 measures all three places against total tick time, because Forge
 records `tickTimes` before END handlers run (§7 budgets).
 
+**Budgets** (review R1-M11). Caps alone are not budgets; these are measured, not
+assumed. The **endgame reference load** is: 16 logical and 4 physical laser
+drills, 32 railguns with 16 launching every 20 ticks, 16 burning black-hole
+generators, 64 active fields with 20 players inside them, 8 elevator pairs
+with 4 rides per minute, 512 transit records, 4,096 endpoints and 8,192
+tombstones, on top of the docs/17 §4 reference load.
+
+| Budget | Limit |
+|---|---|
+| All endgame work, systems loaded and idle | mean ≤ 0.1 ms per tick |
+| All endgame work at the endgame reference load | mean ≤ 2.0 ms, P99 ≤ 8 ms per tick |
+| Share per system at that load | laser drills ≤ 0.8 ms; ledger passes (railgun and elevator cargo) ≤ 0.5 ms; black-hole generators ≤ 0.2 ms; field lookups ≤ 0.3 ms; rides ≤ 0.2 ms (means) |
+| One barrier flush of a root at the 4 MiB bound | ≤ 50 ms |
+| Memory | root ≤ 4 MiB encoded and ≤ 32 MiB of accounted heap; field index ≤ 1,024 entries; audit ring 512 lines; one device view ≤ 8 KiB per open menu |
+| Tickets | none persistent; ride-arrival tickets ≤ 64 (§12) |
+
+These totals stay inside docs/17 §4 (mean ≤ 25 ms for the whole server). A
+budget that C13 cannot meet keeps the version blocked; in particular a barrier
+flush over 50 ms at the bound requires a follow-up ADR that moves the write to
+a writer thread with separate snapshot and durable epochs, as ADR-050 §2
+requires for the satellite registry. The Windows development host gives
+provisional numbers; the reference hardware run is `[H]`.
+
+**Barrier spacing.** Player-triggered barrier flushes (elevator bind and
+unbind) share one server-wide spacing of 20 ticks and a per-station cooldown of
+100 ticks; a request inside either is refused with `ROOT_BUSY` before anything
+changes, as ADR-041's checked-write spacing does for stations. Barrier flushes
+that cannot wait (removal settlement, §9.1) and operator actions are exempt and
+counted in `/arce endgame status`.
+
 ### 8. Energy
 
 - Energy is Forge Energy through the block capability. Each device has its own
