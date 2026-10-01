@@ -20,17 +20,14 @@ public final class BootstrapDataGenerators {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
 
-        // Earlier version outputs (v1.5 and before) remain immutable resource inputs.
-        generator.addProvider(event.includeClient(), new V160LanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new V160LanguageProvider(output, "zh_cn"));
+        // Earlier version outputs (v1.6 and before) remain immutable resource inputs.
+        generator.addProvider(event.includeClient(), new V170LanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new V170LanguageProvider(output, "zh_cn"));
         generator.addProvider(event.includeClient(),
-                new V160SatelliteProviders.Models(output, event.getExistingFileHelper()));
-        generator.addProvider(event.includeServer(), V160SatelliteProviders.loot(output));
-        generator.addProvider(event.includeServer(), new V160SatelliteProviders.Recipes(output));
-        generator.addProvider(event.includeServer(), new V160SatelliteProviders.ToolTags(
+                new V170EndgameProviders.Models(output, event.getExistingFileHelper()));
+        generator.addProvider(event.includeServer(), V170EndgameProviders.loot(output));
+        generator.addProvider(event.includeServer(), new V170EndgameProviders.Recipes(output));
+        generator.addProvider(event.includeServer(), new V170EndgameProviders.ToolTags(
                 output, event.getLookupProvider(), event.getExistingFileHelper()));
-        generator.addProvider(event.includeServer(), new V160SatelliteProviders.Components(output));
-        generator.addProvider(event.includeServer(), new V160SatelliteProviders.KindDefinitions(output));
-        generator.addProvider(event.includeServer(), new V160ResourceTableProvider(output));
     }
 }

@@ -4,6 +4,29 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.7.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.7.0-dev`.
+No candidate or release approval is assigned.
+
+- Add the endgame framework (ADR-054). Opening a world creates
+  `data/advancedrocketrycommunity_endgame.dat` on its first endgame change;
+  v1.6 worlds need no migration. A future or malformed endgame file refuses
+  the world start before anything is written.
+- New COMMON config values under `endgame.*`: one switch per system (the
+  laser drill's physical mining is off by default), intent and selection
+  spacing, and endpoint and zone limits. Disabling a system keeps its blocks
+  and saved state.
+- Operator commands (permission level 2): `/arce endgame status`, `audit`,
+  `zone add|remove|list` (boxes in the current Level that only endgame
+  effects respect), `endpoint list|retire` and `tombstone evict|settle`.
+  Players can forget their own missing endpoints with
+  `/arce endgame endpoint forget <id>`.
+- Public API 1.8 adds the cancelable `EndgameEffectEvent`, so claim and
+  protection mods can veto endgame effects.
+- Add the Endgame Casing block and the Laser Lens item with their recipes.
+  The endgame devices that use them are not available yet.
+
 ## v1.6.0 — in development
 
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.6.0-dev`.

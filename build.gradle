@@ -94,7 +94,7 @@ minecraft {
             workingDirectory project.file('run-data')
             args '--mod', mod_id,
                     '--all',
-                    '--output', file('src/generated/v1.6/resources/'),
+                    '--output', file('src/generated/v1.7/resources/'),
                     '--existing', file('src/main/resources/'),
                     '--existing', file('src/generated/resources/'),
                     '--existing', file('src/generated/v0.2/resources/'),
@@ -107,7 +107,8 @@ minecraft {
                     '--existing', file('src/generated/v1.2/resources/'),
                     '--existing', file('src/generated/v1.3/resources/'),
                     '--existing', file('src/generated/v1.4/resources/'),
-                    '--existing', file('src/generated/v1.5/resources/')
+                    '--existing', file('src/generated/v1.5/resources/'),
+                    '--existing', file('src/generated/v1.6/resources/')
         }
     }
 }
@@ -126,6 +127,7 @@ sourceSets.main.resources {
     srcDir 'src/generated/v1.4/resources'
     srcDir 'src/generated/v1.5/resources'
     srcDir 'src/generated/v1.6/resources'
+    srcDir 'src/generated/v1.7/resources'
     exclude '.cache/**'
 }
 
@@ -150,7 +152,8 @@ tasks.named('processResources') {
             details.exclude()
         }
         // ADR-044: the v1.5 tool tags add the warp core and supersede the v1.2 copies;
-        // ADR-049: the v1.6 tool tags add the satellite builder and supersede the v1.5 copies.
+        // ADR-049: the v1.6 tool tags add the satellite builder and supersede the v1.5 copies;
+        // ADR-054: the v1.7 tool tags add the endgame casing and supersede the v1.6 copies.
         boolean isHistoricalCopy = details.file.toPath().startsWith(
                 file('src/generated/resources').toPath()
         ) || details.file.toPath().startsWith(
@@ -159,6 +162,8 @@ tasks.named('processResources') {
                 file('src/generated/v1.2/resources').toPath()
         ) || details.file.toPath().startsWith(
                 file('src/generated/v1.5/resources').toPath()
+        ) || details.file.toPath().startsWith(
+                file('src/generated/v1.6/resources').toPath()
         )
         if (isHistoricalCopy && currentSupersededHistoricalBlockTags.contains(details.path)) {
             details.exclude()
@@ -179,7 +184,8 @@ tasks.named('sourcesJar') {
             details.exclude()
         }
         // ADR-044: the v1.5 tool tags add the warp core and supersede the v1.2 copies;
-        // ADR-049: the v1.6 tool tags add the satellite builder and supersede the v1.5 copies.
+        // ADR-049: the v1.6 tool tags add the satellite builder and supersede the v1.5 copies;
+        // ADR-054: the v1.7 tool tags add the endgame casing and supersede the v1.6 copies.
         boolean isHistoricalCopy = details.file.toPath().startsWith(
                 file('src/generated/resources').toPath()
         ) || details.file.toPath().startsWith(
@@ -188,6 +194,8 @@ tasks.named('sourcesJar') {
                 file('src/generated/v1.2/resources').toPath()
         ) || details.file.toPath().startsWith(
                 file('src/generated/v1.5/resources').toPath()
+        ) || details.file.toPath().startsWith(
+                file('src/generated/v1.6/resources').toPath()
         )
         if (isHistoricalCopy && currentSupersededHistoricalBlockTags.contains(details.path)) {
             details.exclude()

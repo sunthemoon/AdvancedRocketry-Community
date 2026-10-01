@@ -69,6 +69,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.SOLAR_TRANSMITTER_MODULE.get());
                         output.accept(ModItems.ASTEROID_DRILL_MODULE.get());
                         output.accept(ModItems.GAS_INTAKE_MODULE.get());
+                        output.accept(ModItems.ENDGAME_CASING.get());
+                        output.accept(ModItems.LASER_LENS.get());
                     })
                     .build()
     );

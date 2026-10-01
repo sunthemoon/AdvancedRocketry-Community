@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "pattern": [
+    "IOI",
+    "OMO",
+    "IOI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:endgame_casing"
+  },
+  "show_notification": true
+}

@@ -30,6 +30,7 @@ src/generated/v1.3/resources/.cache/
 src/generated/v1.4/resources/.cache/
 src/generated/v1.5/resources/.cache/
 src/generated/v1.6/resources/.cache/
+src/generated/v1.7/resources/.cache/
 mcmodsrepo/
 bin/
 .classpath

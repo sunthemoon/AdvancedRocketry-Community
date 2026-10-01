@@ -42,6 +42,8 @@ public enum EndgameCode {
     ENDPOINT_POSITION_CONFLICT,
     ENDPOINT_BUSY,
     ENDPOINT_NOT_FOUND,
+    /** {@code endpoint retire} is refused while the endpoint's chunk is loaded; breaking it settles from live state. */
+    ENDPOINT_CHUNK_LOADED,
     // Section 6 zones (operator commands).
     ZONE_INVALID,
     ZONE_EXISTS,

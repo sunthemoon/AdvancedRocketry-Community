@@ -1,0 +1,366 @@
+package io.github.sunthemoon.advancedrocketrycommunity.endgame.service;
+
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.audit.EndgameAudit;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.Tombstone;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+
+/**
+ * The server side of the ADR-054 framework: the endgame root's lifecycle and write policy (section 10), the
+ * persistence observations that make endpoints MISSING and settle tombstones (sections 9 and 11, review R3-M2),
+ * tombstone housekeeping and the audit summary. Everything runs on the server thread except chunk-load scans,
+ * which only enqueue what an indexed chunk's tag showed.
+ */
+public final class EndgameService {
+    private final Supplier<EndgameSettings> settings;
+    private final Supplier<Set<String>> endgameTypes;
+    private final EndgameAudit audit;
+    private final Queue<Observation> observations = new ConcurrentLinkedQueue<>();
+    private final Map<UUID, Long> absentSince = new HashMap<>();
+    private final Map<UUID, Long> readBackAt = new HashMap<>();
+    private volatile Map<ChunkKey, Set<UUID>> index = Map.of();
+    private MinecraftServer server;
+    private EndgameSavedData data;
+    private volatile boolean operational;
+    private long lastCoalescedFlush = Long.MIN_VALUE / 2;
+    private boolean writeFailureLogged;
+
+    public EndgameService(Supplier<EndgameSettings> settings, Supplier<Set<String>> endgameTypes) {
+        this.settings = Objects.requireNonNull(settings, "settings");
+        this.endgameTypes = Objects.requireNonNull(endgameTypes, "endgameTypes");
+        this.audit = new EndgameAudit(AdvancedRocketryCommunity.LOGGER::info);
+    }
+
+    // ---- Lifecycle -------------------------------------------------------------------------------------------
+
+    public void onServerStarted(ServerStartedEvent event) {
+        start(event.getServer());
+    }
+
+    void start(MinecraftServer started) {
+        server = started;
+        data = EndgameSavedData.get(started);
+        operational = data.operational();
+        if (!operational) {
+            AdvancedRocketryCommunity.LOGGER.error("ARCE_ENDGAME_ROOT_BLOCKED file={}", EndgameSavedData.DATA_NAME);
+        }
+        rebuildIndex();
+    }
+
+    /** Unit tests: run the service over a root without a server; writes are then skipped. */
+    void startForTest(EndgameSavedData loaded) {
+        server = null;
+        data = loaded;
+        operational = loaded.operational();
+        rebuildIndex();
+    }
+
+    /** After ServerStoppingEvent every endgame action is refused (section 10 "operational"). */
+    public void onServerStopping(ServerStoppingEvent event) {
+        operational = false;
+    }
+
+    public void onServerStopped(ServerStoppedEvent event) {
+        clear();
+    }
+
+    public void clear() {
+        operational = false;
+        server = null;
+        data = null;
+        observations.clear();
+        absentSince.clear();
+        readBackAt.clear();
+        index = Map.of();
+        audit.clear();
+        writeFailureLogged = false;
+        lastCoalescedFlush = Long.MIN_VALUE / 2;
+    }
+
+    public boolean operational() {
+        return operational && data != null && data.operational();
+    }
+
+    public EndgameAudit audit() {
+        return audit;
+    }
+
+    public EndgameSettings settings() {
+        return settings.get();
+    }
+
+    /** Read access to the root for queries; empty while the endgame is not operational. */
+    public Optional<EndgameRoot> root() {
+        return operational() ? Optional.of(data.view()) : Optional.empty();
+    }
+
+    // ---- Writes (section 10 write policy) --------------------------------------------------------------------
+
+    /** A flush-pending mutation: written by the next coalesced flush, at most one per 100 ticks. */
+    public <T> T coalesced(Function<EndgameRoot, T> operation) {
+        requireOperational();
+        T result = data.update(operation);
+        rebuildIndex();
+        return result;
+    }
+
+    /** A barrier: the mutation is written before the caller reports success; a failed write stays pending. */
+    public <T> T barrier(Function<EndgameRoot, T> operation) {
+        requireOperational();
+        T result = data.update(operation);
+        rebuildIndex();
+        if (data.isDirty()) {
+            flush();
+        }
+        return result;
+    }
+
+    /** Whether the last write left the root dirty (a barrier that could not reach disk yet). */
+    public boolean writePending() {
+        return data != null && data.isDirty();
+    }
+
+    private void flush() {
+        if (server == null) {
+            return;
+        }
+        try {
+            data.flush(server);
+            writeFailureLogged = false;
+        } catch (RuntimeException exception) {
+            if (!writeFailureLogged) {
+                AdvancedRocketryCommunity.LOGGER.error("ARCE_ENDGAME_ROOT_WRITE_FAILED; retained dirty state", exception);
+                writeFailureLogged = true;
+            }
+        }
+    }
+
+    // ---- Persistence observations (sections 9 and 11) --------------------------------------------------------
+
+    public void onChunkSave(ChunkDataEvent.Save event) {
+        observe(event.getLevel(), event.getChunk().getPos(), event.getData(), false);
+    }
+
+    public void onChunkLoad(ChunkDataEvent.Load event) {
+        observe(event.getLevel(), event.getChunk().getPos(), event.getData(), true);
+    }
+
+    private void observe(LevelAccessor accessor, ChunkPos chunk, CompoundTag tag, boolean load) {
+        if (accessor instanceof Level level) {
+            observe(level.dimension().location(), chunk.toLong(), tag, load);
+        }
+    }
+
+    /** Scans an indexed chunk's tag and queues what it showed; safe on chunk-load worker threads. */
+    void observe(ResourceLocation level, long chunk, CompoundTag tag, boolean load) {
+        if (!operational) {
+            return;
+        }
+        ChunkKey key = new ChunkKey(Tombstone.hash(level), chunk);
+        if (!index.containsKey(key)) {
+            return;
+        }
+        observations.add(new Observation(key, EndpointObservations.scan(tag, endgameTypes.get()), load));
+    }
+
+    int pendingObservations() {
+        return observations.size();
+    }
+
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END && operational()) {
+            tick(server.overworld().getGameTime());
+        }
+    }
+
+    void tick(long now) {
+        drainObservations(now);
+        settleAgedAbsences(now);
+        housekeep(now);
+        if (data.flushPending() && now - lastCoalescedFlush >= EndgameLimits.COALESCED_FLUSH_INTERVAL_TICKS) {
+            lastCoalescedFlush = now;
+            flush();
+        }
+        audit.summarizeIfDue(now);
+    }
+
+    private void drainObservations(long now) {
+        EndgameRoot root = data.view();
+        for (Observation observation; (observation = observations.poll()) != null; ) {
+            for (UUID id : index.getOrDefault(observation.key(), Set.of())) {
+                Optional<Long> recorded = position(root, id);
+                if (recorded.isEmpty()) {
+                    continue;
+                }
+                boolean present = EndpointObservations.present(observation.scan(), id, recorded.get());
+                if (root.tombstone(id).orElse(null) instanceof Tombstone.Settled) {
+                    if (present) {
+                        readBackAt.remove(id);
+                    } else if (observation.load()) {
+                        readBackAt.putIfAbsent(id, now);
+                    }
+                } else if (present) {
+                    absentSince.remove(id);
+                } else {
+                    absentSince.putIfAbsent(id, now);
+                }
+            }
+        }
+    }
+
+    private void settleAgedAbsences(long now) {
+        Iterator<Map.Entry<UUID, Long>> entries = absentSince.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry<UUID, Long> entry = entries.next();
+            if (now - entry.getValue() < EndgameLimits.PERSISTENCE_AGE_TICKS) {
+                continue;
+            }
+            UUID id = entry.getKey();
+            entries.remove();
+            EndgameRoot root = data.view();
+            Optional<EndpointRecord> record = root.endpoint(id);
+            if (record.isPresent() && record.get().state() == EndpointRecord.State.ACTIVE) {
+                coalesced(r -> r.markMissing(id));
+                audit.line(now, "endgame", "endpoint_missing", EndgameCode.ENDPOINT_RETIRED.name(), id,
+                        record.get().owner(), null, "kind=" + record.get().kind());
+            } else if (root.tombstone(id).orElse(null) instanceof Tombstone.Young young) {
+                EndgameRoot.Change change = coalesced(r -> r.settle(id, EndgameService::pinned));
+                audit.line(now, "endgame", "tombstone_settled", change.code().name(), id, young.owner(), null, "");
+                auditEvictions(now, change.evicted());
+            }
+        }
+    }
+
+    private void housekeep(long now) {
+        EndgameRoot root = data.view();
+        if (root.youngTombstones().size() + root.settledTombstones().size()
+                <= EndgameLimits.TOMBSTONE_HOUSEKEEPING_THRESHOLD) {
+            return;
+        }
+        List<UUID> evicted = coalesced(r -> r.housekeep(id -> readBackAt.containsKey(id)
+                && now - readBackAt.get(id) >= EndgameLimits.TOMBSTONE_HOUSEKEEPING_AGE_TICKS, EndgameService::pinned));
+        evicted.forEach(readBackAt::remove);
+        auditEvictions(now, evicted);
+    }
+
+    public void auditEvictions(long now, List<UUID> evicted) {
+        for (UUID id : evicted) {
+            readBackAt.remove(id);
+            audit.line(now, "endgame", "tombstone_evicted", "TOMBSTONE_EVICTED", id, null, null, "");
+        }
+    }
+
+    /** Tombstones that a transit record or an elevator pair names are pinned; neither exists before C12. */
+    public static boolean pinned(UUID id) {
+        return false;
+    }
+
+    private static Optional<Long> position(EndgameRoot root, UUID id) {
+        Optional<EndpointRecord> record = root.endpoint(id);
+        if (record.isPresent()) {
+            return record.get().state() == EndpointRecord.State.ACTIVE ? Optional.of(record.get().pos())
+                    : Optional.empty();
+        }
+        return root.tombstone(id).map(Tombstone::pos);
+    }
+
+    /** Rebuilt after every mutation; an immutable snapshot, so chunk-load threads read it safely. */
+    private void rebuildIndex() {
+        if (data == null || !data.operational()) {
+            index = Map.of();
+            return;
+        }
+        EndgameRoot root = data.view();
+        Map<ChunkKey, Set<UUID>> next = new HashMap<>();
+        for (EndpointRecord record : root.endpoints()) {
+            if (record.state() == EndpointRecord.State.ACTIVE) {
+                add(next, Tombstone.hash(record.level()), record.pos(), record.id());
+            }
+        }
+        root.youngTombstones().forEach(tombstone -> add(next, tombstone.levelHash(), tombstone.pos(), tombstone.id()));
+        root.settledTombstones().forEach(tombstone -> add(next, tombstone.levelHash(), tombstone.pos(), tombstone.id()));
+        Map<ChunkKey, Set<UUID>> frozen = new HashMap<>();
+        next.forEach((key, ids) -> frozen.put(key, Set.copyOf(ids)));
+        index = Map.copyOf(frozen);
+    }
+
+    private static void add(Map<ChunkKey, Set<UUID>> index, int levelHash, long pos, UUID id) {
+        BlockPos block = BlockPos.of(pos);
+        index.computeIfAbsent(new ChunkKey(levelHash, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4)),
+                ignored -> new HashSet<>()).add(id);
+    }
+
+    // ---- Diagnostics (section 13) ----------------------------------------------------------------------------
+
+    public String status() {
+        EndgameSettings current = settings.get();
+        StringBuilder text = new StringBuilder("endgame switches: laser_drill=").append(current.laserDrill())
+                .append(" physical_mining=").append(current.laserPhysicalMining())
+                .append(" railgun=").append(current.railgun())
+                .append(" black_hole_generator=").append(current.blackHoleGenerator())
+                .append(" gravity_field=").append(current.gravityField())
+                .append(" space_elevator=").append(current.spaceElevator());
+        if (!operational()) {
+            return text.append("; root: ").append(data == null ? "not loaded" : "BLOCKED").toString();
+        }
+        EndgameRoot root = data.view();
+        long missing = root.endpoints().stream().filter(r -> r.state() == EndpointRecord.State.MISSING).count();
+        return text.append("; root: operational save_epoch=").append(root.saveEpoch())
+                .append(" accounted_bytes=").append(root.accountedBytes())
+                .append(" write_pending=").append(data.isDirty())
+                .append("; endpoints=").append(root.endpoints().size() - missing).append(" missing=").append(missing)
+                .append(" young_tombstones=").append(root.youngTombstones().size())
+                .append(" settled_tombstones=").append(root.settledTombstones().size())
+                .append(" zones=").append(root.zones().size())
+                .append("; transits=0 stubs=0 ride_tickets=0")
+                .append("; audit_ring=").append(audit.ringSize()).toString();
+    }
+
+    private void requireOperational() {
+        if (!operational()) {
+            throw new IllegalStateException("The endgame root is not operational");
+        }
+    }
+
+    /** A chunk of one Level; Levels are told apart by the hash of their key, as settled tombstones store it. */
+    record ChunkKey(int levelHash, long chunk) {
+    }
+
+    record Observation(ChunkKey key, Map<Long, Optional<UUID>> scan, boolean load) {
+    }
+
+    /** For commands and tests: the Level key hash a settled tombstone stores. */
+    public static int levelHash(ResourceLocation level) {
+        return Tombstone.hash(level);
+    }
+}

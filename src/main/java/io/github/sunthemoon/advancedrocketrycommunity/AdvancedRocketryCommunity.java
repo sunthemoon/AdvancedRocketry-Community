@@ -223,6 +223,8 @@ public final class AdvancedRocketryCommunity {
         // C9 evidence hooks; they register nothing unless the release-test JVM flag is set.
         MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.satellite.command
                 .ReleaseTestCommands()::register);
+        // v1.7 (ADR-054): the endgame framework's root, observations, audit and commands.
+        io.github.sunthemoon.advancedrocketrycommunity.endgame.EndgameModule.install();
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {

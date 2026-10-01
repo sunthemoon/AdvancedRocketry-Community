@@ -166,6 +166,11 @@ public final class ModItems {
     public static final RegistryObject<Item> ASTEROID_DRILL_MODULE = component("asteroid_drill_module");
     public static final RegistryObject<Item> GAS_INTAKE_MODULE = component("gas_intake_module");
 
+    // v1.7 (ADR-054 section 16): shared endgame content.
+    public static final RegistryObject<Item> ENDGAME_CASING = blockItem("endgame_casing", ModBlocks.ENDGAME_CASING);
+    /** ADR-055: the laser drill's lens; it sits in the controller's lens slot and is not consumed. */
+    public static final RegistryObject<Item> LASER_LENS = ITEMS.register("laser_lens", () -> new Item(new Item.Properties()));
+
     private ModItems() {
     }
 

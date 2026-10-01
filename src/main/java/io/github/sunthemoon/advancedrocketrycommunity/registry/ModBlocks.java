@@ -150,6 +150,16 @@ public final class ModBlocks {
                     .sound(SoundType.METAL))
     );
 
+    /** ADR-054 section 16: the structure cell of the endgame multiblocks (laser drill, railgun, generator, anchor). */
+    public static final RegistryObject<Block> ENDGAME_CASING = BLOCKS.register(
+            "endgame_casing",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
+    );
+
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.METAL)
