@@ -64,7 +64,13 @@ final class EndpointRegistrations {
         byChunk = Map.copyOf(next);
     }
 
+    /** The endpoint unloaded, was removed or retired: it stops waiting and its last result is dropped. */
     void forget(UUID id) {
+        results.remove(id);
+        stopWaiting(id);
+    }
+
+    private void stopWaiting(UUID id) {
         Map<EndgameService.ChunkKey, Map<UUID, Candidate>> next = new HashMap<>();
         boolean changed = false;
         for (Map.Entry<EndgameService.ChunkKey, Map<UUID, Candidate>> entry : byChunk.entrySet()) {
@@ -109,9 +115,14 @@ final class EndpointRegistrations {
                 continue;
             }
             EndgameCode code = register.apply(candidate, request.frozen());
-            results.put(candidate.id(), code);
+            // Only a refusal is kept, for the endpoint's status, until it registers or is forgotten (C11R-L8).
+            if (code == EndgameCode.OK) {
+                results.remove(candidate.id());
+            } else {
+                results.put(candidate.id(), code);
+            }
             if (code != EndgameCode.ENDPOINT_LIMIT && code != EndgameCode.ROOT_FULL) {
-                forget(candidate.id());
+                stopWaiting(candidate.id());
             }
             done.add(new Result(candidate, code));
         }
@@ -120,6 +131,10 @@ final class EndpointRegistrations {
 
     Optional<EndgameCode> result(UUID id) {
         return Optional.ofNullable(results.get(id));
+    }
+
+    int results() {
+        return results.size();
     }
 
     int waiting() {

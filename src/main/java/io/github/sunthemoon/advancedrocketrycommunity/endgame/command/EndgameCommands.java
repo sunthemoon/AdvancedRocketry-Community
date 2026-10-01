@@ -41,6 +41,8 @@ import net.minecraftforge.event.RegisterCommandsEvent;
  */
 public final class EndgameCommands {
     private static final UUID CONSOLE = new UUID(0L, 0L);
+    /** The last page of 2,048 endpoints (or 256 zones) at 16 lines a page. */
+    private static final int MAX_PAGE = EndgameLimits.MAX_ENDPOINTS / EndgameLimits.AUDIT_PAGE_LINES - 1;
     private final EndgameService service;
     private final EndgameDevices devices;
 
@@ -77,12 +79,22 @@ public final class EndgameCommands {
                         .then(op(Commands.literal("remove"))
                                 .then(Commands.argument("name", StringArgumentType.word())
                                         .executes(this::removeZone)))
-                        .then(op(Commands.literal("list")).executes(this::listZones)))
+                        .then(op(Commands.literal("list")).executes(context -> listZones(context, 0))
+                                .then(Commands.argument("page", IntegerArgumentType.integer(0, MAX_PAGE))
+                                        .executes(context -> listZones(context,
+                                                IntegerArgumentType.getInteger(context, "page"))))))
                 .then(Commands.literal("endpoint")
                         .then(op(Commands.literal("list"))
-                                .executes(context -> listEndpoints(context, Optional.empty()))
+                                .executes(context -> listEndpoints(context, Optional.empty(), 0))
+                                .then(Commands.argument("page", IntegerArgumentType.integer(0, MAX_PAGE))
+                                        .executes(context -> listEndpoints(context, Optional.empty(),
+                                                IntegerArgumentType.getInteger(context, "page"))))
                                 .then(Commands.argument("player", GameProfileArgument.gameProfile())
-                                        .executes(context -> listEndpoints(context, Optional.of(single(context))))))
+                                        .executes(context -> listEndpoints(context, Optional.of(single(context)), 0))
+                                        .then(Commands.argument("page", IntegerArgumentType.integer(0, MAX_PAGE))
+                                                .executes(context -> listEndpoints(context,
+                                                        Optional.of(single(context)),
+                                                        IntegerArgumentType.getInteger(context, "page"))))))
                         .then(op(Commands.literal("retire"))
                                 .then(Commands.argument("id", UuidArgument.uuid()).executes(this::retire)))
                         .then(Commands.literal("forget")
@@ -200,22 +212,25 @@ public final class EndgameCommands {
         return change(context, "zone_remove", null, "name=" + name, root -> root.removeZone(name));
     }
 
-    private int listZones(CommandContext<CommandSourceStack> context) {
+    /** One page of 16 zones in name order, so every zone can be named for {@code zone remove} (C11R-L8). */
+    private int listZones(CommandContext<CommandSourceStack> context, int page) {
         Optional<EndgameRoot> root = service.root();
         if (root.isEmpty()) {
             return reply(context, "zone_list", EndgameCode.ROOT_UNAVAILABLE, null, "");
         }
         List<ProtectedZone> zones = new ArrayList<>(root.get().zones());
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("endgame zones: " + zones.size()), false);
-        zones.stream().limit(EndgameLimits.AUDIT_PAGE_LINES).forEach(zone -> source.sendSuccess(() -> Component.literal(
-                zone.name() + " " + zone.level() + " " + zone.minX() + "," + zone.minZ() + ".." + zone.maxX() + ","
-                        + zone.maxZ() + " allow=" + zone.allowList().size()), false));
+        source.sendSuccess(() -> Component.literal("endgame zones: " + zones.size() + pageLine(page, zones.size())),
+                false);
+        zones.stream().skip((long) page * EndgameLimits.AUDIT_PAGE_LINES).limit(EndgameLimits.AUDIT_PAGE_LINES)
+                .forEach(zone -> source.sendSuccess(() -> Component.literal(zone.name() + " " + zone.level() + " "
+                        + zone.minX() + "," + zone.minZ() + ".." + zone.maxX() + "," + zone.maxZ() + " allow="
+                        + zone.allowList().size()), false));
         return zones.size();
     }
 
-    /** One page: the first 16 records in ID order and the total, so operators narrow by owner. */
-    private int listEndpoints(CommandContext<CommandSourceStack> context, Optional<UUID> owner) {
+    /** One page of 16 records in ID order and the total; operators page through or narrow by owner (C11R-L8). */
+    private int listEndpoints(CommandContext<CommandSourceStack> context, Optional<UUID> owner, int page) {
         Optional<EndgameRoot> root = service.root();
         if (root.isEmpty()) {
             return reply(context, "endpoint_list", EndgameCode.ROOT_UNAVAILABLE, null, "");
@@ -223,13 +238,19 @@ public final class EndgameCommands {
         List<EndpointRecord> records = root.get().endpoints().stream()
                 .filter(record -> owner.isEmpty() || record.owner().equals(owner.get())).toList();
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("endgame endpoints: " + records.size() + " (showing at most "
-                + EndgameLimits.AUDIT_PAGE_LINES + ")"), false);
-        records.stream().limit(EndgameLimits.AUDIT_PAGE_LINES).forEach(record -> source.sendSuccess(
+        source.sendSuccess(() -> Component.literal("endgame endpoints: " + records.size()
+                + pageLine(page, records.size())), false);
+        records.stream().skip((long) page * EndgameLimits.AUDIT_PAGE_LINES).limit(EndgameLimits.AUDIT_PAGE_LINES)
+                .forEach(record -> source.sendSuccess(
                 () -> Component.literal(record.id() + " " + record.kind() + " " + record.state() + " owner="
                         + record.owner() + " " + record.level() + " " + BlockPos.of(record.pos()).toShortString()),
                 false));
         return records.size();
+    }
+
+    private static String pageLine(int page, int total) {
+        int pages = Math.max(1, (total + EndgameLimits.AUDIT_PAGE_LINES - 1) / EndgameLimits.AUDIT_PAGE_LINES);
+        return " (page " + page + " of " + pages + ", 0-based, " + EndgameLimits.AUDIT_PAGE_LINES + " per page)";
     }
 
     private int retire(CommandContext<CommandSourceStack> context) {

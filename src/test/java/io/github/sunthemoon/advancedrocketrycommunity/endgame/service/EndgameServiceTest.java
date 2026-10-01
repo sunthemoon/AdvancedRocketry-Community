@@ -151,6 +151,27 @@ class EndgameServiceTest {
         assertEquals(1, service.pendingObservations());
     }
 
+    /** Review C11R-L8: a registration result is kept only while it explains a refusal, and dropped on forget. */
+    @Test
+    void registrationResultsAreKeptOnlyForRefusals() {
+        EndgameService service = service();
+        UUID registered = new UUID(0L, 30L);
+        service.awaitRegistration(registered, KIND, OWNER, LEVEL, POS.asLong());
+        service.observe(LEVEL, CHUNK, chunk(blockEntity(TYPE, POS, Optional.of(registered))), false);
+        service.tick(4_000L);
+        assertEquals(EndgameCode.OK, service.endpointStatus(registered, LEVEL, POS.asLong()));
+        assertEquals(0, service.registrationResultsForTest(), "a success is not kept");
+        ResourceLocation longLevel = ResourceLocation.tryBuild("datapack", "d".repeat(130));
+        UUID refused = new UUID(0L, 31L);
+        service.awaitRegistration(refused, KIND, OWNER, longLevel, POS.asLong());
+        service.observe(longLevel, CHUNK, chunk(blockEntity(TYPE, POS, Optional.of(refused))), false);
+        service.tick(4_001L);
+        assertEquals(EndgameCode.TARGET_OUT_OF_BOUNDS, service.endpointStatus(refused, longLevel, POS.asLong()));
+        assertEquals(1, service.registrationResultsForTest());
+        service.forgetCandidate(refused);
+        assertEquals(0, service.registrationResultsForTest(), "a forgotten candidate's result is dropped");
+    }
+
     private static void assertIndexMatchesARebuild(EndgameService service) {
         var incremental = service.indexForTest();
         assertEquals(service.rebuiltIndexForTest(), incremental);

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -286,6 +287,65 @@ public final class LaserTargetGameTests {
                 })
                 .thenExecute(() -> level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()))
                 .thenSucceed();
+    }
+
+    /** Review C11R-L8: {@code zone list} pages through every zone, 16 per page. */
+    @GameTest(template = "empty", batch = "endgame_zone_pages", timeoutTicks = 40)
+    public static void zoneListPagesReachEveryZone(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        EndgameService service = EndgameRuntime.operational().orElseThrow();
+        BlockPos corner = helper.absolutePos(BlockPos.ZERO);
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            String name = "gt_page_" + (char) ('a' + i);
+            names.add(name);
+            helper.assertTrue(service.coalesced(root -> root.addZone(ProtectedZone.of(name,
+                    level.dimension().location(), corner.getX(), corner.getZ(), corner.getX() + 1, corner.getZ() + 1,
+                    List.of()), 256)) == EndgameCode.OK, "A fixture zone was not added");
+        }
+        try {
+            List<String> lines = new ArrayList<>();
+            CommandSource capture = new CommandSource() {
+                @Override
+                public void sendSystemMessage(net.minecraft.network.chat.Component message) {
+                    lines.add(message.getString());
+                }
+
+                @Override
+                public boolean acceptsSuccess() {
+                    return true;
+                }
+
+                @Override
+                public boolean acceptsFailure() {
+                    return true;
+                }
+
+                @Override
+                public boolean shouldInformAdmins() {
+                    return false;
+                }
+            };
+            int zones = service.root().orElseThrow().zones().size();
+            int lastPage = (zones - 1) / 16;
+            List<String> listed = new ArrayList<>();
+            for (int page = 0; page <= lastPage; page++) {
+                lines.clear();
+                server.getCommands().getDispatcher().execute("arce endgame zone list " + page,
+                        server.createCommandSourceStack().withSource(capture));
+                helper.assertTrue(lines.size() == 1 + Math.min(16, zones - page * 16),
+                        "Page " + page + " showed " + (lines.size() - 1) + " zones");
+                listed.addAll(lines.subList(1, lines.size()));
+            }
+            helper.assertTrue(names.stream().allMatch(name -> listed.stream().anyMatch(line -> line.startsWith(
+                    name + " "))), "Not every zone was listed: " + listed);
+        } catch (CommandSyntaxException exception) {
+            throw new IllegalStateException(exception);
+        } finally {
+            names.forEach(name -> service.coalesced(root -> root.removeZone(name)));
+        }
+        helper.succeed();
     }
 
     /**

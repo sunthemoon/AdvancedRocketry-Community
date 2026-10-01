@@ -275,6 +275,10 @@ public final class EndgameService {
         return observations.size();
     }
 
+    int registrationResultsForTest() {
+        return registrations.results();
+    }
+
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && operational()) {
             tick(server.overworld().getGameTime());
