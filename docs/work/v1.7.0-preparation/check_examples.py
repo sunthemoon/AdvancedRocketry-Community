@@ -551,6 +551,23 @@ def upkeep(radius):
     return 5 + 2 * radius
 
 
+def jump_height(multiplier, v0=0.42, drag=0.98, gravity=0.08):
+    """Peak height of a vanilla player jump with the gravity attribute scaled (1.00 g gives 1.25 blocks)."""
+    y, v, best = 0.0, v0, 0.0
+    for _ in range(400):
+        y += v
+        best = max(best, y)
+        v = (v - gravity * multiplier) * drag
+        if v < 0 and y < best:
+            break
+    return best
+
+
+def field_affects(case):
+    """R1-M9: inside a station region everyone; elsewhere the owner and the allow list."""
+    return case["in_station"] or case["player"] == case["owner"] or case["player"] in case["allow"]
+
+
 # --- ADR-054 authority and protection order ---------------------------------------------------
 
 def authority(case):
@@ -779,6 +796,10 @@ class Vectors(unittest.TestCase):
             self.assertEqual(upkeep(radius), cost)
         worst = max(chunk_span(x - 16, x + 16) for x in range(-40, 40))
         self.assertEqual(worst, 3)
+        for multiplier, can_step_up in data["jump"]:
+            self.assertEqual(jump_height(multiplier) >= 1.0, can_step_up, multiplier)
+        for case in data["consent"]:
+            self.assertEqual(field_affects(case), case["affected"], case)
 
     def test_authority_matrix(self):
         for case in EXAMPLES["authority"]:

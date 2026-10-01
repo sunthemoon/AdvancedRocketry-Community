@@ -1433,6 +1433,60 @@
     16,
     37
    ]
+  ],
+  "jump": [
+   [
+    0.1,
+    true
+   ],
+   [
+    1.0,
+    true
+   ],
+   [
+    1.35,
+    true
+   ],
+   [
+    1.4,
+    false
+   ],
+   [
+    2.0,
+    false
+   ]
+  ],
+  "consent": [
+   {
+    "in_station": true,
+    "owner": "a",
+    "player": "b",
+    "allow": [],
+    "affected": true
+   },
+   {
+    "in_station": false,
+    "owner": "a",
+    "player": "a",
+    "allow": [],
+    "affected": true
+   },
+   {
+    "in_station": false,
+    "owner": "a",
+    "player": "b",
+    "allow": [],
+    "affected": false
+   },
+   {
+    "in_station": false,
+    "owner": "a",
+    "player": "b",
+    "allow": [
+     "b"
+    ],
+    "affected": true
+   }
   ]
  },
  "authority": [

@@ -89,8 +89,10 @@ holds the settings, and the index is rebuilt as controllers load and tick):
 
 - per Level, keyed by chunk: a field is listed in every chunk its box touches
   (at most 3 × 3 chunks, because a 33-block span covers at most 3 chunks);
-- at most 16 fields per chunk (`FIELD_DENSITY`), 8 active per owner, 256 per
-  Level and 1,024 per server (`ACTIVE_LIMIT`);
+- at most 16 fields per chunk and at most 4 of one owner per chunk
+  (`FIELD_DENSITY`, so one player cannot fill a bucket next to someone else's
+  base), 8 active per owner, 256 per Level and 1,024 per server
+  (`ACTIVE_LIMIT`);
 - removed on deactivation, block removal, chunk unload, Level unload, server
   stop and the system switch turning off (the whole index is cleared that tick).
 
@@ -103,7 +105,8 @@ at(level, pos) = fieldIndex.at(level, pos)
 ```
 
 `fieldIndex.at` reads only the player's chunk bucket (≤ 16 candidates), keeps the
-fields whose box contains the player's block position, and returns `m / 100` of
+fields whose box contains the player's block position **and that affect this
+player** (§5), and returns `m / 100` of
 the one with the smallest box volume, ties broken by the lower `device_id` in
 ADR-054 §7 ID order. It runs in the existing living-tick hook for `ServerPlayer`s,
 so its cost is one bounded lookup per player per tick. The hook already covers
@@ -117,6 +120,20 @@ the station or Level value on the next tick.
 
 - **Players only**, through the attribute. Values stay inside the existing
   0..4.0 bound.
+- **Consent** (review R1-M9). Vanilla jump physics make the range harmful to
+  people who did not choose it: from 1.40 g a player can no longer jump onto a
+  full block (2.00 g: 0.77 blocks), so a pit or a one-block step can trap them,
+  and at 0.10 g a jump peaks near 6.9 blocks and costs about 4 HP of fall
+  damage. Therefore:
+  - inside a committed station region the field affects every player in its
+    clipped box, as the station's own gravity does: it is the station owner's
+    space and the field must belong to the station owner (§3);
+  - everywhere else a field affects only its owner and the players on its
+    **allow list** (at most 16 UUIDs, stored in the controller's root). The
+    owner edits it with `/arce endgame field allow <player>` and `field deny
+    <player>` from their own connected command source while looking at the
+    controller within 5 blocks (the warp-core rule, ADR-044 §4). Everyone else
+    keeps the station or Level gravity inside the box.
 - Mobs, items and projectiles are **deferred** (v1.8 matrix): the attribute does
   not cover non-living entities, and per-entity motion scans are what made the
   legacy controller expensive.
@@ -140,16 +157,18 @@ the station or Level value on the next tick.
 
 | Threat | Control |
 |---|---|
-| Trapping or flinging players | 0.10..2.00 g only, no lateral force, box ≤ 33³, players can walk out |
+| Trapping or hurting players (2.00 g blocks a one-block jump, 0.10 g jumps cost fall damage) | Outside stations only the owner and an allow list are affected; inside stations only the station owner's own fields; no lateral force; box ≤ 33³ |
 | Overriding a station's gravity without consent | `MANAGE_STATION` inside stations; box clipped to the region |
 | Fields over spawn, zones or claims | Chain steps 2–6 including spawn protection, zones and the API event |
 | Server load | Chunk-bucketed index, ≤ 16 candidates per lookup, active caps, no entity scans |
+| Crowding someone else's fields out (`FIELD_DENSITY`) | At most 4 fields of one owner per chunk |
 | Persistent side effects | Transient modifier only |
 | Information leak | Box and coordinates only in the owner's and operators' menus |
 
 Residual: a claim mod that listens to neither block events nor
-`EndgameEffectEvent` cannot veto a field on its land. Fields are bounded and
-harmless; zones and spawn protection still apply.
+`EndgameEffectEvent` cannot veto a field on its land; outside stations such a
+field affects only players who consented, and zones and spawn protection
+still apply.
 
 ## Deferred and rejected
 
@@ -160,10 +179,14 @@ reconsidered with the v1.8 matrix).
 
 ## Verification
 
-- A0: settings bounds and steps, box and clipping, activation order, upkeep
+- A0: settings bounds and steps, box and clipping, activation order, upkeep,
+  consent rule and jump-height thresholds (reference vectors), per-owner density,
   arithmetic, index caps and buckets, winner selection with nested, equal and
   overlapping boxes (reference vectors), composition with the station override.
-- A1: a player inside and outside a field on a planet and on a station; a member
+- A1: on a planet, the owner and an allowed player get the field's value and
+  another player in the same box keeps the Level gravity; `field allow|deny`
+  edits the list only from the owner looking at the controller; on a station,
+  every player in the box gets it; a member
   cannot activate on a station, the station owner can; spawn-area and zone
   refusals; ownership transfer of the station deactivates a field owned by the
   previous owner; API cancellation; out of energy drops the field the same tick;
