@@ -67,8 +67,9 @@ public final class BlackHoleDataReloadListener implements PreparableReloadListen
                     path.substring(directory.length() + 1, path.length() - ".json".length()));
             try (InputStream input = entry.getValue().open()) {
                 byte[] bytes = input.readNBytes(maxBytes + 1);
-                if (bytes.length > maxBytes || id == null) {
-                    errors.add(entry.getKey() + " exceeds " + maxBytes + " bytes or has no valid ID");
+                if (bytes.length > maxBytes || id == null || id.toString().length() > BlackHoleCodec.MAX_ID_CHARS) {
+                    errors.add(entry.getKey() + " exceeds " + maxBytes + " bytes or has no valid ID of at most "
+                            + BlackHoleCodec.MAX_ID_CHARS + " characters");
                 } else {
                     files.put(id, bytes);
                 }

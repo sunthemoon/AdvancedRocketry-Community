@@ -26,6 +26,19 @@ import org.junit.jupiter.api.Test;
 
 /** ADR-055 section 2: the cross-checked table set, eligibility, the reload's all-or-nothing rule and built-in data. */
 final class LaserDrillTablesTest {
+    /** Review C11R-L3: table IDs come from file paths and are bounded to 128 characters. */
+    @Test
+    void tableIdsFromFilePathsAreBounded() {
+        assertEquals(ResourceLocation.tryBuild("pack", "moon"), LaserDrillTableReloadListener.tableId(
+                ResourceLocation.tryBuild("pack", "laser_drill_tables/moon.json")));
+        String longest = "t".repeat(128 - "pack:".length());
+        assertEquals(ResourceLocation.tryBuild("pack", longest), LaserDrillTableReloadListener.tableId(
+                ResourceLocation.tryBuild("pack", "laser_drill_tables/" + longest + ".json")));
+        assertEquals(null, LaserDrillTableReloadListener.tableId(
+                ResourceLocation.tryBuild("pack", "laser_drill_tables/" + longest + "t.json")));
+        assertEquals(null, LaserDrillTableReloadListener.tableId(
+                ResourceLocation.tryBuild("pack", "laser_drill_tables/" + "x".repeat(400) + ".json")));
+    }
     private static final Path DATA = Path.of("src", "generated", "v1.7", "resources", "data", "advancedrocketrycommunity",
             LaserDrillTableCodec.DIRECTORY);
 

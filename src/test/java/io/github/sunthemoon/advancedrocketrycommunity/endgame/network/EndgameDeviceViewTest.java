@@ -33,6 +33,26 @@ final class EndgameDeviceViewTest {
         assertEquals(view, EndgameDeviceView.decode(buffer));
     }
 
+    /** Review C11R-L3: a text value over the byte bound is cut, never thrown, also between multi-byte characters. */
+    @Test
+    void longTextValuesAreCutToTheBound() {
+        EndgameDeviceView.Line ascii = EndgameDeviceView.Line.text("advancedrocketrycommunity.view.table",
+                "a".repeat(1000));
+        EndgameDeviceView.Line wide = EndgameDeviceView.Line.text("advancedrocketrycommunity.view.table",
+                "界".repeat(300));
+        EndgameDeviceView.Line pairs = EndgameDeviceView.Line.text("advancedrocketrycommunity.view.table",
+                "\uD83D\uDE80".repeat(200));
+        for (EndgameDeviceView.Line line : List.of(ascii, wide, pairs)) {
+            int bytes = line.value().getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            assertTrue(bytes <= EndgameDeviceView.MAX_VALUE_BYTES && bytes > EndgameDeviceView.MAX_VALUE_BYTES - 8,
+                    bytes + " bytes");
+            assertTrue(line.value().endsWith("..."));
+            assertTrue(!Character.isHighSurrogate(line.value().charAt(line.value().length() - 4)),
+                    "a surrogate pair was split");
+        }
+        assertEquals("12", EndgameDeviceView.Line.text("advancedrocketrycommunity.view.ops", "12").value());
+    }
+
     @Test
     void codesAndSystemsTravelByName() {
         EndgameDeviceView view = new EndgameDeviceView(3, EndgameSystem.LASER_DRILL, EndgameCode.OUTPUT_FULL,

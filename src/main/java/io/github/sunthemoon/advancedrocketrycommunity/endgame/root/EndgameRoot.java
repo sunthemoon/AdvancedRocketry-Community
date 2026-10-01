@@ -166,6 +166,11 @@ public final class EndgameRoot {
     public EndgameCode register(UUID id, ResourceLocation kind, UUID owner, ResourceLocation level, long pos,
                                 boolean tagFrozen, int globalLimit, int ownerLimit) {
         Objects.requireNonNull(id, "id");
+        if (kind.toString().length() > EndpointRecord.MAX_KIND_LENGTH
+                || level.toString().length() > EndpointRecord.MAX_LEVEL_LENGTH) {
+            // A record cannot hold the key: refused, never thrown on the server tick (review C11R-L3).
+            return EndgameCode.TARGET_OUT_OF_BOUNDS;
+        }
         EndpointRecord existing = endpoints.get(id);
         if (existing != null) {
             if (existing.state() == EndpointRecord.State.MISSING) {

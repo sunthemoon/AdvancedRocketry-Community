@@ -55,8 +55,23 @@ public record EndgameDeviceView(int containerId, EndgameSystem system, EndgameCo
             }
         }
 
+        /** A text value, cut to the byte bound so no server-side value can fail the view (review C11R-L3). */
         public static Line text(String label, String value) {
-            return new Line(label, value, false);
+            return new Line(label, fit(value), false);
+        }
+
+        private static String fit(String value) {
+            if (value.getBytes(StandardCharsets.UTF_8).length <= MAX_VALUE_BYTES) {
+                return value;
+            }
+            int end = Math.min(value.length(), MAX_VALUE_BYTES);
+            while (end > 0 && value.substring(0, end).getBytes(StandardCharsets.UTF_8).length > MAX_VALUE_BYTES - 3) {
+                end--;
+            }
+            if (end > 0 && Character.isHighSurrogate(value.charAt(end - 1))) {
+                end--;
+            }
+            return value.substring(0, end) + "...";
         }
 
         public static Line key(String label, String translationKey) {

@@ -49,6 +49,21 @@ public final class LaserDrillTableReloadListener implements PreparableReloadList
                 .thenAcceptAsync(this::apply, game);
     }
 
+    /**
+     * The table ID of a file under {@code laser_drill_tables/}, or null when its path gives no valid ID of at most 128
+     * characters: table IDs reach menu views and are bounded like every other ID (review C11R-L3).
+     */
+    static ResourceLocation tableId(ResourceLocation file) {
+        String path = file.getPath();
+        String directory = LaserDrillTableCodec.DIRECTORY + "/";
+        if (!path.startsWith(directory) || !path.endsWith(".json")) {
+            return null;
+        }
+        ResourceLocation id = ResourceLocation.tryBuild(file.getNamespace(),
+                path.substring(directory.length(), path.length() - ".json".length()));
+        return id == null || id.toString().length() > LaserDrillTableCodec.MAX_ID_CHARS ? null : id;
+    }
+
     private static RawTables read(ResourceManager resources) {
         List<String> errors = new ArrayList<>();
         Map<ResourceLocation, byte[]> files = new TreeMap<>(Comparator.comparing(ResourceLocation::toString));
@@ -59,14 +74,13 @@ public final class LaserDrillTableReloadListener implements PreparableReloadList
             return new RawTables(files, errors);
         }
         for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
-            String path = entry.getKey().getPath();
-            ResourceLocation id = ResourceLocation.tryBuild(entry.getKey().getNamespace(),
-                    path.substring(directory.length() + 1, path.length() - ".json".length()));
+            ResourceLocation id = tableId(entry.getKey());
             try (InputStream input = entry.getValue().open()) {
                 byte[] bytes = input.readNBytes(LaserDrillTableCodec.MAX_FILE_BYTES + 1);
                 if (bytes.length > LaserDrillTableCodec.MAX_FILE_BYTES || id == null) {
                     errors.add(entry.getKey() + " exceeds " + LaserDrillTableCodec.MAX_FILE_BYTES
-                            + " bytes or has no valid ID");
+                            + " bytes or has no valid ID of at most " + LaserDrillTableCodec.MAX_ID_CHARS
+                            + " characters");
                 } else {
                     files.put(id, bytes);
                 }

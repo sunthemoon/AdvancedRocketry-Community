@@ -22,6 +22,19 @@ class EndgameRootTest {
     private static final UUID OWNER = new UUID(1L, 1L);
     private static final Predicate<UUID> NONE_PINNED = id -> false;
 
+    /** Review C11R-L3: a Level key a record cannot hold is refused with a code, not thrown on the server tick. */
+    @Test
+    void aLevelKeyOverTheRecordBoundIsRefused() {
+        EndgameRoot root = EndgameRoot.create();
+        ResourceLocation longLevel = ResourceLocation.tryBuild("datapack", "d".repeat(130));
+        UUID id = new UUID(0L, 77L);
+        assertEquals(EndgameCode.TARGET_OUT_OF_BOUNDS, root.register(id, KIND, OWNER, longLevel, 0L, false, 64, 64));
+        assertTrue(root.endpoint(id).isEmpty() && !root.changedSinceEpoch());
+        ResourceLocation longKind = ResourceLocation.tryBuild("datapack", "k".repeat(70));
+        assertEquals(EndgameCode.TARGET_OUT_OF_BOUNDS, root.register(id, longKind, OWNER, LEVEL, 0L, false, 64, 64));
+        assertEquals(EndgameCode.OK, root.register(id, KIND, OWNER, LEVEL, 0L, false, 64, 64));
+    }
+
     @Test
     void registrationIsIdempotentAtItsPositionAndConflictsElsewhere() {
         EndgameRoot root = EndgameRoot.create();
