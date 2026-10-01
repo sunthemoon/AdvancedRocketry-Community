@@ -1,0 +1,80 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 51033,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-api.jar",
+        "sha256": "24b6527e452b2f030f370b2de485122c9fea99a9e51bebc664a131333b5218ab"
+      },
+      {
+        "bytes": 1891218,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-sources.jar",
+        "sha256": "ae890045ad058ffaf868a129954e4209cba09fda923bc85fe5004bcd2e219ffb"
+      },
+      {
+        "bytes": 4159471,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "sha256": "6c5222398652f4321ff6a3bf44ee51493a728eabb894f609a774454b515fc78c"
+      }
+    ]
+  },
+  "base_commit": "34ce112",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 246,
+    "tests": 1340
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "f2e368eed77c5baa79193209558a6a69bb1c8082adbd671eecdd222d608a8d56",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/railgun.json": "128e73fb92afa4bfad33379044c811bfb264dc40d641487b8a503a0c345255ec",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/railgun.json": "e7bc9dcbc848bc6febda207d129c3f73c04537279afec49a41143ecd76a9a5e7",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/railgun.json": "2bc1dd9ebe1b7d9bfc80314d69a22f6c29c69ab2d44de59cc8a5926e1b41e801",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/en_us.json": "6ffcab37246b4d8211421b8e702e2964cf0d6747ae98515589348bed7c90f6c6",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/zh_cn.json": "a484f955091d839061fd3020a8c3568fa12d13b9fc153f62a315b2dbef45d2d7",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/advancements/recipes/misc/railgun.json": "ed822b4b8e7b46606a6bcce7801dd5b77d46043518001022d8f23e3a4d6af111",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/loot_tables/blocks/railgun.json": "bcb146198780cdccc111124a61fd30a8c8b7f9367f45585ecf19fa4d9b30b54b",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/recipes/railgun.json": "38e78492054e61a54ebbfc03473e31b2be2390680964a63052cba4513665e698",
+    "src/generated/v1.7/resources/data/carryon/tags/blocks/block_blacklist.json": "b045181492a5714985c9f6e16f9242cd29845061dc4095bed9c51ed5eddd0603",
+    "src/generated/v1.7/resources/data/create/tags/blocks/non_movable.json": "b045181492a5714985c9f6e16f9242cd29845061dc4095bed9c51ed5eddd0603",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/dragon_immune.json": "b045181492a5714985c9f6e16f9242cd29845061dc4095bed9c51ed5eddd0603",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/mineable/pickaxe.json": "60ac7d033e341cb05835c86916f064d0b2f3851484765473977e66560875b75d",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/needs_iron_tool.json": "60ac7d033e341cb05835c86916f064d0b2f3851484765473977e66560875b75d",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/wither_immune.json": "b045181492a5714985c9f6e16f9242cd29845061dc4095bed9c51ed5eddd0603",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java": "857283eac648cfaa30e45b9d21bace4c13b0675eda1e2201fd710a593eaa3343",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/RailgunScreen.java": "f3ab83c88ec5cd31658da8654a348e5524150749cb3d177b7373ba56bb672111",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java": "314e720898f99d423ca687ff9c4b120c41f755a26110bd4123850d0658b88ec7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java": "f77ec784c578f416ead8e93103ce1ab43c8e491f03e16db1e1202e68cf25bcfa",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java": "d0a9c71676fc9d5fa212ea06f969531e51f21d24bd6aab169366b7933ef4083d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java": "2a536bedade01a8856610788559f9247bc8042085b0bc879f3417c544a1839a0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevices.java": "f36db51a938168e21b5fb5cf52a5f9c381c317c4e7cac525427131d713a8c385",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameStations.java": "e973cb5c50211be4d70942dcc6b82f3fb76e3f5361f98b7cb127296c95d49263",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameCode.java": "1d209355ba880dc6c32941e9204fdd2b6af2bcb6b2ce3e48d8fbc7ec83241b6a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunBlock.java": "40e5a1048f89734c8532363e6631ba872e5542879d59469b401fe40d2b98bd44",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunBlockEntity.java": "4bc4bf5606cb46a0c1dfb5dec96146b738435c65a5d7190dd56cb01216a1053f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunEffects.java": "04f7ca10f8ff305178da6bd2ae3a31e7b5ac28bb248e445fe4c036129b575e9d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunLaunch.java": "410f680819e2c2de1e2a0a4719598bfebc1f9d8de2891bca0a890faa0353fbbd",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunLauncher.java": "21d183b539e08f03e3eef8b1724b5f221e48c7d23ccb967fa35a9dd9da31d99e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunMenu.java": "4e83bae8d072132721441628becc1c994ec654c9949d3cd454a4870e0e9d547c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunRedirectRule.java": "47c6d64d65a2a43dd76bff6a6761d689445d4863eeaf42be31f24d83618667f1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunRoute.java": "6a43a24abb073e8e2339f935ab04ba76219659ed2d6c27467ecb65c6705d23e7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunSettings.java": "1eb03e278b64844a696bab747c890947e7ef17da372715b733fba1d7865eca5c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunStorage.java": "3e4a3b83de4b6a2f1c586e84452a5bae8ffdf3ae5abc6143b6d15ac6b29a7677",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameService.java": "7c72f92234d1efcf662601e224bc81cb1efe703e02eb5a9584548905b0f24a04",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitLedger.java": "bf4fd9fe57a9333570ea473cdca141326356090bcac1656e2340ff2846efd760",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitDestinationState.java": "699bbf8e886bb2057c9d8c528e127bcaf6f012dc7762170c88cfc506e1904047",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ChunkSaveWatcher.java": "0020231ac65f0053d4f570444ef4416290a394b2d1a706a2509b05f298861290",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/LaserTargetGameTests.java": "da0e5188c90339ee8b942d8ba8b7bfa1295ddcaaa36a9433b8c591a70f3bc5d1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RailgunGameTests.java": "6cad9a9a816bbe918df2fd850c91487d26432322cfb946ba206ac6add9790d8c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java": "270280014fbd7a2286154cfe1163b110dcb304df507d05032dbaef9a272abc5f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java": "fa572e14816cd8f940104a55096611a52868cc1d628f5419d4cb7624ed3bc842",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java": "beb4ed881f88f311ccbd6a0548cc7da5a8600adf5c05b7adf6b7b2e9cf1155ce",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java": "d2ab268e64737b7df218d2efeae3d89baa72465b812a1ac24f19b4dded3b414b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java": "2ae0d6546de59bd63a4337e60b16f8f010bf7f4688c67b2aa769d7f92a4879c2",
+    "src/main/resources/data/advancedrocketrycommunity/machine_patterns/railgun.json": "3643981249e8882fe25ca25928ac15f45d9de42c99a8fd07d8ec3b61cf9ae6a7",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java": "3cd58b92bea99543f0c3f41b449ac3b9763896c2688dc109bc171863efcc6f62",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunTest.java": "852f7dc8a2462c6c771d64091ccf1574ffd84731c33350caee3ef285a98276c2"
+  }
+}
