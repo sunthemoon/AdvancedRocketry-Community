@@ -204,6 +204,9 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         } else if (endpointStatus != EndgameCode.OK && endpointStatus != EndgameCode.ENDPOINT_POSITION_CONFLICT) {
             service.get().awaitRegistration(deviceId().get(), KIND, ownerId().get(), level.dimension().location(),
                     worldPosition.asLong());
+            // ADR-054 section 2: while unregistered the chunk stays dirty, so the next autosave or the unload save
+            // (which vanilla writes before it removes block entities) shows the ID persisted (review C11R-L5).
+            setChanged();
         }
     }
 

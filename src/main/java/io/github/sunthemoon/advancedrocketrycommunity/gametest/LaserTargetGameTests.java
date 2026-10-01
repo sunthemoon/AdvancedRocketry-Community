@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -254,6 +255,37 @@ public final class LaserTargetGameTests {
         } catch (CommandSyntaxException exception) {
             return -1;
         }
+    }
+
+    /**
+     * Review C11R-L5: a marker waiting for registration keeps its chunk dirty, so the next save (an autosave or the
+     * unload save) registers it. One status check runs here in the test's own tick, because vanilla saves dirty
+     * chunks eagerly between ticks.
+     */
+    @GameTest(template = "empty", batch = "endgame_laser_target_dirty", timeoutTicks = 200)
+    public static void anAwaitingMarkerKeepsItsChunkDirty(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
+        helper.assertTrue(target.assignOwner(UUID.randomUUID()), "The fixture owner was not assigned");
+        UUID id = target.deviceId().orElseThrow();
+        helper.startSequence()
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE
+                            && root().endpoint(id).isEmpty(), "Not awaiting a save: " + target.describe());
+                    LevelChunk chunk = level.getChunkAt(pos);
+                    target.onLoad(); // The next status check is due now.
+                    chunk.setUnsaved(false);
+                    LaserTargetBlockEntity.serverTick(level, pos, level.getBlockState(pos), target);
+                    helper.assertTrue(chunk.isUnsaved(), "An awaiting marker left its chunk clean");
+                })
+                .thenWaitUntil(() -> {
+                    chunkSaved(level, pos);
+                    helper.assertTrue(target.endpointActive(), "Not registered: " + target.describe());
+                })
+                .thenExecute(() -> level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()))
+                .thenSucceed();
     }
 
     /**
