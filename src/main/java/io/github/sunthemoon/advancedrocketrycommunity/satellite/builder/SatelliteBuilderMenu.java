@@ -67,15 +67,16 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
         this.access = access;
         this.builder = builder;
         this.generation = generation;
-        addSlot(new SlotItemHandler(machine, SatelliteBuilderBlockEntity.SLOT_CHASSIS, 18, 30));
-        addSlot(new SlotItemHandler(machine, SatelliteBuilderBlockEntity.SLOT_PRIMARY, 18, 54));
+        Runnable changed = builder == null ? () -> { } : builder::setChanged;
+        addSlot(new MachineSlot(machine, SatelliteBuilderBlockEntity.SLOT_CHASSIS, 18, 30, changed));
+        addSlot(new MachineSlot(machine, SatelliteBuilderBlockEntity.SLOT_PRIMARY, 18, 54, changed));
         for (int index = 0; index < 6; index++) {
-            addSlot(new SlotItemHandler(machine, SatelliteBuilderBlockEntity.SLOT_MODULE_FIRST + index,
-                    52 + (index % 3) * 20, 30 + (index / 3) * 24));
+            addSlot(new MachineSlot(machine, SatelliteBuilderBlockEntity.SLOT_MODULE_FIRST + index,
+                    52 + (index % 3) * 20, 30 + (index / 3) * 24, changed));
         }
-        addSlot(new SlotItemHandler(machine, SatelliteBuilderBlockEntity.SLOT_CHIP, 128, 30));
-        addSlot(new OutputSlot(machine, SatelliteBuilderBlockEntity.SLOT_OUTPUT, 162, 42));
-        addSlot(new SlotItemHandler(machine, SatelliteBuilderBlockEntity.SLOT_CHARGE, 198, 66));
+        addSlot(new MachineSlot(machine, SatelliteBuilderBlockEntity.SLOT_CHIP, 128, 30, changed));
+        addSlot(new OutputSlot(machine, SatelliteBuilderBlockEntity.SLOT_OUTPUT, 162, 42, changed));
+        addSlot(new MachineSlot(machine, SatelliteBuilderBlockEntity.SLOT_CHARGE, 198, 66, changed));
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(playerInventory, column + row * 9 + 9, 31 + column * 18, 118 + row * 18));
@@ -193,10 +194,30 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
                 : SatelliteOperationCode.SERVER_ERROR;
     }
 
-    /** The package slot only gives items out. */
-    private static final class OutputSlot extends SlotItemHandler {
-        private OutputSlot(IItemHandler handler, int index, int x, int y) {
+    /**
+     * A slot over the builder's handler that marks the builder changed. Forge's {@link SlotItemHandler} hands out the
+     * handler's live stack and its {@code setChanged()} reaches only a dummy container, so a partial shift-click or a
+     * merge into a non-empty slot (redstone) changed the stack without marking the chunk (review C11R-C1).
+     */
+    private static class MachineSlot extends SlotItemHandler {
+        private final Runnable changed;
+
+        private MachineSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
             super(handler, index, x, y);
+            this.changed = changed;
+        }
+
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            changed.run();
+        }
+    }
+
+    /** The package slot only gives items out. */
+    private static final class OutputSlot extends MachineSlot {
+        private OutputSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
+            super(handler, index, x, y, changed);
         }
 
         @Override

@@ -97,12 +97,13 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
         this.views = terminal != null && playerInventory.player instanceof ServerPlayer serverPlayer
                 ? new SatelliteTerminalViews(serverPlayer, id) : null;
 
-        addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_CHASSIS, 18, 54));
-        addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_SOLAR_MODULE, 44, 54));
-        addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_DATA_STORAGE, 70, 54));
-        addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, 108, 54));
-        addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_PACKAGE, 134, 54));
-        addSlot(new SlotItemHandler(machineInventory, SatelliteTerminalBlockEntity.SLOT_CHARGE, 188, 54));
+        Runnable changed = terminal == null ? () -> { } : terminal::setChanged;
+        addSlot(new MachineSlot(machineInventory, SatelliteTerminalBlockEntity.SLOT_CHASSIS, 18, 54, changed));
+        addSlot(new MachineSlot(machineInventory, SatelliteTerminalBlockEntity.SLOT_SOLAR_MODULE, 44, 54, changed));
+        addSlot(new MachineSlot(machineInventory, SatelliteTerminalBlockEntity.SLOT_DATA_STORAGE, 70, 54, changed));
+        addSlot(new MachineSlot(machineInventory, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, 108, 54, changed));
+        addSlot(new MachineSlot(machineInventory, SatelliteTerminalBlockEntity.SLOT_PACKAGE, 134, 54, changed));
+        addSlot(new MachineSlot(machineInventory, SatelliteTerminalBlockEntity.SLOT_CHARGE, 188, 54, changed));
         addPlayerInventory(playerInventory);
         addDataSlots(data);
     }
@@ -223,6 +224,26 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
 
     public int energyStored() {
         return data.get(0);
+    }
+
+    /**
+     * A slot over the terminal's handler that marks the terminal changed. Forge's {@link SlotItemHandler} hands out
+     * the handler's live stack and its {@code setChanged()} reaches only a dummy container, so a partial shift-click
+     * or a merge into a non-empty slot (redstone) changed the stack without marking the chunk (review C11R-C1).
+     */
+    private static final class MachineSlot extends SlotItemHandler {
+        private final Runnable changed;
+
+        private MachineSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
+            super(handler, index, x, y);
+            this.changed = changed;
+        }
+
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            changed.run();
+        }
     }
 
     public int energyCapacity() {
