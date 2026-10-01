@@ -39,13 +39,16 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_START, "start", 26, 40));
-        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_STOP, "stop", 70, 40));
-        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_REDSTONE, "redstone", 114, 54));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_START,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.start", 26, 40));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_STOP,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.stop", 70, 40));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_REDSTONE,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.redstone", 114, 54));
     }
 
     private Button button(int id, String key, int x, int width) {
-        return Button.builder(Component.translatable("screen.advancedrocketrycommunity.orbital_laser_drill." + key),
+        return Button.builder(Component.translatable(key),
                 ignored -> {
                     if (minecraft != null && minecraft.gameMode != null) {
                         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
@@ -119,8 +122,9 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
         EndgameCode status = view.get().status();
         graphics.drawString(font, statusLine(status), 8, 94, status == EndgameCode.OK ? BEAM : WARNING, false);
         if (view.get().lastStop() != EndgameCode.OK && view.get().lastStop() != status) {
-            graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.orbital_laser_drill"
-                    + ".last_stop", statusLine(view.get().lastStop())), 8, 104, MUTED, false);
+            graphics.drawString(font, Component.translatable(
+                    "screen.advancedrocketrycommunity.orbital_laser_drill.last_stop",
+                    statusLine(view.get().lastStop())), 8, 104, MUTED, false);
         }
     }
 
