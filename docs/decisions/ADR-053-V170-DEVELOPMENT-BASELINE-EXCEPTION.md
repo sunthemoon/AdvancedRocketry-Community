@@ -59,7 +59,8 @@ and rejected items are rows in `PORTING_MATRIX.md`.
 
 All player-visible outcomes remain required:
 
-- each of the five representative systems forms a complete, playable loop;
+- each of the five representative systems forms a complete, playable loop,
+  obtainable through the recipes and progression of ADR-054 §16;
 - every high-risk system has its ADR, threat model, configuration and audit;
 - every system can be disabled by the server without breaking world load;
 - permission, protection, recovery and performance checks pass;
