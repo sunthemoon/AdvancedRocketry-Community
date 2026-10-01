@@ -16,6 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
@@ -26,6 +27,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -135,6 +137,7 @@ public final class LaserPhysicalGameTests {
         OrbitalLaserDrillMenu menu = new OrbitalLaserDrillMenu(7, owner.getInventory(), drill);
         String zone = "gt_laser_" + markerId.toString().substring(0, 8);
         int[] chunks = new int[2];
+        List<Map<String, Integer>> tickets = new ArrayList<>();
         helper.startSequence()
                 .thenWaitUntil(() -> {
                     LaserTargetGameTests.chunkSaved(overworld, marker);
@@ -164,6 +167,8 @@ public final class LaserPhysicalGameTests {
                             "The first layer was not paid exactly once");
                     chunks[0] = overworld.getChunkSource().getLoadedChunksCount();
                     chunks[1] = fixture.space.getChunkSource().getLoadedChunksCount();
+                    tickets.add(TicketCounts.near(overworld, new ChunkPos(marker), 2));
+                    tickets.add(TicketCounts.near(fixture.space, new ChunkPos(fixture.controller), 2));
                     overworld.setBlockAndUpdate(layer2.get(4), Blocks.BEDROCK.defaultBlockState());
                 })
                 .thenWaitUntil(() -> expectStop(helper, drill, target, layer2, EndgameCode.BLOCKED_IMMUNE))
@@ -215,6 +220,12 @@ public final class LaserPhysicalGameTests {
                     helper.assertTrue(overworld.getChunkSource().getLoadedChunksCount() <= chunks[0]
                                     && fixture.space.getChunkSource().getLoadedChunksCount() <= chunks[1],
                             "A layer loaded a chunk");
+                    // ADR-054 section 12: no ticket of any type was added (review C11R-L7).
+                    Map<String, Integer> markerTickets = TicketCounts.near(overworld, new ChunkPos(marker), 2);
+                    Map<String, Integer> drillTickets = TicketCounts.near(fixture.space,
+                            new ChunkPos(fixture.controller), 2);
+                    helper.assertTrue(markerTickets.equals(tickets.get(0)) && drillTickets.equals(tickets.get(1)),
+                            "A layer changed the tickets: " + tickets + " -> " + markerTickets + " " + drillTickets);
                     // The marker's owner resets it: the drill loses the link and may then unlink.
                     owner.teleportTo(overworld, marker.getX() + 0.5D, marker.getY() + 1, marker.getZ() + 2.5D, 0.0F,
                             0.0F);
@@ -392,6 +403,69 @@ public final class LaserPhysicalGameTests {
                     }
                     overworld.setBlockAndUpdate(marker, Blocks.AIR.defaultBlockState());
                     layers.forEach(layer -> fill(overworld, layer, Blocks.AIR.defaultBlockState()));
+                    fixture.close();
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Review C11R-L7: a linked marker whose chunk unloads stops the drill with {@code TARGET_UNLOADED}; the drill does
+     * not load the chunk again, pays nothing and keeps the endpoint ACTIVE.
+     */
+    @GameTest(template = "empty", batch = COUNTER_BATCH, timeoutTicks = 2400)
+    public static void anUnloadedTargetStopsTheDrillWithoutLoadingIt(GameTestHelper helper) {
+        OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        OrbitalLaserDrillBlockEntity drill = fixture.drill();
+        drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
+        drill.storage().setEnergy(200_000);
+        ServerLevel overworld = helper.getLevel();
+        BlockPos far = helper.absolutePos(BlockPos.ZERO).offset(1024, 0, 0);
+        BlockPos marker = new BlockPos((far.getX() & ~15) + 8, 120, (far.getZ() & ~15) + 8);
+        ChunkPos chunk = new ChunkPos(marker);
+        overworld.setChunkForced(chunk.x, chunk.z, true);
+        overworld.getChunkAt(marker); // Test setup only.
+        overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
+        helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
+        UUID markerId = target.deviceId().orElseThrow();
+        List<ServerPlayer> joined = new ArrayList<>();
+        ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "unloadedOwner", fixture.space,
+                fixture.controller.south(4).above(2), new ArrayList<>());
+        joined.add(owner);
+        OrbitalLaserDrillMenu menu = new OrbitalLaserDrillMenu(11, owner.getInventory(), drill);
+        long[] paid = new long[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    LaserTargetGameTests.chunkSaved(overworld, marker);
+                    helper.assertTrue(target.endpointActive(), "The marker did not register: " + target.describe());
+                })
+                .thenExecute(() -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_MODE, "mode"))
+                .thenExecuteAfter(11, () -> {
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_TARGET_NEXT, "select");
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_LINK, "link");
+                    helper.assertTrue(drill.linkedMarker().filter(markerId::equals).isPresent(), "Not linked");
+                })
+                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_START, "start"))
+                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_CONFIRM, "confirm"))
+                .thenWaitUntil(() -> helper.assertTrue(drill.running(), "Not running: " + drill.describe()))
+                .thenExecute(() -> overworld.setChunkForced(chunk.x, chunk.z, false))
+                .thenWaitUntil(() -> helper.assertTrue(overworld.getChunkSource().getChunkNow(chunk.x, chunk.z) == null
+                        && drill.status() == EndgameCode.TARGET_UNLOADED, "Not stopped as unloaded: "
+                        + drill.describe()))
+                .thenExecute(() -> paid[0] = drill.opsPaid())
+                .thenExecuteAfter(60, () -> {
+                    helper.assertTrue(overworld.getChunkSource().getChunkNow(chunk.x, chunk.z) == null,
+                            "The drill loaded the marker's chunk again");
+                    helper.assertTrue(drill.status() == EndgameCode.TARGET_UNLOADED && drill.opsPaid() == paid[0]
+                                    && service().root().orElseThrow().endpoint(markerId).orElseThrow().state()
+                                    == io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord.State
+                                    .ACTIVE, "An unloaded target changed the link or the record: " + drill.describe());
+                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
+                    overworld.setChunkForced(chunk.x, chunk.z, true);
+                    overworld.getChunkAt(marker); // Test cleanup only.
+                    overworld.setBlockAndUpdate(marker, Blocks.AIR.defaultBlockState());
+                    overworld.setChunkForced(chunk.x, chunk.z, false);
                     fixture.close();
                 })
                 .thenSucceed();

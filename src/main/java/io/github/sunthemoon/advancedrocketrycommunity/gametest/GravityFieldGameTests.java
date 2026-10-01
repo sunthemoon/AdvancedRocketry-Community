@@ -23,6 +23,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.Statio
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
@@ -93,6 +94,8 @@ public final class GravityFieldGameTests {
         device.energy().set(GravityFieldBlockEntity.ENERGY_CAPACITY);
         GravityFieldMenu menu = new GravityFieldMenu(3, owner.getInventory(), device);
         String zone = "gt_field_" + owner.getUUID().toString().substring(0, 8);
+        // ADR-054 section 12: the field adds no chunk ticket of any type (review C11R-L7).
+        Map<String, Integer> tickets = TicketCounts.near(level, new ChunkPos(pos), 2);
         helper.startSequence()
                 .thenExecute(() -> {
                     helper.assertTrue(menu.clickMenuButton(owner, GravityFieldMenu.BUTTON_START), "Start refused");
@@ -169,6 +172,9 @@ public final class GravityFieldGameTests {
                 })
                 .thenWaitUntil(() -> helper.assertTrue(device.active(), "Not active after the switch"))
                 .thenExecute(() -> {
+                    helper.assertTrue(TicketCounts.near(level, new ChunkPos(pos), 2).equals(tickets),
+                            "The field changed the tickets: " + tickets + " -> "
+                                    + TicketCounts.near(level, new ChunkPos(pos), 2));
                     device.onChunkUnloaded();
                     expectGravity(helper, owner, BASE, "an unloaded field");
                     joined.forEach(player -> server.getPlayerList().remove(player));
