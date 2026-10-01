@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
@@ -62,8 +63,8 @@ public final class RailgunMenu extends EndgameDeviceMenu {
     private static final String VIEW = "advancedrocketrycommunity.endgame.view.";
     private static final String VALUE = "advancedrocketrycommunity.endgame.value.";
     private static final int INPUT_START = 0;
-    private static final int RECEIVE_START = RailgunStorage.INPUT_SLOTS;
-    private static final int PLAYER_START = RECEIVE_START + RailgunStorage.RECEIVE_SLOTS;
+    private static final int RECEIVE_START = CargoStorage.INPUT_SLOTS;
+    private static final int PLAYER_START = RECEIVE_START + CargoStorage.RECEIVE_SLOTS;
     private static final int PLAYER_END = PLAYER_START + 36;
 
     private static final int LIST_REFRESH_TICKS = 100;
@@ -73,8 +74,8 @@ public final class RailgunMenu extends EndgameDeviceMenu {
     private long listedAt = Long.MIN_VALUE / 2;
 
     public RailgunMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, null, new ItemStackHandler(RailgunStorage.INPUT_SLOTS),
-                new ItemStackHandler(RailgunStorage.RECEIVE_SLOTS), readOpenData(buffer));
+        this(id, inventory, null, new ItemStackHandler(CargoStorage.INPUT_SLOTS),
+                new ItemStackHandler(CargoStorage.RECEIVE_SLOTS), readOpenData(buffer));
     }
 
     public RailgunMenu(int id, Inventory inventory, RailgunBlockEntity railgun) {
@@ -87,10 +88,10 @@ public final class RailgunMenu extends EndgameDeviceMenu {
         checkContainerDataCount(data, DATA_COUNT);
         this.data = data;
         Runnable changed = railgun == null ? () -> { } : railgun::setChanged;
-        for (int slot = 0; slot < RailgunStorage.INPUT_SLOTS; slot++) {
+        for (int slot = 0; slot < CargoStorage.INPUT_SLOTS; slot++) {
             addSlot(new EndgameItemSlot(input, slot, 8 + slot * 18, 18, changed, this::itemActionAllowed));
         }
-        for (int slot = 0; slot < RailgunStorage.RECEIVE_SLOTS; slot++) {
+        for (int slot = 0; slot < CargoStorage.RECEIVE_SLOTS; slot++) {
             addSlot(new ReceiveSlot(receive, slot, 8 + slot * 18, 54, changed, this::itemActionAllowed));
         }
         for (int row = 0; row < 3; row++) {
@@ -170,7 +171,7 @@ public final class RailgunMenu extends EndgameDeviceMenu {
     private static EndgameCode setting(RailgunBlockEntity railgun, EndgameService service, UUID actor, String name,
                                        Runnable change, java.util.function.Supplier<String> value) {
         change.run();
-        RailgunLauncher.audit(railgun, service, railgun.getLevel().getGameTime(), name, EndgameCode.OK, actor,
+        railgun.audit(service, railgun.getLevel().getGameTime(), name, EndgameCode.OK, actor,
                 name + "=" + value.get());
         return EndgameCode.OK;
     }
@@ -181,7 +182,7 @@ public final class RailgunMenu extends EndgameDeviceMenu {
         EndgameCode code = RailgunLauncher.launch(railgun, player.serverLevel(), service, devices, player.getUUID(),
                 false);
         if (code != EndgameCode.OK) {
-            RailgunLauncher.audit(railgun, service, player.serverLevel().getGameTime(), "launch", code,
+            railgun.audit(service, player.serverLevel().getGameTime(), "launch", code,
                     player.getUUID(), "");
             return code;
         }
@@ -233,7 +234,7 @@ public final class RailgunMenu extends EndgameDeviceMenu {
                 : index + step, destinations.size()));
         boolean foreign = !railgun.ownerId().filter(chosen.owner()::equals).isPresent();
         railgun.target(chosen.id(), operator && foreign);
-        RailgunLauncher.audit(railgun, service, railgun.getLevel().getGameTime(), "destination", EndgameCode.OK,
+        railgun.audit(service, railgun.getLevel().getGameTime(), "destination", EndgameCode.OK,
                 actor, "to=" + chosen.id() + (operator && foreign ? " operator_selection=true" : ""));
         return EndgameCode.OK;
     }

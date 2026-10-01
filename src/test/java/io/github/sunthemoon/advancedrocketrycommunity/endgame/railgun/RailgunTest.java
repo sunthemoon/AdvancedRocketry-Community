@@ -65,7 +65,7 @@ final class RailgunTest {
             assertEquals(expected.get(0).getAsString(), quote.routeClass().name(), vector.toString());
             assertEquals(expected.get(1).getAsInt(), quote.cost(), vector.toString());
             assertEquals(expected.get(2).getAsInt(), quote.travel(), vector.toString());
-            assertTrue(quote.cost() <= RailgunStorage.ENERGY_CAPACITY, "the largest cost fits the buffer");
+            assertTrue(quote.cost() <= RailgunBlockEntity.ENERGY_CAPACITY, "the largest cost fits the buffer");
             cases++;
         }
         assertEquals(9, cases, "the accepted railgun vectors");

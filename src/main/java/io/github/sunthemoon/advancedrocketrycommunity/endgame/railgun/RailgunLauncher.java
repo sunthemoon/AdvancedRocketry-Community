@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameStations;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
@@ -50,7 +51,7 @@ final class RailgunLauncher {
         if (escrow && view.isPresent() && sourceState == EndgameCode.OK) {
             blocked = service.transits().reconcileSource(railgun, now).escrowBlocked();
         }
-        RailgunStorage storage = railgun.storage();
+        CargoStorage storage = railgun.storage();
         int slot = RailgunLaunch.payloadSlot(storage.inputStacks(), railgun.minStack());
         ItemStack stack = slot < 0 ? ItemStack.EMPTY : storage.input().getStackInSlot(slot).copy();
         Optional<TransitPayload> payload = slot < 0 ? Optional.empty() : TransitPayload.of(List.of(stack));
@@ -75,8 +76,8 @@ final class RailgunLauncher {
         OutboxEntry entry = railgun.source().escrow(route.destination().orElseThrow(), payload.get(), quote.cost(),
                 quote.travel(), EndgameSystem.RAILGUN);
         railgun.setChanged();
-        railgun.launched(now);
-        audit(railgun, service, now, "escrow", EndgameCode.OK, actor, "seq=" + entry.seq() + " to="
+        railgun.escrowed(now);
+        railgun.audit(service, now, "escrow", EndgameCode.OK, actor, "seq=" + entry.seq() + " to="
                 + entry.destination() + " class=" + quote.routeClass().name() + " paid_fe=" + quote.cost()
                 + " travel=" + quote.travel() + " payload=" + payload.get().hash());
         return EndgameCode.OK;
@@ -126,11 +127,5 @@ final class RailgunLauncher {
         Optional<EndgameStations.Body> body = devices.body(server, level, pos);
         return new RailgunRoute.Place(level, pos, body.map(EndgameStations.Body::body),
                 body.map(EndgameStations.Body::system));
-    }
-
-    static void audit(RailgunBlockEntity railgun, EndgameService service, long now, String action, EndgameCode code,
-                      @Nullable UUID actor, String fields) {
-        service.audit().line(now, EndgameSystem.RAILGUN.id(), action, code.name(), railgun.deviceId().orElse(null),
-                railgun.ownerId().orElse(null), actor, fields);
     }
 }

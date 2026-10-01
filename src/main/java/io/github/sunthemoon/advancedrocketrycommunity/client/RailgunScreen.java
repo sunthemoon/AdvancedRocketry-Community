@@ -1,11 +1,12 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceView;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceViewCache;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunMenu;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunStorage;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +84,7 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
         renderTooltip(graphics, mouseX, mouseY);
         if (isHovering(152, 18, 16, 50, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.translatable("tooltip.advancedrocketrycommunity.energy",
-                    menu.energyStored(), RailgunStorage.ENERGY_CAPACITY), mouseX, mouseY);
+                    menu.energyStored(), RailgunBlockEntity.ENERGY_CAPACITY), mouseX, mouseY);
         }
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
@@ -106,12 +107,12 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, PANEL_TOP, PANEL_BOTTOM);
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
         graphics.fill(x + 152, y + 18, x + 168, y + 68, RECESS);
-        int height = (int) Math.min(50L, (long) menu.energyStored() * 50L / RailgunStorage.ENERGY_CAPACITY);
+        int height = (int) Math.min(50L, (long) menu.energyStored() * 50L / RailgunBlockEntity.ENERGY_CAPACITY);
         graphics.fill(x + 152, y + 68 - height, x + 168, y + 68, CHARGE);
-        for (int slot = 0; slot < RailgunStorage.INPUT_SLOTS; slot++) {
+        for (int slot = 0; slot < CargoStorage.INPUT_SLOTS; slot++) {
             slot(graphics, x + 7 + slot * 18, y + 17);
         }
-        for (int slot = 0; slot < RailgunStorage.RECEIVE_SLOTS; slot++) {
+        for (int slot = 0; slot < CargoStorage.RECEIVE_SLOTS; slot++) {
             slot(graphics, x + 7 + slot * 18, y + 53);
         }
         for (int row = 0; row < 4; row++) {

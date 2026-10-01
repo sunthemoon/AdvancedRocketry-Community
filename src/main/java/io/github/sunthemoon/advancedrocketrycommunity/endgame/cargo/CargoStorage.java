@@ -1,4 +1,4 @@
-package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
+package io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameEnergyBuffer;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
@@ -20,27 +20,26 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 
 /**
- * ADR-056 section 2 buffers of the railgun controller: a 4-slot input (the payload source, insert-only for
- * automation), a 9-slot receive buffer (the claim target, extract-only for automation) and a 1,000,000 FE input-only
- * energy buffer taking at most 50,000 FE per tick. Incoming payloads live in the ledger's destination state, never
- * here, until the incoming gate moves them. Reads are strict: a defect throws, so the device root is quarantined.
+ * The buffers of a cargo endpoint (ADR-056 section 2, ADR-059 section 2): a 4-slot input (the payload source,
+ * insert-only for automation), a 9-slot receive buffer (the claim target, extract-only for automation) and an
+ * input-only energy buffer with the system's capacity and per-tick input. Incoming payloads live in the ledger's
+ * destination state, never here, until the incoming gate moves them. Reads are strict: a defect throws, so the device
+ * root is quarantined.
  */
-public final class RailgunStorage {
+public final class CargoStorage {
     public static final int INPUT_SLOTS = 4;
     public static final int RECEIVE_SLOTS = 9;
-    public static final int ENERGY_CAPACITY = 1_000_000;
-    public static final int MAX_INPUT_PER_TICK = 50_000;
 
     private final ItemStackHandler input;
     private final ItemStackHandler receive;
     private final EndgameEnergyBuffer energy;
     private final IItemHandler automation = new Automation();
 
-    public RailgunStorage(Runnable changed, Supplier<Level> level) {
+    public CargoStorage(Runnable changed, Supplier<Level> level, int energyCapacity, int maxInputPerTick) {
         Objects.requireNonNull(changed, "changed");
         input = handler(INPUT_SLOTS, changed);
         receive = handler(RECEIVE_SLOTS, changed);
-        energy = new EndgameEnergyBuffer(ENERGY_CAPACITY, MAX_INPUT_PER_TICK, changed, level);
+        energy = new EndgameEnergyBuffer(energyCapacity, maxInputPerTick, changed, level);
     }
 
     private static ItemStackHandler handler(int slots, Runnable changed) {
@@ -76,9 +75,9 @@ public final class RailgunStorage {
 
     /** Strict inventory read: the slot count is fixed, slots are unique and in range, and every item exists. */
     private static void readItems(CompoundTag tag, ItemStackHandler handler) {
-        EndgameNbt.requireKeys(tag, Set.of("Items", "Size"), "Railgun inventory");
+        EndgameNbt.requireKeys(tag, Set.of("Items", "Size"), "Cargo inventory");
         if (EndgameNbt.requireInt(tag, "Size") != handler.getSlots()) {
-            throw new IllegalArgumentException("A railgun inventory has the wrong size");
+            throw new IllegalArgumentException("A cargo inventory has the wrong size");
         }
         ListTag items = EndgameNbt.requireList(tag, "Items", Tag.TAG_COMPOUND, handler.getSlots());
         boolean[] seen = new boolean[handler.getSlots()];
@@ -86,12 +85,12 @@ public final class RailgunStorage {
             CompoundTag item = items.getCompound(i);
             int slot = EndgameNbt.requireInt(item, "Slot");
             if (slot < 0 || slot >= seen.length || seen[slot]) {
-                throw new IllegalArgumentException("A railgun inventory slot is invalid");
+                throw new IllegalArgumentException("A cargo inventory slot is invalid");
             }
             seen[slot] = true;
             ItemStack stack = ItemStack.of(item);
             if (stack.isEmpty() || stack.getCount() > stack.getMaxStackSize()) {
-                throw new IllegalArgumentException("A railgun inventory holds an unknown or invalid item");
+                throw new IllegalArgumentException("A cargo inventory holds an unknown or invalid item");
             }
             handler.setStackInSlot(slot, stack);
         }
