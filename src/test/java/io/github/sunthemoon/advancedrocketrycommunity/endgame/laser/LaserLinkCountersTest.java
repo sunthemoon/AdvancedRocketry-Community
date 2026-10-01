@@ -30,6 +30,29 @@ final class LaserLinkCountersTest {
         assertThrows(IllegalArgumentException.class, () -> LaserLinkCounters.next(-1, 0, 0, COST, true));
     }
 
+    /** Review C11R-L2/M1: the contact rule with resets, relinks and a crash-restored unlinked marker. */
+    @Test
+    void aResetLinkNeverReturnsWhileNewAndRestoredLinksAreAccepted() {
+        long marker = 0;
+        long first = -1;
+        assertEquals(true, LaserLinkCounters.accepts(false, false, first, marker), "a new link");
+        first = marker;
+        assertEquals(true, LaserLinkCounters.accepts(true, true, first, marker), "the served link");
+        assertEquals(false, LaserLinkCounters.accepts(true, false, -1, marker), "another link while one is served");
+        marker++;
+        assertEquals(false, LaserLinkCounters.accepts(false, false, first, marker), "a reset link");
+        for (int cycle = 0; cycle < 100; cycle++) {
+            assertEquals(true, LaserLinkCounters.accepts(false, false, -1, marker), "a relink");
+            marker++;
+            assertEquals(false, LaserLinkCounters.accepts(false, false, first, marker), "after " + cycle + " cycles");
+        }
+        long restored = marker;
+        assertEquals(true, LaserLinkCounters.accepts(false, false, restored, marker),
+                "a crash returned the marker unlinked at the generation the link recorded");
+        assertThrows(IllegalArgumentException.class, () -> LaserLinkCounters.accepts(false, false, -2, 0));
+        assertThrows(IllegalArgumentException.class, () -> LaserLinkCounters.accepts(false, false, 0, -1));
+    }
+
     @Test
     void everyCrashCutUpToSevenEventsSettlesToOnePaymentPerLayer() {
         int[] checked = {0};

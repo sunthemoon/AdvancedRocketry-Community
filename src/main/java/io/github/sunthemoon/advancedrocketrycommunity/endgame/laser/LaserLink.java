@@ -85,6 +85,14 @@ final class LaserLink {
         opsPaid = Math.addExact(opsPaid, 1L);
     }
 
+    /** GameTests only: a controller whose chunk kept more or fewer payments than its marker's (a crash cut). */
+    void setOpsPaidForTest(long value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("ops_paid is not negative");
+        }
+        opsPaid = value;
+    }
+
     /** Records the generation of the marker this link touched; true when it changed (the first contact). */
     boolean touched(long markerGeneration) {
         if (markerGeneration < 0) {

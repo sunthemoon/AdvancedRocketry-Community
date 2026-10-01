@@ -479,6 +479,15 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         return link == null ? 0L : link.opsPaid();
     }
 
+    /** GameTests only: see {@link LaserLink#setOpsPaidForTest}. */
+    public void setOpsPaidForTest(long value) {
+        if (link == null) {
+            throw new IllegalStateException("No link");
+        }
+        link.setOpsPaidForTest(value);
+        setChanged();
+    }
+
     public boolean confirmationPendingFor(UUID player) {
         return pending != null && pending.actor().equals(player);
     }

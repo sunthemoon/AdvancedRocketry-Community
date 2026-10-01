@@ -93,27 +93,30 @@ final class LaserPhysicalDrill {
         link.touched(marker.generation());
 
         // Contact: settle a debt layer by layer as energy allows; no new layer until it is paid (review R1-M7).
+        // Every step comes from the counter model (review C11R-L2).
         int cost = context.settings().costFe();
         boolean paidDebt = false;
-        while (marker.opsDone() > link.opsPaid() && storage.energy() >= cost) {
+        LaserLinkCounters.Step step;
+        while ((step = LaserLinkCounters.next(link.opsPaid(), marker.opsDone(), storage.energy(), cost,
+                context.breakingAllowed())) == LaserLinkCounters.Step.PAY_DEBT) {
             storage.spend(cost);
             link.paid();
             paidDebt = true;
         }
-        if (marker.opsDone() > link.opsPaid()) {
+        if (step == LaserLinkCounters.Step.WAIT_FOR_ENERGY) {
             return Outcome.of(EndgameCode.ENERGY_DEBT, false, false);
         }
         if (paidDebt) {
             audit(context, "DEBT_SETTLED", EndgameCode.OK, "marker=" + link.marker() + " ops=" + link.opsPaid());
         }
-        boolean credit = link.opsPaid() > marker.opsDone();
+        boolean credit = step == LaserLinkCounters.Step.USE_CREDIT || step == LaserLinkCounters.Step.CREDIT_WAITS;
 
         // Breaking: the shared conditions, the switch, then link rules 1 and 2, the footprint and the floor.
         EndgameCode stop = breakingStop(context, link, record.get(), marker, markerLevel, markerPos);
         if (stop != EndgameCode.OK) {
             return Outcome.of(stop, !credit, false);
         }
-        if (!credit && storage.energy() < cost) {
+        if (step == LaserLinkCounters.Step.NO_ENERGY) {
             return Outcome.of(EndgameCode.INSUFFICIENT_ENERGY, true, false);
         }
         // The layer grant comes first, so a layer is planned (and its events posted) only in the tick that may run it

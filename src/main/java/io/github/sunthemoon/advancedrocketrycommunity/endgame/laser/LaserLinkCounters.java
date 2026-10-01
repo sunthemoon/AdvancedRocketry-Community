@@ -5,10 +5,26 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
  * {@code ops_done}; they are saved in different chunks, so a crash can leave either ahead. At every contact the gap
  * is settled before a new layer runs: a debt ({@code done > paid}) is paid one layer at a time as energy arrives, a
  * credit ({@code paid > done}) runs the paid layers without a new payment, and only equal counters start a normal
- * operation (pay, run, count, all in one tick).
+ * operation (pay, run, count, all in one tick). {@link LaserPhysicalDrill} takes every step from {@link #next} and
+ * every contact decision from {@link #accepts} (review C11R-L2), so these tests describe the engine.
  */
 public final class LaserLinkCounters {
     private LaserLinkCounters() {
+    }
+
+    /**
+     * Whether a marker accepts a link at contact: the exact link it serves; when it serves none, a link that never
+     * touched it ({@code linkGeneration < 0}) or one recorded at its current generation, so a link dropped by a reset
+     * never returns however many links and resets follow (review C11R-M1).
+     */
+    public static boolean accepts(boolean markerLinked, boolean sameLink, long linkGeneration, long markerGeneration) {
+        if (markerGeneration < 0 || linkGeneration < -1) {
+            throw new IllegalArgumentException("Generations are -1 (no contact yet) or more");
+        }
+        if (markerLinked) {
+            return sameLink;
+        }
+        return linkGeneration < 0 || linkGeneration == markerGeneration;
     }
 
     public enum Step {

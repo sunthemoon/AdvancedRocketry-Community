@@ -52,6 +52,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class LaserPhysicalGameTests {
     private static final String BATCH = "endgame_laser_physical";
     private static final String ATTACHED_BATCH = "endgame_laser_physical_attached";
+    private static final String COUNTER_BATCH = "endgame_laser_physical_counters";
     private static final AtomicInteger BREAK_EVENTS = new AtomicInteger();
     private static volatile UUID effectVeto;
     private static volatile UUID breakVeto;
@@ -82,6 +83,16 @@ public final class LaserPhysicalGameTests {
 
     @AfterBatch(batch = ATTACHED_BATCH)
     public static void disablePhysicalMiningForAttachedBlocks(ServerLevel level) {
+        CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
+    }
+
+    @BeforeBatch(batch = COUNTER_BATCH)
+    public static void enablePhysicalMiningForCounters(ServerLevel level) {
+        CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
+    }
+
+    @AfterBatch(batch = COUNTER_BATCH)
+    public static void disablePhysicalMiningForCounters(ServerLevel level) {
         CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
     }
 
@@ -293,6 +304,95 @@ public final class LaserPhysicalGameTests {
                     helper.assertTrue(torches == 1 && ladders == 1 && buttons == 1 && cobblestone == 6,
                             "Hanging blocks were not collected once: torches=" + torches + " ladders=" + ladders
                                     + " buttons=" + buttons + " cobblestone=" + cobblestone);
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Review C11R-L2: the counter cuts on the real engine. A marker two layers ahead (the controller's chunk lost
+     * payments) is a debt: paid one layer at a time as energy arrives, nothing dug meanwhile ({@code ENERGY_DEBT}). A
+     * controller two layers ahead (the marker's chunk lost layers) is a credit: two layers dug without payment, then
+     * {@code INSUFFICIENT_ENERGY}.
+     */
+    @GameTest(template = "atmosphere_test", batch = COUNTER_BATCH, timeoutTicks = 1800)
+    public static void debtAndCreditSettleOnTheEngine(GameTestHelper helper) {
+        OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        OrbitalLaserDrillBlockEntity drill = fixture.drill();
+        drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
+        drill.storage().setEnergy(200_000);
+        ServerLevel overworld = helper.getLevel();
+        BlockPos marker = markerPosition(helper);
+        overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
+        helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
+        List<List<BlockPos>> layers = new ArrayList<>();
+        for (int depth = 1; depth <= 5; depth++) {
+            List<BlockPos> layer = LaserShaft.layer(marker, marker.getY() - depth);
+            fill(overworld, layer, Blocks.STONE.defaultBlockState());
+            layers.add(layer);
+        }
+        List<ServerPlayer> joined = new ArrayList<>();
+        ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "counterOwner", fixture.space,
+                fixture.controller.south(4).above(2), new ArrayList<>());
+        joined.add(owner);
+        OrbitalLaserDrillMenu menu = new OrbitalLaserDrillMenu(10, owner.getInventory(), drill);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    LaserTargetGameTests.chunkSaved(overworld, marker);
+                    helper.assertTrue(target.endpointActive(), "The marker did not register: " + target.describe());
+                })
+                .thenExecute(() -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_MODE, "mode"))
+                .thenExecuteAfter(11, () -> {
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_TARGET_NEXT, "select");
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_LINK, "link");
+                })
+                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_START, "start"))
+                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_CONFIRM, "confirm"))
+                .thenWaitUntil(() -> helper.assertTrue(target.opsDone() == 1 && drill.opsPaid() == 1,
+                        "No first layer: " + drill.describe()))
+                .thenExecute(() -> {
+                    // Debt cut: the marker counts 3 layers, the controller paid 1; energy for one payment only.
+                    target.setOpsDoneForTest(3);
+                    drill.storage().setEnergy(10_000);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(drill.status() == EndgameCode.ENERGY_DEBT,
+                        "No ENERGY_DEBT: " + drill.describe()))
+                .thenExecute(() -> {
+                    helper.assertTrue(drill.opsPaid() == 2 && drill.storage().energy() == 0 && target.opsDone() == 3,
+                            "One debt layer was not paid exactly: " + drill.describe());
+                    helper.assertTrue(layers.get(1).stream().noneMatch(cell -> overworld.getBlockState(cell).isAir()),
+                            "A layer was dug while a debt was open");
+                    drill.storage().setEnergy(200_000);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(target.opsDone() == 4, "The debt did not settle: "
+                        + drill.describe()))
+                .thenExecute(() -> {
+                    helper.assertTrue(drill.opsPaid() == 4 && drill.storage().energy() == 180_000,
+                            "The debt and the next layer were not paid once each: " + drill.describe());
+                    helper.assertTrue(layers.get(1).stream().allMatch(cell -> overworld.getBlockState(cell).isAir()),
+                            "The layer after the debt was not dug");
+                    // Credit cut: the controller paid 6 layers, the marker counts 4; no energy at all.
+                    drill.setOpsPaidForTest(6);
+                    drill.storage().setEnergy(0);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(target.opsDone() == 6
+                                && drill.status() == EndgameCode.INSUFFICIENT_ENERGY,
+                        "The credit was not used: " + drill.describe()))
+                .thenExecute(() -> {
+                    helper.assertTrue(drill.opsPaid() == 6 && drill.storage().energy() == 0,
+                            "A credit layer took a payment: " + drill.describe());
+                    helper.assertTrue(layers.get(2).stream().allMatch(cell -> overworld.getBlockState(cell).isAir())
+                                    && layers.get(3).stream().allMatch(cell -> overworld.getBlockState(cell).isAir())
+                                    && layers.get(4).stream().noneMatch(cell -> overworld.getBlockState(cell).isAir()),
+                            "The credit did not dig exactly two layers");
+                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
+                    for (int slot = 0; slot < LaserTargetBlockEntity.BUFFER_SLOTS; slot++) {
+                        target.buffer().setStackInSlot(slot, ItemStack.EMPTY);
+                    }
+                    overworld.setBlockAndUpdate(marker, Blocks.AIR.defaultBlockState());
+                    layers.forEach(layer -> fill(overworld, layer, Blocks.AIR.defaultBlockState()));
+                    fixture.close();
                 })
                 .thenSucceed();
     }

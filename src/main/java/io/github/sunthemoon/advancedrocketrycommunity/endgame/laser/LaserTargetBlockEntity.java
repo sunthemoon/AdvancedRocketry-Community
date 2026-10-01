@@ -241,10 +241,9 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
      * ({@code linkGeneration < 0}) or one that touched it at its current generation (no reset since).
      */
     public boolean accepts(UUID controller, UUID link, long linkGeneration) {
-        if (linkedController == null) {
-            return linkGeneration < 0 || linkGeneration == generation;
-        }
-        return linkedController.equals(controller) && link.equals(linkId);
+        return LaserLinkCounters.accepts(linkedController != null,
+                linkedController != null && linkedController.equals(controller) && link.equals(linkId), linkGeneration,
+                generation);
     }
 
     /** Adopts the controller link on first contact with {@code ops_done = 0}. */
@@ -268,6 +267,15 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     /** The number of resets so far; it never decreases. */
     public long generation() {
         return generation;
+    }
+
+    /** GameTests only: a marker whose chunk kept more or fewer layers than its controller's (a crash cut). */
+    public void setOpsDoneForTest(long value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("ops_done is not negative");
+        }
+        opsDone = value;
+        setChanged();
     }
 
     public int nextLayer() {
