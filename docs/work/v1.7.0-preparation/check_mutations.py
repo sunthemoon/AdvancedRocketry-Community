@@ -34,6 +34,16 @@ TRANSIT = {  # name: (old text, new text, lost writes needed to expose it)
     "no-rollback-fix": ("        if rollback_pending:\n", "        if False:\n", 1),
 }
 
+# Capped tombstone eviction (review R3-M2), run with Transit.CAP_EVICTION on. Not listed: evicting a pinned
+# tombstone and escrow before a durable re-registration. The model has one source life and no other ID, so it shows
+# them as not load-bearing here; they guard sequence and identity reuse across lives, which it does not represent.
+TRANSIT_CAP = {
+    "evict-before-saved-absence": ('absence_seen in ("saved_aged", "aged") \\\n                and not records:',
+                                   'True \\\n                and not records:', 1),
+    "evict-without-freeze": ("            if out_seqs:\n                lost =",
+                             "            if False:\n                lost =", 1),
+}
+
 DELIVERY = {
     "removal-always-unclaims": (
         'settled = ("C", True, e) if receipt is not None and not incoming else ("A", False, None)',
@@ -64,7 +74,7 @@ REDIRECT = {
 }
 
 
-def load(out, name, old=None, new=None):
+def load(out, name, old=None, new=None, cap=False):
     target = out / name
     target.mkdir(parents=True, exist_ok=True)
     shutil.copy(SRC / "examples.json", target / "examples.json")
@@ -77,6 +87,7 @@ def load(out, name, old=None, new=None):
     spec = importlib.util.spec_from_file_location("mutation_" + name.replace("-", "_"), target / "check_examples.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    module.Transit.CAP_EVICTION = cap
     return module
 
 
@@ -119,12 +130,24 @@ def main():
         print("control transit, %d lost write(s): %s" % (faults, found or "no violation"), flush=True)
         if found:
             failures.append("control")
+    control_cap = load(out, "control-cap", cap=True)
+    for faults in (0, 1):
+        found = transit_violation(control_cap, faults)
+        print("control transit with cap eviction, %d lost write(s): %s" % (faults, found or "no violation"), flush=True)
+        if found:
+            failures.append("control cap")
     _, outcomes = control.Redirect.explore((True, True, True), 2)
     print("control redirect, full rules: %s" % sorted(outcomes, key=str), flush=True)
     if set(outcomes) != {1}:
         failures.append("control redirect")
     for name, (old, new, faults) in TRANSIT.items():
         found = transit_violation(load(out, "transit-" + name, old, new), faults)
+        found = None if found == "LIMIT" else found
+        print("transit %-40s %s" % (name, ("CAUGHT: " + found[:90]) if found else "NOT CAUGHT"), flush=True)
+        if not found:
+            failures.append(name)
+    for name, (old, new, faults) in TRANSIT_CAP.items():
+        found = transit_violation(load(out, "transit-cap-" + name, old, new, cap=True), faults)
         found = None if found == "LIMIT" else found
         print("transit %-40s %s" % (name, ("CAUGHT: " + found[:90]) if found else "NOT CAUGHT"), flush=True)
         if not found:

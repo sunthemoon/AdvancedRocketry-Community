@@ -279,8 +279,8 @@ tombstones (a root of about 1.1 MiB), on top of the docs/17 §4 reference load.
 | All endgame work, systems loaded and idle | mean ≤ 0.1 ms per tick |
 | All endgame work at the endgame reference load | mean ≤ 2.0 ms per tick over all ticks; P99 ≤ 8 ms over the ticks without an endgame flush (review R2-L3) |
 | Share per system at that load | laser drills ≤ 0.8 ms; ledger passes (railgun and elevator cargo) ≤ 0.5 ms; black-hole generators ≤ 0.2 ms; field lookups ≤ 0.3 ms; rides ≤ 0.2 ms (means) |
-| One coalesced or barrier flush | ≤ 60 ms at the reference root, ≤ 250 ms at the accounted maximum (§10, about 2.4 MiB); at most one coalesced flush per 100 ticks plus the spaced barriers; a flush tick is its own budget, inside docs/17 §4's 500 ms spike limit |
-| Memory | root ≤ 4 MiB encoded (accounted maximum about 2.4 MiB) and ≤ 32 MiB of accounted heap; field index ≤ 1,024 entries; audit ring 512 lines; one device view ≤ 8 KiB per open menu |
+| One coalesced or barrier flush | ≤ 60 ms at the reference root, ≤ 250 ms at the accounted maximum (§10, about 2.80 MiB), ≤ 400 ms at the 4 MiB bound that only recovery registrations can reach (review R3-M2); at most one coalesced flush per 100 ticks plus the spaced barriers; a flush tick is its own budget, inside docs/17 §4's 500 ms spike limit |
+| Memory | root ≤ 4 MiB encoded (accounted maximum about 2.80 MiB) and ≤ 32 MiB of accounted heap; field index ≤ 1,024 entries; audit ring 512 lines; one device view ≤ 8 KiB per open menu |
 | Tickets | none persistent; ride-arrival tickets ≤ 64 (§12) |
 
 These totals stay inside docs/17 §4 (mean ≤ 25 ms for the whole server). A
@@ -335,7 +335,8 @@ An **endpoint** is a device that other devices can address: `laser_target`
   `kind`, `owner_id`, Level key, block position, `state` (`ACTIVE` or
   `MISSING`), ≤ 384 bytes (two UUIDs, a kind ID of at most 64 characters, a
   Level key of at most 128 characters, a position and a state). At most 2,048
-  endpoints, 64 per owner (review R2-M3).
+  endpoints, 64 per owner (review R2-M3); a young tombstone (§11) takes an
+  endpoint's place in both limits until its absence is settled (review R3-M2).
 - **Registration.** An endpoint is added when its ID is persisted (§2); until
   then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
@@ -494,13 +495,17 @@ entry of the managed-SavedData allowlist (review R1-M2):
   accounting (each section's count times its worst-case record size, as ADR-050
   §3 does), never by encoding the root (review R2-M3). The worst cases are:
   2,048 endpoints × 384 B, 2,048 `dispatched_through` entries × 32 B, 256
-  transit records × 2.5 KiB, 4,096 tombstones × 64 B, 1,024 pairs × 512 B and
-  256 zones × 768 B, about 2.4 MiB in total, so **every cap can be reached at
-  the same time**. Endpoint registration, escrow admission (§11), binds and
-  zone additions are refused only when the accounted size would pass 3 MiB;
-  tombstones beyond 4,096, a registration of an already escrowed payload and
-  every reconciliation step are admitted up to the 4 MiB bound itself, and
-  beyond it wait (never drop) with `ROOT_FULL`;
+  transit records × 2.5 KiB, 11,008 tombstones × 64 B (8,192 settled and
+  unpinned plus 2,816 pinned; young ones take endpoint places, §11), 1,024
+  pairs × 512 B and 256 zones × 768 B, 2,932,736 B or about 2.80 MiB in total,
+  so **every cap can be reached at the same time** (review R3-M2). Endpoint
+  registration, escrow admission (§11), binds and zone additions are refused
+  only when the accounted size would pass 3 MiB. A tombstone is always
+  admitted, because pins, endpoint places and caps bound the table. A
+  registration of an already escrowed payload (only after a restore or a lost
+  write, which escrow admission did not count) and every reconciliation step
+  are admitted up to the 4 MiB bound itself, and beyond it wait (never drop)
+  with `ROOT_FULL`. Only those can take the root past the accounted maximum;
 - **write policy** (ADR-050 §2 semantics): elevator bind and unbind, zone changes
   and operator redirects and purges are **barrier flushes**; every other mutation
   marks the root flush-pending, and a coalesced flush runs at most once per 100
@@ -548,16 +553,42 @@ at least 40 ticks earlier (the age rule of step 2). Until then a crash can
 restore S with a stale outbox entry, and only the tombstone keeps it from
 registering a delivered payload again (review R1-H1). The same table holds the
 ID of every retired endpoint (§9), so one tombstone serves both purposes.
-Tombstones are at most 64 bytes each. One is removed only when its endpoint's
-absence was observed in a `ChunkDataEvent.Load` tag after the last server start
-(so the absence is on disk, review R2-L1) and at least 6,000 ticks earlier,
-**and** the table holds more than 4,096 tombstones, oldest observation first;
-otherwise tombstones are kept, admitted up to the root's hard bound. Because
-the absence must be read back from disk after a start, a lost absence write
-can no longer remove a tombstone. A block mover could still carry a retired
-endpoint away and place it after its tombstone was removed; that needs more
-than 4,096 later retirements in between and is the documented residual of the
-retirement rule. Limits: 256 records globally, 32 per owner, counting live
+Tombstones are at most 64 bytes each and carry their endpoint's owner. Their
+growth is bounded as follows (review R3-M2):
+- **Pinned.** A tombstone whose ID a transit record names (as source,
+  destination or paid endpoint) or an elevator pair names is never removed. At
+  most 2,816 can be pinned (256 records × 3 IDs, 1,024 pairs × 2).
+- **Young.** A tombstone is young until its endpoint's absence was observed in a
+  chunk-save or chunk-load tag at least 40 ticks earlier (the persistence signal
+  and age rule of step 2). Autosave writes a loaded chunk that changed within
+  6,000 ticks, so staying in the chunk does not keep it young. A young tombstone
+  takes its endpoint's place in the owner's 64 and the server's 2,048 endpoints
+  (§9), so a registration beyond them waits with `ENDPOINT_LIMIT`.
+- **Housekeeping.** Once the table holds more than 4,096 tombstones, an
+  unpinned one whose absence was read back in a `ChunkDataEvent.Load` tag after
+  the last server start (so it is on disk, review R2-L1) at least 6,000 ticks
+  earlier is removed, oldest observation first.
+- **Caps.** Settled (not young), unpinned tombstones are capped at **256 per
+  owner** and **8,192 on the server**. Beyond a cap the oldest such tombstone of
+  that owner (or of the server) is evicted, with an audit line
+  (`TOMBSTONE_EVICTED`). `/arce endgame tombstone evict <player>` evicts an
+  owner's settled, unpinned tombstones (one audited barrier flush).
+
+Evicting a settled, unpinned tombstone is safe. Registration reads the
+endpoint's own persisted entry (§9, review R3-H1): a returning copy that holds
+outbox entries, incoming payloads or receipts is frozen. Such a copy can
+neither register a delivered payload again nor claim a record paid elsewhere.
+A returning copy with no contents registers anew. A settled absence means a
+crash restores the endpoint only if the save that showed its absence was lost.
+A copy carried by a block mover has a current `next_seq`, so its new sequence
+numbers are above the old ones. A pin keeps the ID while a live record could
+still meet the copy. The reference model checks the source side with an
+adversary that evicts whenever these rules allow. Without a fault it delivers
+exactly once. With one lost write it adds no outcome beyond the audited
+`SOURCE_ROLLBACK` residual. Evicting before a saved absence, or without the
+freeze, is caught as a duplicate (`check_mutations.py`). One player's churn
+evicts only that player's tombstones, or the server's oldest settled ones.
+Limits: 256 records globally, 32 per owner, counting live
 outbox entries known to the server. A record whose payload no longer decodes
 (for example an item of a removed mod) is `QUARANTINED` with its raw payload kept
 byte-identical; it is never claimed, and only an operator purge removes it. A
@@ -707,8 +738,8 @@ count tickets by type before and after every system and after every ride.
 - **Lines.** Every state-changing intent, refusal code change, operator command,
   quarantine and ledger anomaly (`CLAIM_RECOVERED`, `REMATERIALIZED`,
   `REDIRECT_*`, `OUTBOX_STALE_DROPPED`, `SEQUENCE_GAP`, `SOURCE_ROLLBACK`,
-  `OUTBOX_LOST_ON_REMOVAL`, `REMOVAL_SETTLED`, `REMOVAL_SETTLEMENT_PENDING`)
-  writes one
+  `OUTBOX_LOST_ON_REMOVAL`, `REMOVAL_SETTLED`, `REMOVAL_SETTLEMENT_PENDING`,
+  `ENDPOINT_RETIRED`, `TOMBSTONE_EVICTED`) writes one
   `ARCE_ENDGAME` line of at most 512 bytes. Routine ledger transitions (escrow,
   registration, arrival, claim, acknowledgement, pruning) and effect batches are
   aggregated into one summary line per system every 1,200 ticks (review R1-L6).
@@ -727,7 +758,8 @@ count tickets by type before and after every system and after every ride.
   `endpoint list
   [<player>]`; `endpoint purge <id>` (removes the index record only, refused
   while referenced; the §11 tombstone stays until the absence is persisted);
-  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11); `transfer
+  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11); `tombstone
+  evict <player>` (§11); `transfer
   resettle <source> <seq>` (§9.1);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.
 - **Players** see their own device status in its menu; nothing lists other

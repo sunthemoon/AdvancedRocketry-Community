@@ -782,6 +782,70 @@
   "states_two_payloads_two_crashes": 53459,
   "states_one_payload_two_crashes_one_lost_write": 15665,
   "states_tombstone_removal_one_lost_write": 17897,
+  "states_cap_eviction": [
+   882,
+   20756
+  ],
+  "cap_eviction_cuts": [
+   {
+    "name": "R3-M2: absence save lost after the eviction; the copy with a delivered entry is frozen",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "ARRIVE",
+     "CLAIM",
+     "SAVE_D",
+     "D_ACK",
+     "FLUSH_L",
+     "PRUNE",
+     "D_DROP",
+     "SAVE_D",
+     "FLUSH_L",
+     "REMOVE_S",
+     "SAVE_S_LOST",
+     "AGE",
+     "EVICT_HW",
+     "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     0,
+     false
+    ]
+   },
+   {
+    "name": "R3-M2: removal and its absence saved, tombstone evicted, crash: delivered once",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "REMOVE_S",
+     "SAVE_S",
+     "AGE",
+     "ARRIVE",
+     "CLAIM",
+     "SAVE_D",
+     "D_ACK",
+     "FLUSH_L",
+     "PRUNE",
+     "FLUSH_L",
+     "EVICT_HW",
+     "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     0,
+     false
+    ]
+   }
+  ],
   "named_cuts": [
    {
     "name": "escrow not saved",

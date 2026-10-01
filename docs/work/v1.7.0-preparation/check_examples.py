@@ -156,6 +156,10 @@ class Transit:
     MAX_SEQ = 4
     # R1-H1: tombstone removal needs an aged absence; tests switch it off to separate the residual.
     TOMBSTONE_REMOVAL = True
+    # R3-M2: the tombstone caps may evict an unpinned tombstone once the source's absence was observed in a
+    # chunk-save tag; a test switches this adversary on. An evicted tombstone is ("X", dispatched_through): the
+    # protocol no longer knows the ID, the model keeps the value only to account a frozen copy's entries.
+    CAP_EVICTION = False
 
     @staticmethod
     def initial(payloads=1):
@@ -166,11 +170,11 @@ class Transit:
         l_dur = (frozenset(), 0, 1)
         d_live = (0, frozenset())  # buffer, receipts{(seq,persisted)}
         d_dur = (0, frozenset())
-        return (s_live, s_dur, l_live, l_dur, d_live, d_dur, False, (0, 0))
+        return (s_live, s_dur, l_live, l_dur, d_live, d_dur, False, (0, 0), 0)
 
     @staticmethod
     def normalize(state):
-        s_live, s_dur, (records, hw, e), (drecords, dhw, de), d_live, d_dur, rollback, destroyed = state
+        s_live, s_dur, (records, hw, e), (drecords, dhw, de), d_live, d_dur, rollback, destroyed, returned = state
         epochs = {e, de}
         for record in records | drecords:
             epochs.add(record[2])
@@ -182,7 +186,7 @@ class Transit:
             return frozenset((r[0], r[1], rank[r[2]], r[3], None if r[4] is None else rank[r[4]]) for r in rs)
 
         return (s_live, s_dur, (remap(records), hw, rank[e]), (remap(drecords), dhw, rank[de]), d_live, d_dur, rollback,
-                destroyed)
+                destroyed, returned)
 
     @staticmethod
     def record(records, seq):
@@ -194,10 +198,10 @@ class Transit:
     @classmethod
     def successors(cls, state, crashes_left, faults_left):
         """Yields (label, new_state, crashes_left, faults_left) for every enabled event."""
-        s_live, s_dur, l_live, l_dur, d_live, d_dur, rollback, destroyed = state
+        s_live, s_dur, l_live, l_dur, d_live, d_dur, rollback, destroyed, returned = state
         s_input, outbox, next_seq, present, absence_seen = s_live
         records, hw, e = l_live
-        hw_value = 0 if hw is None else hw  # None: the tombstone was removed
+        hw_value = 0 if hw is None or isinstance(hw, tuple) else hw  # None: removed; a tuple: evicted (R3-M2)
         buffer, receipts = d_live
         out_seqs = {o[0] for o in outbox}
         rec = lambda seq: cls.record(records, seq)
@@ -208,7 +212,7 @@ class Transit:
                          d_live=d_live, d_dur=d_dur, rollback=rollback, destroyed=destroyed)
             parts.update(changes)
             return cls.normalize((parts["s_live"], parts["s_dur"], parts["l_live"], parts["l_dur"],
-                                  parts["d_live"], parts["d_dur"], parts["rollback"], parts["destroyed"]))
+                                  parts["d_live"], parts["d_dur"], parts["rollback"], parts["destroyed"], returned))
 
         # Source rollback detection (ADR-054 section 11, last source row); escrow waits for it.
         rollback_pending = present and next_seq <= hw_value
@@ -216,7 +220,9 @@ class Transit:
             yield ("FIX_ROLLBACK", make(s_live=(s_input, outbox, hw_value + 1, present, absence_seen),
                                          rollback=True),
                    crashes_left, faults_left)
-        if present and not rollback_pending and s_input > 0 and len(outbox) < 4 and next_seq <= cls.MAX_SEQ:
+        # R3-H1: escrow needs S's registration to be durable (after a re-registration the ledger file must say so).
+        if present and not rollback_pending and s_input > 0 and len(outbox) < 4 and next_seq <= cls.MAX_SEQ \
+                and not isinstance(l_dur[1], tuple):
             yield ("ESCROW", make(s_live=(s_input - 1, outbox | {(next_seq, False, False)}, next_seq + 1,
                                           present, absence_seen)), crashes_left, faults_left)
         if present and s_input == 0:
@@ -232,8 +238,9 @@ class Transit:
                    crashes_left, faults_left)
         new_outbox = frozenset((o[0], True, o[2]) for o in outbox)
         saved = (s_input, frozenset(out_seqs), next_seq, present)
-        # R2-L1: only a chunk-load tag after a start (the crash below) observes an absence for tombstones.
-        observed = absence_seen
+        # R2-L1: only a chunk-load tag after a start (the crash below) observes an absence for housekeeping. The
+        # caps (R3-M2) also accept a chunk-save tag, observed even when its asynchronous write is lost.
+        observed = "saved" if cls.CAP_EVICTION and not present and absence_seen is False else absence_seen
         if saved != s_dur or new_outbox != outbox or observed != absence_seen or destroyed[0] != destroyed[1]:
             yield ("SAVE_S", make(s_live=(s_input, new_outbox, next_seq, present, observed), s_dur=saved,
                                   destroyed=(destroyed[0], destroyed[0])), crashes_left, faults_left)
@@ -241,12 +248,17 @@ class Transit:
                 # The save is observed (ChunkDataEvent.Save) but its asynchronous file write is lost.
                 yield ("SAVE_S_LOST", make(s_live=(s_input, new_outbox, next_seq, present, observed)),
                        crashes_left, faults_left - 1)
-        if any(o[1] and not o[2] for o in outbox) or absence_seen == "seen":
+        if any(o[1] and not o[2] for o in outbox) or absence_seen in ("seen", "saved"):
+            aged_absence = {"seen": "aged", "saved": "saved_aged"}.get(absence_seen, absence_seen)
             yield ("AGE", make(s_live=(s_input, frozenset((o[0], o[1], o[1] or o[2]) for o in outbox), next_seq,
-                                       present, "aged" if absence_seen else False)), crashes_left, faults_left)
+                                       present, aged_absence)), crashes_left, faults_left)
         if cls.TOMBSTONE_REMOVAL and hw is not None and not present and absence_seen == "aged":
             # R1-H1: the tombstone goes only once the source's absence is persisted.
             yield ("DROP_HW", make(l_live=(records, None, e)), crashes_left, faults_left)
+        if cls.CAP_EVICTION and isinstance(hw, int) and not present and absence_seen in ("saved_aged", "aged") \
+                and not records:
+            # R3-M2: a cap evicts an unpinned tombstone (no record names S) whose absence a save tag observed.
+            yield ("EVICT_HW", make(l_live=(records, ("X", hw), e)), crashes_left, faults_left)
         lowest = min(out_seqs) if out_seqs else None
         for seq, persisted, aged in sorted(outbox):
             r = rec(seq)
@@ -292,14 +304,30 @@ class Transit:
 
     @classmethod
     def crash(cls, state):
-        _, s_dur, _, l_dur, _, d_dur, rollback, destroyed = state
+        _, s_dur, _, l_dur, _, d_dur, rollback, destroyed, returned = state
         s_input, out_seqs, next_seq, present = s_dur
         # After restart the chunk load is a persistence observation; ageing restarts.
         s_live = (s_input, frozenset((seq, True, False) for seq in out_seqs), next_seq, present,
                   False if present else "seen")
+        l_live = l_dur
+        destroyed = (destroyed[1], destroyed[1])
+        records, hw, e = l_dur
+        if present and isinstance(hw, tuple):
+            # S returns although its tombstone was evicted (only after a lost write of the save that observed its
+            # absence). Registration reads the tag (ADR-054 section 9, R3-H1): with outbox entries the ID is frozen
+            # and an operator resolve discards them, because no tombstone proves them unregistered; the model
+            # counts those above the evicted dispatched_through as destroyed and hands the input back to the
+            # player. With no outbox entries the ID registers anew, with no dispatched_through.
+            if out_seqs:
+                lost = destroyed[1] + sum(1 for seq in out_seqs if seq > hw[1])
+                destroyed, returned = (lost, lost), returned + s_input
+                s_dur = (0, frozenset(), next_seq, False)
+                s_live = (0, frozenset(), next_seq, False, "aged")
+            else:
+                l_live = (records, 0, e)
         d_buffer, d_receipts = d_dur
-        return cls.normalize((s_live, s_dur, l_dur, l_dur, (d_buffer, frozenset((r, True) for r in d_receipts)),
-                              d_dur, rollback, (destroyed[1], destroyed[1])))
+        return cls.normalize((s_live, s_dur, l_live, l_dur, (d_buffer, frozenset((r, True) for r in d_receipts)),
+                              d_dur, rollback, destroyed, returned))
 
     @classmethod
     def drain(cls, state):
@@ -319,9 +347,10 @@ class Transit:
 
     @classmethod
     def delivered(cls, state):
-        (s_input, outbox, _, _, _), _, (records, _, _), _, (buffer, receipts), _, rollback, destroyed = state
+        (s_input, outbox, _, _, _), _, (records, _, _), _, (buffer, receipts), _, rollback, destroyed, returned = state
         assert not outbox and not records and not receipts and s_input == 0, state
-        return buffer, destroyed[1], rollback
+        # A payload handed back to the player by a frozen copy counts as delivered: it exists once.
+        return buffer + returned, destroyed[1], rollback
 
     @classmethod
     def explore(cls, crashes, faults, payloads=1):
@@ -925,6 +954,31 @@ class Vectors(unittest.TestCase):
         unaudited = {key for key in outcomes if key[0] > 1 and not key[2]}
         self.assertEqual(unaudited, set(), outcomes)
         self.assertEqual(states, EXAMPLES["transit"]["states_tombstone_removal_one_lost_write"])
+
+    def test_transit_cap_eviction_keeps_the_lost_write_guarantee(self):
+        # R3-M2: a cap evicts an unpinned tombstone once a chunk-save tag observed the source's absence. Without a
+        # fault the source cannot return; after one lost write a returning copy with outbox entries is frozen and
+        # resolved, an empty one registers anew, and no outcome class is added to the lost-write residual's.
+        Transit.CAP_EVICTION = True
+        try:
+            clean_states, clean = Transit.explore(crashes=2, faults=0)
+            states, outcomes = Transit.explore(crashes=2, faults=1)
+            for case in EXAMPLES["transit"]["cap_eviction_cuts"]:
+                state = Transit.normalize(Transit.initial())
+                for label in case["events"]:
+                    options = {l: s for l, s, _, _ in Transit.successors(state, 1, 1)}
+                    self.assertIn(label, options, (case["name"], label, sorted(options)))
+                    state = options[label]
+                self.assertEqual(list(Transit.delivered(Transit.drain(state))), case["expected"], case["name"])
+        finally:
+            Transit.CAP_EVICTION = False
+        for delivered, destroyed, rollback, faulted in clean:
+            self.assertEqual((delivered + destroyed, rollback, faulted), (1, False, False))
+        for (delivered, destroyed, rollback, faulted), _ in outcomes.items():
+            self.assertGreaterEqual(delivered + destroyed, 1)
+            if delivered > 1:
+                self.assertTrue(faulted and rollback, outcomes)
+        self.assertEqual([clean_states, states], EXAMPLES["transit"]["states_cap_eviction"])
 
     def test_transit_named_cuts(self):
         for case in EXAMPLES["transit"]["named_cuts"]:
