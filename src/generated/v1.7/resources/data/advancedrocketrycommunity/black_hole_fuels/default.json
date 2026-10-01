@@ -1,0 +1,22 @@
+{
+  "default_burn_ticks": 500,
+  "entries": [
+    {
+      "burn_ticks": 1,
+      "item": "minecraft:stone"
+    },
+    {
+      "burn_ticks": 1,
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "burn_ticks": 1,
+      "item": "minecraft:dirt"
+    },
+    {
+      "burn_ticks": 1,
+      "item": "minecraft:netherrack"
+    }
+  ],
+  "schema_version": 1
+}

@@ -36,9 +36,9 @@ class CommonConfigTest {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
         // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing,
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
-        // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values and
-        // the five ADR-058 gravity field caps.
-        assertEquals(45, countValues(CommonConfig.SPEC.getValues()));
+        // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
+        // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values.
+        assertEquals(48, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -73,6 +73,16 @@ class CommonConfigTest {
         assertRange("endgame.laserDrill.layersPerTick", CommonConfig.LASER_DRILL_LAYERS_PER_TICK, 1, 7);
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings.DEFAULTS,
                 CommonConfig.laserDrillSettings(), "the defaults apply until the config loads");
+    }
+
+    @Test
+    void blackHoleValuesHaveTheirContractRanges() {
+        assertRangeAndDefault("endgame.blackHoleGenerator.energyPercent", CommonConfig.BLACK_HOLE_ENERGY_PERCENT, 10,
+                400, 100);
+        assertRange("endgame.blackHoleGenerator.activePerOwner", CommonConfig.BLACK_HOLE_ACTIVE_PER_OWNER, 1, 4);
+        assertRange("endgame.blackHoleGenerator.activeGlobal", CommonConfig.BLACK_HOLE_ACTIVE_GLOBAL, 1, 64);
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleSettings.DEFAULTS,
+                CommonConfig.blackHoleSettings(), "the defaults apply until the config loads");
     }
 
     @Test

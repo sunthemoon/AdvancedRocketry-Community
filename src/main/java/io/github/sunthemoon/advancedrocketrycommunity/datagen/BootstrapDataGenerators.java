@@ -28,6 +28,7 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeServer(), V170EndgameProviders.loot(output));
         generator.addProvider(event.includeServer(), new V170EndgameProviders.Recipes(output));
         generator.addProvider(event.includeServer(), new V170LaserDrillTableProvider(output));
+        generator.addProvider(event.includeServer(), new V170BlackHoleProvider(output));
         generator.addProvider(event.includeServer(), new V170EndgameProviders.ToolTags(
                 output, event.getLookupProvider(), event.getExistingFileHelper()));
     }

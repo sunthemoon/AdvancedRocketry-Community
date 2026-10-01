@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.CelestialCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.command.PlanetaryRouteCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService;
@@ -104,6 +105,7 @@ public final class AdvancedRocketryCommunity {
             new SatelliteComponentReloadListener.Manager();
     private final ResourceTableReloadListener.Manager resourceTables = new ResourceTableReloadListener.Manager();
     private final LaserDrillTableReloadListener.Manager laserDrillTables = new LaserDrillTableReloadListener.Manager();
+    private final BlackHoleDataReloadListener.Manager blackHoleData = new BlackHoleDataReloadListener.Manager();
     private final MultiblockPatternCatalogManager multiblockPatterns =
             new MultiblockPatternCatalogManager();
     private final RollingMachineManager rollingMachines = new RollingMachineManager(multiblockPatterns);
@@ -311,6 +313,7 @@ public final class AdvancedRocketryCommunity {
         event.addListener(new SatelliteDefinitionReloadListener(satelliteCatalogs, celestialCatalogs, satelliteComponents));
         event.addListener(new ResourceTableReloadListener(resourceTables, celestialCatalogs));
         event.addListener(new LaserDrillTableReloadListener(laserDrillTables, celestialCatalogs));
+        event.addListener(new BlackHoleDataReloadListener(blackHoleData));
         event.addListener(new MultiblockPatternReloadListener(multiblockPatterns));
     }
 
@@ -387,5 +390,6 @@ public final class AdvancedRocketryCommunity {
         satelliteComponents.clear();
         resourceTables.clear();
         laserDrillTables.clear();
+        blackHoleData.clear();
     }
 }

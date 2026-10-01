@@ -27,6 +27,7 @@ public final class V170LanguageProvider extends LanguageProvider {
         add("block.advancedrocketrycommunity.endgame_casing", chinese ? "终局机械外壳" : "Endgame Casing");
         add("item.advancedrocketrycommunity.laser_lens", chinese ? "激光透镜" : "Laser Lens");
         add("advancedrocketrycommunity.endgame.status_line", "%s [%s]");
+        add("body.advancedrocketrycommunity.cygnus_x1", chinese ? "天鹅座 X-1" : "Cygnus X-1");
         add("block.advancedrocketrycommunity.orbital_laser_drill", chinese ? "轨道激光钻" : "Orbital Laser Drill");
         add("block.advancedrocketrycommunity.laser_target", chinese ? "激光目标" : "Laser Target");
         add("block.advancedrocketrycommunity.gravity_field_controller", chinese ? "区域重力控制器" : "Gravity Field Controller");
@@ -163,6 +164,10 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.FIELD_OUTSIDE_STATION, "The field lies outside the station", "力场位于空间站之外");
         put(codes, EndgameCode.FIELD_DENSITY, "Too many fields here", "此处力场过多");
         put(codes, EndgameCode.TRUST_LIMIT, "You trust the maximum of 32 owners", "你信任的所有者已达 32 个上限");
+        put(codes, EndgameCode.GENERATING, "Generating", "发电中");
+        put(codes, EndgameCode.PAUSED_FULL, "Paused: the energy buffer is full", "暂停：能量缓存已满");
+        put(codes, EndgameCode.NO_FUEL, "Waiting for fuel", "等待燃料");
+        put(codes, EndgameCode.NO_SINGULARITY, "The station does not orbit a singularity", "空间站未环绕奇点");
         return codes;
     }
 

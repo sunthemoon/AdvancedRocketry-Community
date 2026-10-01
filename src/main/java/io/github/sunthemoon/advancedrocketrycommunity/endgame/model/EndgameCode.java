@@ -78,7 +78,12 @@ public enum EndgameCode {
     FIELD_OUTSIDE_STATION,
     FIELD_DENSITY,
     /** A player's trust list holds at most 32 owners (ADR-058 section 5). */
-    TRUST_LIMIT;
+    TRUST_LIMIT,
+    // ADR-057: the black-hole generator.
+    GENERATING,
+    PAUSED_FULL,
+    NO_FUEL,
+    NO_SINGULARITY;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 
