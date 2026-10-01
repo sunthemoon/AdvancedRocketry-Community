@@ -8,10 +8,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetB
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -20,17 +24,21 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
- * ADR-054 section 8 for device menus: every slot change, including a partial shift-click and a merge into a
- * non-empty slot, marks the block entity changed, so the next save stores what the player left (review C11R-C1).
+ * Device menus: every slot change, including a partial shift-click and a merge into a non-empty slot, marks the block
+ * entity changed, so the next save stores what the player left (ADR-054 section 8, review C11R-C1); a viewer with
+ * public {@code VIEW} only takes and puts nothing (ADR-054 section 3, review C11R-H2).
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -130,6 +138,109 @@ public final class EndgameMenuGameTests {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         }
         helper.succeed();
+    }
+
+    /** Outside stations a stranger has public VIEW of another player's laser target, and takes nothing. */
+    @GameTest(template = "empty", batch = "endgame_menu_stranger", timeoutTicks = 100)
+    public static void aStrangerSeesALaserTargetButTakesNothing(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
+        UUID ownerId = UUID.randomUUID();
+        helper.assertTrue(target.assignOwner(ownerId), "Owner not assigned");
+        target.buffer().setStackInSlot(0, new ItemStack(Items.DIAMOND, 5));
+        List<ServerPlayer> joined = new ArrayList<>();
+        try {
+            ServerPlayer stranger = ConnectedTestPlayers.join(server, UUID.randomUUID(), "menuStranger", level,
+                    pos.east(2), new ArrayList<>());
+            joined.add(stranger);
+            open(level, stranger, pos);
+            helper.assertTrue(stranger.containerMenu instanceof LaserTargetMenu menu
+                    && menu.stillValid(stranger) && !menu.itemActionAllowed(EndgameAction.WITHDRAW),
+                    "The stranger's view is not a public view: " + stranger.containerMenu);
+            LaserTargetMenu menu = (LaserTargetMenu) stranger.containerMenu;
+            menu.clicked(0, 0, ClickType.QUICK_MOVE, stranger);
+            menu.clicked(0, 0, ClickType.PICKUP, stranger);
+            menu.clicked(0, 0, ClickType.THROW, stranger);
+            menu.clicked(0, 0, ClickType.SWAP, stranger);
+            helper.assertTrue(target.buffer().getStackInSlot(0).getCount() == 5
+                            && stranger.getInventory().countItem(Items.DIAMOND) == 0 && menu.getCarried().isEmpty(),
+                    "A stranger took drops from another player's laser target");
+            ServerPlayer owner = ConnectedTestPlayers.join(server, ownerId, "menuTargetOwner", level, pos.west(2),
+                    new ArrayList<>());
+            joined.add(owner);
+            open(level, owner, pos);
+            owner.containerMenu.clicked(0, 0, ClickType.QUICK_MOVE, owner);
+            helper.assertTrue(owner.getInventory().countItem(Items.DIAMOND) == 5
+                    && target.buffer().getStackInSlot(0).isEmpty(), "The owner could not take the drops");
+        } finally {
+            joined.forEach(player -> {
+                player.containerMenu = player.inventoryMenu;
+                server.getPlayerList().remove(player);
+            });
+            target.buffer().setStackInSlot(0, ItemStack.EMPTY);
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        }
+        helper.succeed();
+    }
+
+    /** A station member has VIEW of the station owner's drill: no output, no lens, no lens put back. */
+    @GameTest(template = "empty", batch = "endgame_menu_member", timeoutTicks = 100)
+    public static void aStationMemberSeesTheDrillButTakesAndPutsNothing(GameTestHelper helper) {
+        OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
+                CelestialIds.EARTH_ID);
+        OrbitalLaserDrillBlockEntity drill = fixture.drill();
+        drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
+        drill.storage().output().setStackInSlot(0, new ItemStack(Items.DIAMOND, 7));
+        List<ServerPlayer> joined = new ArrayList<>();
+        try {
+            ServerPlayer member = ConnectedTestPlayers.join(fixture.server, UUID.randomUUID(), "menuMember",
+                    fixture.space, fixture.controller.south(3), new ArrayList<>());
+            joined.add(member);
+            fixture.stations.invite(fixture.stationId, member.getUUID());
+            fixture.stations.acceptInvitation(fixture.stationId, member.getUUID());
+            open(fixture.space, member, fixture.controller);
+            helper.assertTrue(member.containerMenu instanceof OrbitalLaserDrillMenu menu && menu.stillValid(member)
+                    && !menu.itemActionAllowed(EndgameAction.WITHDRAW)
+                    && !menu.itemActionAllowed(EndgameAction.CONFIGURE),
+                    "The member's view is not VIEW only: " + member.containerMenu);
+            OrbitalLaserDrillMenu menu = (OrbitalLaserDrillMenu) member.containerMenu;
+            menu.clicked(1, 0, ClickType.QUICK_MOVE, member);
+            menu.clicked(0, 0, ClickType.QUICK_MOVE, member);
+            menu.clicked(1, 0, ClickType.PICKUP, member);
+            helper.assertTrue(member.getInventory().countItem(Items.DIAMOND) == 0
+                            && member.getInventory().countItem(ModItems.LASER_LENS.get()) == 0
+                            && drill.storage().output().getStackInSlot(0).getCount() == 7
+                            && drill.storage().lensPresent() && menu.getCarried().isEmpty(),
+                    "A station member took the drill's output or lens");
+            drill.storage().lens().setStackInSlot(0, ItemStack.EMPTY);
+            member.getInventory().setItem(9, new ItemStack(ModItems.LASER_LENS.get()));
+            menu.clicked(menu.slots.size() - 36, 0, ClickType.QUICK_MOVE, member);
+            helper.assertTrue(!drill.storage().lensPresent()
+                            && member.getInventory().countItem(ModItems.LASER_LENS.get()) == 1,
+                    "A station member put a lens into the station owner's drill");
+            ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "menuDrillStationOwner",
+                    fixture.space, fixture.controller.south(3).east(), new ArrayList<>());
+            joined.add(owner);
+            open(fixture.space, owner, fixture.controller);
+            owner.containerMenu.clicked(1, 0, ClickType.QUICK_MOVE, owner);
+            helper.assertTrue(owner.getInventory().countItem(Items.DIAMOND) == 7, "The owner could not take output");
+        } finally {
+            joined.forEach(player -> {
+                player.containerMenu = player.inventoryMenu;
+                fixture.server.getPlayerList().remove(player);
+            });
+            fixture.close();
+        }
+        helper.succeed();
+    }
+
+    /** Right-clicks the block as the player would (the block's own authority check opens the menu or refuses). */
+    private static void open(ServerLevel level, ServerPlayer player, BlockPos pos) {
+        level.getBlockState(pos).use(level, player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
     }
 
     /** Fills the inventory with dirt, leaving room for exactly {@code room} more of {@code item} in slot 0. */

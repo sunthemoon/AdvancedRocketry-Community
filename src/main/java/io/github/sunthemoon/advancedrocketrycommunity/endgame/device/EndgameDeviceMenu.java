@@ -14,18 +14,25 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraftforge.common.util.FakePlayer;
 
 /**
  * ADR-054 section 4 menu base: buttons are the only intents and pass {@link EndgameIntentGuard} first; the server
  * sends the device view when the menu opens and on change, at most once per 5 ticks, with detail only for viewers
- * that ADR-054 section 3 allows to see it.
+ * that ADR-054 section 3 allows to see it. Item slots ({@link EndgameItemSlot}) ask {@link #itemActionAllowed}: the
+ * server decides for the viewer at every click, and one data slot carries the result to the client for display.
  */
 public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
+    private static final int TAKE = 1;
+    private static final int PUT = 2;
+
     @Nullable
     private final EndgameIntentGuard.Target target;
     @Nullable
     private final ServerPlayer viewer;
+    private final DataSlot itemAuthority;
     @Nullable
     private EndgameDeviceView lastSent;
     private long lastSentTick = Long.MIN_VALUE / 2;
@@ -35,6 +42,38 @@ public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
         super(type, id);
         this.target = target;
         this.viewer = player instanceof ServerPlayer serverPlayer ? serverPlayer : null;
+        this.itemAuthority = target == null ? DataSlot.standalone() : new DataSlot() {
+            @Override
+            public int get() {
+                return (itemActionAllowed(EndgameAction.WITHDRAW) ? TAKE : 0)
+                        | (itemActionAllowed(EndgameAction.CONFIGURE) ? PUT : 0);
+            }
+
+            @Override
+            public void set(int value) {
+            }
+        };
+        addDataSlot(itemAuthority);
+    }
+
+    /**
+     * ADR-054 section 3 for item slots (review C11R-H2): taking needs {@code WITHDRAW}, putting needs
+     * {@code CONFIGURE}. On the server it is decided now for the menu's viewer, a connected non-fake player; the
+     * client copy shows the server's last decision and changes nothing by itself.
+     */
+    public boolean itemActionAllowed(EndgameAction action) {
+        if (action != EndgameAction.WITHDRAW && action != EndgameAction.CONFIGURE) {
+            throw new IllegalArgumentException("Item slots take or put: " + action);
+        }
+        if (target == null) {
+            return (itemAuthority.get() & (action == EndgameAction.WITHDRAW ? TAKE : PUT)) != 0;
+        }
+        if (viewer == null || viewer instanceof FakePlayer || !(viewer.level() instanceof ServerLevel level)) {
+            return false;
+        }
+        Optional<EndgameDeviceBlockEntity> device = device(level);
+        return device.isPresent() && !device.get().quarantined()
+                && authority(level, viewer, device.get(), action).allowed();
     }
 
     /** The intent of a button ID, or empty for an unknown button. */
@@ -130,9 +169,14 @@ public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
     /** ADR-054 section 3 {@code VIEW} for a viewer of this device. */
     public static EndgameAuthority.Decision viewAuthority(ServerLevel level, Player viewer,
                                                           EndgameDeviceBlockEntity device) {
-        return EndgameAuthority.decide(new EndgameAuthority.Request(viewer.getUUID(), viewer.hasPermissions(2),
-                device.ownerId(), EndgameStations.at(level, device.getBlockPos()).context(), EndgameAction.VIEW,
-                false));
+        return authority(level, viewer, device, EndgameAction.VIEW);
+    }
+
+    /** ADR-054 section 3 for a player and an action on this device (not a station-managed system). */
+    public static EndgameAuthority.Decision authority(ServerLevel level, Player actor, EndgameDeviceBlockEntity device,
+                                                      EndgameAction action) {
+        return EndgameAuthority.decide(new EndgameAuthority.Request(actor.getUUID(), actor.hasPermissions(2),
+                device.ownerId(), EndgameStations.at(level, device.getBlockPos()).context(), action, false));
     }
 
     /** The server-side viewer; null on the client. */

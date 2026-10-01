@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,7 +51,8 @@ public final class LaserTargetMenu extends EndgameDeviceMenu {
         super(ModMenuTypes.LASER_TARGET.get(), id, target == null ? null : targetOf(target), inventory.player);
         Runnable changed = target == null ? () -> { } : target::setChanged;
         for (int slot = 0; slot < LaserTargetBlockEntity.BUFFER_SLOTS; slot++) {
-            addSlot(new TakeOnlySlot(buffer, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18, changed));
+            addSlot(new TakeOnlySlot(buffer, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18, changed,
+                    this::itemActionAllowed));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -115,7 +117,8 @@ public final class LaserTargetMenu extends EndgameDeviceMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        if (index < 0 || index >= PLAYER_START || !slots.get(index).hasItem()) {
+        if (index < 0 || index >= PLAYER_START || !slots.get(index).hasItem()
+                || !itemActionAllowed(EndgameAction.WITHDRAW)) {
             return ItemStack.EMPTY;
         }
         Slot source = slots.get(index);
@@ -134,8 +137,9 @@ public final class LaserTargetMenu extends EndgameDeviceMenu {
     }
 
     private static final class TakeOnlySlot extends EndgameItemSlot {
-        TakeOnlySlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
-            super(handler, index, x, y, changed);
+        TakeOnlySlot(IItemHandler handler, int index, int x, int y, Runnable changed,
+                     Predicate<EndgameAction> allowed) {
+            super(handler, index, x, y, changed, allowed);
         }
 
         @Override

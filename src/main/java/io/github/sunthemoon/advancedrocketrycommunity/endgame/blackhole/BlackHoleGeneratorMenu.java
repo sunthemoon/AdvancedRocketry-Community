@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevi
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameItemSlot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceView;
@@ -13,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -54,7 +56,8 @@ public final class BlackHoleGeneratorMenu extends EndgameDeviceMenu {
         this.data = data;
         Runnable changed = generator == null ? () -> { } : generator::setChanged;
         for (int slot = 0; slot < BlackHoleGeneratorBlockEntity.FUEL_SLOTS; slot++) {
-            addSlot(new FuelSlot(fuel, slot, 62 + (slot % 3) * 18, 18 + (slot / 3) * 18, changed));
+            addSlot(new FuelSlot(fuel, slot, 62 + (slot % 3) * 18, 18 + (slot / 3) * 18, changed,
+                    this::itemActionAllowed));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -114,6 +117,9 @@ public final class BlackHoleGeneratorMenu extends EndgameDeviceMenu {
         if (index < 0 || index >= slots.size() || !slots.get(index).hasItem()) {
             return ItemStack.EMPTY;
         }
+        if (!itemActionAllowed(index < PLAYER_START ? EndgameAction.WITHDRAW : EndgameAction.CONFIGURE)) {
+            return ItemStack.EMPTY;
+        }
         Slot source = slots.get(index);
         ItemStack stack = source.getItem();
         ItemStack original = stack.copy();
@@ -144,8 +150,8 @@ public final class BlackHoleGeneratorMenu extends EndgameDeviceMenu {
     }
 
     private static final class FuelSlot extends EndgameItemSlot {
-        FuelSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
-            super(handler, index, x, y, changed);
+        FuelSlot(IItemHandler handler, int index, int x, int y, Runnable changed, Predicate<EndgameAction> allowed) {
+            super(handler, index, x, y, changed, allowed);
         }
 
         @Override

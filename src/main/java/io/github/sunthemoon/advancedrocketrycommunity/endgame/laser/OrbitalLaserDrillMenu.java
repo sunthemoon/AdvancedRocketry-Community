@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -85,9 +86,10 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
         checkContainerDataCount(data, DATA_COUNT);
         this.data = data;
         Runnable changed = drill == null ? () -> { } : drill::setChanged;
-        addSlot(new EndgameItemSlot(lens, 0, 26, 36, changed));
+        addSlot(new EndgameItemSlot(lens, 0, 26, 36, changed, this::itemActionAllowed));
         for (int slot = 0; slot < LaserDrillStorage.OUTPUT_SLOTS; slot++) {
-            addSlot(new OutputSlot(output, slot, 62 + (slot % 6) * 18, 18 + (slot / 6) * 18, changed));
+            addSlot(new OutputSlot(output, slot, 62 + (slot % 6) * 18, 18 + (slot / 6) * 18, changed,
+                    this::itemActionAllowed));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -282,6 +284,9 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
         if (index < 0 || index >= slots.size() || !slots.get(index).hasItem()) {
             return ItemStack.EMPTY;
         }
+        if (!itemActionAllowed(index < PLAYER_START ? EndgameAction.WITHDRAW : EndgameAction.CONFIGURE)) {
+            return ItemStack.EMPTY;
+        }
         Slot source = slots.get(index);
         ItemStack stack = source.getItem();
         ItemStack original = stack.copy();
@@ -310,8 +315,9 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
 
     /** Players take output; nothing is ever inserted (ADR-055 section 1). */
     private static final class OutputSlot extends EndgameItemSlot {
-        OutputSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
-            super(handler, index, x, y, changed);
+        OutputSlot(IItemHandler handler, int index, int x, int y, Runnable changed,
+                   Predicate<EndgameAction> allowed) {
+            super(handler, index, x, y, changed, allowed);
         }
 
         @Override
