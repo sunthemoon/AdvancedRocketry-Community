@@ -63,6 +63,7 @@ final class TerminalResourceActions {
     void reloaded() {
         loadObservationPending = true;
         initialPassDone = false;
+        failureReported = false;
     }
 
     void tick(ServerLevel level) {
@@ -311,10 +312,8 @@ final class TerminalResourceActions {
             }
             initialPassDone = true;
         }
-        if (missionId != null) {
-            apply(server, service, missionId);
-        }
-        return null;
+        // C9R2-L2: if the acted-on mission's row cannot be reconciled, the action is refused, never taken blind.
+        return missionId != null && !apply(server, service, missionId) ? SatelliteOperationCode.SERVER_ERROR : null;
     }
 
     private static UUID currentMission(ServerPlayer player, SatelliteIdentity chip) {
@@ -331,9 +330,9 @@ final class TerminalResourceActions {
 
     /**
      * One reconciliation row: the service applies the registry side, the delivery section the terminal side. A
-     * failing row is logged once per load and skipped, so the terminal keeps ticking (C9-L2).
+     * failing row is logged once per load and skipped, so the terminal keeps ticking (C9-L2); false then.
      */
-    private void apply(MinecraftServer server, ResourceMissionService service, UUID missionId) {
+    private boolean apply(MinecraftServer server, ResourceMissionService service, UUID missionId) {
         try {
             TerminalDelivery delivery = terminal.delivery();
             DeliveryTerminal here = here(server);
@@ -341,7 +340,7 @@ final class TerminalResourceActions {
                     delivery.receipt(missionId));
             String event = delivery.apply(reconciled.action(), missionId, reconciled.mission());
             if (event == null) {
-                return;
+                return true;
             }
             if (event.equals("RECEIPT_DROPPED") || event.equals("REMATERIALIZED")) {
                 terminal.setChanged();
@@ -351,6 +350,7 @@ final class TerminalResourceActions {
             } else {
                 service.auditAbsent(server, event, missionId, here.id(), terminal.ownerOrNil());
             }
+            return true;
         } catch (RuntimeException exception) {
             if (!failureReported) {
                 failureReported = true;
@@ -358,6 +358,7 @@ final class TerminalResourceActions {
                         "Satellite terminal reconciliation failed for mission {} (reported once per load)",
                         missionId, exception);
             }
+            return false;
         }
     }
 

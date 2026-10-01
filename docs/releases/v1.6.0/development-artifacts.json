@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "bytes": 48476,
+      "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+      "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+    },
+    {
+      "bytes": 1558576,
+      "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+      "sha256": "ad9e6de9a77d22db7f2b2b194b0ce1a595074fe01432ea623c80cdf0090646ed"
+    },
+    {
+      "bytes": 3443356,
+      "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+      "sha256": "452885f0aeccb1396fb2694d149c8add703d1cdfc5f822ed71ef51d4e760dfe0"
+    }
+  ],
+  "build": "1.20.1-1.6.0-dev",
+  "candidate_commit": null,
+  "development_parent_commit": "eb5b80e1aaa6d427e6e3f879f468a814c1bb336f",
+  "native_inputs": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.5.0-dev.jar",
+      "sha256": "26a25d024cdf33b31ec96be9534b34f47ab73099458472da7e751faba4060433",
+      "version": "1.20.1-1.5.0-dev"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+      "sha256": "452885f0aeccb1396fb2694d149c8add703d1cdfc5f822ed71ef51d4e760dfe0",
+      "version": "1.20.1-1.6.0-dev"
+    },
+    {
+      "name": "arce-adapter-compat-test-1.0.0.jar",
+      "sha256": "765735d1254ed6f66049f45cc740208882195bff7a00bfd29e2245e264976fa4",
+      "version": "1.0.0"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Bytes built and tested by the C9 closure full run and its native harness. Development artifacts, not a release candidate or a download."
+}

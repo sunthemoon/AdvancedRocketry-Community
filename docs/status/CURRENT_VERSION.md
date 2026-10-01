@@ -49,8 +49,14 @@ and reward contracts after three independent review rounds
 components, the Satellite Builder, launchable kinds, survey scans and microwave
 receivers) is implemented and closed after two independent reviews, which also
 accepted ADR-049 and ADR-050 revision 4 ([closure](../work/v1.6.0-c7-close/VERIFICATION.md)).
-The runtime identity is `1.20.1-1.6.0-dev`. C8a-2 (resource tables) is done; the next
-work is C8a-1 in [COMPLETION-PLAN](COMPLETION-PLAN.md). No Gate is claimed. The v1.5
+The runtime identity is `1.20.1-1.6.0-dev`. C8a (write policy, limits, budgets,
+retention and resource tables), C8b (resource missions and terminal delivery) and C9
+(the independent review of C8, the native recovery and performance runs) are complete.
+The [v1.6 development handoff](../releases/v1.6.0/RELEASE-EVIDENCE.md) lists the evidence
+and the open acceptance: V0/V1/V2, S2 with real players, reference-hardware performance,
+the candidate-bound matrix and the final audit and human decision. Release status
+remains `IN_PROGRESS`, not `PASSED`. The next development chunk is v1.7 (C10 in
+[COMPLETION-PLAN](COMPLETION-PLAN.md)), in a new session. No Gate is claimed. The v1.5
 facts below are unchanged.
 
 Previous development version (v1.5, development complete, release `IN_PROGRESS`):

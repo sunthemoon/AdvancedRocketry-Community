@@ -1,0 +1,77 @@
+{
+  "base_commit": "eb5b80e1aaa6d427e6e3f879f468a814c1bb336f",
+  "files": [
+    {
+      "bytes": 3019,
+      "path": "docs/releases/v1.6.0/GATE-STATUS.md",
+      "sha256": "ceb7f428678a5b7fee09b3799dfc1d98f4955d0b0ab50964b9ab391561b6ea48",
+      "working_sha256": "ceb7f428678a5b7fee09b3799dfc1d98f4955d0b0ab50964b9ab391561b6ea48"
+    },
+    {
+      "bytes": 6158,
+      "path": "docs/releases/v1.6.0/KNOWN-ISSUES.md",
+      "sha256": "7ca462c6f52f31ad63274614cdbd8b799f457d87f36d93f400f0b99bda9b53fe",
+      "working_sha256": "7ca462c6f52f31ad63274614cdbd8b799f457d87f36d93f400f0b99bda9b53fe"
+    },
+    {
+      "bytes": 5555,
+      "path": "docs/releases/v1.6.0/RECOVERY-MATRIX.md",
+      "sha256": "b8816d0ee908c4db13483c56faa0e86f0e56a76a0d2ae386e542fe8decc91304",
+      "working_sha256": "b8816d0ee908c4db13483c56faa0e86f0e56a76a0d2ae386e542fe8decc91304"
+    },
+    {
+      "bytes": 7881,
+      "path": "docs/releases/v1.6.0/RELEASE-EVIDENCE.md",
+      "sha256": "b9fbdbfa319f791a9b32b5a3b2f8bd16e2ea6d1634d58312a0d720e55b5ce85c",
+      "working_sha256": "b9fbdbfa319f791a9b32b5a3b2f8bd16e2ea6d1634d58312a0d720e55b5ce85c"
+    },
+    {
+      "bytes": 6453,
+      "path": "docs/releases/v1.6.0/REQUIREMENT-MAP.md",
+      "sha256": "188982ad0144dec34d1a2492d2d72e0ba1cbad56427f674505caa26003e5364e",
+      "working_sha256": "188982ad0144dec34d1a2492d2d72e0ba1cbad56427f674505caa26003e5364e"
+    },
+    {
+      "bytes": 598,
+      "path": "docs/releases/v1.6.0/checksums.txt",
+      "sha256": "3a2adc24788dad7a521e038e0e94c9cc6c9bd93f0bb94da0cb985cfe986cce5f",
+      "working_sha256": "3a2adc24788dad7a521e038e0e94c9cc6c9bd93f0bb94da0cb985cfe986cce5f"
+    },
+    {
+      "bytes": 1491,
+      "path": "docs/releases/v1.6.0/development-artifacts.json",
+      "sha256": "c4dd8dad084901a5a6fed0c4c732c6e1d9e477112069043a36d5c0037d803942",
+      "working_sha256": "c4dd8dad084901a5a6fed0c4c732c6e1d9e477112069043a36d5c0037d803942"
+    },
+    {
+      "bytes": 6403,
+      "path": "docs/releases/v1.6.0/evidence-index.json",
+      "sha256": "d765366436869ac968d19b62a97abff3f018fd070659343722bacce0e9f72231",
+      "working_sha256": "d765366436869ac968d19b62a97abff3f018fd070659343722bacce0e9f72231"
+    },
+    {
+      "bytes": 11119,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "fd0a9c0a30ad6a6b18690c6bdb9c42e64fcf5802e757961e4ded57039169edae",
+      "working_sha256": "fd0a9c0a30ad6a6b18690c6bdb9c42e64fcf5802e757961e4ded57039169edae"
+    },
+    {
+      "bytes": 7255,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "a604a8b971a5942b8ff3ad1da315f876a5970aa782f8d9c7e236320ea378a035",
+      "working_sha256": "a604a8b971a5942b8ff3ad1da315f876a5970aa782f8d9c7e236320ea378a035"
+    },
+    {
+      "bytes": 10262,
+      "path": "docs/work/v1.6.0-implementation-log.md",
+      "sha256": "269c68bd8f719b6441742bc0af374ca44ce90d727d5e674cc4acb3c999fad70d",
+      "working_sha256": "269c68bd8f719b6441742bc0af374ca44ce90d727d5e674cc4acb3c999fad70d"
+    },
+    {
+      "bytes": 21237,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/TerminalResourceActions.java",
+      "sha256": "4a095e30b8a4c85552ab8123eca896e3f16bd34f76c478b403915a9b84f41fc4",
+      "working_sha256": "4a095e30b8a4c85552ab8123eca896e3f16bd34f76c478b403915a9b84f41fc4"
+    }
+  ]
+}

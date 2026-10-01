@@ -1,0 +1,33 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48476,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+      },
+      {
+        "bytes": 1558576,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "ad9e6de9a77d22db7f2b2b194b0ce1a595074fe01432ea623c80cdf0090646ed"
+      },
+      {
+        "bytes": 3443356,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "452885f0aeccb1396fb2694d149c8add703d1cdfc5f822ed71ef51d4e760dfe0"
+      }
+    ]
+  },
+  "base_commit": "eb5b80e1aaa6d427e6e3f879f468a814c1bb336f",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 218,
+    "tests": 1157
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/TerminalResourceActions.java": "4a095e30b8a4c85552ab8123eca896e3f16bd34f76c478b403915a9b84f41fc4"
+  }
+}

@@ -131,8 +131,13 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
   终端根 2、区块标签持久化信号、对账表、64 种重绑定顺序与崩溃切点守恒测试、
   超过 256 次领取的 A1（`docs/work/v1.6.0-c8b-delivery/`）。
 
-### C9. v1.6 恢复、原生证据、审核与交付 `[ ]`
+### C9. v1.6 恢复、原生证据、审核与交付 `[x]`
 - 每阶段重启恢复、原生专服、性能预算、独立审核、开发交付文档。
+- 结果（2026-10-01）：C8a/C8b 独立审核第 1 轮 0 Critical / 2 High / 3 Medium / 9 Low，
+  全部必需项已修复并测试（`docs/work/v1.6.0-c9-review/`）；原生专服：v1.5 世界启动前
+  迁移（字节一致备份）、1,000 任务重启与积压、领取前后四种强制停止、最坏根刷写计时
+  （`docs/work/v1.6.0-c9-closure/`）；开发交付 `docs/releases/v1.6.0/RELEASE-EVIDENCE.md`。
+  V1/V2、S2 真实玩家与参考硬件性能仍为 `[H]`。
 
 ---
 
@@ -212,7 +217,5 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
 
 ## 下一块
 
-**C9 v1.6 恢复、原生证据、审核与交付**（同一会话继续，按维护者要求 v1.6 在一个会话内完成；
-在 `codex/v1.6.0-satellite-resource-missions` 上：每阶段重启恢复、原生专服 S1/S2（含 v1.5 世界
-启动前迁移与领取前后的强制停止）、500/1,000 任务性能与刷写频率、区块票据审计、C8a/C8b 独立审核、
-`docs/releases/v1.6.0/RELEASE-EVIDENCE.md`）。
+**C10 v1.7 契约**（新会话：v1.6 开发交付已完成，按维护者要求大版本之间切换会话；
+依据 `docs/versions/V1.7.0-ENDGAME-SYSTEMS.md`，另开 v1.7 分支，先写 ADR 并送独立审核）。
