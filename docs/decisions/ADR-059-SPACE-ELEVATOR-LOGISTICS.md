@@ -105,6 +105,14 @@ still completes (ADR-054 §11).
   outside the station record, this **supersedes** ADR-045's plan to add "bind
   pair" and "unbind pair" as station transitions: no station-record transition
   or schema change is needed.
+- **Fail closed** (review R1-M6): the station module reaches the pair set only
+  through an `ElevatorStationGuard` port installed at startup, so it gains no
+  import of the endgame module (AGENTS §3.4). Until it is installed, and while
+  the endgame root is not operational (ADR-054 §10), warp request, confirmation
+  and commit, evacuation warps and station deletion are refused with
+  `ENDGAME_UNAVAILABLE`, as `StationRocketAuthority` fails closed for rockets
+  (ADR-044 §5). The guard does not depend on `endgame.spaceElevator.enabled`: a
+  disabled elevator still has pairs that pin the station.
 - Crash order: a bind is durable before it is reported; a warp commit is the
   station's own checked write. If a crash loses an unbind and the station was
   warped afterwards, the pair is invalid by rule 3 at the next use (fail closed),
@@ -223,4 +231,5 @@ station rotation and tether breakage (no station rotation exists; not revived).
 ## Rollback
 
 Disable by config; unbind and arrivals still work. Removing the code leaves the
-pairs unused in `arce_endgame`; warp and deletion guards disappear with it.
+pairs unused in `advancedrocketrycommunity_endgame.dat`; warp and deletion
+guards disappear with it.

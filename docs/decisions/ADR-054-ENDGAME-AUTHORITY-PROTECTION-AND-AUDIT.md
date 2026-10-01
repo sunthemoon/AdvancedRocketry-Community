@@ -315,9 +315,20 @@ crashes.
 
 ### 10. Endgame root
 
-All cross-device state lives in one SavedData, `arce_endgame` in the Overworld
-data storage, written with the checked atomic file path (`AtomicSavedData`, new
-`ManagedSavedDataType.ENDGAME`):
+All cross-device state lives in one SavedData,
+`advancedrocketrycommunity_endgame.dat` in the world's `data` directory, a new
+entry of the managed-SavedData allowlist (review R1-M2):
+
+- `ManagedSavedDataType.ENDGAME`: introduced in `v1.7.0`, current schema 1 and
+  format epoch `v1.7.0-endgame` (its own `currentSchemaVersion` and `formatEpoch`
+  cases; schema 1 is the only readable schema, so there is no legacy migration),
+  required tags `endpoints`, `dispatched_through`, `transits`, `elevator_pairs`,
+  `zones` (lists) and `save_epoch` (long), the 4 MiB bound below, and a semantic
+  validator that runs the full root codec;
+- written through the checked atomic file path: `AtomicSavedData` widens its
+  constructor allowlist from the two discovery authorities to also accept
+  `ENDGAME`, so ordinary saves, barrier flushes and the save epoch use the same
+  replace-and-read-back path;
 
 - root `schema_version` 1, `save_epoch`, and the sections `endpoints` (§9),
   `dispatched_through` (§11), `transits` (§11), `elevator_pairs` (ADR-059) and
@@ -334,12 +345,18 @@ data storage, written with the checked atomic file path (`AtomicSavedData`, new
 - **save epoch** E as in ADR-050 §2: a write puts E + 1 in the file and E
   advances when the write returns without error; records store the E of their
   creation, and "durable" means `save_epoch > record_epoch`;
-- **load**: no file means a fresh root (v1.6 worlds need no migration). A root
-  with an unsupported schema, a malformed section, a duplicate key or a bound
-  violation **blocks** the endgame authority: no endgame operation and no
-  settlement, the file is kept unchanged, one `ARCE_ENDGAME_BLOCKED` line names
-  the reason, and `/arce endgame status` reports it. The rest of the world runs.
-  A blocked root is never overwritten by autosave.
+- **load**: no file means a fresh root (v1.6 worlds need no migration). The
+  pre-start validation (`WorldDataMigrationService`, ADR-050 §10) refuses to
+  start the world, as for every managed file, when the root has a future schema
+  (`FUTURE_SCHEMA`) or a malformed section, a duplicate key or a bound violation
+  (`INVALID_SCHEMA`); the message names the file and nothing is overwritten. An
+  operator who accepts losing endgame state moves the file away and restarts.
+  Records that decode but fail a semantic check later (an item of a removed mod)
+  are quarantined one by one (§11). A failed write keeps the root dirty, is
+  retried by the next save, and logs once, as `AtomicSavedData` already does.
+- **operational** means the root is loaded and the endgame service is installed
+  for this server; before that (startup) and after `ServerStoppingEvent` every
+  endgame action is refused and the station guards of ADR-059 §5 fail closed.
 
 ### 11. Transit ledger
 
@@ -432,7 +449,7 @@ residual below; v1.7 adds no window beyond it.
 
 | Ledger | Outbox entry `seq` at S | Action |
 |---|---|---|
-| Blocked | any | Nothing; escrow refused |
+| Not operational (§10) | any | Nothing; escrow refused |
 | No record, `seq > dispatched_through[S]` | persisted, aged, lowest entry of S | Register (step 2); `SEQUENCE_GAP` if `seq > dispatched_through[S] + 1` |
 | No record, `seq > dispatched_through[S]` | unpersisted or not aged | Wait |
 | No record, `seq ≤ dispatched_through[S]` | present | Delivered and pruned (or purged): drop the entry, audit `OUTBOX_STALE_DROPPED` |
@@ -522,7 +539,8 @@ and after every system.
   except the new root, the API minor and the hooks named in ADR-058 (gravity
   chain) and ADR-059 (warp and deletion guards). v1.6 worlds open unchanged.
 - A v1.6 host loading a v1.7 world loses the new blocks (missing registry
-  entries become air with Forge's usual warning) and ignores `arce_endgame`;
+  entries become air with Forge's usual warning) and ignores
+  `advancedrocketrycommunity_endgame.dat`;
   escrowed and in-transit cargo is lost there. Downgrade is not supported, as for
   earlier versions.
 - Disabling a system (§1) is the supported way to stop it.
@@ -568,5 +586,6 @@ and after every system.
 
 ## Rollback
 
-Disable the systems by config. Removing the code leaves `arce_endgame` unused;
+Disable the systems by config. Removing the code leaves
+`advancedrocketrycommunity_endgame.dat` unused;
 escrowed cargo in it would be lost, so removal requires draining transfers first.
