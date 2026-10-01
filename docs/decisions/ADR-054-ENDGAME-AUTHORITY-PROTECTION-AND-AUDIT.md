@@ -636,7 +636,7 @@ evicts only that player's tombstones, or the server's oldest settled ones.
 Limits: 256 records globally, 32 per owner, counting live
 outbox entries known to the server. A record whose payload no longer decodes
 (for example an item of a removed mod) is `QUARANTINED` with its raw payload kept
-byte-identical; it is never claimed, and only an operator purge removes it. A
+byte-identical; it is never claimed, and only `transfer purge` removes it. A
 purge of a record whose source still holds the entry also drops that entry
 (`OUTBOX_STALE_DROPPED`), because the purge destroyed the payload.
 
@@ -760,7 +760,8 @@ is durable (by removal, `MISSING` or `endpoint retire`), so ADR-051 §9's
 double-payment residual cannot arise: a returning destination is retired, or
 after a tombstone eviction frozen by the registration rule, and so inert
 (reviews R2-H1, R3-H1); `transfer purge <source>
-<seq>` removes a record and destroys its payload. The **owner** may redirect
+<seq>` removes a record, or a quarantined outbox entry that has none (below), and
+destroys its payload. The **owner** may redirect
 their own `DESTINATION_MISSING` cargo under the same rule (review R1-L8), with
 `/arce endgame transfer redirect` from their own connected command source. Both
 redirects are barrier flushes subject to the §7 spacing, and both follow the
@@ -770,8 +771,11 @@ source endpoint, or to the endpoint of the original destination's kind (anchor
 or terminal) in the station's current valid pair, so a pair rebuilt after both
 ends were removed can still receive it (review R3-L4). An outbox payload that
 no longer decodes stays raw in S,
-is never registered, shows `OUTBOX_QUARANTINED`, and only an operator purge
-removes it.
+is never registered, shows `OUTBOX_QUARANTINED`, and only `transfer purge
+<source> <seq>` removes it. For such an entry, which has no record, the command
+needs S's chunk to be loaded, because reading S would otherwise load it. It
+removes the raw entry from S and destroys its payload with an audit line naming
+the payload hash (review R4C-I1).
 
 **Crash cuts.**
 

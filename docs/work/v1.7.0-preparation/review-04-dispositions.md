@@ -3,8 +3,9 @@
 Round 4 reviewed revision 4 at `1e7d6c8` and found 0 Critical, 0 High, 0 Medium,
 5 Low and 2 Info findings. Verdicts: all seven ADRs (053–059) ACCEPT. Every
 round-3 finding is resolved. The Lows were recommended before the contracts
-freeze; each answer is its own commit, and the reviewer confirms them before the
-acceptance is recorded. Only ADR-054 and the reference models change.
+freeze; each answer is its own commit. The reviewer's confirmation round at
+`30ab77b` found all five resolved, kept every verdict, and added one Info
+(R4C-I1). Only ADR-054 and the reference models change.
 
 | ID | Severity | Answer | Verification | Commit |
 |---|---|---|---|---|
@@ -15,3 +16,4 @@ acceptance is recorded. Only ADR-054 and the reference models change.
 | R4-L5 | Low | A mutation search that hits its state limit reports INCONCLUSIVE and fails the run | 26 mutations caught, controls clean | `d372340` |
 | R4-I1 | Info | Verified claims; no change | — | — |
 | R4-I2 | Info | The evidence archive (`root-checks.zip`) is committed with the acceptance | — | — |
+| R4C-I1 | Info | Confirmation round: `transfer purge <source> <seq>` also removes a quarantined outbox entry that has no record. It needs S's chunk to be loaded, and it destroys the payload with an audit line | — | this commit |
