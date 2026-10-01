@@ -59,11 +59,18 @@ class WorldDataMigrationServiceTest {
         assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
     }
 
+    /** Alpha worlds predate the endgame root, so only the authorities with a legacy schema take part. */
+    private static final int LEGACY_TYPES = (int) java.util.Arrays.stream(ManagedSavedDataType.values())
+            .filter(ManagedSavedDataType::hasLegacySchema).count();
+
     @Test
     void allAlphaFixturesMigrateAfterByteExactBackup(@TempDir Path temporaryDirectory) throws Exception {
         Path world = createWorld(temporaryDirectory);
         Map<ManagedSavedDataType, byte[]> originals = new EnumMap<>(ManagedSavedDataType.class);
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            if (!type.hasLegacySchema()) {
+                continue; // an Alpha world has no endgame root
+            }
             writeSavedData(world, type, legacyFixture(type));
             originals.put(type, Files.readAllBytes(dataFile(world, type)));
         }
@@ -74,11 +81,11 @@ class WorldDataMigrationServiceTest {
         WorldDataMigrationService.MigrationReport report = service().migrate(world);
 
         assertEquals(MigrationDiagnosticId.MIGRATION_COMPLETE, report.diagnosticId());
-        assertEquals(ManagedSavedDataType.values().length, report.managedFileCount());
-        assertEquals(ManagedSavedDataType.values().length, report.migratedFileCount());
+        assertEquals(LEGACY_TYPES, report.managedFileCount());
+        assertEquals(LEGACY_TYPES, report.migratedFileCount());
         Path backup = world.resolve("advancedrocketrycommunity-backups")
                 .resolve(report.backupDirectory().orElseThrow());
-        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+        for (ManagedSavedDataType type : originals.keySet()) {
             assertArrayEquals(originals.get(type), Files.readAllBytes(backup.resolve(type.fileName())));
             CompoundTag migrated = readPayload(dataFile(world, type));
             assertEquals(type.currentSchemaVersion(), migrated.getInt("schema_version"));
@@ -94,7 +101,7 @@ class WorldDataMigrationServiceTest {
         assertFalse(manifest.has("sourceSchema"));
         assertFalse(manifest.has("targetSchema"));
         assertEquals(FIXED_TIME.toString(), manifest.get("createdAt").getAsString());
-        assertEquals(ManagedSavedDataType.values().length + 1, manifest.getAsJsonArray("files").size());
+        assertEquals(LEGACY_TYPES + 1, manifest.getAsJsonArray("files").size());
         assertFalse(Files.readString(backup.resolve("manifest.json")).contains(world.toString()));
 
         WorldDataMigrationService.MigrationReport second = service().migrate(world);

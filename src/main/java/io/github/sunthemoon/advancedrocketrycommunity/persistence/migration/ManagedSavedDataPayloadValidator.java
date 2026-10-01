@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
@@ -21,6 +22,7 @@ final class ManagedSavedDataPayloadValidator {
                 case ROCKET_TRANSFERS -> RocketTransferSavedData.load(payload).operational();
                 case STATIONS -> StationRegistrySavedData.load(payload).operational();
                 case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload).operational();
+                case ENDGAME -> EndgameSavedData.load(payload).operational();
             };
         } catch (RuntimeException exception) {
             throw new SavedDataMigrationException(

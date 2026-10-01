@@ -43,7 +43,7 @@ public final class SavedDataSchemaMigrator {
         }
         type.validateRootShape(source, schema);
 
-        if (schema >= CURRENT_SCHEMA_VERSION) {
+        if (schema >= type.firstEpochSchema()) {
             String expectedEpoch = type.formatEpoch(schema);
             if (!source.contains(EPOCH_KEY, Tag.TAG_STRING)
                     || !expectedEpoch.equals(source.getString(EPOCH_KEY))) {

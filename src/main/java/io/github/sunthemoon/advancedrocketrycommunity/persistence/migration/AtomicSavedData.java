@@ -8,14 +8,15 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.LevelResource;
 
-/** Checked replacement for the two discovery authorities, including ordinary autosave. */
+/** Checked replacement for the two discovery authorities and the endgame root, including ordinary autosave. */
 public abstract class AtomicSavedData extends SavedData {
     private final ManagedSavedDataType type;
     private boolean saveFailureReported;
 
     protected AtomicSavedData(ManagedSavedDataType type) {
-        if (type != ManagedSavedDataType.CELESTIAL && type != ManagedSavedDataType.SATELLITE_MISSIONS) {
-            throw new IllegalArgumentException("Atomic discovery storage only supports its two authorities");
+        if (type != ManagedSavedDataType.CELESTIAL && type != ManagedSavedDataType.SATELLITE_MISSIONS
+                && type != ManagedSavedDataType.ENDGAME) {
+            throw new IllegalArgumentException("Atomic storage only supports the discovery authorities and the endgame root");
         }
         this.type = type;
     }

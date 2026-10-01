@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
@@ -47,6 +48,20 @@ public enum ManagedSavedDataType {
                     new RequiredTag("missions", Tag.TAG_LIST),
                     new RequiredTag("research_accounts", Tag.TAG_LIST)
             )
+    ),
+    /** ADR-054 section 10: schema 1 is the only readable schema, so there is no legacy migration. */
+    ENDGAME(
+            "v1.7.0",
+            "advancedrocketrycommunity_endgame",
+            EndgameLimits.MAX_ROOT_BYTES,
+            List.of(
+                    new RequiredTag("endpoints", Tag.TAG_LIST),
+                    new RequiredTag("dispatched_through", Tag.TAG_LONG_ARRAY),
+                    new RequiredTag("transits", Tag.TAG_LIST),
+                    new RequiredTag("elevator_pairs", Tag.TAG_LIST),
+                    new RequiredTag("zones", Tag.TAG_LIST),
+                    new RequiredTag("save_epoch", Tag.TAG_LONG)
+            )
     );
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
@@ -87,6 +102,7 @@ public enum ManagedSavedDataType {
         return switch (this) {
             case STATIONS -> StationLimits.REGISTRY_SCHEMA_VERSION;
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
+            case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };
     }
@@ -106,12 +122,32 @@ public enum ManagedSavedDataType {
         if (this == SATELLITE_MISSIONS && schema == SatelliteLimits.REGISTRY_SCHEMA_VERSION) {
             return SatelliteLimits.REGISTRY_FORMAT_EPOCH;
         }
+        if (this == ENDGAME) {
+            return EndgameLimits.ROOT_FORMAT_EPOCH;
+        }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
 
-    /** Every root schema from the legacy one up to the current one is readable for migration. */
+    /**
+     * The first schema whose roots carry a format epoch. The Beta roots gained one at the global schema 2; the
+     * endgame root has it from its schema 1 (ADR-054 section 10, review R2-L7).
+     */
+    public int firstEpochSchema() {
+        return this == ENDGAME ? EndgameLimits.ROOT_SCHEMA_VERSION : SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
+    }
+
+    /** Whether older roots of this type exist; the endgame root was introduced at its current schema. */
+    public boolean hasLegacySchema() {
+        return this != ENDGAME;
+    }
+
+    /**
+     * Every root schema from the legacy one up to the current one is readable for migration; the endgame root
+     * reads only its current schema.
+     */
     public boolean supportsSchema(int schema) {
-        return schema >= SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION && schema <= currentSchemaVersion();
+        int oldest = this == ENDGAME ? EndgameLimits.ROOT_SCHEMA_VERSION : SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION;
+        return schema >= oldest && schema <= currentSchemaVersion();
     }
 
     /**

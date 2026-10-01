@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan;
@@ -84,6 +86,20 @@ final class PopulatedManagedDataFixture {
         satellites.claim(PENDING_MISSION, OWNER, 1_201L);
         satellites.launch(id(32), ACTIVE_MISSION, OWNER, definition, ModIdentity.id("earth"), 1_201L, true);
         payloads.put(ManagedSavedDataType.SATELLITE_MISSIONS, satellites.save(new CompoundTag()));
+
+        // ADR-054 section 10: an active endpoint, a MISSING one, a young tombstone and a zone.
+        EndgameSavedData endgame = EndgameSavedData.create();
+        ResourceLocation kind = ModIdentity.id("laser_target");
+        ResourceLocation overworld = ResourceLocation.tryParse("minecraft:overworld");
+        endgame.update(root -> {
+            for (int i = 40; i < 43; i++) {
+                root.register(id(i), kind, OWNER, overworld, i, false, 2048, 64);
+            }
+            root.markMissing(id(41));
+            root.remove(id(42));
+            return root.addZone(ProtectedZone.of("spawn", overworld, -32, -32, 32, 32, List.of(OWNER)), 256);
+        });
+        payloads.put(ManagedSavedDataType.ENDGAME, endgame.save(new CompoundTag()));
         return payloads;
     }
 
@@ -94,6 +110,7 @@ final class PopulatedManagedDataFixture {
             case ROCKET_TRANSFERS -> RocketTransferSavedData.load(payload);
             case STATIONS -> StationRegistrySavedData.load(payload);
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
+            case ENDGAME -> EndgameSavedData.load(payload);
         };
     }
 

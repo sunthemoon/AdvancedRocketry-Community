@@ -43,7 +43,7 @@ final class StationWorldMigrationTest {
         byte[] oldBytes = {1, 3, 5, 7}; // Previous copies are backed up, not mistaken for authorities.
         Files.write(old, oldBytes);
         var report = new WorldDataMigrationService().migrate(world);
-        assertEquals(5, report.managedFileCount());
+        assertEquals(6, report.managedFileCount(), "five authorities and the endgame root");
         assertEquals(1, report.migratedFileCount());
         Path backup = world.resolve(BACKUPS).resolve(report.backupDirectory().orElseThrow());
         for (var type : ManagedSavedDataType.values()) {
@@ -60,7 +60,7 @@ final class StationWorldMigrationTest {
         assertEquals(2, manifest.get("manifestSchema").getAsInt());
         assertFalse(manifest.has("sourceSchema"));
         assertFalse(manifest.has("targetSchema"));
-        assertEquals(6, manifest.getAsJsonArray("files").size());
+        assertEquals(7, manifest.getAsJsonArray("files").size(), "six managed files and one previous copy");
         for (var entry : manifest.getAsJsonArray("files")) {
             var row = entry.getAsJsonObject();
             String name = row.get("file").getAsString();
@@ -76,8 +76,10 @@ final class StationWorldMigrationTest {
                 assertEquals("authority", row.get("role").getAsString());
                 // v1.6: the satellite registry's current root is 3 (ADR-050 §10); stations migrate 2 -> 4.
                 boolean satellites = name.equals(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
-                assertEquals(satellites ? 3 : 2, row.get("sourceSchema").getAsInt());
-                assertEquals(name.equals(STATIONS.fileName()) ? 4 : satellites ? 3 : 2,
+                // v1.7: the endgame root has only its schema 1 (ADR-054 §10).
+                boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName());
+                assertEquals(endgame ? 1 : satellites ? 3 : 2, row.get("sourceSchema").getAsInt());
+                assertEquals(name.equals(STATIONS.fileName()) ? 4 : satellites ? 3 : endgame ? 1 : 2,
                         row.get("targetSchema").getAsInt());
             }
         }

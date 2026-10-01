@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
@@ -25,6 +26,9 @@ final class ManagedSavedDataLoaderMigrationTest {
     @Test
     void everyHistoricalRootBecomesCurrentThroughItsRequiredMigrationBoundary() throws Exception {
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            if (!type.hasLegacySchema()) {
+                continue; // no historical root: covered by aRootWithoutHistoryIsCurrentFromItsFirstWrite
+            }
             CompoundTag source = fixture(type);
             SavedData legacy = load(type, source);
 
@@ -60,6 +64,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case ROCKET_TRANSFERS -> RocketTransferSavedData.load(payload);
             case STATIONS -> StationRegistrySavedData.load(payload);
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
+            case ENDGAME -> EndgameSavedData.load(payload);
         };
     }
 
@@ -70,6 +75,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case ROCKET_TRANSFERS -> ((RocketTransferSavedData) data).operational();
             case STATIONS -> ((StationRegistrySavedData) data).operational();
             case SATELLITE_MISSIONS -> ((SatelliteMissionSavedData) data).operational();
+            case ENDGAME -> ((EndgameSavedData) data).operational();
         };
         assertTrue(operational, type + " must remain operational after migration");
     }
@@ -94,7 +100,27 @@ final class ManagedSavedDataLoaderMigrationTest {
                 assertEquals(0, canonical.getList("research_accounts", CompoundTag.TAG_COMPOUND).size());
                 assertEquals(1_200L, canonical.getCompound("clock").getLong("logical_game_time"));
             }
+            case ENDGAME -> {
+                assertEquals(0, canonical.getList("endpoints", CompoundTag.TAG_COMPOUND).size());
+                assertEquals(0, canonical.getLongArray("dispatched_through").length);
+                assertEquals(0, canonical.getList("zones", CompoundTag.TAG_COMPOUND).size());
+            }
         }
+    }
+
+    /** ADR-054 section 10: the endgame root has no older schema; a fresh root is current and idempotent. */
+    @Test
+    void aRootWithoutHistoryIsCurrentFromItsFirstWrite() {
+        CompoundTag canonical = EndgameSavedData.create().save(new CompoundTag());
+        assertEquals(1, canonical.getInt("schema_version"));
+        assertEquals("v1.7.0-endgame", canonical.getString("format_epoch"));
+        assertEquals(SavedDataSchemaMigrator.MigrationStatus.CURRENT,
+                SavedDataSchemaMigrator.migrate(ManagedSavedDataType.ENDGAME, canonical).status());
+        SavedData current = load(ManagedSavedDataType.ENDGAME, canonical);
+        assertFalse(current.isDirty());
+        assertOperational(ManagedSavedDataType.ENDGAME, current);
+        assertAuthorityCollections(ManagedSavedDataType.ENDGAME, canonical);
+        assertEquals(canonical, current.save(new CompoundTag()));
     }
 
     private static CompoundTag fixture(ManagedSavedDataType type) throws Exception {

@@ -39,7 +39,7 @@ final class PopulatedWorldDataPreservationTest {
         for (int restart = 0; restart < 3; restart++) {
             WorldDataMigrationService.MigrationReport report = new WorldDataMigrationService().migrate(world);
             assertEquals(MigrationDiagnosticId.DATA_CURRENT, report.diagnosticId());
-            assertEquals(5, report.managedFileCount());
+            assertEquals(6, report.managedFileCount());
             assertEquals(0, report.migratedFileCount());
             assertTrue(report.backupDirectory().isEmpty());
             assertFilesEqual(world, originals);
@@ -63,7 +63,7 @@ final class PopulatedWorldDataPreservationTest {
         assertEquals(5, report.migratedFileCount());
         Path backup = world.resolve("advancedrocketrycommunity-backups")
                 .resolve(report.backupDirectory().orElseThrow());
-        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+        for (ManagedSavedDataType type : originals.keySet()) {
             assertArrayEquals(originals.get(type), Files.readAllBytes(backup.resolve(type.fileName())));
             CompoundTag representable = legacyRepresentable(type, current.get(type));
             CompoundTag expected = representable.copy();
@@ -80,7 +80,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ManagedSavedDataType.class)
+    @EnumSource(value = ManagedSavedDataType.class, names = "ENDGAME", mode = EnumSource.Mode.EXCLUDE)
     void everyPartialCommitFailureRestoresAllPopulatedAuthorities(ManagedSavedDataType failedType) throws Exception {
         Path world = writeWorld(legacyPayloads());
         Map<ManagedSavedDataType, byte[]> originals = capture(world);
@@ -104,7 +104,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ManagedSavedDataType.class)
+    @EnumSource(value = ManagedSavedDataType.class, names = "ENDGAME", mode = EnumSource.Mode.EXCLUDE)
     void oneFutureRootBlocksTheWholePopulatedUpgradeBeforeAnyWrite(ManagedSavedDataType futureType) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
         payloads.get(futureType).putInt("schema_version", futureType.currentSchemaVersion() + 1);
@@ -112,7 +112,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ManagedSavedDataType.class)
+    @EnumSource(value = ManagedSavedDataType.class, names = "ENDGAME", mode = EnumSource.Mode.EXCLUDE)
     void malformedAuthorityElementCannotBeReplacedWithAnEmptyCollection(ManagedSavedDataType type) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
         String field = switch (type) {
@@ -121,11 +121,26 @@ final class PopulatedWorldDataPreservationTest {
             case ROCKET_TRANSFERS -> "transfers";
             case STATIONS -> "stations";
             case SATELLITE_MISSIONS -> "missions";
+            case ENDGAME -> throw new AssertionError("no legacy endgame root");
         };
         ListTag malformed = new ListTag();
         malformed.add(IntTag.valueOf(7));
         payloads.get(type).put(field, malformed);
         assertBlockedWithoutWrites(payloads, MigrationDiagnosticId.INVALID_SCHEMA);
+    }
+
+    /** ADR-054 section 10: a future or malformed endgame root refuses the world start before any write. */
+    @Test
+    void aFutureOrMalformedEndgameRootBlocksStartWithoutWrites() throws Exception {
+        Map<ManagedSavedDataType, CompoundTag> future = PopulatedManagedDataFixture.currentPayloads();
+        future.get(ManagedSavedDataType.ENDGAME).putInt("schema_version", 2);
+        assertBlockedWithoutWrites(future, MigrationDiagnosticId.FUTURE_SCHEMA);
+        Files.walk(temporary.resolve("world")).sorted(java.util.Comparator.reverseOrder()).forEach(path -> path.toFile().delete());
+        Map<ManagedSavedDataType, CompoundTag> malformed = PopulatedManagedDataFixture.currentPayloads();
+        ListTag endpoints = new ListTag();
+        endpoints.add(IntTag.valueOf(7));
+        malformed.get(ManagedSavedDataType.ENDGAME).put("endpoints", endpoints);
+        assertBlockedWithoutWrites(malformed, MigrationDiagnosticId.INVALID_SCHEMA);
     }
 
     @Test
@@ -192,8 +207,10 @@ final class PopulatedWorldDataPreservationTest {
         return representable;
     }
 
+    /** Legacy worlds predate v1.7, so they carry no endgame root. */
     private static Map<ManagedSavedDataType, CompoundTag> legacyPayloads() {
         Map<ManagedSavedDataType, CompoundTag> payloads = PopulatedManagedDataFixture.currentPayloads();
+        payloads.remove(ManagedSavedDataType.ENDGAME);
         payloads.values().forEach(payload -> {
             payload.putInt("schema_version", 1);
             payload.remove("format_epoch");
@@ -225,14 +242,21 @@ final class PopulatedWorldDataPreservationTest {
     private static Map<ManagedSavedDataType, byte[]> capture(Path world) throws IOException {
         Map<ManagedSavedDataType, byte[]> bytes = new EnumMap<>(ManagedSavedDataType.class);
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
-            bytes.put(type, Files.readAllBytes(world.resolve("data").resolve(type.fileName())));
+            Path file = world.resolve("data").resolve(type.fileName());
+            if (Files.exists(file)) {
+                bytes.put(type, Files.readAllBytes(file));
+            }
         }
         return bytes;
     }
 
     private static void assertFilesEqual(Path world, Map<ManagedSavedDataType, byte[]> expected) throws IOException {
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
-            assertArrayEquals(expected.get(type), Files.readAllBytes(world.resolve("data").resolve(type.fileName())), type.name());
+            Path file = world.resolve("data").resolve(type.fileName());
+            assertEquals(expected.containsKey(type), Files.exists(file), type.name());
+            if (expected.containsKey(type)) {
+                assertArrayEquals(expected.get(type), Files.readAllBytes(file), type.name());
+            }
         }
     }
 }
