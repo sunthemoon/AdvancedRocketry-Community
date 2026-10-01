@@ -64,7 +64,9 @@ live catalog; it needs no chunk of the destination.
 
 `d` is the integer horizontal distance between the endpoints, `floor(sqrt(dx² +
 dz²))`, computed in 64-bit integers. Costs are multiplied by
-`endgame.railgun.energyPercent / 100` (10..1,000, default 100). The legacy
+`endgame.railgun.energyPercent / 100` (10..400, default 100), so the largest
+cost, 1,000,000 FE, still fits the buffer (review R1-L11). The class, cost and
+travel are fixed at escrow and stored in the outbox entry. The legacy
 per-tick requirement (up to 100,000 per tick while sending one stack per tick)
 becomes a per-launch cost; this rebalance is deliberate.
 
@@ -78,8 +80,9 @@ The payload is the whole stack in the first input slot, in slot order, whose
 count is at least the minimum stack size. The launch is the ADR-054 §11 escrow:
 payload and cost leave the railgun in one tick, the record is registered after
 the entry is persisted, and the travel time starts at registration. Refusals
-before escrow change nothing: `NO_PAYLOAD`, `NO_TARGET`, `INSUFFICIENT_ENERGY`,
-`OUTBOX_FULL`, `TRANSIT_LIMIT`, `ROOT_FULL`, `SYSTEM_DISABLED`.
+before escrow change nothing: `SYSTEM_DISABLED`, `NOT_AUTHORIZED`, `NO_PAYLOAD`,
+`NO_TARGET`, `TARGET_FOREIGN`, `BODY_UNAVAILABLE`, `ROUTE_OUT_OF_SYSTEM`,
+`INSUFFICIENT_ENERGY`, `OUTBOX_FULL`, `TRANSIT_LIMIT`, `ROOT_FULL`.
 
 ### 5. Arrival
 

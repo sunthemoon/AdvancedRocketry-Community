@@ -49,7 +49,9 @@ A **disabled** system:
 
 - keeps its blocks, items, recipes and saved state registered and loadable, so
   disabling never breaks world load and never removes content;
-- starts no new operation (every intent returns `SYSTEM_DISABLED`) and produces
+- starts no new operation (every operation-starting intent returns
+  `SYSTEM_DISABLED`; withdraw, unbind and other settlement intents still work)
+  and produces
   no effect: no block break, no generation, no field, no launch, no ride, no bind;
 - still runs **settlement and recovery**: transit registration, arrival, claim,
   reconciliation and receipt handling (§11), counter reconciliation (ADR-055),
@@ -184,9 +186,11 @@ device keeps its state and reports the code.
    unless the device owner is on that zone's allow list, else `TARGET_PROTECTED`.
 4. **Stations.** In the Space Level, every touched position is inside a committed
    region where the device owner has `BUILD` access, else `TARGET_PROTECTED`.
-5. **Spawn protection.** `MinecraftServer.isUnderSpawnProtection` for an
-   owner-bound FakePlayer (profile `owner_id`, name `[ARCE]`, no permission
-   level) is false for every position, else `TARGET_PROTECTED`.
+5. **Spawn protection.** The batch box does not intersect the vanilla spawn
+   protection square (a dedicated server's configured radius around the
+   Overworld spawn), tested once per box, else `TARGET_PROTECTED`. Unlike the
+   vanilla player check it is not bypassed when the device owner is an
+   operator, and it does not depend on the operator list being empty.
 6. **Extension event.** The public, cancellable
    `api.endgame.EndgameEffectEvent` (§5.1) is not cancelled, else
    `TARGET_PROTECTED`.
@@ -212,7 +216,8 @@ API minor 1.7 → **1.8** (ADR-021) adds
   (`ResourceKey<Level>`), `min()` and `max()` (`BlockPos`, the batch box).
 
 It exposes no internal type, no device object and no way to change the effect.
-Listeners may only cancel. Existing API classes keep their bytes; the API
+Listeners may only cancel. Existing API classes keep their bytes, except
+`ApiVersions`, whose current-version constant becomes 1.8; the API
 compatibility document, the public API guide and the compatibility test mod
 gain the new types. This is the only public API change in v1.7.
 
@@ -238,7 +243,12 @@ barrier flushes (§10) and audited. Non-operators never see zone boxes.
   lowercase UUID strings (`String.compareTo`), not `UUID.compareTo`, which
   compares signed halves. No system pass ever loops over all devices of another system.
 - **Counts:** active devices per owner and globally, endpoints, transit records,
-  pairs and zones are capped (system ADRs and §10).
+  pairs and zones are capped (system ADRs and §10). Active-device counts are
+  kept by the runtime from loaded devices only; a device in an unloaded chunk is
+  not active (review R1-L12). A device that asks to become active is admitted
+  if its owner's and the global count allow, first come first served; devices
+  already active keep running when more load; a refused device shows
+  `ACTIVE_LIMIT` and retries every 200 ticks.
 - **Ledger passes:** registration ≤ 32 per tick, arrival ≤ 64 per tick,
   reconciliation ≤ 64 records per tick across all endpoints (§11).
 
@@ -310,7 +320,8 @@ An **endpoint** is a device that other devices can address: `laser_target`
 
 - **Index.** The endgame root keeps one record per endpoint: `endpoint_id`,
   `kind`, `owner_id`, Level key, block position, `state` (`ACTIVE` or
-  `MISSING`), ≤ 256 bytes. At most 4,096 endpoints, 64 per owner.
+  `MISSING`), ≤ 512 bytes with a 128-character Level key and a full kind ID.
+  At most 4,096 endpoints, 64 per owner.
 - **Registration.** An endpoint is added when its ID is persisted (§2); until
   then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
@@ -322,7 +333,10 @@ An **endpoint** is a device that other devices can address: `laser_target`
   block entity of that ID at the recorded position becomes `MISSING`; a block
   entity carrying a registered ID at another position is
   `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
-  are outside the guarantee, as in ADR-051 §7).
+  are outside the guarantee, as in ADR-051 §7). A `MISSING` endpoint still
+  counts toward its owner's limit until the owner removes it with
+  `/arce endgame endpoint forget <id>` (own `MISSING` endpoints only; the
+  tombstone of §11 stays).
 - **Selection.** A selection list holds only `ACTIVE` endpoints of a compatible
   kind owned by the **device's owner**, filtered by the system's route rule and
   sorted in ID order (§7); whoever is allowed to `CONFIGURE` the device (§3)
@@ -396,9 +410,11 @@ entry of the managed-SavedData allowlist (review R1-M2):
 - root `schema_version` 1, `save_epoch`, and the sections `endpoints` (§9),
   `dispatched_through` (§11), `transits` (§11), `elevator_pairs` (ADR-059) and
   `zones` (§6);
-- hard bound 4 MiB encoded; **growth admission**: endpoint registration, escrow
-  admission (§11), binds and zone additions are refused while the encoded root is
-  within 1 MiB of the bound; a registration of an already escrowed payload and
+- hard bound 4 MiB encoded; **growth admission** is computed from per-record
+  accounting (each section's count times its worst-case record size, as ADR-050
+  §3 does), never by encoding the root: endpoint registration, escrow admission
+  (§11), binds and zone additions are refused while the accounted size is within
+  1 MiB of the bound; a registration of an already escrowed payload and
   every reconciliation step are admitted up to the bound itself, and beyond it
   wait (never drop) with `ROOT_FULL`;
 - **write policy** (ADR-050 §2 semantics): elevator bind and unbind, zone changes
@@ -428,7 +444,8 @@ destination endpoint D through a ledger record, never directly between two block
 entities.
 
 **Source state** (in S's root): `next_seq` (starts at 1) and an `outbox` of at
-most 4 entries `{seq, destination, payload, paid_fe, system}`. A payload is at
+most 4 entries `{seq, destination, payload, paid_fe, travel, system}`, with the
+travel time fixed at escrow (review R1-L11). A payload is at
 most 4 stacks, each with an encoded item tag of at most 512 bytes; plain items
 only otherwise.
 
@@ -470,8 +487,9 @@ purge of a record whose source still holds the entry also drops that entry
    and the energy.
 2. **Registration.** When the entry is persisted and the persistence
    observation is at least 40 ticks old, and the entry is S's **lowest** outbox
-   entry with `seq > dispatched_through[S]`, the ledger creates the record (`IN_TRANSIT`, `dispatch_epoch = E`,
-   `arrive_at = now + travel`) and sets `dispatched_through[S] = seq`. If the
+   entry with `seq > dispatched_through[S]`, the ledger creates the record
+   (`IN_TRANSIT`, `dispatch_epoch = E`, `arrive_at = now + travel` with the
+   entry's stored travel) and sets `dispatched_through[S] = seq`. If the
    destination has meanwhile become `MISSING` or was removed, the record is still
    created; it will wait as `DESTINATION_MISSING`. Normally
    `seq = dispatched_through[S] + 1`; a larger `seq` means the ledger lost
@@ -545,7 +563,13 @@ changes no outcome, with or without a lost source write.
 payload): `transfer redirect <source> <seq> <endpoint>` for an `IN_TRANSIT` or
 `ARRIVED` record to another endpoint of the same owner and system (ADR-051 §9
 residual applies); `transfer purge <source> <seq>` removes a record and destroys
-its payload.
+its payload. The **owner** may redirect their own `DESTINATION_MISSING` cargo to
+another of their compatible endpoints once the old destination's absence is
+established (its record was removed by §9.1, or it is `MISSING`); then the old
+destination cannot return with a receipt, so ADR-051 §9's residual does not
+apply (review R1-L8). An outbox payload that no longer decodes stays raw in S,
+is never registered, shows `OUTBOX_QUARANTINED`, and only an operator purge
+removes it.
 
 **Crash cuts.**
 
@@ -580,9 +604,15 @@ count tickets by type before and after every system and after every ride.
 
 ### 13. Audit and diagnostics
 
-- **Lines.** Every state-changing intent, refusal code change, effect batch
-  summary, ledger transition, reconciliation result, operator command and
-  quarantine writes one `ARCE_ENDGAME` line of at most 512 bytes:
+- **Lines.** Every state-changing intent, refusal code change, operator command,
+  quarantine and ledger anomaly (`CLAIM_RECOVERED`, `REMATERIALIZED`,
+  `REDIRECT_*`, `OUTBOX_STALE_DROPPED`, `SEQUENCE_GAP`, `SOURCE_ROLLBACK`,
+  `OUTBOX_LOST_ON_REMOVAL`, `REMOVAL_SETTLEMENT_UNKNOWN`) writes one
+  `ARCE_ENDGAME` line of at most 512 bytes. Routine ledger transitions (escrow,
+  registration, arrival, claim, acknowledgement, pruning) and effect batches are
+  aggregated into one summary line per system every 1,200 ticks (review R1-L6).
+  At most 64 lines per tick are written; the rest are counted and the count is
+  logged with the next summary. A line has the form
   `system action result device owner actor` plus bounded fields. Coordinates
   appear only in these server log lines and in operator command output.
 - **Ring.** The last 512 lines are kept in memory (not persisted, cleared at
@@ -591,7 +621,9 @@ count tickets by type before and after every system and after every ride.
   `/arce endgame status` (switches, root state and size, active device counts,
   last-tick work per system, ride-arrival tickets held, at most 64); `audit`;
   `zone …` (§6);
-  `device inspect <pos>`; `device owner <pos> <player>`; `endpoint list
+  `device inspect <pos>` and `device owner <pos> <player>` (both refuse a
+  position whose chunk is not loaded, because reading it would load it);
+  `endpoint list
   [<player>]`; `endpoint purge <id>` (removes the index record only, refused
   while referenced; the §11 tombstone stays until the absence is persisted);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.

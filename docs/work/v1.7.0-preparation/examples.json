@@ -1124,11 +1124,22 @@
    "local": true,
    "dx": 30000000,
    "dz": 30000000,
-   "percent": 1000,
+   "percent": 400,
    "expected": [
     "LOCAL",
-    2500000,
+    1000000,
     200
+   ]
+  },
+  {
+   "local": false,
+   "dx": 0,
+   "dz": 0,
+   "percent": 400,
+   "expected": [
+    "ORBITAL",
+    1000000,
+    600
    ]
   },
   {

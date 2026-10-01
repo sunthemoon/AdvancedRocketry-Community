@@ -98,7 +98,7 @@ same draw is retried and nothing is discarded.
 
 **Built-in data (C11).** Tables for Earth, Moon, Mars and Venus and one
 `default` table. The default reproduces the legacy proportion: one hit in ten is
-an ore entry of 5 items, nine in ten are 5 cobblestone. Ore items are vanilla raw
+an ore entry (1 to 5 items), nine in ten are 5 cobblestone. Ore items are vanilla raw
 ores and minerals; no LibVulpes or upstream item is used.
 
 ### 3. Physical mode (opt-in, default off)
@@ -152,13 +152,17 @@ Layers run from `my − 1` down to
    stop with `TARGET_BUFFER_FULL`.
 4. Remove the breakable cells (`removeBlock`, no drop entities, no experience),
    add every drop to the marker buffer, set `next_layer −= 1`. A waterlogged
-   block leaves its fluid, which stops the next layer.
+   block leaves its fluid, which may flow into the shaft and stop a later layer.
 
 A stop leaves the layer untouched; nothing is half-broken. When
-`next_layer < floor` the shaft is `COMPLETE`. A shaft never breaks anything
-outside its footprint, never damages entities and never places blocks (no
-light-source blocks). Falling blocks and fluids next to the shaft follow vanilla
-physics.
+`next_layer < floor` the shaft is `COMPLETE`. The drill itself removes only
+footprint cells, never damages entities and never places blocks (no
+light-source blocks); vanilla neighbour reactions still happen (the other half
+of a door, attached blocks, falling blocks, fluids, and entities standing on
+the footprint falling in) (review R1-L9). Break events are posted for every
+breakable cell before any cell is removed, so when a later cell's event is
+cancelled, listeners have seen events for cells that stay intact; logging or
+quest mods that count them should use the event's cancelled state.
 
 **Payment counters.** Payment is in the controller's chunk (Space Level), the
 effect in the marker's chunk; they are saved independently. Both sides keep a
@@ -267,8 +271,8 @@ Recorded in `PORTING_MATRIX.md`:
 
 - Logical mining is safe to enable everywhere; physical mining is an explicit
   server decision.
-- Physical mining runs only while the target area is loaded, typically with the
-  owner nearby.
+- Physical mining runs only while both the drill's station chunk and the target
+  area are loaded at the same time.
 
 ## Verification
 

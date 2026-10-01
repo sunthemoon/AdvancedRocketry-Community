@@ -484,6 +484,8 @@ def isqrt(n):
 
 
 def railgun_quote(same_level_same_body, dx, dz, percent):
+    if not 10 <= percent <= 400:  # R1-L11: the largest cost must fit the 1,000,000 FE buffer
+        raise ValueError("railgun percent outside 10..400")
     if same_level_same_body:
         d = isqrt(dx * dx + dz * dz)
         cost = min(25_000 + 10 * d, 250_000)
@@ -779,6 +781,7 @@ class Vectors(unittest.TestCase):
         for case in EXAMPLES["railgun"]:
             self.assertEqual(railgun_quote(case["local"], case["dx"], case["dz"], case["percent"]),
                              case["expected"], case)
+            self.assertLessEqual(case["expected"][1], 1_000_000)  # fits the railgun buffer
 
     def test_black_hole_burn(self):
         for case in EXAMPLES["black_hole"]:
