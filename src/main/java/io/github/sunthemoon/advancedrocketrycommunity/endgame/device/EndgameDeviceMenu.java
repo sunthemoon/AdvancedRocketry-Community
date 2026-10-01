@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceView;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameNetwork;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -130,10 +131,16 @@ public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
             return;
         }
         EndgameAuthority.Decision decision = viewAuthority(level, viewer, device.get());
-        if (!decision.allowed()) {
+        EndgameDeviceView view;
+        if (decision.allowed()) {
+            view = view(containerId, device.get(), decision.detail());
+        } else if (authority(level, viewer, device.get(), EndgameAction.WITHDRAW).allowed()) {
+            // A withdraw-only menu shows only why it is one (review C11R-M4).
+            view = new EndgameDeviceView(containerId, device.get().system(), decision.refusal(), decision.refusal(),
+                    false, List.of());
+        } else {
             return;
         }
-        EndgameDeviceView view = view(containerId, device.get(), decision.detail());
         lastSentTick = now;
         if (!view.equals(lastSent)) {
             lastSent = view;
@@ -163,7 +170,20 @@ public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
         Optional<EndgameDeviceBlockEntity> device = device(level);
         return device.isPresent() && player.distanceToSqr(target.position().getCenter())
                 <= EndgameLimits.INTENT_DISTANCE_BLOCKS * EndgameLimits.INTENT_DISTANCE_BLOCKS
-                && viewAuthority(level, player, device.get()).allowed();
+                && openRefusal(level, player, device.get()) == EndgameCode.OK;
+    }
+
+    /**
+     * Whether a player may open (and keep open) this device's menu: with {@code VIEW}, or with {@code WITHDRAW} alone
+     * where {@code VIEW} is refused, as for the owner of a device in an unavailable station (ADR-054 section 3, review
+     * C11R-M4). Returns the {@code VIEW} refusal otherwise.
+     */
+    public static EndgameCode openRefusal(ServerLevel level, Player viewer, EndgameDeviceBlockEntity device) {
+        EndgameAuthority.Decision view = viewAuthority(level, viewer, device);
+        if (view.allowed() || authority(level, viewer, device, EndgameAction.WITHDRAW).allowed()) {
+            return EndgameCode.OK;
+        }
+        return view.refusal();
     }
 
     /** ADR-054 section 3 {@code VIEW} for a viewer of this device. */

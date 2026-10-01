@@ -237,6 +237,50 @@ public final class EndgameMenuGameTests {
         helper.succeed();
     }
 
+    /**
+     * Review C11R-M4: once the drill's station is gone its position is unavailable; its owner still opens a
+     * withdraw-only menu and takes the output, while a former member cannot open it.
+     */
+    @GameTest(template = "empty", batch = "endgame_menu_unavailable", timeoutTicks = 100)
+    public static void theOwnerWithdrawsFromADrillInAnUnavailableStation(GameTestHelper helper) {
+        OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
+                CelestialIds.EARTH_ID);
+        OrbitalLaserDrillBlockEntity drill = fixture.drill();
+        drill.storage().output().setStackInSlot(0, new ItemStack(Items.DIAMOND, 7));
+        List<ServerPlayer> joined = new ArrayList<>();
+        try {
+            ServerPlayer member = ConnectedTestPlayers.join(fixture.server, UUID.randomUUID(), "menuFormerMember",
+                    fixture.space, fixture.controller.south(3), new ArrayList<>());
+            joined.add(member);
+            fixture.stations.invite(fixture.stationId, member.getUUID());
+            fixture.stations.acceptInvitation(fixture.stationId, member.getUUID());
+            fixture.stations.delete(fixture.stationId);
+            open(fixture.space, member, fixture.controller);
+            helper.assertTrue(!(member.containerMenu instanceof OrbitalLaserDrillMenu),
+                    "A non-owner opened a drill in an unavailable station");
+            ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "menuUnavailableOwner",
+                    fixture.space, fixture.controller.south(3).east(), new ArrayList<>());
+            joined.add(owner);
+            open(fixture.space, owner, fixture.controller);
+            helper.assertTrue(owner.containerMenu instanceof OrbitalLaserDrillMenu menu && menu.stillValid(owner)
+                            && menu.itemActionAllowed(EndgameAction.WITHDRAW)
+                            && !menu.itemActionAllowed(EndgameAction.CONFIGURE),
+                    "The owner did not get a withdraw-only menu: " + owner.containerMenu);
+            owner.containerMenu.clicked(1, 0, ClickType.QUICK_MOVE, owner);
+            helper.assertTrue(owner.getInventory().countItem(Items.DIAMOND) == 7
+                    && drill.storage().output().getStackInSlot(0).isEmpty(), "The owner could not withdraw");
+            helper.assertTrue(!owner.containerMenu.clickMenuButton(owner, OrbitalLaserDrillMenu.BUTTON_START)
+                    && !drill.running(), "A withdraw-only menu started the drill");
+        } finally {
+            joined.forEach(player -> {
+                player.containerMenu = player.inventoryMenu;
+                fixture.server.getPlayerList().remove(player);
+            });
+            fixture.close();
+        }
+        helper.succeed();
+    }
+
     /** Right-clicks the block as the player would (the block's own authority check opens the menu or refuses). */
     private static void open(ServerLevel level, ServerPlayer player, BlockPos pos) {
         level.getBlockState(pos).use(level, player, InteractionHand.MAIN_HAND,

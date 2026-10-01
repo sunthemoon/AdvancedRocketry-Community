@@ -61,7 +61,7 @@ public final class OrbitalLaserDrillBlock extends EndgameDeviceBlock {
         }
         EndgameCode refusal = EndgameRuntime.devices().isEmpty() ? EndgameCode.ROOT_UNAVAILABLE
                 : drill.quarantined() ? EndgameCode.DEVICE_QUARANTINED
-                : EndgameDeviceMenu.viewAuthority((ServerLevel) level, player, drill).refusal();
+                : EndgameDeviceMenu.openRefusal((ServerLevel) level, player, drill);
         if (refusal != EndgameCode.OK) {
             EndgameIntentGuard.statusLine(player, refusal);
             return InteractionResult.CONSUME;

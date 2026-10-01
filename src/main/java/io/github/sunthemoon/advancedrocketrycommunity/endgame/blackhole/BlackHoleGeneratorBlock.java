@@ -58,7 +58,7 @@ public final class BlackHoleGeneratorBlock extends EndgameDeviceBlock {
         }
         EndgameCode refusal = EndgameRuntime.devices().isEmpty() ? EndgameCode.ROOT_UNAVAILABLE
                 : generator.quarantined() ? EndgameCode.DEVICE_QUARANTINED
-                : EndgameDeviceMenu.viewAuthority((ServerLevel) level, player, generator).refusal();
+                : EndgameDeviceMenu.openRefusal((ServerLevel) level, player, generator);
         if (refusal != EndgameCode.OK) {
             EndgameIntentGuard.statusLine(player, refusal);
             return InteractionResult.CONSUME;

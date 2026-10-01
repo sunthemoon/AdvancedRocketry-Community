@@ -46,7 +46,7 @@ public final class LaserTargetBlock extends EndgameDeviceBlock {
         }
         EndgameCode refusal = EndgameRuntime.devices().isEmpty() ? EndgameCode.ROOT_UNAVAILABLE
                 : target.quarantined() ? EndgameCode.DEVICE_QUARANTINED
-                : EndgameDeviceMenu.viewAuthority((ServerLevel) level, player, target).refusal();
+                : EndgameDeviceMenu.openRefusal((ServerLevel) level, player, target);
         if (refusal != EndgameCode.OK) {
             EndgameIntentGuard.statusLine(player, refusal);
             return InteractionResult.CONSUME;
