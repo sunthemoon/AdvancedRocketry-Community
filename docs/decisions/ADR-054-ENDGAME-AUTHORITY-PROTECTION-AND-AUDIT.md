@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 3
+revision: 4
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -906,3 +906,6 @@ escrowed cargo in it would be lost, so removal requires draining transfers first
 - Revision 3 answers review round 2 (required changes for this ADR), one commit
   per finding; see
   [review-02-dispositions](../work/v1.7.0-preparation/review-02-dispositions.md).
+- Revision 4 answers review round 3 (required changes for this ADR, and a loss
+  found while closing R3-L6), one commit per finding; see
+  [review-03-dispositions](../work/v1.7.0-preparation/review-03-dispositions.md).

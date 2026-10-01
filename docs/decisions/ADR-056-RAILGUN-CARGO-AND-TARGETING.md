@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 3
+revision: 4
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -155,3 +155,6 @@ in-transit cargo (ADR-054 §14).
 - Revision 3: accepted by review round 2; only cross-references to ADR-054's
   round-2 answers changed; see
   [review-02-dispositions](../work/v1.7.0-preparation/review-02-dispositions.md).
+- Revision 4: accepted by review round 3; only the owner redirect is named
+  (R3-L4); see
+  [review-03-dispositions](../work/v1.7.0-preparation/review-03-dispositions.md).

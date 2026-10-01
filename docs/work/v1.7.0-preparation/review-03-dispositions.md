@@ -1,0 +1,27 @@
+# v1.7.0 contract review round 3 — dispositions
+
+Round 3 reviewed revision 3 at `9b57a61` and found 0 Critical, 1 High, 2 Medium,
+7 Low and 2 Info findings. Verdicts: ADR-053, ADR-055, ADR-056, ADR-057,
+ADR-058 and ADR-059 ACCEPT; ADR-054 ACCEPT WITH REQUIRED CHANGES. Every round-2
+finding was resolved except R2-H1 (partially); its remaining parts are R3-H1 and
+R3-M1. Each answer is its own commit. Revision 4 changes ADR-054 (every finding),
+plus ADR-056 and ADR-059 (R3-L4 wording only). ADR-053, ADR-055, ADR-057 and
+ADR-058 are unchanged at revision 3.
+
+Closing the model gaps of R3-L6 exposed one further defect of revision 3, a
+loss, fixed in the same commit and listed under R3-L6 below.
+
+| ID | Severity | Answer | Verification | Commit |
+|---|---|---|---|---|
+| R3-H1 | High | Registration reads the endpoint's persisted entry. An ID that is retired, or unregistered and carrying outbox entries, incoming payloads or receipts, is frozen (`ENDPOINT_RETIRED`). Escrow, selection as a destination and claims all need a **durable** registration, so a legitimate endpoint never carries contents unregistered. A redirect waits for the destination's index removal to be durable. Retirement therefore no longer depends on keeping tombstones | `Redirect` model with an adversary that evicts D's tombstone at any time and re-registration from the persisted tag: exactly once in every state. Without the freeze rule the R3-H1 duplicate reappears (`without-freeze`, `register-from-unclean-tag`) | `2396148` |
+| R3-M1 | Medium | A retirement without live state (`MISSING`, `endpoint retire`) returns the endpoint's `CLAIMED`, unacknowledged records to `ARRIVED` in its barrier flush. `resolve` works item by item against the ledger. The `MISSING` residual row is corrected | `MISSING_D` and `RESOLVE_D` in the model; `missing-keeps-the-claim` and `resolve-moves-any-copy` mutations caught | `2396148` |
+| R3-M2 | Medium | Tombstones named by a record or pair are pinned (≤ 2,816). Young tombstones (absence not yet in a save or load tag) take an endpoint place in the owner's 64 and the server's 2,048. Settled, unpinned ones are capped at 256 per owner and 8,192 overall; the oldest is evicted with `TOMBSTONE_EVICTED`, and operators get `tombstone evict <player>`. Accounted maximum 2,932,736 B (about 2.80 MiB) < 3 MiB. Flush budget ≤ 400 ms at the 4 MiB bound, which only recovery registrations reach | `Transit` model with a capped-eviction adversary: exactly once without faults; with one lost write no outcome beyond the audited `SOURCE_ROLLBACK` residual (882 / 20,756 states). Mutations `evict-before-saved-absence` and `evict-without-freeze` caught | `cab9b9b` |
+| R3-L1 | Low | A quarantined or unreadable root at the recorded position counts as present in every presence or absence observation, so quarantine never retires an endpoint | — | `149b3f3` |
+| R3-L2 | Low | Any removal of a retired device, a player's break included, first resolves it in the removal's barrier flush. Owners may resolve their own retired endpoints. The menu explains the state | The model's `RESOLVE_D` followed by a container drop | `149b3f3` |
+| R3-L3 | Low | Items frozen in a registered endpoint are resolved by an operator with the same `endpoint resolve`; until then they make the endpoint busy | — | `149b3f3` |
+| R3-L4 | Low | Elevator cargo may be redirected to the same kind of endpoint in the station's current valid pair, as well as back to its source (ADR-054, ADR-059); ADR-056 names the owner redirect | — | `149b3f3` |
+| R3-L5 | Low | A payload stack is at most 512 bytes encoded, counting ID, count and tag (`PAYLOAD_TOO_LARGE` otherwise). `dispatched_through` is a long array of 24 B entries | — | `149b3f3` |
+| R3-L6 | Low | The model now removes D with a non-empty receive buffer or a due move, and restores a mover's copy from the same snapshot as D's chunk. `MISSING` and eviction were added in `2396148`, and `PLACE_D` starts unpersisted. **Defect found:** after a durable acknowledgement and a player's break, a crash before D's chunk saved the move returned a retired copy whose own payload `resolve` destroyed (outcome 0 on `CLAIM_D SAVE_D MOVE_D FLUSH_L REMOVE_D CRASH`). **Fix:** `resolve` moves a frozen payload whose record is `CLAIMED` at the endpoint, acknowledged or not. A record is pruned only after a save or load tag of its paid endpoint's chunk holds no incoming payload for it; until then it is a payload-free stub among the 256, outside the owner's 32. `endpoint retire` prunes its stubs. Two copies at once (crash-restored D and a mover's copy) remain the container torn-save class. E's removal is the same code path as D's and is not modelled separately | Full rules: 8,122 states, all exactly once; the named path is a vector. Mutations restoring the revision-3 rules (`resolve-destroys-own-move`, `prune-before-persisted-move`) are caught as losses | `74359dd` |
+| R3-L7 | Low | A search that outgrows its limit fails closed (`LIMIT`). Mutations target the retirement rules with every rule on. "Moves again wherever acknowledged" is not listed, because the model shows it is not load-bearing under retirement and the freeze | 23 mutations caught, control clean | `2396148`, `cab9b9b`, `74359dd` |
+| R3-I1 | Info | Verified claims; no change. The opt-out tag names stay defence in depth, not relied on | — | — |
+| R3-I2 | Info | The evidence archive (`root-checks.zip`) is committed with the acceptance | — | — |
