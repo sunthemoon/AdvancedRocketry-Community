@@ -2,6 +2,7 @@
 
 ```yaml
 status: PROPOSED
+revision: 2
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -94,3 +95,10 @@ Before a v1.7 candidate freeze, every inherited and current Required Gate needs
 evidence or a separately approved precise disposition with owner, expiry and
 recovery condition. This decision does not extend any older waiver. Without this
 version-limited exception, v1.7 remains planning-only.
+
+## Review history
+
+- Revision 1 (`10e3d2d`): accepted by contract review round 1 without required changes.
+- Revision 2 aligns the outcome list with ADR-059 §8's ride-arrival tickets and
+  ADR-054 §16's recipes (reviews R1-M4, R1-M12); see
+  [review-01-dispositions](../work/v1.7.0-preparation/review-01-dispositions.md).

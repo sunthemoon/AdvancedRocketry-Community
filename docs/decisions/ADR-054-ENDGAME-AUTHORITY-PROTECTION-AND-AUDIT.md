@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 1
+revision: 2
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -713,3 +713,10 @@ where a device works. A balance pass belongs to the v1.8 content batches.
 Disable the systems by config. Removing the code leaves
 `advancedrocketrycommunity_endgame.dat` unused;
 escrowed cargo in it would be lost, so removal requires draining transfers first.
+
+## Review history
+
+- Revision 1 (`10e3d2d`): independent contract review round 1 asked for changes.
+- Revision 2 answers it, together with root findings S1–S4 and finding F02 of the
+  external v1.3–v1.6 deep-test report, one commit per finding; see
+  [review-01-dispositions](../work/v1.7.0-preparation/review-01-dispositions.md).

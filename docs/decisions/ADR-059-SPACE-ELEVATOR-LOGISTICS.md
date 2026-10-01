@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 1
+revision: 2
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -254,3 +254,10 @@ station rotation and tether breakage (no station rotation exists; not revived).
 Disable by config; unbind and arrivals still work. Removing the code leaves the
 pairs unused in `advancedrocketrycommunity_endgame.dat`; warp and deletion
 guards disappear with it.
+
+## Review history
+
+- Revision 1 (`10e3d2d`): independent contract review round 1 asked for changes.
+- Revision 2 answers it, together with root findings S1–S4 and finding F02 of the
+  external v1.3–v1.6 deep-test report, one commit per finding; see
+  [review-01-dispositions](../work/v1.7.0-preparation/review-01-dispositions.md).
