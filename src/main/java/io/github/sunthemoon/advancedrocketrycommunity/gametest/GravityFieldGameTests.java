@@ -266,10 +266,6 @@ public final class GravityFieldGameTests {
                 + actual);
     }
 
-    /**
-     * The player's own source; the permission is raised only so the test can name the owner with a selector (the
-     * GameTest server has no profile cache for names). The source and its output stay the player's own.
-     */
     /** Review C11R-L6: the unversioned C11 development list still reads; the next change writes schema 1. */
     @GameTest(template = "empty", batch = "endgame_gravity_trust_format", timeoutTicks = 40)
     public static void anUnversionedTrustListIsReadAndRewrittenWithItsSchema(GameTestHelper helper) {
@@ -301,6 +297,10 @@ public final class GravityFieldGameTests {
         helper.succeed();
     }
 
+    /**
+     * The player's own source; the permission is raised only so the test can name the owner with a selector (the
+     * GameTest server has no profile cache for names). The source and its output stay the player's own.
+     */
     private static int command(MinecraftServer server, ServerPlayer player, String command) {
         return command(server, player.createCommandSourceStack().withPermission(2), command);
     }
