@@ -76,6 +76,14 @@ are not available yet. Opening a world upgrades its satellite
 registry and blocks a return to v1.5 builds; use copies of backed-up worlds. The
 [implementation log](docs/work/v1.6.0-implementation-log.md) tracks the work.
 
+**v1.7 Endgame Systems is in preparation.** Its contracts are accepted: an
+orbital laser drill, a railgun cargo launcher with endpoint targeting, a
+black-hole generator, an area gravity controller and space-elevator logistics,
+each with permission, protection, rate, energy and audit bounds. The
+[implementation log](docs/work/v1.7.0-implementation-log.md) tracks the work.
+None of these features is available yet; the runtime build remains
+`1.20.1-1.6.0-dev` until implementation begins.
+
 ## What this project is
 
 Advanced Rocketry: Community Edition aims to rebuild the core Advanced Rocketry experience on a maintainable Forge 1.20.1 foundation:

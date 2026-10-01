@@ -145,7 +145,7 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
 
 依据 `docs/versions/V1.7.0-ENDGAME-SYSTEMS.md`。
 
-### C10. v1.7 契约 `[ ]`
+### C10. v1.7 契约 `[x]`
 - 以下各项的 ADR 送审：
   - 轨道激光/采矿；
   - 轨道炮与目标系统（安全范围）；
@@ -153,6 +153,11 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
   - 重力控制器；
   - 空间电梯物流（以 ADR-045 为基础）；
   - 权限、保护区、速率、能耗与审计日志。
+- 结果（2026-10-01）：分支 `codex/v1.7.0-endgame-systems`，基线 `ab10fb5`。旧版审计只读、
+  未导入。ADR-053..059 经四轮独立审核与一轮确认后由维护者确认接受：第 1 轮 0 Critical /
+  3 High，第 2 轮 2 High，第 3 轮 1 High，第 4 轮无 Critical/High/Medium，5 个 Low 与确认轮的
+  1 个 Info 均单独提交并写入正文。参考模型 27 项测试、26 个变异全部捕获；运行时未改动，
+  重建 JAR 与 v1.6 交付构建字节一致（`docs/work/v1.7.0-preparation/`）。
 
 ### C11. 采矿激光、重力控制器与权限审计框架 `[ ]`
 
@@ -217,5 +222,6 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
 
 ## 下一块
 
-**C10 v1.7 契约**（新会话：v1.6 开发交付已完成，按维护者要求大版本之间切换会话；
-依据 `docs/versions/V1.7.0-ENDGAME-SYSTEMS.md`，另开 v1.7 分支，先写 ADR 并送独立审核）。
+**C11 采矿激光、重力控制器与权限审计框架**（同一会话继续；在 `codex/v1.7.0-endgame-systems`
+上按已接受的 ADR-054/055/058 实现：终局根、权限与保护链、审计、端点索引、激光钻逻辑模式与
+可选物理模式、重力控制器）。

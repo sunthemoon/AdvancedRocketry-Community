@@ -1,0 +1,942 @@
+{
+  "links": [
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/18-V1PLUS-SOURCES.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/MACHINE-KERNEL-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/templates/POST-1.0-VERSION-EVIDENCE-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/templates/REMOTE-SERVER-RUN-REPORT-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/templates/VISUAL-VALIDATION-REPORT-TEMPLATE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.0.0-planning-integration/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/provenance/v1.0.0-v1plus-planning.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-machine-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-contract-draft.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-test-design.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-audit/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-process-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-port-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-pattern-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.2.0-lifecycle-core/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/05-v1.0-release-validation.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/06-implement-post-1.0-version.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/07-audit-post-1.0-version.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "codex-prompts/08-remote-linux-environment-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.0.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/check-debian12-dev-host.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/tmux-arce-layout.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/start-xvfb-visual-smoke.sh"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "scripts/validate_v1plus_planning.py"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/PUBLIC-API-GUIDE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "compat-test-mod/README.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.3.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-020-V130-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/releases/v1.5.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.5.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-039-V150-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-040-STATION-REGIONS-AND-MIGRATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-041-STATION-ORBIT-ENVIRONMENT.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-042-STATION-04-NATIVE-SCOPE.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-043-STAR-SYSTEMS-AS-ROOT-TREES.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-046-V150-STATION-CONTROLS-ARE-COMMANDS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-047-PER-STATION-SKY-CONTEXT.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.6.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.6.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.6.0-legacy-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.6.0-contract-coverage.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-049-SATELLITE-BLUEPRINTS-AND-ASSEMBLY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-052-RESOURCE-TABLES-AND-SEEDS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.7.0-implementation-log.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.7.0-contract-coverage.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-033-PLANETARY-WORLDS-AND-SURFACE-ADMISSION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-map02/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/work/v1.4.0-env/VERIFICATION.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-021-PUBLIC-API-VERSION-POLICY.md"
+    },
+    {
+      "document": "DOCUMENT-INDEX.md",
+      "target": "docs/decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/status/GATE_STATUS.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/04-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v0.9.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/status/GATE_STATUS.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.0.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/PLANETARY-DISCOVERY-GUIDE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/work/v1.6.0-implementation-log.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/work/v1.7.0-implementation-log.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "README.md",
+      "target": "DOCUMENT-INDEX.md"
+    },
+    {
+      "document": "README.md",
+      "target": "LICENSE"
+    },
+    {
+      "document": "README.md",
+      "target": "NOTICE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "UPSTREAM.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/PUBLIC-API-GUIDE.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/API-COMPATIBILITY.md"
+    },
+    {
+      "document": "README.md",
+      "target": "compat-test-mod/README.md"
+    },
+    {
+      "document": "README.md",
+      "target": "CONTRIBUTING.md"
+    },
+    {
+      "document": "README.md",
+      "target": "AGENTS.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/04-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/BETA-SUPPORT-POLICY.md"
+    },
+    {
+      "document": "README.md",
+      "target": "docs/releases/v1.4.0/MIGRATION-REPORT.md"
+    },
+    {
+      "document": "README.md",
+      "target": "SECURITY.md"
+    },
+    {
+      "document": "README.md",
+      "target": "LICENSE"
+    },
+    {
+      "document": "README.md",
+      "target": "NOTICE.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.2.0-machine-audit.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.0.0-core-baseline-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "../releases/v1.6.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-055-ORBITAL-LASER-DRILL.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-056-RAILGUN-CARGO-AND-TARGETING.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-057-BLACK-HOLE-GENERATOR.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-058-AREA-GRAVITY-CONTROLLER.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-059-SPACE-ELEVATOR-LOGISTICS.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "target": "../work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "target": "../work/v1.7.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "target": "../work/v1.7.0-preparation/review-04-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md",
+      "target": "../work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md",
+      "target": "../work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md",
+      "target": "../work/v1.7.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "target": "../work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md",
+      "target": "../work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "target": "ADR-045-SPACE-ELEVATOR-ENDPOINT-CONTRACT.md"
+    },
+    {
+      "document": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "target": "../work/v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "target": "../work/v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "target": "../work/v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "target": "../work/v1.7.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.6.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.6.0-c7-close/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.6.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-orbit-environment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-star-systems/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-slices-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-review-closure/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-closure/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.5.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-orbit-sky/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-elevator-ui/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-mig-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-055-ORBITAL-LASER-DRILL.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-057-BLACK-HOLE-GENERATOR.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../work/v1.7.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../work/v1.7.0-implementation-log.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../06-RELEASE-AND-ACCEPTANCE-GATES.md"
+    },
+    {
+      "document": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "target": "../17-V1PLUS-QUALITY-BUDGETS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-contract-coverage.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-contract-coverage.md",
+      "target": "../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-04-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-legacy-audit.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../v1.7.0-implementation-log.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-055-ORBITAL-LASER-DRILL.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-057-BLACK-HOLE-GENERATOR.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../v1.7.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "review-03-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "review-04-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "review-04-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "independent-review.zip"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "independent-review-files.json"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "examples.json"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "check_examples.py"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "check_mutations.py"
+    },
+    {
+      "document": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+      "target": "../../status/COMPLETION-PLAN.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

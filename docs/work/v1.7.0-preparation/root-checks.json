@@ -1,0 +1,31 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 48476,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-api.jar",
+        "sha256": "d29f20aafb11a751423ad8d06c3ce6206afb1faa2807d773bbcc94d4faa54a5d"
+      },
+      {
+        "bytes": 1558576,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev-sources.jar",
+        "sha256": "ad9e6de9a77d22db7f2b2b194b0ce1a595074fe01432ea623c80cdf0090646ed"
+      },
+      {
+        "bytes": 3443356,
+        "name": "advancedrocketry-community-1.20.1-1.6.0-dev.jar",
+        "sha256": "452885f0aeccb1396fb2694d149c8add703d1cdfc5f822ed71ef51d4e760dfe0"
+      }
+    ]
+  },
+  "base_commit": "ab10fb53a580e53a9a1c24097a487f2a7c54ad52",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 218,
+    "tests": 1157
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {}
+}

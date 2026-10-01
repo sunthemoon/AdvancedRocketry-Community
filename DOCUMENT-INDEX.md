@@ -234,6 +234,17 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [任务调度与恢复](docs/decisions/ADR-050-MISSION-SCHEDULER-AND-RECOVERY.md)（第 3 版，已接受）：单一注册表与逻辑时钟、状态机、预算与保留、取消与超时、隔离与启动前迁移。
 - [资源任务实例与奖励交付](docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md)（第 3 版，已接受）：无坐标的逻辑小行星实例、气态巨行星采集、绑定终端的回执与对账矩阵。
 - [资源表、种子与版本化奖励](docs/decisions/ADR-052-RESOURCE-TABLES-AND-SEEDS.md)（第 2 版，已接受）：数据驱动的小行星类型与气体表、SplitMix64 种子派生与 v1 整数算法、可审计的奖励版本。
+- [v1.7 实施日志](docs/work/v1.7.0-implementation-log.md)：终局系统的分块任务、契约状态与实际验证范围。
+- [v1.7 准备验证](docs/work/v1.7.0-preparation/VERIFICATION.md)：四轮独立契约审核与确认轮、处置表、参考模型与变异检查、未改动运行时的检查。
+- [v1.7 旧版终局系统审计](docs/work/v1.7.0-legacy-audit.md)：固定 MIT commit 的只读行为审计，未导入任何上游文件。
+- [v1.7 契约覆盖表](docs/work/v1.7.0-contract-coverage.md)：版本文档每一项对应的契约条款、测试等级、分块或处置。
+- [v1.7 开发基线例外](docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md)（第 3 版，已接受）：本版开发与继承发布验收分离。
+- [终局权限、保护、速率、能耗、运输与审计框架](docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md)（第 4 版，已接受）：系统开关、设备身份与权限、保护链、端点索引与退役、跨端点运输账本、预算与审计。
+- [轨道激光钻](docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md)（第 3 版，已接受）：逻辑产出与可选的物理采矿、按层结算。
+- [轨道炮货运与目标选择](docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md)（第 4 版，已接受）：端点寻址、能耗报价与恰好一次交付。
+- [黑洞发电机](docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md)（第 3 版，已接受）：燃料表与每 tick 上限，唯一可产能的设备。
+- [区域重力控制器](docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md)（第 3 版，已接受）：信任名单、空间站内 1.00 g 上限与跳跃高度向量。
+- [太空电梯物流](docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md)（第 4 版，已接受）：基于 ADR-045 的配对、乘坐与到达预加载票据、站点守卫与货运。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。

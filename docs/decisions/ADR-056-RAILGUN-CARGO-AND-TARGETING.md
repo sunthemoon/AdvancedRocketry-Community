@@ -1,7 +1,7 @@
 # ADR-056 — Railgun cargo launcher and targeting (safe scope)
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 4
 date: 2026-10-01
 deciders: [sunthemoon]
@@ -9,6 +9,9 @@ owner: sunthemoon
 target_version: v1.7.0
 slices: [V170-RAIL-01]
 development_dependency: ADR-016, ADR-043, ADR-054
+accepted_by: sunthemoon
+accepted_at: 2026-10-01
+acceptance_basis: maintainer confirmation on 2026-10-01 after four independent review rounds
 ```
 
 ## Context
@@ -145,6 +148,19 @@ Recorded in `PORTING_MATRIX.md`:
 
 Disable by config; arrivals still complete. Removing the code loses escrowed and
 in-transit cargo (ADR-054 §14).
+
+## Acceptance record
+
+Accepted on 2026-10-01 by root after the maintainer confirmed it, following four
+independent contract-review rounds and a confirmation round. Round 1 accepted it
+with required changes, and rounds 2 to 4 accepted it; revision 4 changes wording
+only. Every Critical, High and Medium finding is resolved, and the final Low and
+Info findings are applied in this text. Reports and dispositions are in the
+[preparation evidence](../work/v1.7.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.7 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.
 
 ## Review history
 

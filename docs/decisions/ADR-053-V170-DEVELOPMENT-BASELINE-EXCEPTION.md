@@ -1,13 +1,16 @@
 # ADR-053 — v1.7 development baseline exception
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 3
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.7.0
-proposed_baseline: ab10fb53a580e53a9a1c24097a487f2a7c54ad52
+accepted_baseline: ab10fb53a580e53a9a1c24097a487f2a7c54ad52
+accepted_by: sunthemoon
+accepted_at: 2026-10-01
+acceptance_basis: maintainer confirmation on 2026-10-01 after four independent review rounds
 expires: before v1.7.0 release-candidate freeze
 recovery_condition: complete or explicitly disposition every inherited and current Required Gate before freezing a v1.7.0 candidate
 supersedes: ""
@@ -95,6 +98,17 @@ Before a v1.7 candidate freeze, every inherited and current Required Gate needs
 evidence or a separately approved precise disposition with owner, expiry and
 recovery condition. This decision does not extend any older waiver. Without this
 version-limited exception, v1.7 remains planning-only.
+
+## Acceptance record
+
+Recorded on 2026-10-01 after the maintainer confirmed the acceptance of the v1.7
+contracts. Four independent contract-review rounds and a confirmation round
+found no required change to this ADR. ADR-054..059 are ACCEPTED in the same
+step, which satisfies the version's fourth prerequisite: an independent ADR and
+threat model for each endgame system. Reports and dispositions are in the
+[preparation evidence](../work/v1.7.0-preparation/VERIFICATION.md). Root records
+this acceptance separately from the reviews. It permits development, not
+runtime-completion claims, inherited Gate PASS or publication.
 
 ## Review history
 

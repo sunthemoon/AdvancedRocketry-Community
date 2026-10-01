@@ -1,0 +1,101 @@
+{
+  "base_commit": "ab10fb53a580e53a9a1c24097a487f2a7c54ad52",
+  "files": [
+    {
+      "bytes": 24899,
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "92624454700c8decce86419c49204d92f9b24a5b20fc5ccf723564d6f17a236e",
+      "working_sha256": "92624454700c8decce86419c49204d92f9b24a5b20fc5ccf723564d6f17a236e"
+    },
+    {
+      "bytes": 10466,
+      "path": "README.md",
+      "sha256": "856489aa02cdaa7922697ceedbb86279c5fa14aaa5a08a2d1c94206895788d3a",
+      "working_sha256": "856489aa02cdaa7922697ceedbb86279c5fa14aaa5a08a2d1c94206895788d3a"
+    },
+    {
+      "bytes": 12793,
+      "path": "docs/PORTING_MATRIX.md",
+      "sha256": "d02f889ab654f30018e27dafb9846238370b573bdd0f3c4c040ed219f82ed8ef",
+      "working_sha256": "d02f889ab654f30018e27dafb9846238370b573bdd0f3c4c040ed219f82ed8ef"
+    },
+    {
+      "bytes": 6314,
+      "path": "docs/decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "sha256": "a83dc0920d1dfa4ec6513af8e2a2041cf31a11d78901814efe4742828b9b8160",
+      "working_sha256": "a83dc0920d1dfa4ec6513af8e2a2041cf31a11d78901814efe4742828b9b8160"
+    },
+    {
+      "bytes": 64728,
+      "path": "docs/decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md",
+      "sha256": "61980d8c2ef94abed43d323da92ae1894d0e25285f8723c6d547dd0a7a888a0b",
+      "working_sha256": "61980d8c2ef94abed43d323da92ae1894d0e25285f8723c6d547dd0a7a888a0b"
+    },
+    {
+      "bytes": 16727,
+      "path": "docs/decisions/ADR-055-ORBITAL-LASER-DRILL.md",
+      "sha256": "5db4dd17cd1bdb952d140cc1124e131c8f88c2767a76db86e1b6b2cd23a4ac7c",
+      "working_sha256": "5db4dd17cd1bdb952d140cc1124e131c8f88c2767a76db86e1b6b2cd23a4ac7c"
+    },
+    {
+      "bytes": 8646,
+      "path": "docs/decisions/ADR-056-RAILGUN-CARGO-AND-TARGETING.md",
+      "sha256": "caba483060a901198e68f654c684e52e53a9c2810dc30be313265a0d28c03b28",
+      "working_sha256": "caba483060a901198e68f654c684e52e53a9c2810dc30be313265a0d28c03b28"
+    },
+    {
+      "bytes": 8635,
+      "path": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "sha256": "c95a9bd950f1fc35e0bd7cff734db6614c4a4b65cfd6a5e58acbee1355cd2c7c",
+      "working_sha256": "c95a9bd950f1fc35e0bd7cff734db6614c4a4b65cfd6a5e58acbee1355cd2c7c"
+    },
+    {
+      "bytes": 11719,
+      "path": "docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md",
+      "sha256": "064f8fe787166afefdba30502f96209d889507f8915aef29886d11f6a4d9a356",
+      "working_sha256": "064f8fe787166afefdba30502f96209d889507f8915aef29886d11f6a4d9a356"
+    },
+    {
+      "bytes": 16314,
+      "path": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "sha256": "99bec19fea832fc5cf191cc56bbfcd398bf69cfb624514d362205e5713b5e021",
+      "working_sha256": "99bec19fea832fc5cf191cc56bbfcd398bf69cfb624514d362205e5713b5e021"
+    },
+    {
+      "bytes": 11731,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "503d0969f37c4a6a61d1b9d66ee4e3eb4f0a3cf90cb07808a0036c40c3a38412",
+      "working_sha256": "503d0969f37c4a6a61d1b9d66ee4e3eb4f0a3cf90cb07808a0036c40c3a38412"
+    },
+    {
+      "bytes": 8323,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "fe6780bf8c22220fef0852737d67d2b66c9038501d06a46cd2f9bfae9671057f",
+      "working_sha256": "fe6780bf8c22220fef0852737d67d2b66c9038501d06a46cd2f9bfae9671057f"
+    },
+    {
+      "bytes": 8851,
+      "path": "docs/versions/V1.7.0-ENDGAME-SYSTEMS.md",
+      "sha256": "18a1543878c47de8b5bdd5d86c50297f9d61463bb61a6c422d57173362fd32e4",
+      "working_sha256": "18a1543878c47de8b5bdd5d86c50297f9d61463bb61a6c422d57173362fd32e4"
+    },
+    {
+      "bytes": 6491,
+      "path": "docs/work/v1.7.0-contract-coverage.md",
+      "sha256": "8b1a9477b4df6b6d49de40ecf0fd6e0b463697bcb6b184892eaeb92955f0fbda",
+      "working_sha256": "8b1a9477b4df6b6d49de40ecf0fd6e0b463697bcb6b184892eaeb92955f0fbda"
+    },
+    {
+      "bytes": 5511,
+      "path": "docs/work/v1.7.0-implementation-log.md",
+      "sha256": "c5e485b78ae84450eba1701ca99f0b6332fcf3923481a40d5b4a051295f8d701",
+      "working_sha256": "c5e485b78ae84450eba1701ca99f0b6332fcf3923481a40d5b4a051295f8d701"
+    },
+    {
+      "bytes": 14267,
+      "path": "docs/work/v1.7.0-legacy-audit.md",
+      "sha256": "eb980901b2c955538d84c323af2afbbe37e3d261cc79f71698d5baccdbf83468",
+      "working_sha256": "eb980901b2c955538d84c323af2afbbe37e3d261cc79f71698d5baccdbf83468"
+    }
+  ]
+}

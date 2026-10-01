@@ -1,5 +1,5 @@
 {
- "purpose": "Reference vectors for ADR-054..059 revision 3. Laser draw lists and model state counts are generated pins; all other expectations are hand-written from the ADR text.",
+ "purpose": "Reference vectors for the accepted ADR-054..059 (ADR-054, ADR-056 and ADR-059 revision 4; the others revision 3). Laser draw lists and model state counts are generated pins; all other expectations are hand-written from the ADR text.",
  "splitmix64_seed0": [
   "e220a8397b1dcdaf",
   "6e789e6aa1b965f4",

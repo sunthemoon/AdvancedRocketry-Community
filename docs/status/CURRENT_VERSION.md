@@ -25,20 +25,38 @@ frozen release-candidate commit or stable approval. See the
 
 The acceptance cursor above remains at the earliest unfinished release Gate;
 it is not the active feature-development branch. Under accepted
-[ADR-048](../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
-v1.6 development baseline is the v1.5 closure commit. Inherited acceptance
-remains open; accepted v1.6 contracts do not imply implemented satellite or
-mission gameplay:
+[ADR-053](../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
+v1.7 development baseline is the v1.6 handoff commit. Inherited acceptance
+remains open; accepted v1.7 contracts do not imply implemented endgame gameplay:
 
 ```yaml
-active_development_version: v1.6.0
-active_development_branch: codex/v1.6.0-satellite-resource-missions
-phase: IMPLEMENTING
+active_development_version: v1.7.0
+active_development_branch: codex/v1.7.0-endgame-systems
+phase: CONTRACT_FROZEN
 execution_state: ACTIVE
-accepted_development_baseline: 940a5ed3b90a4da0ca4e43417b2bddf41ebb7307
-development_log: docs/work/v1.6.0-implementation-log.md
-previous_development_handoff: docs/releases/v1.5.0/RELEASE-EVIDENCE.md
+accepted_development_baseline: ab10fb53a580e53a9a1c24097a487f2a7c54ad52
+development_log: docs/work/v1.7.0-implementation-log.md
+previous_development_handoff: docs/releases/v1.6.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.6.0-dev
+```
+
+v1.7 preparation (C10) is complete. [ADR-053](../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md)
+accepts v1.7 development from the v1.6 handoff commit `ab10fb5`, separately from
+inherited acceptance. ADR-054..059 freeze the endgame framework (authority,
+protection, rate, energy, the transit ledger and audit) and the laser drill,
+railgun, black-hole generator, gravity controller and space-elevator contracts
+after four independent review rounds and a confirmation round
+([preparation evidence](../work/v1.7.0-preparation/VERIFICATION.md)). The runtime is
+unchanged: the rebuilt JARs are byte-identical to the v1.6 handoff build. The next
+chunk is C11 in [COMPLETION-PLAN](COMPLETION-PLAN.md). The v1.6 facts below are unchanged.
+
+Previous development version (v1.6, development complete, release `IN_PROGRESS`):
+
+```yaml
+previous_development_version: v1.6.0
+previous_development_branch: codex/v1.6.0-satellite-resource-missions
+previous_accepted_development_baseline: 940a5ed3b90a4da0ca4e43417b2bddf41ebb7307
+previous_development_log: docs/work/v1.6.0-implementation-log.md
 ```
 
 v1.6 preparation (C6) is complete. [ADR-048](../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md)
@@ -59,7 +77,7 @@ remains `IN_PROGRESS`, not `PASSED`. The next development chunk is v1.7 (C10 in
 [COMPLETION-PLAN](COMPLETION-PLAN.md)), in a new session. No Gate is claimed. The v1.5
 facts below are unchanged.
 
-Previous development version (v1.5, development complete, release `IN_PROGRESS`):
+Earlier development version (v1.5, development complete, release `IN_PROGRESS`):
 
 ```yaml
 previous_development_version: v1.5.0

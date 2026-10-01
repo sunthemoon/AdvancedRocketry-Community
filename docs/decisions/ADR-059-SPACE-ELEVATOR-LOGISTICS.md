@@ -1,7 +1,7 @@
 # ADR-059 — Space-elevator logistics
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 4
 date: 2026-10-01
 deciders: [sunthemoon]
@@ -10,6 +10,9 @@ target_version: v1.7.0
 slices: [V170-ELEV-01]
 development_dependency: ADR-040, ADR-041, ADR-044, ADR-045, ADR-046, ADR-054
 amends: ADR-044 (warp request, confirmation and commit refuse a bound station), ADR-045 (resolves its open decisions; supersedes its "named station transitions" and "journaled passenger transport" constraints as stated in §5 and §8)
+accepted_by: sunthemoon
+accepted_at: 2026-10-01
+acceptance_basis: maintainer confirmation on 2026-10-01 after four independent review rounds
 ```
 
 ## Context
@@ -260,6 +263,19 @@ station rotation and tether breakage (no station rotation exists; not revived).
 Disable by config; unbind and arrivals still work. Removing the code leaves the
 pairs unused in `advancedrocketrycommunity_endgame.dat`; warp and deletion
 guards disappear with it.
+
+## Acceptance record
+
+Accepted on 2026-10-01 by root after the maintainer confirmed it, following four
+independent contract-review rounds and a confirmation round. Round 1 accepted it
+with required changes, and rounds 2 to 4 accepted it; revision 4 changes wording
+only. Every Critical, High and Medium finding is resolved, and the final Low and
+Info findings are applied in this text. Reports and dispositions are in the
+[preparation evidence](../work/v1.7.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.7 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.
 
 ## Review history
 

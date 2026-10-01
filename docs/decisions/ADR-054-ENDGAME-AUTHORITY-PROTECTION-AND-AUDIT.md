@@ -1,7 +1,7 @@
 # ADR-054 — Endgame authority, protection, rate, energy, transit and audit framework
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 4
 date: 2026-10-01
 deciders: [sunthemoon]
@@ -10,6 +10,9 @@ target_version: v1.7.0
 slices: [V170-SEC-01, V170-TRN-01]
 development_dependency: ADR-021, ADR-040, ADR-041, ADR-043, ADR-044, ADR-045, ADR-049, ADR-050, ADR-051, ADR-053
 used_by: [ADR-055, ADR-056, ADR-057, ADR-058, ADR-059]
+accepted_by: sunthemoon
+accepted_at: 2026-10-01
+acceptance_basis: maintainer confirmation on 2026-10-01 after four independent review rounds
 ```
 
 ## Context
@@ -928,6 +931,20 @@ where a device works. A balance pass belongs to the v1.8 content batches.
 Disable the systems by config. Removing the code leaves
 `advancedrocketrycommunity_endgame.dat` unused;
 escrowed cargo in it would be lost, so removal requires draining transfers first.
+
+## Acceptance record
+
+Accepted on 2026-10-01 by root after the maintainer confirmed it, following four
+independent contract-review rounds and a confirmation round. Rounds 1 to 3
+accepted it with required changes; round 4 accepted revision 4, and the
+confirmation round confirmed its Low answers. Every Critical, High and Medium
+finding is resolved, and the final Low and Info findings are applied in this
+text. Reports and dispositions are in the [preparation
+evidence](../work/v1.7.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.7 slices. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.
 
 ## Review history
 
