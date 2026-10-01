@@ -51,12 +51,14 @@ public final class EndgameService {
     private final EndpointRegistrations registrations = new EndpointRegistrations();
     private final EndpointChunkIndex index = new EndpointChunkIndex();
     private final TransitLedger transits;
+    private final TransitOperations transitOperations;
     private long nextHousekeeping;
     private MinecraftServer server;
     private EndgameSavedData data;
     private volatile boolean operational;
     private long lastCoalescedFlush = Long.MIN_VALUE / 2;
     private boolean writeFailureLogged;
+    private boolean testWrites;
 
     public EndgameService(Supplier<EndgameSettings> settings, Supplier<Set<String>> endgameTypes) {
         this(settings, endgameTypes, () -> TransitLimits.DEFAULTS);
@@ -68,6 +70,12 @@ public final class EndgameService {
         this.endgameTypes = Objects.requireNonNull(endgameTypes, "endgameTypes");
         this.audit = new EndgameAudit(AdvancedRocketryCommunity.LOGGER::info);
         this.transits = new TransitLedger(this, transitLimits);
+        this.transitOperations = new TransitOperations(this);
+    }
+
+    /** Operator and owner actions on the ledger (redirect, purge, resettle, resolve). */
+    public TransitOperations transitOperations() {
+        return transitOperations;
     }
 
     /** The transit ledger of section 11. */
@@ -93,9 +101,15 @@ public final class EndgameService {
 
     /** Unit tests: run the service over a root without a server; writes are then skipped. */
     void startForTest(EndgameSavedData loaded) {
+        startForTest(loaded, false);
+    }
+
+    /** Unit tests: as above; with {@code writesSucceed} every flush counts as a successful root write. */
+    void startForTest(EndgameSavedData loaded, boolean writesSucceed) {
         server = null;
         data = loaded;
         operational = loaded.operational();
+        testWrites = writesSucceed;
         rebuildIndex();
     }
 
@@ -169,6 +183,11 @@ public final class EndgameService {
 
     private void flush() {
         if (server == null) {
+            if (testWrites) {
+                data.view().markPersisted();
+                data.setDirty(false);
+                transits.written();
+            }
             return;
         }
         try {

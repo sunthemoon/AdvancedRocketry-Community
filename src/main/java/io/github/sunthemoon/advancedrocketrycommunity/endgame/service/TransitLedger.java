@@ -11,7 +11,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitEnd
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitKey;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLedgerView;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRules;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTags;
@@ -27,6 +26,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * ADR-054 section 11 on the server. The END-tick passes (section 7): arrival (at most 64 records per tick), stub
@@ -401,11 +401,11 @@ public final class TransitLedger implements TransitLedgerView {
     /**
      * Section 9.1 for a ledger endpoint whose block changed to another block: settles its records from its live state
      * and removes its index record (retiring its ID) in one write, a barrier flush when anything had to be settled.
-     * Returns the incoming payloads that are its own content (acknowledged here or pruned): they drop with the local
-     * buffers. Unregistered outbox entries are destroyed with an audit line; incoming payloads naming another endpoint
-     * are voided.
+     * Returns the items to drop with the local buffers: incoming payloads that are its own content (acknowledged here
+     * or pruned). Unregistered outbox entries are destroyed with an audit line; incoming payloads naming another
+     * endpoint are voided. A retired endpoint is resolved first (section 9), its resolved items dropping too.
      */
-    public List<TransitPayload> settleRemoval(TransitEndpoint endpoint, long gameTime) {
+    public List<ItemStack> settleRemoval(TransitEndpoint endpoint, long gameTime) {
         now = gameTime;
         UUID id = endpoint.endpointId();
         UUID owner = endpoint.endpointOwner().orElse(null);
@@ -413,6 +413,12 @@ public final class TransitLedger implements TransitLedgerView {
         Optional<EndgameRoot> view = service.root();
         if (view.isEmpty()) {
             return List.of();
+        }
+        if (endpoint.transitFrozen()) {
+            List<ItemStack> drops = new ArrayList<>();
+            service.transitOperations().resolve(endpoint, null, gameTime, drops);
+            service.forgetCandidate(id);
+            return drops;
         }
         EndgameRoot root = view.get();
         long epoch = root.saveEpoch();
@@ -448,11 +454,12 @@ public final class TransitLedger implements TransitLedgerView {
                 }
             }
         }
-        List<TransitPayload> own = new ArrayList<>();
+        List<ItemStack> own = new ArrayList<>();
         endpoint.destination().incoming().forEach((key, payload) -> {
             Optional<TransitRecord> record = root.transits().record(key);
             if (record.isEmpty() || record.get().acknowledged() && id.equals(record.get().paidEndpoint())) {
-                own.add(payload);
+                payload.decode().ifPresentOrElse(own::addAll, () -> audit("INCOMING_VOIDED", "undecodable", id,
+                        owner, "transfer=" + key + " payload=" + payload.hash()));
             } else if (!record.get().destination().equals(id) && !id.equals(record.get().paidEndpoint())) {
                 audit("INCOMING_VOIDED", "voided", id, owner, "transfer=" + key + " payload=" + payload.hash());
             }

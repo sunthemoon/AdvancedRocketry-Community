@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.TransitCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
@@ -46,6 +47,7 @@ public final class EndgameModule {
         MinecraftForge.EVENT_BUS.addListener(devices::onLevelUnload);
         MinecraftForge.EVENT_BUS.addListener(new GravityFieldCommands()::register);
         MinecraftForge.EVENT_BUS.addListener(new EndgameCommands(service, devices)::register);
+        MinecraftForge.EVENT_BUS.addListener(new TransitCommands(service)::register);
         return service;
     }
 

@@ -1,7 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.transit;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * A loaded ledger endpoint (railgun, elevator anchor or terminal) as the ledger's END-tick pass sees it (ADR-054
@@ -24,4 +26,7 @@ public interface TransitEndpoint {
 
     /** The block entity's {@code setChanged()}, after any change to its transit state. */
     void transitChanged();
+
+    /** A resolve returns a never-registered outbox payload to the input buffer; false when it does not all fit. */
+    boolean returnToInput(List<ItemStack> stacks);
 }

@@ -108,6 +108,17 @@ final class TransitLedgerTest {
             changes++;
         }
 
+        final List<ItemStack> input = new ArrayList<>();
+
+        @Override
+        public boolean returnToInput(List<ItemStack> stacks) {
+            if (input.size() + stacks.size() > 4) {
+                return false;
+            }
+            stacks.forEach(stack -> input.add(stack.copy()));
+            return true;
+        }
+
         /** The chunk tag a save of this endpoint's chunk would hold. */
         CompoundTag chunkTag(BlockPos pos) {
             CompoundTag section = new CompoundTag();
@@ -250,7 +261,7 @@ final class TransitLedgerTest {
             root.transits().replace(root.transits().record(moved).orElseThrow().arrived().claimed(DESTINATION));
             return null;
         });
-        List<TransitPayload> drops = ledger.settleRemoval(destination, 2L);
+        List<ItemStack> drops = ledger.settleRemoval(destination, 2L);
         EndgameRoot root = service.root().orElseThrow();
         assertEquals(TransitRecord.State.ARRIVED, root.transits().record(incoming).orElseThrow().state(),
                 "the incoming claim did not return to ARRIVED");

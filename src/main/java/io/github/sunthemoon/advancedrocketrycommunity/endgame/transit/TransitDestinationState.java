@@ -3,11 +3,14 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.transit;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -43,16 +46,17 @@ public final class TransitDestinationState {
         void insert(List<ItemStack> stacks);
     }
 
-    public Map<TransitKey, TransitPayload> incoming() {
-        return Map.copyOf(incoming);
+    /** A copy in key order, so a resolve or a removal settles payloads in the same order on every run. */
+    public SortedMap<TransitKey, TransitPayload> incoming() {
+        return Collections.unmodifiableSortedMap(new TreeMap<>(incoming));
     }
 
-    public Set<TransitKey> receipts() {
-        return Set.copyOf(receipts);
+    public SortedSet<TransitKey> receipts() {
+        return Collections.unmodifiableSortedSet(new TreeSet<>(receipts));
     }
 
-    public Set<TransitKey> conflicts() {
-        return Set.copyOf(conflicts);
+    public SortedSet<TransitKey> conflicts() {
+        return Collections.unmodifiableSortedSet(new TreeSet<>(conflicts));
     }
 
     /** Incoming payloads, receipts or frozen conflicts: the endpoint is busy and refuses a non-operator break. */
