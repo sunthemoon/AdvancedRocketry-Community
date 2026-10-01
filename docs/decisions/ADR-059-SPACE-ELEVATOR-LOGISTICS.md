@@ -127,7 +127,10 @@ still completes (ADR-054 §11).
 Cargo uses the ADR-054 §11 ledger between the two endpoints of one pair. The
 destination is always the other end of the departing endpoint's pair; the pair
 must be valid at escrow. Delivery is endpoint-addressed, so it completes even if
-the pair is unbound or invalid afterwards.
+the pair is unbound or invalid afterwards. Cargo whose destination endpoint was
+removed waits as `DESTINATION_MISSING` and can be redirected back to its source
+or to the same kind of endpoint in the station's current valid pair (ADR-054
+§11, review R3-L4).
 
 - Payload: up to 4 stacks, the whole cargo input buffer, at most one launch per
   endpoint per 20 ticks and `endgame.spaceElevator.launchesPerTick` (≤ 4) on the

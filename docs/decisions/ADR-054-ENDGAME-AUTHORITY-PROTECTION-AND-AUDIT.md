@@ -79,7 +79,11 @@ Every endgame block entity root has `schema_version`, `device_id` and `owner_id`
   its bounds is **quarantined**: the device is inert, its root is kept unchanged
   and re-saved byte-identical, and one `ARCE_ENDGAME_DEVICE_QUARANTINED` line is
   written. Buffers of a quarantined root are not dropped on break; breaking it is
-  refused for non-operators.
+  refused for non-operators. Quarantine never reads as absence: in every
+  presence or absence observation (§9 `MISSING`, §11 tombstones and stubs), a
+  block entity of an endgame block at the recorded position counts as present
+  unless its root names a different, readable `device_id`, so a quarantined
+  endpoint is never retired (review R3-L1).
 - Endpoints (§9) additionally follow ADR-051 §5's persistence rule: an endpoint
   ID, outbox entry or receipt counts as **persisted** only when it is present in
   that endpoint's entry of a `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag
@@ -353,7 +357,8 @@ An **endpoint** is a device that other devices can address: `laser_target`
   (§9.1). Breaking is refused for non-operators while it holds an outbox entry,
   an incoming payload, an unacknowledged receipt or an elevator pair
   (`ENDPOINT_BUSY`). An endpoint whose chunk is loaded without a block entity of
-  that ID at the recorded position, observed at least 40 ticks earlier in a
+  that ID at the recorded position (a quarantined or unreadable root there
+  counts as present, §2), observed at least 40 ticks earlier in a
   chunk-save or chunk-load tag, becomes `MISSING` and is retired the same way; a
   block entity carrying a registered, not retired ID at another position is
   `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
@@ -369,9 +374,15 @@ An **endpoint** is a device that other devices can address: `laser_target`
   is retired is therefore `ENDPOINT_RETIRED`: inert at any position. Its outbox
   entries, incoming payloads and receipts are kept raw and **frozen**: it never
   registers, claims, moves, acknowledges, drops or delivers them, and it never
-  registers again. Breaking it drops only its local buffers. An operator resolves
-  it with `/arce endgame endpoint resolve <id>` (one audited barrier flush), item
-  by item (review R3-M1):
+  registers again. Any removal of a retired device, a player's break included,
+  first resolves it as below in the removal's barrier flush and then drops its
+  local buffers. A break therefore never destroys an entry that `resolve` would
+  return, and a retired device is busy (§9 `ENDPOINT_BUSY`) only while a pair
+  names it. Its menu shows `ENDPOINT_RETIRED`, what it holds frozen, and that
+  breaking it resolves them (review R3-L2). Without breaking it, its owner (own
+  endpoints, from their own connected command source, subject to the §7
+  spacing) or an operator resolves it with `/arce endgame endpoint resolve <id>`
+  (one audited barrier flush), item by item (review R3-M1):
   - a frozen outbox entry goes back to the local input buffer only if the ID's
     tombstone still records `dispatched_through` and `seq` is above it (the
     ledger can never register it); otherwise it is discarded with an audit line,
@@ -505,7 +516,9 @@ entry of the managed-SavedData allowlist (review R1-M2):
 - hard bound 4 MiB encoded; **growth admission** is computed from per-record
   accounting (each section's count times its worst-case record size, as ADR-050
   §3 does), never by encoding the root (review R2-M3). The worst cases are:
-  2,048 endpoints × 384 B, 2,048 `dispatched_through` entries × 32 B, 256
+  2,048 endpoints × 384 B, 2,048 `dispatched_through` entries × 32 B (one long
+  array holds three longs per entry, the source UUID and `seq`: 24 B; review
+  R3-L5), 256
   transit records × 2.5 KiB, 11,008 tombstones × 64 B (8,192 settled and
   unpinned plus 2,816 pinned; young ones take endpoint places, §11), 1,024
   pairs × 512 B and 256 zones × 768 B, 2,932,736 B or about 2.80 MiB in total,
@@ -546,8 +559,9 @@ entities.
 **Source state** (in S's root): `next_seq` (starts at 1) and an `outbox` of at
 most 4 entries `{seq, destination, payload, paid_fe, travel, system}`, with the
 travel time fixed at escrow (review R1-L11). A payload is at
-most 4 stacks, each with an encoded item tag of at most 512 bytes; plain items
-only otherwise.
+most 4 stacks, each at most 512 bytes encoded, counting the item ID, the count
+and the tag together (review R3-L5); a larger stack is refused at escrow
+(`PAYLOAD_TOO_LARGE`) and stays in the input buffer.
 
 **Record** (≤ 2.5 KiB: a payload of at most 2 KiB plus at most 512 bytes of
 fields): `source`, `seq`, `system`, `owner_id`, `destination`,
@@ -686,6 +700,10 @@ restore, the payload and receipt are frozen with `REDIRECT_CONFLICT`); a receipt
 is dropped only after the acknowledgement is durable or when the record is
 absent; a claim paid elsewhere freezes the receipt (`REDIRECT_DOUBLE_PAY`); a
 quarantined record keeps it. A retired endpoint (§9) runs none of these rows.
+Items frozen in a registered endpoint (`REDIRECT_CONFLICT`,
+`REDIRECT_DOUBLE_PAY`), which only an operator's restore of an older file can
+cause, are resolved by an operator with the same `endpoint resolve <id>`, item
+by item as in §9; until then they make the endpoint busy (review R3-L3).
 
 **Pruning.** A record is removed once its acknowledgement is durable **and** a
 chunk-save or chunk-load tag of its paid endpoint's chunk, observed at least 40
@@ -720,7 +738,10 @@ their own `DESTINATION_MISSING` cargo under the same rule (review R1-L8), with
 redirects are barrier flushes subject to the §7 spacing, and both follow the
 system's route rule: railgun cargo goes to another of the owner's `ACTIVE`
 railgun endpoints in the source's star system; elevator cargo goes back to its
-source endpoint. An outbox payload that no longer decodes stays raw in S,
+source endpoint, or to the endpoint of the original destination's kind (anchor
+or terminal) in the station's current valid pair, so a pair rebuilt after both
+ends were removed can still receive it (review R3-L4). An outbox payload that
+no longer decodes stays raw in S,
 is never registered, shows `OUTBOX_QUARANTINED`, and only an operator purge
 removes it.
 
@@ -780,7 +801,8 @@ count tickets by type before and after every system and after every ride.
   `endpoint list
   [<player>]`; `endpoint purge <id>` (removes the index record only, refused
   while referenced; the §11 tombstone stays until the absence is persisted);
-  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11); `tombstone
+  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11; owners may resolve
+  their own retired endpoints); `tombstone
   evict <player>` (§11); `transfer
   resettle <source> <seq>` (§9.1);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.

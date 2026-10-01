@@ -90,8 +90,9 @@ The destination claims arrived records into its receive buffer during its
 reconciliation pass whenever its chunk is loaded and the whole payload fits
 (ADR-054 §11). An unloaded destination simply leaves the record `ARRIVED`; the
 cargo waits without loading anything. A destination that was removed leaves the
-record `ARRIVED` with `DESTINATION_MISSING`; only an operator redirect (for
-example back to the source) or purge resolves it.
+record `ARRIVED` with `DESTINATION_MISSING`; only an owner or operator redirect
+under ADR-054 §11's route rule (for example back to the source) or an operator
+purge resolves it.
 
 ### 6. Menus, visuals and audit
 
