@@ -253,8 +253,8 @@ An **endpoint** is a device that other devices can address: `laser_target`
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
   endpoint stays `ENDPOINT_LIMIT` and inert.
 - **Removal.** Breaking an endpoint removes its record. Breaking is refused for
-  non-operators while it holds an outbox entry, an unacknowledged receipt or an
-  elevator pair (`ENDPOINT_BUSY`). An endpoint whose chunk is loaded without a
+  non-operators while it holds an outbox entry, an incoming payload, an
+  unacknowledged receipt or an elevator pair (`ENDPOINT_BUSY`). An endpoint whose chunk is loaded without a
   block entity of that ID at the recorded position becomes `MISSING`; a block
   entity carrying a registered ID at another position is
   `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
@@ -343,9 +343,26 @@ purge of a record whose source still holds the entry also drops that entry
 **Delivery.** At `arrive_at` the record becomes `ARRIVED` (due queue). D claims
 it automatically during its reconciliation pass, or on a withdraw intent, when:
 the record is durable, D's ID is persisted, D's receive buffer has room for the
-whole payload, and D has a free receipt slot (≤ 64). In one tick the record
-becomes `CLAIMED` with `paid_endpoint = D`, and D gains the payload and an
-unpersisted receipt `(source, seq)`.
+whole payload beyond what its incoming payloads already reserve, and D has a
+free receipt slot (≤ 64). In one tick the record becomes `CLAIMED` with
+`paid_endpoint = D`, and D gains an unpersisted receipt `(source, seq)` and the
+payload in its **incoming** area.
+
+**Incoming gate** (answers finding F02 of the external v1.3–v1.6 deep-test report
+of 2026-10-01, which reproduced a duplicate in ADR-051's terminal delivery after
+a player withdrew a reward that the terminal's chunk had not yet saved). Incoming
+payloads are not extractable by players, menus or automation, are not dropped
+when the block is broken (breaking is refused while any exist, §9), and count
+against the receive buffer's room. A payload moves from incoming into the
+extractable receive buffer, in one tick inside D, only after a
+`ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of D's chunk is observed to
+contain it (§2's persistence rule). Until then a crash can only lose D's copy
+together with its receipt, and the record rematerializes it into incoming; no
+third store (a player, a hopper, another container) can already hold it. After
+the move, the receive buffer is an ordinary container: a crash that saves a
+player's file after a withdrawal but not D's chunk duplicates the withdrawn
+items, exactly as for any vanilla chest. That container class is listed as a
+residual below; v1.7 adds no window beyond it.
 
 **Source reconciliation** (when S loads and before each escrow at S):
 
@@ -366,7 +383,8 @@ D; mission → record; ACTIVE/READY → `IN_TRANSIT`/`ARRIVED`; bound terminal �
 not yet `CLAIMED`) sets `CLAIMED` with no items (`CLAIM_RECOVERED`, or
 `REDIRECT_CONFLICT` with a barrier flush that redirects back to D); persisted
 receipt acknowledges; missing receipt for an unacknowledged claim at D
-rematerializes once (`REMATERIALIZED`, waiting while full); a receipt is dropped
+rematerializes once into incoming (`REMATERIALIZED`, waiting while full); a
+receipt is dropped
 only after the acknowledgement is durable or when the record is absent; a claim
 paid elsewhere keeps the receipt (`REDIRECT_DOUBLE_PAY`); a quarantined record
 keeps it.
@@ -393,7 +411,8 @@ its payload.
 | Registered, ledger not flushed | Outbox entry, no record | Registered again with the same `(S, seq)` |
 | Ledger flushed, release not saved | Outbox entry, durable record | Entry dropped; delivered once |
 | Claim: D saved, ledger not | Receipt, record `ARRIVED` | `CLAIM_RECOVERED`; paid once |
-| Claim: ledger flushed, D not | `CLAIMED`, no receipt | Rematerialized once |
+| Claim: ledger flushed, D not | `CLAIMED`, no receipt | Rematerialized once into incoming; nothing was withdrawable before the lost save |
+| Claim persisted, payload moved and withdrawn, player file saved, D's chunk not saved again | D's incoming or buffer still holds the payload; the player holds it too | **Residual**, the ordinary container/player torn save of every vanilla chest; the model shows no other duplicate or loss path |
 | Record pruned while S still holds the entry (S unloaded, its release not yet saved, or that save lost) | Entry with `seq ≤ dispatched_through`, no record | Dropped (`OUTBOX_STALE_DROPPED`); the payload was already delivered once |
 | **Residual**: S's escrow save observed but its asynchronous file write lost, then the record durable | S's input still holds the payload, record exists | Duplicate of one payload, detected and audited as `SOURCE_ROLLBACK`; same class as a torn vanilla save. The 40-tick age rule narrows the window to an `IOWorker` backlog older than 2 s |
 | **Residual**: operator redirect after a ledger rollback | ADR-051 §9 | Possible double delivery, audited |
@@ -466,7 +485,9 @@ and after every system.
   admission; endgame root codec round trip, bounds, blocked load, epoch; transit
   ledger: every source and destination reconciliation row, every crash cut by
   fault injection, ordering enumeration (the reference vectors), pruning and
-  `dispatched_through`; audit line bound.
+  `dispatched_through`; the incoming gate against a third store that withdraws
+  (the reference vectors' delivery model, and the F02 withdrawal sequence as a
+  regression); audit line bound.
 - A1: intents refused for FakePlayers, distance, other Level, unloaded chunk and
   rate; API event cancellation stops a batch; protection chain against a spawn
   area and a zone; disabled switch keeps settlement running; zero tickets.

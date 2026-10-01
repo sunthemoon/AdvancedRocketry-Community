@@ -775,6 +775,20 @@
    }
   ]
  },
+ "delivery": {
+  "states_gated_two_crashes": 1038,
+  "f02_path": [
+   "CLAIM",
+   "FLUSH_L",
+   "WITHDRAW",
+   "SAVE_P",
+   "CRASH"
+  ],
+  "f02_path_gated": [
+   "CLAIM",
+   "FLUSH_L"
+  ]
+ },
  "railgun": [
   {
    "local": true,

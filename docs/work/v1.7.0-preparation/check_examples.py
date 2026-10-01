@@ -295,6 +295,104 @@ class Transit:
         return len(seen), outcomes
 
 
+class Delivery:
+    """Destination half of ADR-054 section 11 with a third store: a player who withdraws the payload.
+
+    One payload whose record is already durable and ARRIVED. `gated=True` is revision 2: a claim lands in a
+    non-extractable `incoming` area and becomes withdrawable only after its receipt is persisted. `gated=False`
+    is the ADR-051 shape the v1.3-v1.6 deep-test report (F02) found duplicating: the claim is extractable at once.
+
+    The `vanilla` flag is set at a crash that tears the ordinary container/player pair, the class every vanilla
+    chest has: the player's file already holds the payload while the destination's saved, extractable buffer
+    still does, or the player loses unsaved items. Protocol-created duplicates are those without the flag.
+    """
+
+    @staticmethod
+    def initial():
+        record = ("A", False, None)  # state, acked, ack_epoch
+        return (record, record, 1, 1, (0, 0, None), (0, 0, False), 0, 0, False)
+
+    @staticmethod
+    def normalize(state):
+        rec, rec_dur, e, e_dur, d, d_dur, p, p_dur, vanilla = state
+        epochs = {e, e_dur} | {r[2] for r in (rec, rec_dur) if r is not None and r[2] is not None}
+        rank = {value: index for index, value in enumerate(sorted(epochs))}
+        fix = lambda r: None if r is None else (r[0], r[1], None if r[2] is None else rank[r[2]])
+        return (fix(rec), fix(rec_dur), rank[e], rank[e_dur], d, d_dur, p, p_dur, vanilla)
+
+    @classmethod
+    def successors(cls, state, gated, crashes_left):
+        rec, rec_dur, e, e_dur, (incoming, buffer, receipt), d_dur, p, p_dur, vanilla = state
+
+        def make(**c):
+            parts = dict(rec=rec, rec_dur=rec_dur, e=e, e_dur=e_dur, d=(incoming, buffer, receipt), d_dur=d_dur,
+                         p=p, p_dur=p_dur, vanilla=vanilla)
+            parts.update(c)
+            return cls.normalize(tuple(parts[k] for k in ("rec", "rec_dur", "e", "e_dur", "d", "d_dur", "p",
+                                                          "p_dur", "vanilla")))
+
+        # incoming is 0, "U" (unpersisted) or "P" (captured by a chunk save together with its receipt).
+        land = (lambda: ("U", buffer, "U")) if gated else (lambda: (incoming, buffer + 1, "U"))
+        if rec is not None and rec[0] == "A" and receipt is None:
+            yield "CLAIM", make(rec=("C", False, None), d=land()), crashes_left
+        if gated and incoming == "P":
+            yield "MOVE", make(d=(0, buffer + 1, receipt)), crashes_left
+        if buffer:
+            yield "WITHDRAW", make(d=(incoming, buffer - 1, receipt), p=p + 1), crashes_left
+        saved = (1 if incoming else 0, buffer, receipt is not None)
+        if saved != d_dur or receipt == "U" or incoming == "U":
+            yield "SAVE_D", make(d=("P" if incoming else 0, buffer, None if receipt is None else "P"),
+                                 d_dur=saved), crashes_left
+        if p != p_dur:
+            yield "SAVE_P", make(p_dur=p), crashes_left
+        if rec != rec_dur:
+            yield "FLUSH_L", make(rec_dur=rec, e=e + 1, e_dur=e + 1), crashes_left
+        if rec is not None and rec[0] == "A" and receipt is not None:
+            yield "D_RECOVER", make(rec=("C", False, None)), crashes_left
+        if rec is not None and rec[0] == "C" and not rec[1] and receipt == "P":
+            yield "D_ACK", make(rec=("C", True, e)), crashes_left
+        if rec is not None and rec[0] == "C" and not rec[1] and receipt is None:
+            yield "D_REMAT", make(d=land()), crashes_left
+        if receipt is not None and (rec is None or (rec[1] and e > rec[2])):
+            yield "D_DROP", make(d=(incoming, buffer, None)), crashes_left
+        if rec is not None and rec[1] and e > rec[2]:
+            yield "PRUNE", make(rec=None), crashes_left
+        if crashes_left:
+            torn = (p_dur >= 1 and d_dur[0] + d_dur[1] >= 1) or p > p_dur
+            yield "CRASH", cls.normalize((rec_dur, rec_dur, e_dur, e_dur,
+                                          ("P" if d_dur[0] else 0, d_dur[1], "P" if d_dur[2] else None), d_dur,
+                                          p_dur, p_dur,
+                                          vanilla or torn)), crashes_left - 1
+
+    @classmethod
+    def outcome(cls, state, gated):
+        order = ["D_RECOVER", "D_ACK", "D_DROP", "D_REMAT", "PRUNE", "CLAIM", "MOVE", "FLUSH_L", "SAVE_D", "SAVE_P"]
+        for _ in range(200):
+            options = {label: s for label, s, _ in cls.successors(state, gated, 0)}
+            chosen = next((label for label in order if label in options), None)
+            if chosen is None:
+                rec, _, _, _, (incoming, buffer, receipt), _, p, _, vanilla = state
+                assert rec is None and receipt is None and not incoming, state
+                return buffer + p, vanilla
+            state = options[chosen]
+        raise AssertionError("delivery drain did not terminate")
+
+    @classmethod
+    def explore(cls, gated, crashes=2):
+        seen, stack, outcomes = set(), [(cls.normalize(cls.initial()), crashes)], {}
+        while stack:
+            node = stack.pop()
+            if node in seen:
+                continue
+            seen.add(node)
+            state, left = node
+            key = cls.outcome(state, gated)
+            outcomes[key] = outcomes.get(key, 0) + 1
+            for _, new_state, c in cls.successors(state, gated, left):
+                stack.append((new_state, c))
+        return len(seen), outcomes
+
+
 # --- ADR-056 railgun classes ------------------------------------------------------------------
 
 def isqrt(n):
@@ -514,6 +612,26 @@ class Vectors(unittest.TestCase):
                 self.assertIn(label, options, (case["name"], label, sorted(options)))
                 state = options[label]
             self.assertEqual(list(Transit.delivered(Transit.drain(state))), case["expected"], case["name"])
+
+    def test_delivery_gate_leaves_only_the_container_torn_save_class(self):
+        states, outcomes = Delivery.explore(gated=True, crashes=2)
+        for (total, torn), _ in outcomes.items():
+            if total != 1:
+                self.assertTrue(torn, outcomes)  # no duplicate or loss without a container/player torn save
+        self.assertEqual(states, EXAMPLES["delivery"]["states_gated_two_crashes"])
+
+    def test_delivery_without_the_gate_reproduces_f02(self):
+        _, outcomes = Delivery.explore(gated=False, crashes=2)
+        self.assertIn((2, False), outcomes)
+        state = Delivery.normalize(Delivery.initial())
+        for label in EXAMPLES["delivery"]["f02_path"]:
+            state = {l: s for l, s, _ in Delivery.successors(state, False, 1)}[label]
+        self.assertEqual(Delivery.outcome(state, False), (2, False))
+        gated = Delivery.normalize(Delivery.initial())
+        for label in EXAMPLES["delivery"]["f02_path_gated"]:
+            gated = {l: s for l, s, _ in Delivery.successors(gated, True, 1)}[label]
+        # With the gate the same prefix offers no withdrawal until a chunk save captured the claim.
+        self.assertNotIn("WITHDRAW", {l for l, _, _ in Delivery.successors(gated, True, 1)})
 
     def test_railgun_quotes(self):
         for case in EXAMPLES["railgun"]:
