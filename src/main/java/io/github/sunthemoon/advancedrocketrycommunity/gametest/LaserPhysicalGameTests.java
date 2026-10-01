@@ -18,16 +18,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.BeforeBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.level.BlockEvent;
@@ -43,6 +50,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class LaserPhysicalGameTests {
     private static final String BATCH = "endgame_laser_physical";
+    private static final String ATTACHED_BATCH = "endgame_laser_physical_attached";
     private static volatile UUID effectVeto;
     private static volatile UUID breakVeto;
 
@@ -61,6 +69,16 @@ public final class LaserPhysicalGameTests {
 
     @AfterBatch(batch = BATCH)
     public static void disablePhysicalMining(ServerLevel level) {
+        CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
+    }
+
+    @BeforeBatch(batch = ATTACHED_BATCH)
+    public static void enablePhysicalMiningForAttachedBlocks(ServerLevel level) {
+        CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
+    }
+
+    @AfterBatch(batch = ATTACHED_BATCH)
+    public static void disablePhysicalMiningForAttachedBlocks(ServerLevel level) {
         CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
     }
 
@@ -195,6 +213,72 @@ public final class LaserPhysicalGameTests {
                     click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_UNLINK, "unlink");
                     helper.assertTrue(drill.linkedMarker().isEmpty() && !drill.running(), "Unlink failed");
                     cleanup(fixture, joined, overworld, marker, layer1, layer2, target);
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Review C11R-H1: a wall torch, a ladder and a button that hang on other cells of the same layer reach the marker
+     * once each and never also drop into the world.
+     */
+    @GameTest(template = "atmosphere_test", batch = ATTACHED_BATCH, timeoutTicks = 1200)
+    public static void blocksHangingOnTheirLayerAreCollectedOnce(GameTestHelper helper) {
+        OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        OrbitalLaserDrillBlockEntity drill = fixture.drill();
+        drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
+        drill.storage().setEnergy(200_000);
+        ServerLevel overworld = helper.getLevel();
+        BlockPos marker = markerPosition(helper);
+        overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
+        helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
+        List<BlockPos> layer1 = LaserShaft.layer(marker, marker.getY() - 1);
+        List<BlockPos> layer2 = LaserShaft.layer(marker, marker.getY() - 2);
+        fill(overworld, layer2, Blocks.STONE.defaultBlockState());
+        fill(overworld, layer1, Blocks.STONE.defaultBlockState());
+        // Cells are x = mx - 1 + i % 3, z = mz - 1 + i / 3. Each hanging block's support is an earlier cell.
+        overworld.setBlockAndUpdate(layer1.get(4), Blocks.WALL_TORCH.defaultBlockState()
+                .setValue(WallTorchBlock.FACING, Direction.SOUTH));
+        overworld.setBlockAndUpdate(layer1.get(5), Blocks.LADDER.defaultBlockState()
+                .setValue(LadderBlock.FACING, Direction.SOUTH));
+        overworld.setBlockAndUpdate(layer1.get(8), Blocks.STONE_BUTTON.defaultBlockState()
+                .setValue(ButtonBlock.FACE, AttachFace.WALL).setValue(ButtonBlock.FACING, Direction.EAST));
+        helper.assertTrue(overworld.getBlockState(layer1.get(4)).is(Blocks.WALL_TORCH)
+                && overworld.getBlockState(layer1.get(5)).is(Blocks.LADDER)
+                && overworld.getBlockState(layer1.get(8)).is(Blocks.STONE_BUTTON), "The hanging blocks were not placed");
+        List<ServerPlayer> joined = new ArrayList<>();
+        ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "attachedOwner", fixture.space,
+                fixture.controller.south(4).above(2), new ArrayList<>());
+        joined.add(owner);
+        OrbitalLaserDrillMenu menu = new OrbitalLaserDrillMenu(9, owner.getInventory(), drill);
+        AABB around = new AABB(marker).inflate(4.0D);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    LaserTargetGameTests.chunkSaved(overworld, marker);
+                    helper.assertTrue(target.endpointActive(), "The marker did not register: " + target.describe());
+                })
+                .thenExecute(() -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_MODE, "mode"))
+                .thenExecuteAfter(11, () -> {
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_TARGET_NEXT, "select");
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_LINK, "link");
+                })
+                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_START, "start"))
+                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_CONFIRM, "confirm"))
+                .thenWaitUntil(() -> helper.assertTrue(target.opsDone() == 1, "No first layer: " + drill.describe()))
+                .thenExecute(() -> {
+                    int entities = overworld.getEntitiesOfClass(ItemEntity.class, around).stream()
+                            .mapToInt(entity -> entity.getItem().getCount()).sum();
+                    int torches = count(target, Items.TORCH);
+                    int ladders = count(target, Items.LADDER);
+                    int buttons = count(target, Items.STONE_BUTTON);
+                    int cobblestone = count(target, Items.COBBLESTONE);
+                    overworld.getEntitiesOfClass(ItemEntity.class, around).forEach(ItemEntity::discard);
+                    cleanup(fixture, joined, overworld, marker, layer1, layer2, target);
+                    helper.assertTrue(entities == 0, entities + " items dropped into the world");
+                    helper.assertTrue(torches == 1 && ladders == 1 && buttons == 1 && cobblestone == 6,
+                            "Hanging blocks were not collected once: torches=" + torches + " ladders=" + ladders
+                                    + " buttons=" + buttons + " cobblestone=" + cobblestone);
                 })
                 .thenSucceed();
     }

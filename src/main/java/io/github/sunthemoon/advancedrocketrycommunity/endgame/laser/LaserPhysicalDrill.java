@@ -39,6 +39,11 @@ import net.minecraftforge.event.level.BlockEvent;
  * anything changes: the protection chain, the classification of every cell, a break event per breakable cell and the
  * whole drop set against the marker's buffer. Any stop leaves the layer untouched. Every read goes through
  * {@code getChunkNow}, so no chunk is loaded.
+ *
+ * <p>Removal order (review C11R-H1): cells without a full collision shape (torches, ladders, buttons, levers, cocoa,
+ * amethyst buds and other blocks that hang on a neighbour) go first, then the rest, each group in cell order. A cell
+ * whose block an earlier removal of the same layer already destroyed through a vanilla neighbour reaction is skipped
+ * with its planned drops, because vanilla dropped or kept them: no drop is ever counted twice.
  */
 final class LaserPhysicalDrill {
     private static final String FAKE_PLAYER_NAME = "[ARCE laser]";
@@ -129,14 +134,12 @@ final class LaserPhysicalDrill {
             link.paid();
         }
         int y = marker.nextLayer();
-        for (BlockPos cell : layer.breakable()) {
-            markerLevel.removeBlock(cell, false);
-        }
-        marker.layerDone(layer.drops(), context.now(), context.settings().operationIntervalTicks()
+        List<ItemStack> collected = remove(markerLevel, markerPos, layer);
+        marker.layerDone(collected, context.now(), context.settings().operationIntervalTicks()
                 + LaserBeam.AFTERGLOW_TICKS);
-        int items = layer.drops().stream().mapToInt(ItemStack::getCount).sum();
+        int items = collected.stream().mapToInt(ItemStack::getCount).sum();
         audit(context, credit ? "CREDIT_USED" : "layer", EndgameCode.OK, "marker=" + link.marker() + " y=" + y
-                + " cells=" + layer.breakable().size() + " items=" + items);
+                + " cells=" + layer.cells().size() + " items=" + items);
         return Outcome.of(EndgameCode.OK, link.opsPaid() == marker.opsDone(), false);
     }
 
@@ -184,10 +187,32 @@ final class LaserPhysicalDrill {
         return true;
     }
 
-    private record Layer(EndgameCode code, List<BlockPos> breakable, List<ItemStack> drops) {
+    /** One breakable cell as planned: its position, its state and its drops. */
+    private record Planned(BlockPos pos, BlockState state, List<ItemStack> drops) {
+    }
+
+    /** A planned layer: the breakable cells in removal order and all their drops. */
+    private record Layer(EndgameCode code, List<Planned> cells, List<ItemStack> drops) {
         static Layer stop(EndgameCode code) {
             return new Layer(code, List.of(), List.of());
         }
+    }
+
+    /**
+     * Removes the planned cells in removal order and returns the drops of the cells it removed. A cell whose block is
+     * gone (a neighbour reaction of this layer destroyed it and vanilla handled its drops) is skipped.
+     */
+    private static List<ItemStack> remove(ServerLevel level, BlockPos marker, Layer layer) {
+        LevelChunk chunk = level.getChunkSource().getChunkNow(marker.getX() >> 4, marker.getZ() >> 4);
+        List<ItemStack> collected = new ArrayList<>();
+        for (Planned cell : layer.cells()) {
+            if (!chunk.getBlockState(cell.pos()).is(cell.state().getBlock())) {
+                continue;
+            }
+            level.removeBlock(cell.pos(), false);
+            collected.addAll(cell.drops());
+        }
+        return collected;
     }
 
     /** Plans one whole layer; nothing changes unless every step passes. */
@@ -214,12 +239,16 @@ final class LaserPhysicalDrill {
             return Layer.stop(classification);
         }
         FakePlayer breaker = FakePlayerFactory.get(level, new GameProfile(context.owner(), FAKE_PLAYER_NAME));
+        // Removal order: cells without a full collision shape (hanging blocks) first, then the rest.
         List<BlockPos> breakable = new ArrayList<>();
         List<BlockState> breakableStates = new ArrayList<>();
-        for (int i = 0; i < LaserShaft.CELLS; i++) {
-            if (kinds.get(i) == LaserShaft.Cell.BREAKABLE) {
-                breakable.add(cells.get(i));
-                breakableStates.add(states.get(i));
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < LaserShaft.CELLS; i++) {
+                if (kinds.get(i) == LaserShaft.Cell.BREAKABLE
+                        && states.get(i).isCollisionShapeFullBlock(level, cells.get(i)) == (pass == 1)) {
+                    breakable.add(cells.get(i));
+                    breakableStates.add(states.get(i));
+                }
             }
         }
         // Step 7: a standard break event per breakable cell, all before any removal.
@@ -230,13 +259,16 @@ final class LaserPhysicalDrill {
             }
         }
         // No tool and no fortune; harvest-tool requirements are not applied (a balance decision).
+        List<Planned> planned = new ArrayList<>(breakable.size());
         List<ItemStack> drops = new ArrayList<>();
         for (int i = 0; i < breakable.size(); i++) {
-            drops.addAll(Block.getDrops(breakableStates.get(i), level, breakable.get(i), null, breaker,
-                    ItemStack.EMPTY));
+            List<ItemStack> cellDrops = new ArrayList<>(Block.getDrops(breakableStates.get(i), level,
+                    breakable.get(i), null, breaker, ItemStack.EMPTY));
+            cellDrops.removeIf(ItemStack::isEmpty);
+            planned.add(new Planned(breakable.get(i), breakableStates.get(i), List.copyOf(cellDrops)));
+            drops.addAll(cellDrops);
         }
-        drops.removeIf(ItemStack::isEmpty);
-        return drops.isEmpty() || markerFits(level, marker, drops) ? new Layer(EndgameCode.OK, breakable, drops)
+        return drops.isEmpty() || markerFits(level, marker, drops) ? new Layer(EndgameCode.OK, planned, drops)
                 : Layer.stop(EndgameCode.TARGET_BUFFER_FULL);
     }
 
