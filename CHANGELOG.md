@@ -67,7 +67,7 @@ No candidate or release approval is assigned.
   (`singularities`, `black_hole_fuels`). New COMMON values
   `endgame.blackHoleGenerator.*`: output percent (10–400) and generators per
   owner and on the server.
-- Add the endgame transit ledger (ADR-054), which the coming railgun and
+- Add the endgame transit ledger (ADR-054), which the railgun and the coming
   space elevator use to move items. Cargo stays at its source until a world save
   has recorded it in the endgame file, and a destination releases it only
   after its own chunk was saved holding it, so a crash, a rollback or a
@@ -79,6 +79,21 @@ No candidate or release approval is assigned.
   `/arce endgame transfer redirect <source> <seq> <endpoint>` and settle an
   endpoint of theirs that came back after removal with
   `/arce endgame endpoint resolve <id>`.
+- Add the Railgun Cargo Launcher (ADR-056). Build it as a 3 × 6 × 3
+  structure: a base of Endgame Casing with the railgun in the middle of its
+  front edge, four iron blocks as the barrel in the middle and a casing on
+  top. It sends the first input stack of at least the minimum stack size to
+  another of your railguns in the same star system, never to a position, a
+  player or a mob. A launch within one dimension and body costs
+  25,000 + 10 FE per block (at most 250,000 FE) and travels 1–10 seconds;
+  any other route costs 250,000 FE and takes 30 seconds
+  (`endgame.railgun.energyPercent`, 10–400 %). Cargo waits in the transit
+  ledger until the destination's chunk is loaded and has room, and appears in
+  its receive buffer once that chunk has been saved. Buttons choose the
+  destination and launch; `auto` launches whenever the redstone mode allows.
+  Each railgun launches at most once per second, and the server at most
+  `endgame.railgun.launchesPerTick` (≤ 4) per tick. A railgun holding cargo
+  can only be broken by an operator.
 - New COMMON values `endgame.gravityField.*`: fields per chunk, per owner and
   chunk, per owner, per Level and on the server.
 - New COMMON values `endgame.laserDrill.*`: energy percent, operation
