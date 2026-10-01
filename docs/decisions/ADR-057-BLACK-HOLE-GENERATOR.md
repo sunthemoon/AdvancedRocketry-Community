@@ -94,7 +94,9 @@ Each tick, for an eligible, formed, enabled generator:
    **pauses** (nothing is consumed and nothing is wasted; the legacy kept burning
    into a full buffer).
 3. Push up to 20,000 FE per tick in total to adjacent energy receivers, in a
-   fixed face order.
+   fixed face order, skipping any neighbour whose chunk is not present
+   (`getChunkNow`), so a generator at a chunk edge never loads its neighbour
+   (review R1-M8).
 
 `endgame.blackHoleGenerator.energyPercent` is 10..400 (default 100), so output
 never exceeds 8,192 FE per tick per generator. Energy is created only from

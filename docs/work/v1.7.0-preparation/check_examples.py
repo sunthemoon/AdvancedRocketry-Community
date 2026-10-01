@@ -64,8 +64,21 @@ def laser_cost(percent):
 
 
 def footprint_inside_chunk(mx, mz):
-    """Java `x & 15` equals Python `x & 15` for negative ints (two's complement)."""
-    return 1 <= (mx & 15) <= 14 and 1 <= (mz & 15) <= 14
+    """R1-M8: marker at local 2..13, so cells (local 1..14) and their direct neighbours stay in the chunk.
+
+    Java `x & 15` equals Python `x & 15` for negative ints (two's complement).
+    """
+    return 2 <= (mx & 15) <= 13 and 2 <= (mz & 15) <= 13
+
+
+def neighbours_inside_chunk(mx, mz):
+    """Every direct neighbour of every footprint cell is in the marker's chunk."""
+    chunk = (mx >> 4, mz >> 4)
+    for x, z in shaft_cells(mx, mz):
+        for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            if ((x + dx) >> 4, (z + dz) >> 4) != chunk:
+                return False
+    return True
 
 
 def shaft_cells(mx, mz):
@@ -633,6 +646,7 @@ class Vectors(unittest.TestCase):
         for case in EXAMPLES["shaft"]:
             mx, my, mz = case["marker"]
             self.assertEqual(footprint_inside_chunk(mx, mz), case["inside_chunk"], case)
+            self.assertEqual(neighbours_inside_chunk(mx, mz), case["inside_chunk"], case)
             self.assertEqual(shaft_cells(mx, mz), case["cells"], case)
             self.assertEqual(shaft_floor(my, case["max_depth"], case["min_build_height"]), case["floor"], case)
 

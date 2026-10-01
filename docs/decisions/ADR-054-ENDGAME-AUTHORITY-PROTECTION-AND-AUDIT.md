@@ -230,8 +230,15 @@ barrier flushes (§10) and audited. Non-operators never see zone boxes.
 - **Ledger passes:** registration ≤ 32 per tick, arrival ≤ 64 per tick,
   reconciliation ≤ 64 records per tick across all endpoints (§11).
 
-All endgame work runs in one `ServerTickEvent` END handler. C13 measures its time
-separately from vanilla MSPT (Forge records `tickTimes` before END handlers).
+**Where work runs** (reviews R1-M8, R1-L4). Devices act from their block-entity
+ticker, which vanilla runs only in block-ticking chunks, and draw on the
+per-tick system budgets above. Ledger, index and reconciliation passes run in
+one `ServerTickEvent` END handler. The gravity-field lookup runs in the existing
+living-tick hook (ADR-058). Any read of a position outside the device's own
+block goes through `getChunkNow` (or `hasChunkAt`) first and treats an absent
+chunk as unavailable, because `Level.getBlockState` and `getBlockEntity` load
+chunks. C13 measures all three places against total tick time, because Forge
+records `tickTimes` before END handlers run (§7 budgets).
 
 ### 8. Energy
 

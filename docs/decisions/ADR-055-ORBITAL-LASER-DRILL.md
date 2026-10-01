@@ -110,8 +110,10 @@ Allowed only while `endgame.laserDrill.physicalMining` is true; otherwise
 `advancedrocketrycommunity:laser_target`, placed by the owner on the surface it
 will dig. Its root holds a 27-slot drop buffer (extractable, never insertable),
 the shaft cursor and the link counter (below). Its footprint is the 3 × 3 column
-centred on it; the footprint must lie inside the marker's own chunk (local x and
-z in 1..14), else the marker is `FOOTPRINT_CROSSES_CHUNK` and cannot be selected.
+centred on it. The marker must sit at local x and z 2..13 of its chunk, so every
+footprint cell is at local 1..14 and every block a removal directly updates
+(the six neighbours of each cell) is still inside that chunk (review R1-M8);
+otherwise the marker is `FOOTPRINT_AT_CHUNK_EDGE` and cannot be selected.
 Placing the marker itself goes through vanilla placement events, so claim mods
 and station protection already apply.
 
@@ -122,7 +124,9 @@ link is valid for an operation only when all hold, else the code in brackets:
 2. the marker's body is the station's live orbit body, the body
    `supportsSurfaceArrival()`, and the marker's Level is that body's unique Level
    (`TARGET_WRONG_BODY`);
-3. the drill's and the marker's chunks are `FULL` (`TARGET_UNLOADED`);
+3. the drill's chunk and the 3 × 3 chunks centred on the marker's chunk are
+   `FULL` (`TARGET_UNLOADED`), so cascading neighbour updates (falling blocks,
+   redstone, attached blocks) never load or upgrade a chunk;
 4. the marker accepts this controller (`LINK_LOST`, below).
 
 **Shaft.** Cells are `(mx − 1 + i mod 3, y, mz − 1 + i div 3)` for `i = 0..8`.
@@ -237,7 +241,8 @@ every 1,200 ticks per drill (operations, items, table version).
 
 | Threat | Control |
 |---|---|
-| Digging others' land | Physical mode off by default; marker placed by the owner through vanilla placement; ADR-054 §5 chain per layer including break events and zones; 3 × 3 footprint inside the marker's own chunk; depth cap |
+| Digging others' land | Physical mode off by default; marker placed by the owner through vanilla placement; ADR-054 §5 chain per layer including break events and zones; 3 × 3 footprint at least one block inside the marker's own chunk; depth cap |
+| Loading chunks through neighbour updates | Footprint at local 1..14; the 3 × 3 surrounding chunks must be `FULL` before each layer |
 | Destroying containers or special blocks | Block entities, unbreakable and immune-tagged blocks stop the shaft |
 | Draining oceans / lava | Fluids stop the shaft; nothing deletes fluid |
 | Duplication | Logical: payment and output in one block entity; physical: drops in the same chunk as the broken blocks; counters for payment; whole-layer atomicity |

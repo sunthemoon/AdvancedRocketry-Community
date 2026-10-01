@@ -418,7 +418,7 @@
     100,
     -15
    ],
-   "inside_chunk": true,
+   "inside_chunk": false,
    "max_depth": 64,
    "min_build_height": -64,
    "floor": 36,
@@ -467,7 +467,7 @@
     0,
     1
    ],
-   "inside_chunk": true,
+   "inside_chunk": false,
    "max_depth": 64,
    "min_build_height": -64,
    "floor": -63,
@@ -556,6 +556,153 @@
     [
      16,
      2
+    ]
+   ]
+  },
+  {
+   "marker": [
+    2,
+    40,
+    13
+   ],
+   "inside_chunk": true,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": -24,
+   "cells": [
+    [
+     1,
+     12
+    ],
+    [
+     2,
+     12
+    ],
+    [
+     3,
+     12
+    ],
+    [
+     1,
+     13
+    ],
+    [
+     2,
+     13
+    ],
+    [
+     3,
+     13
+    ],
+    [
+     1,
+     14
+    ],
+    [
+     2,
+     14
+    ],
+    [
+     3,
+     14
+    ]
+   ]
+  },
+  {
+   "marker": [
+    -3,
+    40,
+    -14
+   ],
+   "inside_chunk": true,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": -24,
+   "cells": [
+    [
+     -4,
+     -15
+    ],
+    [
+     -3,
+     -15
+    ],
+    [
+     -2,
+     -15
+    ],
+    [
+     -4,
+     -14
+    ],
+    [
+     -3,
+     -14
+    ],
+    [
+     -2,
+     -14
+    ],
+    [
+     -4,
+     -13
+    ],
+    [
+     -3,
+     -13
+    ],
+    [
+     -2,
+     -13
+    ]
+   ]
+  },
+  {
+   "marker": [
+    1,
+    40,
+    8
+   ],
+   "inside_chunk": false,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": -24,
+   "cells": [
+    [
+     0,
+     7
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     0,
+     8
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     0,
+     9
+    ],
+    [
+     1,
+     9
+    ],
+    [
+     2,
+     9
     ]
    ]
   }
