@@ -326,17 +326,33 @@ An **endpoint** is a device that other devices can address: `laser_target`
   then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
   endpoint stays `ENDPOINT_LIMIT` and inert.
-- **Removal.** Removing an endpoint removes its record (§9.1). Breaking is
-  refused for non-operators while it holds an outbox entry, an incoming payload,
-  an unacknowledged receipt or an elevator pair (`ENDPOINT_BUSY`). An endpoint
-  whose chunk is loaded without a
-  block entity of that ID at the recorded position becomes `MISSING`; a block
-  entity carrying a registered ID at another position is
+- **Removal.** Removing an endpoint removes its record and **retires** its ID
+  (§9.1). Breaking is refused for non-operators while it holds an outbox entry,
+  an incoming payload, an unacknowledged receipt or an elevator pair
+  (`ENDPOINT_BUSY`). An endpoint whose chunk is loaded without a block entity of
+  that ID at the recorded position, observed at least 40 ticks earlier in a
+  chunk-save or chunk-load tag, becomes `MISSING` and is retired the same way; a
+  block entity carrying a registered, not retired ID at another position is
   `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
   are outside the guarantee, as in ADR-051 §7). A `MISSING` endpoint still
   counts toward its owner's limit until the owner removes it with
   `/arce endgame endpoint forget <id>` (own `MISSING` endpoints only; the
   tombstone of §11 stays).
+- **Retired IDs** (review R2-H1). A removed endpoint can come back with its old
+  identity: a crash after the removal's ledger write but before its chunk saved
+  the removal restores it in place, and a block mover that keeps block-entity
+  data (endpoints refuse vanilla pistons and opt out of the common movers below,
+  but that is not relied on) may place it again anywhere. A block entity whose ID
+  is retired is therefore `ENDPOINT_RETIRED`: inert at any position. Its outbox
+  entries, incoming payloads and receipts are kept raw and **frozen**: it never
+  registers, claims, moves, acknowledges, drops or delivers them, and it never
+  registers again. Breaking it drops only its local buffers. An operator resolves
+  it with `/arce endgame endpoint resolve <id>` (one audited barrier flush):
+  frozen unregistered outbox entries (`seq > dispatched_through`) go back to its
+  local input buffer, because the ledger can never register them; frozen
+  incoming payloads and receipts are destroyed, because their records were
+  settled at removal and are delivered elsewhere. A player who finds a retired
+  device places a new one, which gets a new ID.
 - **Selection.** A selection list holds only `ACTIVE` endpoints of a compatible
   kind owned by the **device's owner**, filtered by the system's route rule and
   sorted in ID order (§7); whoever is allowed to `CONFIGURE` the device (§3)
@@ -356,7 +372,11 @@ An **endpoint** is a device that other devices can address: `laser_target`
 Review R1-H3: a refused player break is not the only way a block entity goes.
 Every endgame endpoint block is in `#minecraft:wither_immune` and
 `#minecraft:dragon_immune`, has blast resistance 1,200 (TNT, creepers, beds
-and withers cannot remove it), and cannot be pushed (it has a block entity).
+and withers cannot remove it), has `PushReaction.BLOCK`, and is listed in the
+non-movable tags of common block movers (`create:non_movable`,
+`carryon:block_blacklist`; shipped with `replace: false`, harmless without those
+mods). These are defence in depth; the retirement rule of §9 is what keeps a
+returning endpoint from paying twice.
 Player breaks follow §9. Every other removal (an operator break, `/setblock`
 and `/fill`, another mod's breaker or block mover) is handled in the block's
 `onRemove` when the block changes to a different block, which chunk unloading
@@ -377,20 +397,27 @@ never triggers:
   materialized here (no receipt), returns to `ARRIVED` with `paid_endpoint`
   cleared and waits as `DESTINATION_MISSING`; a record whose payload already
   moved to the receive buffer (receipt present, nothing incoming) becomes
-  `CLAIMED` and acknowledged. An incoming payload whose record is already
-  acknowledged or pruned is the endpoint's own content (its move was due after
-  a crash, below) and drops with the local buffers. If the barrier flush fails,
-  the records stay as they were and one `REMOVAL_SETTLEMENT_UNKNOWN` line asks
-  an operator to redirect or purge them.
-- The endpoint's index record is removed, its `dispatched_through` stays as a
-  tombstone (§11), pairs naming it become invalid (unbinding stays possible,
-  ADR-059), and a laser drill linked to it sees `LINK_LOST` (ADR-055).
+  `CLAIMED` and acknowledged. An incoming payload whose record is acknowledged
+  **at this endpoint**, or pruned, is the endpoint's own content (its move was
+  due after a crash, below) and drops with the local buffers. An incoming
+  payload whose record names another endpoint is destroyed with an
+  `INCOMING_VOIDED` line, never dropped. If the barrier flush fails, the records
+  stay as they were and one `REMOVAL_SETTLEMENT_UNKNOWN` line asks an operator to
+  redirect or purge them.
+- The endpoint's index record is removed and its ID is **retired** (§9): the
+  tombstone table keeps the ID, with `dispatched_through` for a source (§11).
+  The retirement is part of the barrier flush when one runs, and otherwise
+  flush-pending (nothing then depends on it). Pairs naming the endpoint become
+  invalid (unbinding stays possible, ADR-059), and a laser drill linked to it
+  sees `LINK_LOST` (ADR-055).
 
 A crash after the barrier flush but before the endpoint's chunk saved the
-removal restores the endpoint with its incoming payload and receipt while the
-record is `ARRIVED`; the destination row "ledger behind" re-claims it, so it is
-paid once. The reference model checks removal at any point with up to two
-crashes.
+removal restores the endpoint with its incoming payload and receipt, while the
+record is `ARRIVED` and the ID is retired: the restored block entity is
+`ENDPOINT_RETIRED` and inert, its copy is frozen, and the record is delivered
+once through a redirect (§11). The reference models check removal at any point,
+with up to two crashes, and a removed destination that returns through a crash
+or a block mover after its cargo was redirected and paid elsewhere.
 
 ### 10. Endgame root
 
@@ -463,11 +490,16 @@ a `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of S's chunk whose
 block-entity list holds no entry with S's ID at the recorded position, observed
 at least 40 ticks earlier (the age rule of step 2). Until then a crash can
 restore S with a stale outbox entry, and only the tombstone keeps it from
-registering a delivered payload again (review R1-H1). Tombstones are at most
-64 bytes each. One is removed only when its source's absence was observed at
-least 6,000 ticks earlier **and** the table holds more than 8,192 tombstones,
-oldest observation first; otherwise tombstones are kept, admitted up to the
-root's hard bound. Residual: if the absence observation itself was a lost
+registering a delivered payload again (review R1-H1). The same table holds the
+ID of every retired endpoint (§9), so one tombstone serves both purposes.
+Tombstones are at most 64 bytes each. One is removed only when its endpoint's
+absence was observed in a `ChunkDataEvent.Load` tag after the last server start
+(so the absence is on disk, review R2-L1) and at least 6,000 ticks earlier,
+**and** the table holds more than 8,192 tombstones, oldest observation first;
+otherwise tombstones are kept, admitted up to the root's hard bound. A block
+mover could still carry a retired endpoint away and place it after its
+tombstone was removed; that needs more than 8,192 later retirements in between
+and is the documented residual of the retirement rule. Residual: if the absence observation itself was a lost
 asynchronous write and the server then crashed, S could return after its
 tombstone was removed and register a delivered payload again, unaudited. The
 6,000-tick age (five minutes of uninterrupted running, far beyond any `IOWorker`
@@ -544,15 +576,19 @@ residual below; v1.7 adds no window beyond it.
 D; mission → record; ACTIVE/READY → `IN_TRANSIT`/`ARRIVED`; bound terminal →
 `destination`; rebind → operator redirect; the `CANCELLED` row does not exist
 (transfers cannot be cancelled). Its rows: ledger behind (receipt present, record
-not yet `CLAIMED`) sets `CLAIMED` with no items (`CLAIM_RECOVERED`, or
-`REDIRECT_CONFLICT` with a barrier flush that redirects back to D); persisted
-receipt acknowledges; missing receipt for an unacknowledged claim at D
+not yet `CLAIMED`) sets `CLAIMED` with no items (`CLAIM_RECOVERED`; if the record
+now names another destination, which needs an operator file restore because a
+redirect requires D's retirement, the receipt is frozen with `REDIRECT_CONFLICT`
+instead of binding back); persisted receipt acknowledges; missing receipt for an unacknowledged claim at D
 rematerializes once into incoming (`REMATERIALIZED`, waiting while full); an
-incoming payload whose record is already acknowledged or pruned means D's chunk
-is behind its own move, and it moves again; a receipt is dropped
-only after the acknowledgement is durable or when the record is absent; a claim
-paid elsewhere keeps the receipt (`REDIRECT_DOUBLE_PAY`); a quarantined record
-keeps it.
+incoming payload whose record is acknowledged **at D**, or pruned, means D's
+chunk is behind its own move, and it moves again (a record can only be
+redirected away from D after D's ID is retired, so a D that is not retired never
+holds a payload acknowledged elsewhere; if it ever does, after an operator file
+restore, the payload and receipt are frozen with `REDIRECT_CONFLICT`); a receipt
+is dropped only after the acknowledgement is durable or when the record is
+absent; a claim paid elsewhere freezes the receipt (`REDIRECT_DOUBLE_PAY`); a
+quarantined record keeps it. A retired endpoint (§9) runs none of these rows.
 
 **Pruning.** A record is removed once its acknowledgement is durable, whether or
 not S has already dropped its entry; the `dispatched_through` rule above makes a
@@ -562,14 +598,19 @@ source's absence is persisted (above). A
 changes no outcome, with or without a lost source write.
 
 **Operator actions** (barrier flushes, audited with a SHA-256 prefix of the
-payload): `transfer redirect <source> <seq> <endpoint>` for an `IN_TRANSIT` or
-`ARRIVED` record to another endpoint of the same owner and system (ADR-051 §9
-residual applies); `transfer purge <source> <seq>` removes a record and destroys
-its payload. The **owner** may redirect their own `DESTINATION_MISSING` cargo to
-another of their compatible endpoints once the old destination's absence is
-established (its record was removed by §9.1, or it is `MISSING`); then the old
-destination cannot return with a receipt, so ADR-051 §9's residual does not
-apply (review R1-L8). An outbox payload that no longer decodes stays raw in S,
+payload): `endpoint retire <id>` retires an endpoint that is lost but not
+`MISSING` (for example in a chunk that will never load again);
+`transfer redirect <source> <seq> <endpoint>` moves an `IN_TRANSIT` or `ARRIVED`
+record to another endpoint, but only once its destination's retirement is
+durable, so ADR-051 §9's double-payment residual cannot arise: a retired
+destination that returns is inert (review R2-H1); `transfer purge <source>
+<seq>` removes a record and destroys its payload. The **owner** may redirect
+their own `DESTINATION_MISSING` cargo under the same rule (review R1-L8), with
+`/arce endgame transfer redirect` from their own connected command source. Both
+redirects are barrier flushes subject to the §7 spacing, and both follow the
+system's route rule: railgun cargo goes to another of the owner's `ACTIVE`
+railgun endpoints in the source's star system; elevator cargo goes back to its
+source endpoint. An outbox payload that no longer decodes stays raw in S,
 is never registered, shows `OUTBOX_QUARANTINED`, and only an operator purge
 removes it.
 
@@ -589,7 +630,7 @@ removes it.
 | S removed (and its tombstone kept), ledger flushed, S's chunk not saved | S restored with an entry `seq ≤ dispatched_through` | Dropped (`OUTBOX_STALE_DROPPED`); delivered once |
 | Record pruned while S still holds the entry (S unloaded, its release not yet saved, or that save lost) | Entry with `seq ≤ dispatched_through`, no record | Dropped (`OUTBOX_STALE_DROPPED`); the payload was already delivered once |
 | **Residual**: S's escrow save observed but its asynchronous file write lost, then the record durable | S's input still holds the payload, record exists | Duplicate of one payload, detected and audited as `SOURCE_ROLLBACK`; same class as a torn vanilla save. The 40-tick age rule narrows the window to an `IOWorker` backlog older than 2 s |
-| **Residual**: operator redirect after a ledger rollback | ADR-051 §9 | Possible double delivery, audited |
+| **Residual**: an operator retires an endpoint whose chunk is not loaded (`endpoint retire`), and that chunk holds a claim the ledger lost in a crash, then redirects | The unloaded chunk already paid; the record is `ARRIVED` again | Possible double delivery (ADR-051 §9 class), audited; a `MISSING` or removed endpoint, the only case an owner can redirect, cannot reach it, because §9.1 settles a loaded endpoint's claims from its live state |
 | **Residual** (R1-M1): D's save of a claim observed and aged, but its asynchronous write lost; the move, acknowledgement and flush happened; then a crash | The ledger acknowledged a payload that D's chunk never stored | The payload is lost (ADR-051 §11 lists the same class) |
 | **Residual** (R1-M1): as above, but the ledger's acknowledgement was not yet flushed and a player withdrew and saved the moved payload | The record is `CLAIMED`, D has no receipt | Rematerialized, so the payload exists twice; it needs a lost write that the 40-tick age did not outlast |
 
@@ -628,6 +669,7 @@ count tickets by type before and after every system and after every ride.
   `endpoint list
   [<player>]`; `endpoint purge <id>` (removes the index record only, refused
   while referenced; the §11 tombstone stays until the absence is persisted);
+  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.
 - **Players** see their own device status in its menu; nothing lists other
   players' devices, endpoints, zones or coordinates.

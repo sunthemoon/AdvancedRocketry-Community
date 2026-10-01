@@ -477,6 +477,142 @@ class Delivery:
         return len(seen), outcomes
 
 
+class Redirect:
+    """R2-H1: one payload claimed at D, D removed (destroyed, or picked up by a block mover that keeps its data),
+    the record redirected to E, and D coming back (a crash restore or the mover placing it again).
+
+    `retire=True` is revision 3: removal retires D's ID durably, a returning D with a retired ID is inert and
+    its contents are frozen for an operator, and a redirect requires the retirement to be durable. Ageing,
+    lost writes and third stores are covered by `Delivery`; here every save is durable.
+    Records: (state "A" or "C", destination "D"/"E", acknowledged, ack_epoch) or None once pruned.
+    """
+
+    @staticmethod
+    def initial():
+        rec = ("A", "D", False, None)
+        d = ("here", 0, 0, None)            # where ("here", "gone", "carried"), incoming, buffer, receipt
+        d_dur = (True, 0, 0, False)          # present, incoming, buffer, receipt
+        ee = (0, 0, None)                    # E: incoming, buffer, receipt (E is never removed)
+        ee_dur = (0, 0, False)
+        return (rec, rec, 1, 1, False, False, d, d_dur, None, ee, ee_dur)
+
+    @staticmethod
+    def normalize(state):
+        rec, rec_dur, e, e_dur = state[:4]
+        epochs = {e, e_dur} | {r[3] for r in (rec, rec_dur) if r is not None and r[3] is not None}
+        rank = {v: i for i, v in enumerate(sorted(epochs))}
+        fix = lambda r: None if r is None else (r[0], r[1], r[2], None if r[3] is None else rank[r[3]])
+        return (fix(rec), fix(rec_dur), rank[e], rank[e_dur]) + tuple(state[4:])
+
+    @classmethod
+    def successors(cls, state, retire, crashes_left):
+        rec, rec_dur, e, e_dur, retired, retired_dur, d, d_dur, carried, ee, ee_dur = state
+        where, d_in, d_buf, d_rc = d
+        e_in, e_buf, e_rc = ee
+        keys = ("rec", "rec_dur", "e", "e_dur", "retired", "retired_dur", "d", "d_dur", "carried", "ee", "ee_dur")
+
+        def make(**c):
+            parts = dict(zip(keys, state))
+            parts.update(c)
+            return cls.normalize(tuple(parts[k] for k in keys))
+
+        def endpoint(name, inc, buf, rc, active):
+            """The ADR-054 section 11 destination rules for one endpoint; `active` excludes a retired one."""
+            here = rec is not None and rec[1] == name
+            claimed = here and rec[0] == "C" and not rec[2]
+            setter = (lambda **v: {"d": (where, v.get("inc", inc), v.get("buf", buf), v.get("rc", rc))}) \
+                if name == "D" else (lambda **v: {"ee": (v.get("inc", inc), v.get("buf", buf), v.get("rc", rc))})
+            if not active:
+                return
+            if here and rec[0] == "A" and rc is None:
+                yield "CLAIM_" + name, make(rec=("C", name, False, None), **setter(inc="U", rc="U"))
+            if inc == "P" and (claimed or rec is None or (rec[2] and rec[1] == name)):
+                yield "MOVE_" + name, make(rec=("C", name, True, e) if claimed else rec, **setter(inc=0, buf=buf + 1))
+            if here and rec[0] == "A" and rc is not None:
+                yield "RECOVER_" + name, make(rec=("C", name, False, None))
+            if claimed and rc == "P" and not inc:
+                yield "ACK_" + name, make(rec=("C", name, True, e))
+            if claimed and rc is None:
+                yield "REMAT_" + name, make(**setter(inc="U", rc="U"))
+            if rc is not None and (rec is None or (rec[2] and e > rec[3])):
+                yield "DROP_" + name, make(**setter(rc=None))
+
+        d_active = where == "here" and not (retire and retired)
+        yield from ((label, s2, crashes_left) for label, s2 in endpoint("D", d_in, d_buf, d_rc, d_active))
+        yield from ((label, s2, crashes_left) for label, s2 in endpoint("E", e_in, e_buf, e_rc, True))
+        observe = lambda flag: flag if flag in (0, None) else "P"
+        if where == "here":
+            saved = (True, 1 if d_in else 0, d_buf, d_rc is not None)
+            if saved != d_dur or d_in == "U" or d_rc == "U":
+                yield "SAVE_D", make(d=(where, observe(d_in), d_buf, observe(d_rc)), d_dur=saved), crashes_left
+        elif d_dur[0]:
+            yield "SAVE_D", make(d_dur=(False, 0, 0, False)), crashes_left
+        saved_e = (1 if e_in else 0, e_buf, e_rc is not None)
+        if saved_e != ee_dur or e_in == "U" or e_rc == "U":
+            yield "SAVE_E", make(ee=(observe(e_in), e_buf, observe(e_rc)), ee_dur=saved_e), crashes_left
+        if (rec, retired) != (rec_dur, retired_dur):
+            yield "FLUSH_L", make(rec_dur=rec, retired_dur=retired, e=e + 1, e_dur=e + 1), crashes_left
+        if rec is not None and rec[2] and e > rec[3]:
+            yield "PRUNE", make(rec=None), crashes_left
+        due_move = d_in == "P" and (rec is None or rec[2])
+        if d_active and d_buf == 0 and not due_move:
+            # Removal by any cause (ADR-054 section 9.1), settled from D's live state with a barrier flush that
+            # also retires D's ID (when `retire`). A mover keeps D's data and may place it again later.
+            if rec is not None and rec[1] == "D" and not rec[2]:
+                settled = ("C", "D", True, e) if d_rc is not None and not d_in else ("A", "D", False, None)
+            else:
+                settled = rec
+            barrier = dict(rec=settled, rec_dur=settled, retired=retire, retired_dur=retire, e=e + 1, e_dur=e + 1)
+            yield "REMOVE_D", make(d=("gone", 0, 0, None), **barrier), crashes_left
+            yield "PICKUP_D", make(d=("carried", 0, 0, None), carried=(d_in, d_rc), **barrier), crashes_left
+        if where == "carried":
+            yield "PLACE_D", make(d=("here", carried[0], 0, carried[1]), carried=None), crashes_left
+        # Owner or operator redirect of the missing destination's cargo: a barrier flush; with `retire` it needs
+        # D's retirement to be durable (a returned, retired D is inert), otherwise (the round-2 text) it follows
+        # the index removal at once.
+        if rec is not None and rec[0] == "A" and rec[1] == "D" and (retired_dur if retire else where != "here"):
+            moved = ("A", "E", False, None)
+            yield "REDIRECT", make(rec=moved, rec_dur=moved, e=e + 1, e_dur=e + 1), crashes_left
+        if crashes_left:
+            present, inc, buf, rc = d_dur
+            restored = ("here", "P" if inc else 0, buf, "P" if rc else None) if present else \
+                (("carried", 0, 0, None) if where == "carried" else ("gone", 0, 0, None))
+            yield "CRASH", cls.normalize((rec_dur, rec_dur, e_dur, e_dur, retired_dur, retired_dur, restored, d_dur,
+                                          carried if where == "carried" else None,
+                                          ("P" if ee_dur[0] else 0, ee_dur[1], "P" if ee_dur[2] else None), ee_dur)), \
+                crashes_left - 1
+
+    @classmethod
+    def outcome(cls, state, retire):
+        order = ["RECOVER_D", "ACK_D", "DROP_D", "REMAT_D", "RECOVER_E", "ACK_E", "DROP_E", "REMAT_E", "PRUNE",
+                 "CLAIM_D", "MOVE_D", "CLAIM_E", "MOVE_E", "FLUSH_L", "SAVE_D", "SAVE_E", "PLACE_D", "REDIRECT"]
+        for _ in range(300):
+            options = {label: s for label, s, _ in cls.successors(state, retire, 0)}
+            chosen = next((label for label in order if label in options), None)
+            if chosen is None:
+                rec, _, _, _, retired, _, (where, d_in, d_buf, d_rc), _, carried, (e_in, e_buf, e_rc), _ = state
+                frozen = 1 if (retire and retired and where == "here" and d_in) else 0
+                assert rec is None and not e_in and e_rc is None, state
+                return d_buf + e_buf, frozen
+            state = options[chosen]
+        raise AssertionError("redirect drain did not terminate")
+
+    @classmethod
+    def explore(cls, retire, crashes=2):
+        seen, stack, outcomes = set(), [(cls.normalize(cls.initial()), crashes)], {}
+        while stack:
+            node = stack.pop()
+            if node in seen:
+                continue
+            seen.add(node)
+            state, left = node
+            key = cls.outcome(state, retire)
+            outcomes[key] = outcomes.get(key, 0) + 1
+            for _, new_state, c in cls.successors(state, retire, left):
+                stack.append((new_state, c))
+        return len(seen), outcomes
+
+
 # --- ADR-056 railgun classes ------------------------------------------------------------------
 
 def isqrt(n):
@@ -781,6 +917,22 @@ class Vectors(unittest.TestCase):
             gated = {l: s for l, s, *_ in Delivery.successors(gated, True, 1)}[label]
         # With the gate the same prefix offers no withdrawal until a chunk save captured the claim.
         self.assertNotIn("WITHDRAW", {l for l, *_ in Delivery.successors(gated, True, 1)})
+
+    def test_redirect_with_retirement_pays_once(self):
+        # R2-H1: whatever returns, the payload is delivered exactly once; a returning old destination is frozen.
+        states, outcomes = Redirect.explore(retire=True, crashes=2)
+        for delivered, frozen in outcomes:
+            self.assertEqual(delivered, 1, outcomes)
+        self.assertIn((1, 1), outcomes)  # a returned, retired destination holds a frozen copy for an operator
+        self.assertEqual(states, EXAMPLES["redirect"]["states_retire_two_crashes"])
+
+    def test_redirect_without_retirement_reproduces_r2_h1(self):
+        _, outcomes = Redirect.explore(retire=False, crashes=0)  # the mover path needs no crash
+        self.assertTrue(any(delivered > 1 for delivered, _ in outcomes), outcomes)
+        state = Redirect.normalize(Redirect.initial())
+        for label in EXAMPLES["redirect"]["mover_path"]:
+            state = {l: s for l, s, _ in Redirect.successors(state, False, 0)}[label]
+        self.assertEqual(Redirect.outcome(state, False), (2, 0))
 
     def test_railgun_quotes(self):
         for case in EXAMPLES["railgun"]:

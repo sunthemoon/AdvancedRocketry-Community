@@ -1081,6 +1081,22 @@
    }
   ]
  },
+ "redirect": {
+  "states_retire_two_crashes": 1789,
+  "mover_path": [
+   "CLAIM_D",
+   "SAVE_D",
+   "PICKUP_D",
+   "REDIRECT",
+   "CLAIM_E",
+   "SAVE_E",
+   "MOVE_E",
+   "FLUSH_L",
+   "PRUNE",
+   "PLACE_D",
+   "MOVE_D"
+  ]
+ },
  "railgun": [
   {
    "local": true,
