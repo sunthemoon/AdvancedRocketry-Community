@@ -1,0 +1,335 @@
+{
+  "base_commit": "b571ac8652771601e689e3808be651d5cf7244a7",
+  "files": [
+    {
+      "bytes": 36938,
+      "path": "CHANGELOG.md",
+      "sha256": "dbaa9097e09b556dd0d00410890b0c76f008f3cb1c9617f65b468dc0f5f38219",
+      "working_sha256": "dbaa9097e09b556dd0d00410890b0c76f008f3cb1c9617f65b468dc0f5f38219"
+    },
+    {
+      "bytes": 13886,
+      "path": "docs/work/v1.7.0-implementation-log.md",
+      "sha256": "2a383f67f45d74c3ce09e3d80683c6052009ba36e1460cea1287ee19f95e2ec0",
+      "working_sha256": "2a383f67f45d74c3ce09e3d80683c6052009ba36e1460cea1287ee19f95e2ec0"
+    },
+    {
+      "bytes": 101,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/laser_target.json",
+      "sha256": "cbd6b9e23e04dc086359b05df34203e55b3525c0bc7d6ceb947845e3c1125e9d",
+      "working_sha256": "cbd6b9e23e04dc086359b05df34203e55b3525c0bc7d6ceb947845e3c1125e9d"
+    },
+    {
+      "bytes": 243,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/laser_target.json",
+      "sha256": "6c06022fa31da6b728e2d08fe03199854640e98effe41cdc6282c3ab0f6bf414",
+      "working_sha256": "6c06022fa31da6b728e2d08fe03199854640e98effe41cdc6282c3ab0f6bf414"
+    },
+    {
+      "bytes": 62,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/laser_target.json",
+      "sha256": "854c37caf6f0006d5c37c603c7815d186f01748d915114d9f91fffa166cebac9",
+      "working_sha256": "854c37caf6f0006d5c37c603c7815d186f01748d915114d9f91fffa166cebac9"
+    },
+    {
+      "bytes": 7865,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/en_us.json",
+      "sha256": "6777b901c7f8a166bd24fd9f2a8b7cf9e9d1efd4cd705745b3e0ec40e355850b",
+      "working_sha256": "6777b901c7f8a166bd24fd9f2a8b7cf9e9d1efd4cd705745b3e0ec40e355850b"
+    },
+    {
+      "bytes": 7813,
+      "path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/zh_cn.json",
+      "sha256": "e33b5d39127c8241d63ec329a2a5dbc3c55e6fe61fbb09bc1f1b742d47930909",
+      "working_sha256": "e33b5d39127c8241d63ec329a2a5dbc3c55e6fe61fbb09bc1f1b742d47930909"
+    },
+    {
+      "bytes": 695,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/advancements/recipes/misc/laser_target.json",
+      "sha256": "a9ea067805183013bf3778d2e0e696615f30323d694b296689df49eda51bc204",
+      "working_sha256": "a9ea067805183013bf3778d2e0e696615f30323d694b296689df49eda51bc204"
+    },
+    {
+      "bytes": 424,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/loot_tables/blocks/laser_target.json",
+      "sha256": "68f6d6e387e7e913035902386c16ca1a97507cfd7439acff5ee2e8a4f2a206d2",
+      "working_sha256": "68f6d6e387e7e913035902386c16ca1a97507cfd7439acff5ee2e8a4f2a206d2"
+    },
+    {
+      "bytes": 455,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/recipes/laser_target.json",
+      "sha256": "64b9c3ea76158132256c81a432a246c44f25a79207e6409c6c66e1d180acd43e",
+      "working_sha256": "64b9c3ea76158132256c81a432a246c44f25a79207e6409c6c66e1d180acd43e"
+    },
+    {
+      "bytes": 52,
+      "path": "src/generated/v1.7/resources/data/advancedrocketrycommunity/tags/blocks/laser_drill_immune.json",
+      "sha256": "bc459bc317e1f67587e0683eb788c961a444b1e186bc3d26aa7b90dc4c0679ec",
+      "working_sha256": "bc459bc317e1f67587e0683eb788c961a444b1e186bc3d26aa7b90dc4c0679ec"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v1.7/resources/data/carryon/tags/blocks/block_blacklist.json",
+      "sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1",
+      "working_sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v1.7/resources/data/create/tags/blocks/non_movable.json",
+      "sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1",
+      "working_sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v1.7/resources/data/minecraft/tags/blocks/dragon_immune.json",
+      "sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1",
+      "working_sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1"
+    },
+    {
+      "bytes": 989,
+      "path": "src/generated/v1.7/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "4ffcd941ed4482697008a1bd07af6091115874e28efbf9feb68a790911e994e6",
+      "working_sha256": "4ffcd941ed4482697008a1bd07af6091115874e28efbf9feb68a790911e994e6"
+    },
+    {
+      "bytes": 989,
+      "path": "src/generated/v1.7/resources/data/minecraft/tags/blocks/needs_iron_tool.json",
+      "sha256": "4ffcd941ed4482697008a1bd07af6091115874e28efbf9feb68a790911e994e6",
+      "working_sha256": "4ffcd941ed4482697008a1bd07af6091115874e28efbf9feb68a790911e994e6"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v1.7/resources/data/minecraft/tags/blocks/wither_immune.json",
+      "sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1",
+      "working_sha256": "29360525c656eedcf5c360e77a56ad8b313472af1708d73467cb3a4d411560d1"
+    },
+    {
+      "bytes": 5015,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "sha256": "ae01684294e786bbeab89c51d9cd2507b1f59d12dbbe1aff8105db6ec76b2a5c",
+      "working_sha256": "ae01684294e786bbeab89c51d9cd2507b1f59d12dbbe1aff8105db6ec76b2a5c"
+    },
+    {
+      "bytes": 3147,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/LaserBeamRenderer.java",
+      "sha256": "f01a1dffd16de3e161a65a46101581ef73bb8c44745ffe71475da3663e0dbacd",
+      "working_sha256": "f01a1dffd16de3e161a65a46101581ef73bb8c44745ffe71475da3663e0dbacd"
+    },
+    {
+      "bytes": 5315,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/LaserTargetScreen.java",
+      "sha256": "a3e44751738ce75d99e3a28ae412d8bb358c0fd4b647d0a970a5c4054f1cdd8c",
+      "working_sha256": "a3e44751738ce75d99e3a28ae412d8bb358c0fd4b647d0a970a5c4054f1cdd8c"
+    },
+    {
+      "bytes": 7794,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/OrbitalLaserDrillScreen.java",
+      "sha256": "f392c6a0995c1819e07cb67d0b4b8e8d37258ec8770c742d88605b20ec633537",
+      "working_sha256": "f392c6a0995c1819e07cb67d0b4b8e8d37258ec8770c742d88605b20ec633537"
+    },
+    {
+      "bytes": 8942,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "sha256": "ccc481b928d8731324fc1b63939f8f40861b32ccb64abcddab302fb86ff2518a",
+      "working_sha256": "ccc481b928d8731324fc1b63939f8f40861b32ccb64abcddab302fb86ff2518a"
+    },
+    {
+      "bytes": 11091,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java",
+      "sha256": "f7c8fe146868b2807c2208ab800396378f8385c20195367c37bf54cec7f88519",
+      "working_sha256": "f7c8fe146868b2807c2208ab800396378f8385c20195367c37bf54cec7f88519"
+    },
+    {
+      "bytes": 3079,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java",
+      "sha256": "509c5e398b94760d71c54560e40439dffabb13f3b991b61cbac42a38169bf7d7",
+      "working_sha256": "509c5e398b94760d71c54560e40439dffabb13f3b991b61cbac42a38169bf7d7"
+    },
+    {
+      "bytes": 9440,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDeviceBlockEntity.java",
+      "sha256": "c2f62dafac4c2dd0a2e8e8b8cd83ac98e71cfeac55ea867627d579dc42f31e91",
+      "working_sha256": "c2f62dafac4c2dd0a2e8e8b8cd83ac98e71cfeac55ea867627d579dc42f31e91"
+    },
+    {
+      "bytes": 6558,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDeviceMenu.java",
+      "sha256": "2d0c0a6fa885f94a1234b8c5f64ff133374af218a3bef9f2e1c787268c0ef538",
+      "working_sha256": "2d0c0a6fa885f94a1234b8c5f64ff133374af218a3bef9f2e1c787268c0ef538"
+    },
+    {
+      "bytes": 7462,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevices.java",
+      "sha256": "a637ae7e0a2ecc243358b1fe64a8fde4c59fa86ff46c95af842c8daddbc243da",
+      "working_sha256": "a637ae7e0a2ecc243358b1fe64a8fde4c59fa86ff46c95af842c8daddbc243da"
+    },
+    {
+      "bytes": 592,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserBeam.java",
+      "sha256": "e811b09bd1d7d26cb91342ef2a038ce91a418ff9ca941f2816f7b2cfa8d9e671",
+      "working_sha256": "e811b09bd1d7d26cb91342ef2a038ce91a418ff9ca941f2816f7b2cfa8d9e671"
+    },
+    {
+      "bytes": 8648,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserDrillIntents.java",
+      "sha256": "3db3e2862aad0fba1b4cbcd8ebce9fa1f2e50931da39ae0f55f3fc9864314803",
+      "working_sha256": "3db3e2862aad0fba1b4cbcd8ebce9fa1f2e50931da39ae0f55f3fc9864314803"
+    },
+    {
+      "bytes": 4872,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserDrillOperation.java",
+      "sha256": "676a3f2da773f3fb5de808e5f0098bd1f1eb67b003d68250fbcd0d68c5e6142f",
+      "working_sha256": "676a3f2da773f3fb5de808e5f0098bd1f1eb67b003d68250fbcd0d68c5e6142f"
+    },
+    {
+      "bytes": 9926,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserDrillStorage.java",
+      "sha256": "0ffa41ba1ab19f5db4554fdc0032e10e24398e37a57772a17d21f2daa92fdbc7",
+      "working_sha256": "0ffa41ba1ab19f5db4554fdc0032e10e24398e37a57772a17d21f2daa92fdbc7"
+    },
+    {
+      "bytes": 2417,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserLink.java",
+      "sha256": "f4b81b995e31d2e06678a9893955fea869860bc5fe7767071cc39247118ffc3e",
+      "working_sha256": "f4b81b995e31d2e06678a9893955fea869860bc5fe7767071cc39247118ffc3e"
+    },
+    {
+      "bytes": 1872,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserLinkCounters.java",
+      "sha256": "18e92398041fcc2f33a2c420be61fdc274e2af5dbd1fd4b1c7b7f0d8bcc0b5b6",
+      "working_sha256": "18e92398041fcc2f33a2c420be61fdc274e2af5dbd1fd4b1c7b7f0d8bcc0b5b6"
+    },
+    {
+      "bytes": 13607,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserPhysicalDrill.java",
+      "sha256": "813a0433ed9db9c242c30d8da69e35318be9b5de2b8264b76c8203a805b1257e",
+      "working_sha256": "813a0433ed9db9c242c30d8da69e35318be9b5de2b8264b76c8203a805b1257e"
+    },
+    {
+      "bytes": 2842,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserShaft.java",
+      "sha256": "0dc9929e3cb800969661e0055d2bedaa5c4febccc6af006d7947820d69db19d1",
+      "working_sha256": "0dc9929e3cb800969661e0055d2bedaa5c4febccc6af006d7947820d69db19d1"
+    },
+    {
+      "bytes": 4157,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserTargetBlock.java",
+      "sha256": "70c3d594dd873343fc907dde2876756e2858ce19797d9fe255a7311bf8815b42",
+      "working_sha256": "70c3d594dd873343fc907dde2876756e2858ce19797d9fe255a7311bf8815b42"
+    },
+    {
+      "bytes": 17734,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserTargetBlockEntity.java",
+      "sha256": "9328548c8b451abdf63e9695c8beb5937f10edffe420521f5c2642cc11eb8d59",
+      "working_sha256": "9328548c8b451abdf63e9695c8beb5937f10edffe420521f5c2642cc11eb8d59"
+    },
+    {
+      "bytes": 7215,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserTargetMenu.java",
+      "sha256": "53f612bda598000549bd1a1a36d2c303e0e3476392d8e24947b4e0c1a5dd6f2c",
+      "working_sha256": "53f612bda598000549bd1a1a36d2c303e0e3476392d8e24947b4e0c1a5dd6f2c"
+    },
+    {
+      "bytes": 22897,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/OrbitalLaserDrillBlockEntity.java",
+      "sha256": "085a0a55d6126b59958dc5bf497ef66f1217a6386ae729507a42554ff89b3f8b",
+      "working_sha256": "085a0a55d6126b59958dc5bf497ef66f1217a6386ae729507a42554ff89b3f8b"
+    },
+    {
+      "bytes": 17836,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/OrbitalLaserDrillMenu.java",
+      "sha256": "04e4ceb2c312e750a3fa3c4cfde29e69d278921e83cf9eb0ef2931d97567ba66",
+      "working_sha256": "04e4ceb2c312e750a3fa3c4cfde29e69d278921e83cf9eb0ef2931d97567ba66"
+    },
+    {
+      "bytes": 2578,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameCode.java",
+      "sha256": "f448698d2f1bd1e5abd69e2acf84ba6922b0c77ba341ad540ab15aa93d2e0f39",
+      "working_sha256": "f448698d2f1bd1e5abd69e2acf84ba6922b0c77ba341ad540ab15aa93d2e0f39"
+    },
+    {
+      "bytes": 3803,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameLimits.java",
+      "sha256": "327d328d4aa001f5acb31dbcb03d3473dc6e1468affb396d975fa41da2c45f85",
+      "working_sha256": "327d328d4aa001f5acb31dbcb03d3473dc6e1468affb396d975fa41da2c45f85"
+    },
+    {
+      "bytes": 19026,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameService.java",
+      "sha256": "34b3e8ac5b1c3ba7fad0db682eee78593291768340efed444f66f226fa25ff78",
+      "working_sha256": "34b3e8ac5b1c3ba7fad0db682eee78593291768340efed444f66f226fa25ff78"
+    },
+    {
+      "bytes": 3750,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndpointObservations.java",
+      "sha256": "ea5090fc1c406ad93191dcc26dc6cae3374c11dfdc9da86530d81a2b5a30ddcb",
+      "working_sha256": "ea5090fc1c406ad93191dcc26dc6cae3374c11dfdc9da86530d81a2b5a30ddcb"
+    },
+    {
+      "bytes": 5619,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndpointRegistrations.java",
+      "sha256": "892b9eab0593b7382d65baf0b6ffa55540f66b0cbc5a5b12f3e3cd2948ef8215",
+      "working_sha256": "892b9eab0593b7382d65baf0b6ffa55540f66b0cbc5a5b12f3e3cd2948ef8215"
+    },
+    {
+      "bytes": 15778,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/LaserPhysicalGameTests.java",
+      "sha256": "94b952433c3a8dbf9f47ced7f46f13702fb481f565ba4bbac7f7506c106472bc",
+      "working_sha256": "94b952433c3a8dbf9f47ced7f46f13702fb481f565ba4bbac7f7506c106472bc"
+    },
+    {
+      "bytes": 7085,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/LaserTargetGameTests.java",
+      "sha256": "bc941016a80945819eeabe835fad01340cb743b4e0570cb35eedaf271dbbe413",
+      "working_sha256": "bc941016a80945819eeabe835fad01340cb743b4e0570cb35eedaf271dbbe413"
+    },
+    {
+      "bytes": 8363,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java",
+      "sha256": "856328205340bb94145d9b1f66f3db1db8f26deaca80022e1c5dbed43c068ce3",
+      "working_sha256": "856328205340bb94145d9b1f66f3db1db8f26deaca80022e1c5dbed43c068ce3"
+    },
+    {
+      "bytes": 1342,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockTags.java",
+      "sha256": "59266e6258ec5209f65d538fc43dc3ef311c102b120953bc76bbd37efae06aa3",
+      "working_sha256": "59266e6258ec5209f65d538fc43dc3ef311c102b120953bc76bbd37efae06aa3"
+    },
+    {
+      "bytes": 10528,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "sha256": "43ff27ef7a7dde1fd91876fcc1b74f3a47f239938c3ee6578d412b8cb598d703",
+      "working_sha256": "43ff27ef7a7dde1fd91876fcc1b74f3a47f239938c3ee6578d412b8cb598d703"
+    },
+    {
+      "bytes": 5203,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java",
+      "sha256": "1dcbf58dc282a275c68b6caff03b37e6e8baf31303a8276837c59b0f94f2b644",
+      "working_sha256": "1dcbf58dc282a275c68b6caff03b37e6e8baf31303a8276837c59b0f94f2b644"
+    },
+    {
+      "bytes": 10206,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java",
+      "sha256": "82abc8aa43fa4193c25512fba63d5428006b68bdb850c6d8ac819308990c9977",
+      "working_sha256": "82abc8aa43fa4193c25512fba63d5428006b68bdb850c6d8ac819308990c9977"
+    },
+    {
+      "bytes": 3525,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java",
+      "sha256": "9ceb5f229b13175f20ae3472c7ebb1787c65b1ee6baff2f72c1aa5f972ebe5ca",
+      "working_sha256": "9ceb5f229b13175f20ae3472c7ebb1787c65b1ee6baff2f72c1aa5f972ebe5ca"
+    },
+    {
+      "bytes": 5596,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserLinkCountersTest.java",
+      "sha256": "ddc36fbeacb06b4d9b596aae4c81e061362d6fc21041b15cb82ccdb8725624c8",
+      "working_sha256": "ddc36fbeacb06b4d9b596aae4c81e061362d6fc21041b15cb82ccdb8725624c8"
+    },
+    {
+      "bytes": 2959,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserShaftTest.java",
+      "sha256": "b67948cbee0846b2df56e8666bc79dc42608fbbeaed9d66bda9317a421313509",
+      "working_sha256": "b67948cbee0846b2df56e8666bc79dc42608fbbeaed9d66bda9317a421313509"
+    }
+  ]
+}

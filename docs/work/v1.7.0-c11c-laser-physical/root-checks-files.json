@@ -1,0 +1,1267 @@
+[
+  {
+    "bytes": 274,
+    "path": "api-jar-comparison.json",
+    "sha256": "e8c31999697b25eefb97e538feded89ac8529e8145ce6330e500516a12daa754"
+  },
+  {
+    "bytes": 608,
+    "path": "artifacts.json",
+    "sha256": "8b16b7f6ccf89e56aa134b6c96a676b101479bb3cb5d12ab18771585ec9f3617"
+  },
+  {
+    "bytes": 499171,
+    "path": "attempt-01-failed/gametest-first-link-crash.log",
+    "sha256": "12c35b6be1f79f6dc3ad26b1cfec2af724f099b2802a652143b669c22f1f1400"
+  },
+  {
+    "bytes": 919638,
+    "path": "attempt-01-failed/gametest-save-before-candidate.log",
+    "sha256": "0a1c05d9cf6b2fcff88f5fc5ac5e3215c41a1457e7fa717d12ba7961f965027e"
+  },
+  {
+    "bytes": 919932,
+    "path": "attempt-01-failed/gametest-save-cooldown.log",
+    "sha256": "36243f0c3a842be8e079ea7cab56ad0f2bf98714a00de08a1693ac2b4205fdca"
+  },
+  {
+    "bytes": 897813,
+    "path": "attempt-01-failed/gametest-stale-world-after-crash.log",
+    "sha256": "964840bed0df9325ae5550cdcb4b9f38d2d2a1be8a9a9760a6ad72a27bf5c882"
+  },
+  {
+    "bytes": 41,
+    "path": "base-commit.txt",
+    "sha256": "92811ba59c45b8c16d7546f768786fed93e41218a560a3c647f69788e94c8fe2"
+  },
+  {
+    "bytes": 1279,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.api.environment.EnvironmentSnapshotTest.xml",
+    "sha256": "89ed010035c916c4de6dbc8940a9840c55aa431edfd4d1a95d5fa1fabc04aade"
+  },
+  {
+    "bytes": 1137,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RocketComponentDefinitionTest.xml",
+    "sha256": "b3904494014f887028a0f618e49b093d4c7c12e005f9a5848cfbfabbb45ba6d0"
+  },
+  {
+    "bytes": 255504,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiArtifactTest.xml",
+    "sha256": "3e4dde719203821dce08e99e5a2620cacfcd65b85d9b97071ab1eeaff6932744"
+  },
+  {
+    "bytes": 1846,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.api.version.ApiVersionsTest.xml",
+    "sha256": "d8b454752ce567c754d56fa1453c3d29c2ea8945eb35302b5d6338a865aaa40f"
+  },
+  {
+    "bytes": 914,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygenTest.xml",
+    "sha256": "af5a9d176ec36266aca7c4bdfb3b734251570991f67bd30e96b41453761166b7"
+  },
+  {
+    "bytes": 705,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransferTest.xml",
+    "sha256": "9d704edb12430fffc88f03032bf3eaac3d5c855c64b8756c79fc80ad7d4bf3fd"
+  },
+  {
+    "bytes": 1302,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngineTest.xml",
+    "sha256": "eb49da76adaa55b23e981cf97e869055df234d5b3244086e08c6ac2f5a611814"
+  },
+  {
+    "bytes": 919,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentSupplyEngineTest.xml",
+    "sha256": "69bf761d852d7b865ae7f4e223e086ac6408ebe58e10c6b5f4571b067d58e1f6"
+  },
+  {
+    "bytes": 856,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportStatusPacketTest.xml",
+    "sha256": "15c25047646874e54e29885898076e9b384e209ab645980f5e33dce5bff3a41c"
+  },
+  {
+    "bytes": 711,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIdentityTest.xml",
+    "sha256": "9c9c492df16efc9db507234c14b2d89aa4ecbb27b0630166fe5588bd7226668a"
+  },
+  {
+    "bytes": 1067,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeIndexTest.xml",
+    "sha256": "353d997a22eccc4448147ed28e038b758cafda264b529b9f7be55b1716724eeb"
+  },
+  {
+    "bytes": 703,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePositionTest.xml",
+    "sha256": "e3db12d20da77b4b1b75c88ab506f3d742b68bff95b8418b1890eb970d8ef0f3"
+  },
+  {
+    "bytes": 1470,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinatorTest.xml",
+    "sha256": "7022f33851fceb3690481e6ed25e3802094fc5f46cefec19a8cf9528eb2c4abf"
+  },
+  {
+    "bytes": 1240,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanTaskTest.xml",
+    "sha256": "c1d82a61287ab5134d55d95ed3b57067d971085659d593b1d6d40b220ab61e29"
+  },
+  {
+    "bytes": 917,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentPersistenceTest.xml",
+    "sha256": "844520f6747610e2bc70b3a40929c725def34e925aa9621ddd6e9959e948118e"
+  },
+  {
+    "bytes": 3811,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.binding.PlanetaryBindingsTest.xml",
+    "sha256": "b3f6e7fe5d107fd9294e2aa2326ebd56f49f15b68efb8ba4d7cecadbab1e09ca"
+  },
+  {
+    "bytes": 1411,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogDecoderTest.xml",
+    "sha256": "05f1bc5267310ef529bf12f8edf0c39e26b7f5248e8bb25d505a9a94450a5a25"
+  },
+  {
+    "bytes": 1297,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialCatalogTest.xml",
+    "sha256": "225a71a2bca9e6eb4f67f24ccf2344ab567a3ddb1d29f2d628b99cc556dabaac"
+  },
+  {
+    "bytes": 1199,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefinitionCodecTest.xml",
+    "sha256": "53ec5dc7179399f18797cde7ab087be035e930281fa600968dfd5ae909ff6698"
+  },
+  {
+    "bytes": 1251,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSavedDataTest.xml",
+    "sha256": "a6f6c6949333b460aea0dc1fb656b75e2de42246c06f17abf7c8a409694a21af"
+  },
+  {
+    "bytes": 2611,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSchemaV2Test.xml",
+    "sha256": "20ce03d618fbd40ac2d7c77404b0ad137ecfd1db0e5f5f1dbd4e3be08c36d31a"
+  },
+  {
+    "bytes": 1243,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSnapshotTest.xml",
+    "sha256": "9cda87d6b12b8e31a3944f9467b77855e91d7e7357c16d2045ea48aba213c3e5"
+  },
+  {
+    "bytes": 1501,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialSnapshotV2Test.xml",
+    "sha256": "119b3a7752c6e757ca0d23829023f217003e01107a2e4867b4af6ee87f1cf456"
+  },
+  {
+    "bytes": 1923,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.context.BodyContextResolverTest.xml",
+    "sha256": "8389488ab69495d6500223882e2d1e399130f76d4ae1a67111c6f9183cac6c54"
+  },
+  {
+    "bytes": 1823,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.data.BoundedDefinitionJsonTest.xml",
+    "sha256": "a77e8bba790a71aa1b41707386372b7a77c7d0beac080c41949b86ea281279fa"
+  },
+  {
+    "bytes": 12447,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryReloadTest.xml",
+    "sha256": "f603b6f1d08f116fa00863ca0d9886d1b19af1b0617f536fc2f1ecf517c7f19e"
+  },
+  {
+    "bytes": 1370,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalDefinitionTest.xml",
+    "sha256": "e305d41ccfadfd18953dd05b8b9ef458047d1860e132408db96dc51fe5bc503a"
+  },
+  {
+    "bytes": 1736,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalExposureTest.xml",
+    "sha256": "7c7c61a0d6d4ba2da184c29cb23318b016e56dabacb4462aed83333bec8db4ee"
+  },
+  {
+    "bytes": 1679,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.legacy.LegacyCelestialImporterTest.xml",
+    "sha256": "decaa8c0f51264eab1eae7c65c7031b4c697839e8a9a172435bbc8251a5d43cb"
+  },
+  {
+    "bytes": 957,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.network.StationSkyContextPacketTest.xml",
+    "sha256": "29b7ccd50dab219af425def08420498007faca0c28700204dbf65a25867e901c"
+  },
+  {
+    "bytes": 1630,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.PlanetaryContentTest.xml",
+    "sha256": "bc5f27e53702d6b5e9cc4a563f0046d0aa01310611ca97fe6a6291da1760fb7c"
+  },
+  {
+    "bytes": 1494,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.PlanetaryDiscoveryTest.xml",
+    "sha256": "f1b79006bac6a58d901d1dcdc550c57532b8cb4b0bbee7feb7daab27b21b0ee1"
+  },
+  {
+    "bytes": 783,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityControllerTest.xml",
+    "sha256": "1c2e0a32863ca768e8f6b46afbbbbf4af26159df3d6d8a70ea67d9545898075a"
+  },
+  {
+    "bytes": 1255,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.StarSystemContentTest.xml",
+    "sha256": "8a8562c9af1e1965bad50346fb77dba6cfa2b98de08e3d910195ee7513744b14"
+  },
+  {
+    "bytes": 953,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.AmbientControllerTest.xml",
+    "sha256": "b6c3e430b12915348c5673a2b3d655b6ea631a78b42a2b77ffc7f135b7852be3"
+  },
+  {
+    "bytes": 895,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.OrbitalSkyTest.xml",
+    "sha256": "2917d3e78d28a8b1cd27e2fbd8db2d8f3bbf75041eff901410a9b91334d137f3"
+  },
+  {
+    "bytes": 912,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyMathTest.xml",
+    "sha256": "e62f64eadad55cedbca2588479fa067280191a061749443b7b95cb5259771bec"
+  },
+  {
+    "bytes": 1061,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfileTest.xml",
+    "sha256": "d78042a6f14a7dcde58547675c6763b31ef95481e784ec57727b15b2a063d209"
+  },
+  {
+    "bytes": 754,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyResourcesTest.xml",
+    "sha256": "61c105797f680dc4803acfdb473d44567fe67905ca2ada53a169257269d103a4"
+  },
+  {
+    "bytes": 1307,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelectionTest.xml",
+    "sha256": "aa614ec1a418105e6540edffb18ee31fd07c38ef95573c97c08b67c543e5790d"
+  },
+  {
+    "bytes": 933,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.compat.jei.MachineRecipeViewTest.xml",
+    "sha256": "343dc140810ede8a5762e3e69bdaf8dce011df560140ce343b6c0cd2e2c21f88"
+  },
+  {
+    "bytes": 571,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.RocketFlightScreenLayoutTest.xml",
+    "sha256": "88ef408be58c06b04343ef5fa0d36bff3240f55f51572d36572f738e260eb315"
+  },
+  {
+    "bytes": 744,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.sky.PlanetaryEffectsTest.xml",
+    "sha256": "0f86bf295aacd10d83ff4ba3d9790ed1125e0b59fef13485f502518f6021973c"
+  },
+  {
+    "bytes": 1478,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.sky.SkyProfileReloadTest.xml",
+    "sha256": "f4a5790b18ed57f539c3c596824f32bce04ce188cb116a9d2786993ffc11ee7e"
+  },
+  {
+    "bytes": 553,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.sky.SkyRenderStateTest.xml",
+    "sha256": "b9bf93b78a68aa9be75909df64aa4e63ff106da2c273a5091ec0deb99b00a1b6"
+  },
+  {
+    "bytes": 1131,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.client.starmap.StarMapLayoutTest.xml",
+    "sha256": "362046c2dd17559d10e03165a8d9c39f5730595f0bf799be1005bb2399df06b3"
+  },
+  {
+    "bytes": 2973,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryRegistryTest.xml",
+    "sha256": "426b02ffff3f181cbdd1981c1ba0d6d5f7a3b990c76534f41187f209da6e9e5b"
+  },
+  {
+    "bytes": 1917,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentRegistryTest.xml",
+    "sha256": "f3ff9975bad54eb5156b11c67318d1b2a972cd9ffcaabe97c99134a5b150a1a4"
+  },
+  {
+    "bytes": 6377,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitOxygenAccessTest.xml",
+    "sha256": "6ff4544d66f9c4ede58466dd198b960e6a4b6cb7caf2af1f74a68eb5b2c83650"
+  },
+  {
+    "bytes": 2389,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.environment.ServerEnvironmentQueriesTest.xml",
+    "sha256": "602d287d56a602edb933ac2b82bc5f64e7a91cdf6b1fac270d4f2419eed15303"
+  },
+  {
+    "bytes": 2038,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentRegistryTest.xml",
+    "sha256": "c6fb55109052cbb8aa12c1f177e171d075ed7adeb2c8bcd605efdcf6931659d9"
+  },
+  {
+    "bytes": 1919,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapterBudgetTest.xml",
+    "sha256": "da7ec041faafe1f6e95db46bce392a55db0b4bd5c98df8a626a1bed3b5f04459"
+  },
+  {
+    "bytes": 1688,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.fuel.RocketFuelRegistryTest.xml",
+    "sha256": "efbef371800da0717eac694039683d6f6e15005692bf629abd2419b849a00885"
+  },
+  {
+    "bytes": 2475,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterPayloadsTest.xml",
+    "sha256": "6dc5dcaf176def05b9325af1cd99b38fdc2e82b072d1e808f5d61c0df4553e9a"
+  },
+  {
+    "bytes": 4156,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistryTest.xml",
+    "sha256": "a4469bd61811440975777a21cdb6ac6dc07d434eaa2d04bc7ab5acf91fd95248"
+  },
+  {
+    "bytes": 1500,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.compat.satellite.SatellitePayloadRegistryTest.xml",
+    "sha256": "6ea4ac1802248564c6dee69a7be5753e988981fe522e8ff8dc70bfee5743483f"
+  },
+  {
+    "bytes": 1915,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfigTest.xml",
+    "sha256": "0b9891568faabbf145eb3285c1e900c9531bd84187e7a253028d195e4c6b3b7f"
+  },
+  {
+    "bytes": 8362,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfigWiringTest.xml",
+    "sha256": "9ce0f8dad161cb5a21c5d583db7cbd66da7b545c030d5a4556e5399220d35881"
+  },
+  {
+    "bytes": 914,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaOperationalReportTest.xml",
+    "sha256": "01d8f964951226c35306dd9958e425cc0d1ef3dc48f4949f1c9e95fd6bd29262"
+  },
+  {
+    "bytes": 1093,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.audit.EndgameAuditTest.xml",
+    "sha256": "73ae21aba344ece0d9e2ba7dbff5c42f44cefa6a01e505120b9e40120cc5ad45"
+  },
+  {
+    "bytes": 3832,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthorityTest.xml",
+    "sha256": "79d116cd7f9c276ebb1d7bb36a3e481f2c13c489450f8ea9460d3a3ac02a1c54"
+  },
+  {
+    "bytes": 1277,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceRuntimeTest.xml",
+    "sha256": "faa07fd57c7838cdc6ac94d88ff503ba0a3d7a857559fefd8db8da5742144e51"
+  },
+  {
+    "bytes": 893,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentRulesTest.xml",
+    "sha256": "108cc3b0585c1f653be2d2769e18ca69e633f4c1cda03a9620f6a0f3a06ee8c4"
+  },
+  {
+    "bytes": 1343,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrawTest.xml",
+    "sha256": "4bd0d84efddcd3cd1ab058ef3205a79e502ca829f0d2ac2c3c758d84736f1746"
+  },
+  {
+    "bytes": 1394,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillOperationTest.xml",
+    "sha256": "54755b8c82c4f74a79850188027c8f48fdd0894e6a206db7005b5b9cd9b77850"
+  },
+  {
+    "bytes": 1202,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableCodecTest.xml",
+    "sha256": "e3b70496adc51638d3b855feabe4890c3eb1bac746eaede1929305831b481a85"
+  },
+  {
+    "bytes": 1064,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTablesTest.xml",
+    "sha256": "955bef931002cb35e322c7fe57e7606102dec2cd94310c50429a38827364fbff"
+  },
+  {
+    "bytes": 1060,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserLinkCountersTest.xml",
+    "sha256": "8bd4f970274d807026d1d2fa82c7797534db285de14c0370588a36df17211fd9"
+  },
+  {
+    "bytes": 698,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserShaftTest.xml",
+    "sha256": "538736a41fe7685f3fddc9adabba05bee2d8cf90b3b404e6767f3ee4a55794d3"
+  },
+  {
+    "bytes": 1106,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameModelTest.xml",
+    "sha256": "46bca5dc3ee3d2b1fc5de23ca3719b732bff7672cd1a78d56eef7c3615d20ba2"
+  },
+  {
+    "bytes": 1034,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceViewTest.xml",
+    "sha256": "248456f8e0239258289b5ba64604dd138bcabb5aee6093d71e42f7a10cfc06ea"
+  },
+  {
+    "bytes": 1470,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.EndgameProtectionTest.xml",
+    "sha256": "b6db5a434e115b98cefd93a2b513618fca60ed4703a9ff6ec9240ec58f4bf5ef"
+  },
+  {
+    "bytes": 1076,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZoneTest.xml",
+    "sha256": "74b481e1268c6475c5eff02c237f1291de2df9b6666af2be7677d6a3bf97233e"
+  },
+  {
+    "bytes": 1740,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRootCodecTest.xml",
+    "sha256": "331d2b8ecfdfb3a9821b4058ca6252f06a9435efbec4d1bad757fc253a10d61f"
+  },
+  {
+    "bytes": 2672,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRootTest.xml",
+    "sha256": "df925f9c8dce6cc790687d1cfba08dc0f2e020b2ffce60c4026718d32c45c773"
+  },
+  {
+    "bytes": 1786,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameServiceTest.xml",
+    "sha256": "ef69276f499126b7545bc5bb00475e615e7fb80c869fd13a88fa2a3216047021"
+  },
+  {
+    "bytes": 596,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerKernelParityTest.xml",
+    "sha256": "696a73ee208304238b07585857c1131ccf33421c460cd7238a323f18d691fbdc"
+  },
+  {
+    "bytes": 784,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMaterialLedgerTest.xml",
+    "sha256": "677723102daec47621fc44f768ac4a3cb5766cc849d8621da62be23d92079202"
+  },
+  {
+    "bytes": 1247,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMigrationTest.xml",
+    "sha256": "e6d275adedbeffc472085a56bfaa726a28b06c234abc8200c5757566ebd36e1c"
+  },
+  {
+    "bytes": 1391,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerPersistenceTest.xml",
+    "sha256": "d34e6f705c52fa798fa433ee2d7b70fbcfd842971731e09021af6dfae8cba91f"
+  },
+  {
+    "bytes": 590,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerPortPolicyTest.xml",
+    "sha256": "ed8e75599b04e6ce7884974329d31d2788f78acaee3cb3c5fe5a024926d84a81"
+  },
+  {
+    "bytes": 1324,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerProcessEngineTest.xml",
+    "sha256": "eb248337f733455f268d46b492478f3bbcb5e98c9d2280d6f90c3f88ca067d51"
+  },
+  {
+    "bytes": 589,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeContractTest.xml",
+    "sha256": "b9338bdc11bc9f65d8840c21c37e6b8d01059348eb80bbc2c7fed60bc69e70d1"
+  },
+  {
+    "bytes": 1285,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipeSpecTest.xml",
+    "sha256": "061aa3486512c6e3209db66ab844fe46c4a18ba66dcc43264f2b5047aa65ad90"
+  },
+  {
+    "bytes": 2085,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.forge.LoadedPartBindingGatewayTest.xml",
+    "sha256": "4520057f8556fb28ba5f45e31ed53e6c4897c99bda63b887c0832a7451d743c8"
+  },
+  {
+    "bytes": 1162,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockDirtyQueueTest.xml",
+    "sha256": "03ae20a7e574147e372eb45d3a8f933743703efaa48eef7baf2c6a81b4aa29e6"
+  },
+  {
+    "bytes": 995,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFootprintIndexTest.xml",
+    "sha256": "4617fca9e72a7e2f2a12fbbe6e3ac344490e7e849f3a05b1327d53f5a67fc7bb"
+  },
+  {
+    "bytes": 1062,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockLifecycleCoordinatorTest.xml",
+    "sha256": "5bbd83981a90fe1753952c009bdacf467978daac56b319501238149c91484c73"
+  },
+  {
+    "bytes": 967,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.PartBindingVerifierTest.xml",
+    "sha256": "1b603dad0895d814e36a2e41bacd84f9ea4bf154f414cf2125d8417c052b86b9"
+  },
+  {
+    "bytes": 1878,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.persistence.MultiblockNbtCodecTest.xml",
+    "sha256": "c90cb766a8dba400166ff5f6be47bfbdb9dc08db4cc373e3c998976f184511f1"
+  },
+  {
+    "bytes": 1219,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternCatalogDecoderTest.xml",
+    "sha256": "57857f905007331d7d19f4189f2994c75e5589f34029de04ccaa7e17a0de3007"
+  },
+  {
+    "bytes": 1389,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternJsonCodecTest.xml",
+    "sha256": "519c18d3d996331365494c1494f06d6b0a3a8a2532979157942d2579c2dd5d1e"
+  },
+  {
+    "bytes": 1833,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternValidatorTest.xml",
+    "sha256": "880d25f27659c7b5f5396900f8875bbaba38b69b1b01291f87b63f5da1535d7d"
+  },
+  {
+    "bytes": 1139,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternTransformTest.xml",
+    "sha256": "4d62983b484306d5eba6def894d99f49854bec8444c720f4db9e115003bd64db"
+  },
+  {
+    "bytes": 1011,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManagerTest.xml",
+    "sha256": "c2dcb4af812e10e83fb11ac252dea48eaadba6e9c1c7091c03066d17a8babee7"
+  },
+  {
+    "bytes": 975,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.port.forge.ProcessForgePortAdapterTest.xml",
+    "sha256": "f261dd9f9613c72b35116f594c554921b8fe4db2f21d18a709b0d7be6b01e29f"
+  },
+  {
+    "bytes": 1064,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.port.ProcessPortPolicyTest.xml",
+    "sha256": "9f5d6c049938e224d66d306fedbfe385c3505270b1e05effed10e2ab927f26a9"
+  },
+  {
+    "bytes": 774,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMenuWireTest.xml",
+    "sha256": "d3c0cc2f45789ad5cd014af73e6e0e5a077cff3b5f12220a49597e39ec667bc4"
+  },
+  {
+    "bytes": 979,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPatternTest.xml",
+    "sha256": "518de7a8b6bbe7b31ac616202bb732fb03a2b593221c2d2914ee910566577ea0"
+  },
+  {
+    "bytes": 1629,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPersistedChunkReaderTest.xml",
+    "sha256": "a1624053d849e1d2d78a7e84c1bb1f4190f7088fb5d591153db6d8bfb9af3d7d"
+  },
+  {
+    "bytes": 1017,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortMigrationPersistenceTest.xml",
+    "sha256": "57335d4916ba1e16253d850a53c2b8181438abd16687e4122aed1d11df16f81d"
+  },
+  {
+    "bytes": 1375,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortPersistenceTest.xml",
+    "sha256": "8a9f12ab4d1a7bd259284e0716e8a8c0762fd593e9f900385e4af5db797bd9ae"
+  },
+  {
+    "bytes": 793,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortStorageTest.xml",
+    "sha256": "207d31f66ffd3614b109ed76e66d3fba56d21b59dca546182a732fc241c71e52"
+  },
+  {
+    "bytes": 1771,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipeTest.xml",
+    "sha256": "f56a7b7400175a995780e3fe28bac51310586cf2dfacd7aedf59cc0656952f92"
+  },
+  {
+    "bytes": 1195,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerResourcePersistenceTest.xml",
+    "sha256": "f3193342527f558746b765f616ecd4325804f129c8543672627d2f3e07b93492"
+  },
+  {
+    "bytes": 1239,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinitionTest.xml",
+    "sha256": "f52114f2d4bc6f4f65f8be3552e39d8936c328cd1ed9676c1936e75958fcc619"
+  },
+  {
+    "bytes": 2245,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineLogicTest.xml",
+    "sha256": "e7dc65c28220cb23242f3cea81350d78bf07c5a88c2a41e2d16bae046a383fe7"
+  },
+  {
+    "bytes": 2277,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionExecutorTest.xml",
+    "sha256": "a9fffbc2bf496d7f6e485679707d0df770f4ca6b4b7e4dea9e8d00c3f970ed6c"
+  },
+  {
+    "bytes": 771,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenuWireTest.xml",
+    "sha256": "523aea8420c0249cbed3005a1798bb670957bdcf1e3df86effb4761cbf3e68a4"
+  },
+  {
+    "bytes": 1383,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachinePortPersistenceTest.xml",
+    "sha256": "6cfa969ca5889849492f3d029f0f75e3f11872c6276d8562a0bf51a34ea64313"
+  },
+  {
+    "bytes": 1377,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineProcessPersistenceTest.xml",
+    "sha256": "602f2bd3b69580ad8a08972221cfce7624b2ac60a6e38c0b77b172f62b77bb51"
+  },
+  {
+    "bytes": 1141,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipeTest.xml",
+    "sha256": "fd8f71af91a3f6b84534097e3a174169a8bce229ed32f0e1770901641046188c"
+  },
+  {
+    "bytes": 735,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineTransformsTest.xml",
+    "sha256": "2940244640b8d2ea5bbeea3fd3dbba123b9cb54f5030b8098266655f8bbd5805"
+  },
+  {
+    "bytes": 804,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.ModIdentityTest.xml",
+    "sha256": "225ff8d39d9417bf3a27b5595b6709a5a08f94ec229c05ebd2501ef87f71a54c"
+  },
+  {
+    "bytes": 508,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.ModMetadataTest.xml",
+    "sha256": "92bede493821172b09cac1bc7abd6e75c8aba9716433757258302ac73e9e4f35"
+  },
+  {
+    "bytes": 543,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.network.NetworkProtocolPinTest.xml",
+    "sha256": "dc3862c59625031d984bef4e0d6ed8368747b2f4b6beb81e1a38b768ee271403"
+  },
+  {
+    "bytes": 15457,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedDataTest.xml",
+    "sha256": "9b85d0e9bac66c42d55f86deba73a327e92ea57b2da38a6ac5d69cd4715f390b"
+  },
+  {
+    "bytes": 1383,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BoundedSavedDataIoCapacityTest.xml",
+    "sha256": "a37da5bc5d4973003310484782252be006a43f338bbff647aad5afe797093098"
+  },
+  {
+    "bytes": 819,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataLoaderMigrationTest.xml",
+    "sha256": "e6ffbebc75c82e5d8da12e53aba9d1afb6c58b716402a39081122e04fb70ddf0"
+  },
+  {
+    "bytes": 3802,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.PopulatedWorldDataPreservationTest.xml",
+    "sha256": "4d1a98b38724c7f3a046460a12fbf80b6cb220507539fd4625baa1bd8edc5cf3"
+  },
+  {
+    "bytes": 1509,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigratorTest.xml",
+    "sha256": "c7237f4bb74af0d28829d0b68607bdef314be08f98513d9e10eb6b580f6cf09d"
+  },
+  {
+    "bytes": 1634,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.StationWorldMigrationTest.xml",
+    "sha256": "80353f4dc7e72463035fa24b1217c735771a61be6b8b53d67016c4ca5fb52a2c"
+  },
+  {
+    "bytes": 1955,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationServiceTest.xml",
+    "sha256": "84c42a203ae05d87dd4207fadcbb3252cf0526712f428a3d11ceec64611aca5d"
+  },
+  {
+    "bytes": 721,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccountTest.xml",
+    "sha256": "4bdad14a23d2a0472826b8552fa4625c46fc3a52e84ffbe54de2e14d7a8e8b7e"
+  },
+  {
+    "bytes": 1578,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodecTest.xml",
+    "sha256": "e0753ebef90fffd9c24cf19c079023b031913478668edd4baa10de6bcef0fdf4"
+  },
+  {
+    "bytes": 1201,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedDataTest.xml",
+    "sha256": "6b681d2cb4a88329d56f67a7f8cdaf90fae54ff803bac800ab7779ece3a3070e"
+  },
+  {
+    "bytes": 1362,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.PlanetaryFlightAdmissionTest.xml",
+    "sha256": "65be0e4919922551b9f5cd5a6e9624f13d2060fa52581a9ef770e8224a2326c9"
+  },
+  {
+    "bytes": 1305,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDataTest.xml",
+    "sha256": "6d64178ca1aa262aeae1f33d11deb27582e6152f71e722ef7f3e0b9494c1e85e"
+  },
+  {
+    "bytes": 553,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimitsTest.xml",
+    "sha256": "2eedd1746d1bc7edc4403e304ef11a2cd07e0f507128b45f12fe869757511122"
+  },
+  {
+    "bytes": 1671,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlannerTest.xml",
+    "sha256": "be5981dfd48535d203e1d3aa6ae15b03c6aa5c29b5e0ee7d310ab471a1a7bc2d"
+  },
+  {
+    "bytes": 1301,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightStateMachineTest.xml",
+    "sha256": "a0cb8a3c5343e8471aade39705d542851af6401d7f4b8df023eca9df3f7ae401"
+  },
+  {
+    "bytes": 1404,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelStateTest.xml",
+    "sha256": "97744c1bc6bf99144d1cd2acfe30198eab413b10e82cb7e83b3bf6f1deeedd7f"
+  },
+  {
+    "bytes": 1114,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifestTest.xml",
+    "sha256": "6e1acb322092b57f22849e869210bb2eaed3b39e761d5cf760fc5ee868700671"
+  },
+  {
+    "bytes": 1154,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerPositionTest.xml",
+    "sha256": "aa154dbde4cb859f415cee1424e58997a08ba0082d11758ff1d6cbdd36baf224"
+  },
+  {
+    "bytes": 1708,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueueTest.xml",
+    "sha256": "4ef62edcecb2fa7a51ef8196e0c127bd632cf86795d00d066b7f670c782073ca"
+  },
+  {
+    "bytes": 982,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTargetFlightPlannerTest.xml",
+    "sha256": "4fd7843f944f64fbd8430c9f5d0b42cce132d909274cf97f2ed2ba2a424b1cf8"
+  },
+  {
+    "bytes": 786,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferAuthorityOrderTest.xml",
+    "sha256": "2f34895b3bf2f91b6b6be5e4da501ee59aa96374e850aed9baa68deaf4364dbb"
+  },
+  {
+    "bytes": 1341,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecordTest.xml",
+    "sha256": "d1fb19a162f9f43984f51d0aa8bc0ee6a13d305b04c892f59f0d5ea451c3406d"
+  },
+  {
+    "bytes": 579,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryDecisionTest.xml",
+    "sha256": "ea26fbe72e737e530605a99dfed83bbed8abd108e08b3f15874a151090b6232e"
+  },
+  {
+    "bytes": 1079,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderPersistenceTest.xml",
+    "sha256": "d8728770aab7babea7677c00cdeba2a54cf99636672bc42efb22a57b69a3f673"
+  },
+  {
+    "bytes": 1716,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderStorageTest.xml",
+    "sha256": "9c63736131132ed2dceed85923d5b33f430a343900bee18485a0ce47daa9173f"
+  },
+  {
+    "bytes": 1615,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotesTest.xml",
+    "sha256": "ccd49d58eb31b597363c1e105be00a73e49a6bac823208f320459d23dd74cb74"
+  },
+  {
+    "bytes": 2296,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelectionTest.xml",
+    "sha256": "ecbe096ec6e32fcf436e4974d56d4d263c472ef9fc3436b9c874c3842f8a2cc0"
+  },
+  {
+    "bytes": 1088,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationTest.xml",
+    "sha256": "75cbd885fadba610f2cce972907fb9ade9b21b03f312c5662816e762cc4c029c"
+  },
+  {
+    "bytes": 872,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBoundsTest.xml",
+    "sha256": "c0f0d6befea369e0cf31d87bd95813b3170d09679bfddc01d1c634890c20c8c9"
+  },
+  {
+    "bytes": 2580,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshotTest.xml",
+    "sha256": "dda14b317268d9a861b76978e7472eb61312dc5fbfeea376bc16be8181ad52d1"
+  },
+  {
+    "bytes": 1694,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightIntentPacketTest.xml",
+    "sha256": "8ce740b52175d5eb51e26c3754270d863774731895594817a4e2b4ecc1f4f1d9"
+  },
+  {
+    "bytes": 2109,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightPlanPacketTest.xml",
+    "sha256": "b13902e7d29ea07b57095f8307bf250bfd48549f4a92347006daf42ea32c6363"
+  },
+  {
+    "bytes": 1343,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualClientCacheTest.xml",
+    "sha256": "87f6140996436c543d8678b03d39e6889d0c43db0cd22a2bfb4b3b255b03a7ca"
+  },
+  {
+    "bytes": 1229,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSnapshotCodecTest.xml",
+    "sha256": "209dce8adefc4edd5fdbde6a011f6c1a6e851b42f2cf5e35fcff0cc7880aeb70"
+  },
+  {
+    "bytes": 1925,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodecTest.xml",
+    "sha256": "0bbadb6a59a81a6be4ab030e1595421fa208a225fd8f37b146f8d4ec710e1492"
+  },
+  {
+    "bytes": 1009,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedDataTest.xml",
+    "sha256": "0224771b504f2bf0080a3c1934045276468370c12a1606eda7b0c6e0a08b5ce5"
+  },
+  {
+    "bytes": 2731,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTaskTest.xml",
+    "sha256": "fce84237fc41cbd5e346f000631e1dab4e1f3c9d56c2aca5e9c03f0b8cdb6bef"
+  },
+  {
+    "bytes": 1307,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketBlockRecoveryTest.xml",
+    "sha256": "c5fe20199386ded103315d18524a77a33f3e6d959d33c78147774cd68ed23071"
+  },
+  {
+    "bytes": 798,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketCatalogRefreshLimiterTest.xml",
+    "sha256": "123f4191e490c82495099479f26cb4a69b4c3695cb6a10c27eed752f4e5a74e6"
+  },
+  {
+    "bytes": 1985,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketDisassemblyConfirmationsTest.xml",
+    "sha256": "9918230ef0d2022fa57bc5f871825bcada5ad01fe944af2daa85812f0e20117f"
+  },
+  {
+    "bytes": 583,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketDisassemblyLanguageTest.xml",
+    "sha256": "3f0bf185798823b027d1938e74a79753fb7396c54727f72c5095fce4d44d68b4"
+  },
+  {
+    "bytes": 2699,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightReleaseCheckpointTest.xml",
+    "sha256": "c931b3288a2ef0ca9cb30e4ebc1091cb3acc58342cfee240380195c2f48ebbfc"
+  },
+  {
+    "bytes": 917,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketIntentRateLimiterTest.xml",
+    "sha256": "963ee9b9b4a9d469906bb5db392c6c82c20eb1ebf32ccf4dbfcf5e8d269f17f2"
+  },
+  {
+    "bytes": 1164,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMaintenanceStructureTest.xml",
+    "sha256": "4b188906f9288349e9232d8c0ad1f0377ae88fb4ccd306fc6e2458ecca9ab6ac"
+  },
+  {
+    "bytes": 1658,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketStationMotionRuleTest.xml",
+    "sha256": "6dc4e585dba8ed51f6e1b9499f0aefae1a8727cacb6d988ecc01db71720b6448"
+  },
+  {
+    "bytes": 2131,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionRecoveryReadinessTest.xml",
+    "sha256": "88dc032f47401047e174c2d9aa2c81ee7ef07aafa554bd1cbea65bde2b43765e"
+  },
+  {
+    "bytes": 1168,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransactionReleaseProbeTest.xml",
+    "sha256": "740963c24a1b27ed3adc23d3a50968bdaba63899dac164026e63ee326ec1b14c"
+  },
+  {
+    "bytes": 712,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferJournalCapacityTest.xml",
+    "sha256": "1b88110ad1365f93819753748d48dac8822951877e5e3ef2e8f849a1f7402f0f"
+  },
+  {
+    "bytes": 779,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryLogTest.xml",
+    "sha256": "e569c8a91e34098610eeefdc5582e1a9c5f95618c981c7885ac940f109be6c90"
+  },
+  {
+    "bytes": 1019,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoverySelectionTest.xml",
+    "sha256": "f02ac0233ce560ac7bd92ea4755f2007f7e606c0878618de8b8f1dc82f3619ca"
+  },
+  {
+    "bytes": 793,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferReturnReasonTest.xml",
+    "sha256": "56cc71d474f712e88aac9cdc6c552a559f4b0c35e2407beb137934946cdbcc11"
+  },
+  {
+    "bytes": 922,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStatsCalculatorTest.xml",
+    "sha256": "2cb94c1bbafb78650ed253322c013f416eb60f40aa1c28bebe5c9e06f2ace556"
+  },
+  {
+    "bytes": 962,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRecoveryDecisionTest.xml",
+    "sha256": "f0bd6e7bbde98e7c723868ebfe835bde87eed5fd57e65d26b7f108195e0d6d92"
+  },
+  {
+    "bytes": 8171,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionCheckpointTest.xml",
+    "sha256": "f5ef553ccd826324fe5f987eae6094caa2b3e207187247a223a41b4c147ea796"
+  },
+  {
+    "bytes": 1640,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionExceptionTest.xml",
+    "sha256": "c7317659236949b365ae26f37bd65ff2ca567d496d710ba14b0769095b651e18"
+  },
+  {
+    "bytes": 3074,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionsTest.xml",
+    "sha256": "13aa93922021add0b9de7bb3a2bb8d697324a19e00f3a58760aa110c124e9ad4"
+  },
+  {
+    "bytes": 1122,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketStatsValidatorTest.xml",
+    "sha256": "db9444cf2d8bc14c22df064a14da9324a46646782bd4d0e40b0bafe993b64265"
+  },
+  {
+    "bytes": 783,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.component.GeneratedSatelliteContentTest.xml",
+    "sha256": "7aa4737461a864580e76b1373fc1303eafa5c2905a0810f9fc4c6cf9f6436bfb"
+  },
+  {
+    "bytes": 754,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.component.SatelliteBlueprintsTest.xml",
+    "sha256": "b7bc07fdf4a53b704791ae787146eb5ca35b06b22eba4f72d7694e5e0fdfdb56"
+  },
+  {
+    "bytes": 773,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.component.SatelliteComponentDefinitionTest.xml",
+    "sha256": "7bc2311a50b396f134fadcad29af84214c5d54a540e2c324462deaf0dd6c1597"
+  },
+  {
+    "bytes": 793,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataSchemaTwoTest.xml",
+    "sha256": "cabae69027a45418a5203fd3888b77f66f832d00657a48b637dd4e75a4792151"
+  },
+  {
+    "bytes": 904,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemDataTest.xml",
+    "sha256": "9dd867b958a1167f28a71f4312a728a6e7d27dee76835878ffc2fe4c3e1140bc"
+  },
+  {
+    "bytes": 954,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AccountRecoveryTest.xml",
+    "sha256": "4b4f5cd68fa9d3952ba2afcd524d98aab34fc465bc475f75060d597b5d075527"
+  },
+  {
+    "bytes": 554,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.DeliveryReconciliationTest.xml",
+    "sha256": "5d1f8d34ebdbd7a0b292409e9ad2ec5de346709bfb6cca52ce44765da0013649"
+  },
+  {
+    "bytes": 765,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionDeadlineSchedulerTest.xml",
+    "sha256": "b705bcc743979181885ff5ae8840694a148ab8befc823363b2934db20dc703f8"
+  },
+  {
+    "bytes": 913,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStateTest.xml",
+    "sha256": "5245fb871883dd41a038c6db3c9e8d85a735da858c4d4e118cf452b08b505390"
+  },
+  {
+    "bytes": 750,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MonotonicMissionClockTest.xml",
+    "sha256": "57a00a40fd043ea55f8d1b44b9489ef1511c4cba2382384feeb6d15911f26f30"
+  },
+  {
+    "bytes": 1097,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.QueueBoundsTest.xml",
+    "sha256": "bea5fd86bd735e69de1d8dadf8caf68691c2dd9485ddffc79c979e2c3e25c5cb"
+  },
+  {
+    "bytes": 1916,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLifecycleTest.xml",
+    "sha256": "769c26afd12ea612a8be708c12f1871466fb0723d8e5b03ef883a72bb741b232"
+  },
+  {
+    "bytes": 1892,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissionsTest.xml",
+    "sha256": "88698c7ad5bb38d9080e1faf4b070811782554b411572fe28520f38f7d34c642"
+  },
+  {
+    "bytes": 2122,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteLifecycleRegistryTest.xml",
+    "sha256": "5a96c550fb22e740a410c72cacc11103e7a801bc2c7a4bd3e4e2a00af8e5715e"
+  },
+  {
+    "bytes": 1121,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistryTest.xml",
+    "sha256": "af57084baee8db0df2f9e94694656229a3878151eaf605c2e0846de5e0763f94"
+  },
+  {
+    "bytes": 1126,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteScanAndLinkRegistryTest.xml",
+    "sha256": "15f77177a581264f03e4f34c7056dd663728f16e682b43185283d7d8eace2c6a"
+  },
+  {
+    "bytes": 774,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindDefinitionTest.xml",
+    "sha256": "d6041c303619371976b83067bf3daca804358ff1cc0f53d6534dea65f08c9278"
+  },
+  {
+    "bytes": 726,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStateTest.xml",
+    "sha256": "802b720c438d1803532a61784260a9350aaa1d8075dd3712375076c58401710a"
+  },
+  {
+    "bytes": 1131,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteTerminalViewPacketTest.xml",
+    "sha256": "b59c1d13148832cd968c8c5e6a0c656ed8c2187bdc4740ec0e7092c658c9c68d"
+  },
+  {
+    "bytes": 936,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SurveyScanResultPacketTest.xml",
+    "sha256": "c57016a034d0651aa5a3a17de885824abc5d81bf1ce49b6e0e43e80412532dfe"
+  },
+  {
+    "bytes": 2649,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest.xml",
+    "sha256": "aca3cdc84aa884824c9bc45c1a906091ac7b71cb39e04a33c8a8dd11913aef11"
+  },
+  {
+    "bytes": 1592,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedDataTest.xml",
+    "sha256": "79e6664bfef54d40b31e8f94be3f57a4db378819631d54ea196a71be69358151"
+  },
+  {
+    "bytes": 1482,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRootThreeTest.xml",
+    "sha256": "91f7b6a006194c82c9dccd7c4ae29ab13c44af395098120fc9bbaac5110efcfe"
+  },
+  {
+    "bytes": 754,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteWritePolicyTest.xml",
+    "sha256": "6bf8f077d6d3295ded017be346dedea43d24ad190147ab450c62b8ff774746b1"
+  },
+  {
+    "bytes": 1296,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.ResourceAlgorithmsTest.xml",
+    "sha256": "27bf30c979ca7353ea1642f87b9d207fc0186eba0e61a18871aa866e7ebda537"
+  },
+  {
+    "bytes": 1150,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.ResourceTablesTest.xml",
+    "sha256": "46bd12a40514c21e8363faaafd1bcef1326ea86e1996cbb450f6db9dd81c0894"
+  },
+  {
+    "bytes": 1060,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.RewardVerifierTest.xml",
+    "sha256": "566a30140b72db9b621133a41a7e34ed77731260f23279f99c8beb6d2c984969"
+  },
+  {
+    "bytes": 1726,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteCatalogDecoderTest.xml",
+    "sha256": "c438b61613168372f3208d515a5e93529248bfd2ac587654a2a94e7a046797b7"
+  },
+  {
+    "bytes": 1715,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.SurveyScanJobTest.xml",
+    "sha256": "6eb826cf81f98d603d33b34fba057fe65935cb6d16390b84ec626c223a511921"
+  },
+  {
+    "bytes": 905,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.service.DeliveryRuntimeTest.xml",
+    "sha256": "9fbfd50420c5766f7c12d65cfbe8fe277011cf0d3bf78e941b1e92560e0e7346"
+  },
+  {
+    "bytes": 2708,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.service.DiscoveryClaimRecoveryTest.xml",
+    "sha256": "0749be66a8de2f8df9d2b180c157c592e73198b164912e1d711d39cf6e6e7f2f"
+  },
+  {
+    "bytes": 1138,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.service.DiscoveryReplayQueueTest.xml",
+    "sha256": "b088973b4a67127073dc0819687bdb2904cc3deeeab2a7a50b38016548d803bf"
+  },
+  {
+    "bytes": 559,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.service.IntentRateLimiterTest.xml",
+    "sha256": "5c4b1032800e93f2b8df4a970984ec745119c0ddbee3e27a5cae47ee96070f59"
+  },
+  {
+    "bytes": 1673,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.DeliveryCrashCutTest.xml",
+    "sha256": "9b8362d56b83a2ece9602db2aadd2e0158750bf5e1c0ec8ee2f0d9e5326b7430"
+  },
+  {
+    "bytes": 960,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalTargetsTest.xml",
+    "sha256": "da1428b60e86cf60e20a72213ed124047a69ab3a5aecf3b75297bd2513b84e68"
+  },
+  {
+    "bytes": 1277,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.TerminalDeliveryTest.xml",
+    "sha256": "130abc5a259e720a2c9ae521c1817e46bf10ec88ac96fdddb605450e38873253"
+  },
+  {
+    "bytes": 1702,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorEndpointValidatorTest.xml",
+    "sha256": "ed3106265a02697615295c4479e403c9cf3b08b09b75719fa067b935b6622471"
+  },
+  {
+    "bytes": 1556,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegionBoundaryTest.xml",
+    "sha256": "ff12eb9c85e44a3818ce3bc47ce05a01b54bdbb11d52985df1543042b114ef2e"
+  },
+  {
+    "bytes": 1275,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModelTest.xml",
+    "sha256": "f1aae3d1836ac69d847968c299195d39eb187446ff898e795045cfaac03ecea4"
+  },
+  {
+    "bytes": 718,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.model.StationTeamCapsTest.xml",
+    "sha256": "d493e8815a3e3d99d7bcd9cd1d1935797314dca5c8fe2791f03e24bd4fd0b7d6"
+  },
+  {
+    "bytes": 1620,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolverTest.xml",
+    "sha256": "6581c195ed4b90d38db4d27313f428c0e29e7d714a28fdc5921e8acbe52b86af"
+  },
+  {
+    "bytes": 1669,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationCheckedUpdateScaleTest.xml",
+    "sha256": "d28e41eabe10d82ffa71b7b87fbfe20fa25267134331bd852ae265c40fac2e07"
+  },
+  {
+    "bytes": 153829,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationCheckedUpdateTest.xml",
+    "sha256": "76ce8db8e66b062e5a746624b88e004bc1b6ce04bfc7e9a6d264b3c5aa40c6be"
+  },
+  {
+    "bytes": 1384,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedDataTest.xml",
+    "sha256": "889d59f81fbe23ee1a5f3c1d388710d450128703bff5c55adf51cf461060fc99"
+  },
+  {
+    "bytes": 1177,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistryStorageBoundTest.xml",
+    "sha256": "65574feceaeffcf51bfd63753675a61c373a2fa0ac45d943199d59913320765b"
+  },
+  {
+    "bytes": 2010,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationSchemaMigrationTest.xml",
+    "sha256": "d1566c7ee1c2cba3f4d9e235c3d9ed4bc6750e2119fdb4b8a606fcb22e8b8d59"
+  },
+  {
+    "bytes": 1132,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationStorageBudgetTest.xml",
+    "sha256": "29e471ae374bf0bb35991ce26e7e5c1a0104fe83be8dcaa4d9ade9ad557d6494"
+  },
+  {
+    "bytes": 83836,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationWarpRelocationTest.xml",
+    "sha256": "9bbd0a6d04e86c678012aa16c68db517b11d3c25d1f0779759bf04b8fa570771"
+  },
+  {
+    "bytes": 1481,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationWarpSchemaTest.xml",
+    "sha256": "57022bbf6aaa65528aa621be40b76e8e913a2203b0e9cd9152b691bc9152999e"
+  },
+  {
+    "bytes": 1111,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessServiceTest.xml",
+    "sha256": "80e163d297e81854bf5298f3c148524ef11b42fd6ea12d4b04332d5f63c73f36"
+  },
+  {
+    "bytes": 1352,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionConfirmationsTest.xml",
+    "sha256": "24589b8c7fff2b7b0fc365760f9f364ed2df08e30c23c2c658d8e5d3ffcb75b0"
+  },
+  {
+    "bytes": 1107,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationExpansionServiceTest.xml",
+    "sha256": "1c2c7dd0844458d8d9683e8be6c8aa2f7d847bd70ebeb9cfbef46a340a57d999"
+  },
+  {
+    "bytes": 566,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationGravityCooldownRuleTest.xml",
+    "sha256": "1a42372debda75ed53349a17215c93a4a9a3a21217d13166dcd0ac27a88f52a9"
+  },
+  {
+    "bytes": 560,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntimeLifecycleTest.xml",
+    "sha256": "82c8a2f38bc2df3b3be85c85967366ee841b2a1516a58f597f9273002cb8fac8"
+  },
+  {
+    "bytes": 767,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudgetTest.xml",
+    "sha256": "c0674642d41bd165c9b6d87219b040f3bde6be1d9fa3f0e5a6664c3ed06052cc"
+  },
+  {
+    "bytes": 724,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteCooldownTest.xml",
+    "sha256": "f7e175926a55cd130970c3794ad3bf18a6cfc1460fa49162bf3c604a1324fd62"
+  },
+  {
+    "bytes": 1424,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpStateTest.xml",
+    "sha256": "2d3186c5054ae1664edeea2c1c3091f0065a3f3c642e9b2509e12c21b6d8332f"
+  },
+  {
+    "bytes": 1372,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyFlightTargetMigratorTest.xml",
+    "sha256": "132a4ae7e0d3ca3cb71a18f3328861e8de021ba0f994002702fb1c4046b18ce0"
+  },
+  {
+    "bytes": 919,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.migration.LegacyTravelTargetAdapterTest.xml",
+    "sha256": "2f0fc35dd13faa2c066ebfbfd480c7fe871609805e79e493ed671eac7743a836"
+  },
+  {
+    "bytes": 1091,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.route.RouteCatalogDecoderTest.xml",
+    "sha256": "0f3288abf0b8d95b75295e19353282fb815abab68cdba3fa570aead5038e5cb8"
+  },
+  {
+    "bytes": 1409,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.route.RouteCatalogTest.xml",
+    "sha256": "c727556ad4230b593ebf80df1fb528a67a1501b4ea737c4ebaf4779f87654831"
+  },
+  {
+    "bytes": 1090,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.route.RouteDefinitionCodecTest.xml",
+    "sha256": "11e4b7218acac5b86bfef68d5dc0775ffc06d4bd5c47c8c902d314e50dc1bb8a"
+  },
+  {
+    "bytes": 882,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.route.TravelFuelFormulaTest.xml",
+    "sha256": "99a582f0463ea8e6ad37f715f337be648165aae72b13593b0a4118509406c205"
+  },
+  {
+    "bytes": 1712,
+    "path": "full-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.travel.TravelTargetCodecTest.xml",
+    "sha256": "3e2c511fc8c7d9c6979383f0ca32f20763b03ec51f531321420157fa87eeafd3"
+  },
+  {
+    "bytes": 0,
+    "path": "generated-diff-01.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "bytes": 8917,
+    "path": "implementation-files.json",
+    "sha256": "efb2d215d918b442cfae36e0eb135c1d8461b26e150789df42b7ab3c5a1402a4"
+  },
+  {
+    "bytes": 92,
+    "path": "junit-summary.json",
+    "sha256": "c6806ce175217fae375684e71755a1baeeca94de4139211dfe181fbe7d361c39"
+  },
+  {
+    "bytes": 6089,
+    "path": "packaging/archive_evidence.py",
+    "sha256": "342abfa0bacf4a08e809aa7d67b7cbc7100d9fb548d7edc64eee05c6a11aca72"
+  },
+  {
+    "bytes": 15,
+    "path": "post-run-changes.json",
+    "sha256": "12405c18a19c17bf965cf0e6384f489eae18b73788b89153183a3c53767a6bd0"
+  },
+  {
+    "bytes": 948688,
+    "path": "root-gradle-01.log",
+    "sha256": "7cc4ace82daacf5b9b7672c109cad023c7f8b16684cd6556e1ca92af0b297149"
+  },
+  {
+    "bytes": 1520,
+    "path": "root-gradle-02.log",
+    "sha256": "0185d35a7fd45b222406d36da543d598d98c4a12f50536dfe017c19efaf606f7"
+  },
+  {
+    "bytes": 41,
+    "path": "run-commit.txt",
+    "sha256": "a212d98960bc5f1ce6debbbe41621da53e4c99ba3aa3cc21733d2ca686800d4c"
+  },
+  {
+    "bytes": 2925,
+    "path": "scripts/collect_run.py",
+    "sha256": "e5598b29d67b49e2da99a847607fa4909d5c62cd33f31b568c9a063bdd795f7c"
+  }
+]
