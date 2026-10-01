@@ -1146,7 +1146,7 @@
   ]
  },
  "redirect": {
-  "states_full_rules_two_crashes": 11927,
+  "states_full_rules_two_crashes": 8122,
   "mover_path": [
    "CLAIM_D",
    "SAVE_D",
@@ -1155,12 +1155,21 @@
    "CLAIM_E",
    "SAVE_E",
    "MOVE_E",
+   "SAVE_E",
    "FLUSH_L",
    "PRUNE",
    "PLACE_D",
    "SAVE_D",
    "REREGISTER_D",
    "MOVE_D"
+  ],
+  "own_move_path": [
+   "CLAIM_D",
+   "SAVE_D",
+   "MOVE_D",
+   "FLUSH_L",
+   "REMOVE_D",
+   "CRASH"
   ]
  },
  "railgun": [

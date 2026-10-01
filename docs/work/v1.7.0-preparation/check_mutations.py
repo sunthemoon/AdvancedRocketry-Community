@@ -69,8 +69,15 @@ REDIRECT = {
         'settled = ("A", "D", False, None) if unacked_here else rec\n            yield "MISSING_D"',
         'settled = rec\n            yield "MISSING_D"'),
     "resolve-moves-any-copy": (
-        'if d_in and rec is not None and rec[0] == "C" and rec[1] == "D" and not rec[2]:',
+        'if d_in and rec is not None and rec[0] == "C" and rec[1] == "D":',
         'if d_in:'),
+    # Revision 3's resolve and prune rules (review R3-L6): the retired copy's own move is destroyed.
+    "resolve-destroys-own-move": (
+        'if d_in and rec is not None and rec[0] == "C" and rec[1] == "D":',
+        'if d_in and rec is not None and rec[0] == "C" and rec[1] == "D" and not rec[2]:'),
+    "prune-before-persisted-move": (
+        'and e > rec[3] and not (d_dur[1] if rec[1] == "D" else ee_dur[0]):',
+        'and e > rec[3]:'),
 }
 
 

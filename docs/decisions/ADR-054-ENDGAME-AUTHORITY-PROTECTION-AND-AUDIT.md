@@ -376,11 +376,15 @@ An **endpoint** is a device that other devices can address: `laser_target`
     tombstone still records `dispatched_through` and `seq` is above it (the
     ledger can never register it); otherwise it is discarded with an audit line,
     because it was registered and delivered, or nothing proves it was not;
-  - a frozen incoming payload whose record is still `CLAIMED` and unacknowledged
-    at this endpoint (only after a failed settlement write, §9.1) moves to the
-    local receive buffer and the record is acknowledged; every other frozen
-    incoming payload (record absent, `ARRIVED`, redirected, or acknowledged
-    anywhere) is destroyed with an audit line;
+  - a frozen incoming payload whose record is `CLAIMED` at this endpoint moves to
+    the local receive buffer. The record is unacknowledged only after a failed
+    settlement write (§9.1), and is then acknowledged. It is acknowledged when a
+    crash undid the endpoint's own move after the acknowledgement became durable:
+    the player broke the endpoint, and the server stopped before its chunk saved
+    the move (review R3-L6). Every other frozen incoming payload (record absent,
+    `ARRIVED`, or naming another endpoint) is destroyed with an audit line. The
+    pruning rule of §11 keeps a record paid here until this endpoint's chunk has
+    saved the move, so an absent record never hides the endpoint's own payload;
   - frozen receipts are dropped.
 
   A player who finds a retired device places a new one, which gets a new ID.
@@ -388,7 +392,11 @@ An **endpoint** is a device that other devices can address: `laser_target`
   `MISSING`, or by an operator's `endpoint retire`, has no block entity to
   settle from. Its retirement's barrier flush therefore also returns every
   `CLAIMED`, unacknowledged record paid at it to `ARRIVED`, so the cargo can be
-  redirected; a returning copy is frozen and `resolve` destroys it. Residual: if
+  redirected; a returning copy is frozen and `resolve` destroys it. `endpoint
+  retire` also prunes the stubs paid at the endpoint (§11), because its chunk
+  may never load again to show the saved move; if that chunk does load again,
+  `resolve` destroys the copy's own unsaved move with an audit line (an operator
+  choice, never a duplicate). Residual: if
   that endpoint had already moved the payload to its receive buffer, the
   acknowledgement was lost in a crash, and a player had taken the payload out,
   it can be delivered twice (the ADR-051 §9 class). For `MISSING` this also
@@ -466,8 +474,11 @@ removal restores the endpoint with its incoming payload and receipt, while the
 record is `ARRIVED` and the ID is retired: the restored block entity is
 `ENDPOINT_RETIRED` and inert, its copy is frozen, and the record is delivered
 once through a redirect (§11). The reference models check removal at any point,
-with up to two crashes, and a removed destination that returns through a crash
-or a block mover after its cargo was redirected and paid elsewhere.
+including with a non-empty receive buffer or a due move (review R3-L6), with up
+to two crashes, and a removed destination that returns through a crash or a
+block mover after its cargo was redirected and paid elsewhere. A crash restores
+the chunk and a mover's copy from one snapshot; both copies at once is a torn
+save across two stores, the container residual of §11.
 
 ### 10. Endgame root
 
@@ -676,9 +687,20 @@ is dropped only after the acknowledgement is durable or when the record is
 absent; a claim paid elsewhere freezes the receipt (`REDIRECT_DOUBLE_PAY`); a
 quarantined record keeps it. A retired endpoint (§9) runs none of these rows.
 
-**Pruning.** A record is removed once its acknowledgement is durable, whether or
-not S has already dropped its entry; the `dispatched_through` rule above makes a
-late drop safe. `dispatched_through[S]` is removed only as a tombstone whose
+**Pruning.** A record is removed once its acknowledgement is durable **and** a
+chunk-save or chunk-load tag of its paid endpoint's chunk, observed at least 40
+ticks after the acknowledgement, holds no incoming payload for it: the move is
+saved, or the endpoint is gone (review R3-L6). Until then the record is a
+**stub**. Its payload is dropped (≤ 128 B remain), it no longer counts toward its
+owner's 32 records, and it keeps its place among the 256. The stub is the
+evidence that a payload restored as incoming at a retired endpoint is that
+endpoint's own (§9): without it, the reference model loses that payload when
+the player breaks the endpoint after its move and the server stops before the
+chunk saves. Because the incoming gate already waits for one save before a
+move, a stub normally lives one more save interval (longer only while saves
+are off). Pruning does not wait for S
+to drop its entry; the `dispatched_through` rule above makes a late drop safe.
+`dispatched_through[S]` is removed only as a tombstone whose
 source's absence is persisted (above). A
 `source_released` flag was considered and dropped: the reference model shows it
 changes no outcome, with or without a lost source write.
