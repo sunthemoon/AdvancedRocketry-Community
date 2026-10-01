@@ -29,6 +29,19 @@ public final class V170LanguageProvider extends LanguageProvider {
         add("advancedrocketrycommunity.endgame.status_line", "%s [%s]");
         add("block.advancedrocketrycommunity.orbital_laser_drill", chinese ? "轨道激光钻" : "Orbital Laser Drill");
         add("block.advancedrocketrycommunity.laser_target", chinese ? "激光目标" : "Laser Target");
+        add("block.advancedrocketrycommunity.gravity_field_controller", chinese ? "区域重力控制器" : "Gravity Field Controller");
+        String gravity = "screen.advancedrocketrycommunity.gravity_field_controller.";
+        add(gravity + "start", chinese ? "启动" : "Start");
+        add(gravity + "stop", chinese ? "停止" : "Stop");
+        add(gravity + "redstone", chinese ? "红石" : "Redstone");
+        add(gravity + "radius_down", chinese ? "半径-" : "Radius -");
+        add(gravity + "radius_up", chinese ? "半径+" : "Radius +");
+        add(gravity + "multiplier_down", chinese ? "重力-" : "Gravity -");
+        add(gravity + "multiplier_up", chinese ? "重力+" : "Gravity +");
+        String message = "message.advancedrocketrycommunity.endgame.field.";
+        add(message + "trusted", chinese ? "你现在受 %s 的重力场影响" : "Fields of %s now affect you");
+        add(message + "untrusted", chinese ? "%s 的重力场不再影响你" : "Fields of %s no longer affect you");
+        add(message + "list", chinese ? "你信任的力场所有者：%s / %s" : "Field owners you trust: %s of %s");
         add("screen.advancedrocketrycommunity.laser_target.reset", chinese ? "重置链接" : "Reset link");
         String screen = "screen.advancedrocketrycommunity.orbital_laser_drill.";
         add(screen + "start", chinese ? "启动" : "Start");
@@ -61,6 +74,11 @@ public final class V170LanguageProvider extends LanguageProvider {
         add(view + "target_at", chinese ? "目标位置" : "Target at");
         add(view + "link", chinese ? "链接" : "Link");
         add(view + "warning", chinese ? "警告" : "Warning");
+        add(view + "radius", chinese ? "半径" : "Radius");
+        add(view + "multiplier", chinese ? "重力" : "Gravity");
+        add(view + "upkeep", chinese ? "维持能耗" : "Upkeep");
+        add(view + "box", chinese ? "作用范围" : "Field size");
+        add(view + "box_at", chinese ? "范围坐标" : "Field box");
         String value = "advancedrocketrycommunity.endgame.value.";
         add(value + "on", chinese ? "开" : "On");
         add(value + "off", chinese ? "关" : "Off");
@@ -144,6 +162,7 @@ public final class V170LanguageProvider extends LanguageProvider {
                 "此处只能运行空间站所有者的力场");
         put(codes, EndgameCode.FIELD_OUTSIDE_STATION, "The field lies outside the station", "力场位于空间站之外");
         put(codes, EndgameCode.FIELD_DENSITY, "Too many fields here", "此处力场过多");
+        put(codes, EndgameCode.TRUST_LIMIT, "You trust the maximum of 32 owners", "你信任的所有者已达 32 个上限");
         return codes;
     }
 

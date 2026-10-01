@@ -173,6 +173,8 @@ public final class ModItems {
     public static final RegistryObject<Item> ORBITAL_LASER_DRILL = blockItem("orbital_laser_drill",
             ModBlocks.ORBITAL_LASER_DRILL);
     public static final RegistryObject<Item> LASER_TARGET = blockItem("laser_target", ModBlocks.LASER_TARGET);
+    public static final RegistryObject<Item> GRAVITY_FIELD_CONTROLLER = blockItem("gravity_field_controller",
+            ModBlocks.GRAVITY_FIELD_CONTROLLER);
 
     private ModItems() {
     }

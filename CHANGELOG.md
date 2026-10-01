@@ -46,6 +46,17 @@ No candidate or release approval is assigned.
   untouched; a full target buffer pauses it. The target must sit at least two
   blocks inside its chunk. Payment and digging are counted on both sides, so a
   crash never charges twice or digs unpaid. Resetting a target drops its link.
+- Add the Gravity Field Controller (ADR-058). It sets gravity to 0.10–2.00 g
+  in a cube of radius 2–16 around it while it runs and has energy
+  (5 + 2 × radius FE per tick, 50,000 FE buffer). On a station only the
+  station owner's fields run, they affect everyone inside the station region
+  and are capped at 1.00 g. Elsewhere a field affects only its owner and
+  players who chose to trust that owner with
+  `/arce endgame field trust <player>` (`untrust`, `trusted`); the list is
+  kept across death. Fields respect zones, spawn protection and the API
+  event, affect players only, and leave no lasting effect.
+- New COMMON values `endgame.gravityField.*`: fields per chunk, per owner and
+  chunk, per owner, per Level and on the server.
 - New COMMON values `endgame.laserDrill.*`: energy percent, operation
   interval, active drills per owner and on the server, and per-tick caps.
 - Operator commands `/arce endgame device inspect <pos>` and

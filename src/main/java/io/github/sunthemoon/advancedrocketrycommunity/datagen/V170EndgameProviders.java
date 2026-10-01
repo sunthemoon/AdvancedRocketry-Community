@@ -53,6 +53,10 @@ public final class V170EndgameProviders {
                     mcLoc("block/obsidian"), modLoc("block/machine_casing_top"));
             simpleBlock(ModBlocks.LASER_TARGET.get(), target);
             simpleBlockItem(ModBlocks.LASER_TARGET.get(), target);
+            ModelFile field = models().cubeBottomTop("gravity_field_controller", modLoc("block/machine_casing_front"),
+                    modLoc("block/machine_casing_top"), mcLoc("block/amethyst_block"));
+            simpleBlock(ModBlocks.GRAVITY_FIELD_CONTROLLER.get(), field);
+            simpleBlockItem(ModBlocks.GRAVITY_FIELD_CONTROLLER.get(), field);
             itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
         }
     }
@@ -72,12 +76,13 @@ public final class V170EndgameProviders {
             dropSelf(ModBlocks.ENDGAME_CASING.get());
             dropSelf(ModBlocks.ORBITAL_LASER_DRILL.get());
             dropSelf(ModBlocks.LASER_TARGET.get());
+            dropSelf(ModBlocks.GRAVITY_FIELD_CONTROLLER.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
             return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get(),
-                    ModBlocks.LASER_TARGET.get());
+                    ModBlocks.LASER_TARGET.get(), ModBlocks.GRAVITY_FIELD_CONTROLLER.get());
         }
     }
 
@@ -119,6 +124,13 @@ public final class V170EndgameProviders {
                     .define('B', ModItems.BASIC_CIRCUIT.get())
                     .unlockedBy("has_basic_circuit", has(ModItems.BASIC_CIRCUIT.get()))
                     .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.GRAVITY_FIELD_CONTROLLER.get())
+                    .pattern(" E ").pattern("CMC").pattern(" C ")
+                    .define('E', Tags.Items.ENDER_PEARLS)
+                    .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('M', ModItems.MACHINE_CASING.get())
+                    .unlockedBy("has_advanced_circuit", has(ModItems.ADVANCED_CIRCUIT.get()))
+                    .save(output);
         }
     }
 
@@ -148,7 +160,8 @@ public final class V170EndgameProviders {
                     ModBlocks.MICROWAVE_RECEIVER.get(),
                     ModBlocks.ENDGAME_CASING.get(),
                     ModBlocks.ORBITAL_LASER_DRILL.get(),
-                    ModBlocks.LASER_TARGET.get()
+                    ModBlocks.LASER_TARGET.get(),
+                    ModBlocks.GRAVITY_FIELD_CONTROLLER.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);

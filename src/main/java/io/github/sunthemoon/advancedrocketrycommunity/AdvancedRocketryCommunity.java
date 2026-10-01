@@ -180,7 +180,9 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(rocketVisualSynchronizer::onStartTracking);
         lifeSupportNetwork = new LifeSupportNetwork();
         CelestialGravityController gravityController = new CelestialGravityController(environments,
-                stationManager::effectiveGravity);
+                stationManager::effectiveGravity, player -> io.github.sunthemoon.advancedrocketrycommunity.endgame
+                .service.EndgameRuntime.devices().map(devices -> devices.fieldGravity(player))
+                .orElse(java.util.OptionalDouble.empty()));
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
         CelestialCommands celestialCommands = new CelestialCommands(
                 celestialCatalogs,

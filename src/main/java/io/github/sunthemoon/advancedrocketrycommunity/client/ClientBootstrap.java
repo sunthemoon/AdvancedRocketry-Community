@@ -67,6 +67,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.LASER_TARGET.get(),
                 LaserTargetScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.GRAVITY_FIELD_CONTROLLER.get(),
+                GravityFieldScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 

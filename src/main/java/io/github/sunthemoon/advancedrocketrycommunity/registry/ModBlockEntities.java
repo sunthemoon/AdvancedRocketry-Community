@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
@@ -149,6 +150,16 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             LaserTargetBlockEntity::new,
                             ModBlocks.LASER_TARGET.get()
+                    ).build(null)
+            );
+
+    /** ADR-058: the area gravity field controller. */
+    public static final RegistryObject<BlockEntityType<GravityFieldBlockEntity>> GRAVITY_FIELD_CONTROLLER =
+            BLOCK_ENTITIES.register(
+                    "gravity_field_controller",
+                    () -> BlockEntityType.Builder.of(
+                            GravityFieldBlockEntity::new,
+                            ModBlocks.GRAVITY_FIELD_CONTROLLER.get()
                     ).build(null)
             );
 

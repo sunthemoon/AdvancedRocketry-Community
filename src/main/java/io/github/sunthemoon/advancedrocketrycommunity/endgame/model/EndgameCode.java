@@ -76,7 +76,9 @@ public enum EndgameCode {
     // ADR-058: the area gravity field.
     STATION_OWNER_REQUIRED,
     FIELD_OUTSIDE_STATION,
-    FIELD_DENSITY;
+    FIELD_DENSITY,
+    /** A player's trust list holds at most 32 owners (ADR-058 section 5). */
+    TRUST_LIMIT;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 

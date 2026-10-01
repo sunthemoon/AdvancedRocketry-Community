@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
@@ -24,7 +25,7 @@ public final class EndgameModule {
         EndgameService service = new EndgameService(CommonConfig::endgameSettings, EndgameModule::endgameBlockEntityIds);
         EndgameRuntime.install(service);
         EndgameDevices devices = new EndgameDevices(CommonConfig::endgameSettings, CommonConfig::laserDrillSettings,
-                patterns, celestial, laserTables);
+                CommonConfig::gravityFieldLimits, patterns, celestial, laserTables);
         EndgameRuntime.installDevices(devices);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStopping);
@@ -38,6 +39,8 @@ public final class EndgameModule {
         MinecraftForge.EVENT_BUS.addListener(devices::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(devices::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(devices::onNeighborNotify);
+        MinecraftForge.EVENT_BUS.addListener(devices::onLevelUnload);
+        MinecraftForge.EVENT_BUS.addListener(new GravityFieldCommands()::register);
         MinecraftForge.EVENT_BUS.addListener(new EndgameCommands(service, devices)::register);
         return service;
     }

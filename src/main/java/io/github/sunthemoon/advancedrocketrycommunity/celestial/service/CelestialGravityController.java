@@ -13,8 +13,8 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.entity.living.LivingEvent;
 
 /**
- * Applies a position override (such as a station region, ADR-041) or else the active Level
- * profile through Forge's synchronized gravity attribute.
+ * Applies, in this order, a player's area field (ADR-058), a position override (such as a station region, ADR-041)
+ * or else the active Level profile through Forge's synchronized gravity attribute.
  */
 public final class CelestialGravityController {
     public static final UUID MODIFIER_ID = UUID.fromString("6fef66cc-a721-4b58-9be5-c8b07831eb0f");
@@ -22,14 +22,22 @@ public final class CelestialGravityController {
 
     private final CelestialEnvironmentService environments;
     private final PositionGravity override;
+    private final PlayerGravity fields;
 
     public CelestialGravityController(CelestialEnvironmentService environments) {
         this(environments, (level, position) -> OptionalDouble.empty());
     }
 
     public CelestialGravityController(CelestialEnvironmentService environments, PositionGravity override) {
+        this(environments, override, player -> OptionalDouble.empty());
+    }
+
+    /** ADR-058 section 4: the field layer goes in front of the position override; the override is unchanged. */
+    public CelestialGravityController(CelestialEnvironmentService environments, PositionGravity override,
+                                      PlayerGravity fields) {
         this.environments = environments;
         this.override = Objects.requireNonNull(override, "override");
+        this.fields = Objects.requireNonNull(fields, "fields");
     }
 
     public void onLivingTick(LivingEvent.LivingTickEvent event) {
@@ -37,12 +45,19 @@ public final class CelestialGravityController {
             return;
         }
 
-        OptionalDouble local = override.at(player.serverLevel(), player.blockPosition());
+        OptionalDouble field = fields.at(player);
+        OptionalDouble local = field.isPresent() ? field : override.at(player.serverLevel(), player.blockPosition());
         double multiplier = local.isPresent() ? local.getAsDouble()
                 : environments.forLevel(player.serverLevel().dimension())
                         .map(CelestialEnvironmentService.EnvironmentProfile::gravityMultiplier)
                         .orElse(1.0D);
         applyMultiplier(player.getAttribute(ForgeMod.ENTITY_GRAVITY.get()), multiplier);
+    }
+
+    /** A bounded, per-player layer (an area field the player is affected by); empty falls through. */
+    @FunctionalInterface
+    public interface PlayerGravity {
+        OptionalDouble at(ServerPlayer player);
     }
 
     /** Bounded, constant-time gravity for a position; empty falls back to the Level profile. */

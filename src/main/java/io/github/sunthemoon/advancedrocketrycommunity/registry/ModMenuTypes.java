@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMenu;
@@ -62,6 +63,11 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<LaserTargetMenu>> LASER_TARGET = MENUS.register(
             "laser_target",
             () -> IForgeMenuType.create(LaserTargetMenu::new)
+    );
+
+    public static final RegistryObject<MenuType<GravityFieldMenu>> GRAVITY_FIELD_CONTROLLER = MENUS.register(
+            "gravity_field_controller",
+            () -> IForgeMenuType.create(GravityFieldMenu::new)
     );
 
     private ModMenuTypes() {

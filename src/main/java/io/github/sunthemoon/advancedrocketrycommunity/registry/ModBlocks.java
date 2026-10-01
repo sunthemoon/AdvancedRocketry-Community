@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
@@ -185,6 +186,16 @@ public final class ModBlocks {
                             .strength(5.0F, 1200.0F)
                             .pushReaction(PushReaction.BLOCK)
                             .sound(SoundType.METAL))
+    );
+
+    /** ADR-058: the area gravity field controller. */
+    public static final RegistryObject<Block> GRAVITY_FIELD_CONTROLLER = BLOCKS.register(
+            "gravity_field_controller",
+            () -> new GravityFieldBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
     );
 
     private static BlockBehaviour.Properties metalProperties() {

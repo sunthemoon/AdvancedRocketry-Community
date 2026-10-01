@@ -2,6 +2,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.device;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldIndex;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityTrust;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameRateLimiter;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
@@ -13,14 +16,17 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 
 /**
@@ -31,6 +37,9 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 public final class EndgameDevices {
     private final Supplier<EndgameSettings> settings;
     private final Supplier<LaserDrillSettings> laserSettings;
+    private final Supplier<GravityFieldLimits> gravityLimits;
+    private final GravityFieldIndex fields = new GravityFieldIndex();
+    private final GravityTrust trust = new GravityTrust();
     private final MultiblockPatternCatalogManager patterns;
     private final CelestialCatalogManager celestial;
     private final LaserDrillTableReloadListener.Manager laserTables;
@@ -44,10 +53,11 @@ public final class EndgameDevices {
     private int laserLayersLastTick;
 
     public EndgameDevices(Supplier<EndgameSettings> settings, Supplier<LaserDrillSettings> laserSettings,
-                          MultiblockPatternCatalogManager patterns, CelestialCatalogManager celestial,
-                          LaserDrillTableReloadListener.Manager laserTables) {
+                          Supplier<GravityFieldLimits> gravityLimits, MultiblockPatternCatalogManager patterns,
+                          CelestialCatalogManager celestial, LaserDrillTableReloadListener.Manager laserTables) {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.laserSettings = Objects.requireNonNull(laserSettings, "laserSettings");
+        this.gravityLimits = Objects.requireNonNull(gravityLimits, "gravityLimits");
         this.patterns = Objects.requireNonNull(patterns, "patterns");
         this.celestial = Objects.requireNonNull(celestial, "celestial");
         this.laserTables = Objects.requireNonNull(laserTables, "laserTables");
@@ -59,6 +69,32 @@ public final class EndgameDevices {
 
     public LaserDrillSettings laserSettings() {
         return laserSettings.get();
+    }
+
+    public GravityFieldLimits gravityLimits() {
+        return gravityLimits.get();
+    }
+
+    /** ADR-058 section 4: the runtime field index, never persisted. */
+    public GravityFieldIndex fields() {
+        return fields;
+    }
+
+    public GravityTrust trust() {
+        return trust;
+    }
+
+    /**
+     * ADR-058 section 4: the field layer in front of the station override, for one player in the living-tick hook;
+     * one bounded bucket lookup. Empty while the system is disabled.
+     */
+    public OptionalDouble fieldGravity(ServerPlayer player) {
+        if (fields.size() == 0 || !settings.get().enabled(EndgameSystem.GRAVITY_FIELD)) {
+            return OptionalDouble.empty();
+        }
+        BlockPos position = player.blockPosition();
+        return fields.at(player.level().dimension().location(), position.getX(), position.getY(), position.getZ(),
+                player.getUUID(), trust.trusted(player));
     }
 
     public Optional<MultiblockPatternDefinition> pattern(String id) {
@@ -108,12 +144,23 @@ public final class EndgameDevices {
         laserLayers.resetCounters();
         structureBudget.resetCounters();
         laserOperations.endTick(laserSettings.get().logicalOperationsPerTick());
+        if (!settings.get().enabled(EndgameSystem.GRAVITY_FIELD)) {
+            // The switch turning off clears the whole index that tick (ADR-058 section 4).
+            fields.clear();
+        }
         laserLayers.endTick(laserSettings.get().layersPerTick());
         structureBudget.endTick(EndgameLimits.STRUCTURE_VALIDATIONS_PER_TICK);
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         rates.forget(event.getEntity().getUUID());
+        trust.forget(event.getEntity().getUUID());
+    }
+
+    public void onLevelUnload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            fields.clearLevel(level.dimension().location());
+        }
     }
 
     public void onServerStopped(ServerStoppedEvent event) {
@@ -149,8 +196,8 @@ public final class EndgameDevices {
         return "laser_drill active=" + active.count(EndgameSystem.LASER_DRILL) + " operations_last_tick="
                 + laserOperationsLastTick + " waiting=" + laserOperations.waitingLastTick() + " layers_last_tick="
                 + laserLayersLastTick + " layers_waiting=" + laserLayers.waitingLastTick() + "; structures tracked="
-                + structures.tracked() + " validations_waiting=" + structureBudget.waitingLastTick() + "; intent_players="
-                + rates.size();
+                + structures.tracked() + " validations_waiting=" + structureBudget.waitingLastTick()
+                + "; gravity_fields active=" + fields.size() + "; intent_players=" + rates.size();
     }
 
     public void clear() {
@@ -160,6 +207,8 @@ public final class EndgameDevices {
         structureBudget.clear();
         structures.clear();
         rates.clear();
+        fields.clear();
+        trust.clear();
         laserOperationsLastTick = 0;
         laserLayersLastTick = 0;
     }
