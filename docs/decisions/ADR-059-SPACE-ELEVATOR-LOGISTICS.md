@@ -43,7 +43,7 @@ Pair record (≤ 512 bytes): `pair_id`, `station_id`, `terminal_id`, `anchor_id`
 
 ### 2. Endpoints
 
-- **Anchor** (`elevator_anchor`): a multiblock on the machine kernel (ADR-016),
+- **Anchor** (`elevator_anchor`): a structure-only multiblock (ADR-054 §2.1),
   controller `advancedrocketrycommunity:elevator_anchor`, pattern
   `machine_patterns/elevator_anchor.json`, at most 7 × 3 × 7, built on a body's
   surface Level. Its column `(x, z)` is the controller's.
@@ -146,9 +146,11 @@ and unbind.
   1. re-derive pair validity (§3) and the rider's access;
   2. the departing endpoint holds `50,000 × energyPercent / 100` FE (legacy
      50,000);
-  3. obtain the arrival chunk at `FULL` the way a vanilla teleport does, at the
-     **server-derived** arrival position (the centre of the other endpoint's
-     platform), never from a client value;
+  3. load the arrival chunk synchronously with `ServerLevel.getChunk(cx, cz)`
+     at the **server-derived** arrival position (the centre of the other
+     endpoint's platform), never from a client value. The chunk already exists
+     on disk, because the endpoint was built in it, so this reads it and
+     generates nothing; it adds no ticket of its own;
   4. the arrival block entity carries the recorded endpoint ID, and the two
      blocks above the platform centre are free of collision
      (`ARRIVAL_OBSTRUCTED`);

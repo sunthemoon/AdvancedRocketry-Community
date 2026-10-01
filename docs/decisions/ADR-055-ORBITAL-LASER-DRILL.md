@@ -26,7 +26,7 @@ budgets, conserved output and no chunk loading.
 
 ### 1. Structure and placement
 
-- A multiblock on the machine kernel (ADR-016): controller block
+- A structure-only multiblock (ADR-054 §2.1): controller block
   `advancedrocketrycommunity:orbital_laser_drill`, pattern
   `machine_patterns/orbital_laser_drill.json`, at most 5 × 5 × 5, four rotations,
   no mirror. C11 fixes the cells with community-authored blocks; no upstream
@@ -142,7 +142,9 @@ Layers run from `my − 1` down to
      cancellation stops with `TARGET_PROTECTED`.
 3. Compute the drops of every breakable cell with
    `Block.getDrops(state, level, pos, null, ownerFakePlayer, ItemStack.EMPTY)`
-   (no tool, no fortune). If the marker buffer cannot take **all** of them,
+   (no tool, no fortune). Harvest-tool requirements are not applied: a laser
+   cuts any breakable block, as in the legacy drill (a balance decision). If the
+   marker buffer cannot take **all** of them,
    stop with `TARGET_BUFFER_FULL`.
 4. Remove the breakable cells (`removeBlock`, no drop entities, no experience),
    add every drop to the marker buffer, set `next_layer −= 1`. A waterlogged
@@ -171,8 +173,9 @@ At every contact (both chunks `FULL`, before each operation):
   without a new payment (`CREDIT_USED`).
 
 Then a normal operation: energy −= `cost`, `ops_paid += 1`, the layer runs,
-`ops_done += 1`, all in one tick. Each crash therefore leaves at most one
-unpaid or prepaid layer, and the next contact settles it. Debt is never
+`ops_done += 1`, all in one tick. After a crash the gap between the two counters
+is at most the number of layers run between the two chunks' latest saves
+(normally a few seconds of cadence), and the next contact settles all of it. Debt is never
 forgiven by relinking: a controller may change or clear its link only after a
 contact with no debt and no credit, or when the marker is `MISSING`
 (audited `LINK_ABANDONED`; an unsettled layer is the documented residual). A

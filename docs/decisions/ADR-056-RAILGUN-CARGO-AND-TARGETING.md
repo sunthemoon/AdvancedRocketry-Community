@@ -34,7 +34,7 @@ railgun or targeting system within a safe scope".
 
 ### 2. Structure and state
 
-- A multiblock on the machine kernel (ADR-016): controller
+- A structure-only multiblock (ADR-054 §2.1): controller
   `advancedrocketrycommunity:railgun`, pattern `machine_patterns/railgun.json`,
   at most 5 × 9 × 5, four rotations, no mirror; community-authored blocks.
 - The controller is a `railgun` endpoint (ADR-054 §9). Its root holds:

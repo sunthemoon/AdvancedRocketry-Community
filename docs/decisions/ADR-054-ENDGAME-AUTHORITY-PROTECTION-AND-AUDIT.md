@@ -82,6 +82,20 @@ Every endgame block entity root has `schema_version`, `device_id` and `owner_id`
   for its chunk. Nothing else marks it persisted, and while anything is
   unpersisted the block entity calls `setChanged()`.
 
+### 2.1 Structures
+
+The laser drill, railgun, black-hole generator and elevator anchor are
+**structure-only multiblocks**. Their shape is a `machine_patterns` file in the
+ADR-016 format, matched by the kernel's bounded `MultiblockPatternValidator`
+through a loaded-chunk world view; it never loads a chunk. Unlike the v1.2
+machines they have **no port blocks, part bindings or process journal**: every
+buffer lives in the controller block entity, and automation uses the
+controller's own capabilities. The controller re-validates when a neighbouring
+block changes inside its pattern box and every 200 ticks, at most 8 validations
+per server tick across all endgame controllers (the rest wait, §7). An
+unformed structure idles with `UNFORMED`, and one with an unloaded cell with
+`STRUCTURE_UNLOADED`; nothing is lost or dropped by either state.
+
 ### 3. Authority
 
 `EndgameAuthority.allowed(actor, device, action)` is a pure function over a
@@ -386,12 +400,13 @@ its payload.
 
 ### 12. Chunk loading
 
-v1.7 never creates a chunk ticket, forced chunk or region ticket, never calls a
-synchronous chunk load from a device, and never initialises a Level on demand.
-Every world effect needs its chunks already `FULL` (§5 step 1). Ledger paths need
-no chunk. The only chunk access caused by an endgame action is the arrival of an
-elevator ride (ADR-059), which moves the player like a vanilla teleport to a
-server-derived position. Tests count tickets before and after every system.
+v1.7 never creates a chunk ticket, forced chunk or region ticket, and never
+initialises a Level on demand. Every world effect needs its chunks already `FULL`
+(§5 step 1); ledger paths need no chunk. The single synchronous chunk load is the
+arrival check of an elevator ride (ADR-059 §8): at most one per server tick, of an
+existing chunk at a server-derived position, immediately followed by the player's
+teleport there, so it behaves like a vanilla teleport. Tests count tickets before
+and after every system.
 
 ### 13. Audit and diagnostics
 

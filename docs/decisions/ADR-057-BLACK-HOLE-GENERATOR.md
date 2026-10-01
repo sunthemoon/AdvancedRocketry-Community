@@ -67,7 +67,7 @@ of anything else into the fuel slots is refused.
 
 ### 3. Structure and state
 
-- A multiblock on the machine kernel (ADR-016): controller
+- A structure-only multiblock (ADR-054 §2.1): controller
   `advancedrocketrycommunity:black_hole_generator`, pattern
   `machine_patterns/black_hole_generator.json`, at most 5 × 5 × 5, four
   rotations, no mirror; community-authored blocks.
