@@ -230,6 +230,15 @@ public final class LaserTargetGameTests {
             ServerPlayer recordOwner = ConnectedTestPlayers.join(server, owner, "forgetOwner", level, corner,
                     new ArrayList<>());
             joined.add(recordOwner);
+            // Review C11R-I8: an /execute as source does not act for the owner.
+            try {
+                server.getCommands().getDispatcher().execute("execute as " + owner + " run arce endgame endpoint forget "
+                        + id, server.createCommandSourceStack().withSuppressedOutput());
+            } catch (CommandSyntaxException ignored) {
+                // A refusal is the expected outcome either way.
+            }
+            helper.assertTrue(service.root().orElseThrow().endpoint(id).isPresent(),
+                    "An /execute as source forgot the owner's record");
             helper.assertTrue(command(server, recordOwner, "arce endgame endpoint forget " + id) == 1
                             && service.root().orElseThrow().endpoint(id).isEmpty()
                             && forgetLines(service) == linesBefore + 1 && service.writePending(),

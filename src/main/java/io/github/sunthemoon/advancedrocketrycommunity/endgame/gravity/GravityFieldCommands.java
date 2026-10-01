@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommandSources;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
@@ -15,7 +16,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 
 /**
@@ -35,7 +35,7 @@ public final class GravityFieldCommands {
     }
 
     private int change(CommandContext<CommandSourceStack> context, boolean trust) throws CommandSyntaxException {
-        Optional<ServerPlayer> player = ownPlayer(context.getSource());
+        Optional<ServerPlayer> player = EndgameCommandSources.ownPlayer(context.getSource());
         Optional<EndgameDevices> devices = EndgameRuntime.devices();
         if (player.isEmpty() || devices.isEmpty()) {
             return refuse(context, player.isEmpty() ? EndgameCode.NOT_A_PLAYER : EndgameCode.ROOT_UNAVAILABLE);
@@ -57,7 +57,7 @@ public final class GravityFieldCommands {
     }
 
     private int list(CommandContext<CommandSourceStack> context) {
-        Optional<ServerPlayer> player = ownPlayer(context.getSource());
+        Optional<ServerPlayer> player = EndgameCommandSources.ownPlayer(context.getSource());
         Optional<EndgameDevices> devices = EndgameRuntime.devices();
         if (player.isEmpty() || devices.isEmpty()) {
             return refuse(context, player.isEmpty() ? EndgameCode.NOT_A_PLAYER : EndgameCode.ROOT_UNAVAILABLE);
@@ -67,16 +67,6 @@ public final class GravityFieldCommands {
                 "message.advancedrocketrycommunity.endgame.field.list", owners.size(), GravityTrust.MAX_TRUSTED), false);
         owners.forEach(owner -> context.getSource().sendSuccess(() -> Component.literal(owner.toString()), false));
         return owners.size();
-    }
-
-    /** The player's own, non-silent source: not {@code /execute as}, a function, a command block or a FakePlayer. */
-    private static Optional<ServerPlayer> ownPlayer(CommandSourceStack source) {
-        if (source.getEntity() instanceof ServerPlayer player && !(player instanceof FakePlayer)
-                && source.source == player && source.withSuppressedOutput() != source && player.getServer() != null
-                && player.getServer().getPlayerList().getPlayer(player.getUUID()) == player) {
-            return Optional.of(player);
-        }
-        return Optional.empty();
     }
 
     private static int refuse(CommandContext<CommandSourceStack> context, EndgameCode code) {

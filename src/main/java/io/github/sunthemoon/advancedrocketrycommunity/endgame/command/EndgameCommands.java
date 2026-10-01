@@ -31,7 +31,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 
 /**
@@ -270,9 +269,12 @@ public final class EndgameCommands {
      */
     private int forget(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        if (!(source.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) {
+        // Only the player's own source, as for field trust (review C11R-I8).
+        Optional<ServerPlayer> own = EndgameCommandSources.ownPlayer(source);
+        if (own.isEmpty()) {
             return refuse(context, EndgameCode.NOT_A_PLAYER);
         }
+        ServerPlayer player = own.get();
         UUID id = UuidArgument.getUuid(context, "id");
         boolean operator = source.hasPermission(2);
         Optional<EndgameRoot> view = service.root();
