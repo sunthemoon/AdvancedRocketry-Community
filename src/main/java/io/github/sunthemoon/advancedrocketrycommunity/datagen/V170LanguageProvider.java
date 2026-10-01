@@ -205,6 +205,29 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.ROUTE_REFUSED, "That endpoint cannot receive this cargo", "该端点不能接收此货物");
         put(codes, EndgameCode.NO_PAYLOAD, "No input stack is large enough to launch", "没有达到发射数量的输入物品");
         put(codes, EndgameCode.ROUTE_OUT_OF_SYSTEM, "The destination is in another star system", "目的地位于其他恒星系");
+        put(codes, EndgameCode.ELEVATOR_RULE, "An elevator endpoint rule fails", "电梯端点规则不满足");
+        put(codes, EndgameCode.TERMINAL_UNAVAILABLE, "The terminal is not usable in this station", "终端在此空间站不可用");
+        put(codes, EndgameCode.TERMINAL_ON_PAD, "Too close to the landing pad", "离着陆台太近");
+        put(codes, EndgameCode.ANCHOR_UNAVAILABLE, "The anchor is not usable", "锚点不可用");
+        put(codes, EndgameCode.ANCHOR_FOREIGN, "The anchor belongs to someone else", "该锚点属于他人");
+        put(codes, EndgameCode.STATION_BOUND, "The station already has an elevator", "该空间站已有电梯");
+        put(codes, EndgameCode.ANCHOR_BOUND, "The anchor is already bound", "该锚点已绑定");
+        put(codes, EndgameCode.TERMINAL_BOUND, "The terminal is already bound", "该终端已绑定");
+        put(codes, EndgameCode.COLUMN_BOUND, "An elevator already stands on this column", "此位置已有电梯");
+        put(codes, EndgameCode.WARP_PENDING, "A station warp is pending", "空间站跃迁待执行");
+        put(codes, EndgameCode.PAIR_LEVEL_CHANGED, "The body now uses another dimension", "该天体已改用其他维度");
+        put(codes, EndgameCode.NOT_BOUND, "Not bound to an elevator", "未绑定电梯");
+        put(codes, EndgameCode.PAIR_LIMIT, "Elevator limit reached", "已达电梯数量上限");
+        put(codes, EndgameCode.ANCHOR_OWNER_NOT_MEMBER, "The anchor's owner is not in this station",
+                "锚点所有者不是该空间站成员");
+        put(codes, EndgameCode.NOT_ON_PLATFORM, "Stand on the platform", "请站在平台上");
+        put(codes, EndgameCode.DISMOUNT_FIRST, "Dismount and drop passengers first", "请先下坐骑并放下乘客");
+        put(codes, EndgameCode.RIDE_PENDING, "A ride is already waiting", "已有乘坐在等待");
+        put(codes, EndgameCode.RIDE_LIMIT, "Too many rides waiting", "等待乘坐的人过多");
+        put(codes, EndgameCode.RIDE_COUNTDOWN, "Ride starting: stay on the platform", "即将出发：请留在平台上");
+        put(codes, EndgameCode.RIDE_CANCELLED, "Ride cancelled", "乘坐已取消");
+        put(codes, EndgameCode.ARRIVAL_UNLOADED, "The arrival could not be loaded", "无法加载到达点");
+        put(codes, EndgameCode.ARRIVAL_OBSTRUCTED, "The arrival platform is blocked", "到达平台被阻挡");
         return codes;
     }
 

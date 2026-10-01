@@ -4,6 +4,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameIdOrder;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPair;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPairTable;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTable;
 import java.util.ArrayList;
@@ -23,8 +25,9 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * The cross-device state of ADR-054 section 10 that C11 owns: the endpoint index (section 9), tombstones (section 11,
  * review R3-M2), {@code dispatched_through} values and protected zones (section 6), with the save epoch of ADR-050
- * section 2. The transit ledger and elevator pairs arrive in C12. Every collection iterates in ADR-054 ID order, so
- * encoding is deterministic. Mutations only change memory; the caller decides the write class (section 10).
+ * section 2, the transit ledger (section 11) and the elevator pairs (ADR-059 section 1). Every collection iterates in
+ * ADR-054 ID order, so encoding is deterministic. Mutations only change memory; the caller decides the write class
+ * (section 10).
  */
 public final class EndgameRoot {
     private static final Comparator<Tombstone.Settled> OLDEST = Comparator.comparingInt(Tombstone.Settled::order)
@@ -36,6 +39,7 @@ public final class EndgameRoot {
     private final Map<UUID, Long> dispatchedThrough = new TreeMap<>(EndgameIdOrder.ORDER);
     private final Map<String, ProtectedZone> zones = new TreeMap<>();
     private final TransitTable transits = new TransitTable(() -> changedSinceEpoch = true);
+    private final ElevatorPairTable pairs = new ElevatorPairTable(() -> changedSinceEpoch = true);
     private final Set<UUID> touched = new HashSet<>();
     private long saveEpoch;
     private boolean changedSinceEpoch;
@@ -150,12 +154,13 @@ public final class EndgameRoot {
 
     /**
      * Section 10 growth accounting: each section's count times its worst-case record size, never an encoding of the
-     * root. Young tombstones take endpoint places; elevator pairs arrive with C12d.
+     * root. Young tombstones take endpoint places.
      */
     public long accountedBytes() {
         return (long) places() * EndgameLimits.ENDPOINT_RECORD_BYTES
                 + (long) dispatchedThrough.size() * EndgameLimits.DISPATCHED_THROUGH_ENTRY_BYTES
                 + transits.accountedBytes()
+                + pairs.accountedBytes()
                 + (long) settled.size() * EndgameLimits.TOMBSTONE_RECORD_BYTES
                 + (long) zones.size() * EndgameLimits.ZONE_RECORD_BYTES;
     }
@@ -167,9 +172,17 @@ public final class EndgameRoot {
         return transits;
     }
 
-    /** A tombstone that a transit record names is pinned: never evicted by a cap, housekeeping or a command. */
+    /**
+     * A tombstone that a transit record or an elevator pair names is pinned: never evicted by a cap, housekeeping or a
+     * command.
+     */
     public boolean pinned(UUID id) {
-        return transits.names(id);
+        return transits.names(id) || pairs.names(id);
+    }
+
+    /** The elevator pairs (ADR-059 section 1); binds and unbinds change them only inside a root update. */
+    public ElevatorPairTable pairs() {
+        return pairs;
     }
 
     /** Step 2: the record exists and {@code dispatched_through[S] = seq}, which never decreases. */
@@ -331,7 +344,7 @@ public final class EndgameRoot {
     private List<Tombstone.Settled> eligible(Predicate<UUID> pinned, UUID owner) {
         return settled.values().stream()
                 .filter(tombstone -> owner == null || tombstone.owner().equals(owner))
-                .filter(tombstone -> !pinned.test(tombstone.id()) && !transits.names(tombstone.id()))
+                .filter(tombstone -> !pinned.test(tombstone.id()) && !pinned(tombstone.id()))
                 .sorted(OLDEST)
                 .toList();
     }
@@ -457,6 +470,10 @@ public final class EndgameRoot {
         transits.restore(record);
     }
 
+    void restorePair(ElevatorPair pair) {
+        pairs.restore(pair);
+    }
+
     void restoreZone(ProtectedZone zone) {
         if (zones.putIfAbsent(zone.name(), zone) != null) {
             throw new IllegalArgumentException("Duplicate zone name");
@@ -492,6 +509,13 @@ public final class EndgameRoot {
             }
             if (record.key().seq() > dispatchedThrough(record.key().source())) {
                 throw new IllegalArgumentException("A transit record is above its source's dispatched_through");
+            }
+        }
+        for (ElevatorPair pair : pairs.pairs()) {
+            for (UUID id : new UUID[] {pair.anchorId(), pair.terminalId()}) {
+                if (!endpoints.containsKey(id) && !young.containsKey(id) && !settled.containsKey(id)) {
+                    throw new IllegalArgumentException("An elevator pair names no endpoint or tombstone");
+                }
             }
         }
     }

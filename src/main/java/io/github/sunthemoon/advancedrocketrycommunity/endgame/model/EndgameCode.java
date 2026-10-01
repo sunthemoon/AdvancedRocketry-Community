@@ -103,7 +103,38 @@ public enum EndgameCode {
     /** No input stack holds the minimum stack size. */
     NO_PAYLOAD,
     /** The destination lies in another star system. */
-    ROUTE_OUT_OF_SYSTEM;
+    ROUTE_OUT_OF_SYSTEM,
+    // ADR-059: the space elevator.
+    /** An ADR-045 endpoint rule failed; the rule is named with the code. */
+    ELEVATOR_RULE,
+    /** The terminal is not ACTIVE or not inside this station's committed region. */
+    TERMINAL_UNAVAILABLE,
+    /** A terminal within 2 blocks of the landing-pad column. */
+    TERMINAL_ON_PAD,
+    ANCHOR_UNAVAILABLE,
+    ANCHOR_FOREIGN,
+    STATION_BOUND,
+    ANCHOR_BOUND,
+    TERMINAL_BOUND,
+    COLUMN_BOUND,
+    /** A warp confirmation or countdown is pending for the station. */
+    WARP_PENDING,
+    /** The anchor's body now maps to another Level; the pair is kept. */
+    PAIR_LEVEL_CHANGED,
+    /** The endpoint has no pair. */
+    NOT_BOUND,
+    PAIR_LIMIT,
+    /** The anchor's owner is no longer the station's owner or a member. */
+    ANCHOR_OWNER_NOT_MEMBER,
+    NOT_ON_PLATFORM,
+    DISMOUNT_FIRST,
+    RIDE_PENDING,
+    RIDE_LIMIT,
+    /** A ride's countdown runs; the rider stays on the platform. */
+    RIDE_COUNTDOWN,
+    RIDE_CANCELLED,
+    ARRIVAL_UNLOADED,
+    ARRIVAL_OBSTRUCTED;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 

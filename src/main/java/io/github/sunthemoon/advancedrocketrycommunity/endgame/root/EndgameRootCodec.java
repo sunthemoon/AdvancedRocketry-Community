@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.root;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPairCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
@@ -21,8 +22,8 @@ import net.minecraft.nbt.Tag;
  * The {@code advancedrocketrycommunity_endgame.dat} root, schema 1 (ADR-054 section 10). Sections: {@code endpoints}
  * (index records, and tombstones: young ones in full, settled ones as six longs), {@code dispatched_through} (one
  * long array of three longs per non-zero entry, review R3-L5), {@code transits} (at most 256 records, section 11),
- * {@code elevator_pairs} (empty until C12d) and {@code zones}. Decoding is strict and runs the full root checks, so the pre-start validation and
- * the runtime load agree.
+ * {@code elevator_pairs} (at most 1,024 pairs, ADR-059 section 1) and {@code zones}. Decoding is strict and runs the
+ * full root checks, so the pre-start validation and the runtime load agree.
  */
 public final class EndgameRootCodec {
     public static final String ENDPOINTS = "endpoints";
@@ -61,7 +62,9 @@ public final class EndgameRootCodec {
         ListTag transits = new ListTag();
         root.transits().records().forEach(record -> transits.add(TransitCodec.encodeRecord(record)));
         target.put(TRANSITS, transits);
-        target.put(ELEVATOR_PAIRS, new ListTag());
+        ListTag pairs = new ListTag();
+        root.pairs().pairs().forEach(pair -> pairs.add(ElevatorPairCodec.encode(pair)));
+        target.put(ELEVATOR_PAIRS, pairs);
         ListTag zones = new ListTag();
         root.zones().forEach(zone -> zones.add(encodeZone(zone)));
         target.put(ZONES, zones);
@@ -102,8 +105,8 @@ public final class EndgameRootCodec {
         for (Tag raw : EndgameNbt.requireList(source, TRANSITS, Tag.TAG_COMPOUND, EndgameLimits.MAX_TRANSIT_RECORDS)) {
             root.restoreTransit(TransitCodec.decodeRecord((CompoundTag) raw));
         }
-        if (!EndgameNbt.requireList(source, ELEVATOR_PAIRS, Tag.TAG_COMPOUND, 0).isEmpty()) {
-            throw new IllegalArgumentException("Elevator pairs need the C12d codec");
+        for (Tag raw : EndgameNbt.requireList(source, ELEVATOR_PAIRS, Tag.TAG_COMPOUND, EndgameLimits.MAX_PAIRS)) {
+            root.restorePair(ElevatorPairCodec.decode((CompoundTag) raw));
         }
         for (Tag raw : EndgameNbt.requireList(source, ZONES, Tag.TAG_COMPOUND, EndgameLimits.MAX_ZONES)) {
             root.restoreZone(decodeZone((CompoundTag) raw));
