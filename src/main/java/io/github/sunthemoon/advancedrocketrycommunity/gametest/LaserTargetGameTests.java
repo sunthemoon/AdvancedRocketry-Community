@@ -6,9 +6,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetB
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -188,6 +191,69 @@ public final class LaserTargetGameTests {
                                     + " link_dropped=" + linkDropped);
                 })
                 .thenSucceed();
+    }
+
+    /**
+     * Review C11R-M3: a refused {@code endpoint forget} (unknown ID, another player's record) neither writes the root
+     * nor adds an audit line; the owner's forget of their MISSING record is a coalesced change with one line.
+     */
+    @GameTest(template = "empty", batch = "endgame_endpoint_forget", timeoutTicks = 100)
+    public static void aRefusedForgetWritesNothingAndTheOwnersForgetIsCoalesced(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        EndgameService service = EndgameRuntime.operational().orElseThrow();
+        UUID owner = UUID.randomUUID();
+        UUID id = UUID.randomUUID();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        helper.assertTrue(service.coalesced(root -> root.register(id, LaserTargetBlockEntity.KIND, owner,
+                level.dimension().location(), pos.asLong(), false, 4096, 256)) == EndgameCode.OK
+                && service.coalesced(root -> root.markMissing(id)), "The MISSING fixture record was not created");
+        String zone = "gt_forget_" + id.toString().substring(0, 8);
+        BlockPos corner = helper.absolutePos(BlockPos.ZERO);
+        helper.assertTrue(service.coalesced(root -> root.addZone(ProtectedZone.of(zone, level.dimension().location(),
+                corner.getX(), corner.getZ(), corner.getX() + 1, corner.getZ() + 1, List.of()), 256))
+                == EndgameCode.OK && service.writePending(), "No change is pending");
+        List<ServerPlayer> joined = new ArrayList<>();
+        try {
+            ServerPlayer stranger = ConnectedTestPlayers.join(server, UUID.randomUUID(), "forgetStranger", level,
+                    corner, new ArrayList<>());
+            joined.add(stranger);
+            long linesBefore = forgetLines(service);
+            int unknown = command(server, stranger, "arce endgame endpoint forget " + UUID.randomUUID());
+            int foreign = command(server, stranger, "arce endgame endpoint forget " + id);
+            helper.assertTrue(unknown == 0 && foreign == 0, "A refused forget succeeded");
+            helper.assertTrue(service.writePending() && forgetLines(service) == linesBefore
+                            && service.root().orElseThrow().endpoint(id).isPresent(),
+                    "A refused forget wrote the root, changed it or added an audit line");
+            ServerPlayer recordOwner = ConnectedTestPlayers.join(server, owner, "forgetOwner", level, corner,
+                    new ArrayList<>());
+            joined.add(recordOwner);
+            helper.assertTrue(command(server, recordOwner, "arce endgame endpoint forget " + id) == 1
+                            && service.root().orElseThrow().endpoint(id).isEmpty()
+                            && forgetLines(service) == linesBefore + 1 && service.writePending(),
+                    "The owner's forget was not a coalesced change with one audit line");
+        } finally {
+            joined.forEach(player -> server.getPlayerList().remove(player));
+            service.barrier(root -> root.removeZone(zone));
+        }
+        helper.succeed();
+    }
+
+    private static long forgetLines(EndgameService service) {
+        long total = 0;
+        for (int page = 0; page < 32; page++) {
+            total += service.audit().page("endgame", page).stream().filter(line -> line.contains("endpoint_forget"))
+                    .count();
+        }
+        return total;
+    }
+
+    private static int command(MinecraftServer server, ServerPlayer player, String command) {
+        try {
+            return server.getCommands().getDispatcher().execute(command, player.createCommandSourceStack());
+        } catch (CommandSyntaxException exception) {
+            return -1;
+        }
     }
 
     /**

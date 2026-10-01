@@ -242,14 +242,38 @@ public final class EndgameCommands {
                 root -> root.retireLost(id, EndgameService::pinned));
     }
 
+    /**
+     * A player drops their own {@code MISSING} record. Review C11R-M3: every refusal is decided on the read view, so
+     * it neither changes nor writes the root and adds no audit line (nothing changed); a record of another player is
+     * reported as not found, so the command reveals nothing. A successful forget is a coalesced mutation.
+     */
     private int forget(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         if (!(source.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) {
-            return reply(context, "endpoint_forget", EndgameCode.NOT_A_PLAYER, null, "");
+            return refuse(context, EndgameCode.NOT_A_PLAYER);
         }
         UUID id = UuidArgument.getUuid(context, "id");
-        return changeWithEvictions(context, "endpoint_forget", id,
-                root -> root.forget(id, player.getUUID(), source.hasPermission(2), EndgameService::pinned));
+        boolean operator = source.hasPermission(2);
+        Optional<EndgameRoot> view = service.root();
+        if (view.isEmpty()) {
+            return refuse(context, EndgameCode.ROOT_UNAVAILABLE);
+        }
+        Optional<EndpointRecord> record = view.get().endpoint(id);
+        if (record.isEmpty() || record.get().state() != EndpointRecord.State.MISSING
+                || !operator && !record.get().owner().equals(player.getUUID())) {
+            return refuse(context, EndgameCode.ENDPOINT_NOT_FOUND);
+        }
+        EndgameRoot.Change change = service.coalesced(root -> root.forget(id, player.getUUID(), operator,
+                EndgameService::pinned));
+        service.auditEvictions(source.getServer().overworld().getGameTime(), change.evicted());
+        return reply(context, "endpoint_forget", change.code(), id, change.evicted().isEmpty() ? ""
+                : "evicted=" + change.evicted().size());
+    }
+
+    /** A refusal that changed nothing: the reply only, no audit line. */
+    private static int refuse(CommandContext<CommandSourceStack> context, EndgameCode code) {
+        context.getSource().sendFailure(Component.translatable(code.translationKey()).append(" (" + code.name() + ")"));
+        return 0;
     }
 
     private int evict(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
