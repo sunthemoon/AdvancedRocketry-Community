@@ -42,8 +42,7 @@ final class EndpointRegistrations {
 
         EndgameService.ChunkKey chunk() {
             BlockPos block = BlockPos.of(pos);
-            return new EndgameService.ChunkKey(Tombstone.hash(level), ChunkPos.asLong(block.getX() >> 4,
-                    block.getZ() >> 4));
+            return EndgameService.ChunkKey.exact(level, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4));
         }
     }
 

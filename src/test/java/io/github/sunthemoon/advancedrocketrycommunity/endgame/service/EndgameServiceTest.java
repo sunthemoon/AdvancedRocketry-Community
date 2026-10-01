@@ -116,7 +116,7 @@ class EndgameServiceTest {
         service.coalesced(root -> root.remove(a));
         service.coalesced(root -> root.markMissing(b));
         assertIndexMatchesARebuild(service);
-        assertFalse(service.indexForTest().containsKey(new EndgameService.ChunkKey(Tombstone.hash(LEVEL),
+        assertFalse(service.indexForTest().containsKey(EndgameService.ChunkKey.exact(LEVEL,
                 new ChunkPos(POS.offset(64, 0, 0)).toLong())), "a MISSING record is not indexed");
         service.coalesced(root -> root.settle(a, EndgameService::pinned));
         service.barrier(root -> root.forget(b, OWNER, false, EndgameService::pinned));
@@ -125,9 +125,30 @@ class EndgameServiceTest {
         assertIndexMatchesARebuild(service);
         service.coalesced(root -> root.evictOwner(OWNER, EndgameService::pinned));
         assertIndexMatchesARebuild(service);
-        assertEquals(Set.of(d), service.indexForTest().get(new EndgameService.ChunkKey(Tombstone.hash(LEVEL), CHUNK)));
-        assertEquals(Set.of(c), service.indexForTest().get(new EndgameService.ChunkKey(Tombstone.hash(nether), CHUNK)));
+        assertEquals(Set.of(d), service.indexForTest().get(EndgameService.ChunkKey.exact(LEVEL, CHUNK)));
+        assertEquals(Set.of(c), service.indexForTest().get(EndgameService.ChunkKey.exact(nether, CHUNK)));
         assertEquals(2, service.indexForTest().size());
+    }
+
+    /**
+     * Review C11R-L4: two Level keys with equal string hashes. A save of a chunk in one Level is not an absence of an
+     * ACTIVE endpoint at the same chunk coordinates in the other, so that endpoint is never made MISSING.
+     */
+    @Test
+    void levelKeysWithEqualHashesDoNotShareChunks() {
+        ResourceLocation first = ResourceLocation.tryBuild("test", "dim_aan");
+        ResourceLocation second = ResourceLocation.tryBuild("test", "dim_ac0");
+        assertEquals(Tombstone.hash(first), Tombstone.hash(second), "the fixture keys collide");
+        EndgameService service = service();
+        UUID id = new UUID(0L, 20L);
+        service.coalesced(root -> root.register(id, KIND, OWNER, second, POS.asLong(), false, 2048, 64));
+        service.observe(first, CHUNK, chunk(), false);
+        assertEquals(0, service.pendingObservations(), "a chunk of the other Level was queued");
+        service.tick(3_000L);
+        service.tick(3_100L);
+        assertEquals(EndpointRecord.State.ACTIVE, state(service, id));
+        service.observe(second, CHUNK, chunk(), false);
+        assertEquals(1, service.pendingObservations());
     }
 
     private static void assertIndexMatchesARebuild(EndgameService service) {

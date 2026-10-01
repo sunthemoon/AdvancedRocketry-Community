@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -194,9 +195,9 @@ public final class EndgameService {
         if (!operational) {
             return;
         }
-        ChunkKey key = new ChunkKey(Tombstone.hash(level), chunk);
+        ChunkKey key = ChunkKey.exact(level, chunk);
         registrations.observe(key, tag, endgameTypes.get());
-        if (!index.containsKey(key)) {
+        if (!index.containsKey(key) && !index.containsKey(key.hashed())) {
             return;
         }
         observations.add(new Observation(key, EndpointObservations.scan(tag, endgameTypes.get()), load));
@@ -295,7 +296,9 @@ public final class EndgameService {
     private void drainObservations(long now) {
         EndgameRoot root = data.view();
         for (Observation observation; (observation = observations.poll()) != null; ) {
-            for (UUID id : index.getOrDefault(observation.key(), Set.of())) {
+            Set<UUID> ids = new HashSet<>(index.getOrDefault(observation.key(), Set.of()));
+            ids.addAll(index.getOrDefault(observation.key().hashed(), Set.of()));
+            for (UUID id : ids) {
                 Optional<Long> recorded = position(root, id);
                 if (recorded.isEmpty()) {
                     continue;
@@ -388,10 +391,10 @@ public final class EndgameService {
         for (EndpointRecord record : root.endpoints()) {
             indexKey(root, record.id()).ifPresent(key -> place(next, key, record.id()));
         }
-        root.youngTombstones().forEach(tombstone -> place(next, key(tombstone.levelHash(), tombstone.pos()),
-                tombstone.id()));
-        root.settledTombstones().forEach(tombstone -> place(next, key(tombstone.levelHash(), tombstone.pos()),
-                tombstone.id()));
+        root.youngTombstones().forEach(tombstone -> indexKey(root, tombstone.id())
+                .ifPresent(key -> place(next, key, tombstone.id())));
+        root.settledTombstones().forEach(tombstone -> indexKey(root, tombstone.id())
+                .ifPresent(key -> place(next, key, tombstone.id())));
         next.forEach((key, ids) -> index.put(key, Set.copyOf(ids)));
     }
 
@@ -434,19 +437,24 @@ public final class EndgameService {
         }
     }
 
-    /** The chunk an ID is indexed under: an ACTIVE record's or a tombstone's; none for MISSING or unknown IDs. */
+    /**
+     * The chunk an ID is indexed under: an ACTIVE record's or a young tombstone's by the full Level key, a settled
+     * tombstone's by the Level key hash it keeps (review C11R-L4); none for MISSING or unknown IDs.
+     */
     private static Optional<ChunkKey> indexKey(EndgameRoot root, UUID id) {
         Optional<EndpointRecord> record = root.endpoint(id);
         if (record.isPresent()) {
             return record.get().state() == EndpointRecord.State.ACTIVE
-                    ? Optional.of(key(Tombstone.hash(record.get().level()), record.get().pos())) : Optional.empty();
+                    ? Optional.of(ChunkKey.exact(record.get().level(), chunkOf(record.get().pos()))) : Optional.empty();
         }
-        return root.tombstone(id).map(tombstone -> key(tombstone.levelHash(), tombstone.pos()));
+        return root.tombstone(id).map(tombstone -> tombstone instanceof Tombstone.Young young
+                ? ChunkKey.exact(young.level(), chunkOf(young.pos()))
+                : new ChunkKey(null, tombstone.levelHash(), chunkOf(tombstone.pos())));
     }
 
-    private static ChunkKey key(int levelHash, long pos) {
+    private static long chunkOf(long pos) {
         BlockPos block = BlockPos.of(pos);
-        return new ChunkKey(levelHash, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4));
+        return ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4);
     }
 
     /** Tests: the incremental index and a full rebuild of the current root. */
@@ -492,8 +500,19 @@ public final class EndgameService {
         }
     }
 
-    /** A chunk of one Level; Levels are told apart by the hash of their key, as settled tombstones store it. */
-    record ChunkKey(int levelHash, long chunk) {
+    /**
+     * A chunk of one Level. Live records and young tombstones are keyed by the full Level key, so two Levels whose
+     * keys share a hash never see each other's chunks (review C11R-L4); a settled tombstone keeps only the hash and is
+     * keyed by it ({@code level} null), which only housekeeping reads.
+     */
+    record ChunkKey(@Nullable ResourceLocation level, int levelHash, long chunk) {
+        static ChunkKey exact(ResourceLocation level, long chunk) {
+            return new ChunkKey(level, Tombstone.hash(level), chunk);
+        }
+
+        ChunkKey hashed() {
+            return level == null ? this : new ChunkKey(null, levelHash, chunk);
+        }
     }
 
     record Observation(ChunkKey key, Map<Long, Optional<UUID>> scan, boolean load) {
