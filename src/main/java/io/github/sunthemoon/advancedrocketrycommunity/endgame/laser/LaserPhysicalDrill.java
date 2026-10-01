@@ -116,6 +116,12 @@ final class LaserPhysicalDrill {
         if (!credit && storage.energy() < cost) {
             return Outcome.of(EndgameCode.INSUFFICIENT_ENERGY, true, false);
         }
+        // The layer grant comes first, so a layer is planned (and its events posted) only in the tick that may run it
+        // (review C11R-L1); a grant used by a stopped plan is simply spent.
+        if (!context.devices().laserLayers().take(context.controller())) {
+            context.devices().laserLayers().request(context.controller());
+            return new Outcome(EndgameCode.OK, true, !credit, false);
+        }
         Layer layer = plan(context, markerLevel, markerPos, marker.nextLayer());
         if (layer.code() != EndgameCode.OK) {
             marker.reportStop(layer.code());
@@ -124,10 +130,6 @@ final class LaserPhysicalDrill {
                 audit(context, "protection", layer.code(), "marker=" + link.marker() + " y=" + marker.nextLayer());
             }
             return Outcome.of(layer.code(), !credit, false);
-        }
-        if (!context.devices().laserLayers().take(context.controller())) {
-            context.devices().laserLayers().request(context.controller());
-            return new Outcome(EndgameCode.OK, true, !credit, false);
         }
         if (!credit) {
             storage.spend(cost);

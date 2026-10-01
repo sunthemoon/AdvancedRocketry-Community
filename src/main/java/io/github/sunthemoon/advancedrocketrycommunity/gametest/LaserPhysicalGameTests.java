@@ -17,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.AfterBatch;
@@ -51,8 +52,10 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class LaserPhysicalGameTests {
     private static final String BATCH = "endgame_laser_physical";
     private static final String ATTACHED_BATCH = "endgame_laser_physical_attached";
+    private static final AtomicInteger BREAK_EVENTS = new AtomicInteger();
     private static volatile UUID effectVeto;
     private static volatile UUID breakVeto;
+    private static volatile UUID countBreaksFor;
 
     static {
         MinecraftForge.EVENT_BUS.addListener(LaserPhysicalGameTests::onEffect);
@@ -91,6 +94,9 @@ public final class LaserPhysicalGameTests {
     private static void onBreak(BlockEvent.BreakEvent event) {
         if (event.getPlayer() instanceof FakePlayer fake && fake.getUUID().equals(breakVeto)) {
             event.setCanceled(true);
+        }
+        if (event.getPlayer() instanceof FakePlayer fake && fake.getUUID().equals(countBreaksFor)) {
+            BREAK_EVENTS.incrementAndGet();
         }
     }
 
@@ -264,9 +270,15 @@ public final class LaserPhysicalGameTests {
                     click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_LINK, "link");
                 })
                 .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_START, "start"))
-                .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_CONFIRM, "confirm"))
+                .thenExecuteAfter(11, () -> {
+                    BREAK_EVENTS.set(0);
+                    countBreaksFor = fixture.owner;
+                    click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_CONFIRM, "confirm");
+                })
                 .thenWaitUntil(() -> helper.assertTrue(target.opsDone() == 1, "No first layer: " + drill.describe()))
                 .thenExecute(() -> {
+                    countBreaksFor = null;
+                    int breakEvents = BREAK_EVENTS.get();
                     int entities = overworld.getEntitiesOfClass(ItemEntity.class, around).stream()
                             .mapToInt(entity -> entity.getItem().getCount()).sum();
                     int torches = count(target, Items.TORCH);
@@ -276,6 +288,8 @@ public final class LaserPhysicalGameTests {
                     overworld.getEntitiesOfClass(ItemEntity.class, around).forEach(ItemEntity::discard);
                     cleanup(fixture, joined, overworld, marker, layer1, layer2, target);
                     helper.assertTrue(entities == 0, entities + " items dropped into the world");
+                    // Review C11R-L1: one break event per breakable cell of the layer, not one per planning.
+                    helper.assertTrue(breakEvents == 9, breakEvents + " break events for 9 cells");
                     helper.assertTrue(torches == 1 && ladders == 1 && buttons == 1 && cobblestone == 6,
                             "Hanging blocks were not collected once: torches=" + torches + " ladders=" + ladders
                                     + " buttons=" + buttons + " cobblestone=" + cobblestone);
