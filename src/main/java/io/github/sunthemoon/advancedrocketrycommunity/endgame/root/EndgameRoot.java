@@ -7,10 +7,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.Protect
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -31,6 +33,7 @@ public final class EndgameRoot {
     private final Map<UUID, Tombstone.Settled> settled = new TreeMap<>(EndgameIdOrder.ORDER);
     private final Map<UUID, Long> dispatchedThrough = new TreeMap<>(EndgameIdOrder.ORDER);
     private final Map<String, ProtectedZone> zones = new TreeMap<>();
+    private final Set<UUID> touched = new HashSet<>();
     private long saveEpoch;
     private boolean changedSinceEpoch;
     private int nextSettleOrder;
@@ -66,6 +69,29 @@ public final class EndgameRoot {
 
     public Collection<Tombstone.Settled> settledTombstones() {
         return List.copyOf(settled.values());
+    }
+
+    /** Young and settled tombstones, counted without copying either collection. */
+    public int tombstoneCount() {
+        return young.size() + settled.size();
+    }
+
+    /**
+     * The IDs whose endpoint record or tombstone changed since the last call, so an index follows each mutation
+     * without a full rebuild (review C11R-M5).
+     */
+    public Set<UUID> drainTouched() {
+        if (touched.isEmpty()) {
+            return Set.of();
+        }
+        Set<UUID> drained = Set.copyOf(touched);
+        touched.clear();
+        return drained;
+    }
+
+    private void changed(UUID id) {
+        changedSinceEpoch = true;
+        touched.add(id);
     }
 
     public Optional<Tombstone> tombstone(UUID id) {
@@ -158,7 +184,7 @@ public final class EndgameRoot {
             return EndgameCode.ROOT_FULL;
         }
         endpoints.put(id, new EndpointRecord(id, kind, owner, level, pos, EndpointRecord.State.ACTIVE, saveEpoch));
-        changedSinceEpoch = true;
+        changed(id);
         return EndgameCode.OK;
     }
 
@@ -170,7 +196,7 @@ public final class EndgameRoot {
         }
         endpoints.remove(id);
         young.put(id, new Tombstone.Young(id, record.owner(), record.level(), record.pos()));
-        changedSinceEpoch = true;
+        changed(id);
         return true;
     }
 
@@ -181,7 +207,7 @@ public final class EndgameRoot {
             return false;
         }
         endpoints.put(id, record.withState(EndpointRecord.State.MISSING));
-        changedSinceEpoch = true;
+        changed(id);
         return true;
     }
 
@@ -223,7 +249,7 @@ public final class EndgameRoot {
     private Change settle(Tombstone.Young tombstone, Predicate<UUID> pinned) {
         settled.put(tombstone.id(), tombstone.settle(nextSettleOrder));
         nextSettleOrder = Math.addExact(nextSettleOrder, 1);
-        changedSinceEpoch = true;
+        changed(tombstone.id());
         return Change.done(enforceCaps(tombstone.owner(), pinned));
     }
 
@@ -281,7 +307,7 @@ public final class EndgameRoot {
     private UUID evict(UUID id) {
         settled.remove(id);
         dispatchedThrough.remove(id);
-        changedSinceEpoch = true;
+        changed(id);
         return id;
     }
 
@@ -299,7 +325,7 @@ public final class EndgameRoot {
         }
         endpoints.put(id, new EndpointRecord(id, record.kind(), owner, record.level(), record.pos(), record.state(),
                 record.registeredEpoch()));
-        changedSinceEpoch = true;
+        changed(id);
         return EndgameCode.OK;
     }
 

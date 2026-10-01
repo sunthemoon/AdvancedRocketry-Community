@@ -31,6 +31,8 @@ public final class EndgameLimits {
     // Section 11 tombstones (R3-M2).
     public static final int TOMBSTONE_HOUSEKEEPING_THRESHOLD = 4096;
     public static final int TOMBSTONE_HOUSEKEEPING_AGE_TICKS = 6000;
+    /** Housekeeping runs at most once per this many ticks (review C11R-M5). */
+    public static final int TOMBSTONE_HOUSEKEEPING_INTERVAL_TICKS = 200;
     public static final int MAX_SETTLED_TOMBSTONES_PER_OWNER = 256;
     public static final int MAX_SETTLED_TOMBSTONES = 8192;
     public static final int PERSISTENCE_AGE_TICKS = 40;

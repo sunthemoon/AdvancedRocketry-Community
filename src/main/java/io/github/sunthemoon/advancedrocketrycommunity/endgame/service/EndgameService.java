@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -49,7 +50,10 @@ public final class EndgameService {
     private final Map<UUID, Long> absentSince = new HashMap<>();
     private final Map<UUID, Long> readBackAt = new HashMap<>();
     private final EndpointRegistrations registrations = new EndpointRegistrations();
-    private volatile Map<ChunkKey, Set<UUID>> index = Map.of();
+    /** Chunk to indexed IDs; each value is immutable, so chunk-load threads read single entries safely. */
+    private final Map<ChunkKey, Set<UUID>> index = new ConcurrentHashMap<>();
+    private final Map<UUID, ChunkKey> indexedAt = new HashMap<>();
+    private long nextHousekeeping;
     private MinecraftServer server;
     private EndgameSavedData data;
     private volatile boolean operational;
@@ -103,7 +107,9 @@ public final class EndgameService {
         absentSince.clear();
         readBackAt.clear();
         registrations.clear();
-        index = Map.of();
+        index.clear();
+        indexedAt.clear();
+        nextHousekeeping = 0L;
         audit.clear();
         writeFailureLogged = false;
         lastCoalescedFlush = Long.MIN_VALUE / 2;
@@ -132,7 +138,7 @@ public final class EndgameService {
     public <T> T coalesced(Function<EndgameRoot, T> operation) {
         requireOperational();
         T result = data.update(operation);
-        rebuildIndex();
+        updateIndex();
         return result;
     }
 
@@ -140,7 +146,7 @@ public final class EndgameService {
     public <T> T barrier(Function<EndgameRoot, T> operation) {
         requireOperational();
         T result = data.update(operation);
-        rebuildIndex();
+        updateIndex();
         if (data.isDirty()) {
             flush();
         }
@@ -333,10 +339,13 @@ public final class EndgameService {
         }
     }
 
+    /** At most once per 200 ticks, and only above the threshold (review C11R-M5). */
     private void housekeep(long now) {
-        EndgameRoot root = data.view();
-        if (root.youngTombstones().size() + root.settledTombstones().size()
-                <= EndgameLimits.TOMBSTONE_HOUSEKEEPING_THRESHOLD) {
+        if (now < nextHousekeeping) {
+            return;
+        }
+        nextHousekeeping = now + EndgameLimits.TOMBSTONE_HOUSEKEEPING_INTERVAL_TICKS;
+        if (data.view().tombstoneCount() <= EndgameLimits.TOMBSTONE_HOUSEKEEPING_THRESHOLD) {
             return;
         }
         List<UUID> evicted = coalesced(r -> r.housekeep(id -> readBackAt.containsKey(id)
@@ -366,30 +375,88 @@ public final class EndgameService {
         return root.tombstone(id).map(Tombstone::pos);
     }
 
-    /** Rebuilt after every mutation; an immutable snapshot, so chunk-load threads read it safely. */
+    /** The whole index, built when the root is loaded: ACTIVE records and every tombstone, by chunk. */
     private void rebuildIndex() {
+        index.clear();
+        indexedAt.clear();
         if (data == null || !data.operational()) {
-            index = Map.of();
             return;
         }
         EndgameRoot root = data.view();
+        root.drainTouched();
         Map<ChunkKey, Set<UUID>> next = new HashMap<>();
         for (EndpointRecord record : root.endpoints()) {
-            if (record.state() == EndpointRecord.State.ACTIVE) {
-                add(next, Tombstone.hash(record.level()), record.pos(), record.id());
-            }
+            indexKey(root, record.id()).ifPresent(key -> place(next, key, record.id()));
         }
-        root.youngTombstones().forEach(tombstone -> add(next, tombstone.levelHash(), tombstone.pos(), tombstone.id()));
-        root.settledTombstones().forEach(tombstone -> add(next, tombstone.levelHash(), tombstone.pos(), tombstone.id()));
-        Map<ChunkKey, Set<UUID>> frozen = new HashMap<>();
-        next.forEach((key, ids) -> frozen.put(key, Set.copyOf(ids)));
-        index = Map.copyOf(frozen);
+        root.youngTombstones().forEach(tombstone -> place(next, key(tombstone.levelHash(), tombstone.pos()),
+                tombstone.id()));
+        root.settledTombstones().forEach(tombstone -> place(next, key(tombstone.levelHash(), tombstone.pos()),
+                tombstone.id()));
+        next.forEach((key, ids) -> index.put(key, Set.copyOf(ids)));
     }
 
-    private static void add(Map<ChunkKey, Set<UUID>> index, int levelHash, long pos, UUID id) {
+    private void place(Map<ChunkKey, Set<UUID>> next, ChunkKey key, UUID id) {
+        next.computeIfAbsent(key, ignored -> new HashSet<>()).add(id);
+        indexedAt.put(id, key);
+    }
+
+    /**
+     * After a mutation only the IDs it touched move between chunk entries, so a mutation costs a few map operations
+     * whatever the number of endpoints and tombstones (review C11R-M5).
+     */
+    private void updateIndex() {
+        if (data == null || !data.operational()) {
+            index.clear();
+            indexedAt.clear();
+            return;
+        }
+        EndgameRoot root = data.view();
+        for (UUID id : root.drainTouched()) {
+            ChunkKey now = indexKey(root, id).orElse(null);
+            ChunkKey before = now == null ? indexedAt.remove(id) : indexedAt.put(id, now);
+            if (Objects.equals(before, now)) {
+                continue;
+            }
+            if (before != null) {
+                index.computeIfPresent(before, (key, ids) -> {
+                    Set<UUID> rest = new HashSet<>(ids);
+                    rest.remove(id);
+                    return rest.isEmpty() ? null : Set.copyOf(rest);
+                });
+            }
+            if (now != null) {
+                index.merge(now, Set.of(id), (ids, added) -> {
+                    Set<UUID> all = new HashSet<>(ids);
+                    all.addAll(added);
+                    return Set.copyOf(all);
+                });
+            }
+        }
+    }
+
+    /** The chunk an ID is indexed under: an ACTIVE record's or a tombstone's; none for MISSING or unknown IDs. */
+    private static Optional<ChunkKey> indexKey(EndgameRoot root, UUID id) {
+        Optional<EndpointRecord> record = root.endpoint(id);
+        if (record.isPresent()) {
+            return record.get().state() == EndpointRecord.State.ACTIVE
+                    ? Optional.of(key(Tombstone.hash(record.get().level()), record.get().pos())) : Optional.empty();
+        }
+        return root.tombstone(id).map(tombstone -> key(tombstone.levelHash(), tombstone.pos()));
+    }
+
+    private static ChunkKey key(int levelHash, long pos) {
         BlockPos block = BlockPos.of(pos);
-        index.computeIfAbsent(new ChunkKey(levelHash, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4)),
-                ignored -> new HashSet<>()).add(id);
+        return new ChunkKey(levelHash, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4));
+    }
+
+    /** Tests: the incremental index and a full rebuild of the current root. */
+    Map<ChunkKey, Set<UUID>> indexForTest() {
+        return Map.copyOf(index);
+    }
+
+    Map<ChunkKey, Set<UUID>> rebuiltIndexForTest() {
+        rebuildIndex();
+        return Map.copyOf(index);
     }
 
     // ---- Diagnostics (section 13) ----------------------------------------------------------------------------

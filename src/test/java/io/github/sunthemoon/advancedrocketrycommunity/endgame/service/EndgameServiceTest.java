@@ -98,6 +98,43 @@ class EndgameServiceTest {
         assertEquals(1, service.pendingObservations());
     }
 
+    /** Review C11R-M5: each mutation moves only the IDs it touched, and the result equals a full rebuild. */
+    @Test
+    void theIndexFollowsEveryMutationAsAFullRebuildWould() {
+        EndgameService service = service();
+        ResourceLocation nether = ResourceLocation.tryBuild("minecraft", "the_nether");
+        UUID a = new UUID(0L, 10L);
+        UUID b = new UUID(0L, 11L);
+        UUID c = new UUID(0L, 12L);
+        UUID d = new UUID(0L, 13L);
+        service.coalesced(root -> root.register(a, KIND, OWNER, LEVEL, POS.asLong(), false, 2048, 64));
+        service.coalesced(root -> root.register(b, KIND, OWNER, LEVEL, POS.offset(64, 0, 0).asLong(), false, 2048,
+                64));
+        service.coalesced(root -> root.register(c, KIND, OWNER, nether, POS.asLong(), false, 2048, 64));
+        service.coalesced(root -> root.register(d, KIND, OWNER, LEVEL, POS.above().asLong(), false, 2048, 64));
+        assertIndexMatchesARebuild(service);
+        service.coalesced(root -> root.remove(a));
+        service.coalesced(root -> root.markMissing(b));
+        assertIndexMatchesARebuild(service);
+        assertFalse(service.indexForTest().containsKey(new EndgameService.ChunkKey(Tombstone.hash(LEVEL),
+                new ChunkPos(POS.offset(64, 0, 0)).toLong())), "a MISSING record is not indexed");
+        service.coalesced(root -> root.settle(a, EndgameService::pinned));
+        service.barrier(root -> root.forget(b, OWNER, false, EndgameService::pinned));
+        service.coalesced(root -> root.reassign(c, new UUID(2L, 2L), 64));
+        service.coalesced(root -> root.register(a, KIND, OWNER, LEVEL, POS.asLong(), false, 2048, 64));
+        assertIndexMatchesARebuild(service);
+        service.coalesced(root -> root.evictOwner(OWNER, EndgameService::pinned));
+        assertIndexMatchesARebuild(service);
+        assertEquals(Set.of(d), service.indexForTest().get(new EndgameService.ChunkKey(Tombstone.hash(LEVEL), CHUNK)));
+        assertEquals(Set.of(c), service.indexForTest().get(new EndgameService.ChunkKey(Tombstone.hash(nether), CHUNK)));
+        assertEquals(2, service.indexForTest().size());
+    }
+
+    private static void assertIndexMatchesARebuild(EndgameService service) {
+        var incremental = service.indexForTest();
+        assertEquals(service.rebuiltIndexForTest(), incremental);
+    }
+
     @Test
     void theStatusReportsTheRootAndTheSwitches() {
         EndgameService service = service();
