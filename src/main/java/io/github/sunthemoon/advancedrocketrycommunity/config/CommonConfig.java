@@ -1,6 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -128,7 +130,54 @@ public final class CommonConfig {
             .comment("Gas mission duration in percent of the gas-v1 base duration (ADR-052; 10..1,000).")
             .defineInRange("satellites.gasMissionTimePercent", 100, 10, 1_000);
 
+    // ADR-054 section 1: per-system switches, read at each use. A disabled system keeps its content and state and
+    // still settles and recovers; it only starts nothing new.
+    public static final ForgeConfigSpec.BooleanValue ENDGAME_LASER_DRILL = system(
+            "endgame.laserDrill.enabled", "Orbital laser drills may operate (ADR-055).", true);
+    public static final ForgeConfigSpec.BooleanValue ENDGAME_LASER_PHYSICAL = system(
+            "endgame.laserDrill.physicalMining",
+            "Laser drills may dig real blocks at owned laser targets (ADR-055 physical mode; off by default).", false);
+    public static final ForgeConfigSpec.BooleanValue ENDGAME_RAILGUN = system(
+            "endgame.railgun.enabled", "Railguns may launch cargo (ADR-056).", true);
+    public static final ForgeConfigSpec.BooleanValue ENDGAME_BLACK_HOLE_GENERATOR = system(
+            "endgame.blackHoleGenerator.enabled", "Black-hole generators may burn fuel (ADR-057).", true);
+    public static final ForgeConfigSpec.BooleanValue ENDGAME_GRAVITY_FIELD = system(
+            "endgame.gravityField.enabled", "Area gravity fields may be active (ADR-058).", true);
+    public static final ForgeConfigSpec.BooleanValue ENDGAME_SPACE_ELEVATOR = system(
+            "endgame.spaceElevator.enabled", "Space elevators may bind, ride and ship (ADR-059).", true);
+    public static final ForgeConfigSpec.IntValue ENDGAME_INTENT_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between a player's state-changing endgame intents (ADR-054; at least 10).")
+            .defineInRange("endgame.intentIntervalTicks", EndgameLimits.MIN_INTENT_TICKS,
+                    EndgameLimits.MIN_INTENT_TICKS, EndgameLimits.MAX_INTERVAL_TICKS);
+    public static final ForgeConfigSpec.IntValue ENDGAME_SELECTION_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between a player's endgame selection intents (previous/next; at least 2).")
+            .defineInRange("endgame.selectionIntervalTicks", EndgameLimits.MIN_SELECTION_TICKS,
+                    EndgameLimits.MIN_SELECTION_TICKS, EndgameLimits.MAX_INTERVAL_TICKS);
+    public static final ForgeConfigSpec.IntValue ENDGAME_ENDPOINTS_GLOBAL = limit(
+            "endgame.endpointsGlobal", "Registered endgame endpoints on the server (ADR-054 section 9).",
+            EndgameLimits.MAX_ENDPOINTS);
+    public static final ForgeConfigSpec.IntValue ENDGAME_ENDPOINTS_PER_OWNER = limit(
+            "endgame.endpointsPerOwner", "Registered endgame endpoints per owner.", EndgameLimits.MAX_ENDPOINTS_PER_OWNER);
+    public static final ForgeConfigSpec.IntValue ENDGAME_ZONES = limit(
+            "endgame.zones", "Protected zones on the server (ADR-054 section 6).", EndgameLimits.MAX_ZONES);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
+
+    /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
+    public static EndgameSettings endgameSettings() {
+        if (!SPEC.isLoaded()) {
+            return EndgameSettings.DEFAULTS;
+        }
+        return new EndgameSettings(ENDGAME_LASER_DRILL.get(), ENDGAME_LASER_PHYSICAL.get(), ENDGAME_RAILGUN.get(),
+                ENDGAME_BLACK_HOLE_GENERATOR.get(), ENDGAME_GRAVITY_FIELD.get(), ENDGAME_SPACE_ELEVATOR.get(),
+                ENDGAME_INTENT_INTERVAL_TICKS.get(), ENDGAME_SELECTION_INTERVAL_TICKS.get(),
+                ENDGAME_ENDPOINTS_GLOBAL.get(), ENDGAME_ENDPOINTS_PER_OWNER.get(), ENDGAME_ZONES.get());
+    }
+
+    private static ForgeConfigSpec.BooleanValue system(String path, String comment, boolean defaultValue) {
+        return BUILDER.comment(comment, "Disabling keeps blocks, items and saved state; settlement continues.")
+                .define(path, defaultValue);
+    }
 
     /** ADR-050 section 6 admission limits; the defaults (also the maxima) until the COMMON config is loaded. */
     public static RegistryLimits registryLimits() {

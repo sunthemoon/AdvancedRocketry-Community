@@ -35,9 +35,27 @@ class CommonConfigTest {
     void obsoleteUnconsumedLifecycleToggleIsNotExposed() {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
         // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing,
-        // the three ADR-049 survey scan limits, the ten ADR-050 registry limits and the three ADR-051/052
-        // resource mission values.
-        assertEquals(22, countValues(CommonConfig.SPEC.getValues()));
+        // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
+        // resource mission values and the eleven ADR-054 framework values.
+        assertEquals(33, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void endgameFrameworkValuesHaveTheirContractDefaultsAndRanges() {
+        assertEquals(Boolean.TRUE, CommonConfig.ENDGAME_LASER_DRILL.getDefault());
+        assertEquals(Boolean.FALSE, CommonConfig.ENDGAME_LASER_PHYSICAL.getDefault(), "physical mining is opt-in");
+        assertEquals(Boolean.TRUE, CommonConfig.ENDGAME_RAILGUN.getDefault());
+        assertEquals(Boolean.TRUE, CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.getDefault());
+        assertEquals(Boolean.TRUE, CommonConfig.ENDGAME_GRAVITY_FIELD.getDefault());
+        assertEquals(Boolean.TRUE, CommonConfig.ENDGAME_SPACE_ELEVATOR.getDefault());
+        assertRangeAndDefault("endgame.intentIntervalTicks", CommonConfig.ENDGAME_INTENT_INTERVAL_TICKS, 10, 200, 10);
+        assertRangeAndDefault("endgame.selectionIntervalTicks", CommonConfig.ENDGAME_SELECTION_INTERVAL_TICKS, 2, 200,
+                2);
+        assertRange("endgame.endpointsGlobal", CommonConfig.ENDGAME_ENDPOINTS_GLOBAL, 1, 2048);
+        assertRange("endgame.endpointsPerOwner", CommonConfig.ENDGAME_ENDPOINTS_PER_OWNER, 1, 64);
+        assertRange("endgame.zones", CommonConfig.ENDGAME_ZONES, 1, 256);
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings.DEFAULTS,
+                CommonConfig.endgameSettings(), "the defaults apply until the config loads");
     }
 
     @Test
