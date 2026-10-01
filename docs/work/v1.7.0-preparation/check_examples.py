@@ -131,12 +131,14 @@ class Transit:
     """
 
     MAX_SEQ = 4
+    # R1-H1: tombstone removal needs an aged absence; tests switch it off to separate the residual.
+    TOMBSTONE_REMOVAL = True
 
     @staticmethod
     def initial(payloads=1):
-        # input, outbox{(seq, persisted, aged)}, next_seq
-        s_live = (payloads, frozenset(), 1)
-        s_dur = (payloads, frozenset(), 1)
+        # input, outbox{(seq, persisted, aged)}, next_seq, present, absence (False, "seen" or "aged")
+        s_live = (payloads, frozenset(), 1, True, False)
+        s_dur = (payloads, frozenset(), 1, True)
         l_live = (frozenset(), 0, 1)  # records, hw, E
         l_dur = (frozenset(), 0, 1)
         d_live = (0, frozenset())  # buffer, receipts{(seq,persisted)}
@@ -169,8 +171,9 @@ class Transit:
     def successors(cls, state, crashes_left, faults_left):
         """Yields (label, new_state, crashes_left, faults_left) for every enabled event."""
         s_live, s_dur, l_live, l_dur, d_live, d_dur, rollback = state
-        s_input, outbox, next_seq = s_live
+        s_input, outbox, next_seq, present, absence_seen = s_live
         records, hw, e = l_live
+        hw_value = 0 if hw is None else hw  # None: the tombstone was removed
         buffer, receipts = d_live
         out_seqs = {o[0] for o in outbox}
         rec = lambda seq: cls.record(records, seq)
@@ -184,34 +187,45 @@ class Transit:
                                   parts["d_live"], parts["d_dur"], parts["rollback"]))
 
         # Source rollback detection (ADR-054 section 11, last source row); escrow waits for it.
-        rollback_pending = next_seq <= hw
+        rollback_pending = present and next_seq <= hw_value
         if rollback_pending:
-            yield ("FIX_ROLLBACK", make(s_live=(s_input, outbox, hw + 1), rollback=True),
+            yield ("FIX_ROLLBACK", make(s_live=(s_input, outbox, hw_value + 1, present, absence_seen),
+                                         rollback=True),
                    crashes_left, faults_left)
-        if not rollback_pending and s_input > 0 and len(outbox) < 4 and next_seq <= cls.MAX_SEQ:
-            yield ("ESCROW", make(s_live=(s_input - 1, outbox | {(next_seq, False, False)}, next_seq + 1)),
-                   crashes_left, faults_left)
+        if present and not rollback_pending and s_input > 0 and len(outbox) < 4 and next_seq <= cls.MAX_SEQ:
+            yield ("ESCROW", make(s_live=(s_input - 1, outbox | {(next_seq, False, False)}, next_seq + 1,
+                                          present, absence_seen)), crashes_left, faults_left)
+        if present and s_input == 0 and not outbox:
+            # A player breaks the idle source (allowed: nothing escrowed, nothing in its input buffer).
+            yield ("REMOVE_S", make(s_live=(0, frozenset(), next_seq, False, False)), crashes_left, faults_left)
         new_outbox = frozenset((o[0], True, o[2]) for o in outbox)
-        saved = (s_input, frozenset(out_seqs), next_seq)
-        if saved != s_dur or new_outbox != outbox:
-            yield ("SAVE_S", make(s_live=(s_input, new_outbox, next_seq), s_dur=saved), crashes_left, faults_left)
+        saved = (s_input, frozenset(out_seqs), next_seq, present)
+        observed = absence_seen if absence_seen or present else "seen"
+        if saved != s_dur or new_outbox != outbox or observed != absence_seen:
+            yield ("SAVE_S", make(s_live=(s_input, new_outbox, next_seq, present, observed), s_dur=saved),
+                   crashes_left, faults_left)
             if faults_left:
                 # The save is observed (ChunkDataEvent.Save) but its asynchronous file write is lost.
-                yield ("SAVE_S_LOST", make(s_live=(s_input, new_outbox, next_seq)), crashes_left, faults_left - 1)
-        if any(o[1] and not o[2] for o in outbox):
-            yield ("AGE", make(s_live=(s_input, frozenset((o[0], o[1], o[1] or o[2]) for o in outbox), next_seq)),
-                   crashes_left, faults_left)
+                yield ("SAVE_S_LOST", make(s_live=(s_input, new_outbox, next_seq, present, observed)),
+                       crashes_left, faults_left - 1)
+        if any(o[1] and not o[2] for o in outbox) or absence_seen == "seen":
+            yield ("AGE", make(s_live=(s_input, frozenset((o[0], o[1], o[1] or o[2]) for o in outbox), next_seq,
+                                       present, "aged" if absence_seen else False)), crashes_left, faults_left)
+        if cls.TOMBSTONE_REMOVAL and hw is not None and not present and absence_seen == "aged":
+            # R1-H1: the tombstone goes only once the source's absence is persisted.
+            yield ("DROP_HW", make(l_live=(records, None, e)), crashes_left, faults_left)
+        lowest = min(out_seqs) if out_seqs else None
         for seq, persisted, aged in sorted(outbox):
             r = rec(seq)
-            if r is None and seq <= hw:
-                yield ("STALE_DROP", make(s_live=(s_input, outbox - {(seq, persisted, aged)}, next_seq)),
-                       crashes_left, faults_left)
-            elif r is None and persisted and aged and seq == hw + 1:
+            if r is None and seq <= hw_value:
+                yield ("STALE_DROP", make(s_live=(s_input, outbox - {(seq, persisted, aged)}, next_seq,
+                                                  present, absence_seen)), crashes_left, faults_left)
+            elif r is None and persisted and aged and seq == lowest and seq > hw_value:
                 yield ("REGISTER", make(l_live=(records | {(seq, "T", e, False, None)}, seq, e)),
                        crashes_left, faults_left)
             elif r is not None and e > r[2]:
-                yield ("RELEASE", make(s_live=(s_input, outbox - {(seq, persisted, aged)}, next_seq)),
-                       crashes_left, faults_left)
+                yield ("RELEASE", make(s_live=(s_input, outbox - {(seq, persisted, aged)}, next_seq,
+                                               present, absence_seen)), crashes_left, faults_left)
         for r in sorted(records, key=lambda x: x[0]):
             seq, st, de, acked, ae = r
             if st == "T":
@@ -246,9 +260,10 @@ class Transit:
     @classmethod
     def crash(cls, state):
         _, s_dur, _, l_dur, _, d_dur, rollback = state
-        s_input, out_seqs, next_seq = s_dur
+        s_input, out_seqs, next_seq, present = s_dur
         # After restart the chunk load is a persistence observation; ageing restarts.
-        s_live = (s_input, frozenset((seq, True, False) for seq in out_seqs), next_seq)
+        s_live = (s_input, frozenset((seq, True, False) for seq in out_seqs), next_seq, present,
+                  False if present else "seen")
         d_buffer, d_receipts = d_dur
         return cls.normalize((s_live, s_dur, l_dur, l_dur, (d_buffer, frozenset((r, True) for r in d_receipts)),
                               d_dur, rollback))
@@ -257,7 +272,7 @@ class Transit:
     def drain(cls, state):
         """Fair continuation without crashes or faults; returns the quiescent state."""
         order = ["FIX_ROLLBACK", "STALE_DROP", "D_RECOVER", "D_ACK", "D_DROP", "D_REMAT", "PRUNE",
-                 "RELEASE", "REGISTER", "CLAIM", "ARRIVE", "ESCROW", "AGE",
+                 "RELEASE", "REGISTER", "CLAIM", "ARRIVE", "ESCROW", "AGE", "DROP_HW",
                  "FLUSH_L", "SAVE_D", "SAVE_S"]
         for _ in range(400):
             options = {}
@@ -271,7 +286,7 @@ class Transit:
 
     @classmethod
     def delivered(cls, state):
-        (s_input, outbox, _), _, (records, _, _), _, (buffer, receipts), _, rollback = state
+        (s_input, outbox, _, _, _), _, (records, _, _), _, (buffer, receipts), _, rollback = state
         assert not outbox and not records and not receipts and s_input == 0, state
         return buffer, rollback
 
@@ -594,7 +609,12 @@ class Vectors(unittest.TestCase):
         self.assertEqual(states, EXAMPLES["transit"]["states_two_payloads_two_crashes"])
 
     def test_transit_lost_write_residual_is_detected(self):
-        states, outcomes = Transit.explore(crashes=2, faults=1)
+        # With tombstones kept, every duplicate needs a lost escrow write and is audited.
+        Transit.TOMBSTONE_REMOVAL = False
+        try:
+            states, outcomes = Transit.explore(crashes=2, faults=1)
+        finally:
+            Transit.TOMBSTONE_REMOVAL = True
         for (delivered, rollback, faulted), _ in outcomes.items():
             self.assertIn(delivered, (1, 2))
             if delivered == 2:
@@ -603,6 +623,12 @@ class Vectors(unittest.TestCase):
                 self.assertEqual((delivered, rollback), (1, False))
         self.assertIn((2, True, True), outcomes)  # the residual is reachable, as documented
         self.assertEqual(states, EXAMPLES["transit"]["states_one_payload_two_crashes_one_lost_write"])
+
+    def test_transit_tombstone_residual_needs_a_lost_absence_write(self):
+        states, outcomes = Transit.explore(crashes=2, faults=1)
+        unaudited = {key for key in outcomes if key[0] == 2 and not key[1]}
+        self.assertEqual(unaudited, {(2, False, True)})  # only after a lost write, as ADR-054 section 11 states
+        self.assertEqual(states, EXAMPLES["transit"]["states_tombstone_removal_one_lost_write"])
 
     def test_transit_named_cuts(self):
         for case in EXAMPLES["transit"]["named_cuts"]:

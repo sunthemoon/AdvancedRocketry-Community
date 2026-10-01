@@ -315,7 +315,23 @@ only otherwise.
 (`IN_TRANSIT`, `ARRIVED`, `CLAIMED`, `QUARANTINED`), `paid_endpoint`,
 `acknowledged`, `ack_epoch`, `redirected`. Identity is `(source, seq)`.
 `dispatched_through[S]` is the highest registered `seq` of S and never
-decreases; it is what keeps a pruned transfer from being registered again. Limits: 512 records globally, 32 per owner, counting live
+decreases; it is what keeps a pruned transfer from being registered again.
+When S's endpoint record is removed (by any cause, §9, or by an operator purge)
+`dispatched_through[S]` stays as a **tombstone** until S's absence is persisted:
+a `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of S's chunk whose
+block-entity list holds no entry with S's ID at the recorded position, observed
+at least 40 ticks earlier (the age rule of step 2). Until then a crash can
+restore S with a stale outbox entry, and only the tombstone keeps it from
+registering a delivered payload again (review R1-H1). Tombstones are at most
+64 bytes each. One is removed only when its source's absence was observed at
+least 6,000 ticks earlier **and** the table holds more than 8,192 tombstones,
+oldest observation first; otherwise tombstones are kept, admitted up to the
+root's hard bound. Residual: if the absence observation itself was a lost
+asynchronous write and the server then crashed, S could return after its
+tombstone was removed and register a delivered payload again, unaudited. The
+6,000-tick age (five minutes of uninterrupted running, far beyond any `IOWorker`
+backlog) and the pressure rule make that unreachable in practice; it is the
+same lost-write class as the escrow residual below. Limits: 512 records globally, 32 per owner, counting live
 outbox entries known to the server. A record whose payload no longer decodes
 (for example an item of a removed mod) is `QUARANTINED` with its raw payload kept
 byte-identical; it is never claimed, and only an operator purge removes it. A
@@ -331,11 +347,14 @@ purge of a record whose source still holds the entry also drops that entry
    destination passing the system's route rule, a free outbox slot, the limits
    and the energy.
 2. **Registration.** When the entry is persisted and the persistence
-   observation is at least 40 ticks old, and `seq = dispatched_through[S] + 1`,
-   the ledger creates the record (`IN_TRANSIT`, `dispatch_epoch = E`,
+   observation is at least 40 ticks old, and the entry is S's **lowest** outbox
+   entry with `seq > dispatched_through[S]`, the ledger creates the record (`IN_TRANSIT`, `dispatch_epoch = E`,
    `arrive_at = now + travel`) and sets `dispatched_through[S] = seq`. If the
    destination has meanwhile become `MISSING` or was removed, the record is still
-   created; it will wait as `DESTINATION_MISSING`.
+   created; it will wait as `DESTINATION_MISSING`. Normally
+   `seq = dispatched_through[S] + 1`; a larger `seq` means the ledger lost
+   registrations (an operator restored an older file), and the entry registers
+   with a `SEQUENCE_GAP` audit line instead of waiting forever.
 3. **Release.** S drops the outbox entry when its record is durable, or when
    `seq ≤ dispatched_through[S]` and the record is gone (it was delivered,
    acknowledged durably and pruned, or purged by an operator).
@@ -369,7 +388,7 @@ residual below; v1.7 adds no window beyond it.
 | Ledger | Outbox entry `seq` at S | Action |
 |---|---|---|
 | Blocked | any | Nothing; escrow refused |
-| No record, `seq > dispatched_through[S]` | persisted, aged, next in order | Register (step 2) |
+| No record, `seq > dispatched_through[S]` | persisted, aged, lowest entry of S | Register (step 2); `SEQUENCE_GAP` if `seq > dispatched_through[S] + 1` |
 | No record, `seq > dispatched_through[S]` | unpersisted or not aged | Wait |
 | No record, `seq ≤ dispatched_through[S]` | present | Delivered and pruned (or purged): drop the entry, audit `OUTBOX_STALE_DROPPED` |
 | Record present, not durable | present | Wait |
@@ -391,8 +410,8 @@ keeps it.
 
 **Pruning.** A record is removed once its acknowledgement is durable, whether or
 not S has already dropped its entry; the `dispatched_through` rule above makes a
-late drop safe. `dispatched_through[S]` is removed only when S's endpoint record
-is removed, S holds no outbox entry, and no record has source S. A
+late drop safe. `dispatched_through[S]` is removed only as a tombstone whose
+source's absence is persisted (above). A
 `source_released` flag was considered and dropped: the reference model shows it
 changes no outcome, with or without a lost source write.
 
@@ -413,6 +432,7 @@ its payload.
 | Claim: D saved, ledger not | Receipt, record `ARRIVED` | `CLAIM_RECOVERED`; paid once |
 | Claim: ledger flushed, D not | `CLAIMED`, no receipt | Rematerialized once into incoming; nothing was withdrawable before the lost save |
 | Claim persisted, payload moved and withdrawn, player file saved, D's chunk not saved again | D's incoming or buffer still holds the payload; the player holds it too | **Residual**, the ordinary container/player torn save of every vanilla chest; the model shows no other duplicate or loss path |
+| S removed (and its tombstone kept), ledger flushed, S's chunk not saved | S restored with an entry `seq ≤ dispatched_through` | Dropped (`OUTBOX_STALE_DROPPED`); delivered once |
 | Record pruned while S still holds the entry (S unloaded, its release not yet saved, or that save lost) | Entry with `seq ≤ dispatched_through`, no record | Dropped (`OUTBOX_STALE_DROPPED`); the payload was already delivered once |
 | **Residual**: S's escrow save observed but its asynchronous file write lost, then the record durable | S's input still holds the payload, record exists | Duplicate of one payload, detected and audited as `SOURCE_ROLLBACK`; same class as a torn vanilla save. The 40-tick age rule narrows the window to an `IOWorker` backlog older than 2 s |
 | **Residual**: operator redirect after a ledger rollback | ADR-051 §9 | Possible double delivery, audited |
@@ -440,7 +460,8 @@ and after every system.
   `/arce endgame status` (switches, root state and size, active device counts,
   last-tick work per system, tickets owned: always 0); `audit`; `zone …` (§6);
   `device inspect <pos>`; `device owner <pos> <player>`; `endpoint list
-  [<player>]`; `endpoint purge <id>` (records only, refused while referenced);
+  [<player>]`; `endpoint purge <id>` (removes the index record only, refused
+  while referenced; the §11 tombstone stays until the absence is persisted);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.
 - **Players** see their own device status in its menu; nothing lists other
   players' devices, endpoints, zones or coordinates.

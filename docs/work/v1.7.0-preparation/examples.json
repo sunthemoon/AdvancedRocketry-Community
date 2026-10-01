@@ -632,8 +632,9 @@
   }
  ],
  "transit": {
-  "states_two_payloads_two_crashes": 53783,
-  "states_one_payload_two_crashes_one_lost_write": 7456,
+  "states_two_payloads_two_crashes": 54060,
+  "states_one_payload_two_crashes_one_lost_write": 15467,
+  "states_tombstone_removal_one_lost_write": 21668,
   "named_cuts": [
    {
     "name": "escrow not saved",
@@ -751,6 +752,31 @@
      "FLUSH_L",
      "PRUNE",
      "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "R1-H1: source removed after delivery, crash before its chunk saved the removal",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "RELEASE",
+     "ARRIVE",
+     "CLAIM",
+     "SAVE_D",
+     "D_ACK",
+     "FLUSH_L",
+     "PRUNE",
+     "D_DROP",
+     "SAVE_D",
+     "REMOVE_S",
      "CRASH"
     ],
     "expected": [
