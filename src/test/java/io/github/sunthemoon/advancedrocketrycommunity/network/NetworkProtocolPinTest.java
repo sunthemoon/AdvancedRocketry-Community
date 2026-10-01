@@ -63,7 +63,7 @@ final class NetworkProtocolPinTest {
                         "A message registration the pin table cannot read (for example a non-literal index): " + file);
             }
         }
-        assertEquals(5, channelSources.size(), "Channel sources changed: " + channelSources);
+        assertEquals(6, channelSources.size(), "Channel sources changed: " + channelSources);
         assertEquals(expected(), actual.stream().sorted().toList());
     }
 

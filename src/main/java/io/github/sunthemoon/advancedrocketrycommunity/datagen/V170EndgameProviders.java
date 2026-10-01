@@ -44,6 +44,10 @@ public final class V170EndgameProviders {
                     mcLoc("block/obsidian"));
             simpleBlock(ModBlocks.ENDGAME_CASING.get(), casing);
             simpleBlockItem(ModBlocks.ENDGAME_CASING.get(), casing);
+            ModelFile drill = models().orientable("orbital_laser_drill", modLoc("block/machine_casing_side"),
+                    modLoc("block/machine_casing_front"), mcLoc("block/obsidian"));
+            horizontalBlock(ModBlocks.ORBITAL_LASER_DRILL.get(), drill);
+            simpleBlockItem(ModBlocks.ORBITAL_LASER_DRILL.get(), drill);
             itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
         }
     }
@@ -61,11 +65,12 @@ public final class V170EndgameProviders {
         @Override
         protected void generate() {
             dropSelf(ModBlocks.ENDGAME_CASING.get());
+            dropSelf(ModBlocks.ORBITAL_LASER_DRILL.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return List.of(ModBlocks.ENDGAME_CASING.get());
+            return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get());
         }
     }
 
@@ -90,6 +95,14 @@ public final class V170EndgameProviders {
                     .define('D', Tags.Items.GEMS_DIAMOND)
                     .define('S', ModItems.SILICON_WAFER.get())
                     .unlockedBy("has_silicon_wafer", has(ModItems.SILICON_WAFER.get()))
+                    .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ORBITAL_LASER_DRILL.get())
+                    .pattern("CLC").pattern("ERE").pattern("CEC")
+                    .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('L', ModItems.LASER_LENS.get())
+                    .define('E', ModItems.ENDGAME_CASING.get())
+                    .define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE)
+                    .unlockedBy("has_laser_lens", has(ModItems.LASER_LENS.get()))
                     .save(output);
         }
     }
@@ -118,7 +131,8 @@ public final class V170EndgameProviders {
                     ModBlocks.WARP_CORE.get(),
                     ModBlocks.SATELLITE_BUILDER.get(),
                     ModBlocks.MICROWAVE_RECEIVER.get(),
-                    ModBlocks.ENDGAME_CASING.get()
+                    ModBlocks.ENDGAME_CASING.get(),
+                    ModBlocks.ORBITAL_LASER_DRILL.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);

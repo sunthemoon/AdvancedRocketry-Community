@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlock;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -158,6 +160,18 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)
                     .sound(SoundType.METAL))
+    );
+
+    /** ADR-055: the orbital laser drill controller; pistons cannot move it and explosions barely scratch it. */
+    public static final RegistryObject<Block> ORBITAL_LASER_DRILL = BLOCKS.register(
+            "orbital_laser_drill",
+            () -> new OrbitalLaserDrillBlock(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_BLACK)
+                            .requiresCorrectToolForDrops()
+                            .strength(5.0F, 1200.0F)
+                            .pushReaction(PushReaction.BLOCK)
+                            .sound(SoundType.METAL))
     );
 
     private static BlockBehaviour.Properties metalProperties() {

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenu;
@@ -50,6 +51,11 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<MicrowaveReceiverMenu>> MICROWAVE_RECEIVER = MENUS.register(
             "microwave_receiver",
             () -> IForgeMenuType.create(MicrowaveReceiverMenu::new)
+    );
+
+    public static final RegistryObject<MenuType<OrbitalLaserDrillMenu>> ORBITAL_LASER_DRILL = MENUS.register(
+            "orbital_laser_drill",
+            () -> IForgeMenuType.create(OrbitalLaserDrillMenu::new)
     );
 
     private ModMenuTypes() {

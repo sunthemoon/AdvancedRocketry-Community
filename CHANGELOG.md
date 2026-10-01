@@ -25,7 +25,23 @@ No candidate or release approval is assigned.
 - Public API 1.8 adds the cancelable `EndgameEffectEvent`, so claim and
   protection mods can veto endgame effects.
 - Add the Endgame Casing block and the Laser Lens item with their recipes.
-  The endgame devices that use them are not available yet.
+- Add the Orbital Laser Drill (ADR-055, logical mode). Build it as a 3 × 3 × 3
+  cube of Endgame Casing with the drill in the middle of the front face, on a
+  station you may build on. With a Laser Lens, energy (10,000 FE per
+  operation by default, 200,000 FE buffer) and room for the whole result, it
+  samples the body the station orbits once per second. Items come from the
+  new data-driven `laser_drill_tables` (Earth, Moon, Mars, Venus and a default
+  for other surface bodies); gas giants, stars and orbit-only planets need a
+  table of their own. A full output pauses the drill and nothing is lost.
+  Results are deterministic per drill, and a warp changes the table at the
+  next operation. Start, stop and the redstone mode are menu buttons.
+- New COMMON values `endgame.laserDrill.*`: energy percent, operation
+  interval, active drills per owner and on the server, and per-tick caps.
+- Operator commands `/arce endgame device inspect <pos>` and
+  `device owner <pos> <player>` (an unowned device, for example one placed by
+  a command, does nothing until an operator gives it an owner). Device data
+  that does not load is kept unchanged and the device stays inert; only
+  operators can break it.
 
 ## v1.6.0 — in development
 

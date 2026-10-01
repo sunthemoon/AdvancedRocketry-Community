@@ -32,6 +32,7 @@ public final class EndgameStructure {
     private final String patternId;
     private final Block controllerBlock;
     private EndgameCode code = EndgameCode.UNFORMED;
+    private boolean known;
     private boolean pending = true;
     private long lastValidation = Long.MIN_VALUE / 2;
     @Nullable
@@ -50,13 +51,18 @@ public final class EndgameStructure {
         return code;
     }
 
+    /** False until the first validation since the controller loaded; nothing operates before it. */
+    public boolean known() {
+        return known;
+    }
+
     /** Called from the controller's ticker on the server thread. */
     public void tick(ServerLevel level, BlockPos controller, Direction facing, UUID device, EndgameDevices devices,
                      long now) {
         Optional<MultiblockPatternDefinition> definition = devices.pattern(patternId);
         if (definition.isEmpty()) {
-            code = EndgameCode.UNFORMED;
             untrack(devices);
+            known = true;
             return;
         }
         PatternTransform transform = forFacing(facing);
@@ -88,6 +94,7 @@ public final class EndgameStructure {
             default -> EndgameCode.UNFORMED;
         };
         pending = false;
+        known = true;
         lastValidation = now;
     }
 
@@ -100,6 +107,7 @@ public final class EndgameStructure {
         trackedLevel = null;
         trackedController = null;
         code = EndgameCode.UNFORMED;
+        known = false;
         pending = true;
     }
 

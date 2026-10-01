@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/orbital_laser_drill",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/orbital_laser_drill"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/orbital_laser_drill",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/orbital_laser_drill",
+      "y": 270
+    }
+  }
+}

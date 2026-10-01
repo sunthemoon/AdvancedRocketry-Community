@@ -58,6 +58,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.MICROWAVE_RECEIVER.get(),
                 MicrowaveReceiverScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.ORBITAL_LASER_DRILL.get(),
+                OrbitalLaserDrillScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 

@@ -170,6 +170,8 @@ public final class ModItems {
     public static final RegistryObject<Item> ENDGAME_CASING = blockItem("endgame_casing", ModBlocks.ENDGAME_CASING);
     /** ADR-055: the laser drill's lens; it sits in the controller's lens slot and is not consumed. */
     public static final RegistryObject<Item> LASER_LENS = ITEMS.register("laser_lens", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> ORBITAL_LASER_DRILL = blockItem("orbital_laser_drill",
+            ModBlocks.ORBITAL_LASER_DRILL);
 
     private ModItems() {
     }

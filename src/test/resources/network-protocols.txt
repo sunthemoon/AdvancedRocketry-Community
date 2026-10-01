@@ -1,6 +1,7 @@
 # ADR-046 UI-01: every ARCE network channel, its protocol version and its registered messages.
-# A change to this table needs an ADR and a protocol version bump (celestial_snapshot 3: ADR-047; satellite 1: ADR-049). Format:
+# A change to this table needs an ADR and a protocol version bump (celestial_snapshot 3: ADR-047; satellite 1: ADR-049; endgame 1: ADR-054). Format:
 # channel | protocol | index | message class | direction
+advancedrocketrycommunity:endgame|1|0|EndgameDeviceView|PLAY_TO_CLIENT
 advancedrocketrycommunity:life_support_status|1|0|LifeSupportStatusPacket|PLAY_TO_CLIENT
 advancedrocketrycommunity:celestial_snapshot|3|0|CelestialSnapshotPacket|PLAY_TO_CLIENT
 advancedrocketrycommunity:celestial_snapshot|3|1|StationSkyContextPacket|PLAY_TO_CLIENT

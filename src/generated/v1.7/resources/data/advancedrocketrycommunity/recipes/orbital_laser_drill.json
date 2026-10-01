@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "E": {
+      "item": "advancedrocketrycommunity:endgame_casing"
+    },
+    "L": {
+      "item": "advancedrocketrycommunity:laser_lens"
+    },
+    "R": {
+      "tag": "forge:storage_blocks/redstone"
+    }
+  },
+  "pattern": [
+    "CLC",
+    "ERE",
+    "CEC"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:orbital_laser_drill"
+  },
+  "show_notification": true
+}
