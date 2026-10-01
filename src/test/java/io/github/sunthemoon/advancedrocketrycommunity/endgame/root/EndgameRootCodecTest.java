@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.MigrationDiagnosticId;

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.root;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;

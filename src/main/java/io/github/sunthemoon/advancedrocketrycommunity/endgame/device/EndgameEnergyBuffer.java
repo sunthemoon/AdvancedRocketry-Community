@@ -1,6 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.device;
 
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;

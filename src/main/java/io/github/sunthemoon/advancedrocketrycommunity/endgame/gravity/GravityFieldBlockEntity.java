@@ -9,10 +9,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameReds
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameStations;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.EndgameProtection;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ForgeProtectionView;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;

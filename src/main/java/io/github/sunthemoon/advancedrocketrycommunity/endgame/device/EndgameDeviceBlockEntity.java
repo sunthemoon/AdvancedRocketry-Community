@@ -1,8 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.device;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;

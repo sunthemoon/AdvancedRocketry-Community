@@ -1,4 +1,4 @@
-package io.github.sunthemoon.advancedrocketrycommunity.endgame.root;
+package io.github.sunthemoon.advancedrocketrycommunity.endgame.model;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

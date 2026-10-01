@@ -1,6 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.Objects;
 import java.util.Set;

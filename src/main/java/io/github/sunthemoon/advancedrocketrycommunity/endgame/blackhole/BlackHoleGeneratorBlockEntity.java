@@ -8,8 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameStru
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
