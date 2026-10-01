@@ -534,6 +534,12 @@ def authority(case):
     actor, action = case["actor"], case["action"]
     if actor == "operator":
         return True
+    if action in ("RIDE", "SHIP"):  # ADR-054 section 3 per-action overrides (R1-M3)
+        return actor in ("station_owner", "station_member") and case["anchor_owner_in_station"]
+    if action == "BIND":
+        return actor == "station_owner"
+    if action == "UNBIND":
+        return actor in ("station_owner", "anchor_owner")
     station = case.get("station")
     if station is None:
         if actor == "device_owner":

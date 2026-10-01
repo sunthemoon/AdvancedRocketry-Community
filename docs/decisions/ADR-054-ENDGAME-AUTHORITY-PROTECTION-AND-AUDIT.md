@@ -124,6 +124,16 @@ targets, links, binds), `OPERATE` (start, stop, launch, ride), `WITHDRAW`.
 - `VIEW` of public status never includes a target, a coordinate, an owner name or
   another device's ID.
 
+**Per-action overrides** (review R1-M3). These replace the table above for the
+named actions only; `EndgameAuthority` evaluates them first.
+
+| Action | Allowed for | Extra condition |
+|---|---|---|
+| Elevator `RIDE` and `SHIP`, at either endpoint of a pair | Station owner, station members, operators (station `VISIT`, the rocket rule) | The pair's anchor owner is the station's current owner or a current member, else `ANCHOR_OWNER_NOT_MEMBER` (operators exempt). An ownership transfer or a removed membership therefore stops traffic into the anchor owner's base without that owner's consent |
+| Elevator `BIND` | Station owner or operator, at the terminal | The anchor is the actor's own; operators may pick any (ADR-059 §3) |
+| Elevator `UNBIND` | Station owner, anchor owner, operators | From either endpoint's menu or the command, whatever the pair's validity (ADR-045) |
+| `CONFIGURE` by a station owner of a device someone else owns | Station owner | Selection lists show the **device owner's** endpoints (below), not the station owner's |
+
 ### 4. Intents and network
 
 - All player intents are fixed button IDs through vanilla `clickMenuButton`. No
@@ -262,10 +272,12 @@ An **endpoint** is a device that other devices can address: `laser_target`
   entity carrying a registered ID at another position is
   `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
   are outside the guarantee, as in ADR-051 §7).
-- **Selection.** A player selects only their **own** `ACTIVE` endpoints of a
-  compatible kind, from a server-side list filtered by the system's route rule
-  and sorted in ID order (§7). Operators can select any endpoint. The owner sees
-  the endpoint's Level, position and body; others see nothing.
+- **Selection.** A selection list holds only `ACTIVE` endpoints of a compatible
+  kind owned by the **device's owner**, filtered by the system's route rule and
+  sorted in ID order (§7); whoever is allowed to `CONFIGURE` the device (§3)
+  picks from it. Operators can select any endpoint. The device owner, the
+  station owner where §3 allows `CONFIGURE`, and operators see the endpoint's
+  Level, position and body; others see nothing.
 - **Body context.** An endpoint's body is derived live, never stored, with the
   existing ADR-014 `BodyContextResolver.resolve(WorldLocation, catalog)` over one
   captured catalog: in the Space Level the station-region resolver gives the

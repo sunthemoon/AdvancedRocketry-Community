@@ -80,7 +80,8 @@ and audited. Concurrent binds are serialized on the server thread; the second
 sees the first's pair.
 
 **Validity at use** is re-derived each time from live state, never cached: ADR-045
-rules 1, 3, 4 and 5 (rule 2 is the actor's, checked per action), the stored
+rules 1, 3, 4 and 5 (ADR-045's owner-only rule 2 is replaced, per action, by
+ADR-054 §3's overrides, so members can ride and automation can ship), the stored
 `level_key` equal to the body's current Level, and both endpoints `ACTIVE` in the
 index. A failure reports the rule and changes nothing; a missing body, a
 remapped Level or an absent Level leaves the pair preserved and invalid.
@@ -136,10 +137,12 @@ the pair is unbound or invalid afterwards.
 
 ### 7. Who may ride or ship
 
-Riding and shipping need the station's `VISIT` access (owner, members,
-operators), the same rule as flying a rocket to the station; configuration and
-binding need the station owner or an operator; the anchor owner may also ship
-and unbind.
+ADR-054 §3's per-action overrides apply (review R1-M3): riding and shipping
+need the station's `VISIT` access (owner, members, operators), the rocket rule,
+and the anchor owner must be the station's current owner or a member
+(`ANCHOR_OWNER_NOT_MEMBER`, operators exempt); binding needs the station owner
+or an operator; unbinding is open to the station owner, the anchor owner and
+operators.
 
 ### 8. Passenger rides
 

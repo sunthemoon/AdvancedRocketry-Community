@@ -1372,6 +1372,56 @@
     "owner_build_access": true
    },
    "allowed": false
+  },
+  {
+   "actor": "station_member",
+   "action": "RIDE",
+   "anchor_owner_in_station": true,
+   "allowed": true
+  },
+  {
+   "actor": "station_member",
+   "action": "RIDE",
+   "anchor_owner_in_station": false,
+   "allowed": false
+  },
+  {
+   "actor": "station_owner",
+   "action": "SHIP",
+   "anchor_owner_in_station": false,
+   "allowed": false
+  },
+  {
+   "actor": "operator",
+   "action": "RIDE",
+   "anchor_owner_in_station": false,
+   "allowed": true
+  },
+  {
+   "actor": "stranger",
+   "action": "RIDE",
+   "anchor_owner_in_station": true,
+   "allowed": false
+  },
+  {
+   "actor": "anchor_owner",
+   "action": "UNBIND",
+   "allowed": true
+  },
+  {
+   "actor": "station_member",
+   "action": "UNBIND",
+   "allowed": false
+  },
+  {
+   "actor": "station_owner",
+   "action": "BIND",
+   "allowed": true
+  },
+  {
+   "actor": "anchor_owner",
+   "action": "BIND",
+   "allowed": false
   }
  ],
  "protection": [
