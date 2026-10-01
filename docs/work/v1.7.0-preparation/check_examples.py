@@ -232,7 +232,8 @@ class Transit:
                    crashes_left, faults_left)
         new_outbox = frozenset((o[0], True, o[2]) for o in outbox)
         saved = (s_input, frozenset(out_seqs), next_seq, present)
-        observed = absence_seen if absence_seen or present else "seen"
+        # R2-L1: only a chunk-load tag after a start (the crash below) observes an absence for tombstones.
+        observed = absence_seen
         if saved != s_dur or new_outbox != outbox or observed != absence_seen or destroyed[0] != destroyed[1]:
             yield ("SAVE_S", make(s_live=(s_input, new_outbox, next_seq, present, observed), s_dur=saved,
                                   destroyed=(destroyed[0], destroyed[0])), crashes_left, faults_left)
@@ -871,11 +872,12 @@ class Vectors(unittest.TestCase):
         self.assertIn((2, 0, True, True), outcomes)  # the residual is reachable, as documented
         self.assertEqual(states, EXAMPLES["transit"]["states_one_payload_two_crashes_one_lost_write"])
 
-    def test_transit_tombstone_residual_needs_a_lost_absence_write(self):
+    def test_transit_tombstone_removal_needs_a_reloaded_absence(self):
+        # R2-L1: tombstones go only after the absence is read back from disk, so even a lost write
+        # cannot produce an unaudited duplicate.
         states, outcomes = Transit.explore(crashes=2, faults=1)
         unaudited = {key for key in outcomes if key[0] > 1 and not key[2]}
-        self.assertTrue(unaudited)
-        self.assertTrue(all(key[3] for key in unaudited))  # only after a lost write, as ADR-054 section 11 states
+        self.assertEqual(unaudited, set(), outcomes)
         self.assertEqual(states, EXAMPLES["transit"]["states_tombstone_removal_one_lost_write"])
 
     def test_transit_named_cuts(self):

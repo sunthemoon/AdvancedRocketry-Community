@@ -266,21 +266,21 @@ records `tickTimes` before END handlers run (§7 budgets).
 assumed. The **endgame reference load** is: 16 logical and 4 physical laser
 drills, 32 railguns with 16 launching every 20 ticks, 16 burning black-hole
 generators, 64 active fields with 20 players inside them, 8 elevator pairs
-with 4 rides per minute, 512 transit records, 4,096 endpoints and 8,192
-tombstones, on top of the docs/17 §4 reference load.
+with 4 rides per minute, 256 transit records, 1,024 endpoints and 1,024
+tombstones (a root of about 1.1 MiB), on top of the docs/17 §4 reference load.
 
 | Budget | Limit |
 |---|---|
 | All endgame work, systems loaded and idle | mean ≤ 0.1 ms per tick |
-| All endgame work at the endgame reference load | mean ≤ 2.0 ms, P99 ≤ 8 ms per tick |
+| All endgame work at the endgame reference load | mean ≤ 2.0 ms per tick over all ticks; P99 ≤ 8 ms over the ticks without an endgame flush (review R2-L3) |
 | Share per system at that load | laser drills ≤ 0.8 ms; ledger passes (railgun and elevator cargo) ≤ 0.5 ms; black-hole generators ≤ 0.2 ms; field lookups ≤ 0.3 ms; rides ≤ 0.2 ms (means) |
-| One barrier flush of a root at the 4 MiB bound | ≤ 50 ms |
-| Memory | root ≤ 4 MiB encoded and ≤ 32 MiB of accounted heap; field index ≤ 1,024 entries; audit ring 512 lines; one device view ≤ 8 KiB per open menu |
+| One coalesced or barrier flush | ≤ 60 ms at the reference root, ≤ 250 ms at the accounted maximum (§10, about 2.4 MiB); at most one coalesced flush per 100 ticks plus the spaced barriers; a flush tick is its own budget, inside docs/17 §4's 500 ms spike limit |
+| Memory | root ≤ 4 MiB encoded (accounted maximum about 2.4 MiB) and ≤ 32 MiB of accounted heap; field index ≤ 1,024 entries; audit ring 512 lines; one device view ≤ 8 KiB per open menu |
 | Tickets | none persistent; ride-arrival tickets ≤ 64 (§12) |
 
 These totals stay inside docs/17 §4 (mean ≤ 25 ms for the whole server). A
-budget that C13 cannot meet keeps the version blocked; in particular a barrier
-flush over 50 ms at the bound requires a follow-up ADR that moves the write to
+budget that C13 cannot meet keeps the version blocked; in particular a flush
+over its limit requires a follow-up ADR that moves the write to
 a writer thread with separate snapshot and durable epochs, as ADR-050 §2
 requires for the satellite registry. The Windows development host gives
 provisional numbers; the reference hardware run is `[H]`.
@@ -320,8 +320,9 @@ An **endpoint** is a device that other devices can address: `laser_target`
 
 - **Index.** The endgame root keeps one record per endpoint: `endpoint_id`,
   `kind`, `owner_id`, Level key, block position, `state` (`ACTIVE` or
-  `MISSING`), ≤ 512 bytes with a 128-character Level key and a full kind ID.
-  At most 4,096 endpoints, 64 per owner.
+  `MISSING`), ≤ 384 bytes (two UUIDs, a kind ID of at most 64 characters, a
+  Level key of at most 128 characters, a position and a state). At most 2,048
+  endpoints, 64 per owner (review R2-M3).
 - **Registration.** An endpoint is added when its ID is persisted (§2); until
   then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
@@ -451,11 +452,15 @@ entry of the managed-SavedData allowlist (review R1-M2):
   `zones` (§6);
 - hard bound 4 MiB encoded; **growth admission** is computed from per-record
   accounting (each section's count times its worst-case record size, as ADR-050
-  §3 does), never by encoding the root: endpoint registration, escrow admission
-  (§11), binds and zone additions are refused while the accounted size is within
-  1 MiB of the bound; a registration of an already escrowed payload and
-  every reconciliation step are admitted up to the bound itself, and beyond it
-  wait (never drop) with `ROOT_FULL`;
+  §3 does), never by encoding the root (review R2-M3). The worst cases are:
+  2,048 endpoints × 384 B, 2,048 `dispatched_through` entries × 32 B, 256
+  transit records × 2.5 KiB, 4,096 tombstones × 64 B, 1,024 pairs × 512 B and
+  256 zones × 768 B, about 2.4 MiB in total, so **every cap can be reached at
+  the same time**. Endpoint registration, escrow admission (§11), binds and
+  zone additions are refused only when the accounted size would pass 3 MiB;
+  tombstones beyond 4,096, a registration of an already escrowed payload and
+  every reconciliation step are admitted up to the 4 MiB bound itself, and
+  beyond it wait (never drop) with `ROOT_FULL`;
 - **write policy** (ADR-050 §2 semantics): elevator bind and unbind, zone changes
   and operator redirects and purges are **barrier flushes**; every other mutation
   marks the root flush-pending, and a coalesced flush runs at most once per 100
@@ -488,7 +493,8 @@ travel time fixed at escrow (review R1-L11). A payload is at
 most 4 stacks, each with an encoded item tag of at most 512 bytes; plain items
 only otherwise.
 
-**Record** (≤ 4 KiB): `source`, `seq`, `system`, `owner_id`, `destination`,
+**Record** (≤ 2.5 KiB: a payload of at most 2 KiB plus at most 512 bytes of
+fields): `source`, `seq`, `system`, `owner_id`, `destination`,
 `payload`, `paid_fe`, `dispatch_epoch`, `arrive_at` (game time), `state`
 (`IN_TRANSIT`, `ARRIVED`, `CLAIMED`, `QUARANTINED`), `paid_endpoint`,
 `acknowledged`, `ack_epoch`, `redirected`. Identity is `(source, seq)`.
@@ -505,16 +511,13 @@ ID of every retired endpoint (§9), so one tombstone serves both purposes.
 Tombstones are at most 64 bytes each. One is removed only when its endpoint's
 absence was observed in a `ChunkDataEvent.Load` tag after the last server start
 (so the absence is on disk, review R2-L1) and at least 6,000 ticks earlier,
-**and** the table holds more than 8,192 tombstones, oldest observation first;
-otherwise tombstones are kept, admitted up to the root's hard bound. A block
-mover could still carry a retired endpoint away and place it after its
-tombstone was removed; that needs more than 8,192 later retirements in between
-and is the documented residual of the retirement rule. Residual: if the absence observation itself was a lost
-asynchronous write and the server then crashed, S could return after its
-tombstone was removed and register a delivered payload again, unaudited. The
-6,000-tick age (five minutes of uninterrupted running, far beyond any `IOWorker`
-backlog) and the pressure rule make that unreachable in practice; it is the
-same lost-write class as the escrow residual below. Limits: 512 records globally, 32 per owner, counting live
+**and** the table holds more than 4,096 tombstones, oldest observation first;
+otherwise tombstones are kept, admitted up to the root's hard bound. Because
+the absence must be read back from disk after a start, a lost absence write
+can no longer remove a tombstone. A block mover could still carry a retired
+endpoint away and place it after its tombstone was removed; that needs more
+than 4,096 later retirements in between and is the documented residual of the
+retirement rule. Limits: 256 records globally, 32 per owner, counting live
 outbox entries known to the server. A record whose payload no longer decodes
 (for example an item of a removed mod) is `QUARANTINED` with its raw payload kept
 byte-identical; it is never claimed, and only an operator purge removes it. A

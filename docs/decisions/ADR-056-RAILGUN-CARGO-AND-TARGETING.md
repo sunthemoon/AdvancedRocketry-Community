@@ -115,7 +115,7 @@ example back to the source) or purge resolves it.
 | Duplication or loss across Levels | ADR-054 §11 escrow, persistence signals, epochs, receipts and total reconciliation; residuals as listed there |
 | Chunk loading | None; cargo waits in the ledger |
 | Sending to others' bases | Owner-only destinations; operators may select any |
-| Ledger growth | 512 records, 32 per owner, 4 outbox entries per railgun, root admission |
+| Ledger growth | 256 records, 32 per owner, 4 outbox entries per railgun, root admission (ADR-054 §10) |
 | Automation spam | 20-tick cadence per railgun, ≤ 4 launches per tick server-wide |
 | Contention on one destination | Claims are serialized on the server thread; whole-payload room and 64 receipt slots per destination; waiting records stay `ARRIVED` |
 
