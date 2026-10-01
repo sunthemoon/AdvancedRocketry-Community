@@ -35,6 +35,7 @@ import net.minecraftforge.common.util.FakePlayer;
  * </ul>
  */
 public abstract class EndgameDeviceBlockEntity extends BlockEntity {
+    private static final int MAX_REASON_CHARS = 256;
     private static final Set<String> IDENTITY_KEYS = Set.of(EndgameDeviceTags.SCHEMA_VERSION,
             EndgameDeviceTags.DEVICE_ID, EndgameDeviceTags.OWNER_ID);
 
@@ -153,6 +154,11 @@ public abstract class EndgameDeviceBlockEntity extends BlockEntity {
         return true;
     }
 
+    private static String boundedReason(String reason) {
+        String line = reason.replaceAll("[\\r\\n\\t]", " ");
+        return line.length() <= MAX_REASON_CHARS ? line : line.substring(0, MAX_REASON_CHARS) + "...";
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
@@ -162,9 +168,10 @@ public abstract class EndgameDeviceBlockEntity extends BlockEntity {
         if (quarantinedRoot != null) {
             if (!quarantineLogged) {
                 quarantineLogged = true;
+                // The reason may carry an NBT key name: bounded and on one line (review C11R-I7).
                 AdvancedRocketryCommunity.LOGGER.warn("ARCE_ENDGAME_DEVICE_QUARANTINED system={} level={} pos={} {} {}"
                                 + " reason={}", system().id(), level.dimension().location(), worldPosition.getX(),
-                        worldPosition.getY(), worldPosition.getZ(), quarantineReason);
+                        worldPosition.getY(), worldPosition.getZ(), boundedReason(quarantineReason));
             }
             return;
         }
