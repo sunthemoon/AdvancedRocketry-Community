@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
@@ -62,6 +63,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.ORBITAL_LASER_DRILL.get(),
                 OrbitalLaserDrillScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.LASER_TARGET.get(),
+                LaserTargetScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 
@@ -89,6 +94,8 @@ public final class ClientBootstrap {
     @SubscribeEvent
     public static void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ROCKET.get(), RocketEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.LASER_TARGET.get(), LaserBeamRenderer::forTarget);
+        event.registerBlockEntityRenderer(ModBlockEntities.ORBITAL_LASER_DRILL.get(), LaserBeamRenderer::forDrill);
     }
 
     @SubscribeEvent

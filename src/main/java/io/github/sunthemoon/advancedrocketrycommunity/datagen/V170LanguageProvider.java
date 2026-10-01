@@ -28,6 +28,8 @@ public final class V170LanguageProvider extends LanguageProvider {
         add("item.advancedrocketrycommunity.laser_lens", chinese ? "激光透镜" : "Laser Lens");
         add("advancedrocketrycommunity.endgame.status_line", "%s [%s]");
         add("block.advancedrocketrycommunity.orbital_laser_drill", chinese ? "轨道激光钻" : "Orbital Laser Drill");
+        add("block.advancedrocketrycommunity.laser_target", chinese ? "激光目标" : "Laser Target");
+        add("screen.advancedrocketrycommunity.laser_target.reset", chinese ? "重置链接" : "Reset link");
         String screen = "screen.advancedrocketrycommunity.orbital_laser_drill.";
         add(screen + "start", chinese ? "启动" : "Start");
         add(screen + "stop", chinese ? "停止" : "Stop");
@@ -43,6 +45,12 @@ public final class V170LanguageProvider extends LanguageProvider {
         add(view + "operations", chinese ? "作业次数" : "Operations");
         add(view + "body", chinese ? "环绕天体" : "Orbit body");
         add(view + "table", chinese ? "开采表" : "Table");
+        add(view + "endpoint", chinese ? "端点" : "Endpoint");
+        add(view + "cursor", chinese ? "下一层" : "Next layer");
+        add(view + "floor", chinese ? "底层" : "Floor");
+        add(view + "linked", chinese ? "已链接" : "Linked");
+        add(view + "layers", chinese ? "已挖层数" : "Layers dug");
+        add(view + "footprint", chinese ? "占地" : "Footprint");
         String value = "advancedrocketrycommunity.endgame.value.";
         add(value + "on", chinese ? "开" : "On");
         add(value + "off", chinese ? "关" : "Off");

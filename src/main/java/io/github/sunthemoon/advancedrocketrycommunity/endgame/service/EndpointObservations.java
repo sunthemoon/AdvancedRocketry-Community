@@ -40,6 +40,27 @@ public final class EndpointObservations {
         return found;
     }
 
+    /**
+     * Whether the tag shows the block entity with this ID at this position; when it does, whether its root records a
+     * freeze (review R4-L3). Empty when the tag does not show it.
+     */
+    public static Optional<Boolean> persisted(CompoundTag chunk, Set<String> endgameTypes, UUID id, long pos) {
+        if (!(chunk.get(BLOCK_ENTITIES) instanceof ListTag list) || list.getElementType() != Tag.TAG_COMPOUND) {
+            return Optional.empty();
+        }
+        BlockPos block = BlockPos.of(pos);
+        for (int index = 0; index < list.size(); index++) {
+            CompoundTag blockEntity = list.getCompound(index);
+            if (endgameTypes.contains(blockEntity.getString("id")) && blockEntity.getInt("x") == block.getX()
+                    && blockEntity.getInt("y") == block.getY() && blockEntity.getInt("z") == block.getZ()
+                    && readId(blockEntity).filter(id::equals).isPresent()) {
+                CompoundTag root = blockEntity.getCompound(EndgameDeviceTags.ROOT);
+                return Optional.of(root.getBoolean(EndgameDeviceTags.FROZEN));
+            }
+        }
+        return Optional.empty();
+    }
+
     public static boolean present(Map<Long, Optional<UUID>> scan, UUID id, long pos) {
         Optional<UUID> atPosition = scan.get(pos);
         return atPosition != null && (atPosition.isEmpty() || atPosition.get().equals(id));

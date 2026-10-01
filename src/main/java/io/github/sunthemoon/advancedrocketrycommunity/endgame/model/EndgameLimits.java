@@ -34,6 +34,8 @@ public final class EndgameLimits {
     public static final int MAX_SETTLED_TOMBSTONES_PER_OWNER = 256;
     public static final int MAX_SETTLED_TOMBSTONES = 8192;
     public static final int PERSISTENCE_AGE_TICKS = 40;
+    /** Section 7 ledger pass: endpoint registrations per tick. */
+    public static final int REGISTRATIONS_PER_TICK = 32;
 
     // Section 10: the endgame root.
     public static final int ROOT_SCHEMA_VERSION = 1;

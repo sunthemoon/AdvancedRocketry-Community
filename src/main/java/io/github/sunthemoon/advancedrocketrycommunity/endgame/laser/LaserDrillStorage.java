@@ -91,7 +91,7 @@ public final class LaserDrillStorage {
     }
 
     /** Strict inventory read: the slot count is fixed, slots are unique and in range, and every item exists. */
-    private static void readItems(CompoundTag tag, ItemStackHandler handler, boolean lensOnly) {
+    static void readItems(CompoundTag tag, ItemStackHandler handler, boolean lensOnly) {
         EndgameNbt.requireKeys(tag, Set.of("Items", "Size"), "Laser drill inventory");
         if (EndgameNbt.requireInt(tag, "Size") != handler.getSlots()) {
             throw new IllegalArgumentException("A laser drill inventory has the wrong size");

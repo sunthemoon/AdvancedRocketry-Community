@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,6 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -77,6 +79,7 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     private String summaryTable = "-";
     private Optional<String> lastBody = Optional.empty();
     private Optional<String> lastTable = Optional.empty();
+    private boolean renderActive;
 
     public OrbitalLaserDrillBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.ORBITAL_LASER_DRILL.get(), position, state);
@@ -228,6 +231,7 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         }
         EndgameCode previous = status;
         status = code;
+        updateRenderState(level);
         if (code != EndgameCode.OK) {
             lastStop = code;
         }
@@ -286,6 +290,9 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         release(devices);
         nextEvaluation = 0;
         setChanged();
+        if (level instanceof ServerLevel server) {
+            updateRenderState(server);
+        }
         audit("stop", EndgameCode.OK, actor, "");
         return EndgameCode.OK;
     }
@@ -394,6 +401,42 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     /** Ticks until the next evaluation, for the menu's progress value (0..1,200). */
     public int cooldown(long now) {
         return (int) Math.max(0, Math.min(LaserDrillSettings.MAX_INTERVAL_TICKS, nextEvaluation - now));
+    }
+
+    /** The emitter glows while the drill runs without a stop code (ADR-055 section 5). */
+    private void updateRenderState(ServerLevel level) {
+        boolean next = running && status == EndgameCode.OK;
+        if (next != renderActive) {
+            renderActive = next;
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("active", renderActive);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        renderActive = tag.getBoolean("active");
+    }
+
+    @Nullable
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    public boolean activeForRender() {
+        return renderActive;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition).expandTowards(0.0D, -(2.0D + LaserBeam.EMITTER_LENGTH), 0.0D);
     }
 
     @Override

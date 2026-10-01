@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "IGI",
+    "RBR",
+    "III"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:laser_target"
+  },
+  "show_notification": true
+}

@@ -72,6 +72,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ENDGAME_CASING.get());
                         output.accept(ModItems.LASER_LENS.get());
                         output.accept(ModItems.ORBITAL_LASER_DRILL.get());
+                        output.accept(ModItems.LASER_TARGET.get());
                     })
                     .build()
     );

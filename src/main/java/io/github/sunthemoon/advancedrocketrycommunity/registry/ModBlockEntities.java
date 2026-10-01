@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
@@ -138,6 +139,16 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             OrbitalLaserDrillBlockEntity::new,
                             ModBlocks.ORBITAL_LASER_DRILL.get()
+                    ).build(null)
+            );
+
+    /** ADR-055: the laser target endpoint. */
+    public static final RegistryObject<BlockEntityType<LaserTargetBlockEntity>> LASER_TARGET =
+            BLOCK_ENTITIES.register(
+                    "laser_target",
+                    () -> BlockEntityType.Builder.of(
+                            LaserTargetBlockEntity::new,
+                            ModBlocks.LASER_TARGET.get()
                     ).build(null)
             );
 

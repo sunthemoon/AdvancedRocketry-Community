@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlock;
@@ -168,6 +169,18 @@ public final class ModBlocks {
             () -> new OrbitalLaserDrillBlock(
                     BlockBehaviour.Properties.of()
                             .mapColor(MapColor.COLOR_BLACK)
+                            .requiresCorrectToolForDrops()
+                            .strength(5.0F, 1200.0F)
+                            .pushReaction(PushReaction.BLOCK)
+                            .sound(SoundType.METAL))
+    );
+
+    /** ADR-055: the laser target endpoint; blast resistance 1,200 and no pushing, like every endpoint (ADR-054 9.1). */
+    public static final RegistryObject<Block> LASER_TARGET = BLOCKS.register(
+            "laser_target",
+            () -> new LaserTargetBlock(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_LIGHT_BLUE)
                             .requiresCorrectToolForDrops()
                             .strength(5.0F, 1200.0F)
                             .pushReaction(PushReaction.BLOCK)

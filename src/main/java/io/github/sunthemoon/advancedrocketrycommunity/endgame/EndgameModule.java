@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameNet
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import java.util.Set;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -41,8 +42,8 @@ public final class EndgameModule {
         return service;
     }
 
-    /** The block entity type IDs of endgame endpoints, whose presence the chunk observations read (C11c onwards). */
+    /** The block entity type IDs of endgame endpoints, whose presence the chunk observations read. */
     static Set<String> endgameBlockEntityIds() {
-        return Set.of();
+        return Set.of(ModBlockEntities.LASER_TARGET.getId().toString());
     }
 }

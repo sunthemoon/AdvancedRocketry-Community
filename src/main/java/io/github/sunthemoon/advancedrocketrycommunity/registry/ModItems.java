@@ -172,6 +172,7 @@ public final class ModItems {
     public static final RegistryObject<Item> LASER_LENS = ITEMS.register("laser_lens", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> ORBITAL_LASER_DRILL = blockItem("orbital_laser_drill",
             ModBlocks.ORBITAL_LASER_DRILL);
+    public static final RegistryObject<Item> LASER_TARGET = blockItem("laser_target", ModBlocks.LASER_TARGET);
 
     private ModItems() {
     }

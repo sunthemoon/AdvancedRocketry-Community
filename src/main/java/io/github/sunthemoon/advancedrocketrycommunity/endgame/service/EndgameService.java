@@ -48,6 +48,7 @@ public final class EndgameService {
     private final Queue<Observation> observations = new ConcurrentLinkedQueue<>();
     private final Map<UUID, Long> absentSince = new HashMap<>();
     private final Map<UUID, Long> readBackAt = new HashMap<>();
+    private final EndpointRegistrations registrations = new EndpointRegistrations();
     private volatile Map<ChunkKey, Set<UUID>> index = Map.of();
     private MinecraftServer server;
     private EndgameSavedData data;
@@ -101,6 +102,7 @@ public final class EndgameService {
         observations.clear();
         absentSince.clear();
         readBackAt.clear();
+        registrations.clear();
         index = Map.of();
         audit.clear();
         writeFailureLogged = false;
@@ -187,10 +189,79 @@ public final class EndgameService {
             return;
         }
         ChunkKey key = new ChunkKey(Tombstone.hash(level), chunk);
+        registrations.observe(key, tag, endgameTypes.get());
         if (!index.containsKey(key)) {
             return;
         }
         observations.add(new Observation(key, EndpointObservations.scan(tag, endgameTypes.get()), load));
+    }
+
+    // ---- Endpoint registration and removal (sections 9 and 9.1) ----------------------------------------------
+
+    /**
+     * A loaded endpoint without an index record waits for a chunk tag that shows its ID persisted (section 2);
+     * a frozen endpoint never asks.
+     */
+    public void awaitRegistration(UUID id, ResourceLocation kind, UUID owner, ResourceLocation level, long pos) {
+        if (operational() && data.view().endpoint(id).isEmpty() && !data.view().retired(id)) {
+            registrations.await(new EndpointRegistrations.Candidate(id, kind, owner, level, pos));
+        }
+    }
+
+    /** The endpoint unloaded or was removed: it stops waiting. */
+    public void forgetCandidate(UUID id) {
+        registrations.forget(id);
+    }
+
+    /**
+     * Section 9 status of an endpoint block entity at a position: {@code OK} when registered there, otherwise why
+     * not ({@code AWAITING_WORLD_SAVE}, {@code ENDPOINT_LIMIT}, {@code ROOT_FULL}, {@code ENDPOINT_RETIRED} or
+     * {@code ENDPOINT_POSITION_CONFLICT}).
+     */
+    public EndgameCode endpointStatus(UUID id, ResourceLocation level, long pos) {
+        if (!operational()) {
+            return EndgameCode.ROOT_UNAVAILABLE;
+        }
+        EndgameRoot root = data.view();
+        Optional<EndpointRecord> record = root.endpoint(id);
+        if (record.isPresent()) {
+            if (record.get().state() == EndpointRecord.State.MISSING) {
+                return EndgameCode.ENDPOINT_RETIRED;
+            }
+            return record.get().level().equals(level) && record.get().pos() == pos ? EndgameCode.OK
+                    : EndgameCode.ENDPOINT_POSITION_CONFLICT;
+        }
+        if (root.retired(id)) {
+            return EndgameCode.ENDPOINT_RETIRED;
+        }
+        return registrations.result(id).filter(code -> code != EndgameCode.OK)
+                .orElse(EndgameCode.AWAITING_WORLD_SAVE);
+    }
+
+    /**
+     * Removal by any cause with live state (section 9.1): the record becomes a young tombstone, written by the next
+     * coalesced flush; an endpoint without outbox, payloads or receipts has nothing to settle in a barrier.
+     */
+    public void endpointRemoved(UUID id, long gameTime) {
+        registrations.forget(id);
+        if (!operational()) {
+            return;
+        }
+        Optional<EndpointRecord> record = data.view().endpoint(id);
+        if (record.isPresent() && coalesced(root -> root.remove(id))) {
+            audit.line(gameTime, "endgame", "endpoint_removed", "OK", id, record.get().owner(), null,
+                    "kind=" + record.get().kind());
+        }
+    }
+
+    private void drainRegistrations(long now) {
+        EndgameSettings current = settings.get();
+        for (EndpointRegistrations.Result result : registrations.drain((candidate, frozen) -> coalesced(root ->
+                root.register(candidate.id(), candidate.kind(), candidate.owner(), candidate.level(), candidate.pos(),
+                        frozen, current.endpointsGlobal(), current.endpointsPerOwner())))) {
+            audit.line(now, "endgame", "endpoint_register", result.code().name(), result.candidate().id(),
+                    result.candidate().owner(), null, "kind=" + result.candidate().kind());
+        }
     }
 
     int pendingObservations() {
@@ -204,6 +275,7 @@ public final class EndgameService {
     }
 
     void tick(long now) {
+        drainRegistrations(now);
         drainObservations(now);
         settleAgedAbsences(now);
         housekeep(now);
@@ -342,6 +414,7 @@ public final class EndgameService {
                 .append(" young_tombstones=").append(root.youngTombstones().size())
                 .append(" settled_tombstones=").append(root.settledTombstones().size())
                 .append(" zones=").append(root.zones().size())
+                .append(" awaiting_registration=").append(registrations.waiting())
                 .append("; transits=0 stubs=0 ride_tickets=0")
                 .append("; audit_ring=").append(audit.ringSize()).toString();
     }

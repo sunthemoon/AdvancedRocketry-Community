@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockTags;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.List;
@@ -48,6 +49,10 @@ public final class V170EndgameProviders {
                     modLoc("block/machine_casing_front"), mcLoc("block/obsidian"));
             horizontalBlock(ModBlocks.ORBITAL_LASER_DRILL.get(), drill);
             simpleBlockItem(ModBlocks.ORBITAL_LASER_DRILL.get(), drill);
+            ModelFile target = models().cubeBottomTop("laser_target", modLoc("block/machine_casing_side"),
+                    mcLoc("block/obsidian"), modLoc("block/machine_casing_top"));
+            simpleBlock(ModBlocks.LASER_TARGET.get(), target);
+            simpleBlockItem(ModBlocks.LASER_TARGET.get(), target);
             itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
         }
     }
@@ -66,11 +71,13 @@ public final class V170EndgameProviders {
         protected void generate() {
             dropSelf(ModBlocks.ENDGAME_CASING.get());
             dropSelf(ModBlocks.ORBITAL_LASER_DRILL.get());
+            dropSelf(ModBlocks.LASER_TARGET.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get());
+            return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get(),
+                    ModBlocks.LASER_TARGET.get());
         }
     }
 
@@ -104,6 +111,14 @@ public final class V170EndgameProviders {
                     .define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE)
                     .unlockedBy("has_laser_lens", has(ModItems.LASER_LENS.get()))
                     .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.LASER_TARGET.get())
+                    .pattern("IGI").pattern("RBR").pattern("III")
+                    .define('I', Tags.Items.INGOTS_IRON)
+                    .define('G', Tags.Items.GLASS)
+                    .define('R', Tags.Items.DUSTS_REDSTONE)
+                    .define('B', ModItems.BASIC_CIRCUIT.get())
+                    .unlockedBy("has_basic_circuit", has(ModItems.BASIC_CIRCUIT.get()))
+                    .save(output);
         }
     }
 
@@ -132,10 +147,24 @@ public final class V170EndgameProviders {
                     ModBlocks.SATELLITE_BUILDER.get(),
                     ModBlocks.MICROWAVE_RECEIVER.get(),
                     ModBlocks.ENDGAME_CASING.get(),
-                    ModBlocks.ORBITAL_LASER_DRILL.get()
+                    ModBlocks.ORBITAL_LASER_DRILL.get(),
+                    ModBlocks.LASER_TARGET.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);
+            // ADR-054 section 9.1: endpoints resist withers and the dragon and opt out of common block movers
+            // (shipped with replace false, harmless without those mods).
+            Block[] endpoints = {ModBlocks.LASER_TARGET.get()};
+            tag(net.minecraft.tags.BlockTags.WITHER_IMMUNE).add(endpoints);
+            tag(net.minecraft.tags.BlockTags.DRAGON_IMMUNE).add(endpoints);
+            tag(foreign("create", "non_movable")).add(endpoints);
+            tag(foreign("carryon", "block_blacklist")).add(endpoints);
+            tag(ModBlockTags.LASER_DRILL_IMMUNE).addTag(net.minecraft.tags.BlockTags.WITHER_IMMUNE);
+        }
+
+        private static net.minecraft.tags.TagKey<Block> foreign(String namespace, String path) {
+            return net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK,
+                    java.util.Objects.requireNonNull(net.minecraft.resources.ResourceLocation.tryBuild(namespace, path)));
         }
     }
 }

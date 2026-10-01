@@ -14,6 +14,8 @@ public final class ModBlockTags {
     public static final TagKey<Block> ROCKET_FUEL_TANKS = create("rocket_fuel_tanks");
     public static final TagKey<Block> ROCKET_SEATS = create("rocket_seats");
     public static final TagKey<Block> ROCKET_GUIDANCE = create("rocket_guidance");
+    /** ADR-055 section 3: blocks the laser never cuts (default content {@code #minecraft:wither_immune}). */
+    public static final TagKey<Block> LASER_DRILL_IMMUNE = create("laser_drill_immune");
 
     private ModBlockTags() {
     }
