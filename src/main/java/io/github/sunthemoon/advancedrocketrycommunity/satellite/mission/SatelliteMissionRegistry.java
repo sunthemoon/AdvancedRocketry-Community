@@ -153,18 +153,11 @@ public final class SatelliteMissionRegistry {
      * ADR-050 section 9: one bounded pass over the restored records. Broken references never block the registry:
      * an unfinished mission without its satellite binding is QUARANTINED (the satellite is not changed), a
      * satellite whose current mission is not unfinished becomes RECOVERY_REQUIRED, and an instance whose mission
-     * reference is broken is QUARANTINED. Nothing is deleted, completed or paid. Over-limit roots still load.
+     * reference is broken is QUARANTINED. Nothing is deleted, completed or paid. Over-admission-limit roots
+     * still load, but a missing-account repair must fit the fixed load count and storage budget.
      */
     public synchronized RestoreReport finishRestore() {
-        int accountsAdded = 0;
-        for (SatelliteState satellite : satellites.values()) {
-            if (!accounts.containsKey(satellite.ownerId())) {
-                ResearchAccount account = ResearchAccount.empty(satellite.ownerId());
-                accounts.put(satellite.ownerId(), account);
-                budget.reserve(StorageBudget.Section.ACCOUNTS, account.ownerId(), RecordSizer.ACCOUNT_BYTES);
-                accountsAdded++;
-            }
-        }
+        int accountsAdded = AccountRecovery.restore(satellites.values(), accounts, budget);
         RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances);
         plan.missionQuarantines().forEach((id, reason) -> putMission(missions.get(id).quarantine(reason, false)));
         plan.recoveries().forEach(id -> satellites.put(id, satellites.get(id).requireRecovery()));

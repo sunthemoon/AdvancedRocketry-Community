@@ -1,0 +1,156 @@
+diff --git a/docs/work/v1.6.0-implementation-log.md b/docs/work/v1.6.0-implementation-log.md
+index 7768622..e0e3141 100644
+--- a/docs/work/v1.6.0-implementation-log.md
++++ b/docs/work/v1.6.0-implementation-log.md
+@@ -163,3 +163,29 @@ new work:
+   `OperatorRecovery` moved out, `ResourceMissions` 529).
+ 
+ A class over 500 lines is checked for mixed responsibilities; over 800 needs an ADR.
++
++## F01 recovery hardening -- 2026-10-01
++
++Task: repair missing research-account recovery at the fixed load boundary. The
++external v1.3--v1.6 audit tested `ab10fb53a580e53a9a1c24097a487f2a7c54ad52`
++and reported a root with 4,096 accounts becoming a non-reloadable 4,097-account
++file. This task uses that same v1.6 baseline, the accepted ADR-048 development
++exception and the unchanged ADR-050 limits. Release status remains IN_PROGRESS;
++Required Gates are G0--G9, with inherited acceptance still open.
++
++- Branch: `fix/v1.6.0-recovery-account-bounds`.
++- Worktree: `D:/GitHub/arce-v160-recovery-fix`; the existing v1.7 checkout and
++  its uncommitted documents are not modified.
++- Write scope: missing-account recovery, its persistence validation and tests,
++  this implementation log and `v1.6.0-recovery-account-bounds/` evidence.
++- Verification: first reproduce the count failure; then test unique/shared
++  missing owners, all-or-nothing rejection, section/root byte bounds, repeated
++  recovery and actual checked NBT file load/flush/reload. Run build, DataGen,
++  GameTests and report the real clean-diff result.
++- Non-goals: F02 reward/player/chunk transaction redesign, F03 consumer version
++  selection, F04/F05 historical Python fixtures, F06/F07 historical evidence
++  correction, v1.7 implementation, API/schema changes, upstream imports,
++  long-load/real-client acceptance, commits, pushes and release approval.
++
++Commands, results and remaining obligations are recorded in
++[the repair evidence](v1.6.0-recovery-account-bounds/VERIFICATION.md).
+diff --git a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java
+index 3740e57..405cb4a 100644
+--- a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java
++++ b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/SatelliteMissionRegistry.java
+@@ -153,18 +153,11 @@ public final class SatelliteMissionRegistry {
+      * ADR-050 section 9: one bounded pass over the restored records. Broken references never block the registry:
+      * an unfinished mission without its satellite binding is QUARANTINED (the satellite is not changed), a
+      * satellite whose current mission is not unfinished becomes RECOVERY_REQUIRED, and an instance whose mission
+-     * reference is broken is QUARANTINED. Nothing is deleted, completed or paid. Over-limit roots still load.
++     * reference is broken is QUARANTINED. Nothing is deleted, completed or paid. Over-admission-limit roots
++     * still load, but a missing-account repair must fit the fixed load count and storage budget.
+      */
+     public synchronized RestoreReport finishRestore() {
+-        int accountsAdded = 0;
+-        for (SatelliteState satellite : satellites.values()) {
+-            if (!accounts.containsKey(satellite.ownerId())) {
+-                ResearchAccount account = ResearchAccount.empty(satellite.ownerId());
+-                accounts.put(satellite.ownerId(), account);
+-                budget.reserve(StorageBudget.Section.ACCOUNTS, account.ownerId(), RecordSizer.ACCOUNT_BYTES);
+-                accountsAdded++;
+-            }
+-        }
++        int accountsAdded = AccountRecovery.restore(satellites.values(), accounts, budget);
+         RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances);
+         plan.missionQuarantines().forEach((id, reason) -> putMission(missions.get(id).quarantine(reason, false)));
+         plan.recoveries().forEach(id -> satellites.put(id, satellites.get(id).requireRecovery()));
+diff --git a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java
+index 4952cc2..3cabe21 100644
+--- a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java
++++ b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteMissionSavedData.java
+@@ -17,7 +17,6 @@ import java.util.Objects;
+ import java.util.Optional;
+ import java.util.UUID;
+ import net.minecraft.nbt.CompoundTag;
+-import net.minecraft.nbt.ListTag;
+ import net.minecraft.resources.ResourceLocation;
+ import net.minecraft.server.MinecraftServer;
+ 
+@@ -366,29 +365,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
+         if (preservedBlockedData != null) {
+             return preservedBlockedData.copy();
+         }
+-        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
+-        CompoundTag clock = new CompoundTag();
+-        clock.putLong("logical_game_time", registry.logicalGameTime());
+-        clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
+-        target.put("clock", clock);
+-        // ADR-050 §2: the epoch advances only after a changed write succeeds (onPersisted).
+-        target.putLong(SatelliteRegistryPayload.SAVE_EPOCH, registry.epochToWrite());
+-        ListTag satellites = new ListTag();
+-        registry.satellites().forEach(state -> satellites.add(SatelliteNbtCodec.encodeSatellite(state)));
+-        target.put("satellites", satellites);
+-        ListTag missions = new ListTag();
+-        registry.missions().forEach(state -> missions.add(SatelliteNbtCodec.encodeMission(state)));
+-        target.put("missions", missions);
+-        ListTag accounts = new ListTag();
+-        registry.accounts().forEach(account -> accounts.add(SatelliteNbtCodec.encodeAccount(account)));
+-        target.put("research_accounts", accounts);
+-        ListTag instances = new ListTag();
+-        registry.instances().forEach(instance -> instances.add(SatelliteNbtCodec.encodeInstance(instance)));
+-        target.put(SatelliteRegistryPayload.INSTANCES, instances);
+-        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
+-            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
+-        }
+-        return target;
++        return SatelliteRegistryPayload.encodeCurrent(registry, target);
+     }
+ 
+     @Override
+diff --git a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRegistryPayload.java b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRegistryPayload.java
+index b6161c4..08d715a 100644
+--- a/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRegistryPayload.java
++++ b/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/persistence/SatelliteRegistryPayload.java
+@@ -1,5 +1,7 @@
+ package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
+ 
++import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
++import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
+ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
+ import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
+ import net.minecraft.nbt.CompoundTag;
+@@ -52,9 +54,40 @@ public final class SatelliteRegistryPayload {
+             restored.restoreInstance(SatelliteNbtCodec.decodeInstance((CompoundTag) raw));
+         }
+         restored.finishRestore();
++        if (restored.restoreReport().changed()) {
++            // A repair is usable only when the same encoder used by a flush accepts its full root.
++            encodeCurrent(restored, new CompoundTag());
++        }
+         return restored;
+     }
+ 
++    /** Shared by repair validation and SavedData writes; preserves the existing root-3 wire shape. */
++    static CompoundTag encodeCurrent(SatelliteMissionRegistry registry, CompoundTag target) {
++        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
++        CompoundTag clock = new CompoundTag();
++        clock.putLong("logical_game_time", registry.logicalGameTime());
++        clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
++        target.put("clock", clock);
++        // ADR-050 section 2: the epoch advances only after a changed write succeeds.
++        target.putLong(SAVE_EPOCH, registry.epochToWrite());
++        ListTag satellites = new ListTag();
++        registry.satellites().forEach(state -> satellites.add(SatelliteNbtCodec.encodeSatellite(state)));
++        target.put("satellites", satellites);
++        ListTag missions = new ListTag();
++        registry.missions().forEach(state -> missions.add(SatelliteNbtCodec.encodeMission(state)));
++        target.put("missions", missions);
++        ListTag accounts = new ListTag();
++        registry.accounts().forEach(account -> accounts.add(SatelliteNbtCodec.encodeAccount(account)));
++        target.put("research_accounts", accounts);
++        ListTag instances = new ListTag();
++        registry.instances().forEach(instance -> instances.add(SatelliteNbtCodec.encodeInstance(instance)));
++        target.put(INSTANCES, instances);
++        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
++            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
++        }
++        return target;
++    }
++
+     /**
+      * Upgrades a root-1 or root-2 payload to root 3: satellite and mission records 1 → 2 (copying extra tags),
+      * an empty instance list and save epoch 1. Accounts are unchanged. Stamping is the caller's.

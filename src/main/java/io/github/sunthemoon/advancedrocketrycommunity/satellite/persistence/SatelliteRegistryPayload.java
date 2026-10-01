@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import net.minecraft.nbt.CompoundTag;
@@ -52,7 +54,38 @@ public final class SatelliteRegistryPayload {
             restored.restoreInstance(SatelliteNbtCodec.decodeInstance((CompoundTag) raw));
         }
         restored.finishRestore();
+        if (restored.restoreReport().changed()) {
+            // A repair is usable only when the same encoder used by a flush accepts its full root.
+            encodeCurrent(restored, new CompoundTag());
+        }
         return restored;
+    }
+
+    /** Shared by repair validation and SavedData writes; preserves the existing root-3 wire shape. */
+    static CompoundTag encodeCurrent(SatelliteMissionRegistry registry, CompoundTag target) {
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
+        CompoundTag clock = new CompoundTag();
+        clock.putLong("logical_game_time", registry.logicalGameTime());
+        clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
+        target.put("clock", clock);
+        // ADR-050 section 2: the epoch advances only after a changed write succeeds.
+        target.putLong(SAVE_EPOCH, registry.epochToWrite());
+        ListTag satellites = new ListTag();
+        registry.satellites().forEach(state -> satellites.add(SatelliteNbtCodec.encodeSatellite(state)));
+        target.put("satellites", satellites);
+        ListTag missions = new ListTag();
+        registry.missions().forEach(state -> missions.add(SatelliteNbtCodec.encodeMission(state)));
+        target.put("missions", missions);
+        ListTag accounts = new ListTag();
+        registry.accounts().forEach(account -> accounts.add(SatelliteNbtCodec.encodeAccount(account)));
+        target.put("research_accounts", accounts);
+        ListTag instances = new ListTag();
+        registry.instances().forEach(instance -> instances.add(SatelliteNbtCodec.encodeInstance(instance)));
+        target.put(INSTANCES, instances);
+        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
+            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
+        }
+        return target;
     }
 
     /**

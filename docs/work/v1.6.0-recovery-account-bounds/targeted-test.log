@@ -1,0 +1,92 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.7, JVM: 17.0.7+8-LTS-224 (Oracle Corporation), Arch: amd64
+
+> Task :compileApiJava UP-TO-DATE
+> Task :compileAtmosphereApiJava UP-TO-DATE
+> Task :compileEnvironmentApiJava UP-TO-DATE
+> Task :compileRocketApiJava UP-TO-DATE
+> Task :compileSatelliteApiJava UP-TO-DATE
+> Task :compileJava
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :apiJar
+
+> Task :compileTestJava
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\QueueBoundsTest.java:39: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final List<RewardEntry> YIELD = List.of(new RewardEntry(new ResourceLocation("minecraft",
+                                                                           ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\QueueBoundsTest.java:40: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            "iron_ore"), 30), new RewardEntry(new ResourceLocation("minecraft", "cobblestone"), 34));
+                                              ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\QueueBoundsTest.java:117: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        ResourceLocation longLevel = new ResourceLocation("probe", "d".repeat(200));
+                                     ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\QueueBoundsTest.java:132: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                        Optional.empty(), List.of(new RewardEntry(new ResourceLocation("minecraft", "iron_ore"), 5)),
+                                                                  ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\ResourceMissionsTest.java:35: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new RewardEntry(new ResourceLocation("minecraft", "iron_ore"), 30),
+                            ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\ResourceMissionsTest.java:36: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new RewardEntry(new ResourceLocation("minecraft", "cobblestone"), 170));
+                            ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\ResourceMissionsTest.java:129: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        assertEquals(List.of(new RewardEntry(new ResourceLocation("minecraft", "iron_ore"), 30),
+                                             ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\ResourceMissionsTest.java:130: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                new RewardEntry(new ResourceLocation("minecraft", "cobblestone"), 34)), resource.reward(),
+                                ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\ResourceMissionsTest.java:372: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        List<RewardEntry> reward = List.of(new RewardEntry(new ResourceLocation("minecraft", "iron_ore"), 30),
+                                                           ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\mission\ResourceMissionsTest.java:373: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                new RewardEntry(new ResourceLocation("minecraft", "cobblestone"), 34));
+                                ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\persistence\SatelliteWritePolicyTest.java:88: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new RewardEntry(new ResourceLocation("minecraft", "iron_ore"), 30));
+                            ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\terminal\DeliveryCrashCutTest.java:45: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final List<RewardEntry> REWARD = List.of(new RewardEntry(new ResourceLocation("minecraft", "iron_ore"),
+                                                                            ^
+D:\GitHub\arce-v160-recovery-fix\src\test\java\io\github\sunthemoon\advancedrocketrycommunity\satellite\terminal\DeliveryCrashCutTest.java:46: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            30), new RewardEntry(new ResourceLocation("minecraft", "cobblestone"), 34));
+                                 ^
+13 warnings
+
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses
+
+> Task :test
+
+AccountRecoveryTest > failedRecoveryDoesNotPartiallyAddAccountsOrReservations() FAILED
+    java.lang.IllegalArgumentException at AccountRecoveryTest.java:27
+
+30 tests completed, 1 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+
+> There were failing tests. See the report at: file:///D:/GitHub/arce-v160-recovery-fix/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 34s
+16 actionable tasks: 7 executed, 9 up-to-date

@@ -1,0 +1,57 @@
+setUpClass (test_prepare_v002_g0_review_packet.V002G0ReviewPacketTests) ... ERROR
+test_all_current_text_and_binary_resources_are_allowlisted (test_validate_repository.V002ResourceInventoryTests.test_all_current_text_and_binary_resources_are_allowlisted) ... FAIL
+
+======================================================================
+ERROR: setUpClass (test_prepare_v002_g0_review_packet.V002G0ReviewPacketTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\arce-v160-recovery-fix\scripts\prepare_v002_g0_review_packet.py", line 1405, in _path_within_repository
+    relative_path = candidate.relative_to(repository_root)
+  File "D:\python\pyenv\pyenv-win\versions\3.13.15\Lib\pathlib\_local.py", line 385, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpym92l6f2\\seed\\build\\base-packet' is not in the subpath of 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\tmpym92l6f2\\seed'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\GitHub\arce-v160-recovery-fix\tests\test_prepare_v002_g0_review_packet.py", line 89, in setUpClass
+    cls.base_manifest = generate_packet(
+                        ~~~~~~~~~~~~~~~^
+        cls.seed_root, cls.seed_commit, cls.base_packet
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\GitHub\arce-v160-recovery-fix\scripts\prepare_v002_g0_review_packet.py", line 2782, in generate_packet
+    return _generate_packet_resolved(repository_root, commit, output_directory)
+  File "D:\GitHub\arce-v160-recovery-fix\scripts\prepare_v002_g0_review_packet.py", line 2750, in _generate_packet_resolved
+    output = _safe_ignored_directory(
+        repository_root,
+    ...<2 lines>...
+        require_exists=False,
+    )
+  File "D:\GitHub\arce-v160-recovery-fix\scripts\prepare_v002_g0_review_packet.py", line 1428, in _safe_ignored_directory
+    candidate, relative = _path_within_repository(repository_root, value, label)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\GitHub\arce-v160-recovery-fix\scripts\prepare_v002_g0_review_packet.py", line 1407, in _path_within_repository
+    raise PacketError(f"{label} must remain under the repository root") from exc
+scripts.prepare_v002_g0_review_packet.PacketError: output directory must remain under the repository root
+
+======================================================================
+FAIL: test_all_current_text_and_binary_resources_are_allowlisted (test_validate_repository.V002ResourceInventoryTests.test_all_current_text_and_binary_resources_are_allowlisted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\GitHub\arce-v160-recovery-fix\tests\test_validate_repository.py", line 1438, in test_all_current_text_and_binary_resources_are_allowlisted
+    self.assertEqual([], find_unlisted_v002_resources(paths))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['src/main/resources/assets/advancedrocket[646 chars]son']
+
+Second list contains 8 additional elements.
+First extra element 0:
+'src/main/resources/assets/advancedrocketrycommunity_v110/lang/en_us.json'
+
+Diff is 722 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 1 test in 15.658s
+
+FAILED (failures=1, errors=1)

@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 
@@ -366,29 +365,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
-        CompoundTag clock = new CompoundTag();
-        clock.putLong("logical_game_time", registry.logicalGameTime());
-        clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
-        target.put("clock", clock);
-        // ADR-050 §2: the epoch advances only after a changed write succeeds (onPersisted).
-        target.putLong(SatelliteRegistryPayload.SAVE_EPOCH, registry.epochToWrite());
-        ListTag satellites = new ListTag();
-        registry.satellites().forEach(state -> satellites.add(SatelliteNbtCodec.encodeSatellite(state)));
-        target.put("satellites", satellites);
-        ListTag missions = new ListTag();
-        registry.missions().forEach(state -> missions.add(SatelliteNbtCodec.encodeMission(state)));
-        target.put("missions", missions);
-        ListTag accounts = new ListTag();
-        registry.accounts().forEach(account -> accounts.add(SatelliteNbtCodec.encodeAccount(account)));
-        target.put("research_accounts", accounts);
-        ListTag instances = new ListTag();
-        registry.instances().forEach(instance -> instances.add(SatelliteNbtCodec.encodeInstance(instance)));
-        target.put(SatelliteRegistryPayload.INSTANCES, instances);
-        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
-            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
-        }
-        return target;
+        return SatelliteRegistryPayload.encodeCurrent(registry, target);
     }
 
     @Override
