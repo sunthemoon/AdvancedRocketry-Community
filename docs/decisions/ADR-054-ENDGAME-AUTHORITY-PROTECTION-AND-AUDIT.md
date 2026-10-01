@@ -65,8 +65,10 @@ pattern), unless the text gives a range.
 Every endgame block entity root has `schema_version`, `device_id` and `owner_id`.
 
 - `device_id` is a random UUID created on placement, or on the first load of a
-  root without one. It is never carried in an item: breaking a device drops the
-  plain block and its local buffers, and a new placement gets a new ID.
+  root without one. It is never carried in an item: removing a device drops the
+  plain block and its **local buffers** (input, output, receive and drop
+  buffers; energy is lost), and a new placement gets a new ID. Escrowed outbox
+  entries, incoming payloads and receipts are not local buffers; §9.1 settles them.
 - `owner_id` is the UUID of the placing entity when it is a connected
   `ServerPlayer` that is **not** a `FakePlayer`. Any other placement (automation,
   FakePlayers, `/setblock`) creates an **unowned** device, which is inert
@@ -252,9 +254,10 @@ An **endpoint** is a device that other devices can address: `laser_target`
   then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
   endpoint stays `ENDPOINT_LIMIT` and inert.
-- **Removal.** Breaking an endpoint removes its record. Breaking is refused for
-  non-operators while it holds an outbox entry, an incoming payload, an
-  unacknowledged receipt or an elevator pair (`ENDPOINT_BUSY`). An endpoint whose chunk is loaded without a
+- **Removal.** Removing an endpoint removes its record (§9.1). Breaking is
+  refused for non-operators while it holds an outbox entry, an incoming payload,
+  an unacknowledged receipt or an elevator pair (`ENDPOINT_BUSY`). An endpoint
+  whose chunk is loaded without a
   block entity of that ID at the recorded position becomes `MISSING`; a block
   entity carrying a registered ID at another position is
   `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
@@ -270,6 +273,45 @@ An **endpoint** is a device that other devices can address: `laser_target`
   candidate body. Its star system is the catalog's root for that body (ADR-043).
   No body means `BODY_UNAVAILABLE`. Cross-Level targets are therefore expressed
   as BodyContext plus an endpoint ID, as the version plan requires.
+
+#### 9.1 Removal by any cause
+
+Review R1-H3: a refused player break is not the only way a block entity goes.
+Every endgame endpoint block is in `#minecraft:wither_immune` and
+`#minecraft:dragon_immune`, has blast resistance 1,200 (TNT, creepers, beds
+and withers cannot remove it), and cannot be pushed (it has a block entity).
+Player breaks follow §9. Every other removal (an operator break, `/setblock`
+and `/fill`, another mod's breaker or block mover) is handled in the block's
+`onRemove` when the block changes to a different block, which chunk unloading
+never triggers:
+
+- **Local buffers** drop as items, as for any container.
+- **Outbox entries never drop.** Entries with `seq ≤ dispatched_through[S]` are
+  delivered by the ledger. Unregistered entries are destroyed with one
+  `OUTBOX_LOST_ON_REMOVAL` line naming the payload hash: an audited loss, never a
+  duplicate. Dropping them could duplicate, because dropped item entities are
+  saved in the entity storage, separately from the block entity, and a crash
+  can restore the endpoint with its entries.
+- **Incoming payloads and receipts** are settled from the endpoint's live state,
+  record by record, and the result is written with a **barrier flush** in the
+  same tick: a record whose payload is still incoming here, or was never
+  materialized here (no receipt), returns to `ARRIVED` with `paid_endpoint`
+  cleared and waits as `DESTINATION_MISSING`; a record whose payload already
+  moved to the receive buffer (receipt present, nothing incoming) becomes
+  `CLAIMED` and acknowledged. An incoming payload whose record is already
+  acknowledged or pruned is the endpoint's own content (its move was due after
+  a crash, below) and drops with the local buffers. If the barrier flush fails,
+  the records stay as they were and one `REMOVAL_SETTLEMENT_UNKNOWN` line asks
+  an operator to redirect or purge them.
+- The endpoint's index record is removed, its `dispatched_through` stays as a
+  tombstone (§11), pairs naming it become invalid (unbinding stays possible,
+  ADR-059), and a laser drill linked to it sees `LINK_LOST` (ADR-055).
+
+A crash after the barrier flush but before the endpoint's chunk saved the
+removal restores the endpoint with its incoming payload and receipt while the
+record is `ARRIVED`; the destination row "ledger behind" re-claims it, so it is
+paid once. The reference model checks removal at any point with up to two
+crashes.
 
 ### 10. Endgame root
 
@@ -373,7 +415,8 @@ a player withdrew a reward that the terminal's chunk had not yet saved). Incomin
 payloads are not extractable by players, menus or automation, are not dropped
 when the block is broken (breaking is refused while any exist, §9), and count
 against the receive buffer's room. A payload moves from incoming into the
-extractable receive buffer, in one tick inside D, only after a
+extractable receive buffer, in one tick inside D, and its record is
+acknowledged in the same tick, only after a
 `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of D's chunk is observed to
 contain it (§2's persistence rule). Until then a crash can only lose D's copy
 together with its receipt, and the record rematerializes it into incoming; no
@@ -402,8 +445,9 @@ D; mission → record; ACTIVE/READY → `IN_TRANSIT`/`ARRIVED`; bound terminal �
 not yet `CLAIMED`) sets `CLAIMED` with no items (`CLAIM_RECOVERED`, or
 `REDIRECT_CONFLICT` with a barrier flush that redirects back to D); persisted
 receipt acknowledges; missing receipt for an unacknowledged claim at D
-rematerializes once into incoming (`REMATERIALIZED`, waiting while full); a
-receipt is dropped
+rematerializes once into incoming (`REMATERIALIZED`, waiting while full); an
+incoming payload whose record is already acknowledged or pruned means D's chunk
+is behind its own move, and it moves again; a receipt is dropped
 only after the acknowledgement is durable or when the record is absent; a claim
 paid elsewhere keeps the receipt (`REDIRECT_DOUBLE_PAY`); a quarantined record
 keeps it.
@@ -430,6 +474,8 @@ its payload.
 | Registered, ledger not flushed | Outbox entry, no record | Registered again with the same `(S, seq)` |
 | Ledger flushed, release not saved | Outbox entry, durable record | Entry dropped; delivered once |
 | Claim: D saved, ledger not | Receipt, record `ARRIVED` | `CLAIM_RECOVERED`; paid once |
+| Endpoint removed by a non-player cause, removal not yet saved | Endpoint back with its entries, incoming payload and receipt | Registered entries delivered; the incoming claim, returned to `ARRIVED` by the barrier flush, is re-claimed once |
+| Endpoint removed, removal saved | No endpoint | Registered entries delivered; unregistered entries lost and audited; incoming claims redirected (`DESTINATION_MISSING`) |
 | Claim: ledger flushed, D not | `CLAIMED`, no receipt | Rematerialized once into incoming; nothing was withdrawable before the lost save |
 | Claim persisted, payload moved and withdrawn, player file saved, D's chunk not saved again | D's incoming or buffer still holds the payload; the player holds it too | **Residual**, the ordinary container/player torn save of every vanilla chest; the model shows no other duplicate or loss path |
 | S removed (and its tombstone kept), ledger flushed, S's chunk not saved | S restored with an entry `seq ≤ dispatched_through` | Dropped (`OUTBOX_STALE_DROPPED`); delivered once |

@@ -632,9 +632,9 @@
   }
  ],
  "transit": {
-  "states_two_payloads_two_crashes": 54060,
-  "states_one_payload_two_crashes_one_lost_write": 15467,
-  "states_tombstone_removal_one_lost_write": 21668,
+  "states_two_payloads_two_crashes": 86112,
+  "states_one_payload_two_crashes_one_lost_write": 22060,
+  "states_tombstone_removal_one_lost_write": 34158,
   "named_cuts": [
    {
     "name": "escrow not saved",
@@ -644,6 +644,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -658,6 +659,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -674,6 +676,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -692,6 +695,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -710,6 +714,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -732,6 +737,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -756,6 +762,7 @@
     ],
     "expected": [
      1,
+     0,
      false
     ]
    },
@@ -781,6 +788,54 @@
     ],
     "expected": [
      1,
+     0,
+     false
+    ]
+   },
+   {
+    "name": "R1-H3: forced removal of a source with a persisted, unregistered entry",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "REMOVE_S",
+     "SAVE_S",
+     "CRASH"
+    ],
+    "expected": [
+     0,
+     1,
+     false
+    ]
+   },
+   {
+    "name": "R1-H3: forced removal after the record was durable: delivered, never dropped",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "REMOVE_S",
+     "SAVE_S",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     1,
+     false
+    ]
+   },
+   {
+    "name": "R1-H3: forced removal, crash before the removal was saved",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "REMOVE_S",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     0,
      false
     ]
    },
@@ -796,13 +851,14 @@
     ],
     "expected": [
      2,
+     0,
      true
     ]
    }
   ]
  },
  "delivery": {
-  "states_gated_two_crashes": 1038,
+  "states_gated_two_crashes": 1314,
   "f02_path": [
    "CLAIM",
    "FLUSH_L",
@@ -813,6 +869,50 @@
   "f02_path_gated": [
    "CLAIM",
    "FLUSH_L"
+  ],
+  "removal_cuts": [
+   {
+    "name": "removal while the claim is incoming: back to ARRIVED, redirected, paid once",
+    "events": [
+     "CLAIM",
+     "SAVE_D",
+     "REMOVE_D",
+     "SAVE_D"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "removal while incoming, crash before the removal was saved: re-claimed once",
+    "events": [
+     "CLAIM",
+     "SAVE_D",
+     "REMOVE_D",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "removal after the move and withdrawal: acknowledged, not paid again",
+    "events": [
+     "CLAIM",
+     "SAVE_D",
+     "MOVE",
+     "WITHDRAW",
+     "SAVE_P",
+     "REMOVE_D",
+     "SAVE_D"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   }
   ]
  },
  "railgun": [

@@ -143,11 +143,11 @@ class Transit:
         l_dur = (frozenset(), 0, 1)
         d_live = (0, frozenset())  # buffer, receipts{(seq,persisted)}
         d_dur = (0, frozenset())
-        return (s_live, s_dur, l_live, l_dur, d_live, d_dur, False)
+        return (s_live, s_dur, l_live, l_dur, d_live, d_dur, False, (0, 0))
 
     @staticmethod
     def normalize(state):
-        s_live, s_dur, (records, hw, e), (drecords, dhw, de), d_live, d_dur, rollback = state
+        s_live, s_dur, (records, hw, e), (drecords, dhw, de), d_live, d_dur, rollback, destroyed = state
         epochs = {e, de}
         for record in records | drecords:
             epochs.add(record[2])
@@ -158,7 +158,8 @@ class Transit:
         def remap(rs):
             return frozenset((r[0], r[1], rank[r[2]], r[3], None if r[4] is None else rank[r[4]]) for r in rs)
 
-        return (s_live, s_dur, (remap(records), hw, rank[e]), (remap(drecords), dhw, rank[de]), d_live, d_dur, rollback)
+        return (s_live, s_dur, (remap(records), hw, rank[e]), (remap(drecords), dhw, rank[de]), d_live, d_dur, rollback,
+                destroyed)
 
     @staticmethod
     def record(records, seq):
@@ -170,7 +171,7 @@ class Transit:
     @classmethod
     def successors(cls, state, crashes_left, faults_left):
         """Yields (label, new_state, crashes_left, faults_left) for every enabled event."""
-        s_live, s_dur, l_live, l_dur, d_live, d_dur, rollback = state
+        s_live, s_dur, l_live, l_dur, d_live, d_dur, rollback, destroyed = state
         s_input, outbox, next_seq, present, absence_seen = s_live
         records, hw, e = l_live
         hw_value = 0 if hw is None else hw  # None: the tombstone was removed
@@ -181,10 +182,10 @@ class Transit:
 
         def make(**changes):
             parts = dict(s_live=s_live, s_dur=s_dur, l_live=l_live, l_dur=l_dur,
-                         d_live=d_live, d_dur=d_dur, rollback=rollback)
+                         d_live=d_live, d_dur=d_dur, rollback=rollback, destroyed=destroyed)
             parts.update(changes)
             return cls.normalize((parts["s_live"], parts["s_dur"], parts["l_live"], parts["l_dur"],
-                                  parts["d_live"], parts["d_dur"], parts["rollback"]))
+                                  parts["d_live"], parts["d_dur"], parts["rollback"], parts["destroyed"]))
 
         # Source rollback detection (ADR-054 section 11, last source row); escrow waits for it.
         rollback_pending = present and next_seq <= hw_value
@@ -195,15 +196,18 @@ class Transit:
         if present and not rollback_pending and s_input > 0 and len(outbox) < 4 and next_seq <= cls.MAX_SEQ:
             yield ("ESCROW", make(s_live=(s_input - 1, outbox | {(next_seq, False, False)}, next_seq + 1,
                                           present, absence_seen)), crashes_left, faults_left)
-        if present and s_input == 0 and not outbox:
-            # A player breaks the idle source (allowed: nothing escrowed, nothing in its input buffer).
-            yield ("REMOVE_S", make(s_live=(0, frozenset(), next_seq, False, False)), crashes_left, faults_left)
+        if present and s_input == 0:
+            # R1-H3: removal by any cause. Escrowed entries never drop as items: registered ones are delivered
+            # by the ledger, unregistered ones are destroyed (audited loss). The input buffer is a plain
+            # container, so the model removes S only when it is empty.
+            yield ("REMOVE_S", make(s_live=(0, frozenset(), next_seq, False, False),
+                                    destroyed=(destroyed[0] + len(outbox), destroyed[1])), crashes_left, faults_left)
         new_outbox = frozenset((o[0], True, o[2]) for o in outbox)
         saved = (s_input, frozenset(out_seqs), next_seq, present)
         observed = absence_seen if absence_seen or present else "seen"
-        if saved != s_dur or new_outbox != outbox or observed != absence_seen:
-            yield ("SAVE_S", make(s_live=(s_input, new_outbox, next_seq, present, observed), s_dur=saved),
-                   crashes_left, faults_left)
+        if saved != s_dur or new_outbox != outbox or observed != absence_seen or destroyed[0] != destroyed[1]:
+            yield ("SAVE_S", make(s_live=(s_input, new_outbox, next_seq, present, observed), s_dur=saved,
+                                  destroyed=(destroyed[0], destroyed[0])), crashes_left, faults_left)
             if faults_left:
                 # The save is observed (ChunkDataEvent.Save) but its asynchronous file write is lost.
                 yield ("SAVE_S_LOST", make(s_live=(s_input, new_outbox, next_seq, present, observed)),
@@ -259,14 +263,14 @@ class Transit:
 
     @classmethod
     def crash(cls, state):
-        _, s_dur, _, l_dur, _, d_dur, rollback = state
+        _, s_dur, _, l_dur, _, d_dur, rollback, destroyed = state
         s_input, out_seqs, next_seq, present = s_dur
         # After restart the chunk load is a persistence observation; ageing restarts.
         s_live = (s_input, frozenset((seq, True, False) for seq in out_seqs), next_seq, present,
                   False if present else "seen")
         d_buffer, d_receipts = d_dur
         return cls.normalize((s_live, s_dur, l_dur, l_dur, (d_buffer, frozenset((r, True) for r in d_receipts)),
-                              d_dur, rollback))
+                              d_dur, rollback, (destroyed[1], destroyed[1])))
 
     @classmethod
     def drain(cls, state):
@@ -286,9 +290,9 @@ class Transit:
 
     @classmethod
     def delivered(cls, state):
-        (s_input, outbox, _, _, _), _, (records, _, _), _, (buffer, receipts), _, rollback = state
+        (s_input, outbox, _, _, _), _, (records, _, _), _, (buffer, receipts), _, rollback, destroyed = state
         assert not outbox and not records and not receipts and s_input == 0, state
-        return buffer, rollback
+        return buffer, destroyed[1], rollback
 
     @classmethod
     def explore(cls, crashes, faults, payloads=1):
@@ -302,9 +306,8 @@ class Transit:
                 continue
             seen.add(node)
             state, crashes_left, faults_left = node
-            buffer, rollback = cls.delivered(cls.drain(state))
-            outcomes.setdefault((buffer, rollback, faults_left < faults), 0)
-            outcomes[(buffer, rollback, faults_left < faults)] += 1
+            key = cls.delivered(cls.drain(state)) + (faults_left < faults,)
+            outcomes[key] = outcomes.get(key, 0) + 1
             for _, new_state, c, f in cls.successors(state, crashes_left, faults_left):
                 stack.append((new_state, c, f))
         return len(seen), outcomes
@@ -316,6 +319,8 @@ class Delivery:
     One payload whose record is already durable and ARRIVED. `gated=True` is revision 2: a claim lands in a
     non-extractable `incoming` area and becomes withdrawable only after its receipt is persisted. `gated=False`
     is the ADR-051 shape the v1.3-v1.6 deep-test report (F02) found duplicating: the claim is extractable at once.
+    The destination can be removed by any cause (R1-H3): an unacknowledged claim returns to ARRIVED, and after
+    the removal is persisted an owner or operator redirects the record to a new endpoint.
 
     The `vanilla` flag is set at a crash that tears the ordinary container/player pair, the class every vanilla
     chest has: the player's file already holds the payload while the destination's saved, extractable buffer
@@ -325,7 +330,8 @@ class Delivery:
     @staticmethod
     def initial():
         record = ("A", False, None)  # state, acked, ack_epoch
-        return (record, record, 1, 1, (0, 0, None), (0, 0, False), 0, 0, False)
+        # d: incoming (0, "U", "P"), buffer, receipt (None, "U", "P"), present, absence (False or "seen")
+        return (record, record, 1, 1, (0, 0, None, True, False), (0, 0, False, True), 0, 0, False)
 
     @staticmethod
     def normalize(state):
@@ -337,56 +343,82 @@ class Delivery:
 
     @classmethod
     def successors(cls, state, gated, crashes_left):
-        rec, rec_dur, e, e_dur, (incoming, buffer, receipt), d_dur, p, p_dur, vanilla = state
+        rec, rec_dur, e, e_dur, (incoming, buffer, receipt, present, absence), d_dur, p, p_dur, vanilla = state
 
         def make(**c):
-            parts = dict(rec=rec, rec_dur=rec_dur, e=e, e_dur=e_dur, d=(incoming, buffer, receipt), d_dur=d_dur,
-                         p=p, p_dur=p_dur, vanilla=vanilla)
+            parts = dict(rec=rec, rec_dur=rec_dur, e=e, e_dur=e_dur,
+                         d=(incoming, buffer, receipt, present, absence), d_dur=d_dur, p=p, p_dur=p_dur,
+                         vanilla=vanilla)
             parts.update(c)
             return cls.normalize(tuple(parts[k] for k in ("rec", "rec_dur", "e", "e_dur", "d", "d_dur", "p",
                                                           "p_dur", "vanilla")))
 
-        # incoming is 0, "U" (unpersisted) or "P" (captured by a chunk save together with its receipt).
-        land = (lambda: ("U", buffer, "U")) if gated else (lambda: (incoming, buffer + 1, "U"))
-        if rec is not None and rec[0] == "A" and receipt is None:
+        def d(**c):
+            parts = dict(incoming=incoming, buffer=buffer, receipt=receipt, present=present, absence=absence)
+            parts.update(c)
+            return tuple(parts[k] for k in ("incoming", "buffer", "receipt", "present", "absence"))
+
+        land = (lambda: d(incoming="U", receipt="U")) if gated else (lambda: d(buffer=buffer + 1, receipt="U"))
+        claimed = rec is not None and rec[0] == "C" and not rec[1]
+        if present and rec is not None and rec[0] == "A" and receipt is None:
             yield "CLAIM", make(rec=("C", False, None), d=land()), crashes_left
-        if gated and incoming == "P":
-            yield "MOVE", make(d=(0, buffer + 1, receipt)), crashes_left
-        if buffer:
-            yield "WITHDRAW", make(d=(incoming, buffer - 1, receipt), p=p + 1), crashes_left
-        saved = (1 if incoming else 0, buffer, receipt is not None)
-        if saved != d_dur or receipt == "U" or incoming == "U":
-            yield "SAVE_D", make(d=("P" if incoming else 0, buffer, None if receipt is None else "P"),
-                                 d_dur=saved), crashes_left
+        if present and gated and incoming == "P" and (claimed or rec is None or rec[1]):
+            # The move and the acknowledgement are one step (the ledger is updated in the same tick). An already
+            # acknowledged or pruned record means D's chunk is behind its own move: move again.
+            yield "MOVE", make(d=d(incoming=0, buffer=buffer + 1), rec=("C", True, e) if claimed else rec),                 crashes_left
+        if present and buffer and p < 3:
+            yield "WITHDRAW", make(d=d(buffer=buffer - 1), p=p + 1), crashes_left
+        saved = (1 if incoming else 0, buffer, receipt is not None, present)
+        seen = absence or (False if present else "seen")
+        if saved != d_dur or receipt == "U" or incoming == "U" or seen != absence:
+            yield "SAVE_D", make(d=d(incoming="P" if incoming else 0, receipt=None if receipt is None else "P",
+                                     absence=seen), d_dur=saved), crashes_left
         if p != p_dur:
             yield "SAVE_P", make(p_dur=p), crashes_left
         if rec != rec_dur:
             yield "FLUSH_L", make(rec_dur=rec, e=e + 1, e_dur=e + 1), crashes_left
-        if rec is not None and rec[0] == "A" and receipt is not None:
+        if present and rec is not None and rec[0] == "A" and receipt is not None:
             yield "D_RECOVER", make(rec=("C", False, None)), crashes_left
-        if rec is not None and rec[0] == "C" and not rec[1] and receipt == "P":
+        # Recovery after a crash that kept D's moved state but lost the ledger's acknowledgement.
+        if present and claimed and receipt == "P" and not incoming:
             yield "D_ACK", make(rec=("C", True, e)), crashes_left
-        if rec is not None and rec[0] == "C" and not rec[1] and receipt is None:
+        if present and claimed and receipt is None:
             yield "D_REMAT", make(d=land()), crashes_left
         if receipt is not None and (rec is None or (rec[1] and e > rec[2])):
-            yield "D_DROP", make(d=(incoming, buffer, None)), crashes_left
+            yield "D_DROP", make(d=d(receipt=None)), crashes_left
         if rec is not None and rec[1] and e > rec[2]:
             yield "PRUNE", make(rec=None), crashes_left
+        due_move = incoming == "P" and (rec is None or rec[1])
+        if present and buffer == 0 and not due_move:
+            # R1-H3: removal by any cause, settled from D's live state and written with a barrier flush. A payload
+            # still incoming (or never materialized here) returns its record to ARRIVED; one that moved is
+            # acknowledged. An incoming payload whose record is already acknowledged is D's own content (its move
+            # is due) and drops with the receive buffer; the model covers that case as MOVE followed by a plain
+            # container drop, so it removes D only with an empty receive buffer and no due move.
+            if rec is not None and not rec[1]:
+                settled = ("C", True, e) if receipt is not None and not incoming else ("A", False, None)
+            else:
+                settled = rec
+            yield "REMOVE_D", make(d=(0, 0, None, False, False), rec=settled, rec_dur=settled, e=e + 1,
+                                   e_dur=e + 1), crashes_left
+        if not present and absence == "seen" and rec is not None and rec[0] == "A":
+            yield "REDIRECT", make(d=(0, 0, None, True, False), d_dur=(0, 0, False, True)), crashes_left
         if crashes_left:
             torn = (p_dur >= 1 and d_dur[0] + d_dur[1] >= 1) or p > p_dur
             yield "CRASH", cls.normalize((rec_dur, rec_dur, e_dur, e_dur,
-                                          ("P" if d_dur[0] else 0, d_dur[1], "P" if d_dur[2] else None), d_dur,
-                                          p_dur, p_dur,
-                                          vanilla or torn)), crashes_left - 1
+                                          ("P" if d_dur[0] else 0, d_dur[1], "P" if d_dur[2] else None, d_dur[3],
+                                           False if d_dur[3] else "seen"), d_dur,
+                                          p_dur, p_dur, vanilla or torn)), crashes_left - 1
 
     @classmethod
     def outcome(cls, state, gated):
-        order = ["D_RECOVER", "D_ACK", "D_DROP", "D_REMAT", "PRUNE", "CLAIM", "MOVE", "FLUSH_L", "SAVE_D", "SAVE_P"]
-        for _ in range(200):
+        order = ["D_RECOVER", "D_ACK", "D_DROP", "D_REMAT", "PRUNE", "CLAIM", "MOVE", "FLUSH_L",
+                 "SAVE_D", "SAVE_P", "REDIRECT"]
+        for _ in range(300):
             options = {label: s for label, s, _ in cls.successors(state, gated, 0)}
             chosen = next((label for label in order if label in options), None)
             if chosen is None:
-                rec, _, _, _, (incoming, buffer, receipt), _, p, _, vanilla = state
+                rec, _, _, _, (incoming, buffer, receipt, present, _), _, p, _, vanilla = state
                 assert rec is None and receipt is None and not incoming, state
                 return buffer + p, vanilla
             state = options[chosen]
@@ -605,7 +637,11 @@ class Vectors(unittest.TestCase):
     def test_transit_exactly_once_without_faults(self):
         # Two payloads exercise in-order registration, two outbox entries and stale drops.
         states, outcomes = Transit.explore(crashes=2, faults=0, payloads=2)
-        self.assertEqual(set(outcomes), {(2, False, False)}, outcomes)
+        for buffer, destroyed, rollback, faulted in outcomes:
+            self.assertFalse(rollback or faulted)
+            self.assertLessEqual(buffer, 2)  # never a duplicate
+            # A loss only where a forced removal destroyed escrowed cargo (R1-H3, audited).
+            self.assertGreaterEqual(buffer + destroyed, 2)
         self.assertEqual(states, EXAMPLES["transit"]["states_two_payloads_two_crashes"])
 
     def test_transit_lost_write_residual_is_detected(self):
@@ -615,19 +651,21 @@ class Vectors(unittest.TestCase):
             states, outcomes = Transit.explore(crashes=2, faults=1)
         finally:
             Transit.TOMBSTONE_REMOVAL = True
-        for (delivered, rollback, faulted), _ in outcomes.items():
-            self.assertIn(delivered, (1, 2))
-            if delivered == 2:
+        for (delivered, destroyed, rollback, faulted), _ in outcomes.items():
+            self.assertGreaterEqual(delivered + destroyed, 1)
+            if delivered > 1:
                 self.assertTrue(faulted and rollback, outcomes)  # only after a lost write, always audited
             if not faulted:
-                self.assertEqual((delivered, rollback), (1, False))
-        self.assertIn((2, True, True), outcomes)  # the residual is reachable, as documented
+                self.assertLessEqual(delivered, 1)
+                self.assertFalse(rollback)
+        self.assertIn((2, 0, True, True), outcomes)  # the residual is reachable, as documented
         self.assertEqual(states, EXAMPLES["transit"]["states_one_payload_two_crashes_one_lost_write"])
 
     def test_transit_tombstone_residual_needs_a_lost_absence_write(self):
         states, outcomes = Transit.explore(crashes=2, faults=1)
-        unaudited = {key for key in outcomes if key[0] == 2 and not key[1]}
-        self.assertEqual(unaudited, {(2, False, True)})  # only after a lost write, as ADR-054 section 11 states
+        unaudited = {key for key in outcomes if key[0] > 1 and not key[2]}
+        self.assertTrue(unaudited)
+        self.assertTrue(all(key[3] for key in unaudited))  # only after a lost write, as ADR-054 section 11 states
         self.assertEqual(states, EXAMPLES["transit"]["states_tombstone_removal_one_lost_write"])
 
     def test_transit_named_cuts(self):
@@ -645,6 +683,13 @@ class Vectors(unittest.TestCase):
             if total != 1:
                 self.assertTrue(torn, outcomes)  # no duplicate or loss without a container/player torn save
         self.assertEqual(states, EXAMPLES["delivery"]["states_gated_two_crashes"])
+
+    def test_delivery_removal_settles_once(self):
+        for case in EXAMPLES["delivery"]["removal_cuts"]:
+            state = Delivery.normalize(Delivery.initial())
+            for label in case["events"]:
+                state = {l: s for l, s, _ in Delivery.successors(state, True, 1)}[label]
+            self.assertEqual(list(Delivery.outcome(state, True)), case["expected"], case["name"])
 
     def test_delivery_without_the_gate_reproduces_f02(self):
         _, outcomes = Delivery.explore(gated=False, crashes=2)
