@@ -418,7 +418,9 @@ against the receive buffer's room. A payload moves from incoming into the
 extractable receive buffer, in one tick inside D, and its record is
 acknowledged in the same tick, only after a
 `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of D's chunk is observed to
-contain it (§2's persistence rule). Until then a crash can only lose D's copy
+contain it (§2's persistence rule) and that observation is at least 40 ticks old,
+the same age rule as registration (review R1-M1). The reconciliation row that
+acknowledges a persisted receipt uses the same aged observation. Until then a crash can only lose D's copy
 together with its receipt, and the record rematerializes it into incoming; no
 third store (a player, a hopper, another container) can already hold it. After
 the move, the receive buffer is an ordinary container: a crash that saves a
@@ -482,6 +484,8 @@ its payload.
 | Record pruned while S still holds the entry (S unloaded, its release not yet saved, or that save lost) | Entry with `seq ≤ dispatched_through`, no record | Dropped (`OUTBOX_STALE_DROPPED`); the payload was already delivered once |
 | **Residual**: S's escrow save observed but its asynchronous file write lost, then the record durable | S's input still holds the payload, record exists | Duplicate of one payload, detected and audited as `SOURCE_ROLLBACK`; same class as a torn vanilla save. The 40-tick age rule narrows the window to an `IOWorker` backlog older than 2 s |
 | **Residual**: operator redirect after a ledger rollback | ADR-051 §9 | Possible double delivery, audited |
+| **Residual** (R1-M1): D's save of a claim observed and aged, but its asynchronous write lost; the move, acknowledgement and flush happened; then a crash | The ledger acknowledged a payload that D's chunk never stored | The payload is lost (ADR-051 §11 lists the same class) |
+| **Residual** (R1-M1): as above, but the ledger's acknowledgement was not yet flushed and a player withdrew and saved the moved payload | The record is `CLAIMED`, D has no receipt | Rematerialized, so the payload exists twice; it needs a lost write that the 40-tick age did not outlast |
 
 ### 12. Chunk loading
 

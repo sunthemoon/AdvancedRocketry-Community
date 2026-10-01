@@ -858,7 +858,8 @@
   ]
  },
  "delivery": {
-  "states_gated_two_crashes": 1314,
+  "states_gated_two_crashes": 1622,
+  "states_gated_two_crashes_one_lost_write": 4011,
   "f02_path": [
    "CLAIM",
    "FLUSH_L",
@@ -902,6 +903,7 @@
     "events": [
      "CLAIM",
      "SAVE_D",
+     "AGE_D",
      "MOVE",
      "WITHDRAW",
      "SAVE_P",

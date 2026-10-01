@@ -342,8 +342,9 @@ class Delivery:
         return (fix(rec), fix(rec_dur), rank[e], rank[e_dur], d, d_dur, p, p_dur, vanilla)
 
     @classmethod
-    def successors(cls, state, gated, crashes_left):
+    def successors(cls, state, gated, crashes_left, faults_left=0):
         rec, rec_dur, e, e_dur, (incoming, buffer, receipt, present, absence), d_dur, p, p_dur, vanilla = state
+        c, f = crashes_left, faults_left
 
         def make(**c):
             parts = dict(rec=rec, rec_dur=rec_dur, e=e, e_dur=e_dur,
@@ -361,34 +362,42 @@ class Delivery:
         land = (lambda: d(incoming="U", receipt="U")) if gated else (lambda: d(buffer=buffer + 1, receipt="U"))
         claimed = rec is not None and rec[0] == "C" and not rec[1]
         if present and rec is not None and rec[0] == "A" and receipt is None:
-            yield "CLAIM", make(rec=("C", False, None), d=land()), crashes_left
-        if present and gated and incoming == "P" and (claimed or rec is None or rec[1]):
+            yield "CLAIM", make(rec=("C", False, None), d=land()), c, f
+        if present and gated and incoming == "A" and (claimed or rec is None or rec[1]):
             # The move and the acknowledgement are one step (the ledger is updated in the same tick). An already
             # acknowledged or pruned record means D's chunk is behind its own move: move again.
-            yield "MOVE", make(d=d(incoming=0, buffer=buffer + 1), rec=("C", True, e) if claimed else rec),                 crashes_left
+            yield "MOVE", make(d=d(incoming=0, buffer=buffer + 1), rec=("C", True, e) if claimed else rec), c, f
         if present and buffer and p < 3:
-            yield "WITHDRAW", make(d=d(buffer=buffer - 1), p=p + 1), crashes_left
+            yield "WITHDRAW", make(d=d(buffer=buffer - 1), p=p + 1), c, f
         saved = (1 if incoming else 0, buffer, receipt is not None, present)
         seen = absence or (False if present else "seen")
+        observe = lambda flag: flag if flag in (0, None, "A") else "P"
         if saved != d_dur or receipt == "U" or incoming == "U" or seen != absence:
-            yield "SAVE_D", make(d=d(incoming="P" if incoming else 0, receipt=None if receipt is None else "P",
-                                     absence=seen), d_dur=saved), crashes_left
+            yield "SAVE_D", make(d=d(incoming=observe(incoming), receipt=observe(receipt), absence=seen),
+                                 d_dur=saved), c, f
+            if f:
+                # R1-M1: the save is observed (ChunkDataEvent.Save) but its asynchronous file write is lost.
+                yield "SAVE_D_LOST", make(d=d(incoming=observe(incoming), receipt=observe(receipt), absence=seen)), \
+                    c, f - 1
+        if incoming == "P" or receipt == "P":
+            age = lambda flag: "A" if flag == "P" else flag
+            yield "AGE_D", make(d=d(incoming=age(incoming), receipt=age(receipt))), c, f
         if p != p_dur:
-            yield "SAVE_P", make(p_dur=p), crashes_left
+            yield "SAVE_P", make(p_dur=p), c, f
         if rec != rec_dur:
-            yield "FLUSH_L", make(rec_dur=rec, e=e + 1, e_dur=e + 1), crashes_left
+            yield "FLUSH_L", make(rec_dur=rec, e=e + 1, e_dur=e + 1), c, f
         if present and rec is not None and rec[0] == "A" and receipt is not None:
-            yield "D_RECOVER", make(rec=("C", False, None)), crashes_left
+            yield "D_RECOVER", make(rec=("C", False, None)), c, f
         # Recovery after a crash that kept D's moved state but lost the ledger's acknowledgement.
-        if present and claimed and receipt == "P" and not incoming:
-            yield "D_ACK", make(rec=("C", True, e)), crashes_left
+        if present and claimed and receipt == "A" and not incoming:
+            yield "D_ACK", make(rec=("C", True, e)), c, f
         if present and claimed and receipt is None:
-            yield "D_REMAT", make(d=land()), crashes_left
+            yield "D_REMAT", make(d=land()), c, f
         if receipt is not None and (rec is None or (rec[1] and e > rec[2])):
-            yield "D_DROP", make(d=d(receipt=None)), crashes_left
+            yield "D_DROP", make(d=d(receipt=None)), c, f
         if rec is not None and rec[1] and e > rec[2]:
-            yield "PRUNE", make(rec=None), crashes_left
-        due_move = incoming == "P" and (rec is None or rec[1])
+            yield "PRUNE", make(rec=None), c, f
+        due_move = incoming in ("P", "A") and (rec is None or rec[1])
         if present and buffer == 0 and not due_move:
             # R1-H3: removal by any cause, settled from D's live state and written with a barrier flush. A payload
             # still incoming (or never materialized here) returns its record to ARRIVED; one that moved is
@@ -400,22 +409,22 @@ class Delivery:
             else:
                 settled = rec
             yield "REMOVE_D", make(d=(0, 0, None, False, False), rec=settled, rec_dur=settled, e=e + 1,
-                                   e_dur=e + 1), crashes_left
+                                   e_dur=e + 1), c, f
         if not present and absence == "seen" and rec is not None and rec[0] == "A":
-            yield "REDIRECT", make(d=(0, 0, None, True, False), d_dur=(0, 0, False, True)), crashes_left
+            yield "REDIRECT", make(d=(0, 0, None, True, False), d_dur=(0, 0, False, True)), c, f
         if crashes_left:
             torn = (p_dur >= 1 and d_dur[0] + d_dur[1] >= 1) or p > p_dur
             yield "CRASH", cls.normalize((rec_dur, rec_dur, e_dur, e_dur,
                                           ("P" if d_dur[0] else 0, d_dur[1], "P" if d_dur[2] else None, d_dur[3],
                                            False if d_dur[3] else "seen"), d_dur,
-                                          p_dur, p_dur, vanilla or torn)), crashes_left - 1
+                                          p_dur, p_dur, vanilla or torn)), c - 1, f
 
     @classmethod
     def outcome(cls, state, gated):
-        order = ["D_RECOVER", "D_ACK", "D_DROP", "D_REMAT", "PRUNE", "CLAIM", "MOVE", "FLUSH_L",
+        order = ["D_RECOVER", "D_ACK", "D_DROP", "D_REMAT", "PRUNE", "CLAIM", "MOVE", "AGE_D", "FLUSH_L",
                  "SAVE_D", "SAVE_P", "REDIRECT"]
         for _ in range(300):
-            options = {label: s for label, s, _ in cls.successors(state, gated, 0)}
+            options = {label: s for label, s, _, _ in cls.successors(state, gated, 0)}
             chosen = next((label for label in order if label in options), None)
             if chosen is None:
                 rec, _, _, _, (incoming, buffer, receipt, present, _), _, p, _, vanilla = state
@@ -425,18 +434,18 @@ class Delivery:
         raise AssertionError("delivery drain did not terminate")
 
     @classmethod
-    def explore(cls, gated, crashes=2):
-        seen, stack, outcomes = set(), [(cls.normalize(cls.initial()), crashes)], {}
+    def explore(cls, gated, crashes=2, faults=0):
+        seen, stack, outcomes = set(), [(cls.normalize(cls.initial()), crashes, faults)], {}
         while stack:
             node = stack.pop()
             if node in seen:
                 continue
             seen.add(node)
-            state, left = node
-            key = cls.outcome(state, gated)
+            state, left, faults_left = node
+            key = cls.outcome(state, gated) + (faults_left < faults,)
             outcomes[key] = outcomes.get(key, 0) + 1
-            for _, new_state, c in cls.successors(state, gated, left):
-                stack.append((new_state, c))
+            for _, new_state, c, f in cls.successors(state, gated, left, faults_left):
+                stack.append((new_state, c, f))
         return len(seen), outcomes
 
 
@@ -679,30 +688,39 @@ class Vectors(unittest.TestCase):
 
     def test_delivery_gate_leaves_only_the_container_torn_save_class(self):
         states, outcomes = Delivery.explore(gated=True, crashes=2)
-        for (total, torn), _ in outcomes.items():
+        for (total, torn, _), _ in outcomes.items():
             if total != 1:
                 self.assertTrue(torn, outcomes)  # no duplicate or loss without a container/player torn save
         self.assertEqual(states, EXAMPLES["delivery"]["states_gated_two_crashes"])
+
+    def test_delivery_lost_write_residual(self):
+        # R1-M1: with one lost destination write, a non-torn loss or duplicate needs that fault.
+        states, outcomes = Delivery.explore(gated=True, crashes=2, faults=1)
+        for (total, torn, faulted), _ in outcomes.items():
+            if total != 1 and not torn:
+                self.assertTrue(faulted, outcomes)
+        self.assertIn((0, False, True), outcomes)  # the documented destination-side loss
+        self.assertEqual(states, EXAMPLES["delivery"]["states_gated_two_crashes_one_lost_write"])
 
     def test_delivery_removal_settles_once(self):
         for case in EXAMPLES["delivery"]["removal_cuts"]:
             state = Delivery.normalize(Delivery.initial())
             for label in case["events"]:
-                state = {l: s for l, s, _ in Delivery.successors(state, True, 1)}[label]
+                state = {l: s for l, s, *_ in Delivery.successors(state, True, 1)}[label]
             self.assertEqual(list(Delivery.outcome(state, True)), case["expected"], case["name"])
 
     def test_delivery_without_the_gate_reproduces_f02(self):
         _, outcomes = Delivery.explore(gated=False, crashes=2)
-        self.assertIn((2, False), outcomes)
+        self.assertIn((2, False, False), outcomes)
         state = Delivery.normalize(Delivery.initial())
         for label in EXAMPLES["delivery"]["f02_path"]:
-            state = {l: s for l, s, _ in Delivery.successors(state, False, 1)}[label]
+            state = {l: s for l, s, *_ in Delivery.successors(state, False, 1)}[label]
         self.assertEqual(Delivery.outcome(state, False), (2, False))
         gated = Delivery.normalize(Delivery.initial())
         for label in EXAMPLES["delivery"]["f02_path_gated"]:
-            gated = {l: s for l, s, _ in Delivery.successors(gated, True, 1)}[label]
+            gated = {l: s for l, s, *_ in Delivery.successors(gated, True, 1)}[label]
         # With the gate the same prefix offers no withdrawal until a chunk save captured the claim.
-        self.assertNotIn("WITHDRAW", {l for l, _, _ in Delivery.successors(gated, True, 1)})
+        self.assertNotIn("WITHDRAW", {l for l, *_ in Delivery.successors(gated, True, 1)})
 
     def test_railgun_quotes(self):
         for case in EXAMPLES["railgun"]:
