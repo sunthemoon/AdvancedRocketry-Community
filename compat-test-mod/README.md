@@ -4,8 +4,11 @@ This standalone ForgeGradle project builds the existing
 [`src/adapterTest`](../src/adapterTest/) fixture into a separate, reobfuscated
 mod JAR. It consumes the published ARCE **API classifier**, not the host project,
 main JAR or compiled output. Its platform is Java 17, Minecraft 1.20.1 and
-Forge 47.4.10. This fixture requires API 1.7 for satellite payload missions, in addition to environment queries (1.6), item fuels (1.5), rocket components (1.4),
+Forge 47.4.10. This fixture requires API 1.8 for the cancelable endgame effect event, in addition to satellite payload missions (1.7), environment queries (1.6), item fuels (1.5), rocket components (1.4),
 suit equipment (1.3), atmosphere boundaries (1.2) and rocket registration (1.1).
+
+The endgame fixture listens for `EndgameEffectEvent` on the Forge bus like a claim
+mod and cancels the effects of owners it protects against; it can only cancel.
 
 The environment fixture listens for the actual server-ready API event, queries
 Earth/Moon/unresolved and unloaded locations, and verifies expiration at stopping.

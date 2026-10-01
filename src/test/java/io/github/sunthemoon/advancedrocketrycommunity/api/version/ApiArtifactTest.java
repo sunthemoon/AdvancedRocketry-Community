@@ -59,7 +59,9 @@ class ApiArtifactTest {
             API_PACKAGE + "environment/ServerEnvironmentReadyEvent.class",
             API_PACKAGE + "satellite/SatelliteMissionDefinition.class",
             API_PACKAGE + "satellite/SatellitePayloadRegistrar.class",
-            API_PACKAGE + "satellite/RegisterSatellitePayloadsEvent.class")).collect(Collectors.toUnmodifiableSet());
+            API_PACKAGE + "satellite/RegisterSatellitePayloadsEvent.class",
+            API_PACKAGE + "endgame/EndgameEffect.class",
+            API_PACKAGE + "endgame/EndgameEffectEvent.class")).collect(Collectors.toUnmodifiableSet());
     private static final Set<String> METADATA = Set.of("META-INF/MANIFEST.MF", "META-INF/LICENSE",
             "META-INF/NOTICE.md", "META-INF/THIRD-PARTY-NOTICES.md",
             "META-INF/licenses/GRADLE-8.1.1-LICENSE.txt",
@@ -201,6 +203,26 @@ class ApiArtifactTest {
                 diagnostic.getKind() == Diagnostic.Kind.ERROR
                         && diagnostic.getCode().equals("compiler.err.doesnt.exist")
                         && diagnostic.getMessage(Locale.ROOT).contains("compat.satellite")),
+                result.diagnostics().toString());
+    }
+
+    @Test
+    void endgameConsumerCompilesWithOnlyTheClassifierAndPlatformDependencies() throws IOException {
+        Compilation result = compile("EndgameApiConsumer", platformConsumerClasspath());
+        assertTrue(result.success(), result.diagnostics().toString());
+    }
+
+    @Test
+    void platformConsumerCannotImportTheEndgameProtectionChain() throws IOException {
+        try (ZipFile runtime = new ZipFile(Path.of(System.getProperty("arce.runtimeJar")).toFile())) {
+            assertNotNull(runtime.getEntry(HOST_PACKAGE + "endgame/protection/EndgameProtection.class"));
+        }
+        Compilation result = compile("EndgameInternalConsumer", platformConsumerClasspath());
+        assertFalse(result.success());
+        assertTrue(result.diagnostics().stream().anyMatch(diagnostic ->
+                diagnostic.getKind() == Diagnostic.Kind.ERROR
+                        && diagnostic.getCode().equals("compiler.err.doesnt.exist")
+                        && diagnostic.getMessage(Locale.ROOT).contains("endgame.protection")),
                 result.diagnostics().toString());
     }
 

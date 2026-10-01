@@ -56,8 +56,8 @@ public final class AdapterTestMod {
     static volatile RegisterRocketFuelsEvent fuelEvent;
 
     public AdapterTestMod(FMLJavaModLoadingContext context) {
-        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 7)) != ApiCompatibility.COMPATIBLE) {
-            throw new IllegalStateException("Adapter fixture requires ARCE API 1.7");
+        if (ApiVersions.check(ApiVersions.current(), new ApiVersion(1, 8)) != ApiCompatibility.COMPATIBLE) {
+            throw new IllegalStateException("Adapter fixture requires ARCE API 1.8");
         }
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
@@ -69,6 +69,7 @@ public final class AdapterTestMod {
         modBus.addListener(this::registerRocketFuels);
         modBus.addListener(SatellitePayloadFixture::register);
         EnvironmentQueryFixture.install();
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(EndgameEffectFixture::onEffect);
         StationExpansionProbe.install();
         if (Boolean.getBoolean("arce_adapter_test.satelliteSmoke")) {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(SatellitePayloadFixture::commands);

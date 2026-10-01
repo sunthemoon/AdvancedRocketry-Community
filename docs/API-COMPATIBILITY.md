@@ -1,7 +1,7 @@
 # Integration compatibility and support
 
 Use this page when implementing an ARCE integration or changing a development
-modpack's installed providers. It describes the **v1.3 development API 1.7**,
+modpack's installed providers. It describes the **development API 1.8**,
 not a stable release or a guarantee that arbitrary third-party mods work together.
 For implementation examples and exact limits, read the
 [public API guide](PUBLIC-API-GUIDE.md). For a buildable, isolated consumer, use the
@@ -42,6 +42,7 @@ entries**, including the nested environment enum.
 | `rocket` (fuel) | 1.5 | `RocketFuelDefinition`, `RocketFuelRegistrar`, `RegisterRocketFuelsEvent` |
 | `environment` | 1.6 | `AtmosphereProfile`, `EnvironmentSnapshot`, `EnvironmentSnapshot.Locus`, `EnvironmentQueries`, `ServerEnvironmentReadyEvent` |
 | `satellite` | 1.7 | `SatelliteMissionDefinition`, `SatellitePayloadRegistrar`, `RegisterSatellitePayloadsEvent` |
+| `endgame` | 1.8 | `EndgameEffect`, `EndgameEffectEvent` |
 
 Registration events use the integrating mod's **MOD bus**, synchronously during
 queued common setup on both physical sides. Definition/provider IDs belong to
@@ -62,6 +63,7 @@ registry or world access.
 | Item fuels | Consume a whole item into abstract fuel units and an optional distinct remainder | Not a fluid/capability drain or NBT-dependent callback; unfinished batches retain captured values | [fuel checks](work/v1.3.0-rocket-fuels/VERIFICATION.md) |
 | Environment queries | Read configured surface or indexed station-orbit context without loading chunks | Not effective entity gravity, local room oxygen, travel or build permission | [environment checks](work/v1.3.0-environment-queries/VERIFICATION.md) |
 | Satellite payloads | Manufacture a registered payload and run the existing research mission | Fixed manufacturing roles; no arbitrary reward/mission callbacks; started tasks retain snapshots | [satellite checks](work/v1.3.0-satellite-payloads/VERIFICATION.md) |
+| Endgame effects | Veto a laser drill layer, a gravity field or an elevator ride before it affects the world | Cancel only; no device access, no way to change the effect; zones, stations, spawn protection and break events still apply | [ADR-054 section 5.1](decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md) |
 
 These records identify their actual commits, artifacts and scenarios. An older
 per-feature result is not certification of every newer artifact, actual third-party
@@ -86,6 +88,8 @@ interaction. Unknown combinations remain unverified rather than implicitly suppo
 - **Satellite payloads:** missing definitions block new work, not completion of
   existing snapshotted tasks. Unregistered known payload items remain extractable;
   unresolved native items block and preserve the terminal root.
+- **Endgame effect listeners:** a cancelled batch changes nothing and the device
+  reports `TARGET_PROTECTED`; removing the listening mod removes only its veto.
 - **Atmosphere rules and environment queries:** remove the registration/consumer,
   not saved world identity. A missing atmosphere rule uses ordinary fallback;
   callers must release expired environment handles instead of reusing a prior server.

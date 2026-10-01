@@ -1,7 +1,7 @@
-# Public API: versioning, rockets, atmosphere, equipment, environment and satellites
+# Public API: versioning, rockets, atmosphere, equipment, environment, satellites and endgame effects
 
 Use the API classifier when compiling an integration against supported ARCE
-types. The API version is **1.7**. Version metadata remains JDK-only in
+types. The API version is **1.8**. Version metadata remains JDK-only in
 `io.github.sunthemoon.advancedrocketrycommunity.api.version`:
 
 The [compatibility inventory and support policy](API-COMPATIBILITY.md) summarizes
@@ -23,6 +23,7 @@ details, even when their Java types are `public`. `api.atmosphere` exports the f
 state-boundary and three equipment types described below. `api.environment`
 exports the read-only types described below. `api.satellite` exports
 `SatelliteMissionDefinition`, `SatellitePayloadRegistrar` and `RegisterSatellitePayloadsEvent`.
+`api.endgame` exports `EndgameEffect` and `EndgameEffectEvent`.
 
 ## Compile and run
 
@@ -468,6 +469,40 @@ Over-budget roots require backup/repair and refuse normal survival removal.
 Existing root schemas are unchanged. See
 [the satellite contract](decisions/ADR-029-SATELLITE-PAYLOAD-MISSIONS.md) for exact
 bounds, menu framing and downgrade limitations.
+
+## Veto an endgame effect
+
+Require API **1.8**. Claim and protection mods listen on the **FORGE bus**
+(`MinecraftForge.EVENT_BUS`) for `EndgameEffectEvent`, which the server posts
+on its own thread before an endgame device affects the world:
+
+```java
+MinecraftForge.EVENT_BUS.addListener((EndgameEffectEvent event) -> {
+    if (event.effect() == EndgameEffect.BLOCK_BREAK
+            && !claims.allows(event.ownerId(), event.level(), event.min(), event.max())) {
+        event.setCanceled(true);
+    }
+});
+```
+
+One event describes one batch: at most one tick of work for one device, inside
+the inclusive box `min()..max()` of `level()`. `effect()` is `BLOCK_BREAK` (a
+laser drill layer), `ENTITY_GRAVITY` (a gravity field) or `TELEPORT` (an
+elevator ride). `systemId()` names the system, for example
+`advancedrocketrycommunity:laser_drill`. `ownerId()` is the owner of the device
+that causes the effect (for a ride, the departing endpoint's owner). `actorId()`
+is the player whose intent caused it, or empty for autonomous work.
+
+Listeners may only cancel. The event exposes no device and no way to change the
+effect. A cancelled batch changes nothing: the device keeps its state, reports
+`TARGET_PROTECTED` and tries again later. The event is the last of the host's
+checks, after world border, build height, operator zones, station regions and a
+dedicated server's spawn protection. Laser layers also post a standard
+`BlockEvent.BreakEvent` per block with a FakePlayer bound to the device owner, so
+mods that already protect breaking need no change. Do not load chunks or block
+the server thread in a listener. See
+[ADR-054](decisions/ADR-054-ENDGAME-AUTHORITY-PROTECTION-AND-AUDIT.md) for the
+full chain.
 
 ## Verify an integration boundary
 

@@ -36,7 +36,8 @@ def exportedClasses = [
         'api/environment/EnvironmentSnapshot$Locus.class', 'api/environment/EnvironmentQueries.class',
         'api/environment/ServerEnvironmentReadyEvent.class',
         'api/satellite/SatelliteMissionDefinition.class', 'api/satellite/SatellitePayloadRegistrar.class',
-        'api/satellite/RegisterSatellitePayloadsEvent.class'
+        'api/satellite/RegisterSatellitePayloadsEvent.class',
+        'api/endgame/EndgameEffect.class', 'api/endgame/EndgameEffectEvent.class'
 ].collect { hostPrefix + it }.toSet()
 
 repositories {

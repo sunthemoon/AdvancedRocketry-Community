@@ -25,7 +25,7 @@ sourceSets {
         compileClasspath = sourceSets.main.compileClasspath + files(
                 layout.buildDirectory.dir('classes/api'), layout.buildDirectory.dir('classes/rocketApi'),
                 layout.buildDirectory.dir('classes/atmosphereApi'), layout.buildDirectory.dir('classes/environmentApi'),
-                layout.buildDirectory.dir('classes/satelliteApi'))
+                layout.buildDirectory.dir('classes/satelliteApi'), layout.buildDirectory.dir('classes/endgameApi'))
         runtimeClasspath = output + sourceSets.main.runtimeClasspath
     }
 }
@@ -345,11 +345,14 @@ def exportedEnvironmentApiTypes = ['AtmosphereProfile', 'EnvironmentSnapshot', '
                                    'ServerEnvironmentReadyEvent']
 def satelliteApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/satellite'
 def exportedSatelliteApiTypes = ['SatelliteMissionDefinition', 'SatellitePayloadRegistrar', 'RegisterSatellitePayloadsEvent']
+def endgameApiPackage = 'io/github/sunthemoon/advancedrocketrycommunity/api/endgame'
+def exportedEndgameApiTypes = ['EndgameEffect', 'EndgameEffectEvent']
 def exportedApiClasses = exportedApiTypes.collect { "${apiPackage}/${it}.class" } +
         exportedRocketApiTypes.collect { "${rocketApiPackage}/${it}.class" } +
         exportedAtmosphereApiTypes.collect { "${atmosphereApiPackage}/${it}.class" } +
         exportedEnvironmentApiTypes.collect { "${environmentApiPackage}/${it}.class" } +
         exportedSatelliteApiTypes.collect { "${satelliteApiPackage}/${it}.class" } +
+        exportedEndgameApiTypes.collect { "${endgameApiPackage}/${it}.class" } +
         ["${environmentApiPackage}/EnvironmentSnapshot\$Locus.class"]
 def compileApiJava = tasks.register('compileApiJava', JavaCompile) {
     source exportedApiTypes.collect { "src/main/java/${apiPackage}/${it}.java" }
@@ -406,8 +409,20 @@ def compileSatelliteApiJava = tasks.register('compileSatelliteApiJava', JavaComp
     }
 }
 
+def compileEndgameApiJava = tasks.register('compileEndgameApiJava', JavaCompile) {
+    source exportedEndgameApiTypes.collect { "src/main/java/${endgameApiPackage}/${it}.java" }
+    classpath = sourceSets.main.compileClasspath
+    options.sourcepath = files()
+    options.annotationProcessorPath = files()
+    destinationDirectory = layout.buildDirectory.dir('classes/endgameApi')
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 tasks.named('compileAdapterTestJava', JavaCompile) {
-    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, compileSatelliteApiJava
+    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, compileSatelliteApiJava,
+            compileEndgameApiJava
     options.sourcepath = files()
     options.annotationProcessorPath = files()
 }
@@ -417,7 +432,8 @@ tasks.named('check') {
 }
 
 def apiJar = tasks.register('apiJar', Jar) {
-    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, compileSatelliteApiJava, 'reobfJar'
+    dependsOn compileApiJava, compileRocketApiJava, compileAtmosphereApiJava, compileEnvironmentApiJava, compileSatelliteApiJava,
+            compileEndgameApiJava, 'reobfJar'
     archiveClassifier = 'api'
     // Publish the actual runtime bytes; Forge's remapper can rewrite even JDK-only classes.
     from({ zipTree(tasks.named('jar', Jar).get().archiveFile.get().asFile) }) {
