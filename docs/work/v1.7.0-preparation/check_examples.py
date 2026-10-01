@@ -78,33 +78,41 @@ def shaft_floor(my, max_depth, min_build_height):
 
 # --- ADR-055 physical-mode payment counters ---------------------------------------------------
 
+BUFFER = 200_000  # ADR-055 controller buffer
+
+
 def counter_model(events, cost, energy):
     """Runs controller/marker events with independent saves; returns the settled durable result.
 
-    events: OP, SAVE_C, SAVE_M, CRASH. After the sequence a final contact settles debt and credit
-    with unlimited energy added, the way a powered controller eventually would.
+    events: OP, CHARGE (cost FE arrives, capped at the buffer), SAVE_C, SAVE_M, CRASH. Debt is settled one
+    layer at a time from the buffer (R1-M7); after the sequence the controller keeps receiving CHARGE until
+    it is settled, the way a powered controller eventually would. `spent` is the controller's durable debit.
     """
-    live_c = {"energy": energy, "paid": 0}
+    live_c = {"energy": energy, "paid": 0, "spent": 0}
     live_m = {"done": 0}
     dur_c, dur_m = dict(live_c), dict(live_m)
 
     def contact(c, m):
-        if m["done"] > c["paid"]:
-            debt = (m["done"] - c["paid"]) * cost
-            if c["energy"] < debt:
-                return False
-            c["energy"] -= debt
-            c["paid"] = m["done"]
+        while m["done"] > c["paid"] and c["energy"] >= cost:  # debt, layer by layer
+            c["energy"] -= cost
+            c["spent"] += cost
+            c["paid"] += 1
         if c["paid"] > m["done"]:
             m["done"] = c["paid"]  # credit layers performed without a new payment
-        return True
+        return m["done"] == c["paid"]
+
+    def charge(c):
+        c["energy"] = min(BUFFER, c["energy"] + cost)
 
     for event in events:
         if event == "OP":
             if contact(live_c, live_m) and live_c["energy"] >= cost:
                 live_c["energy"] -= cost
+                live_c["spent"] += cost
                 live_c["paid"] += 1
                 live_m["done"] += 1
+        elif event == "CHARGE":
+            charge(live_c)
         elif event == "SAVE_C":
             dur_c = dict(live_c)
         elif event == "SAVE_M":
@@ -113,11 +121,13 @@ def counter_model(events, cost, energy):
             live_c, live_m = dict(dur_c), dict(dur_m)
         else:
             raise ValueError(event)
-    live_c["energy"] += 10 ** 9
-    added = 10 ** 9
-    assert contact(live_c, live_m)
-    spent = energy + added - live_c["energy"]
-    return {"paid": live_c["paid"], "done": live_m["done"], "spent": spent}
+    for _ in range(64):
+        if contact(live_c, live_m):
+            break
+        charge(live_c)
+    else:
+        raise AssertionError("debt never settled")
+    return {"paid": live_c["paid"], "done": live_m["done"], "spent": live_c["spent"]}
 
 
 # --- ADR-054 section 11 transit ledger --------------------------------------------------------
@@ -628,7 +638,7 @@ class Vectors(unittest.TestCase):
 
     def test_counter_settlement_every_crash_cut(self):
         cost = 10_000
-        alphabet = ["OP", "SAVE_C", "SAVE_M", "CRASH"]
+        alphabet = ["OP", "CHARGE", "SAVE_C", "SAVE_M", "CRASH"]
         checked = 0
 
         def walk(prefix, depth):
@@ -644,6 +654,12 @@ class Vectors(unittest.TestCase):
 
         walk([], 7)
         self.assertEqual(checked, EXAMPLES["counter_sequences_checked"])
+
+    def test_counter_debt_larger_than_the_buffer_settles(self):
+        # R1-M7: at 1,000 % a layer costs 100,000 FE; three unsaved controller layers owe more than the buffer.
+        cost = laser_cost(1000)
+        events = ["OP", "CHARGE", "OP", "CHARGE", "OP", "SAVE_M", "CRASH"]
+        self.assertEqual(counter_model(events, cost, BUFFER), {"paid": 3, "done": 3, "spent": 300_000})
 
     def test_counter_named_cuts(self):
         for case in EXAMPLES["counter_cuts"]:

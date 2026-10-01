@@ -166,21 +166,32 @@ monotone counter for their single link:
 At every contact (both chunks `FULL`, before each operation):
 
 - `ops_done > ops_paid` (the marker was saved after an operation, the controller
-  was not): the controller pays the **debt** `(ops_done − ops_paid) × cost`
-  first, or waits with `ENERGY_DEBT`, then sets `ops_paid = ops_done`
-  (`DEBT_SETTLED`);
+  was not): the controller settles the **debt layer by layer**: each time its
+  buffer holds `cost`, it pays `cost` and raises `ops_paid` by 1 (review
+  R1-M7), so a debt larger than the 200,000 FE buffer is still paid as energy
+  arrives. No new layer runs until `ops_paid = ops_done`; meanwhile the drill
+  shows `ENERGY_DEBT` with the layers still owed, and `DEBT_SETTLED` is audited
+  at the end;
 - `ops_paid > ops_done` (the reverse): the marker performs the paid layers
-  without a new payment (`CREDIT_USED`).
+  without a new payment (`CREDIT_USED`), but only while the system and physical
+  mode are enabled; while disabled the credit waits, because a disabled system
+  breaks no block (ADR-054 §1).
 
 Then a normal operation: energy −= `cost`, `ops_paid += 1`, the layer runs,
 `ops_done += 1`, all in one tick. After a crash the gap between the two counters
 is at most the number of layers run between the two chunks' latest saves
-(normally a few seconds of cadence), and the next contact settles all of it. Debt is never
-forgiven by relinking: a controller may change or clear its link only after a
-contact with no debt and no credit, or when the marker is `MISSING`
-(audited `LINK_ABANDONED`; an unsettled layer is the documented residual). A
-marker owner may reset a marker that is not active; it then accepts a new
-controller, and the old controller sees `LINK_LOST`.
+(normally a few seconds of cadence), and the next contact settles all of it.
+
+**Changing links.** A controller may change or clear its link after a contact
+with no debt and no credit. It may also clear it at any time when the link can
+no longer be contacted: the marker was removed (ADR-054 §9.1), is `MISSING`, or
+answers `LINK_LOST` because it was reset or now serves another controller. The
+unsettled difference is then abandoned with a `LINK_ABANDONED` line stating it;
+it is bounded by the crash gap above. A marker owner may reset a marker that is
+not running a layer; the marker cannot know whether its controller still owes
+layers, so the reset writes a `MARKER_RESET` line with `ops_done`, and any debt
+the old controller held is forgiven within the same bound. Both are documented
+residuals of at most a few layers' energy, never of blocks or drops.
 
 ### 4. Budgets and limits
 
