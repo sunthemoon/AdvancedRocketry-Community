@@ -149,7 +149,17 @@ operators.
 - **Request:** a `ride` intent from a player whose feet are on the departure
   endpoint's platform, with §7 access, not riding anything and carrying no
   passengers (`DISMOUNT_FIRST`), and no other pending ride. At most 4 pending
-  rides per endpoint.
+  rides per endpoint and 64 on the server.
+- **Arrival pre-load** (review R1-M4): the request adds one region ticket of
+  the dedicated type `advancedrocketrycommunity:elevator_arrival` at the arrival
+  chunk, at distance 0 (the chunk becomes `FULL`, nothing around it ticks), with
+  a 300-tick lifespan after which vanilla's ticket timeout removes it even if
+  nothing else does. The position is the **server-derived** arrival position
+  (the centre of the other endpoint's platform, from the pair record), never a
+  client value; the chunk already exists because the endpoint was built in it,
+  so it is read asynchronously from disk and nothing is generated. The ticket is
+  removed at commit, at cancellation and at server stop. At most one per
+  pending ride, so at most 64.
 - **Countdown:** 100 ticks, shown to the rider. It is cancelled if the rider
   leaves the platform, disconnects, dies or changes Level, if the pair becomes
   invalid or unbound, or if the system is disabled.
@@ -157,20 +167,26 @@ operators.
   1. re-derive pair validity (§3) and the rider's access;
   2. the departing endpoint holds `50,000 × energyPercent / 100` FE (legacy
      50,000);
-  3. load the arrival chunk synchronously with `ServerLevel.getChunk(cx, cz)`
-     at the **server-derived** arrival position (the centre of the other
-     endpoint's platform), never from a client value. The chunk already exists
-     on disk, because the endpoint was built in it, so this reads it and
-     generates nothing; it adds no ticket of its own;
+  3. the arrival chunk is `FULL` (`getChunkNow`); there is **no synchronous
+     load**. If the pre-load has not finished, the commit waits, rechecking each
+     tick, for at most 100 more ticks, then cancels with `ARRIVAL_UNLOADED`;
   4. the arrival block entity carries the recorded endpoint ID, and the two
      blocks above the platform centre are free of collision
      (`ARRIVAL_OBSTRUCTED`);
-  5. then, in the same tick: debit the departing endpoint and teleport the
-     player to the arrival position (fall distance reset by the teleport).
+  5. ADR-054 §5 steps 2, 3 and 6 for the arrival box (the platform and the two
+     blocks above it): bounds, protected zones and the public
+     `EndgameEffectEvent` with effect `TELEPORT` (review R1-M5), else
+     `TARGET_PROTECTED`. Step 4 is replaced by the §7 access rule; spawn
+     protection does not apply because no block changes;
+  6. then, in the same tick: teleport the player to the arrival position (fall
+     distance reset by the teleport), and debit the departing endpoint only
+     once the player is in the arrival Level at the arrival position. A
+     teleport that another mod cancels (for example through Forge's dimension
+     travel event) costs nothing.
 
-  Any failure before step 5 changes nothing and reports the code. No ticket
-  remains after the move; the player's own presence keeps the chunk loaded as for
-  any teleport. At most one arrival chunk access per tick.
+  Any failure before step 6 changes nothing but releases the ticket and reports
+  the code. Vanilla's own short `POST_TELEPORT` ticket follows any teleport and
+  expires by itself; afterwards the player's presence keeps the chunk loaded.
 - **No passenger journal.** A ride is one server-thread teleport of one player;
   vanilla stores the player's Level, position and inventory together in the
   player file, so a crash restores the player wholly at the departure or wholly
@@ -202,8 +218,8 @@ operators.
 
 | Threat | Control |
 |---|---|
-| Teleporting into protected or unsafe places | Arrival only at the other endpoint's own platform, built by its owner under vanilla placement rules; obstruction check |
-| Chunk loading from a client position | Arrival position is server-derived from the pair; one access per tick; no ticket |
+| Teleporting into protected or unsafe places | Arrival only at the other endpoint's own platform, built by its owner under vanilla placement rules; obstruction check; zones and the `TELEPORT` API event at commit |
+| Chunk loading from a client position | Arrival position is server-derived from the pair; one expiring pre-load ticket per pending ride (≤ 64, 300 ticks), released at commit or cancel; no synchronous load |
 | Stranded or duplicated players | One-tick teleport; vanilla player file; no capsule entity |
 | Cargo duplication or loss | ADR-054 §11 |
 | Stranded station (warp) | Unbind always possible; warp refuses only while bound |
@@ -227,7 +243,8 @@ station rotation and tether breakage (no station rotation exists; not revived).
   warp refused while bound and allowed after unbind; deletion refused while
   bound; a remapped or missing body invalidates without deleting; obstruction
   refusal; a member can ride, a stranger cannot; disabled switch keeps unbind
-  and arrivals working; ticket counts unchanged after rides.
+  and arrivals working; after rides, cancellations, `ARRIVAL_UNLOADED` and a stop
+  no `elevator_arrival` ticket remains.
 - S2 (C13): forced stop during a ride countdown and right after a commit; cargo
   crash cuts as ADR-054 §11.
 

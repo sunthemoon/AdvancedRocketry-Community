@@ -192,7 +192,9 @@ API minor 1.7 → **1.8** (ADR-021) adds
 `io.github.sunthemoon.advancedrocketrycommunity.api.endgame`:
 
 - `EndgameEffect`: enum `BLOCK_BREAK`, `ENTITY_GRAVITY`, `TELEPORT`;
-- `EndgameEffectEvent`: a cancellable Forge `Event`, posted on
+- `EndgameEffectEvent`: a cancellable Forge `Event` (posted for `BLOCK_BREAK` by
+  ADR-055, for `ENTITY_GRAVITY` by ADR-058 and for `TELEPORT` at every elevator
+  ride commit by ADR-059 §8), posted on
   `MinecraftForge.EVENT_BUS` on the server thread only, with `systemId()`
   (`ResourceLocation`), `effect()`, `ownerId()` (`UUID`), `level()`
   (`ResourceKey<Level>`), `min()` and `max()` (`BlockPos`, the batch box).
@@ -518,13 +520,14 @@ its payload.
 
 ### 12. Chunk loading
 
-v1.7 never creates a chunk ticket, forced chunk or region ticket, and never
-initialises a Level on demand. Every world effect needs its chunks already `FULL`
-(§5 step 1); ledger paths need no chunk. The single synchronous chunk load is the
-arrival check of an elevator ride (ADR-059 §8): at most one per server tick, of an
-existing chunk at a server-derived position, immediately followed by the player's
-teleport there, so it behaves like a vanilla teleport. Tests count tickets before
-and after every system.
+v1.7 never forces a chunk, never creates a persistent ticket, never loads a chunk
+synchronously, and never initialises a Level on demand. Every world effect needs
+its chunks already `FULL` (§5 step 1); ledger paths need no chunk. The only
+tickets an endgame action creates are the elevator ride-arrival tickets of
+ADR-059 §8 (review R1-M4): one per pending ride, at most 64, at a server-derived
+position, with a 300-tick lifespan and released at commit or cancellation;
+vanilla adds its own short `POST_TELEPORT` ticket to the teleport itself. Tests
+count tickets by type before and after every system and after every ride.
 
 ### 13. Audit and diagnostics
 
@@ -537,7 +540,8 @@ and after every system.
   stop) for `/arce endgame audit [system] [page]` (operator, 16 lines per page).
 - **Operator commands** (permission 2, leaf-level `.requires`, ADR-045 lesson):
   `/arce endgame status` (switches, root state and size, active device counts,
-  last-tick work per system, tickets owned: always 0); `audit`; `zone …` (§6);
+  last-tick work per system, ride-arrival tickets held, at most 64); `audit`;
+  `zone …` (§6);
   `device inspect <pos>`; `device owner <pos> <player>`; `endpoint list
   [<player>]`; `endpoint purge <id>` (removes the index record only, refused
   while referenced; the §11 tombstone stays until the absence is persisted);

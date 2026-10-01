@@ -63,7 +63,9 @@ All player-visible outcomes remain required:
 - every high-risk system has its ADR, threat model, configuration and audit;
 - every system can be disabled by the server without breaking world load;
 - permission, protection, recovery and performance checks pass;
-- no chunk ticket and no forced chunk loading;
+- no forced or persistent chunk loading: the only tickets are the bounded,
+  expiring elevator ride-arrival tickets (ADR-059 §8) and vanilla's own
+  teleport ticket;
 - zero Critical/High findings.
 
 Metadata, a diagnostic command or passing unit tests alone cannot substitute for
