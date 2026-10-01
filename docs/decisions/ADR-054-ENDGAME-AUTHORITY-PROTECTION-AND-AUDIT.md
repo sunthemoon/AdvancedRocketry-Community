@@ -383,10 +383,15 @@ An **endpoint** is a device that other devices can address: `laser_target`
   endpoints, from their own connected command source, subject to the §7
   spacing) or an operator resolves it with `/arce endgame endpoint resolve <id>`
   (one audited barrier flush), item by item (review R3-M1):
-  - a frozen outbox entry goes back to the local input buffer only if the ID's
-    tombstone still records `dispatched_through` and `seq` is above it (the
-    ledger can never register it); otherwise it is discarded with an audit line,
-    because it was registered and delivered, or nothing proves it was not;
+  - a frozen outbox entry goes back to the local input buffer if the ID's
+    tombstone exists and `seq` is above its `dispatched_through`, which every
+    tombstone records, 0 when nothing was registered (review R4-L2); the ledger
+    can never register it. Otherwise it is discarded with an audit line: it was
+    registered and delivered, or, after the tombstone was evicted, nothing
+    proves it was not. When the copy's persisted `next_seq` is at or below that
+    `dispatched_through`, the resolve also audits `SOURCE_ROLLBACK`, as source
+    reconciliation does (§11), because the input buffer it hands back may hold a
+    payload already delivered;
   - a frozen incoming payload whose record is `CLAIMED` at this endpoint moves to
     the local receive buffer. The record is unacknowledged only after a failed
     settlement write (§9.1), and is then acknowledged. It is acknowledged when a
@@ -486,8 +491,10 @@ record is `ARRIVED` and the ID is retired: the restored block entity is
 `ENDPOINT_RETIRED` and inert, its copy is frozen, and the record is delivered
 once through a redirect (§11). The reference models check removal at any point,
 including with a non-empty receive buffer or a due move (review R3-L6), with up
-to two crashes, and a removed destination that returns through a crash or a
-block mover after its cargo was redirected and paid elsewhere. A crash restores
+to two crashes, a removed destination that returns through a crash or a block
+mover after its cargo was redirected and paid elsewhere, and a retired source
+that a crash restores, whose resolve returns exactly its unregistered entries
+(review R4-L2). A crash restores
 the chunk and a mover's copy from one snapshot; both copies at once is a torn
 save across two stores, the container residual of §11.
 
@@ -569,7 +576,9 @@ fields): `source`, `seq`, `system`, `owner_id`, `destination`,
 (`IN_TRANSIT`, `ARRIVED`, `CLAIMED`, `QUARANTINED`), `paid_endpoint`,
 `acknowledged`, `ack_epoch`, `redirected`. Identity is `(source, seq)`.
 `dispatched_through[S]` is the highest registered `seq` of S and never
-decreases; it is what keeps a pruned transfer from being registered again.
+decreases; it is what keeps a pruned transfer from being registered again. It
+is 0 from S's registration, so every endpoint's tombstone records it (review
+R4-L2).
 When S's endpoint record is removed (by any cause, §9, or by an operator purge)
 `dispatched_through[S]` stays as a **tombstone** until S's absence is persisted:
 a `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag of S's chunk whose

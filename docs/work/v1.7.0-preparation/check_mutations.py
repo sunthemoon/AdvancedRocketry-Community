@@ -27,8 +27,16 @@ TRANSIT = {  # name: (old text, new text, lost writes needed to expose it)
     "no-stale-drop": ("if r is None and seq <= hw_value:", "if False:", 0),
     "prune-before-durable-ack": ('if st == "C" and acked and e > ae:', 'if st == "C" and acked:', 0),
     "source-removal-without-barrier": (
-        "barrier = dict(l_live=(records, hw, e + 1), l_dur=(records, hw, e + 1)) if pending else {}",
+        "barrier = dict(l_live=(records, tomb, e + 1), l_dur=(records, tomb, e + 1)) if pending else {}",
         "barrier = {}", 0),
+    # Source retirement (review R4-L2): a retired copy registers again, or resolve returns delivered entries, or
+    # the rollback audit is skipped when resolve hands the input buffer back.
+    "retired-source-registers-again": ('            if hw[0] == "R" or out_seqs:\n',
+                                       '            if hw[0] == "X" and out_seqs:\n', 0),
+    "resolve-returns-delivered-entries": ("                    returned += s_input + unregistered\n",
+                                          "                    returned += s_input + len(out_seqs)\n", 0),
+    "resolve-without-rollback-audit": ("                    rollback = rollback or next_seq <= hw[1]\n",
+                                       "", 1),
     "drop-tombstone-before-persisted-absence": ('hw is not None and not present and absence_seen == "aged":',
                                                 "hw is not None and not present:", 0),
     "no-rollback-fix": ("        if rollback_pending:\n", "        if False:\n", 1),
@@ -40,8 +48,8 @@ TRANSIT = {  # name: (old text, new text, lost writes needed to expose it)
 TRANSIT_CAP = {
     "evict-before-saved-absence": ('absence_seen in ("saved_aged", "aged") \\\n                and not records:',
                                    'True \\\n                and not records:', 1),
-    "evict-without-freeze": ("            if out_seqs:\n                lost =",
-                             "            if False:\n                lost =", 1),
+    "evict-without-freeze": ('            if hw[0] == "R" or out_seqs:\n',
+                             '            if hw[0] == "R":\n', 1),
 }
 
 DELIVERY = {

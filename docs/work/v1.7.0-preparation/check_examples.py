@@ -157,8 +157,10 @@ class Transit:
     # R1-H1: tombstone removal needs an aged absence; tests switch it off to separate the residual.
     TOMBSTONE_REMOVAL = True
     # R3-M2: the tombstone caps may evict an unpinned tombstone once the source's absence was observed in a
-    # chunk-save tag; a test switches this adversary on. An evicted tombstone is ("X", dispatched_through): the
-    # protocol no longer knows the ID, the model keeps the value only to account a frozen copy's entries.
+    # chunk-save tag; a test switches this adversary on. A removal retires S's ID (R2-H1): its tombstone is
+    # ("R", dispatched_through), 0 when nothing was registered (R4-L2). An evicted tombstone is
+    # ("X", dispatched_through): the protocol no longer knows the ID, the model keeps the value only to account a
+    # frozen copy's entries.
     CAP_EVICTION = False
 
     @staticmethod
@@ -201,7 +203,7 @@ class Transit:
         s_live, s_dur, l_live, l_dur, d_live, d_dur, rollback, destroyed, returned = state
         s_input, outbox, next_seq, present, absence_seen = s_live
         records, hw, e = l_live
-        hw_value = 0 if hw is None or isinstance(hw, tuple) else hw  # None: removed; a tuple: evicted (R3-M2)
+        hw_value = 0 if hw is None or isinstance(hw, tuple) else hw  # None: removed; a tuple: retired or evicted
         buffer, receipts = d_live
         out_seqs = {o[0] for o in outbox}
         rec = lambda seq: cls.record(records, seq)
@@ -232,9 +234,13 @@ class Transit:
             # The input buffer is a plain container, so the model removes S only when it is empty.
             unregistered = sum(1 for seq in out_seqs if seq > hw_value)
             pending = any(rec(seq) is not None and not e > rec(seq)[2] for seq in out_seqs if seq <= hw_value)
-            barrier = dict(l_live=(records, hw, e + 1), l_dur=(records, hw, e + 1)) if pending else {}
+            # The removal retires S's ID; the retirement rides on the barrier when one runs and is flush-pending
+            # otherwise (ADR-054 section 9.1).
+            tomb = ("R", hw)
+            barrier = dict(l_live=(records, tomb, e + 1), l_dur=(records, tomb, e + 1)) if pending else {}
             yield ("REMOVE_S", make(s_live=(0, frozenset(), next_seq, False, False),
-                                    destroyed=(destroyed[0] + unregistered, destroyed[1]), **barrier),
+                                    destroyed=(destroyed[0] + unregistered, destroyed[1]),
+                                    **(barrier or dict(l_live=(records, tomb, e)))),
                    crashes_left, faults_left)
         new_outbox = frozenset((o[0], True, o[2]) for o in outbox)
         saved = (s_input, frozenset(out_seqs), next_seq, present)
@@ -255,10 +261,11 @@ class Transit:
         if cls.TOMBSTONE_REMOVAL and hw is not None and not present and absence_seen == "aged":
             # R1-H1: the tombstone goes only once the source's absence is persisted.
             yield ("DROP_HW", make(l_live=(records, None, e)), crashes_left, faults_left)
-        if cls.CAP_EVICTION and isinstance(hw, int) and not present and absence_seen in ("saved_aged", "aged") \
+        retired = isinstance(hw, tuple) and hw[0] == "R"
+        if cls.CAP_EVICTION and retired and not present and absence_seen in ("saved_aged", "aged") \
                 and not records:
             # R3-M2: a cap evicts an unpinned tombstone (no record names S) whose absence a save tag observed.
-            yield ("EVICT_HW", make(l_live=(records, ("X", hw), e)), crashes_left, faults_left)
+            yield ("EVICT_HW", make(l_live=(records, ("X", hw[1]), e)), crashes_left, faults_left)
         lowest = min(out_seqs) if out_seqs else None
         for seq, persisted, aged in sorted(outbox):
             r = rec(seq)
@@ -313,14 +320,24 @@ class Transit:
         destroyed = (destroyed[1], destroyed[1])
         records, hw, e = l_dur
         if present and isinstance(hw, tuple):
-            # S returns although its tombstone was evicted (only after a lost write of the save that observed its
-            # absence). Registration reads the tag (ADR-054 section 9, R3-H1): with outbox entries the ID is frozen
-            # and an operator resolve discards them, because no tombstone proves them unregistered; the model
-            # counts those above the evicted dispatched_through as destroyed and hands the input back to the
-            # player. With no outbox entries the ID registers anew, with no dispatched_through.
-            if out_seqs:
-                lost = destroyed[1] + sum(1 for seq in out_seqs if seq > hw[1])
-                destroyed, returned = (lost, lost), returned + s_input
+            # S returns after its removal's retirement reached the ledger file: a crash before S's chunk saved the
+            # removal, or (R3-M2) a lost write of the save that observed its absence, after which a cap evicted the
+            # tombstone. Registration reads the tag (ADR-054 section 9, R3-H1). A retired ID is frozen, and its
+            # break or an operator resolve settles it (R3-L2): entries above the tombstone's dispatched_through,
+            # 0 when nothing was registered, were never registered and go back to the input buffer (R4-L2); the
+            # others were delivered. A persisted next_seq at or below it is audited as SOURCE_ROLLBACK, because
+            # the input buffer may hold a payload already delivered. An evicted ID carrying outbox entries is
+            # frozen too, but nothing proves its entries unregistered: they are discarded (audited, counted as
+            # destroyed when the model knows they were never registered). The input buffer goes back to the
+            # player. An evicted ID with no outbox entries registers anew, with no dispatched_through.
+            if hw[0] == "R" or out_seqs:
+                unregistered = sum(1 for seq in out_seqs if seq > hw[1])
+                if hw[0] == "R":
+                    returned += s_input + unregistered
+                    rollback = rollback or next_seq <= hw[1]
+                else:
+                    lost = destroyed[1] + unregistered
+                    destroyed, returned = (lost, lost), returned + s_input
                 s_dur = (0, frozenset(), next_seq, False)
                 s_live = (0, frozenset(), next_seq, False, "aged")
             else:
