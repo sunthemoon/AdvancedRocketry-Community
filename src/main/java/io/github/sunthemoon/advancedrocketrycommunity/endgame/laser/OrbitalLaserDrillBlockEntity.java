@@ -243,13 +243,14 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
             return;
         }
         long paidBefore = link.opsPaid();
+        long generationBefore = link.generation();
         int energyBefore = storage.energy();
         LaserPhysicalDrill.Outcome outcome = LaserPhysicalDrill.evaluate(new LaserPhysicalDrill.Context(level, devices,
                 service, deviceId().orElseThrow(), ownerId().get(), settings, common, breaking, stationBody.body(), now),
                 link, storage);
         linkSettled = outcome.settled();
         linkLost = outcome.lost();
-        if (link.opsPaid() != paidBefore || storage.energy() != energyBefore) {
+        if (link.opsPaid() != paidBefore || link.generation() != generationBefore || storage.energy() != energyBefore) {
             setChanged();
         }
         setStatus(level, service, pending != null && !running ? EndgameCode.CONFIRM_REQUIRED : outcome.code());

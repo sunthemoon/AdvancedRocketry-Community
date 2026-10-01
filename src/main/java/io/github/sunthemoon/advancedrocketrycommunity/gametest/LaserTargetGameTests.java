@@ -99,6 +99,50 @@ public final class LaserTargetGameTests {
     }
 
     /**
+     * Review C11R-M1: a reset raises the marker generation, so a link dropped by a reset is never adopted again, also
+     * after many more links and resets; a new link and a link recorded at the current generation are; the generation
+     * survives a save.
+     */
+    @GameTest(template = "empty", batch = "endgame_laser_target_generation", timeoutTicks = 100)
+    public static void aResetMarkerNeverAdoptsAnEarlierLinkAgain(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
+        UUID owner = UUID.randomUUID();
+        helper.assertTrue(target.assignOwner(owner), "The fixture owner was not assigned");
+        try {
+            UUID controllerA = UUID.randomUUID();
+            UUID linkA = UUID.randomUUID();
+            helper.assertTrue(target.generation() == 0 && target.accepts(controllerA, linkA, -1L),
+                    "A new link was refused by a new marker");
+            target.adopt(controllerA, linkA);
+            long touchedA = target.generation();
+            target.reset(owner);
+            helper.assertTrue(!target.accepts(controllerA, linkA, touchedA), "A reset link was adopted again");
+            UUID controllerB = UUID.randomUUID();
+            for (int i = 0; i < 12; i++) {
+                UUID link = UUID.randomUUID();
+                helper.assertTrue(target.accepts(controllerB, link, -1L), "A new link was refused");
+                target.adopt(controllerB, link);
+                target.reset(owner);
+            }
+            helper.assertTrue(target.generation() == 13 && !target.accepts(controllerA, linkA, touchedA),
+                    "A reset link was adopted again after 12 more resets");
+            // A marker a crash returned unlinked at the generation the link recorded still adopts it.
+            helper.assertTrue(target.accepts(controllerA, linkA, target.generation()),
+                    "A link of the current generation was refused");
+            CompoundTag saved = target.saveWithoutMetadata();
+            target.load(saved);
+            helper.assertTrue(target.generation() == 13 && !target.quarantined(),
+                    "The generation did not survive a save: " + target.describe());
+        } finally {
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        }
+        helper.succeed();
+    }
+
+    /**
      * Test fixture: the event a chunk save posts, with the tag it would write (vanilla throttles real saves of one
      * chunk to one per 10 s of wall time, which a GameTest outruns).
      */

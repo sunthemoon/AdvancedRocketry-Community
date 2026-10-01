@@ -131,7 +131,7 @@ final class LaserDrillIntents {
         }
         abandonIfUnsettled(drill, root, actor);
         stop(drill, devices, actor);
-        drill.link(new LaserLink(marker, UUID.randomUUID(), 0L, foreign));
+        drill.link(LaserLink.create(marker, foreign));
         drill.audit("link", EndgameCode.OK, actor, "marker=" + marker + (foreign ? " operator_link=true" : ""));
         return EndgameCode.OK;
     }

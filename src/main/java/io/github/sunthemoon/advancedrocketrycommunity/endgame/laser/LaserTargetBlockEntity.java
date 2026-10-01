@@ -9,7 +9,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,9 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -45,9 +42,11 @@ import net.minecraftforge.items.ItemStackHandler;
  * ADR-055 section 3: the {@code laser_target} endpoint the owner places on the surface it will dig. Its root holds a
  * 27-slot drop buffer (extractable, never insertable), the shaft cursor {@code next_layer}, the link
  * {@code {controller_id, link_id, ops_done}} of the one controller link it serves, and the freeze of a retired ID
- * (ADR-054 section 9). It registers once a chunk tag shows its ID persisted; until then it cannot be selected. A
- * reset remembers the last 8 link IDs it dropped, so their controllers see {@code LINK_LOST} instead of adopting the
- * marker again, while a marker a crash returned unlinked still adopts its link and settles it as credit.
+ * (ADR-054 section 9). It registers once a chunk tag shows its ID persisted; until then it cannot be selected. Its
+ * {@code generation} only grows: every reset adds one, and a controller records the generation of its first contact.
+ * An unlinked marker adopts only a link that never touched it or one recorded at its current generation, so a link
+ * dropped by any earlier reset sees {@code LINK_LOST} for good (review C11R-M1), while a marker a crash returned
+ * unlinked (its adoption lost with the chunk) still adopts its link and settles it as credit.
  */
 public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider {
     public static final ResourceLocation KIND = ModIdentity.id("laser_target");
@@ -55,9 +54,8 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     public static final int BUFFER_SLOTS = 27;
     private static final int STATUS_CHECK_TICKS = 20;
     private static final int MAX_PARTICLES_PER_TICK = 8;
-    private static final int MAX_REVOKED = 8;
     private static final Set<String> STATE_KEYS = Set.of(EndgameDeviceTags.FROZEN, "next_layer", "buffer", "link",
-            "revoked");
+            "generation");
 
     private final ItemStackHandler buffer = new ItemStackHandler(BUFFER_SLOTS) {
         @Override
@@ -74,7 +72,7 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     @Nullable
     private UUID linkId;
     private long opsDone;
-    private final List<UUID> revoked = new ArrayList<>();
+    private long generation;
 
     private EndgameCode endpointStatus = EndgameCode.AWAITING_WORLD_SAVE;
     private EndgameCode lastCode = EndgameCode.OK;
@@ -111,7 +109,7 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         linkedController = null;
         linkId = null;
         opsDone = 0L;
-        revoked.clear();
+        generation = 0L;
     }
 
     @Override
@@ -133,14 +131,9 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
                 throw new IllegalArgumentException("A negative ops_done");
             }
         }
-        if (root.contains("revoked")) {
-            ListTag list = EndgameNbt.requireList(root, "revoked", Tag.TAG_INT_ARRAY, MAX_REVOKED);
-            for (int i = 0; i < list.size(); i++) {
-                if (list.getIntArray(i).length != 4) {
-                    throw new IllegalArgumentException("A revoked link is not a UUID");
-                }
-                revoked.add(NbtUtils.loadUUID(list.get(i)));
-            }
+        generation = EndgameNbt.requireLong(root, "generation");
+        if (generation < 0) {
+            throw new IllegalArgumentException("A negative marker generation");
         }
     }
 
@@ -156,11 +149,7 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
             link.putLong("ops_done", opsDone);
             root.put("link", link);
         }
-        if (!revoked.isEmpty()) {
-            ListTag list = new ListTag();
-            revoked.forEach(id -> list.add(NbtUtils.createUUID(id)));
-            root.put("revoked", list);
-        }
+        root.putLong("generation", generation);
     }
 
     public static void serverTick(Level level, BlockPos position, BlockState state, LaserTargetBlockEntity target) {
@@ -244,10 +233,13 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         return endpointStatus;
     }
 
-    /** The marker accepts the exact controller link it serves, or, when it serves none, any link it did not reset. */
-    public boolean accepts(UUID controller, UUID link) {
+    /**
+     * The marker accepts the exact controller link it serves, or, when it serves none, a link that never touched it
+     * ({@code linkGeneration < 0}) or one that touched it at its current generation (no reset since).
+     */
+    public boolean accepts(UUID controller, UUID link, long linkGeneration) {
         if (linkedController == null) {
-            return !revoked.contains(link);
+            return linkGeneration < 0 || linkGeneration == generation;
         }
         return linkedController.equals(controller) && link.equals(linkId);
     }
@@ -268,6 +260,11 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
 
     public long opsDone() {
         return opsDone;
+    }
+
+    /** The number of resets so far; it never decreases. */
+    public long generation() {
+        return generation;
     }
 
     public int nextLayer() {
@@ -322,19 +319,18 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     }
 
     /**
-     * The owner's reset: the marker serves no controller any more. Its {@code ops_done} is audited, because a debt
-     * its old controller held is forgiven (ADR-055 section 3, a residual of at most a few layers' energy).
+     * The owner's reset: the marker serves no controller any more and its generation grows, so no earlier link is
+     * adopted again. Its {@code ops_done} is audited, because a debt its old controller held is forgiven (ADR-055
+     * section 3, a residual of at most a few layers' energy).
      */
     public EndgameCode reset(UUID actor) {
+        generation = Math.addExact(generation, 1L);
+        setChanged();
         if (linkedController == null) {
             return EndgameCode.OK;
         }
         UUID previous = linkedController;
         long done = opsDone;
-        revoked.add(linkId);
-        while (revoked.size() > MAX_REVOKED) {
-            revoked.remove(0);
-        }
         linkedController = null;
         linkId = null;
         opsDone = 0L;
@@ -342,7 +338,7 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         if (level instanceof ServerLevel server) {
             EndgameRuntime.operational().ifPresent(service -> service.audit().line(server.getGameTime(),
                     system().id(), "MARKER_RESET", "OK", deviceId().orElse(null), ownerId().orElse(null), actor,
-                    "controller=" + previous + " ops_done=" + done));
+                    "controller=" + previous + " ops_done=" + done + " generation=" + generation));
         }
         return EndgameCode.OK;
     }

@@ -81,10 +81,11 @@ final class LaserPhysicalDrill {
         if (!(markerLevel.getChunkSource().getChunkNow(markerPos.getX() >> 4, markerPos.getZ() >> 4)
                 .getBlockEntity(markerPos) instanceof LaserTargetBlockEntity marker)
                 || !marker.deviceId().filter(link.marker()::equals).isPresent() || marker.frozen()
-                || !marker.accepts(context.controller(), link.linkId())) {
+                || !marker.accepts(context.controller(), link.linkId(), link.generation())) {
             return Outcome.of(EndgameCode.LINK_LOST, false, true);
         }
         marker.adopt(context.controller(), link.linkId());
+        link.touched(marker.generation());
 
         // Contact: settle a debt layer by layer as energy allows; no new layer until it is paid (review R1-M7).
         int cost = context.settings().costFe();
