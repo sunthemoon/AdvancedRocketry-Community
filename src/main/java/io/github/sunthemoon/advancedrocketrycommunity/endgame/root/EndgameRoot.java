@@ -4,6 +4,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameIdOrder;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -33,6 +35,7 @@ public final class EndgameRoot {
     private final Map<UUID, Tombstone.Settled> settled = new TreeMap<>(EndgameIdOrder.ORDER);
     private final Map<UUID, Long> dispatchedThrough = new TreeMap<>(EndgameIdOrder.ORDER);
     private final Map<String, ProtectedZone> zones = new TreeMap<>();
+    private final TransitTable transits = new TransitTable(() -> changedSinceEpoch = true);
     private final Set<UUID> touched = new HashSet<>();
     private long saveEpoch;
     private boolean changedSinceEpoch;
@@ -147,13 +150,37 @@ public final class EndgameRoot {
 
     /**
      * Section 10 growth accounting: each section's count times its worst-case record size, never an encoding of the
-     * root. Young tombstones take endpoint places; transits and pairs are always empty in C11.
+     * root. Young tombstones take endpoint places; elevator pairs arrive with C12d.
      */
     public long accountedBytes() {
         return (long) places() * EndgameLimits.ENDPOINT_RECORD_BYTES
                 + (long) dispatchedThrough.size() * EndgameLimits.DISPATCHED_THROUGH_ENTRY_BYTES
+                + transits.accountedBytes()
                 + (long) settled.size() * EndgameLimits.TOMBSTONE_RECORD_BYTES
                 + (long) zones.size() * EndgameLimits.ZONE_RECORD_BYTES;
+    }
+
+    // ---- Transit ledger (section 11) ---------------------------------------------------------------------------
+
+    /** The transit records; the ledger changes them only inside a root update. */
+    public TransitTable transits() {
+        return transits;
+    }
+
+    /** A tombstone that a transit record names is pinned: never evicted by a cap, housekeeping or a command. */
+    public boolean pinned(UUID id) {
+        return transits.names(id);
+    }
+
+    /** Step 2: the record exists and {@code dispatched_through[S] = seq}, which never decreases. */
+    public void registerTransit(TransitRecord record) {
+        UUID source = record.key().source();
+        if (record.key().seq() <= dispatchedThrough(source)) {
+            throw new IllegalStateException("A transfer at or below dispatched_through: " + record.key());
+        }
+        transits.add(record);
+        dispatchedThrough.put(source, record.key().seq());
+        changedSinceEpoch = true;
     }
 
     // ---- Endpoint index (section 9) ----------------------------------------------------------------------------
@@ -304,7 +331,7 @@ public final class EndgameRoot {
     private List<Tombstone.Settled> eligible(Predicate<UUID> pinned, UUID owner) {
         return settled.values().stream()
                 .filter(tombstone -> owner == null || tombstone.owner().equals(owner))
-                .filter(tombstone -> !pinned.test(tombstone.id()))
+                .filter(tombstone -> !pinned.test(tombstone.id()) && !transits.names(tombstone.id()))
                 .sorted(OLDEST)
                 .toList();
     }
@@ -423,6 +450,13 @@ public final class EndgameRoot {
         }
     }
 
+    void restoreTransit(TransitRecord record) {
+        if (record.dispatchEpoch() > saveEpoch || record.ackEpoch() > saveEpoch) {
+            throw new IllegalArgumentException("A transit record is newer than the root's save epoch");
+        }
+        transits.restore(record);
+    }
+
     void restoreZone(ProtectedZone zone) {
         if (zones.putIfAbsent(zone.name(), zone) != null) {
             throw new IllegalArgumentException("Duplicate zone name");
@@ -448,6 +482,17 @@ public final class EndgameRoot {
         }
         if (zones.size() > EndgameLimits.MAX_ZONES) {
             throw new IllegalArgumentException("The zone list exceeds its fixed bound");
+        }
+        for (TransitRecord record : transits.records()) {
+            // Pins keep every ID a record names; dispatched_through never falls below a registered seq.
+            for (UUID id : new UUID[] {record.key().source(), record.destination(), record.paidEndpoint()}) {
+                if (id != null && !endpoints.containsKey(id) && !young.containsKey(id) && !settled.containsKey(id)) {
+                    throw new IllegalArgumentException("A transit record names no endpoint or tombstone");
+                }
+            }
+            if (record.key().seq() > dispatchedThrough(record.key().source())) {
+                throw new IllegalArgumentException("A transit record is above its source's dispatched_through");
+            }
         }
     }
 
