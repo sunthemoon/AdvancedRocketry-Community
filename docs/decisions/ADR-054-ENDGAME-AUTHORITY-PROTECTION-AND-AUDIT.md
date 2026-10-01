@@ -597,7 +597,14 @@ growth is bounded as follows (review R3-M2):
   and age rule of step 2). Autosave writes a loaded chunk that changed within
   6,000 ticks, so staying in the chunk does not keep it young. A young tombstone
   takes its endpoint's place in the owner's 64 and the server's 2,048 endpoints
-  (§9), so a registration beyond them waits with `ENDPOINT_LIMIT`.
+  (§9), so a registration beyond them waits with `ENDPOINT_LIMIT`. An absence
+  that will never be observed does not hold a place forever (review R4-L1).
+  `endpoint retire` settles its tombstone at once, because the operator asserts
+  that the chunk will not load again. `/arce endgame tombstone settle <id>` does
+  the same for a removal whose chunk save never succeeds. Both are audited, and
+  for that endpoint both give up the guarantee that one lost write stays
+  audited, because no save showed the absence (`check_mutations.py`,
+  `evict-before-saved-absence`). A returning copy is still frozen (§9).
 - **Housekeeping.** Once the table holds more than 4,096 tombstones, an
   unpinned one whose absence was read back in a `ChunkDataEvent.Load` tag after
   the last server start (so it is on disk, review R2-L1) at least 6,000 ticks
@@ -812,7 +819,7 @@ count tickets by type before and after every system and after every ride.
   while referenced; the §11 tombstone stays until the absence is persisted);
   `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11; owners may resolve
   their own retired endpoints); `tombstone
-  evict <player>` (§11); `transfer
+  evict <player>` and `tombstone settle <id>` (§11); `transfer
   resettle <source> <seq>` (§9.1);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.
 - **Players** see their own device status in its menu; nothing lists other
