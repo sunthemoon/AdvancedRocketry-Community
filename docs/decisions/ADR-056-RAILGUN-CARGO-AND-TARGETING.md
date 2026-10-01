@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -151,3 +151,6 @@ in-transit cargo (ADR-054 §14).
 - Revision 2 answers it, together with root findings S1–S4 and finding F02 of the
   external v1.3–v1.6 deep-test report, one commit per finding; see
   [review-01-dispositions](../work/v1.7.0-preparation/review-01-dispositions.md).
+- Revision 3: accepted by review round 2; only cross-references to ADR-054's
+  round-2 answers changed; see
+  [review-02-dispositions](../work/v1.7.0-preparation/review-02-dispositions.md).

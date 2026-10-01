@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -210,3 +210,6 @@ tick. Removing the code turns the blocks into air.
 - Revision 2 answers it, together with root findings S1–S4 and finding F02 of the
   external v1.3–v1.6 deep-test report, one commit per finding; see
   [review-01-dispositions](../work/v1.7.0-preparation/review-01-dispositions.md).
+- Revision 3 answers review round 2 (required changes for this ADR), one commit
+  per finding; see
+  [review-02-dispositions](../work/v1.7.0-preparation/review-02-dispositions.md).

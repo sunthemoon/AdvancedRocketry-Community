@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-10-01
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -102,3 +102,6 @@ version-limited exception, v1.7 remains planning-only.
 - Revision 2 aligns the outcome list with ADR-059 §8's ride-arrival tickets and
   ADR-054 §16's recipes (reviews R1-M4, R1-M12); see
   [review-01-dispositions](../work/v1.7.0-preparation/review-01-dispositions.md).
+- Revision 3: accepted by review round 2; changed only by round-2 Lows or by
+  numbers that follow ADR-054's round-2 answers; see
+  [review-02-dispositions](../work/v1.7.0-preparation/review-02-dispositions.md).
