@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "X": {
+      "item": "advancedrocketrycommunity:endgame_casing"
+    }
+  },
+  "pattern": [
+    "OEO",
+    "CXC",
+    "OCO"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:black_hole_generator"
+  },
+  "show_notification": true
+}

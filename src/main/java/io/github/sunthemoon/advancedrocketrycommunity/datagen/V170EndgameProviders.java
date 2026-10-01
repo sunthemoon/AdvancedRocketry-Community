@@ -57,6 +57,10 @@ public final class V170EndgameProviders {
                     modLoc("block/machine_casing_top"), mcLoc("block/amethyst_block"));
             simpleBlock(ModBlocks.GRAVITY_FIELD_CONTROLLER.get(), field);
             simpleBlockItem(ModBlocks.GRAVITY_FIELD_CONTROLLER.get(), field);
+            ModelFile generator = models().orientable("black_hole_generator", modLoc("block/machine_casing_side"),
+                    mcLoc("block/crying_obsidian"), mcLoc("block/obsidian"));
+            horizontalBlock(ModBlocks.BLACK_HOLE_GENERATOR.get(), generator);
+            simpleBlockItem(ModBlocks.BLACK_HOLE_GENERATOR.get(), generator);
             itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
         }
     }
@@ -77,12 +81,14 @@ public final class V170EndgameProviders {
             dropSelf(ModBlocks.ORBITAL_LASER_DRILL.get());
             dropSelf(ModBlocks.LASER_TARGET.get());
             dropSelf(ModBlocks.GRAVITY_FIELD_CONTROLLER.get());
+            dropSelf(ModBlocks.BLACK_HOLE_GENERATOR.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
             return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get(),
-                    ModBlocks.LASER_TARGET.get(), ModBlocks.GRAVITY_FIELD_CONTROLLER.get());
+                    ModBlocks.LASER_TARGET.get(), ModBlocks.GRAVITY_FIELD_CONTROLLER.get(),
+                    ModBlocks.BLACK_HOLE_GENERATOR.get());
         }
     }
 
@@ -131,6 +137,14 @@ public final class V170EndgameProviders {
                     .define('M', ModItems.MACHINE_CASING.get())
                     .unlockedBy("has_advanced_circuit", has(ModItems.ADVANCED_CIRCUIT.get()))
                     .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.BLACK_HOLE_GENERATOR.get())
+                    .pattern("OEO").pattern("CXC").pattern("OCO")
+                    .define('O', Items.OBSIDIAN)
+                    .define('E', Items.ENDER_EYE)
+                    .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('X', ModItems.ENDGAME_CASING.get())
+                    .unlockedBy("has_endgame_casing", has(ModItems.ENDGAME_CASING.get()))
+                    .save(output);
         }
     }
 
@@ -161,7 +175,8 @@ public final class V170EndgameProviders {
                     ModBlocks.ENDGAME_CASING.get(),
                     ModBlocks.ORBITAL_LASER_DRILL.get(),
                     ModBlocks.LASER_TARGET.get(),
-                    ModBlocks.GRAVITY_FIELD_CONTROLLER.get()
+                    ModBlocks.GRAVITY_FIELD_CONTROLLER.get(),
+                    ModBlocks.BLACK_HOLE_GENERATOR.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);

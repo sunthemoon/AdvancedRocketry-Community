@@ -231,7 +231,7 @@ public final class AdvancedRocketryCommunity {
                 .ReleaseTestCommands()::register);
         // v1.7 (ADR-054): the endgame framework's root, observations, audit and commands.
         io.github.sunthemoon.advancedrocketrycommunity.endgame.EndgameModule.install(multiblockPatterns, celestialCatalogs,
-                laserDrillTables);
+                laserDrillTables, blackHoleData);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {

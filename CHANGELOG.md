@@ -55,6 +55,18 @@ No candidate or release approval is assigned.
   `/arce endgame field trust <player>` (`untrust`, `trusted`); the list is
   kept across death. Fields respect zones, spawn protection and the API
   event, affect players only, and leave no lasting effect.
+- Add the Black Hole Generator (ADR-057) and the example system Cygnus X-1, a
+  singularity reached only by an interstellar station warp. On a station
+  orbiting it, a 3 × 3 × 3 generator (Endgame Casing, obsidian sides and back,
+  a crying obsidian core) burns plain items for 500 FE per tick (stone,
+  cobblestone, dirt and netherrack last 1 tick, other items 500 ticks), keeps
+  up to 2,000,000 FE and pushes up to 20,000 FE per tick to neighbours. A
+  full buffer pauses the burn without wasting fuel; a warp away pauses it and
+  a warp back resumes it. Items with data (named, enchanted, filled) are
+  refused as fuel. Singularities and fuel tables are data-driven
+  (`singularities`, `black_hole_fuels`). New COMMON values
+  `endgame.blackHoleGenerator.*`: output percent (10–400) and generators per
+  owner and on the server.
 - New COMMON values `endgame.gravityField.*`: fields per chunk, per owner and
   chunk, per owner, per Level and on the server.
 - New COMMON values `endgame.laserDrill.*`: energy percent, operation

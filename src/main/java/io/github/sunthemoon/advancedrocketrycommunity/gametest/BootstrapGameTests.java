@@ -132,12 +132,14 @@ public final class BootstrapGameTests {
                     player.createCommandSourceStack().withPermission(2).withSuppressedOutput()
             );
 
-            // Six v0.3/v1.4 bodies plus the ADR-043 example system (Tau Ceti and Tau Ceti e).
+            // Six v0.3/v1.4 bodies, the ADR-043 example system (Tau Ceti and Tau Ceti e) and the ADR-057 example
+            // singularity (Cygnus X-1).
             int packaged = 6 + io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent
-                    .definitions().size();
-            helper.assertTrue(packaged == 8 && validated == packaged,
-                    "Celestial validate command did not report the eight packaged bodies: " + validated);
-            helper.assertTrue(listed == packaged, "Celestial list command did not report the eight packaged bodies: " + listed);
+                    .definitions().size() + io.github.sunthemoon.advancedrocketrycommunity.celestial.content
+                    .SingularityContent.definitions().size();
+            helper.assertTrue(packaged == 9 && validated == packaged,
+                    "Celestial validate command did not report the nine packaged bodies: " + validated);
+            helper.assertTrue(listed == packaged, "Celestial list command did not report the nine packaged bodies: " + listed);
             helper.assertTrue(moonTravel == 1, "Moon travel command failed");
             helper.assertTrue(
                     CelestialIds.MOON_LEVEL.equals(player.serverLevel().dimension()),

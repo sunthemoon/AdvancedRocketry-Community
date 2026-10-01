@@ -31,6 +31,7 @@ public final class V170LanguageProvider extends LanguageProvider {
         add("block.advancedrocketrycommunity.orbital_laser_drill", chinese ? "轨道激光钻" : "Orbital Laser Drill");
         add("block.advancedrocketrycommunity.laser_target", chinese ? "激光目标" : "Laser Target");
         add("block.advancedrocketrycommunity.gravity_field_controller", chinese ? "区域重力控制器" : "Gravity Field Controller");
+        add("block.advancedrocketrycommunity.black_hole_generator", chinese ? "黑洞发电机" : "Black Hole Generator");
         String gravity = "screen.advancedrocketrycommunity.gravity_field_controller.";
         add(gravity + "start", chinese ? "启动" : "Start");
         add(gravity + "stop", chinese ? "停止" : "Stop");
@@ -80,6 +81,9 @@ public final class V170LanguageProvider extends LanguageProvider {
         add(view + "upkeep", chinese ? "维持能耗" : "Upkeep");
         add(view + "box", chinese ? "作用范围" : "Field size");
         add(view + "box_at", chinese ? "范围坐标" : "Field box");
+        add(view + "rate", chinese ? "输出功率" : "Output");
+        add(view + "remaining", chinese ? "剩余燃烧" : "Burn left");
+        add(view + "fuel_table", chinese ? "燃料表" : "Fuel table");
         String value = "advancedrocketrycommunity.endgame.value.";
         add(value + "on", chinese ? "开" : "On");
         add(value + "off", chinese ? "关" : "Off");

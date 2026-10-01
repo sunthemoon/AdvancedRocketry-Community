@@ -71,6 +71,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.GRAVITY_FIELD_CONTROLLER.get(),
                 GravityFieldScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.BLACK_HOLE_GENERATOR.get(),
+                BlackHoleGeneratorScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 
@@ -100,6 +104,7 @@ public final class ClientBootstrap {
         event.registerEntityRenderer(ModEntities.ROCKET.get(), RocketEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.LASER_TARGET.get(), LaserBeamRenderer::forTarget);
         event.registerBlockEntityRenderer(ModBlockEntities.ORBITAL_LASER_DRILL.get(), LaserBeamRenderer::forDrill);
+        event.registerBlockEntityRenderer(ModBlockEntities.BLACK_HOLE_GENERATOR.get(), AccretionDiscRenderer::new);
     }
 
     @SubscribeEvent

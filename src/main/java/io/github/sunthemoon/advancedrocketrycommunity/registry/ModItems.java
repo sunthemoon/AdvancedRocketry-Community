@@ -175,6 +175,8 @@ public final class ModItems {
     public static final RegistryObject<Item> LASER_TARGET = blockItem("laser_target", ModBlocks.LASER_TARGET);
     public static final RegistryObject<Item> GRAVITY_FIELD_CONTROLLER = blockItem("gravity_field_controller",
             ModBlocks.GRAVITY_FIELD_CONTROLLER);
+    public static final RegistryObject<Item> BLACK_HOLE_GENERATOR = blockItem("black_hole_generator",
+            ModBlocks.BLACK_HOLE_GENERATOR);
 
     private ModItems() {
     }

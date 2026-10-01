@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
@@ -20,12 +21,14 @@ public final class EndgameModule {
     }
 
     public static EndgameService install(MultiblockPatternCatalogManager patterns, CelestialCatalogManager celestial,
-                                         LaserDrillTableReloadListener.Manager laserTables) {
+                                         LaserDrillTableReloadListener.Manager laserTables,
+                                         BlackHoleDataReloadListener.Manager blackHoleData) {
         EndgameNetwork.install(new EndgameNetwork());
         EndgameService service = new EndgameService(CommonConfig::endgameSettings, EndgameModule::endgameBlockEntityIds);
         EndgameRuntime.install(service);
         EndgameDevices devices = new EndgameDevices(CommonConfig::endgameSettings, CommonConfig::laserDrillSettings,
-                CommonConfig::gravityFieldLimits, patterns, celestial, laserTables);
+                CommonConfig::gravityFieldLimits, CommonConfig::blackHoleSettings, patterns, celestial, laserTables,
+                blackHoleData);
         EndgameRuntime.installDevices(devices);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStopping);

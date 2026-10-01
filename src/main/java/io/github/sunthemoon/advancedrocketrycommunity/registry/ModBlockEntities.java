@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlockEntity;
@@ -160,6 +161,16 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             GravityFieldBlockEntity::new,
                             ModBlocks.GRAVITY_FIELD_CONTROLLER.get()
+                    ).build(null)
+            );
+
+    /** ADR-057: the black-hole generator controller. */
+    public static final RegistryObject<BlockEntityType<BlackHoleGeneratorBlockEntity>> BLACK_HOLE_GENERATOR =
+            BLOCK_ENTITIES.register(
+                    "black_hole_generator",
+                    () -> BlockEntityType.Builder.of(
+                            BlackHoleGeneratorBlockEntity::new,
+                            ModBlocks.BLACK_HOLE_GENERATOR.get()
                     ).build(null)
             );
 

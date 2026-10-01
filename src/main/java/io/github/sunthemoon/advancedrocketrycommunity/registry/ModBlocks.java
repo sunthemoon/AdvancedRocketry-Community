@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
@@ -195,6 +196,17 @@ public final class ModBlocks {
                     .mapColor(MapColor.COLOR_PURPLE)
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)
+                    .sound(SoundType.METAL))
+    );
+
+    /** ADR-057: the black-hole generator controller. */
+    public static final RegistryObject<Block> BLACK_HOLE_GENERATOR = BLOCKS.register(
+            "black_hole_generator",
+            () -> new BlackHoleGeneratorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 1200.0F)
+                    .pushReaction(PushReaction.BLOCK)
                     .sound(SoundType.METAL))
     );
 

@@ -2,6 +2,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.device;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldIndex;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityTrust;
@@ -38,6 +41,8 @@ public final class EndgameDevices {
     private final Supplier<EndgameSettings> settings;
     private final Supplier<LaserDrillSettings> laserSettings;
     private final Supplier<GravityFieldLimits> gravityLimits;
+    private final Supplier<BlackHoleSettings> blackHoleSettings;
+    private final BlackHoleDataReloadListener.Manager blackHoleData;
     private final GravityFieldIndex fields = new GravityFieldIndex();
     private final GravityTrust trust = new GravityTrust();
     private final MultiblockPatternCatalogManager patterns;
@@ -53,11 +58,15 @@ public final class EndgameDevices {
     private int laserLayersLastTick;
 
     public EndgameDevices(Supplier<EndgameSettings> settings, Supplier<LaserDrillSettings> laserSettings,
-                          Supplier<GravityFieldLimits> gravityLimits, MultiblockPatternCatalogManager patterns,
-                          CelestialCatalogManager celestial, LaserDrillTableReloadListener.Manager laserTables) {
+                          Supplier<GravityFieldLimits> gravityLimits, Supplier<BlackHoleSettings> blackHoleSettings,
+                          MultiblockPatternCatalogManager patterns, CelestialCatalogManager celestial,
+                          LaserDrillTableReloadListener.Manager laserTables,
+                          BlackHoleDataReloadListener.Manager blackHoleData) {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.laserSettings = Objects.requireNonNull(laserSettings, "laserSettings");
         this.gravityLimits = Objects.requireNonNull(gravityLimits, "gravityLimits");
+        this.blackHoleSettings = Objects.requireNonNull(blackHoleSettings, "blackHoleSettings");
+        this.blackHoleData = Objects.requireNonNull(blackHoleData, "blackHoleData");
         this.patterns = Objects.requireNonNull(patterns, "patterns");
         this.celestial = Objects.requireNonNull(celestial, "celestial");
         this.laserTables = Objects.requireNonNull(laserTables, "laserTables");
@@ -69,6 +78,15 @@ public final class EndgameDevices {
 
     public LaserDrillSettings laserSettings() {
         return laserSettings.get();
+    }
+
+    public BlackHoleSettings blackHoleSettings() {
+        return blackHoleSettings.get();
+    }
+
+    /** ADR-057 singularity profiles and fuel tables; empty until the first complete load. */
+    public BlackHoleData blackHoleData() {
+        return blackHoleData.current().orElse(BlackHoleData.EMPTY);
     }
 
     public GravityFieldLimits gravityLimits() {
@@ -197,7 +215,8 @@ public final class EndgameDevices {
                 + laserOperationsLastTick + " waiting=" + laserOperations.waitingLastTick() + " layers_last_tick="
                 + laserLayersLastTick + " layers_waiting=" + laserLayers.waitingLastTick() + "; structures tracked="
                 + structures.tracked() + " validations_waiting=" + structureBudget.waitingLastTick()
-                + "; gravity_fields active=" + fields.size() + "; intent_players=" + rates.size();
+                + "; gravity_fields active=" + fields.size() + "; black_hole_generators active="
+                + active.count(EndgameSystem.BLACK_HOLE_GENERATOR) + "; intent_players=" + rates.size();
     }
 
     public void clear() {
