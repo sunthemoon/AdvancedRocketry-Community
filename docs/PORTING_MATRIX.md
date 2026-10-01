@@ -46,8 +46,23 @@
 | 空间站/跃迁控制 | stations GUI | 客户端界面与协议 | 服务端命令（ADR-046），无新数据包（四通道固定） | `v1.5.0` | UI-03 A1 矩阵 345/345；S1 待 C3，V2 待 ACC-02 | IN_PROGRESS |
 | 空间站/跃迁控制界面 | stations GUI | 需版本化负载 | 屏幕推迟（ADR-046 处置，最晚 v1.8.0 复议） | `v1.8.0` | 独立 ADR + 有界负载 | DEFERRED |
 | 地球化 | dimension/world | 全局世界修改 | post-MVP | `v1.x+` | future plan | DEFERRED |
-| 黑洞/轨道激光 | 多处 | 高内容/渲染/兼容 | 终局系统 | `v1.7.0` | v1.7 计划 | PLANNED |
-| 空间电梯 | 多处 | 物流/跨维度 | v1.5 端点契约与只读校验（ADR-045，已实现运维检查命令）；v1.7 结构与物流 | `v1.5.0`/`v1.7.0` | ELEVATOR 校验 JUnit/GameTest；v1.7 计划 | IN_PROGRESS |
+| 终局权限/保护/审计框架 | 旧版各终局设备均无权限检查（审计 §6） | 客户端包、强制加载、跨存储复制 | 统一开关、权限、保护链（含 `EndgameEffectEvent` API 1.8）、速率、能量、端点、运输账本与审计（ADR-054，提案） | `v1.7.0` | C11 A0/A1 + C13 S1/S2 | PLANNED |
+| 轨道激光钻（逻辑模式） | `tile/multiblock/orbitallaserdrill/TileOrbitalLaserDrill.java`、`VoidDrill.java` | 无种子 Random、客户端坐标与运行状态、强制加载站点区块 | 站点多方块，按天体数据表与 SplitMix64 产出，付费与产出同在控制器（ADR-055） | `v1.7.0` | C11 A0/A1 + C13 S1 | PLANNED |
+| 轨道激光钻（实体挖掘模式） | `MiningDrill.java`、`entity/EntityLaserNode.java` | 强制加载客户端坐标区块、仅保留末块掉落、后台线程改世界 | 默认关闭；拥有者放置的目标信标、同区块 3×3 井、整层原子、保护链与计数器结算（ADR-055） | `v1.7.0` | C11 A1 + C13 S2 | PLANNED |
+| 激光钻线性/螺旋步进 | `TileOrbitalLaserDrill.java` 的 MODE | 客户端步进 | 推迟到 v1.8 UI 批次（ADR-055） | `v1.8.0` | UI 批次 ADR | DEFERRED |
+| 轨道炮（货运） | `tile/multiblock/TileRailgun.java` | 永久强制加载、跨维度单 tick 移动、链接器坐标 | 同拥有者端点间经运输账本的货运，同一星系（ADR-054 §11、ADR-056） | `v1.7.0` | C12 A0/A1 + C13 S2 | PLANNED |
+| 轨道打击/武器化轨道炮 | — | 破坏与 grief | 安全范围之外，拒绝（ADR-056） | never unless ADR | — | REJECTED |
+| 跨星系货运 | `TileRailgun.java` | 跨系统路线 | 推迟（ADR-056，与火箭路线一致） | `v1.8.0`+ | 独立 ADR | DEFERRED |
+| 黑洞发电机 | `tile/multiblock/energy/TileBlackHoleGenerator.java` | 恒星黑洞标志、任意物品燃料 | 独立奇点数据与示例黑洞系、燃料表、满时暂停、同一方块实体（ADR-057） | `v1.7.0` | C12 A0/A1 + C13 S1 | PLANNED |
+| 黑洞天空渲染 | `client/render/multiblocks/RenderBlackHoleGenerator.java` 等 | 渲染负载 | 推迟到 v1.8 视觉批次（ADR-057） | `v1.8.0` | 视觉批次 | DEFERRED |
+| 区域重力控制器 | `tile/multiblock/TileAreaGravityController.java`、`util/GravityHandler.java` | 每 tick 全实体扫描、推力、静态 WeakHashMap | 玩家重力属性场（0.10–2.00 g，半径 2–16）与分区块索引（ADR-058） | `v1.7.0` | C11 A0/A1 | PLANNED |
+| 站点重力控制器方块 | `tile/station/TileStationGravityController.java` | 第二条站点写入路径 | v1.5 命令保留；方块推迟到 v1.8 UI 批次（ADR-058、ADR-046） | `v1.8.0` | UI 批次 ADR | DEFERRED |
+| 重力场作用于非玩家实体与旧重力 API | `GravityHandler.java`、`api/IGravityManager.java` | 实体扫描、静态状态 | 推迟到 v1.8 矩阵（ADR-058） | `v1.8.0` | 矩阵复议 | DEFERRED |
+| 定向推拉重力 | `TileAreaGravityController.java` | grief、困住玩家 | 拒绝（ADR-058） | never unless ADR | — | REJECTED |
+| 空间电梯 | `tile/multiblock/TileSpaceElevator.java`、`entity/EntityElevatorCapsule.java` | 物流/跨维度、按需初始化维度 | v1.5 端点契约与只读校验（ADR-045）；v1.7 锚点/终端端点、绑定与解绑、经账本货运、倒计时乘客传送（ADR-059） | `v1.5.0`/`v1.7.0` | ELEVATOR 校验 JUnit/GameTest；C12 A0/A1 + C13 S2 | IN_PROGRESS |
+| 电梯舱实体与动画 | `entity/EntityElevatorCapsule.java` | 跨维度实体 | 推迟到 v1.8 视觉批次（ADR-059） | `v1.8.0` | 视觉批次 | DEFERRED |
+| 电梯芯片 | `item/ItemSpaceElevatorChip.java` | 无界位置列表 | 拒绝，由端点记录替代（ADR-059） | never unless ADR | — | REJECTED |
+| 力场投影器 | `tile/TileForceFieldProjector.java` | 方块延伸 | 非终局系统，归 v1.8 矩阵审计（v1.7 审计 §8） | `v1.8.0` | 矩阵审计 | AUDITED |
 
 ## 使用规则
 

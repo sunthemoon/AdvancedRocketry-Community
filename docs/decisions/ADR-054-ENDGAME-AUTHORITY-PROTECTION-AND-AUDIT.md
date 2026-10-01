@@ -1,0 +1,465 @@
+# ADR-054 — Endgame authority, protection, rate, energy, transit and audit framework
+
+```yaml
+status: PROPOSED
+revision: 1
+date: 2026-10-01
+deciders: [sunthemoon]
+owner: sunthemoon
+target_version: v1.7.0
+slices: [V170-SEC-01, V170-TRN-01]
+development_dependency: ADR-021, ADR-040, ADR-041, ADR-043, ADR-044, ADR-045, ADR-049, ADR-050, ADR-051, ADR-053
+used_by: [ADR-055, ADR-056, ADR-057, ADR-058, ADR-059]
+```
+
+## Context
+
+v1.7 adds five systems that can break blocks, mint or move items, generate
+energy, change other players' physics or teleport players across Levels (see the
+[legacy audit](../work/v1.7.0-legacy-audit.md)). In the legacy game none of them
+checked who operated it, several trusted client packets, two force-loaded chunks
+at client coordinates, and cargo moved between two independently saved chunks in
+one tick. The version document requires one shared, frozen contract for:
+per-system switches; server-side validation of target, permission, load state and
+budget; transactional energy and effects; TravelTarget/BodyContext for
+cross-Level targets; audit events and operator diagnostics (§5), plus a
+territory/permission extension point (§6.4).
+
+Existing building blocks: station authority (`StationAccessService`, ADR-040/046),
+the checked station write path and server-wide write spacing (ADR-041), the
+satellite menu-intent rules (ADR-049 §10), and the cross-store delivery protocol
+with a SavedData save epoch, chunk-save persistence signals and a total
+reconciliation table (ADR-050 §2, ADR-051 §5–§11).
+
+## Decision
+
+### 1. Systems and switches
+
+| System ID | ADR | COMMON switch | Default |
+|---|---|---|---|
+| `laser_drill` | ADR-055 | `endgame.laserDrill.enabled` | `true` |
+| `laser_drill` physical mode | ADR-055 | `endgame.laserDrill.physicalMining` | **`false`** |
+| `railgun` | ADR-056 | `endgame.railgun.enabled` | `true` |
+| `black_hole_generator` | ADR-057 | `endgame.blackHoleGenerator.enabled` | `true` |
+| `gravity_field` | ADR-058 | `endgame.gravityField.enabled` | `true` |
+| `space_elevator` | ADR-059 | `endgame.spaceElevator.enabled` | `true` |
+
+The switches are read at each use, so a config reload applies on the next tick.
+A **disabled** system:
+
+- keeps its blocks, items, recipes and saved state registered and loadable, so
+  disabling never breaks world load and never removes content;
+- starts no new operation (every intent returns `SYSTEM_DISABLED`) and produces
+  no effect: no block break, no generation, no field, no launch, no ride, no bind;
+- still runs **settlement and recovery**: transit registration, arrival, claim,
+  reconciliation and receipt handling (§11), counter reconciliation (ADR-055),
+  unbinding (ADR-059) and withdrawal from buffers. A player is never stranded
+  and an escrowed payload is never frozen by a switch.
+
+Every limit in this ADR and the system ADRs is a COMMON config value that can
+only be lowered below its fixed maximum (the existing `CommonConfig.limit`
+pattern), unless the text gives a range.
+
+### 2. Device identity and ownership
+
+Every endgame block entity root has `schema_version`, `device_id` and `owner_id`.
+
+- `device_id` is a random UUID created on placement, or on the first load of a
+  root without one. It is never carried in an item: breaking a device drops the
+  plain block and its local buffers, and a new placement gets a new ID.
+- `owner_id` is the UUID of the placing entity when it is a connected
+  `ServerPlayer` that is **not** a `FakePlayer`. Any other placement (automation,
+  FakePlayers, `/setblock`) creates an **unowned** device, which is inert
+  (`UNOWNED`) until an operator assigns an owner (§13).
+- A root with an unknown schema, a missing or malformed ID, or a value outside
+  its bounds is **quarantined**: the device is inert, its root is kept unchanged
+  and re-saved byte-identical, and one `ARCE_ENDGAME_DEVICE_QUARANTINED` line is
+  written. Buffers of a quarantined root are not dropped on break; breaking it is
+  refused for non-operators.
+- Endpoints (§9) additionally follow ADR-051 §5's persistence rule: an endpoint
+  ID, outbox entry or receipt counts as **persisted** only when it is present in
+  that endpoint's entry of a `ChunkDataEvent.Save` or `ChunkDataEvent.Load` tag
+  for its chunk. Nothing else marks it persisted, and while anything is
+  unpersisted the block entity calls `setChanged()`.
+
+### 3. Authority
+
+`EndgameAuthority.allowed(actor, device, action)` is a pure function over a
+snapshot (actor UUID, operator flag, device owner, the station record at the
+device position if any, the action). Actions: `VIEW`, `CONFIGURE` (settings,
+targets, links, binds), `OPERATE` (start, stop, launch, ride), `WITHDRAW`.
+
+| Actor | Device outside any station region | Device inside a committed station region |
+|---|---|---|
+| Operator (permission 2, connected non-fake player) | all | all |
+| Device owner | all | all, while the owner still has station `BUILD` access (owner or member); otherwise `VIEW` |
+| Station owner (not device owner) | — | all (station `MANAGE_STATION`) |
+| Station member (not device owner) | — | `VIEW` |
+| Anyone else | `VIEW` of public status only | none |
+
+- A device in the Space Level outside every committed region, or in a blocked or
+  quarantined station registry, is refused with `STATION_UNAVAILABLE` for every
+  action except `WITHDRAW` by its owner or an operator. Systems that require a
+  station (ADR-055, ADR-057) also refuse to operate there.
+- ADR-058 narrows `CONFIGURE`/`OPERATE` inside stations to `MANAGE_STATION`,
+  because a field overrides the station's own gravity.
+- FakePlayers, command blocks, functions and the console never pass an intent.
+  The automation path is redstone control, where a system allows it.
+- `VIEW` of public status never includes a target, a coordinate, an owner name or
+  another device's ID.
+
+### 4. Intents and network
+
+- All player intents are fixed button IDs through vanilla `clickMenuButton`. No
+  intent carries a payload, a coordinate, an index or an item. Selections
+  (targets, pairs, products) are server-side menu state moved by previous/next
+  intents, as in ADR-049 §10.
+- Each intent is validated on the server thread: the menu's block entity is
+  still the same device at the same position, the player is within 8 blocks and
+  in the same Level, the chunk is loaded, §3 allows the action, the system is
+  enabled, and the per-player rate allows it (state-changing intents 10 ticks,
+  selection intents 2 ticks, config `endgame.intentIntervalTicks` ≥ 10 and
+  `endgame.selectionIntervalTicks` ≥ 2). Refused intents change nothing and send
+  one status line.
+- **No new network channel and no new C2S message.** Status reaches the client
+  through menu data slots and bounded menu extra data (≤ 4 KiB per menu, tested
+  at maximum), and visuals through block-entity update tags (≤ 1 KiB, only
+  render state: active flag, beam length, field radius and value, never a target
+  coordinate of another Level). Existing channel versions (life support 1,
+  celestial 3, rocket flight 8, rocket visual 1, satellite 1) are unchanged.
+- Every status and refusal is shown as translated text (with its stable code),
+  never by colour or icon alone, so it stays readable at any GUI scale and for
+  colour-blind players.
+
+### 5. Protection chain
+
+Every world effect outside the device's own block passes this chain on the server
+thread, **re-evaluated for every batch** (a batch is at most one tick of work for
+one device). The first failure stops the operation with the given code; the
+device keeps its state and reports the code.
+
+1. **Loaded.** Every chunk the batch touches is present at `FULL` status
+   (`getChunkNow`), else `TARGET_UNLOADED`. Nothing loads a chunk (§12).
+2. **Bounds.** Inside the Level's world border and build height, else
+   `TARGET_OUT_OF_BOUNDS`.
+3. **Protected zones** (§6): no zone in that Level intersects the batch box
+   unless the device owner is on that zone's allow list, else `TARGET_PROTECTED`.
+4. **Stations.** In the Space Level, every touched position is inside a committed
+   region where the device owner has `BUILD` access, else `TARGET_PROTECTED`.
+5. **Spawn protection.** `MinecraftServer.isUnderSpawnProtection` for an
+   owner-bound FakePlayer (profile `owner_id`, name `[ARCE]`, no permission
+   level) is false for every position, else `TARGET_PROTECTED`.
+6. **Extension event.** The public, cancellable
+   `api.endgame.EndgameEffectEvent` (§5.1) is not cancelled, else
+   `TARGET_PROTECTED`.
+7. **Block breaks only.** For each block, a standard `BlockEvent.BreakEvent`
+   posted with the owner-bound FakePlayer is not cancelled, so claim mods that
+   protect breaking also protect against the laser, else `TARGET_PROTECTED`.
+
+A protection refusal is audited once per device and code per 1,200 ticks (§13).
+Effects that touch only the device's own block entity or a ledger (generation,
+cargo escrow, claim) do not use the chain.
+
+#### 5.1 Public API extension
+
+API minor 1.7 → **1.8** (ADR-021) adds
+`io.github.sunthemoon.advancedrocketrycommunity.api.endgame`:
+
+- `EndgameEffect`: enum `BLOCK_BREAK`, `ENTITY_GRAVITY`, `TELEPORT`;
+- `EndgameEffectEvent`: a cancellable Forge `Event`, posted on
+  `MinecraftForge.EVENT_BUS` on the server thread only, with `systemId()`
+  (`ResourceLocation`), `effect()`, `ownerId()` (`UUID`), `level()`
+  (`ResourceKey<Level>`), `min()` and `max()` (`BlockPos`, the batch box).
+
+It exposes no internal type, no device object and no way to change the effect.
+Listeners may only cancel. Existing API classes keep their bytes; the API
+compatibility document, the public API guide and the compatibility test mod
+gain the new types. This is the only public API change in v1.7.
+
+### 6. Protected zones
+
+Operators manage zones in the endgame root (§10): `/arce endgame zone add <name>
+<from> <to> [<player>...]` in the operator's current Level, `zone remove <name>`,
+`zone list`. A zone is an axis-aligned box of at most 4,096 × 4,096 blocks in
+plan view (full height), a name of 1..32 characters `[a-z0-9_-]`, and an allow
+list of at most 16 player UUIDs. At most 256 zones per server. Zones affect only
+endgame effects (§5 step 3); they are not a general claim system. Zone changes are
+barrier flushes (§10) and audited. Non-operators never see zone boxes.
+
+### 7. Rates and budgets
+
+- **Per player:** §4 intent spacing.
+- **Per device:** each system ADR fixes the device cadence (operations per
+  tick or per interval).
+- **Per system per tick:** each system ADR fixes a server-wide work cap (blocks,
+  launches, claims, rides, field lookups). Work beyond the cap waits for the next
+  tick in a deterministic order (device ID order, round-robin from the last
+  served device). **ID order** everywhere in v1.7 is the order of the canonical
+  lowercase UUID strings (`String.compareTo`), not `UUID.compareTo`, which
+  compares signed halves. No system pass ever loops over all devices of another system.
+- **Counts:** active devices per owner and globally, endpoints, transit records,
+  pairs and zones are capped (system ADRs and §10).
+- **Ledger passes:** registration ≤ 32 per tick, arrival ≤ 64 per tick,
+  reconciliation ≤ 64 records per tick across all endpoints (§11).
+
+All endgame work runs in one `ServerTickEvent` END handler. C13 measures its time
+separately from vanilla MSPT (Forge records `tickTimes` before END handlers).
+
+### 8. Energy
+
+- Energy is Forge Energy through the block capability. Each device has its own
+  bounded buffer in its block entity; `receiveEnergy` is effective only on the
+  server thread, `simulate=true` changes nothing, and generators expose no
+  `receiveEnergy`.
+- **Same-store rule.** Wherever possible a payment and its effect are in one
+  block entity and change in the same server tick, so one chunk save covers both:
+  laser logical output (ADR-055), black-hole fuel and generation (ADR-057), field
+  upkeep (ADR-058), cargo escrow (§11).
+- **Cross-store rule.** When the effect is elsewhere, either the payment is
+  escrowed with a record that is reconciled (cargo, §11), or both sides keep
+  monotone counters and reconcile to the maximum with a recorded debt (ADR-055
+  physical mode). A ride (ADR-059) is the single documented energy-only residual.
+- **No refund with a kept effect.** Energy is refunded only when the effect is
+  known not to have happened and can no longer happen (refused before escrow).
+  Escrowed cargo energy is never refunded.
+- No device mints energy except the black-hole generator, bounded by fuel and a
+  per-tick cap (ADR-057).
+
+### 9. Endpoints and targeting
+
+An **endpoint** is a device that other devices can address: `laser_target`
+(ADR-055), `railgun` (ADR-056), `elevator_anchor` and `elevator_terminal`
+(ADR-059). Targeting is always endpoint selection, never a coordinate.
+
+- **Index.** The endgame root keeps one record per endpoint: `endpoint_id`,
+  `kind`, `owner_id`, Level key, block position, `state` (`ACTIVE` or
+  `MISSING`), ≤ 256 bytes. At most 4,096 endpoints, 64 per owner.
+- **Registration.** An endpoint is added when its ID is persisted (§2); until
+  then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
+  flush-pending mutation (§10). Placement beyond the limits is allowed, but the
+  endpoint stays `ENDPOINT_LIMIT` and inert.
+- **Removal.** Breaking an endpoint removes its record. Breaking is refused for
+  non-operators while it holds an outbox entry, an unacknowledged receipt or an
+  elevator pair (`ENDPOINT_BUSY`). An endpoint whose chunk is loaded without a
+  block entity of that ID at the recorded position becomes `MISSING`; a block
+  entity carrying a registered ID at another position is
+  `ENDPOINT_POSITION_CONFLICT` and inert (operator copy tools such as `/clone`
+  are outside the guarantee, as in ADR-051 §7).
+- **Selection.** A player selects only their **own** `ACTIVE` endpoints of a
+  compatible kind, from a server-side list filtered by the system's route rule
+  and sorted in ID order (§7). Operators can select any endpoint. The owner sees
+  the endpoint's Level, position and body; others see nothing.
+- **Body context.** An endpoint's body is derived live, never stored, with the
+  existing ADR-014 `BodyContextResolver.resolve(WorldLocation, catalog)` over one
+  captured catalog: in the Space Level the station-region resolver gives the
+  station's current orbit body (ADR-041); in another Level the Level's single
+  candidate body. Its star system is the catalog's root for that body (ADR-043).
+  No body means `BODY_UNAVAILABLE`. Cross-Level targets are therefore expressed
+  as BodyContext plus an endpoint ID, as the version plan requires.
+
+### 10. Endgame root
+
+All cross-device state lives in one SavedData, `arce_endgame` in the Overworld
+data storage, written with the checked atomic file path (`AtomicSavedData`, new
+`ManagedSavedDataType.ENDGAME`):
+
+- root `schema_version` 1, `save_epoch`, and the sections `endpoints` (§9),
+  `dispatched_through` (§11), `transits` (§11), `elevator_pairs` (ADR-059) and
+  `zones` (§6);
+- hard bound 4 MiB encoded; **growth admission**: endpoint registration, escrow
+  admission (§11), binds and zone additions are refused while the encoded root is
+  within 1 MiB of the bound; a registration of an already escrowed payload and
+  every reconciliation step are admitted up to the bound itself, and beyond it
+  wait (never drop) with `ROOT_FULL`;
+- **write policy** (ADR-050 §2 semantics): elevator bind and unbind, zone changes
+  and operator redirects and purges are **barrier flushes**; every other mutation
+  marks the root flush-pending, and a coalesced flush runs at most once per 100
+  ticks while one is pending; idle servers write nothing extra;
+- **save epoch** E as in ADR-050 §2: a write puts E + 1 in the file and E
+  advances when the write returns without error; records store the E of their
+  creation, and "durable" means `save_epoch > record_epoch`;
+- **load**: no file means a fresh root (v1.6 worlds need no migration). A root
+  with an unsupported schema, a malformed section, a duplicate key or a bound
+  violation **blocks** the endgame authority: no endgame operation and no
+  settlement, the file is kept unchanged, one `ARCE_ENDGAME_BLOCKED` line names
+  the reason, and `/arce endgame status` reports it. The rest of the world runs.
+  A blocked root is never overwritten by autosave.
+
+### 11. Transit ledger
+
+Cargo (ADR-056 railgun, ADR-059 elevator) moves from a source endpoint S to a
+destination endpoint D through a ledger record, never directly between two block
+entities.
+
+**Source state** (in S's root): `next_seq` (starts at 1) and an `outbox` of at
+most 4 entries `{seq, destination, payload, paid_fe, system}`. A payload is at
+most 4 stacks, each with an encoded item tag of at most 512 bytes; plain items
+only otherwise.
+
+**Record** (≤ 4 KiB): `source`, `seq`, `system`, `owner_id`, `destination`,
+`payload`, `paid_fe`, `dispatch_epoch`, `arrive_at` (game time), `state`
+(`IN_TRANSIT`, `ARRIVED`, `CLAIMED`, `QUARANTINED`), `paid_endpoint`,
+`acknowledged`, `ack_epoch`, `redirected`. Identity is `(source, seq)`.
+`dispatched_through[S]` is the highest registered `seq` of S and never
+decreases; it is what keeps a pruned transfer from being registered again. Limits: 512 records globally, 32 per owner, counting live
+outbox entries known to the server. A record whose payload no longer decodes
+(for example an item of a removed mod) is `QUARANTINED` with its raw payload kept
+byte-identical; it is never claimed, and only an operator purge removes it. A
+purge of a record whose source still holds the entry also drops that entry
+(`OUTBOX_STALE_DROPPED`), because the purge destroyed the payload.
+
+**Dispatch.**
+
+1. **Escrow.** In one server tick at S: the payload leaves S's input buffer and
+   becomes outbox entry `seq = next_seq++`, and `paid_fe` leaves S's energy
+   buffer. Requires §3 `OPERATE` (or the system's redstone path), the system
+   enabled, the root operational with admission room, a selected `ACTIVE`
+   destination passing the system's route rule, a free outbox slot, the limits
+   and the energy.
+2. **Registration.** When the entry is persisted and the persistence
+   observation is at least 40 ticks old, and `seq = dispatched_through[S] + 1`,
+   the ledger creates the record (`IN_TRANSIT`, `dispatch_epoch = E`,
+   `arrive_at = now + travel`) and sets `dispatched_through[S] = seq`. If the
+   destination has meanwhile become `MISSING` or was removed, the record is still
+   created; it will wait as `DESTINATION_MISSING`.
+3. **Release.** S drops the outbox entry when its record is durable, or when
+   `seq ≤ dispatched_through[S]` and the record is gone (it was delivered,
+   acknowledged durably and pruned, or purged by an operator).
+
+**Delivery.** At `arrive_at` the record becomes `ARRIVED` (due queue). D claims
+it automatically during its reconciliation pass, or on a withdraw intent, when:
+the record is durable, D's ID is persisted, D's receive buffer has room for the
+whole payload, and D has a free receipt slot (≤ 64). In one tick the record
+becomes `CLAIMED` with `paid_endpoint = D`, and D gains the payload and an
+unpersisted receipt `(source, seq)`.
+
+**Source reconciliation** (when S loads and before each escrow at S):
+
+| Ledger | Outbox entry `seq` at S | Action |
+|---|---|---|
+| Blocked | any | Nothing; escrow refused |
+| No record, `seq > dispatched_through[S]` | persisted, aged, next in order | Register (step 2) |
+| No record, `seq > dispatched_through[S]` | unpersisted or not aged | Wait |
+| No record, `seq ≤ dispatched_through[S]` | present | Delivered and pruned (or purged): drop the entry, audit `OUTBOX_STALE_DROPPED` |
+| Record present, not durable | present | Wait |
+| Record present, durable | present | Drop the entry (step 3) |
+| — | S's persisted `next_seq ≤ dispatched_through[S]` | S's chunk is older than the ledger: set `next_seq = dispatched_through[S] + 1`, refuse escrow for this tick, audit `SOURCE_ROLLBACK` |
+
+**Destination reconciliation** is ADR-051 §7 with these substitutions: terminal →
+D; mission → record; ACTIVE/READY → `IN_TRANSIT`/`ARRIVED`; bound terminal →
+`destination`; rebind → operator redirect; the `CANCELLED` row does not exist
+(transfers cannot be cancelled). Its rows: ledger behind (receipt present, record
+not yet `CLAIMED`) sets `CLAIMED` with no items (`CLAIM_RECOVERED`, or
+`REDIRECT_CONFLICT` with a barrier flush that redirects back to D); persisted
+receipt acknowledges; missing receipt for an unacknowledged claim at D
+rematerializes once (`REMATERIALIZED`, waiting while full); a receipt is dropped
+only after the acknowledgement is durable or when the record is absent; a claim
+paid elsewhere keeps the receipt (`REDIRECT_DOUBLE_PAY`); a quarantined record
+keeps it.
+
+**Pruning.** A record is removed once its acknowledgement is durable, whether or
+not S has already dropped its entry; the `dispatched_through` rule above makes a
+late drop safe. `dispatched_through[S]` is removed only when S's endpoint record
+is removed, S holds no outbox entry, and no record has source S. A
+`source_released` flag was considered and dropped: the reference model shows it
+changes no outcome, with or without a lost source write.
+
+**Operator actions** (barrier flushes, audited with a SHA-256 prefix of the
+payload): `transfer redirect <source> <seq> <endpoint>` for an `IN_TRANSIT` or
+`ARRIVED` record to another endpoint of the same owner and system (ADR-051 §9
+residual applies); `transfer purge <source> <seq>` removes a record and destroys
+its payload.
+
+**Crash cuts.**
+
+| Cut | After restart | Outcome |
+|---|---|---|
+| Escrow not saved | Payload in S's input | Nothing happened |
+| Escrow saved, not registered | Outbox entry, no record | Registered later; exactly once |
+| Registered, ledger not flushed | Outbox entry, no record | Registered again with the same `(S, seq)` |
+| Ledger flushed, release not saved | Outbox entry, durable record | Entry dropped; delivered once |
+| Claim: D saved, ledger not | Receipt, record `ARRIVED` | `CLAIM_RECOVERED`; paid once |
+| Claim: ledger flushed, D not | `CLAIMED`, no receipt | Rematerialized once |
+| Record pruned while S still holds the entry (S unloaded, its release not yet saved, or that save lost) | Entry with `seq ≤ dispatched_through`, no record | Dropped (`OUTBOX_STALE_DROPPED`); the payload was already delivered once |
+| **Residual**: S's escrow save observed but its asynchronous file write lost, then the record durable | S's input still holds the payload, record exists | Duplicate of one payload, detected and audited as `SOURCE_ROLLBACK`; same class as a torn vanilla save. The 40-tick age rule narrows the window to an `IOWorker` backlog older than 2 s |
+| **Residual**: operator redirect after a ledger rollback | ADR-051 §9 | Possible double delivery, audited |
+
+### 12. Chunk loading
+
+v1.7 never creates a chunk ticket, forced chunk or region ticket, never calls a
+synchronous chunk load from a device, and never initialises a Level on demand.
+Every world effect needs its chunks already `FULL` (§5 step 1). Ledger paths need
+no chunk. The only chunk access caused by an endgame action is the arrival of an
+elevator ride (ADR-059), which moves the player like a vanilla teleport to a
+server-derived position. Tests count tickets before and after every system.
+
+### 13. Audit and diagnostics
+
+- **Lines.** Every state-changing intent, refusal code change, effect batch
+  summary, ledger transition, reconciliation result, operator command and
+  quarantine writes one `ARCE_ENDGAME` line of at most 512 bytes:
+  `system action result device owner actor` plus bounded fields. Coordinates
+  appear only in these server log lines and in operator command output.
+- **Ring.** The last 512 lines are kept in memory (not persisted, cleared at
+  stop) for `/arce endgame audit [system] [page]` (operator, 16 lines per page).
+- **Operator commands** (permission 2, leaf-level `.requires`, ADR-045 lesson):
+  `/arce endgame status` (switches, root state and size, active device counts,
+  last-tick work per system, tickets owned: always 0); `audit`; `zone …` (§6);
+  `device inspect <pos>`; `device owner <pos> <player>`; `endpoint list
+  [<player>]`; `endpoint purge <id>` (records only, refused while referenced);
+  `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.
+- **Players** see their own device status in its menu; nothing lists other
+  players' devices, endpoints, zones or coordinates.
+
+### 14. Migration, removal and rollback
+
+- New content only: no existing block, item, registry or SavedData changes
+  except the new root, the API minor and the hooks named in ADR-058 (gravity
+  chain) and ADR-059 (warp and deletion guards). v1.6 worlds open unchanged.
+- A v1.6 host loading a v1.7 world loses the new blocks (missing registry
+  entries become air with Forge's usual warning) and ignores `arce_endgame`;
+  escrowed and in-transit cargo is lost there. Downgrade is not supported, as for
+  earlier versions.
+- Disabling a system (§1) is the supported way to stop it.
+
+### 15. Shared threat model
+
+| Threat | Control |
+|---|---|
+| Grief by breaking or changing others' blocks or physics | §3 authority, §5 chain with zones, stations, spawn protection, API event and break events; physical laser default off |
+| Duplication | Same-store rule; transit ledger with escrow, persistence signals, epochs, receipts and total reconciliation; endpoint break refusal while busy; residuals listed in §11 |
+| Chunk loading | §12: none, tested |
+| Packet spam / forged intents | No new C2S message; button IDs only; server-side selection; rate limits; refusals change nothing |
+| Privilege escalation via automation | FakePlayers and command sources never pass intents; unowned devices inert |
+| Unbounded work or data | §7 caps, §10 root bounds and admission, bounded menus and update tags |
+| Information leak | Coordinates only to the owner and operators; public status carries no target |
+| Disabled or broken config | §1 switches keep content loadable; settlement continues |
+
+## Consequences
+
+- One protection chain, one ledger and one audit format for all five systems.
+- Players address targets they physically built, never coordinates.
+- Claim and protection mods integrate through standard break events and one
+  cancellable API event.
+- Some effects wait for chunks that players or other mods keep loaded; v1.7 does
+  not provide chunk loading.
+
+## Verification
+
+- A0: authority matrix over every actor, action and station case; protection
+  chain order with each step failing; zone bounds and allow lists; limit
+  admission; endgame root codec round trip, bounds, blocked load, epoch; transit
+  ledger: every source and destination reconciliation row, every crash cut by
+  fault injection, ordering enumeration (the reference vectors), pruning and
+  `dispatched_through`; audit line bound.
+- A1: intents refused for FakePlayers, distance, other Level, unloaded chunk and
+  rate; API event cancellation stops a batch; protection chain against a spawn
+  area and a zone; disabled switch keeps settlement running; zero tickets.
+- S1/S2 (C13): forced stops around escrow, registration, release, claim and
+  acknowledgement; after each restart every payload exists exactly once except
+  the documented residuals.
+
+## Rollback
+
+Disable the systems by config. Removing the code leaves `arce_endgame` unused;
+escrowed cargo in it would be lost, so removal requires draining transfers first.

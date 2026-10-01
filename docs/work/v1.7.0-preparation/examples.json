@@ -1,0 +1,1343 @@
+{
+ "purpose": "Reference vectors for ADR-054..059 revision 1. Laser draw lists are generated pins; all other expectations are hand-written from the ADR text.",
+ "splitmix64_seed0": [
+  "e220a8397b1dcdaf",
+  "6e789e6aa1b965f4",
+  "06c45d188009454f"
+ ],
+ "laser_v1": {
+  "laserdrl_hex": "4C4153455244524C",
+  "closed_form_seeds": [
+   "0000000000000000",
+   "0123456789abcdef",
+   "ffffffffffffffff",
+   "9e3779b97f4a7c15"
+  ],
+  "table": {
+   "entries": [
+    {
+     "item": "minecraft:cobblestone",
+     "count": 5,
+     "weight": 900
+    },
+    {
+     "item": "minecraft:raw_iron",
+     "count": 5,
+     "weight": 30
+    },
+    {
+     "item": "minecraft:raw_copper",
+     "count": 5,
+     "weight": 30
+    },
+    {
+     "item": "minecraft:raw_gold",
+     "count": 5,
+     "weight": 15
+    },
+    {
+     "item": "minecraft:redstone",
+     "count": 5,
+     "weight": 20
+    },
+    {
+     "item": "minecraft:diamond",
+     "count": 1,
+     "weight": 5
+    }
+   ]
+  },
+  "default_table": {
+   "entries": [
+    {
+     "item": "minecraft:cobblestone",
+     "count": 5,
+     "weight": 900
+    },
+    {
+     "item": "minecraft:raw_iron",
+     "count": 5,
+     "weight": 30
+    },
+    {
+     "item": "minecraft:raw_copper",
+     "count": 5,
+     "weight": 30
+    },
+    {
+     "item": "minecraft:raw_gold",
+     "count": 5,
+     "weight": 15
+    },
+    {
+     "item": "minecraft:redstone",
+     "count": 5,
+     "weight": 20
+    },
+    {
+     "item": "minecraft:diamond",
+     "count": 1,
+     "weight": 5
+    }
+   ]
+  },
+  "draws": [
+   {
+    "seed": "0000000000000000",
+    "from": 0,
+    "expected": [
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:raw_gold",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:diamond",
+      1
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ]
+    ]
+   },
+   {
+    "seed": "0123456789abcdef",
+    "from": 0,
+    "expected": [
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:raw_iron",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:raw_copper",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ]
+    ]
+   },
+   {
+    "seed": "fedcba9876543210",
+    "from": 1000,
+    "expected": [
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:raw_copper",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:cobblestone",
+      5
+     ],
+     [
+      "minecraft:raw_copper",
+      5
+     ]
+    ]
+   }
+  ]
+ },
+ "laser_cost": [
+  [
+   10,
+   1000
+  ],
+  [
+   100,
+   10000
+  ],
+  [
+   250,
+   25000
+  ],
+  [
+   1000,
+   100000
+  ]
+ ],
+ "shaft": [
+  {
+   "marker": [
+    8,
+    70,
+    8
+   ],
+   "inside_chunk": true,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": 6,
+   "cells": [
+    [
+     7,
+     7
+    ],
+    [
+     8,
+     7
+    ],
+    [
+     9,
+     7
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     8,
+     8
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     7,
+     9
+    ],
+    [
+     8,
+     9
+    ],
+    [
+     9,
+     9
+    ]
+   ]
+  },
+  {
+   "marker": [
+    0,
+    70,
+    5
+   ],
+   "inside_chunk": false,
+   "max_depth": 256,
+   "min_build_height": -64,
+   "floor": -63,
+   "cells": [
+    [
+     -1,
+     4
+    ],
+    [
+     0,
+     4
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     -1,
+     5
+    ],
+    [
+     0,
+     5
+    ],
+    [
+     1,
+     5
+    ],
+    [
+     -1,
+     6
+    ],
+    [
+     0,
+     6
+    ],
+    [
+     1,
+     6
+    ]
+   ]
+  },
+  {
+   "marker": [
+    -1,
+    64,
+    -17
+   ],
+   "inside_chunk": false,
+   "max_depth": 1,
+   "min_build_height": -64,
+   "floor": 63,
+   "cells": [
+    [
+     -2,
+     -18
+    ],
+    [
+     -1,
+     -18
+    ],
+    [
+     0,
+     -18
+    ],
+    [
+     -2,
+     -17
+    ],
+    [
+     -1,
+     -17
+    ],
+    [
+     0,
+     -17
+    ],
+    [
+     -2,
+     -16
+    ],
+    [
+     -1,
+     -16
+    ],
+    [
+     0,
+     -16
+    ]
+   ]
+  },
+  {
+   "marker": [
+    -2,
+    100,
+    -15
+   ],
+   "inside_chunk": true,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": 36,
+   "cells": [
+    [
+     -3,
+     -16
+    ],
+    [
+     -2,
+     -16
+    ],
+    [
+     -1,
+     -16
+    ],
+    [
+     -3,
+     -15
+    ],
+    [
+     -2,
+     -15
+    ],
+    [
+     -1,
+     -15
+    ],
+    [
+     -3,
+     -14
+    ],
+    [
+     -2,
+     -14
+    ],
+    [
+     -1,
+     -14
+    ]
+   ]
+  },
+  {
+   "marker": [
+    14,
+    0,
+    1
+   ],
+   "inside_chunk": true,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": -63,
+   "cells": [
+    [
+     13,
+     0
+    ],
+    [
+     14,
+     0
+    ],
+    [
+     15,
+     0
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     13,
+     2
+    ],
+    [
+     14,
+     2
+    ],
+    [
+     15,
+     2
+    ]
+   ]
+  },
+  {
+   "marker": [
+    15,
+    0,
+    1
+   ],
+   "inside_chunk": false,
+   "max_depth": 64,
+   "min_build_height": -64,
+   "floor": -63,
+   "cells": [
+    [
+     14,
+     0
+    ],
+    [
+     15,
+     0
+    ],
+    [
+     16,
+     0
+    ],
+    [
+     14,
+     1
+    ],
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     14,
+     2
+    ],
+    [
+     15,
+     2
+    ],
+    [
+     16,
+     2
+    ]
+   ]
+  }
+ ],
+ "counter_sequences_checked": 21845,
+ "counter_cuts": [
+  {
+   "name": "nothing saved",
+   "events": [
+    "OP",
+    "CRASH"
+   ],
+   "expected": {
+    "paid": 0,
+    "done": 0,
+    "spent": 0
+   }
+  },
+  {
+   "name": "controller saved, marker not: credit",
+   "events": [
+    "OP",
+    "SAVE_C",
+    "CRASH"
+   ],
+   "expected": {
+    "paid": 1,
+    "done": 1,
+    "spent": 10000
+   }
+  },
+  {
+   "name": "marker saved, controller not: debt",
+   "events": [
+    "OP",
+    "SAVE_M",
+    "CRASH"
+   ],
+   "expected": {
+    "paid": 1,
+    "done": 1,
+    "spent": 10000
+   }
+  },
+  {
+   "name": "interleaved saves",
+   "events": [
+    "OP",
+    "OP",
+    "SAVE_C",
+    "OP",
+    "SAVE_M",
+    "CRASH"
+   ],
+   "expected": {
+    "paid": 3,
+    "done": 3,
+    "spent": 30000
+   }
+  },
+  {
+   "name": "two layers of credit",
+   "events": [
+    "OP",
+    "OP",
+    "SAVE_C",
+    "CRASH"
+   ],
+   "expected": {
+    "paid": 2,
+    "done": 2,
+    "spent": 20000
+   }
+  }
+ ],
+ "transit": {
+  "states_two_payloads_two_crashes": 53783,
+  "states_one_payload_two_crashes_one_lost_write": 7456,
+  "named_cuts": [
+   {
+    "name": "escrow not saved",
+    "events": [
+     "ESCROW",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "registered, ledger not flushed",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "ledger flushed, release not saved",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "RELEASE",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "claim: destination saved, ledger not",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "ARRIVE",
+     "CLAIM",
+     "SAVE_D",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "claim: ledger flushed, destination not",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "ARRIVE",
+     "CLAIM",
+     "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "pruned while the source still holds its entry, then a restart",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "ARRIVE",
+     "CLAIM",
+     "SAVE_D",
+     "D_ACK",
+     "FLUSH_L",
+     "PRUNE",
+     "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "pruned, then the source returns from a lost release write",
+    "events": [
+     "ESCROW",
+     "SAVE_S",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "RELEASE",
+     "SAVE_S_LOST",
+     "ARRIVE",
+     "CLAIM",
+     "SAVE_D",
+     "D_ACK",
+     "FLUSH_L",
+     "PRUNE",
+     "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     1,
+     false
+    ]
+   },
+   {
+    "name": "residual: escrow write lost after registration was flushed",
+    "events": [
+     "ESCROW",
+     "SAVE_S_LOST",
+     "AGE",
+     "REGISTER",
+     "FLUSH_L",
+     "CRASH"
+    ],
+    "expected": [
+     2,
+     true
+    ]
+   }
+  ]
+ },
+ "railgun": [
+  {
+   "local": true,
+   "dx": 0,
+   "dz": 0,
+   "percent": 100,
+   "expected": [
+    "LOCAL",
+    25000,
+    20
+   ]
+  },
+  {
+   "local": true,
+   "dx": 300,
+   "dz": 400,
+   "percent": 100,
+   "expected": [
+    "LOCAL",
+    30000,
+    27
+   ]
+  },
+  {
+   "local": true,
+   "dx": 300,
+   "dz": 400,
+   "percent": 50,
+   "expected": [
+    "LOCAL",
+    15000,
+    27
+   ]
+  },
+  {
+   "local": true,
+   "dx": -1000,
+   "dz": -1000,
+   "percent": 100,
+   "expected": [
+    "LOCAL",
+    39140,
+    42
+   ]
+  },
+  {
+   "local": true,
+   "dx": 22500,
+   "dz": 0,
+   "percent": 100,
+   "expected": [
+    "LOCAL",
+    250000,
+    200
+   ]
+  },
+  {
+   "local": true,
+   "dx": 30000000,
+   "dz": 30000000,
+   "percent": 1000,
+   "expected": [
+    "LOCAL",
+    2500000,
+    200
+   ]
+  },
+  {
+   "local": false,
+   "dx": 5,
+   "dz": 5,
+   "percent": 100,
+   "expected": [
+    "ORBITAL",
+    250000,
+    600
+   ]
+  },
+  {
+   "local": false,
+   "dx": 0,
+   "dz": 0,
+   "percent": 10,
+   "expected": [
+    "ORBITAL",
+    25000,
+    600
+   ]
+  }
+ ],
+ "black_hole": [
+  {
+   "name": "one default item",
+   "fuel": [
+    "minecraft:stick"
+   ],
+   "burn_ticks": {},
+   "default_burn_ticks": 500,
+   "capacity": 2000000,
+   "output": 500,
+   "percent": 100,
+   "ticks": 10,
+   "expected": {
+    "energy": 5000,
+    "remaining": 490,
+    "consumed": 1
+   }
+  },
+  {
+   "name": "legacy one-tick cobblestone",
+   "fuel": [
+    "minecraft:cobblestone",
+    "minecraft:cobblestone",
+    "minecraft:cobblestone"
+   ],
+   "burn_ticks": {
+    "minecraft:cobblestone": 1
+   },
+   "default_burn_ticks": 500,
+   "capacity": 2000000,
+   "output": 500,
+   "percent": 100,
+   "ticks": 5,
+   "expected": {
+    "energy": 1500,
+    "remaining": 0,
+    "consumed": 3
+   }
+  },
+  {
+   "name": "pause when full keeps the burn",
+   "fuel": [
+    "minecraft:stick"
+   ],
+   "burn_ticks": {},
+   "default_burn_ticks": 500,
+   "capacity": 1200,
+   "output": 500,
+   "percent": 100,
+   "ticks": 5,
+   "expected": {
+    "energy": 1000,
+    "remaining": 498,
+    "consumed": 1
+   }
+  },
+  {
+   "name": "pause then resume with extraction",
+   "fuel": [
+    "minecraft:stick"
+   ],
+   "burn_ticks": {},
+   "default_burn_ticks": 500,
+   "capacity": 1200,
+   "output": 500,
+   "percent": 100,
+   "ticks": 4,
+   "extract_per_tick": 100,
+   "expected": {
+    "energy": 1100,
+    "remaining": 497,
+    "consumed": 1
+   }
+  },
+  {
+   "name": "full buffer consumes nothing",
+   "fuel": [
+    "minecraft:stick"
+   ],
+   "burn_ticks": {},
+   "default_burn_ticks": 500,
+   "capacity": 500,
+   "energy": 500,
+   "output": 500,
+   "percent": 100,
+   "ticks": 3,
+   "expected": {
+    "energy": 500,
+    "remaining": 0,
+    "consumed": 0
+   }
+  },
+  {
+   "name": "percent scales the rate",
+   "fuel": [
+    "minecraft:stick"
+   ],
+   "burn_ticks": {},
+   "default_burn_ticks": 500,
+   "capacity": 2000000,
+   "output": 500,
+   "percent": 10,
+   "ticks": 2,
+   "expected": {
+    "energy": 100,
+    "remaining": 498,
+    "consumed": 1
+   }
+  }
+ ],
+ "gravity": {
+  "boxes": [
+   {
+    "center": [
+     0,
+     64,
+     0
+    ],
+    "radius": 8,
+    "box": [
+     -8,
+     56,
+     -8,
+     8,
+     72,
+     8
+    ]
+   },
+   {
+    "center": [
+     100,
+     70,
+     -50
+    ],
+    "radius": 16,
+    "clip": [
+     90,
+     -60,
+     120,
+     -40
+    ],
+    "box": [
+     90,
+     54,
+     -60,
+     116,
+     86,
+     -40
+    ]
+   },
+   {
+    "center": [
+     0,
+     64,
+     0
+    ],
+    "radius": 4,
+    "clip": [
+     10,
+     10,
+     20,
+     20
+    ],
+    "box": null
+   }
+  ],
+  "winners": [
+   {
+    "name": "nested: smaller box wins",
+    "position": [
+     1,
+     64,
+     1
+    ],
+    "winner": "ffffffff-0000-0000-0000-000000000000",
+    "fields": [
+     {
+      "id": "aaaaaaaa-0000-0000-0000-000000000000",
+      "center": [
+       0,
+       64,
+       0
+      ],
+      "radius": 8
+     },
+     {
+      "id": "ffffffff-0000-0000-0000-000000000000",
+      "center": [
+       0,
+       64,
+       0
+      ],
+      "radius": 2
+     }
+    ]
+   },
+   {
+    "name": "equal volume: lower canonical string wins (not UUID.compareTo)",
+    "position": [
+     1,
+     64,
+     0
+    ],
+    "winner": "7fffffff-0000-0000-0000-000000000000",
+    "fields": [
+     {
+      "id": "80000000-0000-0000-0000-000000000000",
+      "center": [
+       0,
+       64,
+       0
+      ],
+      "radius": 4
+     },
+     {
+      "id": "7fffffff-0000-0000-0000-000000000000",
+      "center": [
+       2,
+       64,
+       0
+      ],
+      "radius": 4
+     }
+    ]
+   },
+   {
+    "name": "outside every field",
+    "position": [
+     100,
+     64,
+     100
+    ],
+    "winner": null,
+    "fields": [
+     {
+      "id": "7fffffff-0000-0000-0000-000000000000",
+      "center": [
+       0,
+       64,
+       0
+      ],
+      "radius": 16
+     }
+    ]
+   },
+   {
+    "name": "boundary is inclusive",
+    "position": [
+     8,
+     72,
+     -8
+    ],
+    "winner": "80000000-0000-0000-0000-000000000000",
+    "fields": [
+     {
+      "id": "80000000-0000-0000-0000-000000000000",
+      "center": [
+       0,
+       64,
+       0
+      ],
+      "radius": 8
+     }
+    ]
+   }
+  ],
+  "upkeep": [
+   [
+    2,
+    9
+   ],
+   [
+    8,
+    21
+   ],
+   [
+    16,
+    37
+   ]
+  ]
+ },
+ "authority": [
+  {
+   "actor": "operator",
+   "action": "CONFIGURE",
+   "station": {
+    "owner_build_access": false
+   },
+   "allowed": true
+  },
+  {
+   "actor": "operator",
+   "action": "OPERATE",
+   "allowed": true
+  },
+  {
+   "actor": "device_owner",
+   "action": "CONFIGURE",
+   "allowed": true
+  },
+  {
+   "actor": "stranger",
+   "action": "VIEW",
+   "allowed": true
+  },
+  {
+   "actor": "stranger",
+   "action": "OPERATE",
+   "allowed": false
+  },
+  {
+   "actor": "device_owner",
+   "action": "OPERATE",
+   "station": {
+    "owner_build_access": true
+   },
+   "allowed": true
+  },
+  {
+   "actor": "device_owner",
+   "action": "OPERATE",
+   "station": {
+    "owner_build_access": false
+   },
+   "allowed": false
+  },
+  {
+   "actor": "device_owner",
+   "action": "VIEW",
+   "station": {
+    "owner_build_access": false
+   },
+   "allowed": true
+  },
+  {
+   "actor": "station_owner",
+   "action": "CONFIGURE",
+   "station": {
+    "owner_build_access": true
+   },
+   "allowed": true
+  },
+  {
+   "actor": "station_member",
+   "action": "VIEW",
+   "station": {
+    "owner_build_access": true
+   },
+   "allowed": true
+  },
+  {
+   "actor": "station_member",
+   "action": "OPERATE",
+   "station": {
+    "owner_build_access": true
+   },
+   "allowed": false
+  },
+  {
+   "actor": "stranger",
+   "action": "VIEW",
+   "station": {
+    "owner_build_access": true
+   },
+   "allowed": false
+  }
+ ],
+ "protection": [
+  {
+   "failing": [],
+   "expected": "ALLOWED"
+  },
+  {
+   "failing": [
+    "zone"
+   ],
+   "expected": "TARGET_PROTECTED"
+  },
+  {
+   "failing": [
+    "bounds",
+    "zone"
+   ],
+   "expected": "TARGET_OUT_OF_BOUNDS"
+  },
+  {
+   "failing": [
+    "loaded",
+    "bounds"
+   ],
+   "expected": "TARGET_UNLOADED"
+  },
+  {
+   "failing": [
+    "api_event",
+    "break_event"
+   ],
+   "expected": "TARGET_PROTECTED"
+  },
+  {
+   "failing": [
+    "break_event"
+   ],
+   "expected": "TARGET_PROTECTED"
+  }
+ ],
+ "bind": [
+  {
+   "name": "all rules pass",
+   "facts": {},
+   "expected": "BOUND"
+  },
+  {
+   "name": "missing station before authority",
+   "facts": {
+    "station_exists": false,
+    "actor_owner_or_operator": false
+   },
+   "expected": "STATION_MISSING"
+  },
+  {
+   "name": "authority before body",
+   "facts": {
+    "actor_owner_or_operator": false,
+    "body_is_orbit": false
+   },
+   "expected": "UNAUTHORIZED"
+  },
+  {
+   "name": "orbit before warp",
+   "facts": {
+    "body_is_orbit": false,
+    "no_warp_pending": false
+   },
+   "expected": "NOT_CURRENT_ORBIT"
+  },
+  {
+   "name": "anchor activity before ownership",
+   "facts": {
+    "anchor_active": false,
+    "anchor_owned": false
+   },
+   "expected": "ANCHOR_UNAVAILABLE"
+  },
+  {
+   "name": "ownership before cardinality",
+   "facts": {
+    "anchor_owned": false,
+    "station_unbound": false
+   },
+   "expected": "ANCHOR_FOREIGN"
+  },
+  {
+   "name": "cardinality before warp",
+   "facts": {
+    "column_unbound": false,
+    "no_warp_pending": false
+   },
+   "expected": "COLUMN_BOUND"
+  },
+  {
+   "name": "pending warp",
+   "facts": {
+    "no_warp_pending": false
+   },
+   "expected": "WARP_PENDING"
+  },
+  {
+   "name": "root full",
+   "facts": {
+    "root_admission": false
+   },
+   "expected": "ROOT_FULL"
+  }
+ ]
+}
