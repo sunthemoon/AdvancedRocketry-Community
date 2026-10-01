@@ -2,7 +2,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.service;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.Tombstone;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,7 @@ import net.minecraft.world.level.ChunkPos;
  * chunk-load threads read them safely; only the server thread changes them.
  */
 final class EndpointRegistrations {
-    private volatile Map<EndgameService.ChunkKey, Map<UUID, Candidate>> byChunk = Map.of();
+    private volatile Map<EndpointChunkIndex.ChunkKey, Map<UUID, Candidate>> byChunk = Map.of();
     private final Queue<Request> requests = new ConcurrentLinkedQueue<>();
     private final Map<UUID, EndgameCode> results = new HashMap<>();
 
@@ -40,9 +39,9 @@ final class EndpointRegistrations {
             Objects.requireNonNull(level, "level");
         }
 
-        EndgameService.ChunkKey chunk() {
+        EndpointChunkIndex.ChunkKey chunk() {
             BlockPos block = BlockPos.of(pos);
-            return EndgameService.ChunkKey.exact(level, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4));
+            return EndpointChunkIndex.ChunkKey.exact(level, ChunkPos.asLong(block.getX() >> 4, block.getZ() >> 4));
         }
     }
 
@@ -57,7 +56,7 @@ final class EndpointRegistrations {
         if (candidate.equals(current.get(candidate.id()))) {
             return;
         }
-        Map<EndgameService.ChunkKey, Map<UUID, Candidate>> next = new HashMap<>(byChunk);
+        Map<EndpointChunkIndex.ChunkKey, Map<UUID, Candidate>> next = new HashMap<>(byChunk);
         Map<UUID, Candidate> chunk = new HashMap<>(current);
         chunk.put(candidate.id(), candidate);
         next.put(candidate.chunk(), Map.copyOf(chunk));
@@ -71,9 +70,9 @@ final class EndpointRegistrations {
     }
 
     private void stopWaiting(UUID id) {
-        Map<EndgameService.ChunkKey, Map<UUID, Candidate>> next = new HashMap<>();
+        Map<EndpointChunkIndex.ChunkKey, Map<UUID, Candidate>> next = new HashMap<>();
         boolean changed = false;
-        for (Map.Entry<EndgameService.ChunkKey, Map<UUID, Candidate>> entry : byChunk.entrySet()) {
+        for (Map.Entry<EndpointChunkIndex.ChunkKey, Map<UUID, Candidate>> entry : byChunk.entrySet()) {
             if (entry.getValue().containsKey(id)) {
                 changed = true;
                 Map<UUID, Candidate> chunk = new HashMap<>(entry.getValue());
@@ -90,12 +89,12 @@ final class EndpointRegistrations {
         }
     }
 
-    boolean watches(EndgameService.ChunkKey key) {
+    boolean watches(EndpointChunkIndex.ChunkKey key) {
         return byChunk.containsKey(key);
     }
 
     /** Any thread: queues the candidates this chunk tag shows persisted, with the tag's freeze flag. */
-    void observe(EndgameService.ChunkKey key, CompoundTag tag, Set<String> endgameTypes) {
+    void observe(EndpointChunkIndex.ChunkKey key, CompoundTag tag, Set<String> endgameTypes) {
         Map<UUID, Candidate> candidates = byChunk.get(key);
         if (candidates == null) {
             return;

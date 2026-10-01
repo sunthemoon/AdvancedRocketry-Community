@@ -116,7 +116,7 @@ class EndgameServiceTest {
         service.coalesced(root -> root.remove(a));
         service.coalesced(root -> root.markMissing(b));
         assertIndexMatchesARebuild(service);
-        assertFalse(service.indexForTest().containsKey(EndgameService.ChunkKey.exact(LEVEL,
+        assertFalse(service.indexForTest().containsKey(EndpointChunkIndex.ChunkKey.exact(LEVEL,
                 new ChunkPos(POS.offset(64, 0, 0)).toLong())), "a MISSING record is not indexed");
         service.coalesced(root -> root.settle(a, EndgameService::pinned));
         service.barrier(root -> root.forget(b, OWNER, false, EndgameService::pinned));
@@ -125,8 +125,8 @@ class EndgameServiceTest {
         assertIndexMatchesARebuild(service);
         service.coalesced(root -> root.evictOwner(OWNER, EndgameService::pinned));
         assertIndexMatchesARebuild(service);
-        assertEquals(Set.of(d), service.indexForTest().get(EndgameService.ChunkKey.exact(LEVEL, CHUNK)));
-        assertEquals(Set.of(c), service.indexForTest().get(EndgameService.ChunkKey.exact(nether, CHUNK)));
+        assertEquals(Set.of(d), service.indexForTest().get(EndpointChunkIndex.ChunkKey.exact(LEVEL, CHUNK)));
+        assertEquals(Set.of(c), service.indexForTest().get(EndpointChunkIndex.ChunkKey.exact(nether, CHUNK)));
         assertEquals(2, service.indexForTest().size());
     }
 
