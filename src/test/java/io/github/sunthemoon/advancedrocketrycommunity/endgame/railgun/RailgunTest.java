@@ -126,6 +126,12 @@ final class RailgunTest {
                 RailgunRoute.quote(here, near, 100), "same Level and body");
         assertEquals(RailgunRoute.RouteClass.ORBITAL, RailgunRoute.quote(here, station, 100).routeClass(),
                 "a station orbiting the same body is another Level");
+        RailgunRoute.Place moonStation = place(SPACE, new BlockPos(5_064, 128, 0), MOON, SOL);
+        assertEquals(new RailgunRoute.Quote(RailgunRoute.RouteClass.ORBITAL, 250_000, 600),
+                RailgunRoute.quote(station, moonStation, 100), "two stations of one Level orbiting other bodies");
+        assertEquals(new RailgunRoute.Quote(RailgunRoute.RouteClass.LOCAL, 25_640, 21),
+                RailgunRoute.quote(station, place(SPACE, new BlockPos(5_064, 128, 0), EARTH, SOL), 100),
+                "two places of one Level and body, 64 blocks apart");
         assertEquals(new RailgunRoute.Quote(RailgunRoute.RouteClass.ORBITAL, 250_000, 600),
                 RailgunRoute.quote(here, moon, 100));
     }
