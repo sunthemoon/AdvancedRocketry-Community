@@ -172,6 +172,15 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.PAUSED_FULL, "Paused: the energy buffer is full", "暂停：能量缓存已满");
         put(codes, EndgameCode.NO_FUEL, "Waiting for fuel", "等待燃料");
         put(codes, EndgameCode.NO_SINGULARITY, "The station does not orbit a singularity", "空间站未环绕奇点");
+        put(codes, EndgameCode.TRANSIT_LIMIT, "Too much cargo in transit; wait for deliveries", "运输中的货物过多，请等待送达");
+        put(codes, EndgameCode.OUTBOX_FULL, "Four launches wait for registration", "已有四次发射等待登记");
+        put(codes, EndgameCode.OUTBOX_QUARANTINED, "Escrowed cargo no longer loads; an operator must purge it",
+                "托管货物已无法读取，需由管理员清除");
+        put(codes, EndgameCode.PAYLOAD_TOO_LARGE, "A stack is too large to ship", "物品堆过大，无法运送");
+        put(codes, EndgameCode.DESTINATION_MISSING, "The destination is gone; redirect the cargo", "目的地已不存在，请改投货物");
+        put(codes, EndgameCode.TRANSFER_NOT_FOUND, "No such transfer", "没有该运输记录");
+        put(codes, EndgameCode.DESTINATION_ACTIVE, "The destination still exists", "目的地仍然存在");
+        put(codes, EndgameCode.ROUTE_REFUSED, "That endpoint cannot receive this cargo", "该端点不能接收此货物");
         return codes;
     }
 

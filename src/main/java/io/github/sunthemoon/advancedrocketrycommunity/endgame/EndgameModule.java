@@ -24,7 +24,8 @@ public final class EndgameModule {
                                          LaserDrillTableReloadListener.Manager laserTables,
                                          BlackHoleDataReloadListener.Manager blackHoleData) {
         EndgameNetwork.install(new EndgameNetwork());
-        EndgameService service = new EndgameService(CommonConfig::endgameSettings, EndgameModule::endgameBlockEntityIds);
+        EndgameService service = new EndgameService(CommonConfig::endgameSettings, EndgameModule::endgameBlockEntityIds,
+                CommonConfig::transitLimits);
         EndgameRuntime.install(service);
         EndgameDevices devices = new EndgameDevices(CommonConfig::endgameSettings, CommonConfig::laserDrillSettings,
                 CommonConfig::gravityFieldLimits, CommonConfig::blackHoleSettings, patterns, celestial, laserTables,

@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFie
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -163,6 +164,12 @@ public final class CommonConfig {
             "endgame.endpointsPerOwner", "Registered endgame endpoints per owner.", EndgameLimits.MAX_ENDPOINTS_PER_OWNER);
     public static final ForgeConfigSpec.IntValue ENDGAME_ZONES = limit(
             "endgame.zones", "Protected zones on the server (ADR-054 section 6).", EndgameLimits.MAX_ZONES);
+    public static final ForgeConfigSpec.IntValue ENDGAME_TRANSIT_RECORDS = limit(
+            "endgame.transitRecords", "Transit records on the server, stubs and known outbox entries included "
+                    + "(ADR-054 section 11).", EndgameLimits.MAX_TRANSIT_RECORDS);
+    public static final ForgeConfigSpec.IntValue ENDGAME_TRANSIT_PER_OWNER = limit(
+            "endgame.transitPerOwner", "Live transit records and outbox entries per owner.",
+            TransitLimits.MAX_PER_OWNER);
 
     // ADR-055 section 4: laser drill budgets.
     public static final ForgeConfigSpec.IntValue LASER_DRILL_ENERGY_PERCENT = BUILDER
@@ -230,6 +237,14 @@ public final class CommonConfig {
                 ENDGAME_BLACK_HOLE_GENERATOR.get(), ENDGAME_GRAVITY_FIELD.get(), ENDGAME_SPACE_ELEVATOR.get(),
                 ENDGAME_INTENT_INTERVAL_TICKS.get(), ENDGAME_SELECTION_INTERVAL_TICKS.get(),
                 ENDGAME_ENDPOINTS_GLOBAL.get(), ENDGAME_ENDPOINTS_PER_OWNER.get(), ENDGAME_ZONES.get());
+    }
+
+    /** ADR-054 section 11 transit limits; the maxima until the COMMON config is loaded. */
+    public static TransitLimits transitLimits() {
+        if (!SPEC.isLoaded()) {
+            return TransitLimits.DEFAULTS;
+        }
+        return new TransitLimits(ENDGAME_TRANSIT_RECORDS.get(), ENDGAME_TRANSIT_PER_OWNER.get());
     }
 
     /** ADR-057 black-hole generator settings; the defaults until the COMMON config is loaded. */

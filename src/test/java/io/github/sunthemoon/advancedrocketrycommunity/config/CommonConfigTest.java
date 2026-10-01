@@ -38,7 +38,7 @@ class CommonConfigTest {
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values.
-        assertEquals(48, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(50, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -53,6 +53,8 @@ class CommonConfigTest {
         assertRangeAndDefault("endgame.selectionIntervalTicks", CommonConfig.ENDGAME_SELECTION_INTERVAL_TICKS, 2, 200,
                 2);
         assertRange("endgame.endpointsGlobal", CommonConfig.ENDGAME_ENDPOINTS_GLOBAL, 1, 2048);
+        assertRange("endgame.transitRecords", CommonConfig.ENDGAME_TRANSIT_RECORDS, 1, 256);
+        assertRange("endgame.transitPerOwner", CommonConfig.ENDGAME_TRANSIT_PER_OWNER, 1, 32);
         assertRange("endgame.endpointsPerOwner", CommonConfig.ENDGAME_ENDPOINTS_PER_OWNER, 1, 64);
         assertRange("endgame.zones", CommonConfig.ENDGAME_ZONES, 1, 256);
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings.DEFAULTS,

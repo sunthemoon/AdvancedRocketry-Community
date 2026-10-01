@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.Protect
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.TransitLedger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -259,7 +260,11 @@ public final class EndgameCommands {
             return reply(context, "endpoint_retire", EndgameCode.ENDPOINT_CHUNK_LOADED, id, "");
         }
         return changeWithEvictions(context, "endpoint_retire", id,
-                root -> root.retireLost(id, EndgameService::pinned));
+                root -> {
+                    // Retirement without live state (review R3-M1): claims return, stubs paid here are pruned.
+                    TransitLedger.retireWithoutLiveState(root, id, true);
+                    return root.retireLost(id, EndgameService::pinned);
+                });
     }
 
     /**

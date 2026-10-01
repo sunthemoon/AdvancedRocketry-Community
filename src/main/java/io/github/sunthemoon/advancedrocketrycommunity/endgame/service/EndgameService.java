@@ -9,6 +9,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.Tombstone;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTags;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +50,7 @@ public final class EndgameService {
     private final Map<UUID, Long> readBackAt = new HashMap<>();
     private final EndpointRegistrations registrations = new EndpointRegistrations();
     private final EndpointChunkIndex index = new EndpointChunkIndex();
+    private final TransitLedger transits;
     private long nextHousekeeping;
     private MinecraftServer server;
     private EndgameSavedData data;
@@ -56,9 +59,20 @@ public final class EndgameService {
     private boolean writeFailureLogged;
 
     public EndgameService(Supplier<EndgameSettings> settings, Supplier<Set<String>> endgameTypes) {
+        this(settings, endgameTypes, () -> TransitLimits.DEFAULTS);
+    }
+
+    public EndgameService(Supplier<EndgameSettings> settings, Supplier<Set<String>> endgameTypes,
+                          Supplier<TransitLimits> transitLimits) {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.endgameTypes = Objects.requireNonNull(endgameTypes, "endgameTypes");
         this.audit = new EndgameAudit(AdvancedRocketryCommunity.LOGGER::info);
+        this.transits = new TransitLedger(this, transitLimits);
+    }
+
+    /** The transit ledger of section 11. */
+    public TransitLedger transits() {
+        return transits;
     }
 
     // ---- Lifecycle -------------------------------------------------------------------------------------------
@@ -102,6 +116,7 @@ public final class EndgameService {
         absentSince.clear();
         readBackAt.clear();
         registrations.clear();
+        transits.clear();
         index.clear();
         nextHousekeeping = 0L;
         audit.clear();
@@ -159,6 +174,9 @@ public final class EndgameService {
         try {
             data.flush(server);
             writeFailureLogged = false;
+            if (!data.isDirty()) {
+                transits.written();
+            }
         } catch (RuntimeException exception) {
             if (!writeFailureLogged) {
                 AdvancedRocketryCommunity.LOGGER.error("ARCE_ENDGAME_ROOT_WRITE_FAILED; retained dirty state", exception);
@@ -193,7 +211,8 @@ public final class EndgameService {
         if (!index.watches(key)) {
             return;
         }
-        observations.add(new Observation(key, EndpointObservations.scan(tag, endgameTypes.get()), load));
+        observations.add(new Observation(key, EndpointObservations.scan(tag, endgameTypes.get()),
+                EndpointObservations.transit(tag, endgameTypes.get()), load));
     }
 
     // ---- Endpoint registration and removal (sections 9 and 9.1) ----------------------------------------------
@@ -283,11 +302,17 @@ public final class EndgameService {
         drainObservations(now);
         settleAgedAbsences(now);
         housekeep(now);
+        ledgerPasses(now);
         if (data.flushPending() && now - lastCoalescedFlush >= EndgameLimits.COALESCED_FLUSH_INTERVAL_TICKS) {
             lastCoalescedFlush = now;
             flush();
         }
         audit.summarizeIfDue(now);
+    }
+
+    /** Section 7: the ledger passes run in the same END handler, after observations and settlements. */
+    private void ledgerPasses(long now) {
+        transits.tick(now);
     }
 
     private void drainObservations(long now) {
@@ -311,6 +336,7 @@ public final class EndgameService {
                     absentSince.putIfAbsent(id, now);
                 }
             }
+            transits.observed(observation.key(), observation.scan(), observation.transit(), now);
         }
     }
 
@@ -326,7 +352,8 @@ public final class EndgameService {
             EndgameRoot root = data.view();
             Optional<EndpointRecord> record = root.endpoint(id);
             if (record.isPresent() && record.get().state() == EndpointRecord.State.ACTIVE) {
-                coalesced(r -> r.markMissing(id));
+                // Retirement without live state (review R3-M1): its unacknowledged claims return to ARRIVED.
+                coalesced(r -> r.markMissing(id) | TransitLedger.retireWithoutLiveState(r, id, false) > 0);
                 audit.line(now, "endgame", "endpoint_missing", EndgameCode.ENDPOINT_RETIRED.name(), id,
                         record.get().owner(), null, "kind=" + record.get().kind());
             } else if (root.tombstone(id).orElse(null) instanceof Tombstone.Young young) {
@@ -424,7 +451,7 @@ public final class EndgameService {
                 .append(" settled_tombstones=").append(root.settledTombstones().size())
                 .append(" zones=").append(root.zones().size())
                 .append(" awaiting_registration=").append(registrations.waiting())
-                .append("; transits=0 stubs=0 ride_tickets=0")
+                .append("; ").append(transits.status()).append(" ride_tickets=0")
                 .append("; audit_ring=").append(audit.ringSize()).toString();
     }
 
@@ -434,7 +461,8 @@ public final class EndgameService {
         }
     }
 
-    record Observation(EndpointChunkIndex.ChunkKey key, Map<Long, Optional<UUID>> scan, boolean load) {
+    record Observation(EndpointChunkIndex.ChunkKey key, Map<Long, Optional<UUID>> scan,
+                       Map<UUID, TransitTags.Shown> transit, boolean load) {
     }
 
     /** For commands and tests: the Level key hash a settled tombstone stores. */
