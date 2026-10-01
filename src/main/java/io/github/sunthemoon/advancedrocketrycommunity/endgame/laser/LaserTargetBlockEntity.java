@@ -358,11 +358,17 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
 
     /**
      * Review C11R-M2: a marker an operator gave to another owner serves none of the old owner's links; the new
-     * owner's drill links it again.
+     * owner's drill links it again. A marker not registered yet waits again under its new owner in the same tick, so
+     * no later save registers it for the old owner, and a request queued from an earlier save no longer matches the
+     * waiting candidate (review C11R2-L1).
      */
     @Override
     protected void ownerChanged(UUID previous) {
         reset(null);
+        if (level instanceof ServerLevel server && !frozen && deviceId().isPresent() && ownerId().isPresent()) {
+            EndgameRuntime.operational().ifPresent(service -> service.awaitRegistration(deviceId().get(), KIND,
+                    ownerId().get(), server.dimension().location(), worldPosition.asLong()));
+        }
     }
 
     public ItemStackHandler buffer() {

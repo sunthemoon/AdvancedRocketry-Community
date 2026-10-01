@@ -358,6 +358,46 @@ public final class LaserTargetGameTests {
     }
 
     /**
+     * Review C11R2-L1: {@code device owner} on a marker that is not registered yet; a save right after the command
+     * registers it for the new owner.
+     */
+    @GameTest(template = "empty", batch = "endgame_laser_target_owner_waiting", timeoutTicks = 200)
+    public static void anOwnerChangeBeforeRegistrationRegistersTheNewOwner(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
+        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
+        helper.assertTrue(target.assignOwner(UUID.randomUUID()), "The fixture owner was not assigned");
+        UUID id = target.deviceId().orElseThrow();
+        ServerPlayer newOwner = ConnectedTestPlayers.join(server, UUID.randomUUID(), "waitingNewOwner", level,
+                pos.east(3), new ArrayList<>());
+        helper.startSequence()
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(root().endpoint(id).isEmpty(), "Registered before the owner change");
+                    int result;
+                    try {
+                        result = server.getCommands().getDispatcher().execute("arce endgame device owner "
+                                + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " @a[name=waitingNewOwner]",
+                                server.createCommandSourceStack().withSuppressedOutput());
+                    } catch (CommandSyntaxException exception) {
+                        result = -1;
+                    }
+                    helper.assertTrue(result == 1, "The owner command failed: " + result);
+                    // The save comes before the marker's next status check.
+                    chunkSaved(level, pos);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(root().endpoint(id).isPresent(), "Not registered"))
+                .thenExecute(() -> {
+                    boolean newOwnerRecord = root().endpoint(id).orElseThrow().owner().equals(newOwner.getUUID());
+                    server.getPlayerList().remove(newOwner);
+                    level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                    helper.assertTrue(newOwnerRecord, "The record registered for the old owner");
+                })
+                .thenSucceed();
+    }
+
+    /**
      * Test fixture: the event a chunk save posts, with the tag it would write (vanilla throttles real saves of one
      * chunk to one per 10 s of wall time, which a GameTest outruns).
      */
