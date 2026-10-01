@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 51033,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-api.jar",
+        "sha256": "24b6527e452b2f030f370b2de485122c9fea99a9e51bebc664a131333b5218ab"
+      },
+      {
+        "bytes": 1788059,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-sources.jar",
+        "sha256": "bb0a1fd087429271173b451d7a2f8723e2ea7edb53b10a7f944bd62d2df4a78a"
+      },
+      {
+        "bytes": 3936235,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "sha256": "81e83339402c095c7966b4b5b9daca78949f3ba1ca1515d6625e93f2c7fd2e42"
+      }
+    ]
+  },
+  "base_commit": "8d52d7f",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 239,
+    "tests": 1295
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "7807a97ca114673f67efb9a1766c2586772d50388540bfd27e92c05aa1bf3e4a",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/black_hole_generator.json": "9f8ee19360de000c35d6227a04df972be51f3da96a10fa64630c079385b8e0ef",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/black_hole_generator.json": "9c96b384a17997edc391bacb423cdafe6b20b76ff19a295216a00a7e9aaf6fdb",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/black_hole_generator.json": "7b725aec9e7e233c0155568cb78c22afcb3459de8e9941c4151babb941b9d46f",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/en_us.json": "c18f68e0813129e8b2a2d7ee6b4dd8810a8c69d901246a32b24e0a4147bdba57",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/zh_cn.json": "0890ded859214cb5b141765f85e5366507570e5ce99cc6b6857093295b7a37fe",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/advancements/recipes/misc/black_hole_generator.json": "4539beb696d1cfd1b1889088d5daee543c24324fb45647a9bc2f986b9909c152",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/black_hole_fuels/default.json": "2fa8e1c0e7253100944a263171f9a5d0c4ce3deff4fd4acb12e70d9c1b9b67e6",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/celestial_bodies/cygnus_x1.json": "91c545906ca6ce2c9c383c78ecc2d6799a3f84ee5d0f8baa71b00f9d21df5090",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/loot_tables/blocks/black_hole_generator.json": "98cb112800305fcc39e848bdc7ac8b969c586ebaffc84e7895731b6bf370e886",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/recipes/black_hole_generator.json": "27af0f0fba9149bbb13296e22cc9552f36c473e1568057e0d410adde1c6009e8",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/singularities/cygnus_x1.json": "e429096582cfa7924773c8ad3c5b2ce0a11462db4d64f8136f8fda51985f3a4e",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/mineable/pickaxe.json": "cea6be61c2a82068d133daa9be7cd4f4a65a63368c3b2fa755ac27dd9ecd0ace",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/needs_iron_tool.json": "cea6be61c2a82068d133daa9be7cd4f4a65a63368c3b2fa755ac27dd9ecd0ace",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "f52b7297943c80691b2aec2c578db0ed1bab154e303b8558d1f84364e689a94f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/content/SingularityContent.java": "8ccc61661cfb62ad2f4a92d398ab4f3322b2f90674eb88a14c6f92cf5a5db44e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/AccretionDiscRenderer.java": "5035a16be11def1dac3426961dcbc88aca0eead59d11b88d65ce1e56e5f25025",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/BlackHoleGeneratorScreen.java": "ea04146bd64a4c08104215854a28b16b78426f5cb5d4310e8c0ef5893b5ae83c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java": "e0ee26075134ce49fa8d5bcdc46e4d5be6e0a8bb4bbaa3f885bfb87b32069ca8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java": "326d5b976a9a66bebdfacb9c1637d17b553973db534fdf541820d86a07b32bd2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java": "e1b1999a0e9a37d57dae64f32d645efbdeb0a52a551f284c4db9e88265dc05f8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170BlackHoleProvider.java": "3b9adc0b5c0bf782d98c613eea9cf6e89e14872ed6ae96e3534028dd5c851e80",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java": "2117a1ec6b3234e1bf0e1ff9efefae6de95e694a854e3cb7b49369c11bddb423",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java": "43b145ac1587384be247fe1845493c7d6464f7538c876d35eea89d0cddb35a97",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java": "ceace101aa13161643a843b9a93851f1c3157cd8bb36f2251502cc4d963c5592",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleBurn.java": "a57f062a4d71305803c448230587abbfe6566e0566fb8c968243f01ef270ee09",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleCodec.java": "fb93b6959eeed390c76fd80b19786613b3eca5c28cff262e5f157b4fcd2093c4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleData.java": "ec06e5c04cb0ff08d886efceeae833d2ba37813a2dd644806b2d984d147612e3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleDataReloadListener.java": "aa71de1283b024488c9c428254314946e5d7dba5e4002bbecc42b915c1f1d1f7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleFuelTable.java": "53c23f08fbfd833c9742c719830696a759d1c1f329fe34328ca96136daa7a8ca",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleGeneratorBlock.java": "0d476a0b632246a0dd40cf76429b39e91d0494007b5f12e3eb353296905a3e6c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleGeneratorBlockEntity.java": "e71716937be09fe393ea3d8917be064edefc68b3b1a8fc21a99815799a334987",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleGeneratorMenu.java": "9ab1c142f7ad755d7ffd328bab54bbda1d8e093ab70e5d5bf22343322838bfc3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleSettings.java": "a4c0cf107facdb524bc5d7a4fc93756433c580e9cc617f809409bdb355d6f146",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/SingularityProfile.java": "1446c138dbf4f5de969898a7c80a7aef83005479a0b7e73406dabdfe60887ad3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevices.java": "c1ab76a95e959edf605797b26d5ea9f2f0209049a87607863550401ae704d287",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameCode.java": "0d3821a1d2d547ac2debbbeea6d98ea15989cfdd8db58beafe90cfcd8b0c0cbc",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BlackHoleGeneratorGameTests.java": "5e9f45bf5eee5f5936802f20f3b908279fc76fdbd378087d79edb583d51d0094",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.java": "c09d91eb40bb74e6829d8a8b0ef6558e0fb064a9ff893d9f0437db0bb5560ce4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java": "ee740c2c5dcf5dc07a568a946f57607bc9d97e7b550507cbd644e5fd832459df",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java": "ebe9c02809548c6b7e61eff9841c1ae47312a2158c0a978f7b7e5499ebcc176f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java": "31e6581f01503a80d221d7d59247a37aa32167d277319523c7fed49e67a9b4b4",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java": "fbc255356a625f10803689da7768ada6b57a1366248dea2766e906f48f2b0143",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java": "e8251aea8d78dbe3294610950dcab739b1fd73b5db7fbafe276b5771581b2fff",
+    "src/main/resources/data/advancedrocketrycommunity/machine_patterns/black_hole_generator.json": "22e99ecebcb78295151d5b3cf9a3c56b2e2f53dbf20b89699210d229a41f6622",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java": "f86acea5309b1c5413ee1057479bed55fe038f542e7b24b3088f8c3acc7b4cd8",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleTest.java": "0821238a10b99347cc68ccf0dfc4b9ee5db3a996734d5ba83c928dcd7c78afc6"
+  }
+}
