@@ -1,0 +1,38 @@
+{
+  "base_commit": "ab10fb53a580e53a9a1c24097a487f2a7c54ad52",
+  "artifact_sha256": "185701d7da7356a9bdb4d49daa0e18d99f5cf2c4c9b05cc7f8c3ff3704358494",
+  "environment": "packaged offline loopback, no real clients",
+  "result": "PASS_SCOPED_S1",
+  "phases": [
+    {
+      "phase": "repair",
+      "exit_code": 0,
+      "strict_log_findings": [],
+      "expected_repair_diagnostics": [
+        "[17:58:19] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1",
+        "[17:58:21] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1"
+      ]
+    },
+    {
+      "phase": "restart",
+      "exit_code": 0,
+      "strict_log_findings": [],
+      "expected_repair_diagnostics": []
+    },
+    {
+      "phase": "blocked",
+      "exit_code": 0,
+      "original_file_sha256": "22e4690eea3b801e3dc13dbb0dae41230431b25c85160570ec03a0e7a41224e2",
+      "strict_log_findings": [
+        "[17:58:54] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-2000] Beta world data check blocked startup: advancedrocketrycommunity_satellite_missions failed semantic validation. Keep the world stopped and restore the newest complete migration backup if recovery is required.",
+        "[17:58:54] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: advancedrocketrycommunity_satellite_missions failed semantic validation",
+        "[17:58:54] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception",
+        "[17:58:55] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID 65fbc74b-d257-4880-b509-7bd1757e6f06",
+        "[17:58:55] [Server thread/ERROR] [minecraft/MinecraftServer]: This crash report has been saved to: D:\\GitHub\\arce-v160-recovery-fix\\build\\f01-native-attempt3\\blocked-server\\.\\crash-reports\\crash-2026-10-01_17.58.55-server.txt",
+        "[17:58:55] [Server thread/ERROR] [minecraft/MinecraftServer]: Exception stopping the server"
+      ]
+    }
+  ],
+  "accepted_input_sha256": "ead407f11758e4b6f82a8a47dc7ebeb3dfb8066a21a4067858b0505746b5a15d",
+  "accepted_final_sha256": "3ae6766afbb530e8867731b0ed9b4f7639d0335397deb561cbb6ecdbf944fe93"
+}

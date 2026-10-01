@@ -1,0 +1,26 @@
+{
+  "base_commit": "ab10fb53a580e53a9a1c24097a487f2a7c54ad52",
+  "artifact_sha256": "185701d7da7356a9bdb4d49daa0e18d99f5cf2c4c9b05cc7f8c3ff3704358494",
+  "environment": "packaged offline loopback, no real clients",
+  "result": "FAIL",
+  "phases": [
+    {
+      "phase": "repair",
+      "exit_code": 0,
+      "strict_log_findings": [],
+      "expected_repair_diagnostics": [
+        "[17:56:16] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1",
+        "[17:56:19] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1"
+      ]
+    },
+    {
+      "phase": "restart",
+      "exit_code": 0,
+      "strict_log_findings": [],
+      "expected_repair_diagnostics": []
+    }
+  ],
+  "accepted_input_sha256": "ead407f11758e4b6f82a8a47dc7ebeb3dfb8066a21a4067858b0505746b5a15d",
+  "accepted_final_sha256": "3ae6766afbb530e8867731b0ed9b4f7639d0335397deb561cbb6ecdbf944fe93",
+  "error": "AssertionError: Over-bound repaired root unexpectedly started"
+}

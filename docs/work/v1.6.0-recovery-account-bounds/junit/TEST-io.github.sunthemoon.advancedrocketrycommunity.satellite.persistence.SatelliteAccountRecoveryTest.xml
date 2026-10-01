@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-01T09:51:05" hostname="DESKTOP-8J2KSNF" time="2.177">
+  <properties/>
+  <testcase name="anInputOneByteAboveTheRootBoundIsPreserved()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.428"/>
+  <testcase name="anInputAtTheExactRootByteBoundCanRepairAndRoundTrip()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.216"/>
+  <testcase name="[1] 4095, 1, 1" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.286"/>
+  <testcase name="[2] 4095, 1, 3" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.268"/>
+  <testcase name="[3] 4094, 2, 2" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.262"/>
+  <testcase name="[1] 4096, 1, 1" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.203"/>
+  <testcase name="[2] 4096, 1, 3" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.184"/>
+  <testcase name="[3] 4095, 2, 2" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.188"/>
+  <testcase name="aFullRootWithExistingOwnerAccountsStillLoads()" classname="io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteAccountRecoveryTest" time="0.138"/>
+  <system-out><![CDATA[[17:51:05] [Test worker/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1
+[17:51:06] [Test worker/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1
+[17:51:06] [Test worker/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=1
+[17:51:06] [Test worker/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RESTORE quarantined_missions=0 recovery_required=0 quarantined_instances=0 accounts_added=2
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

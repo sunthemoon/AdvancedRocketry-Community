@@ -1,0 +1,5 @@
+# Preserve this packet's captured evidence bytes and checksum bindings.
+*.log -text -whitespace
+*.diff -text -whitespace
+*.json -text -whitespace
+*.xml -text -whitespace

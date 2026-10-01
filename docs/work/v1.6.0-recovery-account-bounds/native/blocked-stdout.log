@@ -1,0 +1,146 @@
+2026-10-01 17:58:43,479 main WARN Advanced terminal features are not available in this environment
+[17:58:43] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[17:58:43] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.7 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+[17:58:43] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\config\fml.toml is not correct. Correcting
+[17:58:43] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[17:58:43] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[17:58:43] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[17:58:43] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[17:58:43] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[17:58:43] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/D:/GitHub/arce-v160-recovery-fix/build/f01-native-attempt3/blocked-server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[17:58:44] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\libraries\net\minecraftforge\fmlcore\1.20.1-47.4.10\fmlcore-1.20.1-47.4.10.jar is missing mods.toml file
+[17:58:44] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\libraries\net\minecraftforge\javafmllanguage\1.20.1-47.4.10\javafmllanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[17:58:44] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\libraries\net\minecraftforge\lowcodelanguage\1.20.1-47.4.10\lowcodelanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[17:58:44] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\libraries\net\minecraftforge\mclanguage\1.20.1-47.4.10\mclanguage-1.20.1-47.4.10.jar is missing mods.toml file
+[17:58:44] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[17:58:45] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[17:58:50] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
+[17:58:50] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.10 Initialized
+[17:58:50] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\config\advancedrocketrycommunity-common.toml is not correct. Correcting
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key stations was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key stations.warpEnabled was corrected from null to its default, true. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key stations.warpCostInSystem was corrected from null to its default, 2000000. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key stations.warpCostInterstellar was corrected from null to its default, 8000000. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key stations.checkedWriteTicksPer100Stations was corrected from null to its default, 3. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanJobLimit was corrected from null to its default, 4. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanCooldownTicks was corrected from null to its default, 100. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanReadsPerTick was corrected from null to its default, 16384. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.unfinishedMissionsGlobal was corrected from null to its default, 1024. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.unfinishedMissionsPerOwner was corrected from null to its default, 64. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.finishedMissionsPerOwner was corrected from null to its default, 128. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.missionsTotal was corrected from null to its default, 3072. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.satellitesGlobal was corrected from null to its default, 4096. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.satellitesPerOwner was corrected from null to its default, 256. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstancesGlobal was corrected from null to its default, 2048. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstancesPerOwner was corrected from null to its default, 16. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.intentIntervalTicks was corrected from null to its default, 10. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.selectionIntervalTicks was corrected from null to its default, 2. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstanceTtlTicks was corrected from null to its default, 168000. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidMissionTimePercent was corrected from null to its default, 100. 
+[17:58:51] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key satellites.gasMissionTimePercent was corrected from null to its default, 100. 
+[17:58:51] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.6.0-dev initialized
+[17:58:51] [modloading-worker-0/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=absent version=absent
+[17:58:51] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[17:58:52] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: UP_TO_DATE Current: 47.4.10 Target: null
+[17:58:52] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[17:58:52] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/D:/GitHub/arce-v160-recovery-fix/build/f01-native-attempt3/blocked-server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
+[17:58:52] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/D:/GitHub/arce-v160-recovery-fix/build/f01-native-attempt3/blocked-server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
+[17:58:53] [main/INFO] [minecraft/RecipeManager]: Loaded 10 recipes
+[17:58:53] [main/INFO] [minecraft/AdvancementList]: Loaded 1315 advancements
+[17:58:53] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted planetary catalog generation 1 with 8 bodies, 9 routes and 9 anchors
+[17:58:53] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted satellite component catalog with 11 components
+[17:58:53] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted satellite catalog generation 1 with 1 definitions
+[17:58:53] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted resource tables generation 1: 4 asteroid types, 1 gas tables
+[17:58:53] [main/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: Accepted multiblock pattern catalog generation 1 with 2 definitions
+[17:58:54] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[17:58:54] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[17:58:54] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[17:58:54] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[17:58:54] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:59897
+[17:58:54] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using default channel type
+[17:58:54] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[17:58:54] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.
+[17:58:54] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[17:58:54] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set "online-mode" to "true" in the server.properties file.
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file .\world\serverconfig\forge-server.toml is not correct. Correcting
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
+[17:58:54] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[17:58:54] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-2000] Beta world data check blocked startup: advancedrocketrycommunity_satellite_missions failed semantic validation. Keep the world stopped and restore the newest complete migration backup if recovery is required.
+io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: advancedrocketrycommunity_satellite_missions failed semantic validation
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataPayloadValidator.validate(ManagedSavedDataPayloadValidator.java:35) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationService.discoverSources(WorldDataMigrationService.java:123) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationService.migrate(WorldDataMigrationService.java:71) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents.onServerAboutToStart(BetaWorldMigrationEvents.java:21) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at net.minecraftforge.eventbus.EventBus.doCastFilter(EventBus.java:260) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.eventbus.EventBus.lambda$addListener$11(EventBus.java:252) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.eventbus.EventBus.post(EventBus.java:315) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.eventbus.EventBus.post(EventBus.java:296) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.server.ServerLifecycleHooks.handleServerAboutToStart(ServerLifecycleHooks.java:98) ~[forge-1.20.1-47.4.10-universal.jar%23108!/:?] {re:classloading}
+	at net.minecraft.server.dedicated.DedicatedServer.m_7038_(DedicatedServer.java:162) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_130011_(MinecraftServer.java:634) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_206580_(MinecraftServer.java:251) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at java.lang.Thread.run(Thread.java:833) ~[?:?] {}
+[17:58:54] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: advancedrocketrycommunity_satellite_missions failed semantic validation
+	Index: 1
+	Listeners:
+		0: NORMAL
+		1: net.minecraftforge.eventbus.EventBus$$Lambda$3993/0x000000080163ef88@6984bfae
+		2: net.minecraftforge.eventbus.EventBus$$Lambda$3993/0x000000080163ef88@3be7b7f9
+		3: net.minecraftforge.eventbus.EventBus$$Lambda$3993/0x000000080163ef88@28e93895
+		4: net.minecraftforge.eventbus.EventBus$$Lambda$3993/0x000000080163ef88@422b2102
+		5: net.minecraftforge.eventbus.EventBus$$Lambda$3993/0x000000080163ef88@e1e9f26
+		6: net.minecraftforge.eventbus.EventBus$$Lambda$3993/0x000000080163ef88@8c0b963
+io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: advancedrocketrycommunity_satellite_missions failed semantic validation
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.6.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataPayloadValidator.validate(ManagedSavedDataPayloadValidator.java:35)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.6.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationService.discoverSources(WorldDataMigrationService.java:123)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.6.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationService.migrate(WorldDataMigrationService.java:71)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.6.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents.onServerAboutToStart(BetaWorldMigrationEvents.java:21)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.doCastFilter(EventBus.java:260)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.lambda$addListener$11(EventBus.java:252)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.post(EventBus.java:315)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.post(EventBus.java:296)
+	at TRANSFORMER/forge@47.4.10/net.minecraftforge.server.ServerLifecycleHooks.handleServerAboutToStart(ServerLifecycleHooks.java:98)
+	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.dedicated.DedicatedServer.m_7038_(DedicatedServer.java:162)
+	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_130011_(MinecraftServer.java:634)
+	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_206580_(MinecraftServer.java:251)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+
+[17:58:54] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception
+io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: advancedrocketrycommunity_satellite_missions failed semantic validation
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataPayloadValidator.validate(ManagedSavedDataPayloadValidator.java:35) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationService.discoverSources(WorldDataMigrationService.java:123) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.WorldDataMigrationService.migrate(WorldDataMigrationService.java:71) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents.onServerAboutToStart(BetaWorldMigrationEvents.java:21) ~[advancedrocketry-community-1.20.1-1.6.0-dev.jar%23101!/:1.20.1-1.6.0-dev] {re:classloading}
+	at net.minecraftforge.eventbus.EventBus.doCastFilter(EventBus.java:260) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.eventbus.EventBus.lambda$addListener$11(EventBus.java:252) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.eventbus.EventBus.post(EventBus.java:315) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.eventbus.EventBus.post(EventBus.java:296) ~[eventbus-6.0.5.jar%2352!/:?] {}
+	at net.minecraftforge.server.ServerLifecycleHooks.handleServerAboutToStart(ServerLifecycleHooks.java:98) ~[forge-1.20.1-47.4.10-universal.jar%23108!/:?] {re:classloading}
+	at net.minecraft.server.dedicated.DedicatedServer.m_7038_(DedicatedServer.java:162) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_130011_(MinecraftServer.java:634) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_206580_(MinecraftServer.java:251) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at java.lang.Thread.run(Thread.java:833) ~[?:?] {}
+[17:58:55] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID 65fbc74b-d257-4880-b509-7bd1757e6f06
+[17:58:55] [Server thread/ERROR] [minecraft/MinecraftServer]: This crash report has been saved to: D:\GitHub\arce-v160-recovery-fix\build\f01-native-attempt3\blocked-server\.\crash-reports\crash-2026-10-01_17.58.55-server.txt
+[17:58:55] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[17:58:55] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[17:58:55] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[17:58:55] [Server thread/ERROR] [minecraft/MinecraftServer]: Exception stopping the server
+java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.m_6857_()" because "serverlevel2" is null
+	at net.minecraft.server.MinecraftServer.m_129885_(MinecraftServer.java:513) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_7041_(MinecraftServer.java:584) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.dedicated.DedicatedServer.m_7041_(DedicatedServer.java:510) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_130011_(MinecraftServer.java:689) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.m_206580_(MinecraftServer.java:251) ~[server-1.20.1-20230612.114412-srg.jar%23103!/:?] {re:classloading,pl:accesstransformer:B}
+	at java.lang.Thread.run(Thread.java:833) ~[?:?] {}
