@@ -339,7 +339,15 @@ An **endpoint** is a device that other devices can address: `laser_target`
 - **Registration.** An endpoint is added when its ID is persisted (§2); until
   then it is `AWAITING_WORLD_SAVE` and cannot be selected. Registration is a
   flush-pending mutation (§10). Placement beyond the limits is allowed, but the
-  endpoint stays `ENDPOINT_LIMIT` and inert.
+  endpoint stays `ENDPOINT_LIMIT` and inert. Registration reads the endpoint's
+  entry in that persistence tag: if the ID is retired, or the entry holds any
+  outbox entry, incoming payload or receipt, the endpoint does not register and
+  is `ENDPOINT_RETIRED` (frozen) instead (review R3-H1). A legitimate endpoint
+  never holds them unregistered, because being selected as a destination,
+  escrowing at a source and claiming at a destination all require the
+  endpoint's registration to be **durable** (§11). So a copy that comes back
+  after its tombstone was evicted (§11) is frozen like a retired one, and the
+  retirement no longer depends on keeping tombstones.
 - **Removal.** Removing an endpoint removes its record and **retires** its ID
   (§9.1). Breaking is refused for non-operators while it holds an outbox entry,
   an incoming payload, an unacknowledged receipt or an elevator pair
@@ -361,12 +369,29 @@ An **endpoint** is a device that other devices can address: `laser_target`
   entries, incoming payloads and receipts are kept raw and **frozen**: it never
   registers, claims, moves, acknowledges, drops or delivers them, and it never
   registers again. Breaking it drops only its local buffers. An operator resolves
-  it with `/arce endgame endpoint resolve <id>` (one audited barrier flush):
-  frozen unregistered outbox entries (`seq > dispatched_through`) go back to its
-  local input buffer, because the ledger can never register them; frozen
-  incoming payloads and receipts are destroyed, because their records were
-  settled at removal and are delivered elsewhere. A player who finds a retired
-  device places a new one, which gets a new ID.
+  it with `/arce endgame endpoint resolve <id>` (one audited barrier flush), item
+  by item (review R3-M1):
+  - a frozen outbox entry goes back to the local input buffer only if the ID's
+    tombstone still records `dispatched_through` and `seq` is above it (the
+    ledger can never register it); otherwise it is discarded with an audit line,
+    because it was registered and delivered, or nothing proves it was not;
+  - a frozen incoming payload whose record is still `CLAIMED` and unacknowledged
+    at this endpoint (only after a failed settlement write, §9.1) moves to the
+    local receive buffer and the record is acknowledged; every other frozen
+    incoming payload (record absent, `ARRIVED`, redirected, or acknowledged
+    anywhere) is destroyed with an audit line;
+  - frozen receipts are dropped.
+
+  A player who finds a retired device places a new one, which gets a new ID.
+- **Retirement without live state** (review R3-M1). An endpoint retired as
+  `MISSING`, or by an operator's `endpoint retire`, has no block entity to
+  settle from. Its retirement's barrier flush therefore also returns every
+  `CLAIMED`, unacknowledged record paid at it to `ARRIVED`, so the cargo can be
+  redirected; a returning copy is frozen and `resolve` destroys it. Residual: if
+  that endpoint had already moved the payload to its receive buffer, the
+  acknowledgement was lost in a crash, and a player had taken the payload out,
+  it can be delivered twice (the ADR-051 §9 class). For `MISSING` this also
+  needs the block entity to vanish without `onRemove`.
 - **Selection.** A selection list holds only `ACTIVE` endpoints of a compatible
   kind owned by the **device's owner**, filtered by the system's route rule and
   sorted in ID order (§7); whoever is allowed to `CONFIGURE` the device (§3)
@@ -544,7 +569,8 @@ purge of a record whose source still holds the entry also drops that entry
 1. **Escrow.** In one server tick at S: the payload leaves S's input buffer and
    becomes outbox entry `seq = next_seq++`, and `paid_fe` leaves S's energy
    buffer. Requires §3 `OPERATE` (or the system's redstone path), the system
-   enabled, the root operational with admission room, a selected `ACTIVE`
+   enabled, the root operational with admission room, S's own registration and
+   the selected `ACTIVE` destination's registration both durable (R3-H1), the
    destination passing the system's route rule, a free outbox slot, the limits
    and the energy.
 2. **Registration.** When the entry is persisted and the persistence
@@ -563,7 +589,8 @@ purge of a record whose source still holds the entry also drops that entry
 
 **Delivery.** At `arrive_at` the record becomes `ARRIVED` (due queue). D claims
 it automatically during its reconciliation pass, or on a withdraw intent, when:
-the record is durable, D's ID is persisted, D's receive buffer has room for the
+the record is durable, D's registration is durable (R3-H1), D's receive buffer
+has room for the
 whole payload beyond what its incoming payloads already reserve, and D has a
 free receipt slot (≤ 64). In one tick the record becomes `CLAIMED` with
 `paid_endpoint = D`, and D gains an unpersisted receipt `(source, seq)` and the
@@ -629,9 +656,11 @@ changes no outcome, with or without a lost source write.
 payload): `endpoint retire <id>` retires an endpoint that is lost but not
 `MISSING` (for example in a chunk that will never load again);
 `transfer redirect <source> <seq> <endpoint>` moves an `IN_TRANSIT` or `ARRIVED`
-record to another endpoint, but only once its destination's retirement is
-durable, so ADR-051 §9's double-payment residual cannot arise: a retired
-destination that returns is inert (review R2-H1); `transfer purge <source>
+record to another endpoint, but only once its destination's **index removal**
+is durable (by removal, `MISSING` or `endpoint retire`), so ADR-051 §9's
+double-payment residual cannot arise: a returning destination is retired, or
+after a tombstone eviction frozen by the registration rule, and so inert
+(reviews R2-H1, R3-H1); `transfer purge <source>
 <seq>` removes a record and destroys its payload. The **owner** may redirect
 their own `DESTINATION_MISSING` cargo under the same rule (review R1-L8), with
 `/arce endgame transfer redirect` from their own connected command source. Both
@@ -658,7 +687,7 @@ removes it.
 | S removed (and its tombstone kept), ledger flushed, S's chunk not saved | S restored with an entry `seq ≤ dispatched_through` | Dropped (`OUTBOX_STALE_DROPPED`); delivered once |
 | Record pruned while S still holds the entry (S unloaded, its release not yet saved, or that save lost) | Entry with `seq ≤ dispatched_through`, no record | Dropped (`OUTBOX_STALE_DROPPED`); the payload was already delivered once |
 | **Residual**: S's escrow save observed but its asynchronous file write lost, then the record durable | S's input still holds the payload, record exists | Duplicate of one payload, detected and audited as `SOURCE_ROLLBACK`; same class as a torn vanilla save. The 40-tick age rule narrows the window to an `IOWorker` backlog older than 2 s |
-| **Residual**: an operator retires an endpoint whose chunk is not loaded (`endpoint retire`), and that chunk holds a claim the ledger lost in a crash, then redirects | The unloaded chunk already paid; the record is `ARRIVED` again | Possible double delivery (ADR-051 §9 class), audited; a `MISSING` or removed endpoint, the only case an owner can redirect, cannot reach it, because §9.1 settles a loaded endpoint's claims from its live state |
+| **Residual**: an operator retires an endpoint whose chunk is not loaded (`endpoint retire`), and that chunk holds a claim the ledger lost in a crash, then redirects | The unloaded chunk already paid; the record is `ARRIVED` again | Possible double delivery (ADR-051 §9 class), audited. A removed endpoint cannot reach it, because §9.1 settles its claims from its live state; a `MISSING` one can only if its block entity vanished without `onRemove` after a lost acknowledgement (see "Retirement without live state", §9) |
 | **Residual** (R1-M1): D's save of a claim observed and aged, but its asynchronous write lost; the move, acknowledgement and flush happened; then a crash | The ledger acknowledged a payload that D's chunk never stored | The payload is lost (ADR-051 §11 lists the same class) |
 | **Residual** (R1-M1): as above, but the ledger's acknowledgement was not yet flushed and a player withdrew and saved the moved payload | The record is `CLAIMED`, D has no receipt | Rematerialized, so the payload exists twice; it needs a lost write that the 40-tick age did not outlast |
 

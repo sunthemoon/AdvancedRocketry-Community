@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Mutation check for the reference models in check_examples.py (standard library only).
 
-Each mutation changes one rule of ADR-054 section 9.1 or 11 in a copy of check_examples.py and searches that
+Each mutation changes one rule of ADR-054 section 9, 9.1 or 11 in a copy of check_examples.py and searches that
 copy's own model for a violation: a duplicate, an unaccounted loss, or a state that never becomes quiescent.
 The script exits 0 only when the unmodified control shows no violation and every mutation is caught.
 
@@ -47,6 +47,23 @@ DELIVERY = {
 }
 
 
+# The retirement rules themselves, with every rule on (review R3-L7). Relaxing "moves again only when acknowledged
+# at this endpoint" is not listed: with retirement and the freeze rule an active endpoint never holds a payload
+# acknowledged elsewhere, so the model shows that condition is defence in depth, not load-bearing.
+REDIRECT = {
+    "redirect-before-durable-index-removal": (
+        'and (not registered_dur if retire else where != "here"):',
+        'and (True if retire else where != "here"):'),
+    "register-from-unclean-tag": ("and (clean_on_disk or not freeze):", "and True:"),
+    "missing-keeps-the-claim": (
+        'settled = ("A", "D", False, None) if unacked_here else rec\n            yield "MISSING_D"',
+        'settled = rec\n            yield "MISSING_D"'),
+    "resolve-moves-any-copy": (
+        'if d_in and rec is not None and rec[0] == "C" and rec[1] == "D" and not rec[2]:',
+        'if d_in:'),
+}
+
+
 def load(out, name, old=None, new=None):
     target = out / name
     target.mkdir(parents=True, exist_ok=True)
@@ -73,7 +90,7 @@ def transit_violation(module, faults, limit=300_000):
             continue
         seen.add((state, crashes, faults_left))
         if len(seen) > limit:
-            return None
+            return "LIMIT"  # fails closed: a search that outgrows its limit proves nothing (review R3-L7)
         try:
             delivered, destroyed, rollback = model.delivered(model.drain(state))
         except AssertionError:
@@ -102,8 +119,13 @@ def main():
         print("control transit, %d lost write(s): %s" % (faults, found or "no violation"), flush=True)
         if found:
             failures.append("control")
+    _, outcomes = control.Redirect.explore((True, True, True), 2)
+    print("control redirect, full rules: %s" % sorted(outcomes, key=str), flush=True)
+    if set(outcomes) != {1}:
+        failures.append("control redirect")
     for name, (old, new, faults) in TRANSIT.items():
         found = transit_violation(load(out, "transit-" + name, old, new), faults)
+        found = None if found == "LIMIT" else found
         print("transit %-40s %s" % (name, ("CAUGHT: " + found[:90]) if found else "NOT CAUGHT"), flush=True)
         if not found:
             failures.append(name)
@@ -117,11 +139,22 @@ def main():
         print("delivery %-39s %s" % (name, ("CAUGHT: %s" % bad[:3]) if bad else "NOT CAUGHT"), flush=True)
         if not bad:
             failures.append(name)
-    _, outcomes = control.Redirect.explore(False, 0)
-    bad = sorted(k for k in outcomes if k[0] != 1)
-    print("redirect %-39s %s" % ("without-retirement", ("CAUGHT: %s" % bad) if bad else "NOT CAUGHT"), flush=True)
-    if not bad:
-        failures.append("without-retirement")
+    for name, rules in (("without-retirement", (False, False, False)), ("without-freeze", (True, False, True))):
+        _, outcomes = control.Redirect.explore(rules, 0)
+        bad = sorted((k for k in outcomes if k != 1), key=str)
+        print("redirect %-39s %s" % (name, ("CAUGHT: %s" % bad) if bad else "NOT CAUGHT"), flush=True)
+        if not bad:
+            failures.append(name)
+    for name, (old, new) in REDIRECT.items():
+        module = load(out, "redirect-" + name, old, new)
+        try:
+            _, outcomes = module.Redirect.explore((True, True, True), 2)
+            bad = sorted((k for k in outcomes if k != 1), key=str)
+        except AssertionError:
+            bad = ["limit"]
+        print("redirect %-39s %s" % (name, ("CAUGHT: %s" % bad) if bad else "NOT CAUGHT"), flush=True)
+        if not bad:
+            failures.append(name)
     if failures:
         raise SystemExit("not caught: " + ", ".join(failures))
     print("all mutations caught", flush=True)

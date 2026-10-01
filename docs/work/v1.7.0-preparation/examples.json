@@ -1082,7 +1082,7 @@
   ]
  },
  "redirect": {
-  "states_retire_two_crashes": 1789,
+  "states_full_rules_two_crashes": 11927,
   "mover_path": [
    "CLAIM_D",
    "SAVE_D",
@@ -1094,6 +1094,8 @@
    "FLUSH_L",
    "PRUNE",
    "PLACE_D",
+   "SAVE_D",
+   "REREGISTER_D",
    "MOVE_D"
   ]
  },
