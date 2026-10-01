@@ -715,6 +715,10 @@ count tickets by type before and after every system and after every ride.
   escrowed and in-transit cargo is lost there. Downgrade is not supported, as for
   earlier versions.
 - Disabling a system (§1) is the supported way to stop it.
+- Restoring an older `advancedrocketrycommunity_endgame.dat` from a backup is
+  outside the guarantee, as in ADR-051 §7: entries that sources still hold
+  register again with `SEQUENCE_GAP`, and payloads delivered after the backup can
+  be delivered a second time. The operator guide says so (review R2-I4).
 
 ### 15. Shared threat model
 

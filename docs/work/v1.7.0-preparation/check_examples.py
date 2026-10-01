@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reference projections of ADR-054..059 (revision 1) rules; not production code or runtime behaviour.
+"""Reference projections of ADR-054..059 (revision 3) rules; not production code or runtime behaviour.
 
 The functions restate the proposed integer rules and protocols so that the Java slices (C11/C12)
 can be checked against the same vectors in examples.json. The transit-ledger and payment-counter
