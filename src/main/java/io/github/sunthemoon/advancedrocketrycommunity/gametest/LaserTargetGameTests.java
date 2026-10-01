@@ -279,21 +279,28 @@ public final class LaserTargetGameTests {
         LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
         helper.assertTrue(target.assignOwner(UUID.randomUUID()), "The fixture owner was not assigned");
         UUID id = target.deviceId().orElseThrow();
+        // Vanilla saves dirty chunks on its own between ticks, so the dirty-chunk check runs here, in the placement
+        // tick, and every later save of the chunk is recorded.
+        LevelChunk chunk = level.getChunkAt(pos);
+        target.onLoad(); // The first status check is due now.
+        chunk.setUnsaved(false);
+        LaserTargetBlockEntity.serverTick(level, pos, level.getBlockState(pos), target);
+        helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE && root().endpoint(id).isEmpty(),
+                "Not awaiting a save: " + target.describe());
+        helper.assertTrue(chunk.isUnsaved(), "An awaiting marker left its chunk clean");
+        ChunkSaveWatcher saves = ChunkSaveWatcher.start(level, pos);
         helper.startSequence()
-                .thenExecuteAfter(25, () -> {
-                    helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE
-                            && root().endpoint(id).isEmpty(), "Not awaiting a save: " + target.describe());
-                    LevelChunk chunk = level.getChunkAt(pos);
-                    target.onLoad(); // The next status check is due now.
-                    chunk.setUnsaved(false);
-                    LaserTargetBlockEntity.serverTick(level, pos, level.getBlockState(pos), target);
-                    helper.assertTrue(chunk.isUnsaved(), "An awaiting marker left its chunk clean");
-                })
+                .thenExecuteAfter(25, () -> helper.assertTrue(saves.any(pos)
+                                || target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE && root().endpoint(id).isEmpty(),
+                        "Registered without any save: " + target.describe()))
                 .thenWaitUntil(() -> {
                     chunkSaved(level, pos);
                     helper.assertTrue(target.endpointActive(), "Not registered: " + target.describe());
                 })
-                .thenExecute(() -> level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()))
+                .thenExecute(() -> {
+                    saves.stop();
+                    level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                })
                 .thenSucceed();
     }
 
