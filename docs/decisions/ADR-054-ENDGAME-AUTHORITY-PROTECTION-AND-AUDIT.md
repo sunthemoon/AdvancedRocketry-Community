@@ -736,7 +736,11 @@ endpoint's own (§9): without it, the reference model loses that payload when
 the player breaks the endpoint after its move and the server stops before the
 chunk saves. Because the incoming gate already waits for one save before a
 move, a stub normally lives one more save interval (longer only while saves
-are off). Pruning does not wait for S
+are off). While saves are off (`/save-off`, common during backups) no stub is
+pruned. Once live records and stubs reach 256, every escrow on the server is
+refused with `TRANSIT_LIMIT` until saving resumes. Delivery of records already
+in flight continues. `/arce endgame status` shows the stub count, and the
+operator guide says so (review R4-L4). Pruning does not wait for S
 to drop its entry; the `dispatched_through` rule above makes a late drop safe.
 `dispatched_through[S]` is removed only as a tombstone whose
 source's absence is persisted (above). A
@@ -818,7 +822,8 @@ count tickets by type before and after every system and after every ride.
   stop) for `/arce endgame audit [system] [page]` (operator, 16 lines per page).
 - **Operator commands** (permission 2, leaf-level `.requires`, ADR-045 lesson):
   `/arce endgame status` (switches, root state and size, active device counts,
-  last-tick work per system, ride-arrival tickets held, at most 64); `audit`;
+  last-tick work per system, transit records and stubs, ride-arrival tickets
+  held, at most 64); `audit`;
   `zone …` (§6);
   `device inspect <pos>` and `device owner <pos> <player>` (both refuse a
   position whose chunk is not loaded, because reading it would load it);
