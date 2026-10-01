@@ -1,0 +1,72 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 51033,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-api.jar",
+        "sha256": "24b6527e452b2f030f370b2de485122c9fea99a9e51bebc664a131333b5218ab"
+      },
+      {
+        "bytes": 1753904,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-sources.jar",
+        "sha256": "73b18c6b6f64f394b63bd9c3a57677d6e81fa1f7503489d1c2bde2a47d29ab75"
+      },
+      {
+        "bytes": 3863364,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "sha256": "2d8db949f5f0400b15a1eb2f0b8d65f7d446e8c2688080ef2541b747f09bf831"
+      }
+    ]
+  },
+  "base_commit": "c618064bbf7ade16d695775216ceae2f5606d5b6",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 238,
+    "tests": 1290
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "7b790bb2450225bdfe01d60ed0b626d0f31b9acbf2f9d8f555bf0dbf500a5e95",
+    "gradle.properties": "2a093cf9a76f99108c6d61d57a1107ac78e7e46d2d485a0b833cb70cdd2035bf",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/gravity_field_controller.json": "f34b9ac2e127ebb5aedec43cfe489a74a2aff77fa347873ee65f63ffba464b9e",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/gravity_field_controller.json": "048f4673a7ea08512339388fc73df1241b2e5f79d9d55979924662e2cec5e95b",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/gravity_field_controller.json": "5887d0e504711d67e9f45205057dbd910f2a137582c1f76b3995fe65eb040ea6",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/en_us.json": "4f5673cd379b20da054ad5f96aa797450af60b484007693b08e78eb166369cb9",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/zh_cn.json": "efa45f03a1f3b61005a7cca8cc652f3e50ca6b106344ff8a2dcffd0e5d773558",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/advancements/recipes/misc/gravity_field_controller.json": "4b48a669aa35d556b61bd81c307b5353118a2053c5d149a288af7140a33d248c",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/loot_tables/blocks/gravity_field_controller.json": "ad398936021f693864164dafcfd87d68596421df35691abbd0144f5b4e855619",
+    "src/generated/v1.7/resources/data/advancedrocketrycommunity/recipes/gravity_field_controller.json": "6e687667cda9fdc05361079e13152fc742c5866cee7f2f1c5c32074c3646b281",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/mineable/pickaxe.json": "84bda2049503a947cbadf89f999601ce1f996943e40e2628c281d6442a78fe09",
+    "src/generated/v1.7/resources/data/minecraft/tags/blocks/needs_iron_tool.json": "84bda2049503a947cbadf89f999601ce1f996943e40e2628c281d6442a78fe09",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": "15cbf3a2970ed27e77842c180798ccbced8f2edfbf99ff017060516a9ff1ff0f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityController.java": "3b1e2370a37fc890ad09c14bf9ea7de581b96a124f1362814fe3ae293c40c732",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java": "5aad2008f620e3682a96567ae68ba81576510be744f74a9255c42f9bb2519726",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/GravityFieldScreen.java": "59462e92c60c83efcc67a504940d44441e56abd7ad46ad1b3d917758c1979ad8",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java": "3f23461f29612fe46faf1a09b36d2e37868613ff2502158dd8ed3209a516767d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java": "5298cdf02813dea41b9789fa16d67ca12c293b5b7292f423b8c24ec6951f54cf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java": "6ad70aaf91539cd749fbee5363bc31567dfab65fe6ff4b1424cf184432391f91",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java": "75fe4af39b2ac021e39e2bd71fde62a0edb25399898dcdb748424fa84b38397a",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevices.java": "6899f9d65890708f9008086d0aecdb2063c97d5c81efcab6224c2257d1f95c00",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameEnergyBuffer.java": "4068174521b16efbe3be8862b5188e82f2d4cf99a7c62f9f462485eca87426c6",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityField.java": "d38eccec0e0e2f212c8dd0620aab133c2bb8d8b27257508cd7d3873cb5e64a1e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldBlock.java": "d2f0a0d06881589b427e945f4840b4edbabae276afc01a2428af7d3b77a0f559",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldBlockEntity.java": "38f5f7e9251991df08696d1a5029a235373f6680a8c37a329981a76ffaa57a6c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldCommands.java": "64aff8f762bd746d6845daa0a44db1e466c153801b2af2a064e57b8b3dc5b2c0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldIndex.java": "7c9a60b237842a3ffdbc81111a215104ff7df5540092c671794c8ff8bdb873a5",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldLimits.java": "04ca3a9d5cf69937b6d52587b702c9fe0c2c020a822d992c700f9e2748d895ef",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldMenu.java": "b2a4f73b5f2e8cf36190b12c0d7f78771b43b59180cfd42231e9723eb2a1a633",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityTrust.java": "dfeb7123d122d8470932cc53288bff2b589b002f12718d1eabc76e614d7c3957",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameCode.java": "a7cabff0d90fb65d6b3684ae873e26999e9776b9f16e56ce588d7194123478cc",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/GravityFieldGameTests.java": "15d19777f3006958304664a8481f7072f7f03037f27f7018a815ede3fbb23cb1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java": "183d6be79b772cf17834705d5d7ff544880c8517775295894e48b4114f78d7f3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java": "9456163336835e63a0243e4e936e095cbd62cc105560970da1c7e15bdcac1fe9",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java": "4f03148c0a984568080bb2e8bd4f2fc7126ee04641000c6666c67bd4bdecfeb0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java": "60d297a4502852e749ec2e3ff260df7732d8ae037adc599812f060b5d3fbed46",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java": "4979645827f9e8ded0f1d9b343826a577edeed14a51b54d07493c480d6f780ac",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java": "a40f103e40eeaa5fdf06a93e64524324a7e6dfad5ae2c9b3e46c61596ed18d54",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java": "4eccc62359cff5780f5864170e462bbb2a0f021700febe7e47cc166636e88a89",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldTest.java": "2fdbb57282caa5e9f19c8d6bc8c0895e1219fe14190805fd65baff04397cab16"
+  }
+}
