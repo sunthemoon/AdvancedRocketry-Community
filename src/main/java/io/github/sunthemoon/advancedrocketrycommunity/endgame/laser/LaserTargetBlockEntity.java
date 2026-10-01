@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +20,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -41,8 +44,10 @@ import net.minecraftforge.items.ItemStackHandler;
 /**
  * ADR-055 section 3: the {@code laser_target} endpoint the owner places on the surface it will dig. Its root holds a
  * 27-slot drop buffer (extractable, never insertable), the shaft cursor {@code next_layer}, the link
- * {@code {controller_id, ops_done}} of the one controller it serves, and the freeze of a retired ID (ADR-054 section
- * 9). It registers once a chunk tag shows its ID persisted; until then it cannot be selected.
+ * {@code {controller_id, link_id, ops_done}} of the one controller link it serves, and the freeze of a retired ID
+ * (ADR-054 section 9). It registers once a chunk tag shows its ID persisted; until then it cannot be selected. A
+ * reset remembers the last 8 link IDs it dropped, so their controllers see {@code LINK_LOST} instead of adopting the
+ * marker again, while a marker a crash returned unlinked still adopts its link and settles it as credit.
  */
 public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider {
     public static final ResourceLocation KIND = ModIdentity.id("laser_target");
@@ -50,7 +55,9 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     public static final int BUFFER_SLOTS = 27;
     private static final int STATUS_CHECK_TICKS = 20;
     private static final int MAX_PARTICLES_PER_TICK = 8;
-    private static final Set<String> STATE_KEYS = Set.of(EndgameDeviceTags.FROZEN, "next_layer", "buffer", "link");
+    private static final int MAX_REVOKED = 8;
+    private static final Set<String> STATE_KEYS = Set.of(EndgameDeviceTags.FROZEN, "next_layer", "buffer", "link",
+            "revoked");
 
     private final ItemStackHandler buffer = new ItemStackHandler(BUFFER_SLOTS) {
         @Override
@@ -64,7 +71,10 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     private int nextLayer;
     @Nullable
     private UUID linkedController;
+    @Nullable
+    private UUID linkId;
     private long opsDone;
+    private final List<UUID> revoked = new ArrayList<>();
 
     private EndgameCode endpointStatus = EndgameCode.AWAITING_WORLD_SAVE;
     private EndgameCode lastCode = EndgameCode.OK;
@@ -99,7 +109,9 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         frozen = false;
         nextLayer = LaserShaft.firstLayer(worldPosition);
         linkedController = null;
+        linkId = null;
         opsDone = 0L;
+        revoked.clear();
     }
 
     @Override
@@ -113,11 +125,21 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         LaserDrillStorage.readItems(EndgameNbt.requireCompound(root, "buffer"), buffer, false);
         if (root.contains("link")) {
             CompoundTag link = EndgameNbt.requireCompound(root, "link");
-            EndgameNbt.requireKeys(link, Set.of("controller_id", "ops_done"), "Laser target link");
+            EndgameNbt.requireKeys(link, Set.of("controller_id", "link_id", "ops_done"), "Laser target link");
             linkedController = EndgameNbt.requireUuid(link, "controller_id");
+            linkId = EndgameNbt.requireUuid(link, "link_id");
             opsDone = EndgameNbt.requireLong(link, "ops_done");
             if (opsDone < 0) {
                 throw new IllegalArgumentException("A negative ops_done");
+            }
+        }
+        if (root.contains("revoked")) {
+            ListTag list = EndgameNbt.requireList(root, "revoked", Tag.TAG_INT_ARRAY, MAX_REVOKED);
+            for (int i = 0; i < list.size(); i++) {
+                if (list.getIntArray(i).length != 4) {
+                    throw new IllegalArgumentException("A revoked link is not a UUID");
+                }
+                revoked.add(NbtUtils.loadUUID(list.get(i)));
             }
         }
     }
@@ -130,8 +152,14 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         if (linkedController != null) {
             CompoundTag link = new CompoundTag();
             link.put("controller_id", NbtUtils.createUUID(linkedController));
+            link.put("link_id", NbtUtils.createUUID(linkId));
             link.putLong("ops_done", opsDone);
             root.put("link", link);
+        }
+        if (!revoked.isEmpty()) {
+            ListTag list = new ListTag();
+            revoked.forEach(id -> list.add(NbtUtils.createUUID(id)));
+            root.put("revoked", list);
         }
     }
 
@@ -216,15 +244,19 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         return endpointStatus;
     }
 
-    /** The marker accepts a controller it already serves, or adopts one when it serves none. */
-    public boolean accepts(UUID controller) {
-        return linkedController == null || linkedController.equals(controller);
+    /** The marker accepts the exact controller link it serves, or, when it serves none, any link it did not reset. */
+    public boolean accepts(UUID controller, UUID link) {
+        if (linkedController == null) {
+            return !revoked.contains(link);
+        }
+        return linkedController.equals(controller) && link.equals(linkId);
     }
 
-    /** Adopts the controller on first contact with {@code ops_done = 0}. */
-    public void adopt(UUID controller) {
+    /** Adopts the controller link on first contact with {@code ops_done = 0}. */
+    public void adopt(UUID controller, UUID link) {
         if (linkedController == null) {
             linkedController = controller;
+            linkId = link;
             opsDone = 0L;
             setChanged();
         }
@@ -299,7 +331,12 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
         }
         UUID previous = linkedController;
         long done = opsDone;
+        revoked.add(linkId);
+        while (revoked.size() > MAX_REVOKED) {
+            revoked.remove(0);
+        }
         linkedController = null;
+        linkId = null;
         opsDone = 0L;
         setChanged();
         if (level instanceof ServerLevel server) {

@@ -35,6 +35,17 @@ No candidate or release approval is assigned.
   table of their own. A full output pauses the drill and nothing is lost.
   Results are deterministic per drill, and a warp changes the table at the
   next operation. Start, stop and the redstone mode are menu buttons.
+- Add the Laser Target block and the drill's physical mode (ADR-055, off
+  unless `endgame.laserDrill.physicalMining` is true). Place a Laser Target on
+  the surface below your station's orbit; once the world has saved, the drill
+  can select and link it. Starting physical mode asks for a confirmation,
+  because it removes the 3 × 3 column under the target one layer per
+  operation, down to `endgame.laserDrill.maxDepth`. Drops go into the target.
+  Blocks with block entities, unbreakable or wither-immune blocks, fluids,
+  protected zones, claims (break events) and the API event stop a layer
+  untouched; a full target buffer pauses it. The target must sit at least two
+  blocks inside its chunk. Payment and digging are counted on both sides, so a
+  crash never charges twice or digs unpaid. Resetting a target drops its link.
 - New COMMON values `endgame.laserDrill.*`: energy percent, operation
   interval, active drills per owner and on the server, and per-tick caps.
 - Operator commands `/arce endgame device inspect <pos>` and

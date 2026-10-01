@@ -16,8 +16,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Community-authored laser drill panel (ADR-055 section 5): energy, lens, output, the start, stop and redstone
- * buttons, and the status with its stable code from the device view, so no state is shown by colour alone.
+ * Community-authored laser drill panel (ADR-055 section 5): energy, lens, output, the start, stop, redstone and mode
+ * buttons, the target selection, link, unlink and the physical-mode confirmation, and the status with its stable code
+ * from the device view, so no state is shown by colour alone.
  */
 public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<OrbitalLaserDrillMenu> {
     private static final int PANEL_TOP = 0xFF1B1F2A;
@@ -32,28 +33,40 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
     public OrbitalLaserDrillScreen(OrbitalLaserDrillMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
-        imageHeight = 206;
-        inventoryLabelY = 113;
+        imageHeight = 222;
+        inventoryLabelY = 129;
     }
 
     @Override
     protected void init() {
         super.init();
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_START,
-                "screen.advancedrocketrycommunity.orbital_laser_drill.start", 26, 40));
+                "screen.advancedrocketrycommunity.orbital_laser_drill.start", 8, 76, 38));
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_STOP,
-                "screen.advancedrocketrycommunity.orbital_laser_drill.stop", 70, 40));
+                "screen.advancedrocketrycommunity.orbital_laser_drill.stop", 48, 76, 38));
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_REDSTONE,
-                "screen.advancedrocketrycommunity.orbital_laser_drill.redstone", 114, 54));
+                "screen.advancedrocketrycommunity.orbital_laser_drill.redstone", 88, 76, 42));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_MODE,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.mode", 132, 76, 36));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_TARGET_PREVIOUS,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.previous", 8, 92, 16));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_TARGET_NEXT,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.next", 26, 92, 16));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_LINK,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.link", 44, 92, 38));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_UNLINK,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.unlink", 84, 92, 40));
+        addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_CONFIRM,
+                "screen.advancedrocketrycommunity.orbital_laser_drill.confirm", 126, 92, 42));
     }
 
-    private Button button(int id, String key, int x, int width) {
+    private Button button(int id, String key, int x, int y, int width) {
         return Button.builder(Component.translatable(key),
                 ignored -> {
                     if (minecraft != null && minecraft.gameMode != null) {
                         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
                     }
-                }).bounds(leftPos + x, topPos + 76, width, 14).build();
+                }).bounds(leftPos + x, topPos + y, width, 14).build();
     }
 
     @Override
@@ -72,7 +85,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
                     menu.energyStored(), LaserDrillStorage.ENERGY_CAPACITY), mouseX, mouseY);
         }
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
-        if (view.isPresent() && isHovering(8, 92, 160, 20, mouseX, mouseY)) {
+        if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
@@ -99,7 +112,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
             slot(graphics, x + 61 + (slot % 6) * 18, y + 17 + (slot / 6) * 18);
         }
         for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 123 + row * 18 : 181);
+            int rowY = y + (row < 3 ? 139 + row * 18 : 197);
             for (int column = 0; column < 9; column++) {
                 graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
             }
@@ -120,11 +133,11 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
             return;
         }
         EndgameCode status = view.get().status();
-        graphics.drawString(font, statusLine(status), 8, 94, status == EndgameCode.OK ? BEAM : WARNING, false);
+        graphics.drawString(font, statusLine(status), 8, 110, status == EndgameCode.OK ? BEAM : WARNING, false);
         if (view.get().lastStop() != EndgameCode.OK && view.get().lastStop() != status) {
             graphics.drawString(font, Component.translatable(
                     "screen.advancedrocketrycommunity.orbital_laser_drill.last_stop",
-                    statusLine(view.get().lastStop())), 8, 104, MUTED, false);
+                    statusLine(view.get().lastStop())), 8, 120, MUTED, false);
         }
     }
 

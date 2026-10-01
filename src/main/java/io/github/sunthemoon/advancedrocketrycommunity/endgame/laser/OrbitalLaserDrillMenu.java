@@ -9,14 +9,24 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameActio
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceView;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -30,8 +40,10 @@ import net.minecraftforge.items.SlotItemHandler;
 
 /**
  * ADR-055 section 5 menu: the lens slot, the 18 output slots, energy and the time to the next operation as data
- * slots, and the device view for status, codes and settings. Buttons are the only intents: start, stop and the
- * redstone mode. Open data format 1 carries only the position, for display.
+ * slots, and the device view for status, codes, settings, the selected target and the physical danger confirmation.
+ * Buttons are the only intents: start, stop, redstone, mode, target previous/next, link, unlink and confirm. The
+ * target selection is server-side menu state over the owner's laser targets in ID order (operators see all); the
+ * client never sends an index. Open data format 1 carries only the position, for display.
  */
 public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
     public static final int FORMAT_MARKER = -1;
@@ -39,6 +51,12 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
     public static final int BUTTON_START = 0;
     public static final int BUTTON_STOP = 1;
     public static final int BUTTON_REDSTONE = 2;
+    public static final int BUTTON_MODE = 3;
+    public static final int BUTTON_TARGET_PREVIOUS = 4;
+    public static final int BUTTON_TARGET_NEXT = 5;
+    public static final int BUTTON_LINK = 6;
+    public static final int BUTTON_UNLINK = 7;
+    public static final int BUTTON_CONFIRM = 8;
     public static final int DATA_COUNT = 3;
     public static final String VIEW = "advancedrocketrycommunity.endgame.view.";
     public static final String VALUE = "advancedrocketrycommunity.endgame.value.";
@@ -49,6 +67,8 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
     private static final int PLAYER_END = PLAYER_START + 36;
 
     private final ContainerData data;
+    @Nullable
+    private UUID selected;
 
     public OrbitalLaserDrillMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, null, new ItemStackHandler(1), new ItemStackHandler(LaserDrillStorage.OUTPUT_SLOTS),
@@ -70,11 +90,11 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 124 + row * 18));
+                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 140 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 182));
+            addSlot(new Slot(inventory, column, 8 + column * 18, 198));
         }
         addDataSlots(data);
     }
@@ -101,8 +121,12 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
                     true, false));
             case BUTTON_STOP -> Optional.of(new EndgameIntentGuard.Intent(EndgameAction.OPERATE, IntentKind.STATE,
                     false, false));
-            case BUTTON_REDSTONE -> Optional.of(new EndgameIntentGuard.Intent(EndgameAction.CONFIGURE, IntentKind.STATE,
-                    false, false));
+            case BUTTON_REDSTONE, BUTTON_MODE, BUTTON_LINK, BUTTON_UNLINK -> Optional.of(new EndgameIntentGuard.Intent(
+                    EndgameAction.CONFIGURE, IntentKind.STATE, false, false));
+            case BUTTON_TARGET_PREVIOUS, BUTTON_TARGET_NEXT -> Optional.of(new EndgameIntentGuard.Intent(
+                    EndgameAction.CONFIGURE, IntentKind.SELECTION, false, false));
+            case BUTTON_CONFIRM -> Optional.of(new EndgameIntentGuard.Intent(EndgameAction.OPERATE, IntentKind.STATE,
+                    true, false));
             default -> Optional.empty();
         };
     }
@@ -114,12 +138,60 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
         if (devices.isEmpty()) {
             return EndgameCode.ROOT_UNAVAILABLE;
         }
+        Optional<EndgameRoot> root = EndgameRuntime.operational().flatMap(EndgameService::root);
+        if (root.isEmpty()) {
+            return EndgameCode.ROOT_UNAVAILABLE;
+        }
+        long now = player.serverLevel().getGameTime();
+        UUID actor = player.getUUID();
         return switch (button) {
-            case BUTTON_START -> drill.start(devices.get(), player.getUUID());
-            case BUTTON_STOP -> drill.stop(devices.get(), player.getUUID());
-            case BUTTON_REDSTONE -> drill.cycleRedstone(player.getUUID());
+            case BUTTON_START -> LaserDrillIntents.start(drill, devices.get(), actor, now);
+            case BUTTON_CONFIRM -> LaserDrillIntents.confirm(drill, devices.get(), actor, now);
+            case BUTTON_STOP -> LaserDrillIntents.stop(drill, devices.get(), actor);
+            case BUTTON_REDSTONE -> LaserDrillIntents.cycleRedstone(drill, actor);
+            case BUTTON_MODE -> LaserDrillIntents.toggleMode(drill, devices.get(), actor);
+            case BUTTON_TARGET_PREVIOUS, BUTTON_TARGET_NEXT -> move(targets(root.get(), drill, player),
+                    button == BUTTON_TARGET_NEXT ? 1 : -1);
+            case BUTTON_LINK -> selected == null ? EndgameCode.NO_TARGET : LaserDrillIntents.link(drill, devices.get(),
+                    root.get(), actor, player.hasPermissions(2), selected);
+            case BUTTON_UNLINK -> LaserDrillIntents.unlink(drill, devices.get(), root.get(), actor);
             default -> EndgameCode.OK;
         };
+    }
+
+    /**
+     * ADR-054 section 9 selection: {@code ACTIVE} laser targets owned by the drill's owner (any owner for an
+     * operator), with their footprint inside their chunk, in ID order.
+     */
+    static List<EndpointRecord> targets(EndgameRoot root, OrbitalLaserDrillBlockEntity drill, Player viewer) {
+        boolean operator = viewer.hasPermissions(2);
+        return root.endpoints().stream()
+                .filter(record -> record.state() == EndpointRecord.State.ACTIVE
+                        && record.kind().equals(LaserTargetBlockEntity.KIND)
+                        && (operator || drill.ownerId().filter(record.owner()::equals).isPresent())
+                        && LaserShaft.footprintInsideChunk(BlockPos.of(record.pos())))
+                .sorted(Comparator.comparing(record -> record.id().toString()))
+                .toList();
+    }
+
+    private EndgameCode move(List<EndpointRecord> targets, int step) {
+        if (targets.isEmpty()) {
+            selected = null;
+            return EndgameCode.NO_TARGET;
+        }
+        int index = position(targets);
+        selected = targets.get(Math.floorMod(index < 0 ? (step > 0 ? -1 : 0) + step : index + step,
+                targets.size())).id();
+        return EndgameCode.OK;
+    }
+
+    private int position(List<EndpointRecord> targets) {
+        for (int i = 0; i < targets.size(); i++) {
+            if (targets.get(i).id().equals(selected)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /** Public status carries only the codes and the running flag; the orbit body and table need detail. */
@@ -140,9 +212,64 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
             lines.add(EndgameDeviceView.Line.text(VIEW + "operations", Long.toString(drill.operationIndex())));
             drill.lastBody().ifPresent(body -> lines.add(EndgameDeviceView.Line.text(VIEW + "body", body)));
             drill.lastTable().ifPresent(table -> lines.add(EndgameDeviceView.Line.text(VIEW + "table", table)));
+            if (drill.mode() == LaserDrillMode.PHYSICAL) {
+                physicalLines(drill, lines);
+            }
         }
         return new EndgameDeviceView(containerId, EndgameSystem.LASER_DRILL, drill.status(), drill.lastStop(), detail,
-                lines);
+                lines.subList(0, Math.min(lines.size(), EndgameDeviceView.MAX_LINES)));
+    }
+
+    /** The selected target, the link and, while a start waits for this viewer's confirmation, what it will dig. */
+    private void physicalLines(OrbitalLaserDrillBlockEntity drill, List<EndgameDeviceView.Line> lines) {
+        Optional<EndgameRoot> root = EndgameRuntime.operational().flatMap(EndgameService::root);
+        Player viewer = viewer();
+        if (root.isEmpty() || viewer == null || !(drill.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        List<EndpointRecord> targets = targets(root.get(), drill, viewer);
+        int index = position(targets);
+        if (index < 0 && !targets.isEmpty()) {
+            selected = targets.get(0).id();
+            index = 0;
+        }
+        lines.add(EndgameDeviceView.Line.text(VIEW + "target", index < 0 ? "-"
+                : label(targets.get(index)) + " (" + (index + 1) + " / " + targets.size() + ")"));
+        if (index >= 0) {
+            BlockPos at = BlockPos.of(targets.get(index).pos());
+            lines.add(EndgameDeviceView.Line.text(VIEW + "target_at", targets.get(index).level() + " "
+                    + at.toShortString()));
+        }
+        Optional<EndpointRecord> linked = drill.linkedMarker().flatMap(root.get()::endpoint);
+        lines.add(EndgameDeviceView.Line.text(VIEW + "link", drill.linkedMarker().isEmpty() ? "-"
+                : linked.map(OrbitalLaserDrillMenu::label).orElse(drill.linkedMarker().get().toString().substring(0, 8))
+                + " paid=" + drill.opsPaid()));
+        if (drill.confirmationPendingFor(viewer.getUUID()) && linked.isPresent()) {
+            BlockPos marker = BlockPos.of(linked.get().pos());
+            ServerLevel markerLevel = level.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
+                    linked.get().level()));
+            int maxDepth = EndgameRuntime.devices().map(EndgameDevices::laserSettings)
+                    .orElse(LaserDrillSettings.DEFAULTS).maxDepth();
+            lines.add(EndgameDeviceView.Line.key(VIEW + "warning", VALUE + "removes_blocks"));
+            lines.add(EndgameDeviceView.Line.text(VIEW + "footprint", (marker.getX() - 1) + ".." + (marker.getX() + 1)
+                    + ", " + (marker.getZ() - 1) + ".." + (marker.getZ() + 1)));
+            if (markerLevel != null) {
+                lines.add(EndgameDeviceView.Line.text(VIEW + "floor", Integer.toString(LaserShaft.floor(marker,
+                        markerLevel.getMinBuildHeight(), maxDepth))));
+                if (markerLevel.getChunkSource().getChunkNow(marker.getX() >> 4, marker.getZ() >> 4) != null
+                        && markerLevel.getBlockEntity(marker) instanceof LaserTargetBlockEntity target) {
+                    lines.add(EndgameDeviceView.Line.text(VIEW + "cursor", Integer.toString(target.nextLayer())));
+                }
+            }
+        }
+    }
+
+    /** A generated label: the kind, the first 8 hex digits of the ID and the body (ADR-054 section 4). */
+    static String label(EndpointRecord record) {
+        String body = EndgameRuntime.devices().flatMap(EndgameDevices::celestial)
+                .flatMap(catalog -> catalog.forLevel(ResourceKey.create(Registries.DIMENSION, record.level())))
+                .map(definition -> definition.id().getPath()).orElse("?");
+        return "laser_target " + record.id().toString().substring(0, 8) + " @ " + body;
     }
 
     private static String lower(String name) {

@@ -36,10 +36,12 @@ public final class EndgameDevices {
     private final LaserDrillTableReloadListener.Manager laserTables;
     private final EndgameActiveDevices active = new EndgameActiveDevices();
     private final RoundRobinBudget laserOperations = new RoundRobinBudget();
+    private final RoundRobinBudget laserLayers = new RoundRobinBudget();
     private final RoundRobinBudget structureBudget = new RoundRobinBudget();
     private final EndgameStructureTracker structures = new EndgameStructureTracker();
     private final EndgameRateLimiter rates = new EndgameRateLimiter();
     private int laserOperationsLastTick;
+    private int laserLayersLastTick;
 
     public EndgameDevices(Supplier<EndgameSettings> settings, Supplier<LaserDrillSettings> laserSettings,
                           MultiblockPatternCatalogManager patterns, CelestialCatalogManager celestial,
@@ -79,6 +81,11 @@ public final class EndgameDevices {
         return laserOperations;
     }
 
+    /** ADR-055 section 4: physical layers per server tick (at most 7, 63 cells). */
+    public RoundRobinBudget laserLayers() {
+        return laserLayers;
+    }
+
     public RoundRobinBudget structureBudget() {
         return structureBudget;
     }
@@ -96,9 +103,12 @@ public final class EndgameDevices {
             return;
         }
         laserOperationsLastTick = laserOperations.servedLastTick();
+        laserLayersLastTick = laserLayers.servedLastTick();
         laserOperations.resetCounters();
+        laserLayers.resetCounters();
         structureBudget.resetCounters();
         laserOperations.endTick(laserSettings.get().logicalOperationsPerTick());
+        laserLayers.endTick(laserSettings.get().layersPerTick());
         structureBudget.endTick(EndgameLimits.STRUCTURE_VALIDATIONS_PER_TICK);
     }
 
@@ -137,7 +147,8 @@ public final class EndgameDevices {
     /** One status line for {@code /arce endgame status}: active devices and last-tick work. */
     public String status() {
         return "laser_drill active=" + active.count(EndgameSystem.LASER_DRILL) + " operations_last_tick="
-                + laserOperationsLastTick + " waiting=" + laserOperations.waitingLastTick() + "; structures tracked="
+                + laserOperationsLastTick + " waiting=" + laserOperations.waitingLastTick() + " layers_last_tick="
+                + laserLayersLastTick + " layers_waiting=" + laserLayers.waitingLastTick() + "; structures tracked="
                 + structures.tracked() + " validations_waiting=" + structureBudget.waitingLastTick() + "; intent_players="
                 + rates.size();
     }
@@ -145,10 +156,12 @@ public final class EndgameDevices {
     public void clear() {
         active.clear();
         laserOperations.clear();
+        laserLayers.clear();
         structureBudget.clear();
         structures.clear();
         rates.clear();
         laserOperationsLastTick = 0;
+        laserLayersLastTick = 0;
     }
 
     private void changed(net.minecraft.world.level.LevelAccessor accessor, BlockPos position) {

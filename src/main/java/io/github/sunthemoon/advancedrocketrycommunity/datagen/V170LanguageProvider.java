@@ -35,6 +35,12 @@ public final class V170LanguageProvider extends LanguageProvider {
         add(screen + "stop", chinese ? "停止" : "Stop");
         add(screen + "redstone", chinese ? "红石模式" : "Redstone");
         add(screen + "last_stop", chinese ? "上次停止：%s" : "Last stop: %s");
+        add(screen + "mode", chinese ? "模式" : "Mode");
+        add(screen + "previous", "<");
+        add(screen + "next", ">");
+        add(screen + "link", chinese ? "链接" : "Link");
+        add(screen + "unlink", chinese ? "断开" : "Unlink");
+        add(screen + "confirm", chinese ? "确认" : "Confirm");
         String view = "advancedrocketrycommunity.endgame.view.";
         add(view + "running", chinese ? "运行" : "Running");
         add(view + "structure", chinese ? "结构" : "Structure");
@@ -51,9 +57,14 @@ public final class V170LanguageProvider extends LanguageProvider {
         add(view + "linked", chinese ? "已链接" : "Linked");
         add(view + "layers", chinese ? "已挖层数" : "Layers dug");
         add(view + "footprint", chinese ? "占地" : "Footprint");
+        add(view + "target", chinese ? "选中目标" : "Selected target");
+        add(view + "target_at", chinese ? "目标位置" : "Target at");
+        add(view + "link", chinese ? "链接" : "Link");
+        add(view + "warning", chinese ? "警告" : "Warning");
         String value = "advancedrocketrycommunity.endgame.value.";
         add(value + "on", chinese ? "开" : "On");
         add(value + "off", chinese ? "关" : "Off");
+        add(value + "removes_blocks", chinese ? "此操作会移除方块" : "This removes blocks");
         add(value + "present", chinese ? "已安装" : "Present");
         add(value + "missing", chinese ? "缺失" : "Missing");
         add(value + "mode.logical", chinese ? "逻辑采样" : "Logical sampling");

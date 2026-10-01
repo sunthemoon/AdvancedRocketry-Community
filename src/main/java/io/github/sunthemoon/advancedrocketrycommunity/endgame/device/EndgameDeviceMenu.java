@@ -135,6 +135,12 @@ public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
                 false));
     }
 
+    /** The server-side viewer; null on the client. */
+    @Nullable
+    protected ServerPlayer viewer() {
+        return viewer;
+    }
+
     protected Optional<EndgameIntentGuard.Target> target() {
         return Optional.ofNullable(target);
     }

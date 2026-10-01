@@ -45,10 +45,12 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * ADR-055 sections 1, 2 and 6: the orbital laser drill controller. Everything the drill pays for or produces lives
- * here ({@link LaserDrillStorage}, settings, seed and operation index), so one chunk save covers payment and output.
- * A logical operation takes the cost, advances the index and adds the whole drawn stack in one tick at the
- * controller; a full output pauses with {@code OUTPUT_FULL} and the same draw is retried.
+ * ADR-055 sections 1 to 3 and 6: the orbital laser drill controller. Everything the drill pays for or produces in
+ * logical mode lives here ({@link LaserDrillStorage}, settings, seed and operation index), so one chunk save covers
+ * payment and output. A logical operation takes the cost, advances the index and adds the whole drawn stack in one
+ * tick; a full output pauses with {@code OUTPUT_FULL} and the same draw is retried. In physical mode the controller
+ * keeps its side of the link ({@link LaserLink}) and {@link LaserPhysicalDrill} digs one layer per operation at the
+ * linked laser target. Button effects are in {@link LaserDrillIntents}.
  */
 public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider {
     public static final int ROOT_SCHEMA = 1;
@@ -56,7 +58,7 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     private static final int STATUS_RECHECK_TICKS = 20;
     private static final SecureRandom SEEDS = new SecureRandom();
     private static final Set<String> STATE_KEYS = Set.of("running", "redstone", "mode", "seed", "op_index", "energy",
-            "lens", "output");
+            "lens", "output", "link");
 
     private final LaserDrillStorage storage = new LaserDrillStorage(this::setChanged, this::getLevel);
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.empty();
@@ -66,6 +68,8 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     private LaserDrillMode mode = LaserDrillMode.LOGICAL;
     private long seed;
     private long index;
+    @Nullable
+    private LaserLink link;
 
     private final EndgameStructure structure = new EndgameStructure(PATTERN_ID, ModBlocks.ORBITAL_LASER_DRILL.get());
     private EndgameCode status = EndgameCode.STOPPED;
@@ -80,6 +84,18 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     private Optional<String> lastBody = Optional.empty();
     private Optional<String> lastTable = Optional.empty();
     private boolean renderActive;
+    private boolean linkSettled;
+    private boolean linkLost;
+    @Nullable
+    private Pending pending;
+
+    /** A physical start waiting for the same player's confirmation (runtime only). */
+    record Pending(UUID actor, long tick) {
+    }
+
+    /** The station case and the live orbit body at the controller. */
+    private record StationBody(EndgameCode station, Optional<CelestialBodyDefinition> body) {
+    }
 
     public OrbitalLaserDrillBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.ORBITAL_LASER_DRILL.get(), position, state);
@@ -108,6 +124,10 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         mode = LaserDrillMode.LOGICAL;
         seed = 0L;
         index = 0L;
+        link = null;
+        linkSettled = false;
+        linkLost = false;
+        pending = null;
     }
 
     /** The seed comes from the server's {@code SecureRandom}, never from a client. */
@@ -121,15 +141,13 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         running = EndgameNbt.requireBoolean(root, "running");
         redstone = EndgameRedstoneMode.byName(EndgameNbt.requireString(root, "redstone", 16));
         mode = LaserDrillMode.byName(EndgameNbt.requireString(root, "mode", 16));
-        if (mode != LaserDrillMode.LOGICAL) {
-            throw new IllegalArgumentException("This build has only the logical mode");
-        }
         seed = EndgameNbt.requireLong(root, "seed");
         index = EndgameNbt.requireLong(root, "op_index");
         if (index < 0) {
             throw new IllegalArgumentException("The operation index is negative");
         }
         storage.read(root);
+        link = root.contains("link") ? LaserLink.read(EndgameNbt.requireCompound(root, "link")) : null;
     }
 
     @Override
@@ -140,6 +158,9 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         root.putLong("seed", seed);
         root.putLong("op_index", index);
         storage.write(root);
+        if (link != null) {
+            root.put("link", link.write());
+        }
     }
 
     public static void serverTick(Level level, BlockPos position, BlockState state, OrbitalLaserDrillBlockEntity drill) {
@@ -174,6 +195,10 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         if (!structure.known() || now < nextEvaluation) {
             return;
         }
+        if (mode == LaserDrillMode.PHYSICAL) {
+            physicalTick(level, devices.get(), service.get(), settings, now);
+            return;
+        }
         LaserDrillOperation.Decision decision = decide(level, devices.get(), settings);
         setStatus(level, service.get(), decision.code());
         if (!decision.operates()) {
@@ -198,23 +223,65 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         nextEvaluation = now + settings.operationIntervalTicks();
     }
 
+    /**
+     * One physical evaluation: a contact settles a debt even while the drill is stopped or the system is disabled;
+     * layers run only while breaking is allowed (ADR-054 section 1 settlement).
+     */
+    private void physicalTick(ServerLevel level, EndgameDevices devices, EndgameService service,
+                              LaserDrillSettings settings, long now) {
+        if (pending != null && now - pending.tick() > LaserDrillIntents.CONFIRM_WINDOW_TICKS) {
+            pending = null;
+        }
+        StationBody stationBody = stationAndBody(level, devices);
+        EndgameCode common = LaserDrillOperation.common(inputs(level, devices, settings, stationBody));
+        boolean breaking = devices.settings().enabled(EndgameSystem.LASER_DRILL)
+                && devices.settings().laserPhysicalMining();
+        if (link == null || ownerId().isEmpty()) {
+            setStatus(level, service, pending != null ? EndgameCode.CONFIRM_REQUIRED : common != EndgameCode.OK ? common
+                    : !breaking ? EndgameCode.PHYSICAL_DISABLED : EndgameCode.NO_TARGET);
+            nextEvaluation = now + STATUS_RECHECK_TICKS;
+            return;
+        }
+        long paidBefore = link.opsPaid();
+        int energyBefore = storage.energy();
+        LaserPhysicalDrill.Outcome outcome = LaserPhysicalDrill.evaluate(new LaserPhysicalDrill.Context(level, devices,
+                service, deviceId().orElseThrow(), ownerId().get(), settings, common, breaking, stationBody.body(), now),
+                link, storage);
+        linkSettled = outcome.settled();
+        linkLost = outcome.lost();
+        if (link.opsPaid() != paidBefore || storage.energy() != energyBefore) {
+            setChanged();
+        }
+        setStatus(level, service, pending != null && !running ? EndgameCode.CONFIRM_REQUIRED : outcome.code());
+        nextEvaluation = outcome.waitingForBudget() ? now + 1 : outcome.code() == EndgameCode.OK
+                ? now + settings.operationIntervalTicks() : now + STATUS_RECHECK_TICKS;
+    }
+
     /** The orbit body is the station's live orbit body, re-read for every operation (ADR-055 section 1). */
-    private LaserDrillOperation.Decision decide(ServerLevel level, EndgameDevices devices, LaserDrillSettings settings) {
+    private StationBody stationAndBody(ServerLevel level, EndgameDevices devices) {
         EndgameStations.At at = EndgameStations.at(level, worldPosition);
-        EndgameCode station = EndgameCode.OK;
-        Optional<CelestialBodyDefinition> body = Optional.empty();
         if (at.station().isEmpty() || ownerId().isEmpty() || !EndgameAuthority.decide(new EndgameAuthority.Request(
                 ownerId().get(), false, ownerId(), at.context(), EndgameAction.OPERATE, false)).allowed()) {
-            station = EndgameCode.STATION_UNAVAILABLE;
-        } else {
-            body = devices.celestial().flatMap(catalog -> catalog.get(at.station().get().orbitBody()));
+            lastBody = Optional.empty();
+            return new StationBody(EndgameCode.STATION_UNAVAILABLE, Optional.empty());
         }
+        Optional<CelestialBodyDefinition> body = devices.celestial()
+                .flatMap(catalog -> catalog.get(at.station().get().orbitBody()));
         lastBody = body.map(definition -> definition.id().toString());
-        LaserDrillOperation.Decision decision = LaserDrillOperation.decide(new LaserDrillOperation.Inputs(ownerId().isPresent(),
-                devices.settings().enabled(EndgameSystem.LASER_DRILL), station, structure.code(),
+        return new StationBody(EndgameCode.OK, body);
+    }
+
+    private LaserDrillOperation.Inputs inputs(ServerLevel level, EndgameDevices devices, LaserDrillSettings settings,
+                                              StationBody stationBody) {
+        return new LaserDrillOperation.Inputs(ownerId().isPresent(),
+                devices.settings().enabled(EndgameSystem.LASER_DRILL), stationBody.station(), structure.code(),
                 storage.lensPresent(), running, redstone.satisfied(level.hasNeighborSignal(worldPosition)), admitted,
-                body, devices.laserTables(), storage.energy(), settings.costFe(), seed, index),
-                entry -> storage.fits(stack(entry)));
+                stationBody.body(), devices.laserTables(), storage.energy(), settings.costFe(), seed, index);
+    }
+
+    private LaserDrillOperation.Decision decide(ServerLevel level, EndgameDevices devices, LaserDrillSettings settings) {
+        LaserDrillOperation.Decision decision = LaserDrillOperation.decide(inputs(level, devices, settings,
+                stationAndBody(level, devices)), entry -> storage.fits(stack(entry)));
         lastTable = decision.table().map(table -> table.id() + "@" + table.version());
         return decision;
     }
@@ -260,52 +327,67 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         summaryItems = 0;
     }
 
-    /** Start: admitted first come first served, refused beyond a limit with {@code ACTIVE_LIMIT}. */
-    EndgameCode start(EndgameDevices devices, UUID actor) {
-        if (running) {
-            return EndgameCode.OK;
-        }
-        if (ownerId().isEmpty()) {
-            return EndgameCode.UNOWNED;
-        }
-        LaserDrillSettings settings = devices.laserSettings();
-        if (!devices.active().admit(EndgameSystem.LASER_DRILL, deviceId().orElseThrow(), ownerId().get(),
-                settings.activePerOwner(), settings.activeGlobal())) {
-            audit("start", EndgameCode.ACTIVE_LIMIT, actor, "");
-            return EndgameCode.ACTIVE_LIMIT;
-        }
-        running = true;
-        admitted = true;
-        nextEvaluation = 0;
-        setChanged();
-        audit("start", EndgameCode.OK, actor, "");
-        return EndgameCode.OK;
-    }
+    // ---- State the button effects change (LaserDrillIntents) --------------------------------------------------
 
-    EndgameCode stop(EndgameDevices devices, UUID actor) {
-        if (!running) {
-            return EndgameCode.OK;
+    void running(boolean next, EndgameDevices devices) {
+        running = next;
+        if (next) {
+            admitted = true;
+        } else {
+            release(devices);
         }
-        running = false;
-        release(devices);
         nextEvaluation = 0;
         setChanged();
         if (level instanceof ServerLevel server) {
             updateRenderState(server);
         }
-        audit("stop", EndgameCode.OK, actor, "");
-        return EndgameCode.OK;
     }
 
-    EndgameCode cycleRedstone(UUID actor) {
-        redstone = redstone.next();
+    void redstoneMode(EndgameRedstoneMode next) {
+        redstone = next;
         nextEvaluation = 0;
         setChanged();
-        audit("redstone", EndgameCode.OK, actor, "mode=" + redstone.name());
-        return EndgameCode.OK;
     }
 
-    private void audit(String action, EndgameCode code, UUID actor, String fields) {
+    void mode(LaserDrillMode next) {
+        mode = next;
+        pending = null;
+        lastTable = Optional.empty();
+        nextEvaluation = 0;
+        setChanged();
+    }
+
+    /** A new link has had no contact, so it holds no debt or credit yet. */
+    void link(@Nullable LaserLink next) {
+        link = next;
+        linkSettled = true;
+        linkLost = false;
+        nextEvaluation = 0;
+        setChanged();
+    }
+
+    Optional<LaserLink> link() {
+        return Optional.ofNullable(link);
+    }
+
+    boolean linkSettled() {
+        return linkSettled;
+    }
+
+    boolean linkLost() {
+        return linkLost;
+    }
+
+    Optional<Pending> pending() {
+        return Optional.ofNullable(pending);
+    }
+
+    void pending(@Nullable Pending next) {
+        pending = next;
+        nextEvaluation = 0;
+    }
+
+    void audit(String action, EndgameCode code, UUID actor, String fields) {
         if (level instanceof ServerLevel server) {
             EndgameRuntime.operational().ifPresent(service -> service.audit().line(server.getGameTime(), system().id(),
                     action, code.name(), deviceId().orElse(null), ownerId().orElse(null), actor, fields));
@@ -345,7 +427,9 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     protected String describeState() {
         return "status=" + status.name() + " structure=" + structure.code().name() + " running=" + running
                 + " admitted=" + admitted + " redstone=" + redstone.name() + " mode=" + mode.name() + " op_index="
-                + index + " energy=" + storage.energy() + " lens=" + storage.lensPresent();
+                + index + " energy=" + storage.energy() + " lens=" + storage.lensPresent() + " link="
+                + (link == null ? "-" : link.marker() + " ops_paid=" + link.opsPaid() + " settled=" + linkSettled
+                + " lost=" + linkLost) + " pending=" + (pending != null);
     }
 
     public EndgameCode status() {
@@ -383,6 +467,19 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
 
     public long seed() {
         return seed;
+    }
+
+    /** The linked marker and the controller's {@code ops_paid}, for views and tests. */
+    public Optional<UUID> linkedMarker() {
+        return link().map(LaserLink::marker);
+    }
+
+    public long opsPaid() {
+        return link == null ? 0L : link.opsPaid();
+    }
+
+    public boolean confirmationPendingFor(UUID player) {
+        return pending != null && pending.actor().equals(player);
     }
 
     /** The orbit body and table of the last evaluation, for the owner's view only. */

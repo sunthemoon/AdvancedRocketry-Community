@@ -20,29 +20,9 @@ public final class LaserDrillOperation {
     public static Decision decide(Inputs in, Predicate<LaserDrillTable.Entry> outputAccepts) {
         Objects.requireNonNull(in, "in");
         Objects.requireNonNull(outputAccepts, "outputAccepts");
-        if (!in.owned()) {
-            return Decision.stop(EndgameCode.UNOWNED);
-        }
-        if (!in.systemEnabled()) {
-            return Decision.stop(EndgameCode.SYSTEM_DISABLED);
-        }
-        if (in.station() != EndgameCode.OK) {
-            return Decision.stop(in.station());
-        }
-        if (in.structure() != EndgameCode.OK) {
-            return Decision.stop(in.structure());
-        }
-        if (!in.lens()) {
-            return Decision.stop(EndgameCode.NO_LENS);
-        }
-        if (!in.running()) {
-            return Decision.stop(EndgameCode.STOPPED);
-        }
-        if (!in.redstoneSatisfied()) {
-            return Decision.stop(EndgameCode.REDSTONE_BLOCKED);
-        }
-        if (!in.admitted()) {
-            return Decision.stop(EndgameCode.ACTIVE_LIMIT);
+        EndgameCode common = common(in);
+        if (common != EndgameCode.OK) {
+            return Decision.stop(common);
         }
         if (in.orbitBody().isEmpty()) {
             return Decision.stop(EndgameCode.ORBIT_BODY_UNAVAILABLE);
@@ -59,6 +39,35 @@ public final class LaserDrillOperation {
             return new Decision(EndgameCode.OUTPUT_FULL, table, Optional.of(stack));
         }
         return new Decision(EndgameCode.OK, table, Optional.of(stack));
+    }
+
+    /**
+     * The conditions both modes share, in contract order: owned, system enabled, station, structure formed, lens,
+     * running, redstone and active admission; {@code OK} when all hold.
+     */
+    public static EndgameCode common(Inputs in) {
+        if (!in.owned()) {
+            return EndgameCode.UNOWNED;
+        }
+        if (!in.systemEnabled()) {
+            return EndgameCode.SYSTEM_DISABLED;
+        }
+        if (in.station() != EndgameCode.OK) {
+            return in.station();
+        }
+        if (in.structure() != EndgameCode.OK) {
+            return in.structure();
+        }
+        if (!in.lens()) {
+            return EndgameCode.NO_LENS;
+        }
+        if (!in.running()) {
+            return EndgameCode.STOPPED;
+        }
+        if (!in.redstoneSatisfied()) {
+            return EndgameCode.REDSTONE_BLOCKED;
+        }
+        return in.admitted() ? EndgameCode.OK : EndgameCode.ACTIVE_LIMIT;
     }
 
     /**
