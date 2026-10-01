@@ -25,7 +25,9 @@ class ModMetadataTest {
             assertTrue(metadata.contains("This v1.7.0 development build adds the endgame framework to the satellite "
                     + "and resource mission development baseline: per-system switches, an authority matrix, a "
                     + "protection chain with operator zones and a cancelable effect event, and a versioned endgame "
-                    + "root with an endpoint index. Endgame devices and release validation remain in progress"));
+                    + "root with an endpoint index, the orbital laser drill with laser targets, and the area gravity "
+                    + "field controller. The railgun, black-hole generator, space elevator and release validation "
+                    + "remain in progress"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));
