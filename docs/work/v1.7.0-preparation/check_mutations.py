@@ -155,18 +155,18 @@ def main():
     print("control redirect, full rules: %s" % sorted(outcomes, key=str), flush=True)
     if set(outcomes) != {1}:
         failures.append("control redirect")
+    def report(kind, name, found):
+        """A search that outgrew its limit proves nothing either way: inconclusive, a failure (review R4-L5)."""
+        verdict = "INCONCLUSIVE (state limit)" if found == "LIMIT" else \
+            ("CAUGHT: %s" % found)[:98] if found else "NOT CAUGHT"
+        print("%s %-*s %s" % (kind, 47 - len(kind), name, verdict), flush=True)
+        if not found or found == "LIMIT":
+            failures.append(name)
+
     for name, (old, new, faults) in TRANSIT.items():
-        found = transit_violation(load(out, "transit-" + name, old, new), faults)
-        found = None if found == "LIMIT" else found
-        print("transit %-40s %s" % (name, ("CAUGHT: " + found[:90]) if found else "NOT CAUGHT"), flush=True)
-        if not found:
-            failures.append(name)
+        report("transit", name, transit_violation(load(out, "transit-" + name, old, new), faults))
     for name, (old, new, faults) in TRANSIT_CAP.items():
-        found = transit_violation(load(out, "transit-cap-" + name, old, new, cap=True), faults)
-        found = None if found == "LIMIT" else found
-        print("transit %-40s %s" % (name, ("CAUGHT: " + found[:90]) if found else "NOT CAUGHT"), flush=True)
-        if not found:
-            failures.append(name)
+        report("transit", name, transit_violation(load(out, "transit-cap-" + name, old, new, cap=True), faults))
     for name, (old, new) in DELIVERY.items():
         module = load(out, "delivery-" + name, old, new)
         try:
@@ -188,11 +188,9 @@ def main():
         try:
             _, outcomes = module.Redirect.explore((True, True, True), 2)
             bad = sorted((k for k in outcomes if k != 1), key=str)
-        except AssertionError:
-            bad = ["limit"]
-        print("redirect %-39s %s" % (name, ("CAUGHT: %s" % bad) if bad else "NOT CAUGHT"), flush=True)
-        if not bad:
-            failures.append(name)
+        except AssertionError:  # Redirect.explore raises only when it outgrows its state limit
+            bad = "LIMIT"
+        report("redirect", name, bad)
     if failures:
         raise SystemExit("not caught: " + ", ".join(failures))
     print("all mutations caught", flush=True)
