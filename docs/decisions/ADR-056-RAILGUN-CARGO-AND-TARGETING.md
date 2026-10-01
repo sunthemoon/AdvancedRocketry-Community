@@ -92,7 +92,8 @@ example back to the source) or purge resolves it.
 
 ### 6. Menus, visuals and audit
 
-- Menu: buffers, energy, destination (owner and operators: name, body, Level,
+- Menu (ADR-054 §4 device view): buffers, energy, destination (owner and
+  operators: label, body, Level,
   position, class, cost and travel), `auto`, redstone mode, minimum stack size,
   outbox and in-transit counts, receipts, last code. Buttons: destination
   previous/next, launch, auto toggle, redstone mode, minimum stack size ±1/±16.

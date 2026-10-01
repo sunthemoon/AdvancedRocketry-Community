@@ -215,7 +215,8 @@ refused with `ACTIVE_LIMIT`. Work over a per-tick cap waits (ADR-054 §7).
 ### 5. Menus and visuals
 
 - Menu: lens slot, output slots, energy, mode, running, redstone mode, the
-  selected target (owner and operators only: name, body, position, depth,
+  selected target (ADR-054 §4 device view; owner and operators: label, body,
+  position, depth,
   buffer fullness) and the last stop code. Buttons: start, stop, mode, redstone
   mode, target previous/next, link, unlink.
 - **Danger confirmation:** starting physical mode (or relinking it) is two-step:

@@ -147,12 +147,24 @@ named actions only; `EndgameAuthority` evaluates them first.
   selection intents 2 ticks, config `endgame.intentIntervalTicks` ≥ 10 and
   `endgame.selectionIntervalTicks` ≥ 2). Refused intents change nothing and send
   one status line.
-- **No new network channel and no new C2S message.** Status reaches the client
-  through menu data slots and bounded menu extra data (≤ 4 KiB per menu, tested
-  at maximum), and visuals through block-entity update tags (≤ 1 KiB, only
-  render state: active flag, beam length, field radius and value, never a target
-  coordinate of another Level). Existing channel versions (life support 1,
-  celestial 3, rocket flight 8, rocket visual 1, satellite 1) are unchanged.
+- **No new C2S message.** Menu data slots carry only 16-bit values and open
+  data is sent once, so they cannot show a selection that changes with every
+  previous/next intent (review R1-M10). As v1.6 did for the terminal (ADR-049
+  §10), one new **S2C-only** channel `advancedrocketrycommunity:endgame`,
+  protocol `1`, carries one message, the **device view**: sent when a device
+  menu opens and on change, at most once per 5 ticks per player, ≤ 8 KiB and
+  tested at that maximum. It holds the device status and codes, the current
+  selection only (never the whole list: the selected endpoint's label, its
+  position in the list and the list size), pair and transit counts, and buffer
+  summaries. Endpoints have no player-set names; a **label** is generated from
+  the kind, the first 8 hex digits of the ID and the body. Level and position
+  are included only for viewers allowed to see them (§9). Numbers that change
+  every tick (energy, progress) stay in data slots. A client without the channel
+  cannot join, as with the other channels.
+- Visuals use block-entity update tags (≤ 1 KiB, only render state: active
+  flag, beam length, field radius and value, never a target coordinate of
+  another Level). Existing channel versions (life support 1, celestial 3,
+  rocket flight 8, rocket visual 1, satellite 1) are unchanged.
 - Every status and refusal is shown as translated text (with its stable code),
   never by colour or icon alone, so it stays readable at any GUI scale and for
   colour-blind players.

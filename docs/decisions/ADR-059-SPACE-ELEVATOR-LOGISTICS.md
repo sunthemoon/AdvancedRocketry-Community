@@ -200,7 +200,8 @@ operators.
 
 ### 9. Menus, visuals and audit
 
-- Terminal and anchor menus: buffers, energy, pair state with the failing rule,
+- Terminal and anchor menus (ADR-054 §4 device view): buffers, energy, pair
+  state with the failing rule,
   the far end (owner, station owner and operators only), auto and redstone mode,
   in-transit counts, receipts. Buttons: anchor previous/next (terminal only),
   bind, unbind, launch, auto, redstone mode, ride.
