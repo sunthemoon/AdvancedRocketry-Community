@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "I": {
+      "tag": "forge:storage_blocks/iron"
+    },
+    "R": {
+      "item": "advancedrocketrycommunity:rocket_motor"
+    },
+    "X": {
+      "item": "advancedrocketrycommunity:endgame_casing"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "RXR",
+    "ICI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:railgun"
+  },
+  "show_notification": true
+}

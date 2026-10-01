@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/railgun",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/railgun"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/railgun",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/railgun",
+      "y": 270
+    }
+  }
+}

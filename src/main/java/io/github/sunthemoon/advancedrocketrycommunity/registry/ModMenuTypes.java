@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHol
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineMenu;
@@ -74,6 +75,11 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<BlackHoleGeneratorMenu>> BLACK_HOLE_GENERATOR = MENUS.register(
             "black_hole_generator",
             () -> IForgeMenuType.create(BlackHoleGeneratorMenu::new)
+    );
+
+    public static final RegistryObject<MenuType<RailgunMenu>> RAILGUN = MENUS.register(
+            "railgun",
+            () -> IForgeMenuType.create(RailgunMenu::new)
     );
 
     private ModMenuTypes() {

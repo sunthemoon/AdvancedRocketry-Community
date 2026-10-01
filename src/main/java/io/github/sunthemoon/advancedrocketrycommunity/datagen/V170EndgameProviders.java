@@ -61,6 +61,10 @@ public final class V170EndgameProviders {
                     mcLoc("block/crying_obsidian"), mcLoc("block/obsidian"));
             horizontalBlock(ModBlocks.BLACK_HOLE_GENERATOR.get(), generator);
             simpleBlockItem(ModBlocks.BLACK_HOLE_GENERATOR.get(), generator);
+            ModelFile railgun = models().orientable("railgun", modLoc("block/machine_casing_side"),
+                    modLoc("block/machine_casing_front"), mcLoc("block/iron_block"));
+            horizontalBlock(ModBlocks.RAILGUN.get(), railgun);
+            simpleBlockItem(ModBlocks.RAILGUN.get(), railgun);
             itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
         }
     }
@@ -82,13 +86,14 @@ public final class V170EndgameProviders {
             dropSelf(ModBlocks.LASER_TARGET.get());
             dropSelf(ModBlocks.GRAVITY_FIELD_CONTROLLER.get());
             dropSelf(ModBlocks.BLACK_HOLE_GENERATOR.get());
+            dropSelf(ModBlocks.RAILGUN.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
             return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get(),
                     ModBlocks.LASER_TARGET.get(), ModBlocks.GRAVITY_FIELD_CONTROLLER.get(),
-                    ModBlocks.BLACK_HOLE_GENERATOR.get());
+                    ModBlocks.BLACK_HOLE_GENERATOR.get(), ModBlocks.RAILGUN.get());
         }
     }
 
@@ -145,6 +150,14 @@ public final class V170EndgameProviders {
                     .define('X', ModItems.ENDGAME_CASING.get())
                     .unlockedBy("has_endgame_casing", has(ModItems.ENDGAME_CASING.get()))
                     .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.RAILGUN.get())
+                    .pattern("ICI").pattern("RXR").pattern("ICI")
+                    .define('I', Tags.Items.STORAGE_BLOCKS_IRON)
+                    .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('R', ModItems.ROCKET_MOTOR.get())
+                    .define('X', ModItems.ENDGAME_CASING.get())
+                    .unlockedBy("has_endgame_casing", has(ModItems.ENDGAME_CASING.get()))
+                    .save(output);
         }
     }
 
@@ -176,13 +189,14 @@ public final class V170EndgameProviders {
                     ModBlocks.ORBITAL_LASER_DRILL.get(),
                     ModBlocks.LASER_TARGET.get(),
                     ModBlocks.GRAVITY_FIELD_CONTROLLER.get(),
-                    ModBlocks.BLACK_HOLE_GENERATOR.get()
+                    ModBlocks.BLACK_HOLE_GENERATOR.get(),
+                    ModBlocks.RAILGUN.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);
             // ADR-054 section 9.1: endpoints resist withers and the dragon and opt out of common block movers
             // (shipped with replace false, harmless without those mods).
-            Block[] endpoints = {ModBlocks.LASER_TARGET.get()};
+            Block[] endpoints = {ModBlocks.LASER_TARGET.get(), ModBlocks.RAILGUN.get()};
             tag(net.minecraft.tags.BlockTags.WITHER_IMMUNE).add(endpoints);
             tag(net.minecraft.tags.BlockTags.DRAGON_IMMUNE).add(endpoints);
             tag(foreign("create", "non_movable")).add(endpoints);

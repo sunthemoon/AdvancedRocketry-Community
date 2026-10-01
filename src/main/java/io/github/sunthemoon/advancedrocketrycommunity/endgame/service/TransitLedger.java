@@ -83,6 +83,11 @@ public final class TransitLedger implements TransitLedgerView {
         loaded.remove(id.toString());
     }
 
+    /** An unloading block entity detaches only itself, never another block entity attached under its ID. */
+    public void detach(UUID id, TransitEndpoint endpoint) {
+        loaded.remove(id.toString(), endpoint);
+    }
+
     public Optional<TransitEndpoint> loaded(UUID id) {
         return Optional.ofNullable(loaded.get(id.toString()));
     }

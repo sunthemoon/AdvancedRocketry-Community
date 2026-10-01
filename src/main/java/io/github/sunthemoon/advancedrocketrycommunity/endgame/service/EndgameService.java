@@ -73,6 +73,11 @@ public final class EndgameService {
         this.transitOperations = new TransitOperations(this);
     }
 
+    /** The running server, for lookups that need it outside a level (the railgun's redirect rule). */
+    public Optional<MinecraftServer> server() {
+        return Optional.ofNullable(server);
+    }
+
     /** Operator and owner actions on the ledger (redirect, purge, resettle, resolve). */
     public TransitOperations transitOperations() {
         return transitOperations;

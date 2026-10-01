@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHol
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlock;
@@ -204,6 +205,17 @@ public final class ModBlocks {
             "black_hole_generator",
             () -> new BlackHoleGeneratorBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLACK)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 1200.0F)
+                    .pushReaction(PushReaction.BLOCK)
+                    .sound(SoundType.METAL))
+    );
+
+    /** ADR-056: the railgun controller, a ledger endpoint. */
+    public static final RegistryObject<Block> RAILGUN = BLOCKS.register(
+            "railgun",
+            () -> new RailgunBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 1200.0F)
                     .pushReaction(PushReaction.BLOCK)

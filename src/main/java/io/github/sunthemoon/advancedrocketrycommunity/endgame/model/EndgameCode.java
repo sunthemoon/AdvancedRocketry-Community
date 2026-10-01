@@ -98,7 +98,12 @@ public enum EndgameCode {
     /** A redirect waits until its destination's index removal is durable. */
     DESTINATION_ACTIVE,
     /** The redirect target does not pass the system's route rule. */
-    ROUTE_REFUSED;
+    ROUTE_REFUSED,
+    // ADR-056: the railgun.
+    /** No input stack holds the minimum stack size. */
+    NO_PAYLOAD,
+    /** The destination lies in another star system. */
+    ROUTE_OUT_OF_SYSTEM;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 

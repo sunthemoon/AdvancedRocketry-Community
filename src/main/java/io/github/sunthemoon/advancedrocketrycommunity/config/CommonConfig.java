@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFie
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
@@ -226,6 +227,15 @@ public final class CommonConfig {
             "endgame.blackHoleGenerator.activeGlobal", "Burning black-hole generators on the server (ADR-057).",
             BlackHoleSettings.MAX_ACTIVE_GLOBAL);
 
+    // ADR-056 sections 3 and 4: railgun launch cost and the server's launches per tick.
+    public static final ForgeConfigSpec.IntValue RAILGUN_ENERGY_PERCENT = BUILDER
+            .comment("Railgun launch cost in percent of the route class's cost (ADR-056; 10..400).")
+            .defineInRange("endgame.railgun.energyPercent", 100, RailgunSettings.MIN_PERCENT,
+                    RailgunSettings.MAX_PERCENT);
+    public static final ForgeConfigSpec.IntValue RAILGUN_LAUNCHES_PER_TICK = limit(
+            "endgame.railgun.launchesPerTick", "Railgun launches the server starts in one tick (ADR-056).",
+            RailgunSettings.MAX_LAUNCHES_PER_TICK);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -254,6 +264,14 @@ public final class CommonConfig {
         }
         return new BlackHoleSettings(BLACK_HOLE_ENERGY_PERCENT.get(), BLACK_HOLE_ACTIVE_PER_OWNER.get(),
                 BLACK_HOLE_ACTIVE_GLOBAL.get());
+    }
+
+    /** ADR-056 railgun settings; the defaults until the COMMON config is loaded. */
+    public static RailgunSettings railgunSettings() {
+        if (!SPEC.isLoaded()) {
+            return RailgunSettings.DEFAULTS;
+        }
+        return new RailgunSettings(RAILGUN_ENERGY_PERCENT.get(), RAILGUN_LAUNCHES_PER_TICK.get());
     }
 
     /** ADR-058 section 4 gravity field caps; the defaults until the COMMON config is loaded. */

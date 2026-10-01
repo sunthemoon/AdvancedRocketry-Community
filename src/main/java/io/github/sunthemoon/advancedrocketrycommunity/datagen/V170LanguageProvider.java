@@ -32,6 +32,18 @@ public final class V170LanguageProvider extends LanguageProvider {
         add("block.advancedrocketrycommunity.laser_target", chinese ? "激光目标" : "Laser Target");
         add("block.advancedrocketrycommunity.gravity_field_controller", chinese ? "区域重力控制器" : "Gravity Field Controller");
         add("block.advancedrocketrycommunity.black_hole_generator", chinese ? "黑洞发电机" : "Black Hole Generator");
+        add("block.advancedrocketrycommunity.railgun", chinese ? "轨道炮货运发射器" : "Railgun Cargo Launcher");
+        add("screen.advancedrocketrycommunity.railgun.previous", "<");
+        add("screen.advancedrocketrycommunity.railgun.next", ">");
+        add("screen.advancedrocketrycommunity.railgun.launch", chinese ? "发射" : "Launch");
+        add("screen.advancedrocketrycommunity.railgun.auto", chinese ? "自动" : "Auto");
+        add("screen.advancedrocketrycommunity.railgun.redstone", chinese ? "红石" : "Redstone");
+        add("screen.advancedrocketrycommunity.railgun.min_down_16", "-16");
+        add("screen.advancedrocketrycommunity.railgun.min_down_1", "-1");
+        add("screen.advancedrocketrycommunity.railgun.min_up_1", "+1");
+        add("screen.advancedrocketrycommunity.railgun.min_up_16", "+16");
+        add("screen.advancedrocketrycommunity.railgun.received", chinese ? "已接收" : "Received");
+        add("screen.advancedrocketrycommunity.railgun.last", chinese ? "上次：%s" : "Last: %s");
         String gravity = "screen.advancedrocketrycommunity.gravity_field_controller.";
         add(gravity + "start", chinese ? "启动" : "Start");
         add(gravity + "stop", chinese ? "停止" : "Stop");
@@ -84,10 +96,20 @@ public final class V170LanguageProvider extends LanguageProvider {
         add(view + "rate", chinese ? "输出功率" : "Output");
         add(view + "remaining", chinese ? "剩余燃烧" : "Burn left");
         add(view + "fuel_table", chinese ? "燃料表" : "Fuel table");
+        add(view + "destination", chinese ? "目的地" : "Destination");
+        add(view + "destination_at", chinese ? "目的地位置" : "Destination at");
+        add(view + "route", chinese ? "航线" : "Route");
+        add(view + "auto", chinese ? "自动发射" : "Auto launch");
+        add(view + "min_stack", chinese ? "最小堆叠" : "Minimum stack");
+        add(view + "outbox", chinese ? "待登记" : "Awaiting registration");
+        add(view + "in_transit", chinese ? "运输中" : "In transit");
+        add(view + "incoming", chinese ? "入站" : "Incoming");
+        add(view + "receipts", chinese ? "回执" : "Receipts");
         String value = "advancedrocketrycommunity.endgame.value.";
         add(value + "on", chinese ? "开" : "On");
         add(value + "off", chinese ? "关" : "Off");
         add(value + "removes_blocks", chinese ? "此操作会移除方块" : "This removes blocks");
+        add(value + "break_resolves", chinese ? "拆除它会结算其中冻结的货物" : "Breaking it settles its frozen cargo");
         add(value + "present", chinese ? "已安装" : "Present");
         add(value + "missing", chinese ? "缺失" : "Missing");
         add(value + "mode.logical", chinese ? "逻辑采样" : "Logical sampling");
@@ -150,7 +172,7 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.INSUFFICIENT_ENERGY, "Not enough energy", "能量不足");
         put(codes, EndgameCode.OUTPUT_FULL, "Output full: empty it to continue", "输出已满：取出物品后继续");
         put(codes, EndgameCode.PHYSICAL_DISABLED, "Physical mining is disabled on this server", "本服务器已停用实体挖掘");
-        put(codes, EndgameCode.NO_TARGET, "No laser target linked", "未链接激光目标");
+        put(codes, EndgameCode.NO_TARGET, "No target selected", "未选择目标");
         put(codes, EndgameCode.FOOTPRINT_AT_CHUNK_EDGE, "Target too close to a chunk edge", "目标离区块边缘太近");
         put(codes, EndgameCode.TARGET_FOREIGN, "The target belongs to someone else", "该目标属于他人");
         put(codes, EndgameCode.TARGET_WRONG_BODY, "The target is not on the orbited body", "目标不在所环绕的天体上");
@@ -181,6 +203,8 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.TRANSFER_NOT_FOUND, "No such transfer", "没有该运输记录");
         put(codes, EndgameCode.DESTINATION_ACTIVE, "The destination still exists", "目的地仍然存在");
         put(codes, EndgameCode.ROUTE_REFUSED, "That endpoint cannot receive this cargo", "该端点不能接收此货物");
+        put(codes, EndgameCode.NO_PAYLOAD, "No input stack is large enough to launch", "没有达到发射数量的输入物品");
+        put(codes, EndgameCode.ROUTE_OUT_OF_SYSTEM, "The destination is in another star system", "目的地位于其他恒星系");
         return codes;
     }
 

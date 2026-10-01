@@ -75,6 +75,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.LASER_TARGET.get());
                         output.accept(ModItems.GRAVITY_FIELD_CONTROLLER.get());
                         output.accept(ModItems.BLACK_HOLE_GENERATOR.get());
+                        output.accept(ModItems.RAILGUN.get());
                     })
                     .build()
     );

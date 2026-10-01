@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHol
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlockEntity;
@@ -171,6 +172,16 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             BlackHoleGeneratorBlockEntity::new,
                             ModBlocks.BLACK_HOLE_GENERATOR.get()
+                    ).build(null)
+            );
+
+    /** ADR-056: the railgun controller. */
+    public static final RegistryObject<BlockEntityType<RailgunBlockEntity>> RAILGUN =
+            BLOCK_ENTITIES.register(
+                    "railgun",
+                    () -> BlockEntityType.Builder.of(
+                            RailgunBlockEntity::new,
+                            ModBlocks.RAILGUN.get()
                     ).build(null)
             );
 

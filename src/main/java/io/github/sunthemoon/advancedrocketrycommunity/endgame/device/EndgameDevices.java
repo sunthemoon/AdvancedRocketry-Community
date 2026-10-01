@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTa
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import java.util.Objects;
@@ -23,6 +24,8 @@ import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.BlockSnapshot;
@@ -42,6 +45,7 @@ public final class EndgameDevices {
     private final Supplier<LaserDrillSettings> laserSettings;
     private final Supplier<GravityFieldLimits> gravityLimits;
     private final Supplier<BlackHoleSettings> blackHoleSettings;
+    private final Supplier<RailgunSettings> railgunSettings;
     private final BlackHoleDataReloadListener.Manager blackHoleData;
     private final GravityFieldIndex fields = new GravityFieldIndex();
     private final GravityTrust trust = new GravityTrust();
@@ -52,20 +56,24 @@ public final class EndgameDevices {
     private final RoundRobinBudget laserOperations = new RoundRobinBudget();
     private final RoundRobinBudget laserLayers = new RoundRobinBudget();
     private final RoundRobinBudget structureBudget = new RoundRobinBudget();
+    private final RoundRobinBudget railgunLaunches = new RoundRobinBudget();
     private final EndgameStructureTracker structures = new EndgameStructureTracker();
     private final EndgameRateLimiter rates = new EndgameRateLimiter();
     private int laserOperationsLastTick;
     private int laserLayersLastTick;
+    private int railgunLaunchesLastTick;
 
     public EndgameDevices(Supplier<EndgameSettings> settings, Supplier<LaserDrillSettings> laserSettings,
                           Supplier<GravityFieldLimits> gravityLimits, Supplier<BlackHoleSettings> blackHoleSettings,
-                          MultiblockPatternCatalogManager patterns, CelestialCatalogManager celestial,
+                          Supplier<RailgunSettings> railgunSettings, MultiblockPatternCatalogManager patterns,
+                          CelestialCatalogManager celestial,
                           LaserDrillTableReloadListener.Manager laserTables,
                           BlackHoleDataReloadListener.Manager blackHoleData) {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.laserSettings = Objects.requireNonNull(laserSettings, "laserSettings");
         this.gravityLimits = Objects.requireNonNull(gravityLimits, "gravityLimits");
         this.blackHoleSettings = Objects.requireNonNull(blackHoleSettings, "blackHoleSettings");
+        this.railgunSettings = Objects.requireNonNull(railgunSettings, "railgunSettings");
         this.blackHoleData = Objects.requireNonNull(blackHoleData, "blackHoleData");
         this.patterns = Objects.requireNonNull(patterns, "patterns");
         this.celestial = Objects.requireNonNull(celestial, "celestial");
@@ -82,6 +90,20 @@ public final class EndgameDevices {
 
     public BlackHoleSettings blackHoleSettings() {
         return blackHoleSettings.get();
+    }
+
+    public RailgunSettings railgunSettings() {
+        return railgunSettings.get();
+    }
+
+    /** ADR-056 section 4: launches per server tick (at most 4), granted in railgun ID order, round-robin. */
+    public RoundRobinBudget railgunLaunches() {
+        return railgunLaunches;
+    }
+
+    /** ADR-054 section 9: a position's live body and star system over the current catalog. */
+    public Optional<EndgameStations.Body> body(MinecraftServer server, ResourceLocation level, long pos) {
+        return celestial.current().flatMap(catalog -> EndgameStations.body(server, celestial, catalog, level, pos));
     }
 
     /** ADR-057 singularity profiles and fuel tables; empty until the first complete load. */
@@ -158,8 +180,10 @@ public final class EndgameDevices {
         }
         laserOperationsLastTick = laserOperations.servedLastTick();
         laserLayersLastTick = laserLayers.servedLastTick();
+        railgunLaunchesLastTick = railgunLaunches.servedLastTick();
         laserOperations.resetCounters();
         laserLayers.resetCounters();
+        railgunLaunches.resetCounters();
         structureBudget.resetCounters();
         laserOperations.endTick(laserSettings.get().logicalOperationsPerTick());
         if (!settings.get().enabled(EndgameSystem.GRAVITY_FIELD)) {
@@ -168,6 +192,7 @@ public final class EndgameDevices {
         }
         laserLayers.endTick(laserSettings.get().layersPerTick());
         structureBudget.endTick(EndgameLimits.STRUCTURE_VALIDATIONS_PER_TICK);
+        railgunLaunches.endTick(railgunSettings.get().launchesPerTick());
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
@@ -216,7 +241,9 @@ public final class EndgameDevices {
                 + laserLayersLastTick + " layers_waiting=" + laserLayers.waitingLastTick() + "; structures tracked="
                 + structures.tracked() + " validations_waiting=" + structureBudget.waitingLastTick()
                 + "; gravity_fields active=" + fields.size() + "; black_hole_generators active="
-                + active.count(EndgameSystem.BLACK_HOLE_GENERATOR) + "; intent_players=" + rates.size();
+                + active.count(EndgameSystem.BLACK_HOLE_GENERATOR) + "; railgun launches_last_tick="
+                + railgunLaunchesLastTick + " waiting=" + railgunLaunches.waitingLastTick() + "; intent_players="
+                + rates.size();
     }
 
     public void clear() {
@@ -224,12 +251,14 @@ public final class EndgameDevices {
         laserOperations.clear();
         laserLayers.clear();
         structureBudget.clear();
+        railgunLaunches.clear();
         structures.clear();
         rates.clear();
         fields.clear();
         trust.clear();
         laserOperationsLastTick = 0;
         laserLayersLastTick = 0;
+        railgunLaunchesLastTick = 0;
     }
 
     private void changed(net.minecraft.world.level.LevelAccessor accessor, BlockPos position) {

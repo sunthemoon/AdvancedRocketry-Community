@@ -8,6 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.TransitCom
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunRedirectRule;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
@@ -29,8 +31,10 @@ public final class EndgameModule {
                 CommonConfig::transitLimits);
         EndgameRuntime.install(service);
         EndgameDevices devices = new EndgameDevices(CommonConfig::endgameSettings, CommonConfig::laserDrillSettings,
-                CommonConfig::gravityFieldLimits, CommonConfig::blackHoleSettings, patterns, celestial, laserTables,
-                blackHoleData);
+                CommonConfig::gravityFieldLimits, CommonConfig::blackHoleSettings, CommonConfig::railgunSettings,
+                patterns, celestial, laserTables, blackHoleData);
+        service.transitOperations().route(EndgameSystem.RAILGUN, new RailgunRedirectRule(service,
+                EndgameRuntime::devices));
         EndgameRuntime.installDevices(devices);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(service::onServerStopping);
@@ -53,6 +57,6 @@ public final class EndgameModule {
 
     /** The block entity type IDs of endgame endpoints, whose presence the chunk observations read. */
     static Set<String> endgameBlockEntityIds() {
-        return Set.of(ModBlockEntities.LASER_TARGET.getId().toString());
+        return Set.of(ModBlockEntities.LASER_TARGET.getId().toString(), ModBlockEntities.RAILGUN.getId().toString());
     }
 }

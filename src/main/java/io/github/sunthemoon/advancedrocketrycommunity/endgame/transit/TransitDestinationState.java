@@ -59,6 +59,15 @@ public final class TransitDestinationState {
         return Collections.unmodifiableSortedSet(new TreeSet<>(conflicts));
     }
 
+    /** A fresh endpoint root: nothing incoming, no receipts, no conflicts. */
+    public void clear() {
+        incoming.clear();
+        receipts.clear();
+        conflicts.clear();
+        incomingObservedAt.clear();
+        receiptObservedAt.clear();
+    }
+
     /** Incoming payloads, receipts or frozen conflicts: the endpoint is busy and refuses a non-operator break. */
     public boolean holdsContents() {
         return !incoming.isEmpty() || !receipts.isEmpty() || !conflicts.isEmpty();

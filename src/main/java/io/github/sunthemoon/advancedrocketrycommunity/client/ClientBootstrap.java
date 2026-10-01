@@ -75,6 +75,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.BLACK_HOLE_GENERATOR.get(),
                 BlackHoleGeneratorScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.RAILGUN.get(),
+                RailgunScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 

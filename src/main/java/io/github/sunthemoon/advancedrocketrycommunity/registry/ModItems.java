@@ -177,6 +177,7 @@ public final class ModItems {
             ModBlocks.GRAVITY_FIELD_CONTROLLER);
     public static final RegistryObject<Item> BLACK_HOLE_GENERATOR = blockItem("black_hole_generator",
             ModBlocks.BLACK_HOLE_GENERATOR);
+    public static final RegistryObject<Item> RAILGUN = blockItem("railgun", ModBlocks.RAILGUN);
 
     private ModItems() {
     }
