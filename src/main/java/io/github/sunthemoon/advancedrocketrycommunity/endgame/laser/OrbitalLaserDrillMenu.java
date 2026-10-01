@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameItemSlot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.IntentKind;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
@@ -36,7 +37,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 /**
  * ADR-055 section 5 menu: the lens slot, the 18 output slots, energy and the time to the next operation as data
@@ -84,9 +84,10 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
         super(ModMenuTypes.ORBITAL_LASER_DRILL.get(), id, drill == null ? null : targetOf(drill), inventory.player);
         checkContainerDataCount(data, DATA_COUNT);
         this.data = data;
-        addSlot(new SlotItemHandler(lens, 0, 26, 36));
+        Runnable changed = drill == null ? () -> { } : drill::setChanged;
+        addSlot(new EndgameItemSlot(lens, 0, 26, 36, changed));
         for (int slot = 0; slot < LaserDrillStorage.OUTPUT_SLOTS; slot++) {
-            addSlot(new OutputSlot(output, slot, 62 + (slot % 6) * 18, 18 + (slot / 6) * 18));
+            addSlot(new OutputSlot(output, slot, 62 + (slot % 6) * 18, 18 + (slot / 6) * 18, changed));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -308,9 +309,9 @@ public final class OrbitalLaserDrillMenu extends EndgameDeviceMenu {
     }
 
     /** Players take output; nothing is ever inserted (ADR-055 section 1). */
-    private static final class OutputSlot extends SlotItemHandler {
-        OutputSlot(IItemHandler handler, int index, int x, int y) {
-            super(handler, index, x, y);
+    private static final class OutputSlot extends EndgameItemSlot {
+        OutputSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
+            super(handler, index, x, y, changed);
         }
 
         @Override

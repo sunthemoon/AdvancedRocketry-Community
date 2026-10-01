@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameItemSlot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
@@ -23,7 +24,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 /**
  * ADR-057 section 6 menu: the 9 fuel slots (plain items only), energy, the output rate and the remaining burn as
@@ -52,8 +52,9 @@ public final class BlackHoleGeneratorMenu extends EndgameDeviceMenu {
                 inventory.player);
         checkContainerDataCount(data, DATA_COUNT);
         this.data = data;
+        Runnable changed = generator == null ? () -> { } : generator::setChanged;
         for (int slot = 0; slot < BlackHoleGeneratorBlockEntity.FUEL_SLOTS; slot++) {
-            addSlot(new FuelSlot(fuel, slot, 62 + (slot % 3) * 18, 18 + (slot / 3) * 18));
+            addSlot(new FuelSlot(fuel, slot, 62 + (slot % 3) * 18, 18 + (slot / 3) * 18, changed));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -142,9 +143,9 @@ public final class BlackHoleGeneratorMenu extends EndgameDeviceMenu {
         return (data.get(3) & 0xFFFF) | ((data.get(4) & 0xFFFF) << 16);
     }
 
-    private static final class FuelSlot extends SlotItemHandler {
-        FuelSlot(IItemHandler handler, int index, int x, int y) {
-            super(handler, index, x, y);
+    private static final class FuelSlot extends EndgameItemSlot {
+        FuelSlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
+            super(handler, index, x, y, changed);
         }
 
         @Override

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameItemSlot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.IntentKind;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
@@ -23,7 +24,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
 
 /**
  * ADR-055 section 5 marker menu: the 27-slot drop buffer (take only), and in the device view the endpoint state,
@@ -48,8 +48,9 @@ public final class LaserTargetMenu extends EndgameDeviceMenu {
     private LaserTargetMenu(int id, Inventory inventory, LaserTargetBlockEntity target, IItemHandler buffer,
                             boolean ignored) {
         super(ModMenuTypes.LASER_TARGET.get(), id, target == null ? null : targetOf(target), inventory.player);
+        Runnable changed = target == null ? () -> { } : target::setChanged;
         for (int slot = 0; slot < LaserTargetBlockEntity.BUFFER_SLOTS; slot++) {
-            addSlot(new TakeOnlySlot(buffer, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18));
+            addSlot(new TakeOnlySlot(buffer, slot, 8 + (slot % 9) * 18, 18 + (slot / 9) * 18, changed));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -132,9 +133,9 @@ public final class LaserTargetMenu extends EndgameDeviceMenu {
         return original;
     }
 
-    private static final class TakeOnlySlot extends SlotItemHandler {
-        TakeOnlySlot(IItemHandler handler, int index, int x, int y) {
-            super(handler, index, x, y);
+    private static final class TakeOnlySlot extends EndgameItemSlot {
+        TakeOnlySlot(IItemHandler handler, int index, int x, int y, Runnable changed) {
+            super(handler, index, x, y, changed);
         }
 
         @Override
