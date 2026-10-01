@@ -56,7 +56,23 @@ public enum EndgameCode {
     ORBIT_BODY_UNAVAILABLE,
     NO_TABLE,
     INSUFFICIENT_ENERGY,
-    OUTPUT_FULL;
+    OUTPUT_FULL,
+    // ADR-055 section 3: the physical mode, its laser target and the link.
+    PHYSICAL_DISABLED,
+    NO_TARGET,
+    FOOTPRINT_AT_CHUNK_EDGE,
+    TARGET_FOREIGN,
+    TARGET_WRONG_BODY,
+    LINK_LOST,
+    LINK_UNSETTLED,
+    CONFIRM_REQUIRED,
+    BLOCKED_IMMUNE,
+    BLOCKED_FLUID,
+    TARGET_BUFFER_FULL,
+    ENERGY_DEBT,
+    COMPLETE,
+    /** ADR-054 section 9: no body context for an endpoint's position. */
+    BODY_UNAVAILABLE;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 

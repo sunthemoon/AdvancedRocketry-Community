@@ -107,6 +107,20 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.NO_TABLE, "Nothing to mine from this body", "该天体没有可开采的资源");
         put(codes, EndgameCode.INSUFFICIENT_ENERGY, "Not enough energy", "能量不足");
         put(codes, EndgameCode.OUTPUT_FULL, "Output full: empty it to continue", "输出已满：取出物品后继续");
+        put(codes, EndgameCode.PHYSICAL_DISABLED, "Physical mining is disabled on this server", "本服务器已停用实体挖掘");
+        put(codes, EndgameCode.NO_TARGET, "No laser target linked", "未链接激光目标");
+        put(codes, EndgameCode.FOOTPRINT_AT_CHUNK_EDGE, "Target too close to a chunk edge", "目标离区块边缘太近");
+        put(codes, EndgameCode.TARGET_FOREIGN, "The target belongs to someone else", "该目标属于他人");
+        put(codes, EndgameCode.TARGET_WRONG_BODY, "The target is not on the orbited body", "目标不在所环绕的天体上");
+        put(codes, EndgameCode.LINK_LOST, "The link to the target is lost", "与目标的链接已丢失");
+        put(codes, EndgameCode.LINK_UNSETTLED, "Settle the link with its target first", "请先与目标完成结算");
+        put(codes, EndgameCode.CONFIRM_REQUIRED, "Confirm: this removes blocks", "请确认：此操作会移除方块");
+        put(codes, EndgameCode.BLOCKED_IMMUNE, "Blocked by a protected or special block", "被受保护或特殊方块阻挡");
+        put(codes, EndgameCode.BLOCKED_FLUID, "Blocked by a fluid", "被流体阻挡");
+        put(codes, EndgameCode.TARGET_BUFFER_FULL, "Target buffer full: empty it to continue", "目标缓存已满：取出物品后继续");
+        put(codes, EndgameCode.ENERGY_DEBT, "Paying for layers already dug", "正在补付已挖掘层的能量");
+        put(codes, EndgameCode.COMPLETE, "Shaft complete", "竖井已完成");
+        put(codes, EndgameCode.BODY_UNAVAILABLE, "No celestial body here", "此处没有天体");
         return codes;
     }
 
