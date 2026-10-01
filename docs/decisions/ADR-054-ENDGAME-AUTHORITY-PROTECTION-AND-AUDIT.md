@@ -937,3 +937,6 @@ escrowed cargo in it would be lost, so removal requires draining transfers first
 - Revision 4 answers review round 3 (required changes for this ADR, and a loss
   found while closing R3-L6), one commit per finding; see
   [review-03-dispositions](../work/v1.7.0-preparation/review-03-dispositions.md).
+- Revision 4 is accepted by review round 4; its five Lows are answered one
+  commit each; see
+  [review-04-dispositions](../work/v1.7.0-preparation/review-04-dispositions.md).
