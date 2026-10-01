@@ -29,6 +29,8 @@ import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -116,7 +118,10 @@ public final class GravityFieldGameTests {
                             "fieldFriend"));
                     respawned.restoreFrom(friend, false);
                     helper.assertTrue(respawned.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)
-                            .getList(GravityTrust.KEY, 11).size() == 1, "The trust list did not survive a respawn");
+                            .getCompound(GravityTrust.KEY).getList(GravityTrust.OWNERS, 11).size() == 1
+                            && respawned.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)
+                            .getCompound(GravityTrust.KEY).getInt("schema_version") == GravityTrust.SCHEMA_VERSION,
+                            "The versioned trust list did not survive a respawn");
                     // Out of energy: the field drops in the same tick.
                     device.energy().set(0);
                 })
@@ -259,6 +264,37 @@ public final class GravityFieldGameTests {
      * The player's own source; the permission is raised only so the test can name the owner with a selector (the
      * GameTest server has no profile cache for names). The source and its output stay the player's own.
      */
+    /** Review C11R-L6: the unversioned C11 development list still reads; the next change writes schema 1. */
+    @GameTest(template = "empty", batch = "endgame_gravity_trust_format", timeoutTicks = 40)
+    public static void anUnversionedTrustListIsReadAndRewrittenWithItsSchema(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        ServerPlayer player = ConnectedTestPlayers.join(server, UUID.randomUUID(), "trustFormat", level,
+                helper.absolutePos(BlockPos.ZERO), new ArrayList<>());
+        try {
+            UUID first = UUID.randomUUID();
+            UUID second = UUID.randomUUID();
+            ListTag unversioned = new ListTag();
+            unversioned.add(NbtUtils.createUUID(first));
+            CompoundTag persisted = new CompoundTag();
+            persisted.put(GravityTrust.KEY, unversioned);
+            player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+            GravityTrust trust = new GravityTrust();
+            helper.assertTrue(trust.list(player).equals(List.of(first)) && trust.trusted(player).contains(first),
+                    "The unversioned list was not read");
+            helper.assertTrue(trust.trust(player, second) == EndgameCode.OK, "A trust was refused");
+            CompoundTag stored = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)
+                    .getCompound(GravityTrust.KEY);
+            helper.assertTrue(stored.getInt("schema_version") == GravityTrust.SCHEMA_VERSION
+                            && stored.getList(GravityTrust.OWNERS, 11).size() == 2
+                            && new GravityTrust().list(player).equals(List.of(first, second)),
+                    "The list was not rewritten with its schema: " + stored);
+        } finally {
+            server.getPlayerList().remove(player);
+        }
+        helper.succeed();
+    }
+
     private static int command(MinecraftServer server, ServerPlayer player, String command) {
         return command(server, player.createCommandSourceStack().withPermission(2), command);
     }
