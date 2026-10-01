@@ -401,9 +401,19 @@ never triggers:
   **at this endpoint**, or pruned, is the endpoint's own content (its move was
   due after a crash, below) and drops with the local buffers. An incoming
   payload whose record names another endpoint is destroyed with an
-  `INCOMING_VOIDED` line, never dropped. If the barrier flush fails, the records
-  stay as they were and one `REMOVAL_SETTLEMENT_UNKNOWN` line asks an operator to
-  redirect or purge them.
+  `INCOMING_VOIDED` line, never dropped. Each settled record is written to the
+  log as one `REMOVAL_SETTLED` line naming the record and its outcome
+  (`incoming`, `moved` or `voided`). If the barrier flush fails, the settlement
+  stays applied in memory: the root stays dirty, every later flush or autosave
+  retries it, and `REMOVAL_SETTLEMENT_PENDING` is logged once and shown in
+  `/arce endgame status` until a write succeeds (review R2-M2). Only if the
+  server stops before any successful write can the file keep a `CLAIMED`,
+  unacknowledged record paid at the removed endpoint; an operator then applies
+  the logged outcome with `/arce endgame transfer resettle <source> <seq>`, which
+  returns the record to `ARRIVED` for an `incoming` outcome and acknowledges it
+  for a `moved` one. The endpoint's retirement keeps any returning copy inert
+  either way. Such records still count toward the owner's transit limit until
+  resettled.
 - The endpoint's index record is removed and its ID is **retired** (§9): the
   tombstone table keeps the ID, with `dispatched_through` for a source (§11).
   The retirement is part of the barrier flush when one runs, and otherwise
@@ -650,7 +660,8 @@ count tickets by type before and after every system and after every ride.
 - **Lines.** Every state-changing intent, refusal code change, operator command,
   quarantine and ledger anomaly (`CLAIM_RECOVERED`, `REMATERIALIZED`,
   `REDIRECT_*`, `OUTBOX_STALE_DROPPED`, `SEQUENCE_GAP`, `SOURCE_ROLLBACK`,
-  `OUTBOX_LOST_ON_REMOVAL`, `REMOVAL_SETTLEMENT_UNKNOWN`) writes one
+  `OUTBOX_LOST_ON_REMOVAL`, `REMOVAL_SETTLED`, `REMOVAL_SETTLEMENT_PENDING`)
+  writes one
   `ARCE_ENDGAME` line of at most 512 bytes. Routine ledger transitions (escrow,
   registration, arrival, claim, acknowledgement, pruning) and effect batches are
   aggregated into one summary line per system every 1,200 ticks (review R1-L6).
@@ -669,7 +680,8 @@ count tickets by type before and after every system and after every ride.
   `endpoint list
   [<player>]`; `endpoint purge <id>` (removes the index record only, refused
   while referenced; the §11 tombstone stays until the absence is persisted);
-  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11);
+  `endpoint retire <id>` and `endpoint resolve <id>` (§9, §11); `transfer
+  resettle <source> <seq>` (§9.1);
   `transfer list|inspect|redirect|purge` (§11). Outputs are bounded to one page.
 - **Players** see their own device status in its menu; nothing lists other
   players' devices, endpoints, zones or coordinates.
