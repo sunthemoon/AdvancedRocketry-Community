@@ -1,0 +1,39 @@
+{
+  "bodies": [
+    "advancedrocketrycommunity:venus"
+  ],
+  "default": false,
+  "entries": [
+    {
+      "count": 5,
+      "item": "minecraft:basalt",
+      "weight": 900
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_gold",
+      "weight": 30
+    },
+    {
+      "count": 5,
+      "item": "minecraft:quartz",
+      "weight": 30
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_copper",
+      "weight": 20
+    },
+    {
+      "count": 5,
+      "item": "minecraft:redstone",
+      "weight": 15
+    },
+    {
+      "count": 1,
+      "item": "minecraft:diamond",
+      "weight": 5
+    }
+  ],
+  "schema_version": 1
+}

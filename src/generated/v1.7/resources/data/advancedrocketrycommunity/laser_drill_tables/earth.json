@@ -1,0 +1,49 @@
+{
+  "bodies": [
+    "advancedrocketrycommunity:earth"
+  ],
+  "default": false,
+  "entries": [
+    {
+      "count": 5,
+      "item": "minecraft:cobblestone",
+      "weight": 900
+    },
+    {
+      "count": 5,
+      "item": "minecraft:coal",
+      "weight": 25
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_iron",
+      "weight": 25
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_copper",
+      "weight": 20
+    },
+    {
+      "count": 3,
+      "item": "minecraft:raw_gold",
+      "weight": 10
+    },
+    {
+      "count": 5,
+      "item": "minecraft:lapis_lazuli",
+      "weight": 10
+    },
+    {
+      "count": 1,
+      "item": "minecraft:diamond",
+      "weight": 5
+    },
+    {
+      "count": 1,
+      "item": "minecraft:emerald",
+      "weight": 5
+    }
+  ],
+  "schema_version": 1
+}

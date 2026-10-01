@@ -1,0 +1,39 @@
+{
+  "bodies": [
+    "advancedrocketrycommunity:mars"
+  ],
+  "default": false,
+  "entries": [
+    {
+      "count": 5,
+      "item": "minecraft:red_sand",
+      "weight": 900
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_iron",
+      "weight": 45
+    },
+    {
+      "count": 5,
+      "item": "minecraft:redstone",
+      "weight": 25
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_copper",
+      "weight": 20
+    },
+    {
+      "count": 2,
+      "item": "minecraft:raw_gold",
+      "weight": 5
+    },
+    {
+      "count": 1,
+      "item": "minecraft:diamond",
+      "weight": 5
+    }
+  ],
+  "schema_version": 1
+}

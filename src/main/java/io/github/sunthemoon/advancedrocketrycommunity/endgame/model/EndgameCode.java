@@ -48,7 +48,15 @@ public enum EndgameCode {
     ZONE_INVALID,
     ZONE_EXISTS,
     ZONE_NOT_FOUND,
-    ZONE_LIMIT;
+    ZONE_LIMIT,
+    // ADR-055 section 2: the laser drill's logical mode.
+    NO_LENS,
+    STOPPED,
+    REDSTONE_BLOCKED,
+    ORBIT_BODY_UNAVAILABLE,
+    NO_TABLE,
+    INSUFFICIENT_ENERGY,
+    OUTPUT_FULL;
 
     private final String translationKey = ModIdentity.MOD_ID + ".endgame.code." + name().toLowerCase(Locale.ROOT);
 

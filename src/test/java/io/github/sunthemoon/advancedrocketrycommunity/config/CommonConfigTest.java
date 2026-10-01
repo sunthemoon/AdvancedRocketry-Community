@@ -36,8 +36,8 @@ class CommonConfigTest {
         assertFalse(CommonConfig.SPEC.getValues().contains("logLifecycleEvents"));
         // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing,
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
-        // resource mission values and the eleven ADR-054 framework values.
-        assertEquals(33, countValues(CommonConfig.SPEC.getValues()));
+        // resource mission values, the eleven ADR-054 framework values and the seven ADR-055 laser drill values.
+        assertEquals(40, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -56,6 +56,22 @@ class CommonConfigTest {
         assertRange("endgame.zones", CommonConfig.ENDGAME_ZONES, 1, 256);
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings.DEFAULTS,
                 CommonConfig.endgameSettings(), "the defaults apply until the config loads");
+    }
+
+    @Test
+    void laserDrillValuesHaveTheirContractDefaultsAndRanges() {
+        assertRangeAndDefault("endgame.laserDrill.energyPercent", CommonConfig.LASER_DRILL_ENERGY_PERCENT, 10, 1_000,
+                100);
+        assertRangeAndDefault("endgame.laserDrill.operationIntervalTicks",
+                CommonConfig.LASER_DRILL_OPERATION_INTERVAL_TICKS, 20, 1_200, 20);
+        assertRangeAndDefault("endgame.laserDrill.maxDepth", CommonConfig.LASER_DRILL_MAX_DEPTH, 1, 256, 64);
+        assertRange("endgame.laserDrill.activeGlobal", CommonConfig.LASER_DRILL_ACTIVE_GLOBAL, 1, 32);
+        assertRange("endgame.laserDrill.activePerOwner", CommonConfig.LASER_DRILL_ACTIVE_PER_OWNER, 1, 4);
+        assertRange("endgame.laserDrill.logicalOperationsPerTick", CommonConfig.LASER_DRILL_LOGICAL_OPERATIONS_PER_TICK,
+                1, 32);
+        assertRange("endgame.laserDrill.layersPerTick", CommonConfig.LASER_DRILL_LAYERS_PER_TICK, 1, 7);
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings.DEFAULTS,
+                CommonConfig.laserDrillSettings(), "the defaults apply until the config loads");
     }
 
     @Test

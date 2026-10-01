@@ -1,0 +1,37 @@
+{
+  "bodies": [],
+  "default": true,
+  "entries": [
+    {
+      "count": 5,
+      "item": "minecraft:cobblestone",
+      "weight": 900
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_iron",
+      "weight": 30
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_copper",
+      "weight": 30
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_gold",
+      "weight": 15
+    },
+    {
+      "count": 5,
+      "item": "minecraft:redstone",
+      "weight": 20
+    },
+    {
+      "count": 1,
+      "item": "minecraft:diamond",
+      "weight": 5
+    }
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,39 @@
+{
+  "bodies": [
+    "advancedrocketrycommunity:moon"
+  ],
+  "default": false,
+  "entries": [
+    {
+      "count": 5,
+      "item": "minecraft:cobblestone",
+      "weight": 900
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_iron",
+      "weight": 40
+    },
+    {
+      "count": 5,
+      "item": "minecraft:quartz",
+      "weight": 30
+    },
+    {
+      "count": 2,
+      "item": "minecraft:raw_gold",
+      "weight": 15
+    },
+    {
+      "count": 5,
+      "item": "minecraft:raw_copper",
+      "weight": 10
+    },
+    {
+      "count": 1,
+      "item": "minecraft:diamond",
+      "weight": 5
+    }
+  ],
+  "schema_version": 1
+}

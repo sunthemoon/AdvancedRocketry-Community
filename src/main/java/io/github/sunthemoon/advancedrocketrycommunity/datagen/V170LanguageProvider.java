@@ -73,6 +73,13 @@ public final class V170LanguageProvider extends LanguageProvider {
         put(codes, EndgameCode.ZONE_EXISTS, "A zone with this name exists", "已存在同名保护区");
         put(codes, EndgameCode.ZONE_NOT_FOUND, "No such zone", "没有该保护区");
         put(codes, EndgameCode.ZONE_LIMIT, "Zone limit reached", "已达保护区数量上限");
+        put(codes, EndgameCode.NO_LENS, "Insert a laser lens", "请放入激光透镜");
+        put(codes, EndgameCode.STOPPED, "Stopped", "已停止");
+        put(codes, EndgameCode.REDSTONE_BLOCKED, "Paused by the redstone setting", "因红石设置而暂停");
+        put(codes, EndgameCode.ORBIT_BODY_UNAVAILABLE, "The orbited body is unavailable", "所环绕的天体不可用");
+        put(codes, EndgameCode.NO_TABLE, "Nothing to mine from this body", "该天体没有可开采的资源");
+        put(codes, EndgameCode.INSUFFICIENT_ENERGY, "Not enough energy", "能量不足");
+        put(codes, EndgameCode.OUTPUT_FULL, "Output full: empty it to continue", "输出已满：取出物品后继续");
         return codes;
     }
 

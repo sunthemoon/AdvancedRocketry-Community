@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
@@ -161,6 +162,32 @@ public final class CommonConfig {
     public static final ForgeConfigSpec.IntValue ENDGAME_ZONES = limit(
             "endgame.zones", "Protected zones on the server (ADR-054 section 6).", EndgameLimits.MAX_ZONES);
 
+    // ADR-055 section 4: laser drill budgets.
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_ENERGY_PERCENT = BUILDER
+            .comment("Energy per laser drill operation in percent of 10,000 FE (ADR-055; 10..1,000).")
+            .defineInRange("endgame.laserDrill.energyPercent", LaserDrillSettings.DEFAULTS.energyPercent(),
+                    LaserDrillSettings.MIN_ENERGY_PERCENT, LaserDrillSettings.MAX_ENERGY_PERCENT);
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_OPERATION_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between two operations of one laser drill (ADR-055; 20..1,200).")
+            .defineInRange("endgame.laserDrill.operationIntervalTicks", LaserDrillSettings.MIN_INTERVAL_TICKS,
+                    LaserDrillSettings.MIN_INTERVAL_TICKS, LaserDrillSettings.MAX_INTERVAL_TICKS);
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_MAX_DEPTH = BUILDER
+            .comment("Layers a physical laser shaft may dig below its marker (ADR-055; 1..256).")
+            .defineInRange("endgame.laserDrill.maxDepth", LaserDrillSettings.DEFAULTS.maxDepth(), 1,
+                    LaserDrillSettings.MAX_DEPTH);
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_ACTIVE_GLOBAL = limit(
+            "endgame.laserDrill.activeGlobal", "Running laser drills on the server (ADR-055).",
+            LaserDrillSettings.MAX_ACTIVE_GLOBAL);
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_ACTIVE_PER_OWNER = limit(
+            "endgame.laserDrill.activePerOwner", "Running laser drills per owner (ADR-055).",
+            LaserDrillSettings.MAX_ACTIVE_PER_OWNER);
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_LOGICAL_OPERATIONS_PER_TICK = limit(
+            "endgame.laserDrill.logicalOperationsPerTick", "Logical laser drill operations per server tick (ADR-055).",
+            LaserDrillSettings.MAX_LOGICAL_OPERATIONS_PER_TICK);
+    public static final ForgeConfigSpec.IntValue LASER_DRILL_LAYERS_PER_TICK = limit(
+            "endgame.laserDrill.layersPerTick", "Physical laser shaft layers per server tick (ADR-055).",
+            LaserDrillSettings.MAX_LAYERS_PER_TICK);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -172,6 +199,16 @@ public final class CommonConfig {
                 ENDGAME_BLACK_HOLE_GENERATOR.get(), ENDGAME_GRAVITY_FIELD.get(), ENDGAME_SPACE_ELEVATOR.get(),
                 ENDGAME_INTENT_INTERVAL_TICKS.get(), ENDGAME_SELECTION_INTERVAL_TICKS.get(),
                 ENDGAME_ENDPOINTS_GLOBAL.get(), ENDGAME_ENDPOINTS_PER_OWNER.get(), ENDGAME_ZONES.get());
+    }
+
+    /** ADR-055 section 4 laser drill budgets; the defaults until the COMMON config is loaded. */
+    public static LaserDrillSettings laserDrillSettings() {
+        if (!SPEC.isLoaded()) {
+            return LaserDrillSettings.DEFAULTS;
+        }
+        return new LaserDrillSettings(LASER_DRILL_ENERGY_PERCENT.get(), LASER_DRILL_OPERATION_INTERVAL_TICKS.get(),
+                LASER_DRILL_MAX_DEPTH.get(), LASER_DRILL_ACTIVE_GLOBAL.get(), LASER_DRILL_ACTIVE_PER_OWNER.get(),
+                LASER_DRILL_LOGICAL_OPERATIONS_PER_TICK.get(), LASER_DRILL_LAYERS_PER_TICK.get());
     }
 
     private static ForgeConfigSpec.BooleanValue system(String path, String comment, boolean defaultValue) {
