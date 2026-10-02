@@ -362,6 +362,31 @@ final class TransitLedgerTest {
                 .destination());
     }
 
+    /**
+     * Review C12R-L4: {@code endpoint retire} of an ID without an index record (a young tombstone here) is refused
+     * before anything changes: the stub paid there stays until that endpoint's chunk saved the move.
+     */
+    @Test
+    void aRefusedRetireChangesNothing() {
+        EndgameService service = service(TransitLimits.DEFAULTS);
+        TransitKey key = new TransitKey(SOURCE, 1L);
+        service.coalesced(root -> {
+            root.registerTransit(TransitRecord.registered(SOURCE, new OutboxEntry(1L, DESTINATION, payload(), 1, 20,
+                    EndgameSystem.RAILGUN), OWNER, root.saveEpoch(), 0L).arrived().claimed(DESTINATION)
+                    .acknowledged(root.saveEpoch()).asStub());
+            return null;
+        });
+        persist(service);
+        service.endpointRemoved(DESTINATION, 5L);
+        EndgameRoot.Change change = service.barrier(root -> TransitLedger.retire(root, DESTINATION));
+        assertEquals(EndgameCode.ENDPOINT_NOT_FOUND, change.code());
+        assertTrue(service.root().orElseThrow().transits().record(key).isPresent(),
+                "the refused retire pruned the stub paid at the removed endpoint");
+        EndgameRoot.Change retired = service.barrier(root -> TransitLedger.retire(root, SOURCE));
+        assertEquals(EndgameCode.OK, retired.code(), "an indexed endpoint retires");
+        assertTrue(service.root().orElseThrow().endpoint(SOURCE).isEmpty());
+    }
+
     // ---- Review C12R-M1: one busy endpoint does not starve the others -------------------------------------------
 
     /** The destination (the hub, first in ID order) and {@link #OTHER} and {@link #LATE_SOURCE} are registered. */

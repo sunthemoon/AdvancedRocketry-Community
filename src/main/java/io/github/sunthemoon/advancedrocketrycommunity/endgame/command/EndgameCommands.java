@@ -267,12 +267,7 @@ public final class EndgameCommands {
         if (record.isPresent() && chunkLoaded(context, record.get())) {
             return reply(context, "endpoint_retire", EndgameCode.ENDPOINT_CHUNK_LOADED, id, "");
         }
-        return changeWithEvictions(context, "endpoint_retire", id,
-                root -> {
-                    // Retirement without live state (review R3-M1): claims return, stubs paid here are pruned.
-                    TransitLedger.retireWithoutLiveState(root, id, true);
-                    return root.retireLost(id, EndgameService::pinned);
-                });
+        return changeWithEvictions(context, "endpoint_retire", id, root -> TransitLedger.retire(root, id));
     }
 
     /**

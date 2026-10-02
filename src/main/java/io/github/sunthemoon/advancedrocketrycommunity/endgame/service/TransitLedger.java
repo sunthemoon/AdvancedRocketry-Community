@@ -505,6 +505,19 @@ public final class TransitLedger implements TransitLedgerView {
      * update: every claim paid at the endpoint and not acknowledged returns to arrived; {@code endpoint retire} also
      * prunes the stubs paid there, because the endpoint's chunk may never load again to show the saved move.
      */
+    /**
+     * {@code endpoint retire}: an indexed endpoint is retired without its live state (review R3-M1): its claims
+     * return, the stubs paid there are pruned, and its record becomes a tombstone. Any other ID is refused before
+     * anything changes (review C12R-L4).
+     */
+    public static EndgameRoot.Change retire(EndgameRoot root, UUID id) {
+        if (root.endpoint(id).isEmpty()) {
+            return new EndgameRoot.Change(EndgameCode.ENDPOINT_NOT_FOUND, List.of());
+        }
+        retireWithoutLiveState(root, id, true);
+        return root.retireLost(id, EndgameService::pinned);
+    }
+
     public static int retireWithoutLiveState(EndgameRoot root, UUID id, boolean pruneStubs) {
         int changed = 0;
         long epoch = root.saveEpoch();
