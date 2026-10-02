@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -178,7 +179,10 @@ public final class BlackHoleGeneratorGameTests {
         helper.assertTrue(generator.assignOwner(owner), "Owner not assigned");
         long[] at = new long[2];
         helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.NO_FUEL,
+                // A new generator already reads NO_FUEL before its chunk ticks it; the orbit body is set only by a
+                // full evaluation, so the warp below is timed against a generator that really idles.
+                .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.NO_FUEL
+                                && generator.orbitBody().equals(Optional.of(SingularityContent.CYGNUS_X1)),
                         "An empty generator at Cygnus X-1 did not idle: " + generator.describe()))
                 .thenExecute(() -> {
                     warp(helper, server, stations, stationId, CelestialIds.EARTH_ID);
