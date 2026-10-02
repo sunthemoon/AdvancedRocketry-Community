@@ -266,6 +266,8 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
                 errors.append(f"{where}: decision token {token!r} is neither an ADR nor a version document")
         if disposition in ("REDESIGNED", "DEFERRED", "REJECTED", "MERGED", "PLANNED") and not adrs:
             errors.append(f"{where}: {disposition} needs an ADR")
+        if disposition == "REDESIGNED" and not [token for token in tokens if token != PLAYER_IMPACT_ADR]:
+            errors.append(f"{where}: REDESIGNED needs the ADR or version document that delivered the mechanism")
         if disposition in ("DEFERRED", "REJECTED") and PLAYER_IMPACT_ADR not in tokens:
             errors.append(f"{where}: {disposition} needs {PLAYER_IMPACT_ADR}, which records the player impact")
         if row["evidence"] and not (disposition in ("IMPLEMENTED", "REDESIGNED") and plan == "v1.8.0"):

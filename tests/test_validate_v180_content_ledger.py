@@ -125,7 +125,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         evidence.parent.mkdir(parents=True)
         evidence.write_text("x", encoding="utf-8")
         self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything",
-                          evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+                          decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
         self.assertEqual([], self._errors())
 
     def test_planned_row_cannot_carry_evidence(self) -> None:
@@ -153,6 +153,11 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._edit_ledger("block:railgun", target="advancedrocketrycommunity:rocket")
         self.assertIn("ledger: block:railgun: IMPLEMENTED content needs a registered modern block/item ID",
                       self._errors())
+
+    def test_redesigned_rows_name_the_delivering_decision(self) -> None:
+        self._edit_ledger("block:launchpad", decision="ADR-062")
+        self.assertIn("ledger: block:launchpad: REDESIGNED needs the ADR or version document that delivered the "
+                      "mechanism", self._errors())
 
     def test_rejected_rows_need_the_player_impact_adr(self) -> None:
         self._edit_ledger("entity:laserNode", decision="ADR-055")
