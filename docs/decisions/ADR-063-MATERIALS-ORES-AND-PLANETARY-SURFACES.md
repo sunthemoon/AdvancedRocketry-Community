@@ -413,6 +413,85 @@ endgame casing and a laser lens without crystals. The recipe graph check
 (ADR-061 §5.3) treats both Levels as reachable only after an interstellar warp
 and must still find every C16–C18 output reachable without them.
 
+*Revision 6 (proposed, C15c).* Settled while implementing §6:
+
+- **Bodies.** Both orbit Tau Ceti, are landable and orbitable, need
+  discovery and have environment effects. `tau_ceti_f`: gravity 1.0, orbit
+  199,000,000 at a period of 20,764,800 ticks, solar intensity 0.8, radiation
+  0. `tau_ceti_g`: gravity 1.2, orbit 19,400,000 at 646,400 ticks, solar
+  intensity 1.2, radiation 0.1. Distances follow the real planets' (1.33 and
+  0.13 AU, on the scale of Tau Ceti e) and periods use Tau Ceti e's ticks per
+  real day. With §6's atmospheres neither world harms an unprotected player
+  (cold below 240 K, pressure above 2 atm and sunlight above 1.5 cause damage);
+  Tau Ceti g is not breathable.
+- **Skies.** Each body has its own atmosphere and visual profile, and the two
+  visual profiles are new built-ins beside the Moon, Mars, Venus and space
+  ones: a blue-green day sky for f and the dark storm sky of the legacy
+  stormland (`0x202020`) for g.
+- **Levels and terrain.** Dimension types `tau_ceti_f` and `tau_ceti_g` (as
+  Mars: heights 0–256 and a day cycle). Each Level has low relief from one 2D
+  noise `n` in [-1, 1], as the Moon (§5), over vanilla stone with bedrock at
+  y 0–4 and no caves, aquifers or ore veins. Tau Ceti f has water up to y 62
+  and its top block at `63 + 18n` (y 45–81); the same noise is the
+  continentalness of a multi-noise source, so the biomes follow the ground:
+  ocean spires below n = -0.45 (the sea floor below y 55), marsh to -0.15
+  (shallows), deep swamp to 0.1 (the shore) and alien forest above. Tau Ceti g
+  has no sea and its top block at `96 + 8n` (y 88–104), a plateau like the
+  legacy stormland and crystal chasms (base height 1); its two biomes lie in
+  irregular patches (the `patches` source of revision 5, its own salt).
+- **Biomes.** The legacy surfaces and colours: alien forest (grass over dirt;
+  grass `0x7777FF`, foliage `0x55FFE1`, water `0x8888FF`), marsh (grass over
+  dirt, clay and lily pads), deep swamp (grass over dirt; water `0xE0FFAE`, sky
+  `0x203020`), ocean spires (gravel), stormland (grass over dirt; grass and sky
+  `0x202020`, rain), crystal chasms (snow block over packed ice, temperature
+  0.1). Nothing spawns, as in revision 5 (the legacy deep-swamp slimes and
+  stormland creepers are not restored).
+- **Features.** Each is a placed feature behind a COMMON switch and writes only
+  within 12 blocks horizontally of its origin; numbers are the legacy ones
+  unless stated:
+  - lightwood tree (`worldgen.lightwoodTrees`): in 1 of 20 alien forest
+    chunks; a 2 × 2 trunk 20–29 high with branches and leaf blobs, the branches
+    shortened so that nothing passes 12 blocks (the legacy tree reached about
+    14); dense grass (vanilla patch);
+  - giant swamp tree (`worldgen.swampTrees`): in 1 of 100 deep swamp chunks;
+    40–49 high with roots to 20 below and a canopy within 12 blocks; vanilla
+    swamp oaks, sugar cane, lily pads, mushrooms and blue orchids around it;
+  - marsh: vanilla clay disks and lily pads;
+  - inverted pillar (`worldgen.invertedPillars`): in about half the ocean
+    spire chunks (legacy 7 in 16); radius 5, 20–33 high from the sea floor,
+    mossy cobblestone at the foot, cobblestone, dirt at the top;
+  - crystal cluster (`worldgen.crystalClusters`): in 1 of 36 crystal chasm
+    chunks; 10–49 high, edge radius 2–5, one of the six colours, the lean capped
+    so that the top stays within 12 blocks;
+  - electric mushrooms (`worldgen.electricMushrooms`): one patch per stormland
+    chunk, 64 tries within 8 blocks;
+  - charred trees (the `worldgen.charredTrees` switch of revision 5): six per
+    stormland chunk, as the legacy stormland's trees.
+- **Blocks.** Lightwood log (a log that burns, hardness 3), lightwood leaves
+  (light 8, decay, a sapling in 1 of 100 drops and nothing else, as legacy;
+  shears or Silk Touch take the leaves),
+  lightwood sapling (two stages; bone meal succeeds in 45 % of uses, as
+  legacy; grows the lightwood tree where it fits), lightwood planks (light 4;
+  four from a log), six crystal blocks (`violet_crystal_block`,
+  `blue_crystal_block`, `green_crystal_block`, `red_crystal_block`,
+  `yellow_crystal_block`, `orange_crystal_block`: hardness 2, glass sound,
+  translucent, one drawn texture tinted with the legacy colours, each drops
+  itself) and the electric mushroom (mushroom placement, hardness 0, no light).
+  The lightwood blocks join the vanilla log, planks, leaves and sapling tags, so
+  vanilla wood recipes accept them.
+- **Electric effect.** Electric mushrooms throw sparks on the client. During
+  rain in a stormland the client also flashes the sky and plays a distant
+  thunder sound, at most once every five seconds; the CLIENT value
+  `effects.electricMushroomFlashes` (default on) turns the flashes off. Nothing
+  is struck, set on fire or sent over the network.
+- **Assets.** Every C15c texture is drawn new (ADR-061 §4.2, as the geode shell
+  in revision 5): the crystal, lightwood sapling and electric mushroom textures
+  the plan would import and the lightwood log under authorship review; the
+  asset plan's rules for them become `REGENERATE`.
+- **Recipe graph.** The check with both Levels removed (§9) runs with the C16d
+  recipe graph tool; C15c adds only the planks recipe and the vanilla tag
+  memberships above.
+
 ### 7. Persistence and migration
 
 No saved-data schema changes. New IDs only (ADR-061 §1). New Levels bind on
@@ -556,4 +635,9 @@ need a new revision and review.
   structures of one type, the Venus patch biome source, no carvers on the
   three bodies, no spawns, geode and charred-tree numbers, the five switches,
   the surfaces, the drops and tools, the saved pieces). For the C15b
+  implementation review and the owner's acceptance.
+- Revision 6 (proposed, 2026-10-03): C15c decisions in §6 (the bodies' numbers,
+  their skies, Levels and terrain, the six biomes, the features with their
+  switches and numbers, the blocks, the electric mushroom's client effect, all
+  textures drawn new, the recipe graph check in C16d). For the C15c
   implementation review and the owner's acceptance.
