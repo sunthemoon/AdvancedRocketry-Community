@@ -401,77 +401,79 @@ public final class RocketGameTests {
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
     public static void fuelLoaderFuelsOnlyOwnedNearbyLoadedRocketAtFixedRate(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3);
-        BlockPos loaderPosition = origin.offset(5, 0, 0);
-        placeLegalRocket(helper, origin, false);
-        helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
-        RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
-        ServerLevel level = helper.getLevel();
-        UUID ownerId = UUID.randomUUID();
+        // Review C12R2-L1: the loader fuels only a rocket whose entity section has loaded.
+        EntitySections.whenLoaded(helper, () -> {
+            BlockPos loaderPosition = origin.offset(5, 0, 0);
+            placeLegalRocket(helper, origin, false);
+            helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
+            RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
+            ServerLevel level = helper.getLevel();
+            UUID ownerId = UUID.randomUUID();
 
-        RocketEntity unauthorized = ModEntities.ROCKET.get().create(level);
-        helper.assertTrue(unauthorized != null, "Rocket entity type did not create unauthorized target");
-        unauthorized.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
-        helper.assertTrue(level.addFreshEntity(unauthorized), "Unauthorized rocket did not spawn");
+            RocketEntity unauthorized = ModEntities.ROCKET.get().create(level);
+            helper.assertTrue(unauthorized != null, "Rocket entity type did not create unauthorized target");
+            unauthorized.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
+            helper.assertTrue(level.addFreshEntity(unauthorized), "Unauthorized rocket did not spawn");
 
-        helper.setBlock(loaderPosition, ModBlocks.FUEL_LOADER.get());
-        FuelLoaderBlockEntity loader = (FuelLoaderBlockEntity) helper.getBlockEntity(loaderPosition);
-        loader.assignOwner(ownerId);
-        ItemStack remainder = loader.itemHandler().insertItem(
-                FuelLoaderBlockEntity.SLOT,
-                new ItemStack(ModItems.ROCKET_FUEL_CELL.get()),
-                false
-        );
-        helper.assertTrue(remainder.isEmpty(), "Fuel Loader rejected a valid fuel cell");
-        FuelLoaderBlockEntity.serverTick(level, loader.getBlockPos(), loader.getBlockState(), loader);
-        helper.assertTrue(
-                loader.status() == FuelLoaderStatus.WAITING_FOR_ROCKET,
-                "Fuel Loader selected an unauthorized rocket"
-        );
-        helper.assertTrue(
-                unauthorized.flightData().orElseThrow().fuel().amount() == 0L,
-                "Unauthorized rocket received fuel"
-        );
-
-        RocketEntity authorized = ModEntities.ROCKET.get().create(level);
-        helper.assertTrue(authorized != null, "Rocket entity type did not create authorized target");
-        authorized.initialize(snapshot, UUID.randomUUID(), ownerId);
-        helper.assertTrue(level.addFreshEntity(authorized), "Authorized rocket did not spawn");
-        for (int tick = 0; tick < RocketFlightLimits.FUEL_CELL_UNITS
-                / RocketFlightLimits.FUEL_TRANSFER_PER_TICK; tick++) {
+            helper.setBlock(loaderPosition, ModBlocks.FUEL_LOADER.get());
+            FuelLoaderBlockEntity loader = (FuelLoaderBlockEntity) helper.getBlockEntity(loaderPosition);
+            loader.assignOwner(ownerId);
+            ItemStack remainder = loader.itemHandler().insertItem(
+                    FuelLoaderBlockEntity.SLOT,
+                    new ItemStack(ModItems.ROCKET_FUEL_CELL.get()),
+                    false
+            );
+            helper.assertTrue(remainder.isEmpty(), "Fuel Loader rejected a valid fuel cell");
             FuelLoaderBlockEntity.serverTick(level, loader.getBlockPos(), loader.getBlockState(), loader);
-        }
+            helper.assertTrue(
+                    loader.status() == FuelLoaderStatus.WAITING_FOR_ROCKET,
+                    "Fuel Loader selected an unauthorized rocket"
+            );
+            helper.assertTrue(
+                    unauthorized.flightData().orElseThrow().fuel().amount() == 0L,
+                    "Unauthorized rocket received fuel"
+            );
 
-        helper.assertTrue(
-                authorized.flightData().orElseThrow().fuel().amount()
-                        == RocketFlightLimits.FUEL_CELL_UNITS,
-                "Fuel Loader did not transfer exactly one cell"
-        );
-        helper.assertTrue(
-                authorized.flightData().orElseThrow().state() == RocketFlightState.FUELED,
-                "Fuel Loader did not move the rocket to FUELED"
-        );
-        helper.assertTrue(
-                loader.itemHandler().getStackInSlot(FuelLoaderBlockEntity.SLOT)
-                        .is(ModItems.EMPTY_CANISTER.get()),
-                "Fuel Loader did not conserve the empty canister"
-        );
-        helper.assertTrue(loader.bufferedUnits() == 0L, "Fuel Loader retained fuel after completion");
-        helper.assertTrue(
-                unauthorized.flightData().orElseThrow().fuel().amount() == 0L,
-                "Unauthorized rocket changed while another rocket was fueled"
-        );
-        var viewer = helper.makeMockPlayer();
-        viewer.setPos(authorized.getX(), authorized.getY(), authorized.getZ());
-        RocketFlightMenu menu = new RocketFlightMenu(7, viewer.getInventory(), authorized);
-        helper.assertTrue(menu.state() == RocketFlightState.FUELED, "Flight menu state is not authoritative");
-        helper.assertTrue(menu.currentDestination() == RocketDestination.EARTH, "Flight menu source is not Earth");
-        helper.assertTrue(menu.plannedDestination() == RocketDestination.MOON, "Flight menu did not quote Moon");
-        helper.assertTrue(menu.fuelAmount() == RocketFlightLimits.FUEL_CELL_UNITS, "Flight menu fuel is stale");
-        helper.assertTrue(menu.requiredFuel() > 0, "Flight menu omitted the server fuel quote");
-        helper.assertTrue(menu.canLaunch(), "Fueled legal rocket was not launchable in the menu");
-        unauthorized.discard();
-        authorized.discard();
-        helper.succeed();
+            RocketEntity authorized = ModEntities.ROCKET.get().create(level);
+            helper.assertTrue(authorized != null, "Rocket entity type did not create authorized target");
+            authorized.initialize(snapshot, UUID.randomUUID(), ownerId);
+            helper.assertTrue(level.addFreshEntity(authorized), "Authorized rocket did not spawn");
+            for (int tick = 0; tick < RocketFlightLimits.FUEL_CELL_UNITS
+                    / RocketFlightLimits.FUEL_TRANSFER_PER_TICK; tick++) {
+                FuelLoaderBlockEntity.serverTick(level, loader.getBlockPos(), loader.getBlockState(), loader);
+            }
+
+            helper.assertTrue(
+                    authorized.flightData().orElseThrow().fuel().amount()
+                            == RocketFlightLimits.FUEL_CELL_UNITS,
+                    "Fuel Loader did not transfer exactly one cell"
+            );
+            helper.assertTrue(
+                    authorized.flightData().orElseThrow().state() == RocketFlightState.FUELED,
+                    "Fuel Loader did not move the rocket to FUELED"
+            );
+            helper.assertTrue(
+                    loader.itemHandler().getStackInSlot(FuelLoaderBlockEntity.SLOT)
+                            .is(ModItems.EMPTY_CANISTER.get()),
+                    "Fuel Loader did not conserve the empty canister"
+            );
+            helper.assertTrue(loader.bufferedUnits() == 0L, "Fuel Loader retained fuel after completion");
+            helper.assertTrue(
+                    unauthorized.flightData().orElseThrow().fuel().amount() == 0L,
+                    "Unauthorized rocket changed while another rocket was fueled"
+            );
+            var viewer = helper.makeMockPlayer();
+            viewer.setPos(authorized.getX(), authorized.getY(), authorized.getZ());
+            RocketFlightMenu menu = new RocketFlightMenu(7, viewer.getInventory(), authorized);
+            helper.assertTrue(menu.state() == RocketFlightState.FUELED, "Flight menu state is not authoritative");
+            helper.assertTrue(menu.currentDestination() == RocketDestination.EARTH, "Flight menu source is not Earth");
+            helper.assertTrue(menu.plannedDestination() == RocketDestination.MOON, "Flight menu did not quote Moon");
+            helper.assertTrue(menu.fuelAmount() == RocketFlightLimits.FUEL_CELL_UNITS, "Flight menu fuel is stale");
+            helper.assertTrue(menu.requiredFuel() > 0, "Flight menu omitted the server fuel quote");
+            helper.assertTrue(menu.canLaunch(), "Fueled legal rocket was not launchable in the menu");
+            unauthorized.discard();
+            authorized.discard();
+        }, origin);
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 20)
