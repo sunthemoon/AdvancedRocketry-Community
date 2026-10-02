@@ -263,7 +263,18 @@ must handle:
    the controls for it.
    A `HIT` is never imported or reviewed into the tree (docs/08 §7);
    `SUSPECT` and `UNSUPPORTED` files are `REVIEW` at most and import only
-   after a `CLEARED` origin finding. The results are committed in
+   after a `CLEARED` origin finding.
+   **Appeal of a `HIT`.** The check prefers false positives to false
+   negatives; for example the radial glows `stationlight.png` and
+   `hololamp.png` match the vanilla sun by rank alone. The owner may overturn
+   a `HIT` with an origin finding of decision `CLEARED` that sets
+   `"overrides": "HIT"`, describes in `basis` what was compared and how the
+   file differs from the matched vanilla file (no vanilla pixels are
+   committed), and names a second person who confirmed it in `confirmed_by`.
+   The file then also needs an ADR-062 revision that adds it to the import
+   allowlist as `REVIEW` (§4.2). The validator accepts a `HIT` file as
+   `REVIEW` or `IMPORT` only with such a finding.
+   The results are committed in
    [`v1.8.0-vanilla-derivation.json`](../work/v1.8.0-vanilla-derivation.json);
    the validator refuses any `IMPORT` whose verdict is not `CLEAR`. The
    importer re-runs the check for each entry it writes (for derived pixels,

@@ -284,6 +284,24 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertIn("v1.8.0-vanilla-derivation.json: thresholds differ from tools/audit/vanilla_derivation.py", errors)
         self.assertIn("v1.8.0-vanilla-derivation.json: must compare against exactly the clients 1.12.2, 1.20.1", errors)
 
+    def test_owner_can_overturn_a_hit_with_a_second_confirmation(self) -> None:
+        asset = "textures/blocks/stationlight.png"
+        self._set_rule(asset, handling="REVIEW", plan="C18d")
+        allowlist = self.root / ALLOWLIST
+        raw = allowlist.read_bytes() + (asset + "\tREVIEW\n").encode("utf-8")
+        allowlist.write_bytes(raw)
+        adr = self.root / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+        adr.write_text(re.sub(r"^import_allowlist_sha256:.*$", "import_allowlist_sha256: " + hashlib.sha256(raw).hexdigest(),
+                              adr.read_text(encoding="utf-8"), flags=re.M), encoding="utf-8")
+        self.assertIn(f"asset plan: {asset} is vanilla-derived (HIT) but handled as REVIEW", self._errors())
+        finding = {"asset": asset, "decision": "CLEARED", "reviewer": "sunthemoon", "reviewed_at": "2026-10-02",
+                   "basis": "a radial glow drawn for the block; it shares only the gradient with the vanilla sun",
+                   "overrides": "HIT"}
+        self._write_findings([finding])
+        self.assertTrue(any("overrides a verdict without" in error for error in self._errors()))
+        self._write_findings([dict(finding, confirmed_by="second reviewer")])
+        self.assertEqual([], self._errors())
+
     def test_allowlist_is_pinned(self) -> None:
         path = self.root / ALLOWLIST
         path.write_text(path.read_text(encoding="utf-8") + "textures/env/sun.png\tIMPORT\n", encoding="utf-8")

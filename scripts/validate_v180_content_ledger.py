@@ -378,13 +378,15 @@ def adr_owner(root: Path) -> str | None:
     return match.group(1) if match else None
 
 
-def load_origin_findings(root: Path, errors: list[str]) -> dict[str, str]:
+def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str], set[str]]:
+    """Decisions by asset, and the assets whose HIT verdict the owner overturned (ADR-061 section 4.8)."""
     data = json.loads((root / ORIGIN_FINDINGS).read_text(encoding="utf-8"))
     owner = adr_owner(root)
     findings: dict[str, str] = {}
+    overturned: set[str] = set()
     if data.get("schema_version") != 1 or not isinstance(data.get("findings"), list):
         errors.append(f"{ORIGIN_FINDINGS.name}: schema_version 1 with a findings list required")
-        return findings
+        return findings, overturned
     for finding in data["findings"]:
         asset = finding.get("asset")
         if (finding.get("decision") not in ("CLEARED", "EXCLUDED") or not finding.get("reviewer")
@@ -401,8 +403,16 @@ def load_origin_findings(root: Path, errors: list[str]) -> dict[str, str]:
                 errors.append(f"{ORIGIN_FINDINGS.name}: {asset} is CLEARED by {finding['reviewer']!r}, who is neither "
                               f"the owner nor an independent reviewer with a review record naming the asset")
                 continue
+        if "overrides" in finding:
+            confirmed = finding.get("confirmed_by")
+            if (finding["overrides"] != "HIT" or finding["decision"] != "CLEARED" or finding["reviewer"] != owner
+                    or not isinstance(confirmed, str) or not confirmed or confirmed == finding["reviewer"]):
+                errors.append(f"{ORIGIN_FINDINGS.name}: {asset} overrides a verdict without the owner's CLEARED "
+                              f"decision and a second person's confirmation")
+                continue
+            overturned.add(asset)
         findings[asset] = finding["decision"]
-    return findings
+    return findings, overturned
 
 
 def _repository_module(relative: Path):
@@ -527,13 +537,13 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
         if handling == "IMPORTED" and asset not in imported:
             errors.append(f"asset plan: {asset} is handled as IMPORTED without a provenance record")
     allowed = load_allowlist(root, errors)
-    findings = load_origin_findings(root, errors)
+    findings, overturned = load_origin_findings(root, errors)
     verdicts = load_derivation(root, errors)
     if set(verdicts) != set(assets):
         errors.append(f"{DERIVATION.name}: does not cover exactly the legacy assets")
     for asset, handling in sorted(handling_of.items()):
         verdict = verdicts.get(asset)
-        if handling in ("IMPORT", "REVIEW") and verdict == "HIT":
+        if handling in ("IMPORT", "REVIEW") and verdict == "HIT" and asset not in overturned:
             errors.append(f"asset plan: {asset} is vanilla-derived (HIT) but handled as {handling}")
         elif handling == "IMPORT" and verdict != "CLEAR" and findings.get(asset) != "CLEARED":
             errors.append(f"asset plan: {asset} has derivation verdict {verdict} and no CLEARED origin finding")
