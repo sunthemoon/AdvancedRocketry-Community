@@ -139,9 +139,12 @@ must handle:
    writes the files and the record, `verify` recomputes both and fails on any
    difference. Allowed transformations are byte copies, renames (namespace,
    lower case, singular directories, flattened names), OBJ/MTL reference
-   rewrites and `.lang` key extraction. Pixel edits, recolouring and upscaling
-   produce `NEW` files with the upstream file named as inspiration, not
-   `UPSTREAM_AR_MIT` files.
+   rewrites and `.lang` key extraction. A file whose pixels are changed
+   (recolouring, cropping, palette edits) is still derived from its source: it
+   keeps the source's status and notice, the importer makes the change by a
+   script, and the record lists the change as a transformation. Only art drawn
+   from scratch is `NEW`. Runtime tinting of byte-copied greyscale templates is
+   preferred to recoloured copies.
 5. **Review.** Records enter with review status `PENDING_HUMAN_REVIEW`. The
    maintainer's visual and license review sets `APPROVED`; G0 needs every
    record approved. `REVIEW` assets enter only after a recorded origin finding;
