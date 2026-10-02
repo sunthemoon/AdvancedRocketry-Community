@@ -90,6 +90,11 @@ CURRENT = (1, 8, 0)
 MAX_FIELD = 512
 
 
+def _token(identifier: str) -> re.Pattern:
+    """An ID as a whole token: block:lathe does not match block:latheX or xblock:lathe."""
+    return re.compile(r"(?<![A-Za-z0-9_:])" + re.escape(identifier) + r"(?![A-Za-z0-9_])")
+
+
 def _version(text: str) -> tuple[int, int, int] | None:
     match = VERSION.match(text)
     return tuple(int(part) for part in match.groups()) if match else None
@@ -296,8 +301,13 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
                 evidence = row["evidence"]
                 if not EVIDENCE_PATH.match(evidence) or not (root / evidence).is_file():
                     errors.append(f"{where}: {disposition} in v1.8.0 needs the delivering batch's evidence file")
-                elif unit_id not in (root / evidence).read_text(encoding="utf-8"):
-                    errors.append(f"{where}: evidence file {evidence} does not list the unit")
+                else:
+                    text = (root / evidence).read_text(encoding="utf-8")
+                    if not _token(unit_id).search(text):
+                        errors.append(f"{where}: evidence file {evidence} does not list the unit")
+                    for modern in MODERN_ID.findall(target):
+                        if not _token(f"{MOD_ID}:{modern}").search(text):
+                            errors.append(f"{where}: evidence file {evidence} does not list {MOD_ID}:{modern}")
         elif disposition == "DEFERRED":
             if plan != "post-2.0":
                 errors.append(f"{where}: DEFERRED plan must be post-2.0")
@@ -404,9 +414,12 @@ def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str],
                               f"the owner nor an independent reviewer with a review record naming the asset")
                 continue
         if "overrides" in finding:
-            confirmed = finding.get("confirmed_by")
+            confirmed, record = finding.get("confirmed_by"), finding.get("confirmation_record")
             if (finding["overrides"] != "HIT" or finding["decision"] != "CLEARED" or finding["reviewer"] != owner
-                    or not isinstance(confirmed, str) or not confirmed or confirmed == finding["reviewer"]):
+                    or not isinstance(confirmed, str) or not confirmed or confirmed == finding["reviewer"]
+                    or not isinstance(record, str) or not record.startswith("docs/") or not (root / record).is_file()
+                    or asset not in (root / record).read_text(encoding="utf-8")
+                    or confirmed not in (root / record).read_text(encoding="utf-8")):
                 errors.append(f"{ORIGIN_FINDINGS.name}: {asset} overrides a verdict without the owner's CLEARED "
                               f"decision and a second person's confirmation")
                 continue

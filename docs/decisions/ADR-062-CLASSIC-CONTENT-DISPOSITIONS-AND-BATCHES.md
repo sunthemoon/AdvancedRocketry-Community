@@ -190,7 +190,10 @@ pins the importable assets (ADR-061 §4.2); changing that list is a revision of
 this ADR. Every `DEFERRED` and `REJECTED` ledger row cites this ADR, which
 holds the player impact. Moving a unit to `DEFERRED` or `REJECTED`,
 or reviving a deferred or rejected unit, needs a revision of this ADR with
-reasons and player impact.
+reasons and player impact. The validator checks the form of every row; the
+meaning of a link (that an owning unit really owns an asset, that an
+`IMPLEMENTED` target is the unit's own delivery, that a `REJECTED` row has its
+§4 entry) is checked in the review of the commit that changes it.
 
 ### 8. ADR-018's campaign trigger (owner decision)
 

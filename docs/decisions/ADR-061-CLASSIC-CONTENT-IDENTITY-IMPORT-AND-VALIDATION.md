@@ -189,7 +189,10 @@ must handle:
    date, basis); a finding with decision `EXCLUDED` forces `EXCLUDE`. A
    `CLEARED` finding is made by the owner, or by a named reviewer with
    `"role": "independent reviewer"` whose committed `review_record` names the
-   file.
+   file. Names in a finding are text: the control is that the findings file
+   changes only in a commit by its reviewer or the owner, reviewed like any
+   contract change, and the validator only checks that each finding is
+   complete and linked.
 3. **Records.** Each batch writes `docs/provenance/v1.8.0-<batch>.json` with a
    schema-2 record before the files enter the tree. Schema 2 keeps every
    schema-1 entry field (target path, status, source repository, branch,
@@ -301,7 +304,9 @@ must handle:
    a `HIT` with an origin finding of decision `CLEARED` that sets
    `"overrides": "HIT"`, describes in `basis` what was compared and how the
    file differs from the matched vanilla file (no vanilla pixels are
-   committed), and names a second person who confirmed it in `confirmed_by`.
+   committed), and names a second person who confirmed it in `confirmed_by`
+   with a committed `confirmation_record` that names the file and that
+   person.
    The file then also needs an ADR-062 revision that adds it to the import
    allowlist as `REVIEW` (§4.2). The validator accepts a `HIT` file as
    `REVIEW` or `IMPORT` only with such a finding.
@@ -386,8 +391,8 @@ must handle:
    `REDESIGNED` with plan `v1.8.0` without that file, which lives in the
    batch's evidence folder (`docs/work/v1.8.0-<batch>-<name>/<file>.md`, for
    example `docs/work/v1.8.0-c16c-machines/VERIFICATION.md`) and lists the
-   unit ID; work v1.8 still has to build stays `PLANNED`, including
-   redesigns.
+   unit ID and each delivered modern ID as whole tokens; work v1.8 still has
+   to build stays `PLANNED`, including redesigns.
    `scripts/validate_v180_content_ledger.py` checks every row; C19 runs it with
    `--require-accepted` and requires zero `PLANNED` rows.
 

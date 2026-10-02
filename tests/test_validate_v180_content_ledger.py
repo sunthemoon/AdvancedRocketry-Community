@@ -139,6 +139,27 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does "
                       "not list the unit", self._errors())
 
+    def test_v18_evidence_matches_ids_as_whole_tokens(self) -> None:
+        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text("| block:centrifugeX | advancedrocketrycommunity:machine_casing |", encoding="utf-8")
+        self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0",
+                          target="advancedrocketrycommunity:centrifuge", decision="ADR-061 ADR-062",
+                          evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+        errors = self._errors()
+        self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does "
+                      "not list the unit", errors)
+
+    def test_v18_evidence_must_list_the_delivered_id(self) -> None:
+        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text("| block:lathe | advancedrocketrycommunity:machine_casing |", encoding="utf-8")
+        self._edit_ledger("block:lathe", disposition="REDESIGNED", plan="v1.8.0",
+                          target="advancedrocketrycommunity:warp_core", decision="ADR-061 ADR-062",
+                          evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+        self.assertIn("ledger: block:lathe: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does not "
+                      "list advancedrocketrycommunity:warp_core", self._errors())
+
     def test_v18_evidence_must_be_a_batch_evidence_file(self) -> None:
         self._edit_ledger("block:lathe", disposition="REDESIGNED", plan="v1.8.0",
                           target="advancedrocketrycommunity:machine_casing", decision="ADR-061 ADR-062",
@@ -299,7 +320,12 @@ class V180ContentLedgerTests(unittest.TestCase):
                    "overrides": "HIT"}
         self._write_findings([finding])
         self.assertTrue(any("overrides a verdict without" in error for error in self._errors()))
-        self._write_findings([dict(finding, confirmed_by="second reviewer")])
+        record = "docs/work/v1.8.0-preparation/override-confirmation.md"
+        self._write_findings([dict(finding, confirmed_by="second reviewer", confirmation_record=record)])
+        self.assertTrue(any("overrides a verdict without" in error for error in self._errors()))
+        (self.root / record).parent.mkdir(parents=True, exist_ok=True)
+        (self.root / record).write_text(f"{asset}: compared side by side; confirmed by second reviewer",
+                                        encoding="utf-8")
         self.assertEqual([], self._errors())
 
     def test_derivatives_of_quarantined_files_inherit_review(self) -> None:
