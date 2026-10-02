@@ -1,278 +1,280 @@
 order,pattern,handling,plan,units,reason
-1,textures/armor/spacesuit_layer1.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png (overlap 0.16, mask 0.26, rank 0.61); origin review"
-2,textures/armor/spacesuit_layer2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png (overlap 0.32, mask 0.61, rank 0.43)"
-3,textures/blocks/fluid/oxygen_still.png,REVIEW,C16a,fluid:oxygen,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/water_still.png (overlap 0.00, mask 1.00, rank 0.83); origin review"
-4,textures/blocks/forcefieldprojectorfront.png,REVIEW,C17b,block:forceField block:forceFieldProjector,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png (overlap 0.00, mask 1.00, rank 0.87); origin review"
-5,textures/blocks/fuelingmachine.png,REVIEW,C17a,block:fuelingStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/parrot/parrot_grey.png (overlap 0.12, mask 0.96, rank 0.06); origin review"
-6,textures/blocks/guidancecomputer.png,REVIEW,C17a,block:guidanceComputer,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_silver.png (overlap 0.11, mask 1.00, rank -0.04); origin review"
-7,textures/blocks/hotdry_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png (overlap 0.00, mask 1.00, rank 1.00)"
-8,textures/blocks/leaves_alien.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png (overlap 0.00, mask 1.00, rank 1.00)"
-9,textures/blocks/lens1.png,REVIEW,C18d,block:spaceLaser,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/debug2.png (overlap 0.11, mask 0.34, rank 0.00); origin review"
-10,textures/blocks/log_blue_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_big_oak_top.png (overlap 0.00, mask 1.00, rank 0.92)"
-11,textures/blocks/log_charcoal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak.png (overlap 0.00, mask 1.00, rank 1.00)"
-12,textures/blocks/log_charcoal_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak_top.png (overlap 0.00, mask 1.00, rank 1.00)"
-13,textures/blocks/monitorfrontleft.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.29, mask 0.70, rank 0.00); origin review"
-14,textures/blocks/monitorfrontmid.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.29, mask 0.70, rank 0.00); origin review"
-15,textures/blocks/monitorfrontright.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.29, mask 0.70, rank 0.00); origin review"
-16,textures/blocks/monitormoon.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.12, mask 0.70, rank 0.00); origin review"
-17,textures/blocks/monitorplanet.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.14, mask 0.70, rank 0.03); origin review"
-18,textures/blocks/monitorplanet_active.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.14, mask 0.70, rank 0.03); origin review"
-19,textures/blocks/monitorrocket.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.21, mask 0.70, rank 0.00); origin review"
-20,textures/blocks/monitorsatellite.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.14, mask 0.70, rank 0.00); origin review"
-21,textures/blocks/monitorside.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_silver.png (overlap 0.14, mask 1.00, rank -0.03); origin review"
-22,textures/blocks/moon_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png (overlap 0.00, mask 1.00, rank 1.00)"
-23,textures/blocks/moon_turf_dark.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png (overlap 0.00, mask 1.00, rank 1.00)"
-24,textures/blocks/panelside.png,REVIEW,C18b,block:suitWorkStation,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/entity/decorated_pot/decorated_pot_side.png (overlap 0.00, mask 0.88, rank 0.83); origin review"
-25,textures/blocks/platepresser_bottom.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png (overlap 0.00, mask 1.00, rank 0.98)"
-26,textures/blocks/platepresser_internal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_inner.png (overlap 0.00, mask 1.00, rank 0.99)"
-27,textures/blocks/platepresser_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png (overlap 0.00, mask 1.00, rank 0.98)"
-28,textures/blocks/platepresser_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/furnace_top.png (overlap 0.00, mask 1.00, rank 0.99)"
-29,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png (overlap 0.00, mask 1.00, rank 1.00)"
-30,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png (overlap 0.00, mask 0.97, rank 0.98)"
-31,textures/blocks/qcrucible_top.png,REVIEW,C16c,block:quartzcrucible,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/composter_top.png (overlap 0.00, mask 1.00, rank 0.77); origin review"
-32,textures/blocks/smallairlockdoor_lower.png,REVIEW,C18a,block:airlock_door,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png (overlap 0.15, mask 1.00, rank 0.00); origin review"
-33,textures/blocks/starshipcontrolpanel.png,REVIEW,C17b,block:warpMonitor,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.10, mask 0.70, rank 0.20); origin review"
-34,textures/blocks/stationlight.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png (overlap 0.00, mask 1.00, rank 0.93)"
-35,textures/env/earth_phases.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/moon_phases.png (overlap 0.95, mask 1.00, rank 1.00)"
-36,textures/env/sun2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png (overlap 0.00, mask 0.90, rank 0.98)"
-37,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/furnace.png (overlap 0.58, mask 0.92, rank 0.37)"
-38,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/shulker_box.png (overlap 0.43, mask 0.97, rank 0.00)"
-39,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/furnace.png (overlap 0.58, mask 0.94, rank 0.43)"
-40,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png (overlap 0.56, mask 0.92, rank 0.46)"
-41,textures/gui/genericneibackground.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png (overlap 0.58, mask 0.92, rank 0.41)"
-42,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png (overlap 0.66, mask 0.93, rank 0.49)"
-43,textures/gui/precisionassembler.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png (overlap 0.58, mask 0.93, rank 0.42)"
-44,textures/gui/progressbars/progressbars.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png (overlap 0.20, mask 0.60, rank 0.23); origin review"
-45,textures/gui/rocketbuilder.png,REVIEW,C18d,block:rocketBuilder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/shulker_box.png (overlap 0.29, mask 0.93, rank 0.05); origin review"
-46,textures/items/antifogvisor.png,REVIEW,C18b,item_variant:itemUpgrade/4,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.12, mask 0.58, rank 0.00); origin review"
-47,textures/items/beaconfinder.png,REVIEW,C17c,item:beaconFinder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.13, mask 0.60, rank 0.00); origin review"
-48,textures/items/carbonbrick.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_ingot.png (overlap 0.00, mask 1.00, rank 1.00)"
-49,textures/items/earthbrightvisor.png,REVIEW,C18b,item_variant:itemUpgrade/5,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.13, mask 0.60, rank 0.08); origin review"
-50,textures/items/qcrucible.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/cauldron.png (overlap 0.00, mask 1.00, rank 1.00)"
-51,textures/items/space_boots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/chainmail_boots.png (overlap 0.14, mask 0.98, rank 0.00); origin review"
-52,textures/items/space_chestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png (overlap 0.25, mask 0.61, rank 0.40); origin review"
-53,textures/items/space_helmet.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png (overlap 0.23, mask 0.82, rank 0.00); origin review"
-54,textures/items/space_leggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/chainmail_leggings.png (overlap 0.34, mask 0.90, rank 0.00)"
-55,textures/items/spaceboots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/chainmail_boots.png (overlap 0.14, mask 0.98, rank 0.00); origin review"
-56,textures/items/spacechestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png (overlap 0.25, mask 0.61, rank 0.40); origin review"
-57,textures/items/spacehelmet.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png (overlap 0.23, mask 0.82, rank 0.00); origin review"
-58,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/chainmail_leggings.png (overlap 0.34, mask 0.90, rank 0.00)"
-59,textures/items/userinterface.png,REVIEW,C16d,item_variant:misc/0,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.20, mask 0.68, rank 0.00); origin review"
-60,textures/models/girder.png,REVIEW,C18d,block:rocketBuilder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/debug2.png (overlap 0.24, mask 1.00, rank 0.00); origin review"
-61,textures/models/jetpack.png,REVIEW,C18b,item:jetPack,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png (overlap 0.11, mask 1.00, rank 0.30); origin review"
-62,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png (overlap 0.00, mask 1.00, rank 0.91)"
-63,textures/particle/hardsquare.png,REVIEW,C18d,-,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/light_14.png (overlap 0.11, mask 0.37, rank 0.00); origin review"
-64,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-65,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-66,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-67,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-68,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-69,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-70,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-71,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-72,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
-73,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
-74,lang/*.lang,REVIEW,C18d,-,community translations; each needs its own contributor provenance before use
-75,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
-76,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
-77,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
-78,textures/blocks/fluid/lava_*,REVIEW,C16a,-,shares the vanilla lava file names; origin review
-79,textures/font.png,EXCLUDE,-,-,no planned consumer
-80,textures/env/sun.png,REVIEW,C18d,-,shares the vanilla sun file name; origin review
-81,textures/planets/shadow.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-82,textures/gui/eyecandy/earth.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-83,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
-84,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
-85,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
-86,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
-87,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-88,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-89,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-90,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-91,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-92,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
-93,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
-94,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-95,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-96,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
-97,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
-98,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
-99,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
-100,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
-101,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-102,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-103,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-104,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-105,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-106,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
-107,textures/blocks/machinegeneric.png,REVIEW,C16a,libvulpes:java/blockAdvStructureBlock,byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review
-108,models/item/models/motor.*,REVIEW,C16a,libvulpes:java/blockMotor,motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established
-109,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
-110,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
-111,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
-112,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
-113,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
-114,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
-115,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
-116,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
-117,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
-118,textures/blocks/fluid/oxygen_*,IMPORT,C16a,fluid:oxygen,fluid textures
-119,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
-120,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
-121,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
-122,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
-123,textures/blocks/log_blue*.png,IMPORT,C15c,block:alienWood,lightwood
-124,textures/blocks/plank_blue.png,IMPORT,C15c,block:planks,lightwood
-125,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
-126,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
-127,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
-128,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
-129,textures/blocks/crystallizer*.png,IMPORT,C16c,block:crystallizer,crystallizer
-130,textures/blocks/cuttingmachine*.png,IMPORT,C16b,block:cuttingMachine,cutting machine
-131,textures/blocks/machineprecisionlaseretcher.png,IMPORT,C16c,block:precisionlaseretcher,laser etcher
-132,textures/blocks/precisionassemblerfront*.png,IMPORT,C18d,block:precisionassemblingmachine,precision assembler visual refresh
-133,textures/blocks/machineelectrolyzer*.png,IMPORT,C18d,block:electrolyser,electrolyzer visual refresh
-134,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
-135,textures/blocks/pump*.png,IMPORT,C16a,block:blockPump,fluid pump
-136,textures/blocks/machinenuclear.png,IMPORT,C17a,block:nuclearcore,nuclear core
-137,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
-138,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
-139,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
-140,textures/blocks/guidancecomputer*.png,IMPORT,C17a,block:guidanceComputer,guidance computer visual refresh
-141,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
-142,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
-143,textures/blocks/satellitebay.png,IMPORT,C17c,block_variant:loader/1,satellite bay
-144,textures/blocks/satelliteassembler.png,IMPORT,C18d,block:satelliteBuilder,satellite builder visual refresh
-145,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
-146,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
-147,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
-148,textures/blocks/forcefield*,IMPORT,C17b,block:forceField block:forceFieldProjector,force field and projector
-149,textures/blocks/machineorientationcontrol.png,IMPORT,C17b,block:orientationController,station controllers
-150,textures/blocks/controlpanel.png,IMPORT,C17b,block:altitudeController block:gravityController,station controllers
-151,textures/blocks/warpcore.png,IMPORT,C18d,block:warpCore,warp core visual refresh
-152,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
-153,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-154,textures/blocks/solar.png,IMPORT,C17c,block:solarGenerator,solar generator
-155,textures/blocks/panelside*.png,IMPORT,C18b,block:suitWorkStation,suit workstation and panels
-156,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
-157,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
-158,textures/blocks/atmospheredetector*.png,IMPORT,C18a,block:oxygenDetection,atmosphere detector
-159,textures/blocks/gaschargertop.png,IMPORT,C18a,block:oxygenCharger,gas charge pad
-160,textures/blocks/machinescrubber*.png,IMPORT,C18a,block:oxygenScrubber,CO2 scrubber
-161,textures/blocks/seal.png,IMPORT,C18a,block:pipeSealer,pipe seal
-162,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,block:airlock_door,airlock door
-163,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
-164,textures/blocks/laser*.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-165,textures/blocks/vacuumlaserfront.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-166,textures/blocks/railgun.png,IMPORT,C18d,block:railgun,railgun visual refresh
-167,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
-168,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
-169,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
-170,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
-171,textures/items/atmanalyzer.png,IMPORT,C18a,item:atmAnalyser,atmosphere analyzer
-172,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
-173,textures/items/pressuretank*.png,IMPORT,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,pressure tanks
-174,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
-175,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
-176,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
-177,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
-178,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
-179,textures/items/bioniclegs.png,IMPORT,C18b,item_variant:itemUpgrade/2,suit upgrades
-180,textures/items/landingboots.png,IMPORT,C18b,item_variant:itemUpgrade/3,suit upgrades
-181,textures/items/space*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit visual refresh
-182,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-183,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
-184,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
-185,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
-186,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
-187,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
-188,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
-189,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
-190,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
-191,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-192,textures/items/advancedsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/1,satellite component visual refresh
-193,textures/items/basicsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/0,satellite component visual refresh
-194,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
-195,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
-196,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
-197,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
-198,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-199,textures/armor/spacesuit_*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit armor layers
-200,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
-201,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
-202,textures/gui/rockethud.png,IMPORT,C18d,event:RocketEventHandler.onScreenRender(Post),rocket HUD
-203,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
-204,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
-205,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-206,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
-207,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
-208,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
-209,textures/gui/buttons/*warp*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
-210,textures/gui/buttons/*planet*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
-211,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
-212,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
-213,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-214,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
-215,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
-216,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-217,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
-218,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
-219,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
-220,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-221,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
-222,models/areagravitycontroller.obj,IMPORT,C18d,block:gravityMachine,machine OBJ model for the visual batch
-223,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
-224,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
-225,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
-226,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
-227,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
-228,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
-229,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
-230,models/electrolyser.obj,IMPORT,C18d,block:electrolyser,machine OBJ model for the visual batch
-231,models/lathe.obj,IMPORT,C18d,block:lathe,machine OBJ model for the visual batch
-232,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
-233,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
-234,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
-235,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
-236,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
-237,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
-238,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
-239,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
-240,models/warpcore.obj,IMPORT,C18d,block:warpCore,machine OBJ model for the visual batch
-241,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
-242,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
-243,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
-244,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
-245,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
-246,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
-247,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
-248,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
-249,textures/models/areagravitycontroller.png,IMPORT,C18d,block:gravityMachine,model texture for the visual batch
-250,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
-251,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
-252,textures/models/centrifuge.png,IMPORT,C18d,block:centrifuge,model texture for the visual batch
-253,textures/models/chemicalreactor.png,IMPORT,C18d,block:chemicalReactor,model texture for the visual batch
-254,textures/models/crystalliser.png,IMPORT,C18d,block:crystallizer,model texture for the visual batch
-255,textures/models/cuttingmachine.png,IMPORT,C18d,block:cuttingMachine,model texture for the visual batch
-256,textures/models/diamondmetal.png,IMPORT,C18d,-,model texture for the visual batch
-257,textures/models/electrolyser.png,IMPORT,C18d,block:electrolyser,model texture for the visual batch
-258,textures/models/fan.png,IMPORT,C18d,-,model texture for the visual batch
-259,textures/models/grid.png,IMPORT,C18d,block:rocketBuilder,model texture for the visual batch
-260,textures/models/lathe.png,IMPORT,C18d,block:lathe,model texture for the visual batch
-261,textures/models/metalplate.png,IMPORT,C18d,-,model texture for the visual batch
-262,textures/models/observatory.png,IMPORT,C18d,block:observatory,model texture for the visual batch
-263,textures/models/orbitallaserdrill.png,IMPORT,C18d,block:spaceLaser,model texture for the visual batch
-264,textures/models/precisionassembler.png,IMPORT,C18d,block:precisionassemblingmachine,model texture for the visual batch
-265,textures/models/precisionlaseretcher.png,IMPORT,C18d,block:precisionlaseretcher,model texture for the visual batch
-266,textures/models/railgun.png,IMPORT,C18d,block:railgun,model texture for the visual batch
-267,textures/models/rollingmachine.png,IMPORT,C18d,block:rollingMachine,model texture for the visual batch
-268,textures/models/solararray.png,IMPORT,C18d,block:solararray,model texture for the visual batch
-269,textures/models/spaceelevator.png,IMPORT,C18d,block:spaceElevatorController,model texture for the visual batch
-270,textures/models/spaceelevatorcapsule.png,IMPORT,C18d,entity:ARSpaceElevatorCapsule,model texture for the visual batch
-271,textures/models/warpcore.png,IMPORT,C18d,block:warpCore,model texture for the visual batch
-272,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
-273,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-274,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
-275,textures/particle/*,IMPORT,C18d,-,particles
-276,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
-277,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it
+1,textures/armor/spacesuit_layer1.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png, orientation 0 (overlap 0.16 over 36 colours, mask 0.26, rank 0.00); origin review"
+2,textures/armor/spacesuit_layer2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png, orientation 0 (overlap 0.32 over 42 colours, mask 0.61, rank 0.00)"
+3,textures/blocks/fluid/oxygen_flow.png,REVIEW,C16a,fluid:oxygen,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/water_flow.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.88); origin review"
+4,textures/blocks/fluid/oxygen_still.png,REVIEW,C16a,fluid:oxygen,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/water_still.png#frame0, orientation frame0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.84); origin review"
+5,textures/blocks/forcefieldprojectorfront.png,REVIEW,C17b,block:forceField block:forceFieldProjector,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.87); origin review"
+6,textures/blocks/hotdry_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+7,textures/blocks/leaves_alien.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+8,textures/blocks/log_blue_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_big_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
+9,textures/blocks/log_charcoal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+10,textures/blocks/log_charcoal_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+11,textures/blocks/machineprecisionlaseretcher.png,REVIEW,C16c,block:precisionlaseretcher,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/stripe_downleft.png, scale -4 (overlap 0.11 over 2 colours, mask 0.47, rank 0.00); origin review"
+12,textures/blocks/monitorfrontleft.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png contains it at (11, 14) (orientation 2; 99% of its pixels equal, 2 colours); origin review"
+13,textures/blocks/monitorfrontmid.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/square_bottom_right.png contains it at (11, 12) (orientation 0; 100% of its pixels equal, 2 colours); origin review"
+14,textures/blocks/monitormoon.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/diagonal_up_right.png, scale -4 (overlap 0.11 over 2 colours, mask 0.47, rank 0.00); origin review"
+15,textures/blocks/monitorplanet.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.13 over 2 colours, mask 0.47, rank 0.00); origin review"
+16,textures/blocks/monitorplanet_active.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.13 over 2 colours, mask 0.47, rank 0.00); origin review"
+17,textures/blocks/monitorrocket.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.24 over 2 colours, mask 0.47, rank 0.00); origin review"
+18,textures/blocks/monitorsatellite.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png, scale -4 (overlap 0.20 over 2 colours, mask 0.47, rank 0.00); origin review"
+19,textures/blocks/moon_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+20,textures/blocks/moon_turf_dark.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+21,textures/blocks/panelside.png,REVIEW,C18b,block:suitWorkStation,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/entity/decorated_pot/decorated_pot_side.png, orientation 4 (overlap 0.00 over 0 colours, mask 0.88, rank 0.83); origin review"
+22,textures/blocks/plank_blue.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/planks_big_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+23,textures/blocks/platepresser_bottom.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
+24,textures/blocks/platepresser_internal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
+25,textures/blocks/platepresser_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
+26,textures/blocks/platepresser_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/furnace_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
+27,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+28,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 0.97, rank 0.98)"
+29,textures/blocks/qcrucible_top.png,REVIEW,C16c,block:quartzcrucible,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/composter_top.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.78); origin review"
+30,textures/blocks/railgun.png,REVIEW,C18d,block:railgun,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png, scale -4 (overlap 0.15 over 2 colours, mask 0.47, rank 0.00); origin review"
+31,textures/blocks/satellitebay.png,REVIEW,C17c,block_variant:loader/1,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png, scale -4 (overlap 0.11 over 2 colours, mask 0.47, rank 0.00); origin review"
+32,textures/blocks/seal.png,REVIEW,C18a,block:pipeSealer,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/diamond_block.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+33,textures/blocks/smallairlockdoor_lower.png,REVIEW,C18a,block:airlock_door,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png, orientation 1 (overlap 0.20 over 2 colours, mask 1.00, rank 0.44); origin review"
+34,textures/blocks/smallairlockdoor_upper.png,REVIEW,C18a,block:airlock_door,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png, orientation 7 (overlap 0.12 over 2 colours, mask 0.75, rank 0.00); origin review"
+35,textures/blocks/stationlight.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
+36,textures/env/earth_phases.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/moon_phases.png, orientation 0 (overlap 0.95 over 43 colours, mask 1.00, rank 1.00)"
+37,textures/env/sun2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale 4 (overlap 0.00 over 0 colours, mask 0.90, rank 0.98)"
+38,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/furnace.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.92, rank 0.37)"
+39,textures/gui/buttons/buttonautoeject.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/advancements/tabs.png contains it at (102, 94) (orientation 7; 69% of its pixels equal, 3 colours); origin review"
+40,textures/gui/buttons/tabdata.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/advancements/widgets.png contains it at (2, 156) (orientation 0; 52% of its pixels equal, 4 colours); origin review"
+41,textures/gui/buttons/tabtemplate.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/advancements/tabs.png contains it at (129, 92) (orientation 5; 81% of its pixels equal, 4 colours)"
+42,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/horse.png, orientation 7 (overlap 0.45 over 5 colours, mask 0.82, rank 0.00)"
+43,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/furnace.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.94, rank 0.43)"
+44,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.56 over 5 colours, mask 0.92, rank 0.46)"
+45,textures/gui/genericneibackground.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.92, rank 0.41)"
+46,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 0 (overlap 0.66 over 5 colours, mask 0.93, rank 0.49)"
+47,textures/gui/precisionassembler.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.93, rank 0.42)"
+48,textures/gui/progressbars/progressbars.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 0 (overlap 0.20 over 4 colours, mask 0.60, rank 0.00); origin review"
+49,textures/gui/rocketbuilder.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 7 (overlap 0.37 over 5 colours, mask 0.89, rank 0.19)"
+50,textures/gui/rockethud.png,REVIEW,C18d,event:RocketEventHandler.onScreenRender(Post),"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_items.png, orientation 7 (overlap 0.13 over 2 colours, mask 0.33, rank 0.00); origin review"
+51,textures/items/antifogvisor.png,REVIEW,C18b,item_variant:itemUpgrade/4,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png, scale -4 (overlap 0.12 over 2 colours, mask 0.31, rank 0.00); origin review"
+52,textures/items/beaconfinder.png,REVIEW,C17c,item:beaconFinder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png, scale -4 (overlap 0.16 over 2 colours, mask 0.35, rank 0.00); origin review"
+53,textures/items/carbonbrick.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_ingot.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+54,textures/items/earthbrightvisor.png,REVIEW,C18b,item_variant:itemUpgrade/5,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png, scale -4 (overlap 0.16 over 2 colours, mask 0.35, rank 0.00); origin review"
+55,textures/items/qcrucible.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/cauldron.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+56,textures/items/space_boots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/iron_boots.png, orientation 0 (overlap 0.27 over 2 colours, mask 1.00, rank 0.68); origin review"
+57,textures/items/space_chestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
+58,textures/items/space_helmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
+59,textures/items/space_leggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
+60,textures/items/spaceboots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/iron_boots.png, orientation 0 (overlap 0.27 over 2 colours, mask 1.00, rank 0.68); origin review"
+61,textures/items/spacechestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
+62,textures/items/spacechestplate_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/diamond_chestplate.png, orientation 0 (overlap 0.13 over 2 colours, mask 0.15, rank 0.00); origin review"
+63,textures/items/spacehelmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
+64,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
+65,textures/models/girder.png,REVIEW,C18d,block:rocketBuilder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/curly_border.png, scale -4 (overlap 0.18 over 2 colours, mask 0.47, rank 0.00); origin review"
+66,textures/models/jetpack.png,REVIEW,C18b,item:jetPack,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/creeper.png, scale 2 (overlap 0.18 over 2 colours, mask 0.42, rank 0.00); origin review"
+67,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png, orientation 6 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
+68,textures/blocks/fluid/oxygen_flow.png.mcmeta,REVIEW,C16a,fluid:oxygen,"animation metadata of oxygen_flow.png, which is REVIEW for its pixels"
+69,textures/blocks/fluid/oxygen_still.png.mcmeta,REVIEW,C16a,fluid:oxygen,"animation metadata of oxygen_still.png, which is REVIEW for its pixels"
+70,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+71,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+72,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+73,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+74,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+75,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+76,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+77,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+78,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+79,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+80,lang/*.lang,REVIEW,C18d,-,community translations; each needs its own contributor provenance before use
+81,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
+82,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
+83,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
+84,textures/blocks/fluid/lava_*,REVIEW,C16a,-,shares the vanilla lava file names; origin review
+85,textures/font.png,EXCLUDE,-,-,no planned consumer
+86,textures/env/sun.png,REVIEW,C18d,-,shares the vanilla sun file name; origin review
+87,textures/planets/shadow.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+88,textures/gui/eyecandy/earth.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+89,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
+90,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
+91,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
+92,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
+93,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+94,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+95,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+96,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+97,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+98,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
+99,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
+100,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+101,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+102,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
+103,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
+104,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
+105,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
+106,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
+107,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+108,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+109,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+110,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+111,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+112,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
+113,textures/blocks/machinegeneric.png,REVIEW,C16a,libvulpes:java/blockAdvStructureBlock,byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review
+114,models/item/models/motor.*,REVIEW,C16a,libvulpes:java/blockMotor,motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established
+115,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
+116,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+117,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+118,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
+119,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
+120,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
+121,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
+122,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
+123,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
+124,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
+125,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
+126,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
+127,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
+128,textures/blocks/log_blue*.png,IMPORT,C15c,block:alienWood,lightwood
+129,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
+130,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
+131,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
+132,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
+133,textures/blocks/crystallizer*.png,IMPORT,C16c,block:crystallizer,crystallizer
+134,textures/blocks/cuttingmachine*.png,IMPORT,C16b,block:cuttingMachine,cutting machine
+135,textures/blocks/precisionassemblerfront*.png,IMPORT,C18d,block:precisionassemblingmachine,precision assembler visual refresh
+136,textures/blocks/machineelectrolyzer*.png,IMPORT,C18d,block:electrolyser,electrolyzer visual refresh
+137,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
+138,textures/blocks/pump*.png,IMPORT,C16a,block:blockPump,fluid pump
+139,textures/blocks/machinenuclear.png,IMPORT,C17a,block:nuclearcore,nuclear core
+140,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
+141,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
+142,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
+143,textures/blocks/fuelingmachine.png,IMPORT,C17a,block:fuelingStation,fueling
+144,textures/blocks/guidancecomputer*.png,IMPORT,C17a,block:guidanceComputer,guidance computer visual refresh
+145,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
+146,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
+147,textures/blocks/satelliteassembler.png,IMPORT,C18d,block:satelliteBuilder,satellite builder visual refresh
+148,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
+149,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
+150,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
+151,textures/blocks/forcefield*,IMPORT,C17b,block:forceField block:forceFieldProjector,force field and projector
+152,textures/blocks/machineorientationcontrol.png,IMPORT,C17b,block:orientationController,station controllers
+153,textures/blocks/controlpanel.png,IMPORT,C17b,block:altitudeController block:gravityController,station controllers
+154,textures/blocks/starshipcontrolpanel.png,IMPORT,C17b,block:warpMonitor,warp controller
+155,textures/blocks/warpcore.png,IMPORT,C18d,block:warpCore,warp core visual refresh
+156,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
+157,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+158,textures/blocks/solar.png,IMPORT,C17c,block:solarGenerator,solar generator
+159,textures/blocks/panelside*.png,IMPORT,C18b,block:suitWorkStation,suit workstation and panels
+160,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
+161,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
+162,textures/blocks/atmospheredetector*.png,IMPORT,C18a,block:oxygenDetection,atmosphere detector
+163,textures/blocks/gaschargertop.png,IMPORT,C18a,block:oxygenCharger,gas charge pad
+164,textures/blocks/machinescrubber*.png,IMPORT,C18a,block:oxygenScrubber,CO2 scrubber
+165,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
+166,textures/blocks/lens1.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+167,textures/blocks/laser*.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+168,textures/blocks/vacuumlaserfront.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+169,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
+170,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
+171,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
+172,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
+173,textures/items/atmanalyzer.png,IMPORT,C18a,item:atmAnalyser,atmosphere analyzer
+174,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
+175,textures/items/pressuretank*.png,IMPORT,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,pressure tanks
+176,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
+177,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
+178,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
+179,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
+180,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
+181,textures/items/bioniclegs.png,IMPORT,C18b,item_variant:itemUpgrade/2,suit upgrades
+182,textures/items/landingboots.png,IMPORT,C18b,item_variant:itemUpgrade/3,suit upgrades
+183,textures/items/space*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit visual refresh
+184,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+185,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
+186,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
+187,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
+188,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
+189,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
+190,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
+191,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
+192,textures/items/userinterface.png,IMPORT,C16d,item_variant:misc/0,components
+193,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
+194,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+195,textures/items/advancedsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/1,satellite component visual refresh
+196,textures/items/basicsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/0,satellite component visual refresh
+197,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
+198,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
+199,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
+200,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
+201,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+202,textures/armor/spacesuit_*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit armor layers
+203,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
+204,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
+205,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
+206,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
+207,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+208,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
+209,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
+210,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
+211,textures/gui/buttons/*warp*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
+212,textures/gui/buttons/*planet*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
+213,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
+214,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
+215,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+216,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
+217,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+218,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+219,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
+220,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
+221,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
+222,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+223,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
+224,models/areagravitycontroller.obj,IMPORT,C18d,block:gravityMachine,machine OBJ model for the visual batch
+225,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
+226,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
+227,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
+228,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
+229,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
+230,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
+231,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
+232,models/electrolyser.obj,IMPORT,C18d,block:electrolyser,machine OBJ model for the visual batch
+233,models/lathe.obj,IMPORT,C18d,block:lathe,machine OBJ model for the visual batch
+234,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
+235,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
+236,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
+237,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
+238,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
+239,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
+240,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
+241,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
+242,models/warpcore.obj,IMPORT,C18d,block:warpCore,machine OBJ model for the visual batch
+243,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
+244,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
+245,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
+246,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
+247,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
+248,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+249,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
+250,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
+251,textures/models/areagravitycontroller.png,IMPORT,C18d,block:gravityMachine,model texture for the visual batch
+252,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
+253,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
+254,textures/models/centrifuge.png,IMPORT,C18d,block:centrifuge,model texture for the visual batch
+255,textures/models/chemicalreactor.png,IMPORT,C18d,block:chemicalReactor,model texture for the visual batch
+256,textures/models/crystalliser.png,IMPORT,C18d,block:crystallizer,model texture for the visual batch
+257,textures/models/cuttingmachine.png,IMPORT,C18d,block:cuttingMachine,model texture for the visual batch
+258,textures/models/diamondmetal.png,IMPORT,C18d,-,model texture for the visual batch
+259,textures/models/electrolyser.png,IMPORT,C18d,block:electrolyser,model texture for the visual batch
+260,textures/models/fan.png,IMPORT,C18d,-,model texture for the visual batch
+261,textures/models/grid.png,IMPORT,C18d,block:rocketBuilder,model texture for the visual batch
+262,textures/models/lathe.png,IMPORT,C18d,block:lathe,model texture for the visual batch
+263,textures/models/metalplate.png,IMPORT,C18d,-,model texture for the visual batch
+264,textures/models/observatory.png,IMPORT,C18d,block:observatory,model texture for the visual batch
+265,textures/models/orbitallaserdrill.png,IMPORT,C18d,block:spaceLaser,model texture for the visual batch
+266,textures/models/precisionassembler.png,IMPORT,C18d,block:precisionassemblingmachine,model texture for the visual batch
+267,textures/models/precisionlaseretcher.png,IMPORT,C18d,block:precisionlaseretcher,model texture for the visual batch
+268,textures/models/railgun.png,IMPORT,C18d,block:railgun,model texture for the visual batch
+269,textures/models/rollingmachine.png,IMPORT,C18d,block:rollingMachine,model texture for the visual batch
+270,textures/models/solararray.png,IMPORT,C18d,block:solararray,model texture for the visual batch
+271,textures/models/spaceelevator.png,IMPORT,C18d,block:spaceElevatorController,model texture for the visual batch
+272,textures/models/spaceelevatorcapsule.png,IMPORT,C18d,entity:ARSpaceElevatorCapsule,model texture for the visual batch
+273,textures/models/warpcore.png,IMPORT,C18d,block:warpCore,model texture for the visual batch
+274,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
+275,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+276,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
+277,textures/particle/*,IMPORT,C18d,-,particles
+278,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
+279,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it

@@ -10,7 +10,7 @@ target_version: v1.8.0
 development_dependency: ADR-060, ADR-061
 revisits: ADR-018 (campaign trigger, proposal for the owner in section 8), ADR-046 (station screens), ADR-049 (satellite bay, spy telescope, star-map overlay), ADR-051 (physical asteroid fields, observatory, rocket mining), ADR-055 (line and spiral modes), ADR-056 (cross-system cargo), ADR-057 (black-hole sky), ADR-058 (station gravity block, non-player fields, legacy gravity API), ADR-059 (capsule visuals)
 supersedes: ""
-import_allowlist_sha256: 0249587b53c6674b2c3f27534999f0053bbe1a745f90f791e7c1debc7edffe37
+import_allowlist_sha256: 8d78499eb8a2f625652274f37399311342bdbf603b9ae61c30a9beef63208c5e
 ```
 
 ## Context
@@ -58,8 +58,8 @@ inventory unit exactly one disposition:
 | `REJECTED` | 57 | not migrated; reasons and player impact in §4 |
 
 [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv) gives every one of the
-898 legacy assets exactly one handling under ADR-061 §4: 275 `IMPORT`, 80
-`REVIEW`, 430 `REGENERATE`, 103 `EXCLUDE` and 10 already `IMPORTED` (seven
+898 legacy assets exactly one handling under ADR-061 §4: 269 `IMPORT`, 81
+`REVIEW`, 430 `REGENERATE`, 108 `EXCLUDE` and 10 already `IMPORTED` (seven
 textures, one sound and the two language files whose reviewed keys v0.1.0
 extracted).
 `scripts/validate_v180_content_ledger.py` checks both files against

@@ -255,7 +255,7 @@ roots down to 20 below, as legacy, canopy radius ≤ 12), inverted pillars
 (radius 5, height 20–33, as legacy) and crystal clusters (height 10–49, as
 legacy; the lean is capped so the top stays within the bound). Textures
 follow the asset plan; files the derivation check excluded (the lightwood
-leaves and log top) are drawn new.
+leaves, log top and planks) are drawn new.
 Bindings for the two new Levels are added at startup by the existing ADR-032
 rules; Tau Ceti e is unchanged.
 

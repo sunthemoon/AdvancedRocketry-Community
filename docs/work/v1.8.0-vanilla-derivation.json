@@ -1,20 +1,30 @@
 {
- "schema": 1,
+ "schema": 2,
  "generator": "tools/audit/vanilla_derivation.py",
  "thresholds": {
   "hit_overlap": 0.3,
   "hit_iou": 0.9,
   "hit_rank": 0.9,
+  "hit_sub": 0.75,
   "suspect_overlap": 0.1,
   "suspect_iou": 0.85,
   "suspect_rank": 0.75,
+  "suspect_sub": 0.5,
   "min_shared_pixels": 32,
-  "min_luminance_levels": 8,
+  "min_informative_pixels": 16,
+  "min_rank_levels": 3,
+  "min_sub_pixels": 16,
+  "dominant_exclusion_colours": 4,
+  "min_evidence_colours": 2,
+  "min_matched_colours": 3,
   "scales": [
-   1,
    2,
    4
-  ]
+  ],
+  "max_sheet": 512,
+  "max_sub_candidate": 64,
+  "max_sub_offsets": 4096,
+  "orientations": 8
  },
  "vanilla": {
   "1.12.2": {
@@ -22,14 +32,14 @@
    "bytes": 10180113
   },
   "1.20.1": {
-   "sha256": "f43d1ac034a8907edab190a17501fd4ca2b0af107d4231da364eeca8ab5ee317",
-   "bytes": 10436626
+   "sha256": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f",
+   "bytes": 23028853
   }
  },
  "counts": {
-  "CLEAR": 799,
-  "HIT": 45,
-  "SUSPECT": 42,
+  "CLEAR": 794,
+  "HIT": 39,
+  "SUSPECT": 53,
   "UNSUPPORTED": 12
  },
  "assets": [
@@ -2673,9 +2683,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 1.0,
+    "colours": 44,
     "iou": 1.0,
     "rank": 1.0
    }
@@ -2689,9 +2701,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/models/armor/iron_layer_2.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 1.0,
+    "colours": 40,
     "iou": 1.0,
     "rank": 1.0
    }
@@ -2705,11 +2719,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.1554,
+    "colours": 36,
     "iou": 0.2597,
-    "rank": 0.6138
+    "rank": 0.0
    }
   },
   {
@@ -2721,11 +2737,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/rabbit/toast.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0072,
+    "colours": 2,
     "iou": 0.0399,
-    "rank": -0.0356
+    "rank": 0.0
    }
   },
   {
@@ -2737,11 +2755,13 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.3235,
+    "colours": 42,
     "iou": 0.6089,
-    "rank": 0.43
+    "rank": 0.0
    }
   },
   {
@@ -2753,11 +2773,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/skeleton/skeleton.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0074,
+    "colours": 2,
     "iou": 0.0865,
-    "rank": 0.1621
+    "rank": 0.0
    }
   },
   {
@@ -2769,11 +2791,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/bucket.png",
-    "scale": 1,
-    "overlap": 0.0337,
-    "iou": 0.5703,
-    "rank": 0.1424
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/creeper.png",
+    "scale": -4,
+    "overlap": 0.0625,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -2785,11 +2809,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": 0.0125
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/creeper.png",
+    "scale": -4,
+    "overlap": 0.0625,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -2801,11 +2827,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/recovery_compass_19.png",
-    "scale": 1,
-    "overlap": 0.0268,
-    "iou": 0.7031,
-    "rank": 0.0938
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/coal_block.png",
+    "orientation": 2,
+    "overlap": 0.1104,
+    "colours": 1,
+    "iou": 1.0,
+    "rank": 0.1068
    }
   },
   {
@@ -2815,13 +2843,15 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0688,
-    "iou": 0.6992,
-    "rank": 0.0959
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png",
+    "scale": -4,
+    "overlap": 0.1875,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -2833,11 +2863,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/bee_nest_side.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/acacia_planks.png",
+    "orientation": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.5978
+    "rank": 0.6216
    }
   },
   {
@@ -2849,11 +2881,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/small_dripleaf_top.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/respawn_anchor_top_off.png",
+    "orientation": 2,
     "overlap": 0.0,
-    "iou": 0.25,
-    "rank": 0.752
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.7223
    }
   },
   {
@@ -2865,11 +2899,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/small_dripleaf_top.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/pointed_dripstone_up_base.png",
+    "orientation": 1,
     "overlap": 0.0,
-    "iou": 0.25,
-    "rank": 0.761
+    "colours": 0,
+    "iou": 0.8984,
+    "rank": 0.6651
    }
   },
   {
@@ -2881,9 +2917,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/anvil_base.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.0,
     "rank": 0.0
    }
@@ -2897,11 +2935,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cobblestone.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_top.png",
     "scale": 2,
-    "overlap": 0.0176,
+    "overlap": 0.0357,
+    "colours": 1,
     "iou": 1.0,
-    "rank": 0.0949
+    "rank": 0.214
    }
   },
   {
@@ -2913,11 +2953,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_side.png",
-    "scale": 1,
-    "overlap": 0.0704,
-    "iou": 1.0,
-    "rank": -0.0669
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_left.png",
+    "scale": -4,
+    "overlap": 0.1836,
+    "colours": 1,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -2929,11 +2971,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/anvil_base.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/gold_block.png",
+    "orientation": 7,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.0
+    "rank": 0.3794
    }
   },
   {
@@ -2945,11 +2989,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/blast_furnace_side.png",
-    "scale": 1,
-    "overlap": 0.0602,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 5,
+    "overlap": 0.0814,
+    "colours": 1,
     "iou": 1.0,
-    "rank": -0.0166
+    "rank": 0.2227
    }
   },
   {
@@ -2961,11 +3007,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/cracked_deepslate_bricks.png",
-    "scale": 1,
-    "overlap": 0.0195,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 5,
+    "overlap": 0.0814,
+    "colours": 1,
     "iou": 1.0,
-    "rank": 0.2206
+    "rank": -0.2531
    }
   },
   {
@@ -2977,11 +3025,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.0305,
-    "iou": 1.0,
-    "rank": 0.0745
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/flint.png",
+    "orientation": 5,
+    "overlap": 0.0649,
+    "colours": 1,
+    "iou": 0.4023,
+    "rank": 0.0
    }
   },
   {
@@ -2993,11 +3043,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.0305,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0938,
+    "colours": 1,
     "iou": 1.0,
-    "rank": 0.0707
+    "rank": 0.4546
    }
   },
   {
@@ -3009,11 +3061,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_side.png",
-    "scale": 1,
-    "overlap": 0.0376,
-    "iou": 1.0,
-    "rank": 0.0719
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.0898,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3025,11 +3079,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/water_flow.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/painting/match.png",
+    "orientation": "frame0",
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.0738
+    "rank": 0.1762
    }
   },
   {
@@ -3046,11 +3102,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/water_still.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/melon_side.png",
+    "orientation": "frame0",
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.1272
+    "rank": 0.3318
    }
   },
   {
@@ -3065,13 +3123,15 @@
     32,
     1024
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/water_flow.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/water_flow.png",
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.0
+    "rank": 0.8846
    }
   },
   {
@@ -3088,11 +3148,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/water_still.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/water_still.png#frame0",
+    "orientation": "frame0",
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.8339
+    "rank": 0.8389
    }
   },
   {
@@ -3109,11 +3171,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/sculk_sensor_tendril_inactive.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_magenta.png",
+    "orientation": "frame0",
     "overlap": 0.0,
-    "iou": 0.1243,
-    "rank": 0.0341
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.2033
    }
   },
   {
@@ -3130,11 +3194,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/parrot/parrot_grey.png",
-    "scale": -2,
-    "overlap": 0.0256,
-    "iou": 0.957,
-    "rank": 0.1792
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.0391,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3146,11 +3212,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/parrot/parrot_grey.png",
-    "scale": -2,
-    "overlap": 0.0513,
-    "iou": 0.957,
-    "rank": 0.1792
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/blast_furnace_top.png",
+    "orientation": 6,
+    "overlap": 0.0588,
+    "colours": 1,
+    "iou": 1.0,
+    "rank": 0.346
    }
   },
   {
@@ -3162,9 +3230,11 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/environment/sun.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.8662
    }
@@ -3176,11 +3246,13 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/parrot/parrot_grey.png",
     "scale": -2,
     "overlap": 0.1154,
+    "colours": 1,
     "iou": 0.957,
     "rank": 0.0584
    }
@@ -3194,11 +3266,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": -0.0804
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.082,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3210,11 +3284,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone.png",
-    "scale": 1,
-    "overlap": 0.0,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/polished_basalt_side.png",
+    "orientation": 5,
+    "overlap": 0.0116,
+    "colours": 1,
     "iou": 1.0,
-    "rank": 0.6544
+    "rank": 0.0834
    }
   },
   {
@@ -3226,11 +3302,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/big_dripleaf_tip.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_1.png",
     "scale": 2,
     "overlap": 0.0,
-    "iou": 0.1562,
-    "rank": 0.6193
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.2316
    }
   },
   {
@@ -3240,13 +3318,15 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_silver.png",
-    "scale": 1,
+    "orientation": 5,
     "overlap": 0.1117,
+    "colours": 1,
     "iou": 1.0,
-    "rank": -0.037
+    "rank": -0.0361
    }
   },
   {
@@ -3258,11 +3338,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": -0.1018
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_right.png",
+    "scale": -4,
+    "overlap": 0.043,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3274,9 +3356,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/environment/sun.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9304
    }
@@ -3290,9 +3374,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/grass_top.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9978
    }
@@ -3306,11 +3392,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_side.png",
-    "scale": 1,
-    "overlap": 0.0516,
-    "iou": 1.0,
-    "rank": -0.0436
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_middle.png",
+    "scale": -4,
+    "overlap": 0.0977,
+    "colours": 1,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3322,11 +3410,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/environment/sun.png",
-    "scale": -2,
-    "overlap": 0.0814,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.1719,
+    "colours": 1,
     "iou": 1.0,
-    "rank": 0.2241
+    "rank": 0.3854
    }
   },
   {
@@ -3338,11 +3428,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": 0.0442
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.0508,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3354,11 +3446,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0187,
-    "iou": 0.6992,
-    "rank": 0.0935
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/diagonal_left.png",
+    "scale": -4,
+    "overlap": 0.0391,
+    "colours": 1,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3370,9 +3464,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 1.0
    }
@@ -3384,11 +3480,13 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.1098,
+    "colours": 1,
     "iou": 0.3359,
     "rank": 0.0
    }
@@ -3402,10 +3500,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.0244,
-    "iou": 0.5039,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.0804,
+    "colours": 2,
+    "iou": 0.2513,
     "rank": 0.0
    }
   },
@@ -3418,11 +3518,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/allium.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/log_birch.png",
+    "orientation": 0,
     "overlap": 0.0,
-    "iou": 0.1484,
-    "rank": 0.3699
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.3298
    }
   },
   {
@@ -3434,9 +3536,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/log_big_oak_top.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.915
    }
@@ -3450,9 +3554,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/log_oak.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9992
    }
@@ -3466,9 +3572,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/log_oak_top.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.998
    }
@@ -3482,11 +3590,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/iron_trapdoor.png",
-    "scale": 1,
-    "overlap": 0.0208,
-    "iou": 0.8594,
-    "rank": 0.2107
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/particle/spark_4.png",
+    "scale": 2,
+    "overlap": 0.0469,
+    "colours": 1,
+    "iou": 0.3906,
+    "rank": 0.0
    }
   },
   {
@@ -3498,11 +3608,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/iron_trapdoor.png",
-    "scale": 1,
-    "overlap": 0.0208,
-    "iou": 0.8594,
-    "rank": 0.2118
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/particle/spark_4.png",
+    "scale": 2,
+    "overlap": 0.0469,
+    "colours": 1,
+    "iou": 0.3906,
+    "rank": 0.0
    }
   },
   {
@@ -3514,11 +3626,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": -0.0796
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.0898,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3530,11 +3644,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": 0.0393
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.0391,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3546,11 +3662,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/bucket.png",
-    "scale": 1,
-    "overlap": 0.0337,
-    "iou": 0.5703,
-    "rank": 0.3355
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.0781,
+    "colours": 3,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3560,13 +3678,15 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_side.png",
-    "scale": 1,
-    "overlap": 0.0469,
-    "iou": 1.0,
-    "rank": -0.0293
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_downleft.png",
+    "scale": -4,
+    "overlap": 0.1055,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3578,11 +3698,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/observer_top.png",
-    "scale": 1,
-    "overlap": 0.0214,
-    "iou": 1.0,
-    "rank": -0.3308
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_right.png",
+    "scale": -4,
+    "overlap": 0.0586,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3594,11 +3716,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": -0.0758
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_right.png",
+    "scale": -4,
+    "overlap": 0.0586,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3610,10 +3734,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_upper.png",
-    "scale": 1,
-    "overlap": 0.0207,
-    "iou": 0.8125,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.082,
+    "colours": 1,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -3626,11 +3752,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": 0.0112
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.0586,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3642,11 +3770,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/diamond_ore.png",
-    "scale": 1,
-    "overlap": 0.0216,
-    "iou": 1.0,
-    "rank": -0.1507
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.0391,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3658,9 +3788,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_silver.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0782,
+    "colours": 1,
     "iou": 1.0,
     "rank": -0.1296
    }
@@ -3674,10 +3806,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.2875,
-    "iou": 0.6992,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png",
+    "orientation": 2,
+    "offset": [
+     11,
+     14
+    ],
+    "sub": 0.9922,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -3690,10 +3829,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.2875,
-    "iou": 0.6992,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_bottom_right.png",
+    "orientation": 0,
+    "offset": [
+     11,
+     12
+    ],
+    "sub": 1.0,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -3704,12 +3850,14 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.2875,
-    "iou": 0.6992,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_middle.png",
+    "scale": -4,
+    "overlap": 0.4258,
+    "colours": 1,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -3722,11 +3870,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.125,
-    "iou": 0.6992,
-    "rank": 0.0011
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/diagonal_up_right.png",
+    "scale": -4,
+    "overlap": 0.1094,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3738,11 +3888,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1375,
-    "iou": 0.6992,
-    "rank": 0.031
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.1328,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3754,11 +3906,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1375,
-    "iou": 0.6992,
-    "rank": 0.0302
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.1328,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3770,11 +3924,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_bottom.png",
-    "scale": 1,
-    "overlap": 0.0795,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 6,
+    "overlap": 0.1337,
+    "colours": 1,
     "iou": 1.0,
-    "rank": -0.1133
+    "rank": -0.2753
    }
   },
   {
@@ -3786,10 +3942,12 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.2125,
-    "iou": 0.6992,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.2383,
+    "colours": 2,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -3802,10 +3960,12 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1437,
-    "iou": 0.6992,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png",
+    "scale": -4,
+    "overlap": 0.1953,
+    "colours": 2,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -3816,13 +3976,15 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_silver.png",
-    "scale": 1,
-    "overlap": 0.1397,
+    "orientation": 1,
+    "overlap": 0.1676,
+    "colours": 1,
     "iou": 1.0,
-    "rank": -0.0305
+    "rank": -0.037
    }
   },
   {
@@ -3834,9 +3996,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/grass_top.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9955
    }
@@ -3850,9 +4014,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/grass_top.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9955
    }
@@ -3866,9 +4032,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/mushroom_red.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0067,
+    "colours": 1,
     "iou": 0.1375,
     "rank": 0.0
    }
@@ -3882,9 +4050,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/redstone_ore.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.052,
+    "colours": 1,
     "iou": 1.0,
     "rank": 0.0
    }
@@ -3898,11 +4068,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/decorated_pot/decorated_pot_side.png",
-    "scale": 1,
+    "orientation": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.875,
-    "rank": 0.8299
+    "rank": 0.8348
    }
   },
   {
@@ -3914,11 +4086,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/blast_furnace_side.png",
-    "scale": 1,
-    "overlap": 0.0231,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png",
+    "orientation": 5,
+    "overlap": 0.0442,
+    "colours": 4,
     "iou": 1.0,
-    "rank": -0.0417
+    "rank": 0.0397
    }
   },
   {
@@ -3930,11 +4104,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_upper.png",
-    "scale": 1,
-    "overlap": 0.0248,
-    "iou": 0.8125,
-    "rank": -0.2308
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.082,
+    "colours": 1,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -3946,10 +4122,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_upper.png",
-    "scale": 1,
-    "overlap": 0.0207,
-    "iou": 0.8125,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.1094,
+    "colours": 1,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -3962,10 +4140,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_upper.png",
-    "scale": 1,
-    "overlap": 0.0207,
-    "iou": 0.8125,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.082,
+    "colours": 1,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -3976,13 +4156,15 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/anvil_base.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/planks_big_oak.png",
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.0
+    "rank": 1.0
    }
   },
   {
@@ -3994,9 +4176,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9841
    }
@@ -4010,9 +4194,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/piston_inner.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.99
    }
@@ -4026,9 +4212,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/piston_side.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9844
    }
@@ -4042,9 +4230,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/furnace_top.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9915
    }
@@ -4058,11 +4248,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.0305,
-    "iou": 1.0,
-    "rank": 0.0916
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_leggings.png",
+    "orientation": 3,
+    "overlap": 0.0439,
+    "colours": 2,
+    "iou": 0.4375,
+    "rank": 0.0
    }
   },
   {
@@ -4074,11 +4266,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.0305,
-    "iou": 1.0,
-    "rank": 0.0775
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_leggings.png",
+    "orientation": 3,
+    "overlap": 0.0439,
+    "colours": 2,
+    "iou": 0.4375,
+    "rank": 0.0
    }
   },
   {
@@ -4090,11 +4284,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_side.png",
-    "scale": 1,
-    "overlap": 0.0282,
-    "iou": 1.0,
-    "rank": -0.1234
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.082,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -4106,11 +4302,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone_slab_side.png",
-    "scale": 1,
-    "overlap": 0.0209,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.1094,
+    "colours": 1,
     "iou": 1.0,
-    "rank": -0.0791
+    "rank": -0.6479
    }
   },
   {
@@ -4122,9 +4320,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/block/grass_block_side_overlay.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0159,
+    "colours": 1,
     "iou": 0.24,
     "rank": 0.0
    }
@@ -4138,9 +4338,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 1.0
    }
@@ -4154,9 +4356,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_side.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.9675,
     "rank": 0.9782
    }
@@ -4170,11 +4374,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/block/composter_top.png",
-    "scale": 1,
+    "orientation": 3,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.7671
+    "rank": 0.7815
    }
   },
   {
@@ -4184,13 +4390,15 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tnt_side.png",
-    "scale": 1,
-    "overlap": 0.061,
-    "iou": 1.0,
-    "rank": -0.0106
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png",
+    "scale": -4,
+    "overlap": 0.1523,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -4202,11 +4410,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0375,
-    "iou": 0.6992,
-    "rank": -0.0293
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
+    "orientation": 1,
+    "overlap": 0.0404,
+    "colours": 1,
+    "iou": 0.6016,
+    "rank": 0.0
    }
   },
   {
@@ -4218,11 +4428,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0269,
+    "orientation": 1,
+    "overlap": 0.0404,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.1081
+    "rank": 0.0
    }
   },
   {
@@ -4234,11 +4446,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
-    "iou": 0.6016,
-    "rank": 0.149
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_side.png",
+    "orientation": 3,
+    "overlap": 0.0495,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -4250,11 +4464,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
-    "iou": 0.6016,
-    "rank": 0.0344
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_side.png",
+    "orientation": 3,
+    "overlap": 0.0405,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -4266,11 +4482,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
-    "iou": 0.6016,
-    "rank": 0.0453
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_side.png",
+    "orientation": 3,
+    "overlap": 0.0495,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -4282,11 +4500,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0375,
-    "iou": 0.6992,
-    "rank": 0.0059
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
+    "orientation": 1,
+    "overlap": 0.0404,
+    "colours": 1,
+    "iou": 0.6016,
+    "rank": 0.0
    }
   },
   {
@@ -4298,11 +4518,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0269,
+    "orientation": 1,
+    "overlap": 0.0404,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.1779
+    "rank": 0.0
    }
   },
   {
@@ -4314,11 +4536,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
-    "iou": 0.6016,
-    "rank": 0.0782
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_side.png",
+    "orientation": 3,
+    "overlap": 0.0495,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -4330,11 +4554,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
-    "iou": 0.6016,
-    "rank": 0.1002
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_side.png",
+    "orientation": 3,
+    "overlap": 0.0405,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -4346,11 +4572,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0269,
+    "orientation": 1,
+    "overlap": 0.0448,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.1575
+    "rank": 0.0
    }
   },
   {
@@ -4362,11 +4590,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0269,
+    "orientation": 1,
+    "overlap": 0.0448,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.1177
+    "rank": 0.0
    }
   },
   {
@@ -4378,11 +4608,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0269,
+    "orientation": 1,
+    "overlap": 0.0448,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.1892
+    "rank": 0.0
    }
   },
   {
@@ -4394,11 +4626,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
+    "orientation": 4,
+    "overlap": 0.0448,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.0646
+    "rank": 0.0
    }
   },
   {
@@ -4410,11 +4644,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
-    "iou": 0.6016,
-    "rank": 0.113
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_side.png",
+    "orientation": 3,
+    "overlap": 0.0495,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -4426,11 +4662,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0359,
+    "orientation": 4,
+    "overlap": 0.0448,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.1334
+    "rank": 0.0
    }
   },
   {
@@ -4442,11 +4680,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/knowledge_book.png",
-    "scale": 1,
-    "overlap": 0.0269,
+    "orientation": 1,
+    "overlap": 0.0448,
+    "colours": 1,
     "iou": 0.6016,
-    "rank": 0.0886
+    "rank": 0.0
    }
   },
   {
@@ -4458,11 +4698,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/alex.png",
-    "scale": -4,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/rabbit_cooked.png",
+    "orientation": 1,
     "overlap": 0.0,
-    "iou": 0.3416,
-    "rank": 0.5211
+    "colours": 0,
+    "iou": 0.6835,
+    "rank": 0.0
    }
   },
   {
@@ -4474,11 +4716,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/wither/wither.png",
     "scale": -4,
     "overlap": 0.0548,
+    "colours": 1,
     "iou": 0.8281,
-    "rank": 0.0872
+    "rank": 0.0
    }
   },
   {
@@ -4488,12 +4732,14 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
-    "scale": 1,
-    "overlap": 0.0845,
-    "iou": 1.0,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.1133,
+    "colours": 2,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -4504,13 +4750,15 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/horse/horse_gray.png",
-    "scale": -4,
-    "overlap": 0.0381,
-    "iou": 0.6484,
-    "rank": -0.0355
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/diamond_block.png",
+    "orientation": 3,
+    "overlap": 0.0,
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.7731
    }
   },
   {
@@ -4522,11 +4770,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png",
-    "scale": 1,
-    "overlap": 0.1547,
+    "orientation": 1,
+    "overlap": 0.2044,
+    "colours": 2,
     "iou": 1.0,
-    "rank": 0.0
+    "rank": 0.4408
    }
   },
   {
@@ -4536,11 +4786,13 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png",
-    "scale": 1,
-    "overlap": 0.0884,
+    "orientation": 7,
+    "overlap": 0.1215,
+    "colours": 2,
     "iou": 0.75,
     "rank": 0.0
    }
@@ -4554,10 +4806,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_nugget.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/leather_helmet_overlay.png",
+    "orientation": 1,
     "overlap": 0.0,
-    "iou": 0.5676,
+    "colours": 0,
+    "iou": 0.625,
     "rank": 0.0
    }
   },
@@ -4570,11 +4824,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/crimson_trapdoor.png",
-    "scale": 1,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
     "overlap": 0.0,
-    "iou": 0.8438,
-    "rank": 0.6194
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.4749
    }
   },
   {
@@ -4584,13 +4840,15 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
     "scale": -2,
     "overlap": 0.1,
+    "colours": 1,
     "iou": 0.6992,
-    "rank": 0.2017
+    "rank": 0.0
    }
   },
   {
@@ -4602,9 +4860,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/environment/sun.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9304
    }
@@ -4618,9 +4878,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/effect/dither.png",
     "scale": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.6875,
     "rank": 0.0
    }
@@ -4634,11 +4896,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/iron_block.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0064,
+    "colours": 1,
     "iou": 1.0,
-    "rank": 0.0
+    "rank": -0.0878
    }
   },
   {
@@ -4650,10 +4914,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.2,
-    "iou": 0.6992,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/circle.png",
+    "orientation": 0,
+    "offset": [
+     5,
+     14
+    ],
+    "sub": 0.7422,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4664,12 +4935,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.3415,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png",
+    "orientation": 1,
+    "offset": [
+     19,
+     2
+    ],
+    "sub": 0.9023,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4680,12 +4958,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.4207,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_horizontal.png",
+    "orientation": 0,
+    "offset": [
+     0,
+     9
+    ],
+    "sub": 0.9375,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4696,12 +4981,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.3171,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png",
+    "orientation": 2,
+    "offset": [
+     19,
+     2
+    ],
+    "sub": 0.9023,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4712,12 +5004,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.4146,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_horizontal.png",
+    "orientation": 3,
+    "offset": [
+     0,
+     9
+    ],
+    "sub": 0.9375,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4730,10 +5029,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.2439,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/rhombus.png",
+    "orientation": 2,
+    "offset": [
+     3,
+     18
+    ],
+    "sub": 0.7891,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4746,10 +5052,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.2439,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/rhombus.png",
+    "orientation": 1,
+    "offset": [
+     3,
+     18
+    ],
+    "sub": 0.7891,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4760,11 +5073,13 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.5305,
+    "colours": 1,
     "iou": 1.0,
     "rank": 0.0
    }
@@ -4778,10 +5093,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.2378,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/rhombus.png",
+    "orientation": 3,
+    "offset": [
+     3,
+     18
+    ],
+    "sub": 0.7891,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4794,10 +5116,17 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.2439,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/rhombus.png",
+    "orientation": 0,
+    "offset": [
+     3,
+     18
+    ],
+    "sub": 0.7891,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4808,12 +5137,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.4268,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_horizontal.png",
+    "orientation": 1,
+    "offset": [
+     0,
+     9
+    ],
+    "sub": 0.9375,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4824,12 +5160,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.3293,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png",
+    "orientation": 0,
+    "offset": [
+     19,
+     2
+    ],
+    "sub": 0.9023,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4840,12 +5183,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.4146,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_horizontal.png",
+    "orientation": 2,
+    "offset": [
+     0,
+     9
+    ],
+    "sub": 0.9375,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4856,12 +5206,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.3354,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png",
+    "orientation": 3,
+    "offset": [
+     19,
+     2
+    ],
+    "sub": 0.9023,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4872,12 +5229,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.3049,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png",
+    "orientation": 1,
+    "offset": [
+     8,
+     0
+    ],
+    "sub": 0.7617,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4888,12 +5252,19 @@
     16,
     16
    ],
-   "verdict": "HIT",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.311,
-    "iou": 1.0,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png",
+    "orientation": 0,
+    "offset": [
+     8,
+     0
+    ],
+    "sub": 0.7617,
+    "colours": 2,
+    "overlap": 0.0,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -4906,10 +5277,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cobblestone.png",
-    "scale": 1,
-    "overlap": 0.0044,
-    "iou": 0.0859,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grindstone_round.png",
+    "orientation": 3,
+    "overlap": 0.023,
+    "colours": 1,
+    "iou": 0.0536,
     "rank": 0.0
    }
   },
@@ -4922,11 +5295,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_lower.png",
-    "scale": 1,
-    "overlap": 0.0123,
-    "iou": 1.0,
-    "rank": 0.0462
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/experience_orb.png",
+    "scale": -4,
+    "overlap": 0.0227,
+    "colours": 1,
+    "iou": 0.543,
+    "rank": 0.0
    }
   },
   {
@@ -4938,9 +5313,11 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/sand.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.2672,
+    "colours": 55,
     "iou": 1.0,
     "rank": 0.4496
    }
@@ -4954,11 +5331,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stonebrick_carved.png",
-    "scale": 1,
-    "overlap": 0.0184,
-    "iou": 1.0,
-    "rank": 0.022
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
+    "scale": -4,
+    "overlap": 0.0391,
+    "colours": 2,
+    "iou": 0.4688,
+    "rank": 0.0
    }
   },
   {
@@ -4970,11 +5349,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/villager/librarian.png",
-    "scale": -4,
-    "overlap": 0.0359,
-    "iou": 0.6055,
-    "rank": 0.2467
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/cake.png",
+    "orientation": 5,
+    "overlap": 0.0521,
+    "colours": 2,
+    "iou": 0.7383,
+    "rank": 0.0
    }
   },
   {
@@ -4986,11 +5367,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/repeater_off.png",
-    "scale": 1,
-    "overlap": 0.1065,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png",
+    "orientation": 5,
+    "overlap": 0.1105,
+    "colours": 2,
     "iou": 1.0,
-    "rank": -0.0599
+    "rank": 0.1438
    }
   },
   {
@@ -5002,11 +5385,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/triangle_bottom.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_horizontal_bottom.png",
     "scale": 2,
-    "overlap": 0.0402,
+    "overlap": 0.0433,
+    "colours": 1,
     "iou": 0.4269,
-    "rank": 0.1754
+    "rank": 0.0
    }
   },
   {
@@ -5018,9 +5403,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/misc/spyglass_scope.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/environment/clouds.png",
     "scale": 2,
-    "overlap": 0.0018,
+    "overlap": 0.0403,
+    "colours": 2,
     "iou": 0.7182,
     "rank": 0.0
    }
@@ -5034,11 +5421,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/misc/nausea.png",
-    "scale": -4,
-    "overlap": 0.0361,
-    "iou": 0.8057,
-    "rank": 0.645
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/triangles_top.png",
+    "orientation": 0,
+    "overlap": 0.0383,
+    "colours": 1,
+    "iou": 0.4343,
+    "rank": 0.0
    }
   },
   {
@@ -5050,11 +5439,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/misc/nausea.png",
     "scale": -2,
     "overlap": 0.0131,
+    "colours": 2,
     "iou": 0.6706,
-    "rank": -0.2045
+    "rank": 0.0
    }
   },
   {
@@ -5066,9 +5457,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/environment/moon_phases.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.947,
+    "colours": 43,
     "iou": 1.0,
     "rank": 0.9983
    }
@@ -5082,11 +5475,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/horse/horse_white.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0004,
+    "colours": 3,
     "iou": 0.2391,
-    "rank": -0.1213
+    "rank": 0.0
    }
   },
   {
@@ -5098,9 +5493,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/environment/sun.png",
     "scale": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.9043,
     "rank": 0.9814
    }
@@ -5114,10 +5511,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/particle/particles.png",
-    "scale": -4,
-    "overlap": 0.0024,
-    "iou": 0.1602,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_0.png",
+    "scale": 2,
+    "overlap": 0.1367,
+    "colours": 1,
+    "iou": 0.8945,
     "rank": 0.0
    }
   },
@@ -5139,9 +5538,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/gui/container/furnace.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.5768,
+    "colours": 5,
     "iou": 0.9162,
     "rank": 0.3693
    }
@@ -5153,7 +5554,16 @@
     1,
     3
    ],
-   "verdict": "CLEAR"
+   "verdict": "CLEAR",
+   "best": {
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/gui/title/background/panorama_0.png",
+    "orientation": "frame0",
+    "overlap": 0.0,
+    "colours": 0,
+    "iou": 1.0,
+    "rank": 0.0
+   }
   },
   {
    "asset": "textures/gui/bordervertical.png",
@@ -5189,12 +5599,19 @@
     24,
     24
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
-    "scale": -2,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/advancements/tabs.png",
+    "orientation": 7,
+    "offset": [
+     102,
+     94
+    ],
+    "sub": 0.6871,
+    "colours": 3,
     "overlap": 0.0,
-    "iou": 0.3636,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -5207,9 +5624,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3636,
     "rank": 0.0
    }
@@ -5223,9 +5642,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3636,
     "rank": 0.0
    }
@@ -5257,11 +5678,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3782,
-    "rank": 0.2166
+    "rank": 0.0
    }
   },
   {
@@ -5273,9 +5696,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3782,
     "rank": 0.0
    }
@@ -5289,11 +5714,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3782,
-    "rank": 0.0603
+    "rank": 0.0
    }
   },
   {
@@ -5305,9 +5732,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3782,
     "rank": 0.0
    }
@@ -5321,9 +5750,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3782,
     "rank": 0.0
    }
@@ -5337,9 +5768,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3649,
     "rank": 0.0
    }
@@ -5353,9 +5786,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3649,
     "rank": 0.0
    }
@@ -5367,12 +5802,19 @@
     24,
     24
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
-    "scale": -2,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/advancements/widgets.png",
+    "orientation": 0,
+    "offset": [
+     2,
+     156
+    ],
+    "sub": 0.5193,
+    "colours": 4,
     "overlap": 0.0,
-    "iou": 0.3649,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -5385,9 +5827,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3649,
     "rank": 0.0
    }
@@ -5401,11 +5845,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/temperate_frog.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
-    "iou": 0.3614,
-    "rank": 0.0724
+    "colours": 0,
+    "iou": 0.3649,
+    "rank": 0.0
    }
   },
   {
@@ -5417,11 +5863,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/temperate_frog.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
-    "iou": 0.3614,
-    "rank": 0.2042
+    "colours": 0,
+    "iou": 0.3649,
+    "rank": 0.0
    }
   },
   {
@@ -5433,11 +5881,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/cold_frog.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
-    "iou": 0.3614,
-    "rank": 0.1778
+    "colours": 0,
+    "iou": 0.3649,
+    "rank": 0.0
    }
   },
   {
@@ -5449,11 +5899,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/cold_frog.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
-    "iou": 0.3614,
-    "rank": 0.0816
+    "colours": 0,
+    "iou": 0.3649,
+    "rank": 0.0
    }
   },
   {
@@ -5463,12 +5915,19 @@
     24,
     24
    ],
-   "verdict": "CLEAR",
+   "verdict": "HIT",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
-    "scale": -2,
+    "method": "subimage",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/advancements/tabs.png",
+    "orientation": 5,
+    "offset": [
+     129,
+     92
+    ],
+    "sub": 0.8105,
+    "colours": 4,
     "overlap": 0.0,
-    "iou": 0.3649,
+    "iou": 0.0,
     "rank": 0.0
    }
   },
@@ -5481,11 +5940,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3649,
-    "rank": -0.0572
+    "rank": 0.0
    }
   },
   {
@@ -5497,11 +5958,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/temperate_frog.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/entity/frog/warm_frog.png",
     "scale": -2,
     "overlap": 0.0,
-    "iou": 0.3614,
-    "rank": -0.0162
+    "colours": 0,
+    "iou": 0.3649,
+    "rank": 0.0
    }
   },
   {
@@ -5513,10 +5976,12 @@
    ],
    "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/shulker_box.png",
-    "scale": 1,
-    "overlap": 0.426,
-    "iou": 0.9705,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/gui/container/horse.png",
+    "orientation": 7,
+    "overlap": 0.4549,
+    "colours": 5,
+    "iou": 0.8165,
     "rank": 0.0
    }
   },
@@ -5529,9 +5994,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/gui/container/furnace.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.5768,
+    "colours": 5,
     "iou": 0.9395,
     "rank": 0.4273
    }
@@ -5545,9 +6012,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/gui/container/smithing.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.5562,
+    "colours": 5,
     "iou": 0.9211,
     "rank": 0.4605
    }
@@ -5561,11 +6030,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/particle/particles.png",
-    "scale": 2,
-    "overlap": 0.0011,
-    "iou": 0.3057,
-    "rank": -0.2117
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/environment/clouds.png",
+    "orientation": 3,
+    "overlap": 0.0072,
+    "colours": 1,
+    "iou": 0.2228,
+    "rank": 0.0
    }
   },
   {
@@ -5577,11 +6048,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png",
-    "scale": 1,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_top.png",
+    "scale": 4,
     "overlap": 0.0,
-    "iou": 0.2155,
-    "rank": 0.9312
+    "colours": 0,
+    "iou": 0.5843,
+    "rank": 0.0
    }
   },
   {
@@ -5602,9 +6075,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/gui/container/smithing.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.5845,
+    "colours": 5,
     "iou": 0.9221,
     "rank": 0.409
    }
@@ -5627,9 +6102,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/font/asciillager.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3018,
     "rank": 0.0
    }
@@ -5643,9 +6120,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/font/asciillager.png",
     "scale": -2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3018,
     "rank": 0.0
    }
@@ -5659,9 +6138,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/effect/dither.png",
     "scale": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.875,
     "rank": 0.0
    }
@@ -5675,9 +6156,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/effect/dither.png",
     "scale": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.875,
     "rank": 0.0
    }
@@ -5691,11 +6174,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/effect/dither.png",
-    "scale": 4,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
     "overlap": 0.0,
-    "iou": 0.875,
-    "rank": 0.0
+    "colours": 0,
+    "iou": 0.8594,
+    "rank": 0.2314
    }
   },
   {
@@ -5707,9 +6192,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/gui/container/crafting_table.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.6591,
+    "colours": 5,
     "iou": 0.9279,
     "rank": 0.4935
    }
@@ -5723,11 +6210,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/sculk_shrieker_top.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_0.png",
     "scale": 4,
-    "overlap": 0.0,
-    "iou": 0.1564,
-    "rank": 0.5944
+    "overlap": 0.0195,
+    "colours": 1,
+    "iou": 0.75,
+    "rank": 0.0
    }
   },
   {
@@ -5739,11 +6228,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/panda/panda.png",
-    "scale": 1,
-    "overlap": 0.0004,
-    "iou": 0.2584,
-    "rank": -0.0223
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/gui/checkbox.png",
+    "orientation": 5,
+    "overlap": 0.0006,
+    "colours": 1,
+    "iou": 0.149,
+    "rank": 0.0
    }
   },
   {
@@ -5755,9 +6246,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/gui/container/smithing.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.5767,
+    "colours": 5,
     "iou": 0.931,
     "rank": 0.4243
    }
@@ -5771,11 +6264,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/shulker_box.png",
-    "scale": 1,
-    "overlap": 0.029,
-    "iou": 0.3267,
-    "rank": 0.0209
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_item_search.png",
+    "orientation": 0,
+    "overlap": 0.0316,
+    "colours": 3,
+    "iou": 0.36,
+    "rank": 0.0
    }
   },
   {
@@ -5787,11 +6282,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/gui/container/crafting_table.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.2023,
+    "colours": 4,
     "iou": 0.5975,
-    "rank": 0.2301
+    "rank": 0.0
    }
   },
   {
@@ -5803,10 +6300,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/stone_pickaxe.png",
-    "scale": 1,
-    "overlap": 0.0294,
-    "iou": 0.1111,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.0368,
+    "colours": 1,
+    "iou": 0.1176,
     "rank": 0.0
    }
   },
@@ -5817,13 +6316,15 @@
     256,
     256
    ],
-   "verdict": "SUSPECT",
+   "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/shulker_box.png",
-    "scale": 1,
-    "overlap": 0.2881,
-    "iou": 0.9266,
-    "rank": 0.0455
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/crafting_table.png",
+    "orientation": 7,
+    "overlap": 0.366,
+    "colours": 5,
+    "iou": 0.8933,
+    "rank": 0.1868
    }
   },
   {
@@ -5833,13 +6334,15 @@
     256,
     256
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/crafting_table.png",
-    "scale": 1,
-    "overlap": 0.044,
-    "iou": 0.2988,
-    "rank": 0.0898
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_items.png",
+    "orientation": 7,
+    "overlap": 0.1317,
+    "colours": 2,
+    "iou": 0.33,
+    "rank": 0.0
    }
   },
   {
@@ -5851,11 +6354,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/shield/diagonal_up_right.png",
-    "scale": 2,
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/particle/sonic_boom_13.png",
+    "scale": 4,
     "overlap": 0.0,
-    "iou": 0.1079,
-    "rank": 0.6312
+    "colours": 0,
+    "iou": 0.2283,
+    "rank": 0.0
    }
   },
   {
@@ -5867,9 +6372,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/particle/nautilus.png",
     "scale": 2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.7895,
     "rank": 0.0
    }
@@ -5883,10 +6390,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/grass_path_side.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/entity/decorated_pot/angler_pottery_pattern.png",
+    "orientation": 1,
     "overlap": 0.0,
-    "iou": 0.6639,
+    "colours": 0,
+    "iou": 0.6957,
     "rank": 0.0
    }
   },
@@ -5899,9 +6408,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/particle/heart.png",
     "scale": 2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.6957,
     "rank": 0.0
    }
@@ -5915,9 +6426,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/particle/nautilus.png",
     "scale": 2,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.7273,
     "rank": 0.0
    }
@@ -5940,11 +6453,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
-    "scale": 1,
-    "overlap": 0.1802,
-    "iou": 0.8048,
-    "rank": 0.0731
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/circle.png",
+    "scale": 4,
+    "overlap": 0.2942,
+    "colours": 2,
+    "iou": 0.6025,
+    "rank": 0.0
    }
   },
   {
@@ -5956,11 +6471,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0583,
-    "iou": 0.6528,
-    "rank": -0.1453
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/rhombus.png",
+    "scale": -4,
+    "overlap": 0.0841,
+    "colours": 2,
+    "iou": 0.3925,
+    "rank": 0.0
    }
   },
   {
@@ -5972,11 +6489,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/jigsaw_top.png",
-    "scale": 1,
-    "overlap": 0.0398,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_bottom.png",
+    "orientation": 6,
+    "overlap": 0.0455,
+    "colours": 1,
     "iou": 0.5469,
-    "rank": 0.0302
+    "rank": 0.0
    }
   },
   {
@@ -5988,11 +6507,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/wither/wither.png",
-    "scale": -4,
-    "overlap": 0.0076,
-    "iou": 0.7355,
-    "rank": -0.1281
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/door_spruce.png",
+    "orientation": 0,
+    "overlap": 0.0081,
+    "colours": 1,
+    "iou": 0.6415,
+    "rank": 0.0
    }
   },
   {
@@ -6004,11 +6525,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png",
-    "scale": 1,
-    "overlap": 0.0056,
-    "iou": 0.2826,
-    "rank": -0.1712
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grass_block_side_overlay.png",
+    "orientation": 7,
+    "overlap": 0.0099,
+    "colours": 1,
+    "iou": 0.115,
+    "rank": 0.0
    }
   },
   {
@@ -6020,11 +6543,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/suspicious_sand_2.png",
-    "scale": 1,
-    "overlap": 0.0053,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/sand.png",
+    "orientation": 0,
+    "overlap": 0.0135,
+    "colours": 1,
     "iou": 0.5391,
-    "rank": -0.1339
+    "rank": 0.0
    }
   },
   {
@@ -6036,10 +6561,12 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1228,
-    "iou": 0.581,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png",
+    "scale": -4,
+    "overlap": 0.1244,
+    "colours": 2,
+    "iou": 0.3062,
     "rank": 0.0
    }
   },
@@ -6052,11 +6579,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/tallgrass.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0126,
+    "colours": 1,
     "iou": 0.6065,
-    "rank": -0.016
+    "rank": 0.0
    }
   },
   {
@@ -6068,10 +6597,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/panda/aggressive_panda.png",
-    "scale": -4,
-    "overlap": 0.0341,
-    "iou": 0.6484,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/music_disc_11.png",
+    "orientation": 0,
+    "overlap": 0.0728,
+    "colours": 1,
+    "iou": 0.5135,
     "rank": 0.0
    }
   },
@@ -6084,11 +6615,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/jigsaw_top.png",
-    "scale": 1,
-    "overlap": 0.0398,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_bottom.png",
+    "orientation": 6,
+    "overlap": 0.0455,
+    "colours": 1,
     "iou": 0.5469,
-    "rank": 0.0335
+    "rank": 0.0
    }
   },
   {
@@ -6100,11 +6633,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/wither/wither.png",
-    "scale": -4,
-    "overlap": 0.0076,
-    "iou": 0.7355,
-    "rank": -0.13
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/jigsaw_side.png",
+    "orientation": 1,
+    "overlap": 0.0128,
+    "colours": 1,
+    "iou": 0.8125,
+    "rank": 0.0
    }
   },
   {
@@ -6116,9 +6651,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/items/flint_and_steel.png",
     "scale": 4,
     "overlap": 0.0185,
+    "colours": 1,
     "iou": 0.2097,
     "rank": 0.0
    }
@@ -6132,10 +6669,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/melon_stem_disconnected.png",
-    "scale": 1,
-    "overlap": 0.0118,
-    "iou": 0.1023,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/melon_stem_connected.png",
+    "orientation": 7,
+    "overlap": 0.0123,
+    "colours": 1,
+    "iou": 0.0556,
     "rank": 0.0
    }
   },
@@ -6148,11 +6687,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_axe.png",
-    "scale": 1,
-    "overlap": 0.0093,
-    "iou": 0.281,
-    "rank": -0.0875
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_top.png",
+    "orientation": 3,
+    "overlap": 0.0176,
+    "colours": 1,
+    "iou": 0.306,
+    "rank": 0.0
    }
   },
   {
@@ -6164,10 +6705,12 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1282,
-    "iou": 0.6009,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png",
+    "scale": -4,
+    "overlap": 0.1627,
+    "colours": 2,
+    "iou": 0.3493,
     "rank": 0.0
    }
   },
@@ -6180,10 +6723,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0165,
-    "iou": 0.3733,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 3,
+    "overlap": 0.064,
+    "colours": 1,
+    "iou": 0.4648,
     "rank": 0.0
    }
   },
@@ -6196,11 +6741,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_axe.png",
-    "scale": 1,
-    "overlap": 0.0204,
-    "iou": 0.2857,
-    "rank": -0.0344
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/door_iron.png",
+    "orientation": 5,
+    "overlap": 0.0897,
+    "colours": 1,
+    "iou": 0.3605,
+    "rank": 0.0
    }
   },
   {
@@ -6212,11 +6759,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/banner_overlay.png",
-    "scale": 1,
-    "overlap": 0.0227,
-    "iou": 0.5575,
-    "rank": -0.1558
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/music_disc_11.png",
+    "orientation": 1,
+    "overlap": 0.0612,
+    "colours": 1,
+    "iou": 0.5076,
+    "rank": 0.0
    }
   },
   {
@@ -6228,9 +6777,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/iron_ingot.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.9959
    }
@@ -6244,11 +6795,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0598,
-    "iou": 0.4225,
-    "rank": 0.0967
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/circle.png",
+    "scale": -4,
+    "overlap": 0.1012,
+    "colours": 1,
+    "iou": 0.4524,
+    "rank": 0.0
    }
   },
   {
@@ -6260,11 +6813,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/crossbow_pulling_2.png",
-    "scale": 1,
-    "overlap": 0.0329,
-    "iou": 0.5591,
-    "rank": 0.0438
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0938,
+    "colours": 1,
+    "iou": 0.5938,
+    "rank": 0.0
    }
   },
   {
@@ -6276,11 +6831,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_side.png",
-    "scale": 1,
-    "overlap": 0.0042,
-    "iou": 0.7897,
-    "rank": 0.0676
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_jungle.png",
+    "orientation": 1,
+    "overlap": 0.0118,
+    "colours": 1,
+    "iou": 0.6901,
+    "rank": 0.0
    }
   },
   {
@@ -6292,11 +6849,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_lower.png",
-    "scale": 1,
-    "overlap": 0.0041,
-    "iou": 0.3672,
-    "rank": 0.3217
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/banner_overlay.png",
+    "orientation": 2,
+    "overlap": 0.0235,
+    "colours": 1,
+    "iou": 0.7,
+    "rank": 0.0
    }
   },
   {
@@ -6308,11 +6867,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1282,
-    "iou": 0.6009,
-    "rank": 0.0836
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png",
+    "scale": -4,
+    "overlap": 0.1627,
+    "colours": 2,
+    "iou": 0.3493,
+    "rank": 0.0
    }
   },
   {
@@ -6324,11 +6885,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/tallgrass.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0126,
+    "colours": 1,
     "iou": 0.6065,
-    "rank": 0.0766
+    "rank": 0.0
    }
   },
   {
@@ -6340,10 +6903,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/spawn_egg_overlay.png",
-    "scale": 1,
-    "overlap": 0.0054,
-    "iou": 0.2188,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 7,
+    "overlap": 0.0523,
+    "colours": 1,
+    "iou": 0.7422,
     "rank": 0.0
    }
   },
@@ -6356,11 +6921,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png",
-    "scale": 1,
-    "overlap": 0.0238,
-    "iou": 0.5234,
-    "rank": 0.2192
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/particle/effect_2.png",
+    "scale": 2,
+    "overlap": 0.0625,
+    "colours": 1,
+    "iou": 0.1622,
+    "rank": 0.0
    }
   },
   {
@@ -6372,10 +6939,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.0755,
-    "iou": 0.3663,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/triangles_top.png",
+    "scale": -4,
+    "overlap": 0.1656,
+    "colours": 1,
+    "iou": 0.3313,
     "rank": 0.0
    }
   },
@@ -6388,10 +6957,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/spawn_egg_overlay.png",
-    "scale": 1,
-    "overlap": 0.0054,
-    "iou": 0.2188,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 7,
+    "overlap": 0.0523,
+    "colours": 1,
+    "iou": 0.7422,
     "rank": 0.0
    }
   },
@@ -6404,11 +6975,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_side.png",
-    "scale": 1,
-    "overlap": 0.0042,
-    "iou": 0.7897,
-    "rank": 0.0674
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_jungle.png",
+    "orientation": 1,
+    "overlap": 0.0118,
+    "colours": 1,
+    "iou": 0.6901,
+    "rank": 0.0
    }
   },
   {
@@ -6420,11 +6993,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png",
-    "scale": 1,
-    "overlap": 0.0055,
-    "iou": 0.2474,
-    "rank": 0.1182
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grass_block_side_overlay.png",
+    "orientation": 6,
+    "overlap": 0.0094,
+    "colours": 1,
+    "iou": 0.0763,
+    "rank": 0.0
    }
   },
   {
@@ -6436,11 +7011,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/minecart_hopper.png",
-    "scale": 1,
-    "overlap": 0.0432,
-    "iou": 0.7255,
-    "rank": 0.0106
+    "orientation": 3,
+    "overlap": 0.0683,
+    "colours": 1,
+    "iou": 0.734,
+    "rank": 0.0
    }
   },
   {
@@ -6452,11 +7029,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/banner_overlay.png",
-    "scale": 1,
-    "overlap": 0.0476,
-    "iou": 0.351,
-    "rank": -0.0667
+    "orientation": 7,
+    "overlap": 0.075,
+    "colours": 1,
+    "iou": 0.4069,
+    "rank": 0.0
    }
   },
   {
@@ -6468,11 +7047,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_side.png",
-    "scale": 1,
-    "overlap": 0.0042,
-    "iou": 0.7897,
-    "rank": 0.1033
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_jungle.png",
+    "orientation": 1,
+    "overlap": 0.0118,
+    "colours": 1,
+    "iou": 0.6901,
+    "rank": 0.0
    }
   },
   {
@@ -6484,11 +7065,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/tadpole_bucket.png",
-    "scale": 1,
-    "overlap": 0.0299,
-    "iou": 0.544,
-    "rank": 0.286
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0469,
+    "colours": 1,
+    "iou": 0.5312,
+    "rank": 0.0
    }
   },
   {
@@ -6500,11 +7083,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_helmet.png",
-    "scale": 1,
-    "overlap": 0.0284,
-    "iou": 0.4875,
-    "rank": -0.2051
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0938,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -6516,11 +7101,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/wither/wither.png",
     "scale": -4,
     "overlap": 0.0909,
+    "colours": 1,
     "iou": 0.7355,
-    "rank": -0.1994
+    "rank": 0.0
    }
   },
   {
@@ -6532,11 +7119,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/blast_furnace_side.png",
-    "scale": 1,
-    "overlap": 0.0139,
-    "iou": 0.3242,
-    "rank": 0.0919
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/fern.png",
+    "orientation": 0,
+    "overlap": 0.0246,
+    "colours": 2,
+    "iou": 0.3279,
+    "rank": 0.0
    }
   },
   {
@@ -6548,10 +7137,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/panda/aggressive_panda.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_left.png",
     "scale": -4,
-    "overlap": 0.0703,
-    "iou": 0.6886,
+    "overlap": 0.1197,
+    "colours": 1,
+    "iou": 0.3162,
     "rank": 0.0
    }
   },
@@ -6564,11 +7155,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/tallgrass.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0126,
+    "colours": 1,
     "iou": 0.6065,
-    "rank": 0.0705
+    "rank": 0.0
    }
   },
   {
@@ -6580,11 +7173,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png",
-    "scale": 1,
-    "overlap": 0.0278,
+    "orientation": 7,
+    "overlap": 0.0417,
+    "colours": 3,
     "iou": 0.6406,
-    "rank": -0.3048
+    "rank": 0.0
    }
   },
   {
@@ -6596,11 +7191,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/deepslate_copper_ore.png",
-    "scale": 1,
-    "overlap": 0.0098,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/coal_block.png",
+    "orientation": 2,
+    "overlap": 0.0513,
+    "colours": 2,
     "iou": 0.6406,
-    "rank": 0.1811
+    "rank": 0.0
    }
   },
   {
@@ -6612,11 +7209,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/pointed_dripstone_up_tip.png",
-    "scale": 1,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/netherite_upgrade_smithing_template.png",
+    "orientation": 2,
     "overlap": 0.0,
-    "iou": 0.3152,
-    "rank": 0.6617
+    "colours": 0,
+    "iou": 0.878,
+    "rank": 0.5023
    }
   },
   {
@@ -6628,11 +7227,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/pointed_dripstone_up_tip.png",
-    "scale": 1,
-    "overlap": 0.0,
-    "iou": 0.3152,
-    "rank": 0.6651
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/purpur_block.png",
+    "orientation": 4,
+    "overlap": 0.0043,
+    "colours": 1,
+    "iou": 0.6406,
+    "rank": 0.0
    }
   },
   {
@@ -6644,9 +7245,11 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/items/cauldron.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 1.0
    }
@@ -6660,11 +7263,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/iron_trapdoor.png",
-    "scale": 1,
-    "overlap": 0.006,
-    "iou": 0.7241,
-    "rank": 0.0084
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
+    "scale": -4,
+    "overlap": 0.0323,
+    "colours": 1,
+    "iou": 0.3825,
+    "rank": 0.0
    }
   },
   {
@@ -6676,11 +7281,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/tallgrass.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0126,
+    "colours": 1,
     "iou": 0.6065,
-    "rank": -0.0217
+    "rank": 0.0
    }
   },
   {
@@ -6692,11 +7299,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_axe.png",
-    "scale": 1,
-    "overlap": 0.0093,
-    "iou": 0.281,
-    "rank": -0.0875
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_top.png",
+    "orientation": 3,
+    "overlap": 0.0176,
+    "colours": 1,
+    "iou": 0.306,
+    "rank": 0.0
    }
   },
   {
@@ -6708,11 +7317,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png",
-    "scale": 1,
-    "overlap": 0.0056,
-    "iou": 0.2826,
-    "rank": -0.1712
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/grass_block_side_overlay.png",
+    "orientation": 7,
+    "overlap": 0.0099,
+    "colours": 1,
+    "iou": 0.115,
+    "rank": 0.0
    }
   },
   {
@@ -6724,11 +7335,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/wither/wither.png",
     "scale": -4,
     "overlap": 0.0909,
+    "colours": 1,
     "iou": 0.7355,
-    "rank": -0.1994
+    "rank": 0.0
    }
   },
   {
@@ -6740,11 +7353,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/crossbow_pulling_2.png",
-    "scale": 1,
-    "overlap": 0.0329,
-    "iou": 0.5591,
-    "rank": 0.0438
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0938,
+    "colours": 1,
+    "iou": 0.5938,
+    "rank": 0.0
    }
   },
   {
@@ -6756,11 +7371,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/tadpole_bucket.png",
-    "scale": 1,
-    "overlap": 0.0299,
-    "iou": 0.544,
-    "rank": 0.286
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0469,
+    "colours": 1,
+    "iou": 0.5312,
+    "rank": 0.0
    }
   },
   {
@@ -6772,11 +7389,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_helmet.png",
-    "scale": 1,
-    "overlap": 0.0284,
-    "iou": 0.4875,
-    "rank": -0.2051
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0938,
+    "colours": 1,
+    "iou": 0.5625,
+    "rank": 0.0
    }
   },
   {
@@ -6788,11 +7407,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/blast_furnace_side.png",
-    "scale": 1,
-    "overlap": 0.0139,
-    "iou": 0.3242,
-    "rank": 0.0919
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/fern.png",
+    "orientation": 0,
+    "overlap": 0.0246,
+    "colours": 2,
+    "iou": 0.3279,
+    "rank": 0.0
    }
   },
   {
@@ -6804,11 +7425,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_axe.png",
-    "scale": 1,
-    "overlap": 0.0204,
-    "iou": 0.2857,
-    "rank": -0.0344
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/door_iron.png",
+    "orientation": 5,
+    "overlap": 0.0897,
+    "colours": 1,
+    "iou": 0.3605,
+    "rank": 0.0
    }
   },
   {
@@ -6820,11 +7443,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png",
-    "scale": 2,
-    "overlap": 0.0046,
-    "iou": 0.5703,
-    "rank": -0.1141
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
+    "orientation": 5,
+    "overlap": 0.0137,
+    "colours": 1,
+    "iou": 0.4441,
+    "rank": 0.0
    }
   },
   {
@@ -6836,11 +7461,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/horse/horse_gray.png",
-    "scale": -4,
-    "overlap": 0.0226,
-    "iou": 0.5874,
-    "rank": 0.0069
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "scale": 2,
+    "overlap": 0.0312,
+    "colours": 1,
+    "iou": 0.7344,
+    "rank": 0.0
    }
   },
   {
@@ -6852,10 +7479,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/panda/aggressive_panda.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_left.png",
     "scale": -4,
-    "overlap": 0.0703,
-    "iou": 0.6886,
+    "overlap": 0.1197,
+    "colours": 1,
+    "iou": 0.3162,
     "rank": 0.0
    }
   },
@@ -6868,11 +7497,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/particle/sonic_boom_10.png",
-    "scale": -2,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/cake.png",
+    "orientation": 1,
     "overlap": 0.0,
-    "iou": 0.3029,
-    "rank": 0.7184
+    "colours": 0,
+    "iou": 0.9057,
+    "rank": 0.3792
    }
   },
   {
@@ -6884,9 +7515,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/stone_slab_side.png",
-    "scale": 1,
-    "overlap": 0.0733,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+    "orientation": 2,
+    "overlap": 0.093,
+    "colours": 1,
     "iou": 0.5195,
     "rank": 0.0
    }
@@ -6900,11 +7533,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_boots.png",
-    "scale": 1,
-    "overlap": 0.1385,
-    "iou": 0.9773,
-    "rank": 0.0
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/iron_boots.png",
+    "orientation": 0,
+    "overlap": 0.2742,
+    "colours": 2,
+    "iou": 1.0,
+    "rank": 0.6808
    }
   },
   {
@@ -6916,11 +7551,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png",
-    "scale": 1,
-    "overlap": 0.2473,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_chestplate.png",
+    "orientation": 0,
+    "overlap": 0.2812,
+    "colours": 3,
     "iou": 0.6111,
-    "rank": 0.3962
+    "rank": 0.0
    }
   },
   {
@@ -6930,11 +7567,13 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png",
-    "scale": 1,
-    "overlap": 0.2264,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_chestplate.png",
+    "orientation": 0,
+    "overlap": 0.4125,
+    "colours": 3,
     "iou": 0.8235,
     "rank": 0.0
    }
@@ -6948,11 +7587,13 @@
    ],
    "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_leggings.png",
-    "scale": 1,
-    "overlap": 0.3438,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_leggings.png",
+    "orientation": 0,
+    "overlap": 0.6771,
+    "colours": 3,
     "iou": 0.9032,
-    "rank": 0.0
+    "rank": 0.8402
    }
   },
   {
@@ -6964,11 +7605,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_boots.png",
-    "scale": 1,
-    "overlap": 0.1385,
-    "iou": 0.9773,
-    "rank": 0.0
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/iron_boots.png",
+    "orientation": 0,
+    "overlap": 0.2742,
+    "colours": 2,
+    "iou": 1.0,
+    "rank": 0.6808
    }
   },
   {
@@ -6980,10 +7623,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_boots.png",
-    "scale": 1,
-    "overlap": 0.0308,
-    "iou": 0.4545,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/chainmail_boots.png",
+    "orientation": 3,
+    "overlap": 0.0633,
+    "colours": 1,
+    "iou": 0.2381,
     "rank": 0.0
    }
   },
@@ -6996,11 +7641,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png",
-    "scale": 1,
-    "overlap": 0.2473,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_chestplate.png",
+    "orientation": 0,
+    "overlap": 0.2812,
+    "colours": 3,
     "iou": 0.6111,
-    "rank": 0.3962
+    "rank": 0.0
    }
   },
   {
@@ -7010,11 +7657,13 @@
     16,
     16
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png",
-    "scale": 1,
-    "overlap": 0.057,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/diamond_chestplate.png",
+    "orientation": 0,
+    "overlap": 0.1288,
+    "colours": 2,
     "iou": 0.1489,
     "rank": 0.0
    }
@@ -7026,11 +7675,13 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png",
-    "scale": 1,
-    "overlap": 0.2264,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_chestplate.png",
+    "orientation": 0,
+    "overlap": 0.4125,
+    "colours": 3,
     "iou": 0.8235,
     "rank": 0.0
    }
@@ -7044,9 +7695,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_chestplate.png",
-    "scale": 1,
-    "overlap": 0.049,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/diamond_chestplate.png",
+    "orientation": 0,
+    "overlap": 0.0921,
+    "colours": 2,
     "iou": 0.2727,
     "rank": 0.0
    }
@@ -7060,11 +7713,13 @@
    ],
    "verdict": "HIT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/items/chainmail_leggings.png",
-    "scale": 1,
-    "overlap": 0.3438,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/items/iron_leggings.png",
+    "orientation": 0,
+    "overlap": 0.6771,
+    "colours": 3,
     "iou": 0.9032,
-    "rank": 0.0
+    "rank": 0.8402
    }
   },
   {
@@ -7076,11 +7731,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.20.1:assets/minecraft/textures/item/elytra.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0392,
+    "colours": 2,
     "iou": 0.5236,
-    "rank": 0.1235
+    "rank": 0.0
    }
   },
   {
@@ -7092,11 +7749,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/block/cracked_deepslate_bricks.png",
-    "scale": 1,
-    "overlap": 0.039,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/deepslate_bricks.png",
+    "orientation": 4,
+    "overlap": 0.0582,
+    "colours": 1,
     "iou": 0.7188,
-    "rank": -0.0466
+    "rank": 0.0
    }
   },
   {
@@ -7108,11 +7767,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/allay/allay.png",
-    "scale": -2,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/item/bundle.png",
+    "orientation": 4,
     "overlap": 0.0,
-    "iou": 0.1961,
-    "rank": 0.5311
+    "colours": 0,
+    "iou": 0.8441,
+    "rank": 0.0
    }
   },
   {
@@ -7124,11 +7785,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/tallgrass.png",
-    "scale": 1,
-    "overlap": 0.0126,
-    "iou": 0.6111,
-    "rank": 0.0598
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_bottom.png",
+    "orientation": 2,
+    "overlap": 0.0227,
+    "colours": 1,
+    "iou": 0.7227,
+    "rank": 0.0
    }
   },
   {
@@ -7138,12 +7801,14 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/map/map_icons.png",
-    "scale": -2,
-    "overlap": 0.1987,
-    "iou": 0.6786,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/stripe_middle.png",
+    "scale": -4,
+    "overlap": 0.2886,
+    "colours": 1,
+    "iou": 0.4797,
     "rank": 0.0
    }
   },
@@ -7156,11 +7821,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/flint_and_steel.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/waterlily.png",
     "scale": 2,
-    "overlap": 0.0165,
-    "iou": 0.332,
-    "rank": -0.0377
+    "overlap": 0.0396,
+    "colours": 1,
+    "iou": 0.5781,
+    "rank": 0.0
    }
   },
   {
@@ -7172,11 +7839,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_upper.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/waterlily.png",
     "scale": 2,
-    "overlap": 0.0124,
-    "iou": 0.8125,
-    "rank": -0.221
+    "overlap": 0.0495,
+    "colours": 1,
+    "iou": 0.5781,
+    "rank": 0.0
    }
   },
   {
@@ -7188,11 +7857,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/entity/rabbit/black.png",
     "scale": 2,
     "overlap": 0.0107,
+    "colours": 1,
     "iou": 0.3372,
-    "rank": 0.2429
+    "rank": 0.0
    }
   },
   {
@@ -7204,11 +7875,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/models/armor/leather_layer_1_overlay.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/enderman/enderman.png",
     "scale": 2,
-    "overlap": 0.0,
-    "iou": 0.0289,
-    "rank": 0.5989
+    "overlap": 0.0011,
+    "colours": 1,
+    "iou": 0.3449,
+    "rank": 0.0
    }
   },
   {
@@ -7220,11 +7893,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/misc/unknown_pack.png",
-    "scale": 2,
-    "overlap": 0.0048,
-    "iou": 0.9471,
-    "rank": 0.0988
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/widgets.png",
+    "orientation": 5,
+    "overlap": 0.0085,
+    "colours": 21,
+    "iou": 0.8485,
+    "rank": 0.0
    }
   },
   {
@@ -7236,11 +7911,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/trims/models/armor/host.png",
-    "scale": 2,
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+    "scale": -4,
     "overlap": 0.0,
-    "iou": 0.0503,
-    "rank": 0.5167
+    "colours": 0,
+    "iou": 0.6669,
+    "rank": 0.0
    }
   },
   {
@@ -7252,11 +7929,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/horse/horse_white.png",
     "scale": 2,
     "overlap": 0.002,
+    "colours": 5,
     "iou": 0.4341,
-    "rank": -0.1785
+    "rank": 0.0
    }
   },
   {
@@ -7268,11 +7947,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/flint_and_steel.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/waterlily.png",
     "scale": 2,
-    "overlap": 0.0165,
-    "iou": 0.332,
-    "rank": -0.0377
+    "overlap": 0.0396,
+    "colours": 1,
+    "iou": 0.5781,
+    "rank": 0.0
    }
   },
   {
@@ -7284,11 +7965,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/rabbit/black.png",
     "scale": 2,
     "overlap": 0.0013,
+    "colours": 1,
     "iou": 0.3633,
-    "rank": 0.0197
+    "rank": 0.0
    }
   },
   {
@@ -7300,11 +7983,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/misc/enchanted_item_glint.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/experience_orb.png",
     "scale": 2,
-    "overlap": 0.002,
-    "iou": 0.4854,
-    "rank": 0.1538
+    "overlap": 0.0023,
+    "colours": 1,
+    "iou": 0.3342,
+    "rank": 0.0
    }
   },
   {
@@ -7316,11 +8001,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/endercrystal/endercrystal.png",
-    "scale": 1,
-    "overlap": 0.0002,
-    "iou": 0.3339,
-    "rank": -0.0066
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/chest/normal_double.png",
+    "orientation": 4,
+    "overlap": 0.0007,
+    "colours": 1,
+    "iou": 0.298,
+    "rank": 0.0
    }
   },
   {
@@ -7332,11 +8019,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/door_iron_upper.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/waterlily.png",
     "scale": 2,
-    "overlap": 0.0124,
-    "iou": 0.8125,
-    "rank": -0.221
+    "overlap": 0.0495,
+    "colours": 1,
+    "iou": 0.5781,
+    "rank": 0.0
    }
   },
   {
@@ -7348,11 +8037,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/skeleton/skeleton.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/trims/models/armor/coast.png",
     "scale": 2,
-    "overlap": 0.001,
-    "iou": 0.2986,
-    "rank": 0.4394
+    "overlap": 0.0012,
+    "colours": 1,
+    "iou": 0.0382,
+    "rank": 0.0
    }
   },
   {
@@ -7364,11 +8055,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/rabbit/white_splotched.png",
     "scale": 2,
     "overlap": 0.001,
+    "colours": 1,
     "iou": 0.4155,
-    "rank": 0.1154
+    "rank": 0.0
    }
   },
   {
@@ -7380,11 +8073,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/painting/aztec2.png",
-    "scale": 4,
-    "overlap": 0.004,
-    "iou": 1.0,
-    "rank": 0.1065
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_bottom_left.png",
+    "orientation": 1,
+    "overlap": 0.0071,
+    "colours": 1,
+    "iou": 0.4199,
+    "rank": 0.0
    }
   },
   {
@@ -7396,9 +8091,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/block/iron_door_bottom.png",
     "scale": 2,
     "overlap": 0.0455,
+    "colours": 1,
     "iou": 1.0,
     "rank": -0.0491
    }
@@ -7419,13 +8116,15 @@
     256,
     256
    ],
-   "verdict": "CLEAR",
+   "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/misc/nausea.png",
-    "scale": 1,
-    "overlap": 0.0884,
-    "iou": 1.0,
-    "rank": 0.0873
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/half_horizontal_bottom.png",
+    "scale": 4,
+    "overlap": 0.1174,
+    "colours": 2,
+    "iou": 0.4199,
+    "rank": 0.0
    }
   },
   {
@@ -7437,11 +8136,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/endercrystal/endercrystal.png",
-    "scale": 1,
-    "overlap": 0.0002,
-    "iou": 0.3465,
-    "rank": 0.0689
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/chest/normal_double.png",
+    "orientation": 4,
+    "overlap": 0.0007,
+    "colours": 1,
+    "iou": 0.2582,
+    "rank": 0.0
    }
   },
   {
@@ -7453,11 +8154,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/entity/panda/panda.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/square_top_left.png",
     "scale": 2,
-    "overlap": 0.0149,
-    "iou": 0.8047,
-    "rank": 0.0589
+    "overlap": 0.0168,
+    "colours": 1,
+    "iou": 0.4199,
+    "rank": 0.0
    }
   },
   {
@@ -7469,10 +8172,12 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 1,
-    "overlap": 0.2439,
-    "iou": 1.0,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/curly_border.png",
+    "scale": -4,
+    "overlap": 0.1758,
+    "colours": 2,
+    "iou": 0.4688,
     "rank": 0.0
    }
   },
@@ -7485,10 +8190,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
-    "scale": 4,
-    "overlap": 0.0,
-    "iou": 0.75,
+    "method": "same",
+    "vanilla": "1.20.1:assets/minecraft/textures/particle/flash.png",
+    "orientation": 0,
+    "overlap": 0.0042,
+    "colours": 2,
+    "iou": 0.545,
     "rank": 0.0
    }
   },
@@ -7501,11 +8208,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/gui/container/inventory.png",
     "scale": 2,
     "overlap": 0.0268,
+    "colours": 1,
     "iou": 0.5862,
-    "rank": 0.0433
+    "rank": 0.0
    }
   },
   {
@@ -7517,11 +8226,13 @@
    ],
    "verdict": "SUSPECT",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/environment/sun.png",
-    "scale": 4,
-    "overlap": 0.1063,
-    "iou": 1.0,
-    "rank": 0.2969
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/creeper.png",
+    "scale": 2,
+    "overlap": 0.177,
+    "colours": 2,
+    "iou": 0.4199,
+    "rank": 0.0
    }
   },
   {
@@ -7533,11 +8244,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/trims/models/armor/host.png",
-    "scale": 2,
-    "overlap": 0.0,
-    "iou": 0.0308,
-    "rank": 0.5756
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/chest/normal_double.png",
+    "orientation": 4,
+    "overlap": 0.0008,
+    "colours": 1,
+    "iou": 0.2805,
+    "rank": 0.0
    }
   },
   {
@@ -7549,11 +8262,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
-    "scale": 1,
-    "overlap": 0.0015,
-    "iou": 0.8012,
-    "rank": 0.0001
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tabs.png",
+    "orientation": 4,
+    "overlap": 0.0066,
+    "colours": 1,
+    "iou": 0.3696,
+    "rank": 0.0
    }
   },
   {
@@ -7565,11 +8280,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/flint_and_steel.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/waterlily.png",
     "scale": 2,
-    "overlap": 0.0165,
-    "iou": 0.332,
-    "rank": -0.0377
+    "overlap": 0.0396,
+    "colours": 1,
+    "iou": 0.5781,
+    "rank": 0.0
    }
   },
   {
@@ -7581,11 +8298,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/entity/witch.png",
-    "scale": 2,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/environment/end_sky.png",
+    "orientation": "frame0",
     "overlap": 0.0,
-    "iou": 0.2582,
-    "rank": 0.2498
+    "colours": 0,
+    "iou": 0.4804,
+    "rank": 0.0
    }
   },
   {
@@ -7597,11 +8316,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/misc/nausea.png",
-    "scale": -2,
-    "overlap": 0.0004,
-    "iou": 0.8095,
-    "rank": 0.1534
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/border.png",
+    "scale": 2,
+    "overlap": 0.0006,
+    "colours": 1,
+    "iou": 0.4792,
+    "rank": 0.0
    }
   },
   {
@@ -7613,11 +8334,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/gui/container/inventory.png",
-    "scale": 1,
-    "overlap": 0.0003,
-    "iou": 0.2789,
-    "rank": 0.1197
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/horse.png",
+    "orientation": 3,
+    "overlap": 0.0008,
+    "colours": 1,
+    "iou": 0.3906,
+    "rank": 0.0
    }
   },
   {
@@ -7629,11 +8352,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/models/armor/chainmail_layer_2.png",
-    "scale": 2,
-    "overlap": 0.0,
-    "iou": 0.0478,
-    "rank": 0.5649
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/llama/decor/decor_gray.png",
+    "orientation": 4,
+    "overlap": 0.0005,
+    "colours": 1,
+    "iou": 0.0535,
+    "rank": 0.0
    }
   },
   {
@@ -7645,11 +8370,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/gui/container/creative_inventory/tabs.png",
-    "scale": 1,
-    "overlap": 0.0007,
-    "iou": 0.4812,
-    "rank": 0.004
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/circle.png",
+    "scale": 4,
+    "overlap": 0.0037,
+    "colours": 1,
+    "iou": 0.5616,
+    "rank": 0.0
    }
   },
   {
@@ -7661,11 +8388,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_inventory.png",
-    "scale": -2,
-    "overlap": 0.0014,
-    "iou": 0.6815,
-    "rank": -0.048
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/circle.png",
+    "scale": 2,
+    "overlap": 0.0017,
+    "colours": 1,
+    "iou": 0.5156,
+    "rank": 0.0
    }
   },
   {
@@ -7677,11 +8406,13 @@
    ],
    "verdict": "HIT",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/bone_block_side.png",
-    "scale": 1,
+    "orientation": 6,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
-    "rank": 0.9129
+    "rank": 0.9159
    }
   },
   {
@@ -7693,10 +8424,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/sweep.png",
-    "scale": 1,
+    "orientation": 4,
     "overlap": 0.0,
-    "iou": 0.1182,
+    "colours": 0,
+    "iou": 0.129,
     "rank": 0.0
    }
   },
@@ -7709,11 +8442,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/gui/checkbox.png",
-    "scale": 4,
-    "overlap": 0.0009,
-    "iou": 0.7346,
-    "rank": 0.0871
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/gui/demo_background.png",
+    "orientation": 4,
+    "overlap": 0.0032,
+    "colours": 1,
+    "iou": 0.5157,
+    "rank": 0.0
    }
   },
   {
@@ -7725,11 +8460,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/banner/gradient_up.png",
     "scale": 2,
     "overlap": 0.0022,
+    "colours": 2,
     "iou": 0.5312,
-    "rank": 0.4191
+    "rank": 0.0
    }
   },
   {
@@ -7741,9 +8478,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/glazed_terracotta_silver.png",
     "scale": 2,
     "overlap": 0.0559,
+    "colours": 1,
     "iou": 1.0,
     "rank": 0.0275
    }
@@ -7757,11 +8496,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/entity/skeleton/wither_skeleton.png",
     "scale": 4,
     "overlap": 0.0048,
+    "colours": 2,
     "iou": 0.3592,
-    "rank": 0.072
+    "rank": 0.0
    }
   },
   {
@@ -7773,11 +8514,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
     "scale": 2,
     "overlap": 0.0037,
+    "colours": 3,
     "iou": 0.8012,
-    "rank": -0.0935
+    "rank": 0.0
    }
   },
   {
@@ -7789,10 +8532,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "scale": 4,
-    "overlap": 0.0122,
-    "iou": 0.5859,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/environment/clouds.png",
+    "scale": -4,
+    "overlap": 0.0303,
+    "colours": 2,
+    "iou": 0.6016,
     "rank": 0.0
    }
   },
@@ -7803,12 +8548,14 @@
     16,
     16
    ],
-   "verdict": "SUSPECT",
+   "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/item/light_14.png",
-    "scale": 1,
-    "overlap": 0.1087,
-    "iou": 0.3735,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/redstone_dust_dot.png",
+    "orientation": 0,
+    "overlap": 0.1172,
+    "colours": 1,
+    "iou": 0.2266,
     "rank": 0.0
    }
   },
@@ -7821,10 +8568,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/blocks/chain_command_block_back.png",
-    "scale": 1,
-    "overlap": 0.0,
-    "iou": 0.2842,
+    "method": "same",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/redstone_dust_dot.png",
+    "orientation": "frame0",
+    "overlap": 0.0759,
+    "colours": 1,
+    "iou": 0.1646,
     "rank": 0.0
    }
   },
@@ -7837,10 +8586,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/particle/particles.png",
-    "scale": -4,
-    "overlap": 0.0012,
-    "iou": 0.1592,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_0.png",
+    "scale": 2,
+    "overlap": 0.0664,
+    "colours": 1,
+    "iou": 0.8789,
     "rank": 0.0
    }
   },
@@ -7853,10 +8604,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/particle/flash.png",
-    "scale": 1,
-    "overlap": 0.0,
-    "iou": 0.9235,
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_0.png",
+    "scale": 2,
+    "overlap": 0.0664,
+    "colours": 1,
+    "iou": 0.8789,
     "rank": 0.0
    }
   },
@@ -7869,11 +8622,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/particle/sonic_boom_1.png",
-    "scale": 1,
-    "overlap": 0.0,
-    "iou": 0.0573,
-    "rank": 0.9305
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_7.png",
+    "scale": 2,
+    "overlap": 0.0391,
+    "colours": 1,
+    "iou": 0.8711,
+    "rank": -0.01
    }
   },
   {
@@ -7885,11 +8640,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/regeneration.png",
     "scale": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.2316,
-    "rank": 0.2882
+    "rank": 0.0
    }
   },
   {
@@ -7901,11 +8658,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/items/cauldron.png",
     "scale": 4,
     "overlap": 0.0091,
+    "colours": 1,
     "iou": 0.5564,
-    "rank": -0.0592
+    "rank": 0.0
    }
   },
   {
@@ -7917,11 +8676,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/block/tripwire_hook.png",
     "scale": 4,
     "overlap": 0.0198,
+    "colours": 2,
     "iou": 0.3486,
-    "rank": -0.3826
+    "rank": 0.0
    }
   },
   {
@@ -7933,11 +8694,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/items/minecart_furnace.png",
     "scale": 4,
     "overlap": 0.0088,
+    "colours": 1,
     "iou": 0.4444,
-    "rank": 0.0679
+    "rank": 0.0
    }
   },
   {
@@ -7949,9 +8712,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "same",
     "vanilla": "1.12.2:assets/minecraft/textures/effect/dither.png",
-    "scale": 1,
+    "orientation": 0,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.0,
     "rank": 0.0
    }
@@ -7965,11 +8730,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/absorption.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.4601,
-    "rank": 0.451
+    "colours": 0,
+    "iou": 0.5708,
+    "rank": 0.0
    }
   },
   {
@@ -7990,11 +8757,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/glowing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.633,
-    "rank": 0.791
+    "colours": 0,
+    "iou": 0.8268,
+    "rank": 0.0
    }
   },
   {
@@ -8006,11 +8775,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
+    "method": "scaled",
+    "vanilla": "1.12.2:assets/minecraft/textures/environment/clouds.png",
     "scale": 2,
-    "overlap": 0.0003,
-    "iou": 0.1669,
-    "rank": -0.1039
+    "overlap": 0.0055,
+    "colours": 1,
+    "iou": 0.83,
+    "rank": 0.0
    }
   },
   {
@@ -8022,11 +8793,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/glowing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.6198,
-    "rank": 0.3669
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8043,11 +8816,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/water_breathing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.2124,
-    "rank": 0.3569
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8064,11 +8839,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/bad_omen.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.6009,
-    "rank": 0.2962
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8085,11 +8862,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/glowing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.6198,
-    "rank": 0.2974
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8106,11 +8885,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/water_breathing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.2124,
-    "rank": 0.2417
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8127,11 +8908,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/water_breathing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.2124,
-    "rank": 0.3057
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8148,11 +8931,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/water_breathing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.2124,
-    "rank": 0.3656
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8169,11 +8954,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/strength.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.3463,
-    "rank": 0.3836
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8190,11 +8977,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/glowing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.6198,
-    "rank": 0.6667
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8243,9 +9032,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/saturation.png",
     "scale": 4,
     "overlap": 0.0545,
+    "colours": 1,
     "iou": 0.5652,
     "rank": 0.0
    }
@@ -8259,9 +9050,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/hero_of_the_village.png",
     "scale": 4,
     "overlap": 0.0,
+    "colours": 0,
     "iou": 0.3652,
     "rank": 0.0
    }
@@ -8284,11 +9077,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/water_breathing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.2124,
-    "rank": 0.2735
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8305,11 +9100,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/glowing.png",
+    "method": "scaled",
+    "vanilla": "1.20.1:assets/minecraft/textures/mob_effect/conduit_power.png",
     "scale": 4,
     "overlap": 0.0,
-    "iou": 0.6198,
-    "rank": 0.4865
+    "colours": 0,
+    "iou": 0.8087,
+    "rank": 0.0
    }
   },
   {
@@ -8326,11 +9123,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
+    "method": "scaled",
     "vanilla": "1.12.2:assets/minecraft/textures/blocks/leaves_jungle.png",
     "scale": 2,
     "overlap": 0.0491,
+    "colours": 1,
     "iou": 0.4723,
-    "rank": -0.0417
+    "rank": 0.0
    }
   }
  ]

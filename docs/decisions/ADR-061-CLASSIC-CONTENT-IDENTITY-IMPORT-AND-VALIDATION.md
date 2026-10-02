@@ -218,16 +218,42 @@ must handle:
    legacy Moon turf and ferric sand are recolours of the vanilla grass top
    with a different name. `tools/audit/vanilla_derivation.py` compares every
    legacy asset with the assets of the vanilla 1.12.2 and 1.20.1 client JARs
-   (read locally, never copied; their SHA-256 values are in the results) by
-   file hash and, for PNG images of the same size or an integer scale of 2
-   or 4, by byte-equal pixels outside the vanilla image's dominant colour
-   (`overlap`), opaque-mask intersection over union (`iou`) and luminance
-   rank correlation (`rank`). Verdicts: `HIT` when the hash is equal,
-   `overlap` ≥ 0.30, or `iou` ≥ 0.90 with `rank` ≥ 0.90; `SUSPECT` when
-   `overlap` ≥ 0.10, or `iou` ≥ 0.85 with `rank` ≥ 0.75; `UNSUPPORTED` for
-   formats it cannot decode; otherwise `CLEAR`. A `HIT` is never imported or
-   reviewed into the tree (docs/08 §7); `SUSPECT` and `UNSUPPORTED` files are
-   `REVIEW` at most and import only after a `CLEARED` origin finding. The
+   (read locally, never copied; their SHA-256 values are in the results):
+   - by file hash;
+   - for PNG images, in all eight orientations (four rotations, each
+     mirrored), at the same size, at an integer scale of 2 or 4 in either
+     direction, and between the first frames of animated strips, by
+     byte-equal pixels over the opaque union, leaving out the vanilla
+     image's dominant colour when it has at least four colours (`overlap`,
+     with the number of distinct matched colours), opaque-mask intersection
+     over union (`iou`) and luminance rank correlation over the shared
+     opaque pixels when both images have at least three luminance levels
+     and share at least 32 pixels (`rank`);
+   - by a sub-image search: each candidate up to 64 × 64, in all eight
+     orientations, inside every larger vanilla image up to 512 × 512,
+     scored by the share of its opaque pixels that are byte-equal at the
+     best offset (`sub`, with the number of distinct matched colours).
+   Verdicts: `HIT` when the hash is equal, `iou` ≥ 0.90 with `rank` ≥ 0.90,
+   or an exact match of at least three distinct colours with `overlap` ≥ 0.30
+   or `sub` ≥ 0.75; `SUSPECT` when `iou` ≥ 0.85 with `rank` ≥ 0.75, or an
+   exact match of at least two colours with `overlap` ≥ 0.10 or `sub` ≥ 0.50
+   (an exact match of two colours matches a shape rather than pixel art, and
+   one colour is a shared flat fill, which is no evidence); `UNSUPPORTED` for
+   formats it cannot decode; otherwise `CLEAR`. The
+   tool's constants are the thresholds, and the results file repeats them.
+   **Calibration.** `tests/test_vanilla_derivation.py` builds a synthetic
+   calibration set (an exact copy, a recolour, a low-palette icon and its
+   recolour, a crop of a sheet, a mirror, a rotation, a ×2 upscale and the
+   first frame of an animated strip) and asserts that every one is `HIT`
+   (false-negative rate 0 on the set), that two unrelated images and an image
+   sharing only one flat colour stay `CLEAR`, and that a two-colour shape is
+   `SUSPECT`. Known limit: exact
+   sub-image matching does not see a recoloured crop; such a file is found
+   only when it is a whole image (by `rank`), so the history rule (§4.9)
+   and the record review (§4.5) remain the controls for it.
+   A `HIT` is never imported or reviewed into the tree (docs/08 §7);
+   `SUSPECT` and `UNSUPPORTED` files are `REVIEW` at most and import only
+   after a `CLEARED` origin finding. The
    results are committed in
    [`v1.8.0-vanilla-derivation.json`](../work/v1.8.0-vanilla-derivation.json);
    the validator refuses any `IMPORT` whose verdict is not `CLEAR`. The
