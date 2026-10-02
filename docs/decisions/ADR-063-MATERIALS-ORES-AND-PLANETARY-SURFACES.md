@@ -156,14 +156,28 @@ ADR-055; no batch depends on that.
 - **Mars and Venus shape unchanged.** Mars and Venus keep their v1.4 noise
   router, base block and heights, and switch to multi-biome sources with the
   new biomes; only the top and filler blocks and the features change.
-- Features: craters as a carver (radius 8–48, at most one crater origin per
-  chunk, Moon and Mars), volcanoes (Venus, cone radius ≤ 32 and height ≤ 48,
-  at most one per 16×16 chunks), ore geodes (Venus, radius ≤ 12, ores from a
-  tag), charred trees (Venus), vanilla cave and canyon carvers where the legacy
-  planets had them, the Moon dilithium ore (10 veins per chunk) and the Moon
-  and Mars iridium ore (§4).
-- Every feature is bounded in size and count, runs only at chunk generation
-  and has a server switch.
+- **Generation mechanisms.** In 1.20.1 a placed feature may write only within
+  the 3 × 3 chunks around its origin chunk, and a carver only removes blocks.
+  Each legacy generator therefore gets the mechanism its size needs:
+
+  | Generator | Mechanism | Bounds |
+  |---|---|---|
+  | craters (Moon, Mars) | structure `crater`, one piece whose bounding box covers the bowl and the raised rim | radius 8–48; structure set spacing 6 and separation 3 chunks; Moon floor ≥ y 4 and rim ≤ y 44 (§5 Moon terrain) |
+  | volcanoes (Venus) | structure `volcano`, one piece (cone, crater and lava core) | cone radius ≤ 32, height ≤ 48 above the surface; spacing 16, separation 8 chunks |
+  | ore geodes (Venus) | structure `geode`, one piece below the surface | radius ≤ 24; ores from a block tag; spacing 8, separation 4 chunks |
+  | charred trees (Venus) | placed feature | ≤ 4 blocks from the origin, height ≤ 12 |
+  | ores, Moon dilithium (10 veins per chunk), Moon and Mars iridium (§4) | vanilla `ore` configured features | vein size ≤ 16 |
+  | caves and canyons | vanilla cave and canyon carvers where the legacy planets had them | vanilla bounds |
+
+  A structure piece writes only into the chunk being generated (it is clipped
+  to that chunk's box), so its size is limited by the generation budget, not by
+  the feature write radius. Structure starts are saved in chunks by vanilla, so
+  a crater or volcano started before a restart finishes in chunks generated
+  after it. The structures have no loot and no advancement.
+- Every structure and feature is bounded in size and count, runs only at chunk
+  generation and has a server switch: a disabled structure returns no
+  generation point and a disabled feature places nothing; starts already
+  saved still finish.
 - **Seams (ADR-033, ADR-061 §6).** The three Levels keep their IDs (data-pack
   dimension definitions take precedence over `level.dat`, so existing worlds
   get the new generator for new chunks). Chunks generated before the upgrade
@@ -195,8 +209,15 @@ Flora and features: lightwood log, leaves, sapling and planks with the large
 alien tree; electric mushrooms (light level 7; the client lightning flash is an
 effect setting, never real lightning); swamp trees; inverted pillars; six
 crystal block colours with large crystal clusters (moved here from C15b,
-where no world uses them). Textures follow the asset plan; files the
-derivation check excluded (the lightwood leaves and log top) are drawn new.
+where no world uses them). The trees, pillars and clusters are placed features
+whose writes stay within 12 blocks horizontally of the origin, inside the
+feature write radius:
+the large alien tree (height 20–29, as legacy), swamp trees (height 40–49 with
+roots down to 20 below, as legacy, canopy radius ≤ 12), inverted pillars
+(radius 5, height 20–33, as legacy) and crystal clusters (height 10–49, as
+legacy; the lean is capped so the top stays within the bound). Textures
+follow the asset plan; files the derivation check excluded (the lightwood
+leaves and log top) are drawn new.
 Bindings for the two new Levels are added at startup by the existing ADR-032
 rules; Tau Ceti e is unchanged.
 
@@ -255,7 +276,10 @@ ID in this namespace fail startup through the existing binding checks.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
   below; unpowered; repeated pulses; unloaded neighbour), smelting and rolling
   recipes, ore feature placement in a test chunk (including iridium on the
-  Moon and Mars and none in the Overworld), a crater carver bound test, a
+  Moon and Mars and none in the Overworld), bound tests for the crater,
+  volcano and geode structures (bounding box within the stated radius, every
+  write inside the chunk being generated) and for each placed feature (every
+  write within the 3 × 3 chunks around its origin), a
   Moon height bound test (no generated block above y 63 over a sampled grid of
   at least 4,096 columns for two seeds, crater rims included), a rocket
   landing on the Moon over a crater and over the highest highlands (arrival at
