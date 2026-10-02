@@ -97,7 +97,7 @@ public final class EndgameStructure {
         }
         PatternValidationResult result = MultiblockPatternValidator.validate(definition.get(), transform,
                 new PatternPosition(controller.getX(), controller.getY(), controller.getZ()),
-                new ServerLevelPatternWorldView(level, new Roles(controller, controllerBlock)));
+                new ServerLevelPatternWorldView(level, new Roles(controller, controllerBlock), devices.patternBlocks()));
         code = switch (result.status()) {
             case FORMED -> EndgameCode.OK;
             case WAITING_UNLOADED -> EndgameCode.STRUCTURE_UNLOADED;

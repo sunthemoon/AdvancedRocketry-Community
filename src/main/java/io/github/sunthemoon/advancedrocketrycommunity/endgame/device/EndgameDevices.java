@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSyste
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.forge.PatternBlockCache;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +59,7 @@ public final class EndgameDevices {
     private final GravityTrust trust = new GravityTrust();
     private final MultiblockPatternCatalogManager patterns;
     private final Map<String, Optional<MultiblockPatternDefinition>> patternCache = new HashMap<>();
+    private final PatternBlockCache patternBlocks = new PatternBlockCache();
     @Nullable
     private MultiblockPatternCatalog patternCatalog;
     private final CelestialCatalogManager celestial;
@@ -297,8 +299,14 @@ public final class EndgameDevices {
                 + rates.size();
     }
 
+    /** Validated pattern blocks for structure validation; cleared when tags reload and at server stop. */
+    public PatternBlockCache patternBlocks() {
+        return patternBlocks;
+    }
+
     public void clear() {
         patternCache.clear();
+        patternBlocks.clear();
         patternCatalog = null;
         active.clear();
         laserOperations.clear();
