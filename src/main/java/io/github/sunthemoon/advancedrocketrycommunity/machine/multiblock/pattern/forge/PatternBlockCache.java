@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.event.TagsUpdatedEvent;
 
 /**
  * Validated {@link PatternBlock}s by block state and role, for a validator that re-reads the same blocks often (C13:
@@ -38,6 +39,16 @@ public final class PatternBlockCache {
 
     public void clear() {
         blocks.clear();
+    }
+
+    /**
+     * Clears on the server's own tag reload only. A single-player or LAN host also posts this event on the client
+     * thread when its client receives the tags, and the cache belongs to the server thread (review C13-F6).
+     */
+    public void onTagsUpdated(TagsUpdatedEvent event) {
+        if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.SERVER_DATA_LOAD) {
+            blocks.clear();
+        }
     }
 
     public int size() {

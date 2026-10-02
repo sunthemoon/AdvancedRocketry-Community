@@ -9,7 +9,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -41,5 +43,19 @@ final class PatternBlockCacheTest {
             return new PatternBlock("minecraft:stone", Set.of(), false, false, Optional.empty());
         });
         assertEquals(2, built.get(), "a cleared cache builds again");
+    }
+
+    /** Review C13-F6: only the server's tag reload clears it; the client-side post may run on another thread. */
+    @Test
+    void onlyTheServerTagReloadClearsIt() {
+        PatternBlockCache cache = new PatternBlockCache();
+        cache.get(Blocks.STONE.defaultBlockState(), false, Optional.empty(),
+                () -> new PatternBlock("minecraft:stone", Set.of(), false, false, Optional.empty()));
+        cache.onTagsUpdated(new TagsUpdatedEvent(RegistryAccess.EMPTY, true, true));
+        assertEquals(1, cache.size(), "an integrated client's tag packet cleared the server-thread cache");
+        cache.onTagsUpdated(new TagsUpdatedEvent(RegistryAccess.EMPTY, true, false));
+        assertEquals(1, cache.size(), "a remote client's tag packet cleared it");
+        cache.onTagsUpdated(new TagsUpdatedEvent(RegistryAccess.EMPTY, false, false));
+        assertEquals(0, cache.size(), "the server's tag reload left stale tag sets");
     }
 }

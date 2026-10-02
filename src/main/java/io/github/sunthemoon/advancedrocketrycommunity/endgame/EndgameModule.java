@@ -25,7 +25,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import java.util.Set;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -61,7 +60,7 @@ public final class EndgameModule {
         MinecraftForge.EVENT_BUS.addListener(devices::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(devices::onServerStopped);
         // Pattern blocks hold tag sets: a tag reload makes every cached one stale (C13).
-        MinecraftForge.EVENT_BUS.addListener((TagsUpdatedEvent event) -> devices.patternBlocks().clear());
+        MinecraftForge.EVENT_BUS.addListener(devices.patternBlocks()::onTagsUpdated);
         MinecraftForge.EVENT_BUS.addListener(devices::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(devices::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(devices::onBlockPlaced);
