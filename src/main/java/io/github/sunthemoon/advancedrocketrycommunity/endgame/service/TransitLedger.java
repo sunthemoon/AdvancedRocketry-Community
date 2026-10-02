@@ -17,11 +17,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRul
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTags;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -38,6 +40,8 @@ import net.minecraft.world.item.ItemStack;
 public final class TransitLedger implements TransitLedgerView {
     public static final int ARRIVALS_PER_TICK = 64;
     public static final int RECONCILIATIONS_PER_TICK = 64;
+    /** A loaded endpoint found with nothing to reconcile is looked at again after at most this many ticks. */
+    private static final int IDLE_SWEEP_TICKS = 20;
     private static final int MAX_PENDING_OBSERVATIONS = 1024;
     private static final String SYSTEM = "endgame";
 
@@ -53,6 +57,13 @@ public final class TransitLedger implements TransitLedgerView {
     private final Map<TransitKey, Long> acknowledgedAt = new HashMap<>();
     @Nullable
     private UUID cursor;
+    /**
+     * Loaded endpoints found with nothing to reconcile (C13): the pass skips them until a sweep every 20 ticks, a
+     * change in the transit table, their attachment, an observation of them or an escrow admission for them.
+     */
+    private final Set<UUID> idle = new HashSet<>();
+    private long sweptVersion = -1L;
+    private long nextIdleSweep = Long.MIN_VALUE;
     private int registrationsLeft = EndgameLimits.REGISTRATIONS_PER_TICK;
     private int reconciliationsLeft = RECONCILIATIONS_PER_TICK;
     private long now;
@@ -73,6 +84,7 @@ public final class TransitLedger implements TransitLedgerView {
     public void attach(TransitEndpoint endpoint) {
         UUID id = endpoint.endpointId();
         loaded.put(id, endpoint);
+        idle.remove(id);
         Pending observed = pending.remove(id);
         if (observed != null) {
             apply(endpoint, observed.shown(), observed.tick());
@@ -81,11 +93,14 @@ public final class TransitLedger implements TransitLedgerView {
 
     public void detach(UUID id) {
         loaded.remove(id);
+        idle.remove(id);
     }
 
     /** An unloading block entity detaches only itself, never another block entity attached under its ID. */
     public void detach(UUID id, TransitEndpoint endpoint) {
-        loaded.remove(id, endpoint);
+        if (loaded.remove(id, endpoint)) {
+            idle.remove(id);
+        }
     }
 
     public Optional<TransitEndpoint> loaded(UUID id) {
@@ -120,6 +135,7 @@ public final class TransitLedger implements TransitLedgerView {
             }
         }
         shown.forEach((id, sections) -> {
+            idle.remove(id);
             TransitEndpoint endpoint = loaded.get(id);
             if (endpoint != null) {
                 apply(endpoint, sections, tick);
@@ -213,12 +229,21 @@ public final class TransitLedger implements TransitLedgerView {
         if (loaded.isEmpty()) {
             return;
         }
+        boolean sweep = now >= nextIdleSweep || root.transits().version() != sweptVersion;
+        if (sweep) {
+            nextIdleSweep = now + IDLE_SWEEP_TICKS;
+            sweptVersion = root.transits().version();
+        }
         List<UUID> order = new ArrayList<>();
         order.addAll(cursor == null ? loaded.keySet() : loaded.tailMap(cursor, false).keySet());
         if (cursor != null) {
             order.addAll(loaded.headMap(cursor, true).keySet());
         }
         for (UUID id : order) {
+            if (!sweep && idle.contains(id)) {
+                cursor = id;
+                continue;
+            }
             TransitEndpoint endpoint = loaded.get(id);
             UUID endpointId = endpoint.endpointId();
             if (endpoint.source().anythingUnpersisted() || endpoint.destination().anythingUnpersisted()) {
@@ -233,9 +258,11 @@ public final class TransitLedger implements TransitLedgerView {
                     && !root.transits().names(endpointId)
                     && !TransitRules.rollback(endpoint.source().nextSeq(), root.dispatchedThrough(endpointId))) {
                 // Nothing to reconcile: no outbox entry, incoming payload, receipt, record or rollback (C13).
+                idle.add(id);
                 cursor = id;
                 continue;
             }
+            idle.remove(id);
             UUID owner = endpoint.endpointOwner().get();
             boolean changed = endpoint.source().reconcile(this, endpointId, owner, now).changed();
             changed |= endpoint.destination().reconcile(this, endpointId, owner, endpoint.receiveBuffer(), now);
@@ -376,6 +403,7 @@ public final class TransitLedger implements TransitLedgerView {
      * and the root's accounted size stays within 3 MiB.
      */
     public EndgameCode admitEscrow(UUID source, UUID owner) {
+        idle.remove(source); // An escrow follows: the source has an entry to register.
         Optional<EndgameRoot> view = service.root();
         if (view.isEmpty()) {
             return EndgameCode.ROOT_UNAVAILABLE;
@@ -550,6 +578,9 @@ public final class TransitLedger implements TransitLedgerView {
 
     void clear() {
         loaded.clear();
+        idle.clear();
+        sweptVersion = -1L;
+        nextIdleSweep = Long.MIN_VALUE;
         pending.clear();
         acknowledgedAt.clear();
         cursor = null;

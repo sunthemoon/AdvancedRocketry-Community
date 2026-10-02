@@ -33,6 +33,7 @@ public final class TransitTable {
     private final TreeSet<TransitRecord> inTransit = new TreeSet<>(BY_ARRIVAL);
     private final TreeSet<TransitKey> acknowledgedWithPayload = new TreeSet<>(TransitKey.ORDER);
     private final Runnable changed;
+    private long version;
 
     public TransitTable(Runnable changed) {
         this.changed = Objects.requireNonNull(changed, "changed");
@@ -48,6 +49,11 @@ public final class TransitTable {
 
     public int size() {
         return records.size();
+    }
+
+    /** Raised by every mutation, so a reader can tell whether anything changed since it last looked. */
+    public long version() {
+        return version;
     }
 
     public int stubs() {
@@ -154,6 +160,7 @@ public final class TransitTable {
             throw new IllegalStateException("A transfer is registered twice: " + record.key());
         }
         index(record);
+        version++;
         changed.run();
     }
 
@@ -165,6 +172,7 @@ public final class TransitTable {
         }
         unindex(previous);
         index(record);
+        version++;
         changed.run();
     }
 
@@ -174,6 +182,7 @@ public final class TransitTable {
             return false;
         }
         unindex(removed);
+        version++;
         changed.run();
         return true;
     }
@@ -184,6 +193,7 @@ public final class TransitTable {
             throw new IllegalArgumentException("A transfer appears twice in the root: " + record.key());
         }
         index(record);
+        version++;
         if (records.size() > EndgameLimits.MAX_TRANSIT_RECORDS) {
             throw new IllegalArgumentException("The transit section exceeds its fixed bound");
         }
