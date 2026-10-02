@@ -54,7 +54,21 @@ must handle:
 3. **Existing IDs keep their identity.** A classic tier that already has a
    modern ID (for example `rocket_motor`, `rocket_fuel_tank`, `basic_circuit`)
    keeps it; new tiers get new IDs. v1.8 adds IDs and does not rename or remove
-   any existing ID.
+   any existing ID. The placeholders the version document (§8, §10) means are
+   formalised under their existing IDs:
+   - fourteen `DevelopmentComponentItem`s whose tooltip says they have no
+     machine behaviour yet (`silicon_wafer`, `basic_circuit`,
+     `advanced_circuit`, `data_storage_unit`, `satellite_chassis`,
+     `satellite_solar_module`, `advanced_solar_panel`, `satellite_battery`,
+     `large_satellite_battery`, `satellite_cargo_hold`, `survey_scanner_module`,
+     `solar_transmitter_module`, `asteroid_drill_module`, `gas_intake_module`)
+     lose that tooltip and get their classic recipes in C16d;
+   - the community-authored placeholder block models of the v1.2 machines and
+     the other blocks built from casing and vanilla textures get their final
+     models in C18d;
+   - the C19 upgrade check loads a v1.7 world that holds every one of these
+     IDs and confirms that items, block states and block entities survive
+     unchanged.
 4. **Permanence.** From the first commit that registers an ID, renaming it needs
    a `MissingMappingsEvent` remap and an ADR revision; removing it needs a scan
    of the representative worlds and a migration (version document §8). An ID
