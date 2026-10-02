@@ -61,7 +61,7 @@ jobs:
       - name: Regenerate v1.8.0 vanilla derivation results (ADR-061 section 4.8)
         run: |
           python tools/audit/fetch_vanilla_clients.py --output "$RUNNER_TEMP/vanilla-clients"
-          python tools/audit/vanilla_derivation.py --upstream build/upstream/AdvancedRocketry --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar" --check
+          python tools/audit/vanilla_derivation.py --upstream build/upstream/AdvancedRocketry --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar" --check --report-memory
 
       - name: Verify v0.2.0 authored DataGen inventory
         run: |

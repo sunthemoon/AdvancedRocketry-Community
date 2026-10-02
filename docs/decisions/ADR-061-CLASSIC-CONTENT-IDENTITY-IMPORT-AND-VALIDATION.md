@@ -323,8 +323,16 @@ must handle:
    from Mojang's version manifest, verified by their pinned SHA-1 and
    SHA-256 (`tools/audit/fetch_vanilla_clients.py`, outside the tree), and
    runs `vanilla_derivation.py --check`, which regenerates the results and
-   compares them byte for byte. Any change of the results, including a
-   stricter tool, re-pins the digest here in the same commit.
+   compares them byte for byte; the step is mandatory, never
+   `continue-on-error`. It fits a standard hosted runner: the tool keeps
+   pixels as bytes, builds the whole-image masks one size group at a time and
+   samples images over 64 px a side, and peaks at 0.35 GB in 3.5 minutes on
+   the development machine (Windows), against the 7 GB of GitHub's standard
+   Linux runner for private repositories. The step prints the run's peak
+   memory (`--report-memory`, the Linux `ru_maxrss`), so the first CI run on
+   Linux records its own measurement in the batch evidence. Any change of
+   the results, including a stricter tool, re-pins the digest here in the
+   same commit.
 9. **History.** Each record entry lists the upstream commits that touched
    its source file. A history entry that brings in material from an issue,
    an unmerged pull request or another project (for example the plate
