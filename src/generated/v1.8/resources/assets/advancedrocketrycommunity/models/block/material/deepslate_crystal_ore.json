@@ -1,0 +1,7 @@
+{
+  "parent": "advancedrocketrycommunity:block/material/tinted_ore",
+  "textures": {
+    "base": "minecraft:block/deepslate",
+    "overlay": "advancedrocketrycommunity:block/material/crystal_ore_overlay"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/steel"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "S": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    "SPS",
+    " I ",
+    "SPS"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:steel_gear"
+  },
+  "show_notification": true
+}

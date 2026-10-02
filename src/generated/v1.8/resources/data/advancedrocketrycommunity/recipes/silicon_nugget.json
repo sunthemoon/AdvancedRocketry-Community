@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "forge:ingots/silicon"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "item": "advancedrocketrycommunity:silicon_nugget"
+  }
+}

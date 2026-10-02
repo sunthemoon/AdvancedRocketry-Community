@@ -1,0 +1,7 @@
+{
+  "parent": "advancedrocketrycommunity:block/material/tinted_cube_column",
+  "textures": {
+    "end": "advancedrocketrycommunity:block/material/coil_top",
+    "side": "advancedrocketrycommunity:block/material/coil_side"
+  }
+}

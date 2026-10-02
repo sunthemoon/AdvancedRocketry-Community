@@ -1,0 +1,11 @@
+{
+  "type": "advancedrocketrycommunity:small_plate_press",
+  "ingredient": {
+    "tag": "forge:storage_blocks/iron"
+  },
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:iron_plate"
+  },
+  "schema_version": 1
+}

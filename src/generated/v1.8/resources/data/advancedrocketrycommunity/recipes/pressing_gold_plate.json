@@ -1,0 +1,11 @@
+{
+  "type": "advancedrocketrycommunity:small_plate_press",
+  "ingredient": {
+    "tag": "forge:storage_blocks/gold"
+  },
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:gold_plate"
+  },
+  "schema_version": 1
+}

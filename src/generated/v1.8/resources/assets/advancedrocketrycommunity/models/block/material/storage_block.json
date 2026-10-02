@@ -1,0 +1,6 @@
+{
+  "parent": "advancedrocketrycommunity:block/material/tinted_cube_all",
+  "textures": {
+    "all": "advancedrocketrycommunity:block/material/storage"
+  }
+}

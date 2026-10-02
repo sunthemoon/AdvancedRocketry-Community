@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "tag": "forge:rods/steel"
+    }
+  },
+  "pattern": [
+    "P P",
+    " R ",
+    "P P"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:steel_fan"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,11 @@
+{
+  "type": "advancedrocketrycommunity:small_plate_press",
+  "ingredient": {
+    "tag": "forge:ores/copper"
+  },
+  "result": {
+    "count": 2,
+    "item": "advancedrocketrycommunity:copper_dust"
+  },
+  "schema_version": 1
+}

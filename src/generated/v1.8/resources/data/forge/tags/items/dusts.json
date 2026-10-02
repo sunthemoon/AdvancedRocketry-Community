@@ -1,0 +1,16 @@
+{
+  "values": [
+    "#forge:dusts/titanium",
+    "#forge:dusts/aluminum",
+    "#forge:dusts/tin",
+    "#forge:dusts/steel",
+    "#forge:dusts/iridium",
+    "#forge:dusts/dilithium",
+    "#forge:dusts/silicon",
+    "#forge:dusts/titanium_aluminide",
+    "#forge:dusts/titanium_iridium",
+    "#forge:dusts/copper",
+    "#forge:dusts/iron",
+    "#forge:dusts/gold"
+  ]
+}

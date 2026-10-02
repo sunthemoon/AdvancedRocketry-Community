@@ -1,0 +1,11 @@
+{
+  "type": "advancedrocketrycommunity:small_plate_press",
+  "ingredient": {
+    "tag": "forge:storage_blocks/steel"
+  },
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:steel_plate"
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#forge:storage_blocks/titanium",
+    "#forge:storage_blocks/aluminum",
+    "#forge:storage_blocks/tin",
+    "#forge:storage_blocks/steel",
+    "#forge:storage_blocks/iridium",
+    "#forge:storage_blocks/titanium_aluminide",
+    "#forge:storage_blocks/titanium_iridium"
+  ]
+}

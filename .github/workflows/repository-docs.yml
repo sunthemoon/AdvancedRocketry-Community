@@ -63,6 +63,10 @@ jobs:
           python tools/audit/fetch_vanilla_clients.py --output "$RUNNER_TEMP/vanilla-clients"
           python tools/audit/vanilla_derivation.py --upstream build/upstream/AdvancedRocketry --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar" --check --report-memory
 
+      - name: Screen the v1.8.0 generated art against vanilla (ADR-063 section 9)
+        run: |
+          python tools/audit/screen_generated_art.py --root src/generated/v1.8/resources --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar"
+
       - name: Verify v0.2.0 authored DataGen inventory
         run: |
           python scripts/manage_v020_generated_manifest.py verify

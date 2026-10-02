@@ -20,14 +20,13 @@ class ModMetadataTest {
             assertTrue(metadata.contains("modId=\"advancedrocketrycommunity\""));
             assertTrue(metadata.contains("displayName=\"Advanced Rocketry: Community Edition\""));
             assertTrue(metadata.contains("license=\"MIT\""));
-            assertTrue(metadata.contains("version=\"1.20.1-1.7.0-dev\""));
-            assertTrue(metadata.contains("This v1.7.0 development build"));
-            assertTrue(metadata.contains("This v1.7.0 development build adds the endgame framework to the satellite "
-                    + "and resource mission development baseline: per-system switches, an authority matrix, a "
-                    + "protection chain with operator zones and a cancelable effect event, and a versioned endgame "
-                    + "root with an endpoint index, the orbital laser drill with laser targets, and the area gravity "
-                    + "field controller. The railgun, black-hole generator, space elevator and release validation "
-                    + "remain in progress"));
+            assertTrue(metadata.contains("version=\"1.20.1-1.8.0-dev\""));
+            assertTrue(metadata.contains("This v1.8.0 development build adds the classic material set to the "
+                    + "endgame development baseline: titanium, aluminum, tin, steel, iridium, dilithium, silicon and "
+                    + "the two titanium alloys with their ingots, nuggets, dusts, plates, sheets, rods, gears, fans, "
+                    + "boules, coils and storage blocks, Overworld tin, rutile, aluminum and dilithium ores, and the "
+                    + "small plate press. The planetary surfaces, classic machines and parts, the rocket and station "
+                    + "parts and release validation remain in progress"));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));

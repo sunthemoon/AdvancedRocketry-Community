@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/titanium_iridium"
+    },
+    "P": {
+      "tag": "forge:plates/titanium_iridium"
+    },
+    "S": {
+      "tag": "forge:rods/titanium_iridium"
+    }
+  },
+  "pattern": [
+    "SPS",
+    " I ",
+    "SPS"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:titanium_iridium_gear"
+  },
+  "show_notification": true
+}

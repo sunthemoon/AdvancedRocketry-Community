@@ -1,0 +1,12 @@
+{
+  "values": [
+    "#forge:ingots/titanium",
+    "#forge:ingots/aluminum",
+    "#forge:ingots/tin",
+    "#forge:ingots/steel",
+    "#forge:ingots/iridium",
+    "#forge:ingots/silicon",
+    "#forge:ingots/titanium_aluminide",
+    "#forge:ingots/titanium_iridium"
+  ]
+}

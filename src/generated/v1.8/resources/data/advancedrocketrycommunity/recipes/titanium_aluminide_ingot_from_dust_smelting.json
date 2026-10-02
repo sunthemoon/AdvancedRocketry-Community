@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.35,
+  "ingredient": {
+    "tag": "forge:dusts/titanium_aluminide"
+  },
+  "result": "advancedrocketrycommunity:titanium_aluminide_ingot"
+}

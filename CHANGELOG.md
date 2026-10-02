@@ -4,6 +4,39 @@ This file records player- and operator-visible changes. The project is an
 unofficial community rewrite and is not supported by the original Advanced
 Rocketry maintainers.
 
+## v1.8.0 — in development
+
+**Status:** `IN_PROGRESS`; development identity `1.20.1-1.8.0-dev`.
+No candidate or release approval is assigned.
+
+- Add the classic material set (ADR-063): titanium, aluminum, tin, steel,
+  iridium, dilithium, silicon, titanium aluminide and titanium-iridium alloy,
+  with their ingots, nuggets, dusts, plates, sheets, rods, gears, coils and
+  storage blocks, the steel fan, the dilithium crystal and the silicon boule.
+  Copper, iron and gold gain dusts, plates and other products on their vanilla
+  ingots. Items carry the common `forge:` tags (for example
+  `forge:ingots/tin`) and this mod's tags for sheets, coils, fans and boules;
+  the five coils form `advancedrocketrycommunity:coils`. They have their own
+  creative tab, "Advanced Rocketry: Materials".
+- Add tin, rutile (titanium), aluminum, iridium and dilithium ores with
+  deepslate variants (iridium has none) and raw items. New Overworld chunks
+  get tin, rutile, aluminum and dilithium between y −16 and 64; chunks
+  generated before the upgrade keep what they had, and iridium is not placed
+  in the Overworld. The COMMON value `worldgen.overworldOres` turns the
+  Overworld ores off; data packs may override the
+  `advancedrocketrycommunity:overworld_ores` biome modifier.
+- Recipes: nuggets, blocks, rods, gears, coils and the steel fan are crafted;
+  ores, raw items and dusts smelt and blast into ingots (dilithium ore gives
+  dilithium dust; rutile waits for the electric arc furnace); the Rolling
+  Machine rolls ingots into plates (20 FE/t) and plates into sheets
+  (200 FE/t) with water. Iron ingots still roll into iron bars, so iron plates
+  come from the press.
+- Add the Small Plate Press. Put a metal block or an ore under it, obsidian
+  under that block, and give the press a redstone pulse: a block becomes four
+  plates, an ore two dust. One operation per pulse; claim mods that stop
+  pistons stop it too. The COMMON value `classic.smallPlatePress` turns it
+  off. JEI shows its recipes.
+
 ## v1.7.0 — in development
 
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.7.0-dev`.

@@ -38,7 +38,7 @@ class CommonConfigTest {
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values.
-        assertEquals(54, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(56, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

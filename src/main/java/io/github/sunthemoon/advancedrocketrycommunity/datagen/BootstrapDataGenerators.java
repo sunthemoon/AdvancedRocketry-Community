@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,16 +21,18 @@ public final class BootstrapDataGenerators {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
 
-        // Earlier version outputs (v1.6 and before) remain immutable resource inputs.
-        generator.addProvider(event.includeClient(), new V170LanguageProvider(output, "en_us"));
-        generator.addProvider(event.includeClient(), new V170LanguageProvider(output, "zh_cn"));
-        generator.addProvider(event.includeClient(),
-                new V170EndgameProviders.Models(output, event.getExistingFileHelper()));
-        generator.addProvider(event.includeServer(), V170EndgameProviders.loot(output));
-        generator.addProvider(event.includeServer(), new V170EndgameProviders.Recipes(output));
-        generator.addProvider(event.includeServer(), new V170LaserDrillTableProvider(output));
-        generator.addProvider(event.includeServer(), new V170BlackHoleProvider(output));
-        generator.addProvider(event.includeServer(), new V170EndgameProviders.ToolTags(
-                output, event.getLookupProvider(), event.getExistingFileHelper()));
+        // Earlier version outputs (v1.7 and before) remain immutable resource inputs.
+        ExistingFileHelper existingFiles = event.getExistingFileHelper();
+        generator.addProvider(event.includeClient(), new V180MaterialArt(output));
+        generator.addProvider(event.includeClient(), new V180MaterialModels(output, existingFiles));
+        generator.addProvider(event.includeClient(), new V180LanguageProvider(output, "en_us"));
+        generator.addProvider(event.includeClient(), new V180LanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeServer(), V180MaterialData.loot(output));
+        V180MaterialData.Blocks blockTags = generator.addProvider(event.includeServer(),
+                new V180MaterialData.Blocks(output, event.getLookupProvider(), existingFiles));
+        generator.addProvider(event.includeServer(), new V180MaterialData.Items(output, event.getLookupProvider(),
+                blockTags.contentsGetter(), existingFiles));
+        generator.addProvider(event.includeServer(), new V180MaterialRecipes(output));
+        generator.addProvider(event.includeServer(), V180MaterialWorldgen.provider(output, event.getLookupProvider()));
     }
 }

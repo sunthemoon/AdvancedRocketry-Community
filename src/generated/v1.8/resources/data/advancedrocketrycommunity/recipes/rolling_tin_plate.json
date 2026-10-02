@@ -1,0 +1,18 @@
+{
+  "type": "advancedrocketrycommunity:rolling",
+  "energy_per_tick": 20,
+  "fluid": {
+    "amount": 100,
+    "fluid": "minecraft:water"
+  },
+  "ingredient": {
+    "item": "advancedrocketrycommunity:tin_ingot"
+  },
+  "input_count": 1,
+  "processing_time": 300,
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:tin_plate"
+  },
+  "schema_version": 1
+}

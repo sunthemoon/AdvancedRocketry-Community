@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "forge:storage_blocks/titanium_iridium"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "item": "advancedrocketrycommunity:titanium_iridium_ingot"
+  }
+}

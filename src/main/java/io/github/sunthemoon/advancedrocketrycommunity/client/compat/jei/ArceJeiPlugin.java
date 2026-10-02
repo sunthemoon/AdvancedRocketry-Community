@@ -9,6 +9,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnostic
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
+import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
+import io.github.sunthemoon.advancedrocketrycommunity.material.press.SmallPlatePressRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.util.List;
@@ -38,7 +40,8 @@ public final class ArceJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(
                 new ElectrolyzerJeiCategory(helper),
                 new RollingMachineJeiCategory(helper),
-                new PrecisionAssemblerJeiCategory(helper)
+                new PrecisionAssemblerJeiCategory(helper),
+                new SmallPlatePressJeiCategory(helper)
         );
     }
 
@@ -57,15 +60,18 @@ public final class ArceJeiPlugin implements IModPlugin {
         registration.addRecipes(ElectrolyzerJeiCategory.TYPE, electrolyzerRecipes);
         registration.addRecipes(RollingMachineJeiCategory.TYPE, rollingRecipes);
         registration.addRecipes(PrecisionAssemblerJeiCategory.TYPE, precisionRecipes);
+        List<SmallPlatePressRecipe> pressRecipes = level == null ? List.of()
+                : level.getRecipeManager().getAllRecipesFor(MaterialContent.SMALL_PLATE_PRESS_TYPE.get());
+        registration.addRecipes(SmallPlatePressJeiCategory.TYPE, pressRecipes);
         AdvancedRocketryCommunity.LOGGER.info(
                 "{} optional_compat=jei status=registered recipes={}",
                 BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
                 electrolyzerRecipes.size()
         );
         AdvancedRocketryCommunity.LOGGER.info(
-                "{} optional_compat=jei machine_recipes rolling={} precision={}",
+                "{} optional_compat=jei machine_recipes rolling={} precision={} small_plate_press={}",
                 BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
-                rollingRecipes.size(), precisionRecipes.size()
+                rollingRecipes.size(), precisionRecipes.size(), pressRecipes.size()
         );
     }
 
@@ -74,6 +80,7 @@ public final class ArceJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModItems.ELECTROLYZER.get(), ElectrolyzerJeiCategory.TYPE);
         registration.addRecipeCatalyst(ModItems.ROLLING_MACHINE.get(), RollingMachineJeiCategory.TYPE);
         registration.addRecipeCatalyst(ModItems.PRECISION_ASSEMBLER.get(), PrecisionAssemblerJeiCategory.TYPE);
+        registration.addRecipeCatalyst(MaterialContent.SMALL_PLATE_PRESS_ITEM.get(), SmallPlatePressJeiCategory.TYPE);
     }
 
     @Override

@@ -1,0 +1,11 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "advancedrocketrycommunity:overworld_tin_ore",
+    "advancedrocketrycommunity:overworld_rutile_ore",
+    "advancedrocketrycommunity:overworld_aluminum_ore",
+    "advancedrocketrycommunity:overworld_dilithium_ore"
+  ],
+  "step": "underground_ores"
+}

@@ -1,0 +1,13 @@
+{
+  "values": [
+    "#forge:nuggets/titanium",
+    "#forge:nuggets/aluminum",
+    "#forge:nuggets/tin",
+    "#forge:nuggets/steel",
+    "#forge:nuggets/iridium",
+    "#forge:nuggets/silicon",
+    "#forge:nuggets/titanium_aluminide",
+    "#forge:nuggets/titanium_iridium",
+    "#forge:nuggets/copper"
+  ]
+}

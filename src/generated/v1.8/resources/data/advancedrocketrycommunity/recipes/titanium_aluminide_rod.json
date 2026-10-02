@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/titanium_aluminide"
+    }
+  },
+  "pattern": [
+    "I  ",
+    " I ",
+    "  I"
+  ],
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:titanium_aluminide_rod"
+  },
+  "show_notification": true
+}

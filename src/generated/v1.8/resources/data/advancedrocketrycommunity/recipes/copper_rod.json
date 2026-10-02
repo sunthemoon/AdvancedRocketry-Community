@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/copper"
+    }
+  },
+  "pattern": [
+    "I  ",
+    " I ",
+    "  I"
+  ],
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:copper_rod"
+  },
+  "show_notification": true
+}

@@ -247,6 +247,17 @@ public final class CommonConfig {
             "endgame.spaceElevator.launchesPerTick", "Elevator cargo launches the server starts in one tick (ADR-059).",
             ElevatorSettings.MAX_LAUNCHES_PER_TICK);
 
+    // ADR-061 section 3.5 and ADR-063: server switches for classic content. Disabling keeps blocks, items and
+    // already generated chunks; it stops the press acting and the features generating in new chunks.
+    public static final ForgeConfigSpec.BooleanValue SMALL_PLATE_PRESS_ENABLED = BUILDER
+            .comment("Let the small plate press act on a rising redstone edge (ADR-063 section 3).",
+                    "Disabling keeps the blocks; a powered press then does nothing.")
+            .define("classic.smallPlatePress", true);
+    public static final ForgeConfigSpec.BooleanValue OVERWORLD_ORES_ENABLED = BUILDER
+            .comment("Generate the classic tin, rutile, aluminum and dilithium ores in new Overworld chunks",
+                    "(ADR-063 section 4). Chunks already generated keep their ores.")
+            .define("worldgen.overworldOres", true);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -368,6 +379,16 @@ public final class CommonConfig {
     public static int checkedWriteTicksPer100Stations() {
         return SPEC.isLoaded() ? CHECKED_WRITE_TICKS_PER_100_STATIONS.get()
                 : CHECKED_WRITE_TICKS_PER_100_STATIONS.getDefault();
+    }
+
+    /** ADR-063 section 3: whether the small plate press acts; the default until the COMMON config is loaded. */
+    public static boolean smallPlatePressEnabled() {
+        return SPEC.isLoaded() ? SMALL_PLATE_PRESS_ENABLED.get() : SMALL_PLATE_PRESS_ENABLED.getDefault();
+    }
+
+    /** ADR-063 section 4: whether the Overworld ores generate; the default until the COMMON config is loaded. */
+    public static boolean overworldOresEnabled() {
+        return SPEC.isLoaded() ? OVERWORLD_ORES_ENABLED.get() : OVERWORLD_ORES_ENABLED.getDefault();
     }
 
     private CommonConfig() {

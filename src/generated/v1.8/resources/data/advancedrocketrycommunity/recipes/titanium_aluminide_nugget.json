@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "forge:ingots/titanium_aluminide"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "item": "advancedrocketrycommunity:titanium_aluminide_nugget"
+  }
+}

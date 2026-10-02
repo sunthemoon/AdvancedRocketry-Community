@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/titanium"
+    },
+    "P": {
+      "tag": "forge:plates/titanium"
+    },
+    "S": {
+      "tag": "forge:rods/titanium"
+    }
+  },
+  "pattern": [
+    "SPS",
+    " I ",
+    "SPS"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:titanium_gear"
+  },
+  "show_notification": true
+}

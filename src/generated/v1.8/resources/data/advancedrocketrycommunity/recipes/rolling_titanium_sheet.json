@@ -1,0 +1,18 @@
+{
+  "type": "advancedrocketrycommunity:rolling",
+  "energy_per_tick": 200,
+  "fluid": {
+    "amount": 100,
+    "fluid": "minecraft:water"
+  },
+  "ingredient": {
+    "item": "advancedrocketrycommunity:titanium_plate"
+  },
+  "input_count": 1,
+  "processing_time": 300,
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:titanium_sheet"
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/titanium"
+    }
+  },
+  "pattern": [
+    "I  ",
+    " I ",
+    "  I"
+  ],
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:titanium_rod"
+  },
+  "show_notification": true
+}

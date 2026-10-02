@@ -16,5 +16,7 @@ public final class ModRegistries {
         ModSounds.register(modBus);
         ModEntities.register(modBus);
         ModCreativeTabs.register(modBus);
+        // v1.8 (ADR-063): the classic material set, its ores and the small plate press.
+        io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent.register(modBus);
     }
 }

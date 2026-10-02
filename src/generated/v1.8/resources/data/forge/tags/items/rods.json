@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#forge:rods/titanium",
+    "#forge:rods/steel",
+    "#forge:rods/iridium",
+    "#forge:rods/titanium_aluminide",
+    "#forge:rods/titanium_iridium",
+    "#forge:rods/copper",
+    "#forge:rods/iron"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "values": [
+    "#forge:plates/titanium",
+    "#forge:plates/aluminum",
+    "#forge:plates/tin",
+    "#forge:plates/steel",
+    "#forge:plates/iridium",
+    "#forge:plates/silicon",
+    "#forge:plates/titanium_aluminide",
+    "#forge:plates/titanium_iridium",
+    "#forge:plates/copper",
+    "#forge:plates/iron",
+    "#forge:plates/gold"
+  ]
+}
