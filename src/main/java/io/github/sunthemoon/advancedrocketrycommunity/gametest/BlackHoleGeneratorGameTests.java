@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -76,6 +77,8 @@ public final class BlackHoleGeneratorGameTests {
         generator.fuel().insertItem(0, new ItemStack(Items.STICK, 4), false);
         BlockPos receiverPos = controller.north();
         int[] pushed = new int[1];
+        // ADR-057 A1: the generator never adds a chunk ticket (review C12R-I3).
+        Map<String, Integer> tickets = TicketCounts.near(space, chunk, 3);
         helper.startSequence()
                 .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.NO_SINGULARITY,
                         "A generator orbiting Earth did not idle: " + generator.describe()))
@@ -88,6 +91,8 @@ public final class BlackHoleGeneratorGameTests {
                 .thenExecute(() -> {
                     helper.assertTrue(count(generator) == 3 && generator.rate() == 500,
                             "One item, 500 FE per tick: " + generator.describe());
+                    helper.assertTrue(TicketCounts.near(space, chunk, 3).equals(tickets),
+                            "A generating generator changed the tickets: " + TicketCounts.near(space, chunk, 3));
                     warp(helper, server, stations, stationId, CelestialIds.EARTH_ID);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.NO_SINGULARITY,
@@ -113,13 +118,22 @@ public final class BlackHoleGeneratorGameTests {
                     helper.assertTrue(generator.remaining() == pushed[0] && count(generator) == 3
                                     && generator.energy() == BlackHoleGeneratorBlockEntity.ENERGY_CAPACITY,
                             "A paused burn consumed fuel or wasted energy: " + generator.describe());
+                    // Review C12R-I3: with no burn in progress, a full buffer takes no new item either.
+                    generator.endBurnForTest();
+                })
+                .thenExecuteAfter(10, () -> {
+                    helper.assertTrue(generator.remaining() == 0 && count(generator) == 3
+                                    && generator.status() == EndgameCode.PAUSED_FULL,
+                            "An empty burn with a full buffer took an item: " + generator.describe());
+                    helper.assertTrue(TicketCounts.near(space, chunk, 3).equals(tickets),
+                            "A paused generator changed the tickets");
                     generator.setEnergyForTest(0);
                     CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.set(false);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.SYSTEM_DISABLED,
                         "The switch did not pause the generator"))
                 .thenExecuteAfter(5, () -> {
-                    helper.assertTrue(generator.energy() == 0 && generator.remaining() == pushed[0],
+                    helper.assertTrue(generator.energy() == 0 && generator.remaining() == 0 && count(generator) == 3,
                             "A disabled generator burned");
                     CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.set(true);
                     generator.fuel().setStackInSlot(0, ItemStack.EMPTY);

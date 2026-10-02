@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole;
 
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
@@ -13,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.Optional;
@@ -421,6 +421,13 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
 
     public ItemStackHandler fuel() {
         return fuel;
+    }
+
+    /** Test seam: no burn in progress, so the next step decides whether to take an item. */
+    public void endBurnForTest() {
+        remaining = 0;
+        rate = 0;
+        setChanged();
     }
 
     /** Test seam: energy within the buffer. */

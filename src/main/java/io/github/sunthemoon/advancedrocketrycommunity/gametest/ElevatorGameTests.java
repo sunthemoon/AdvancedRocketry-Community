@@ -190,9 +190,12 @@ public final class ElevatorGameTests {
                     ElevatorStationGuard guard = ElevatorStationGuard.Installed.current();
                     helper.assertTrue(guard.warp(fixture.server, fixture.station) == ElevatorStationGuard.Decision.BOUND,
                             "A bound station may warp");
+                    List<String> replies = new ArrayList<>();
                     helper.assertTrue(command(fixture.server, "arce station admin delete " + fixture.stationId
-                            + " confirm") == 0 && fixture.stations.find(fixture.stationId).isPresent(),
+                            + " confirm", replies) == 0 && fixture.stations.find(fixture.stationId).isPresent(),
                             "A bound station was deleted");
+                    helper.assertTrue(replies.stream().anyMatch(line -> line.contains("ELEVATOR_REFERENCES")),
+                            "The deletion was not refused for its elevator references: " + replies);
                     fixture.anchor().storage().input().setStackInSlot(0, new ItemStack(Items.IRON_INGOT, 3));
                     fixture.anchor().storage().energy().set(100_000);
                     fixture.anchor().launchForTest(fixture.owner);
@@ -309,10 +312,19 @@ public final class ElevatorGameTests {
                         service(), devices()).code() == EndgameCode.RIDE_COUNTDOWN, "The second ride down was refused"))
                 .thenWaitUntil(() -> helper.assertTrue(joined.get(0).level() == fixture.level
                         && fixture.anchor().onPlatform(joined.get(0)), "The member did not arrive down"))
+                .thenExecute(() -> helper.assertTrue(fixture.terminal().storage().energy().energy() == 150_000
+                                && arrivalTickets(fixture.level) == 0 && arrivalTickets(fixture.space) == 0,
+                        "The ride down cost the wrong energy or left a ticket"))
+                // ADR-059 A1 (review C12R-I3): a server stop releases a pending ride's arrival ticket.
+                .thenExecuteAfter(ElevatorRules.RIDE_COOLDOWN_TICKS + 5, () -> {
+                    helper.assertTrue(rides().request(joined.get(0), fixture.anchor(), service(), devices()).code()
+                            == EndgameCode.RIDE_COUNTDOWN && arrivalTickets(fixture.space) == 1,
+                            "The third ride was refused or holds no ticket");
+                    rides().clear(fixture.server);
+                    helper.assertTrue(arrivalTickets(fixture.space) == 0 && rides().tickets() == 0
+                            && rides().pending(joined.get(0).getUUID()).isEmpty(), "The stop left a ride or ticket");
+                })
                 .thenExecute(() -> {
-                    helper.assertTrue(fixture.terminal().storage().energy().energy() == 150_000
-                                    && arrivalTickets(fixture.level) == 0 && arrivalTickets(fixture.space) == 0,
-                            "The ride down cost the wrong energy or left a ticket");
                     joined.forEach(player -> fixture.server.getPlayerList().remove(player));
                     fixture.close();
                 })
@@ -621,6 +633,16 @@ public final class ElevatorGameTests {
         try {
             return server.getCommands().getDispatcher().execute(command,
                     server.createCommandSourceStack().withSuppressedOutput());
+        } catch (CommandSyntaxException exception) {
+            return -1;
+        }
+    }
+
+    /** As {@link #command(MinecraftServer, String)}, keeping the replies. */
+    private static int command(MinecraftServer server, String command, List<String> replies) {
+        try {
+            return server.getCommands().getDispatcher().execute(command,
+                    server.createCommandSourceStack().withSource(ConnectedTestPlayers.capture(replies)));
         } catch (CommandSyntaxException exception) {
             return -1;
         }
