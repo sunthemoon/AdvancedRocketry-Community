@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSetti
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.OutboxEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitDestinationState;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitEndpoint;
@@ -104,6 +105,44 @@ final class TransitOperationsTest {
         TransitKey claimed = record(service, 3L, true);
         assertEquals(EndgameCode.DESTINATION_ACTIVE, operations.redirect(claimed, SOURCE, OWNER, true, 200L),
                 "a claimed record was redirected");
+    }
+
+    /**
+     * Review C12R-M3: an owner redirect to a station's endpoint enters that station's 100-tick cooldown and the shared
+     * spacing; a refusal changes nothing; an operator's redirect is exempt and counted in the status.
+     */
+    @Test
+    void ownerRedirectsEnterTheStationsCooldownAndOperatorBarriersAreCounted() {
+        EndgameService service = service();
+        TransitOperations operations = service.transitOperations();
+        UUID station = new UUID(5L, 5L);
+        operations.route(EndgameSystem.RAILGUN, new TransitOperations.Route() {
+            @Override
+            public EndgameCode check(EndgameRoot root, TransitRecord record, EndpointRecord target, boolean operator) {
+                return EndgameCode.OK;
+            }
+
+            @Override
+            public Optional<UUID> station(EndgameRoot root, EndpointRecord target) {
+                return Optional.of(station);
+            }
+        });
+        TransitKey first = record(service, 1L, false);
+        TransitKey second = record(service, 2L, false);
+        TransitKey third = record(service, 3L, false);
+        service.barrier(root -> root.remove(DESTINATION));
+        long exempt = service.barrierSpacing().exemptFlushes();
+        assertEquals(EndgameCode.OK, operations.redirect(first, SPARE, OWNER, false, 1_000L));
+        assertEquals(exempt, service.barrierSpacing().exemptFlushes(), "an owner redirect is a spaced barrier");
+        assertEquals(EndgameCode.ROOT_BUSY, operations.redirect(second, SPARE, OWNER, false, 1_050L),
+                "inside the station's 100-tick cooldown");
+        assertEquals(DESTINATION, service.root().orElseThrow().transits().record(second).orElseThrow().destination(),
+                "a refused redirect changed the record");
+        assertEquals(EndgameCode.OK, operations.redirect(second, SPARE, OWNER, true, 1_050L), "operators are exempt");
+        assertEquals(exempt + 1, service.barrierSpacing().exemptFlushes());
+        assertTrue(service.status().contains("exempt_barriers=" + (exempt + 1)), service.status());
+        assertEquals(EndgameCode.OK, operations.redirect(third, SPARE, OWNER, false, 1_100L),
+                "the cooldown ends 100 ticks after the station's last owner redirect");
     }
 
     @Test

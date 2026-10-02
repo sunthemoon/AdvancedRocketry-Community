@@ -151,7 +151,7 @@ public final class TransitCommands {
             return refuse(context, EndgameCode.ROOT_BUSY);
         }
         TransitOperations.Resolved resolved = service.transitOperations().resolve(endpoint.get(), actor, now(context),
-                null);
+                null, !operator);
         return reply(context, "endpoint_resolve", EndgameCode.OK, "id=" + id + " returned=" + resolved.returned()
                 + " moved=" + resolved.moved() + " destroyed=" + resolved.destroyed() + " receipts="
                 + resolved.receipts() + " left=" + resolved.left());

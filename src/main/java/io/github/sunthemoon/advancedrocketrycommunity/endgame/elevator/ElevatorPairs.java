@@ -18,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAcc
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -133,15 +134,22 @@ public final class ElevatorPairs {
             audit(service, now, "bind", check, terminal.deviceId().orElse(null), actor, "anchor=" + anchorId);
             return check;
         }
+        // ADR-054 section 7 (review C12R-M3): binds share the 20-tick spacing and the station's 100-tick cooldown.
+        if (!operator && !service.barrierSpacing().admit(stationId.get(), now)) {
+            ElevatorRules.Check busy = ElevatorRules.Check.of(EndgameCode.ROOT_BUSY);
+            audit(service, now, "bind", busy, terminal.deviceId().orElse(null), actor, "anchor=" + anchorId);
+            return busy;
+        }
         ElevatorPair pair = new ElevatorPair(UUID.randomUUID(), stationId.get(), terminalId, anchorId,
                 body.get().body(), anchor.get().level(), at.getX(), at.getZ(), at.getY(), now, actor);
-        EndgameCode written = service.barrier(r -> {
+        Function<EndgameRoot, EndgameCode> write = r -> {
             EndgameCode conflict = r.pairs().conflict(pair.stationId(), anchorId, terminalId, column);
             if (conflict == EndgameCode.OK) {
                 r.pairs().add(pair);
             }
             return conflict;
-        });
+        };
+        EndgameCode written = operator ? service.barrier(write) : service.spacedBarrier(write);
         if (written != EndgameCode.OK) {
             return ElevatorRules.Check.of(written);
         }
@@ -179,6 +187,7 @@ public final class ElevatorPairs {
             return ElevatorRules.Check.of(EndgameCode.UNAUTHORIZED);
         }
         service.barrier(root -> root.pairs().remove(pair.pairId()));
+        service.barrierSpacing().unbound(now); // Never refused; it counts toward the next bind's spacing.
         devices.elevatorRides().cancelPair(server, pair.pairId());
         audit(service, now, "unbind", ElevatorRules.Check.OK, pair.terminalId(), actor, describe(pair));
         return ElevatorRules.Check.OK;

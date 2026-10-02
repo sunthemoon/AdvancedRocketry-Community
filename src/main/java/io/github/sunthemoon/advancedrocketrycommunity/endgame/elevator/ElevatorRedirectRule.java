@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.TransitOpe
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -51,5 +52,11 @@ public final class ElevatorRedirectRule implements TransitOperations.Route {
             return EndgameCode.ROOT_UNAVAILABLE;
         }
         return ElevatorPairs.validity(server.get(), root, current.get(), pair.get()).code();
+    }
+
+    /** An owner's redirect to an endpoint in a pair enters that station's cooldown (review C12R-M3). */
+    @Override
+    public Optional<UUID> station(EndgameRoot root, EndpointRecord target) {
+        return root.pairs().forEndpoint(target.id()).map(ElevatorPair::stationId);
     }
 }

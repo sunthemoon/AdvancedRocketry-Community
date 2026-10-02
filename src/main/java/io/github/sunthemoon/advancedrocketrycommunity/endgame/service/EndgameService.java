@@ -53,6 +53,7 @@ public final class EndgameService {
     private final TransitLedger transits;
     private final EndgameTimings timings = new EndgameTimings();
     private final TransitOperations transitOperations;
+    private final BarrierSpacing barrierSpacing = new BarrierSpacing();
     private long nextHousekeeping;
     private MinecraftServer server;
     private EndgameSavedData data;
@@ -85,6 +86,11 @@ public final class EndgameService {
     }
 
     /** Operator and owner actions on the ledger (redirect, purge, resettle, resolve). */
+    /** Section 7: the spacing and per-station cooldown of player-triggered barrier flushes. */
+    public BarrierSpacing barrierSpacing() {
+        return barrierSpacing;
+    }
+
     public TransitOperations transitOperations() {
         return transitOperations;
     }
@@ -146,6 +152,7 @@ public final class EndgameService {
         nextHousekeeping = 0L;
         audit.clear();
         timings.clear();
+        barrierSpacing.clear();
         writeFailureLogged = false;
         lastCoalescedFlush = Long.MIN_VALUE / 2;
     }
@@ -177,12 +184,27 @@ public final class EndgameService {
         return result;
     }
 
-    /** A barrier: the mutation is written before the caller reports success; a failed write stays pending. */
+    /**
+     * A barrier: the mutation is written before the caller reports success; a failed write stays pending. Every barrier
+     * but a spaced player request ({@link #spacedBarrier}) is exempt from the section 7 spacing and counted.
+     */
     public <T> T barrier(Function<EndgameRoot, T> operation) {
+        return barrier(operation, false);
+    }
+
+    /** A barrier of a player request that {@link BarrierSpacing#admit} let through. */
+    public <T> T spacedBarrier(Function<EndgameRoot, T> operation) {
+        return barrier(operation, true);
+    }
+
+    private <T> T barrier(Function<EndgameRoot, T> operation, boolean spaced) {
         requireOperational();
         T result = data.update(operation);
         updateIndex();
         if (data.isDirty()) {
+            if (!spaced) {
+                barrierSpacing.exemptFlush();
+            }
             flush();
         }
         return result;
@@ -481,6 +503,7 @@ public final class EndgameService {
         return text.append("; root: operational save_epoch=").append(root.saveEpoch())
                 .append(" accounted_bytes=").append(root.accountedBytes())
                 .append(" write_pending=").append(data.isDirty())
+                .append(" exempt_barriers=").append(barrierSpacing.exemptFlushes())
                 .append("; endpoints=").append(root.endpoints().size() - missing).append(" missing=").append(missing)
                 .append(" young_tombstones=").append(root.youngTombstones().size())
                 .append(" settled_tombstones=").append(root.settledTombstones().size())

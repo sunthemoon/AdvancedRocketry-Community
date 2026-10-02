@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorR
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRules;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorTerminalBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
@@ -60,6 +61,7 @@ public final class ElevatorGameTests {
     private static final String RIDES = "endgame_elevator_rides";
     private static final String VALIDITY = "endgame_elevator_validity";
     private static final String ZONE = "endgame_elevator_zone";
+    private static final String SPACING = "endgame_elevator_spacing";
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
             Comparator.comparing(UUID::toString));
     private static final String ARRIVAL_TICKET = "advancedrocketrycommunity:elevator_arrival";
@@ -352,6 +354,44 @@ public final class ElevatorGameTests {
                 .thenSucceed();
     }
 
+    /**
+     * Review C12R-M3 (ADR-054 section 7): binds share the 20-tick spacing and their station's 100-tick cooldown and
+     * are refused with {@code ROOT_BUSY} before anything changes; an unbind is never refused and counts toward the
+     * next bind's spacing.
+     */
+    @GameTest(template = "empty", batch = SPACING, timeoutTicks = 1200)
+    public static void bindsAreSpacedAndCooledDownPerStation(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper);
+        long[] boundAt = new long[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> fixture.registered(helper))
+                .thenExecute(() -> {
+                    ElevatorPair pair = fixture.bind(helper);
+                    boundAt[0] = fixture.level.getGameTime();
+                    helper.assertTrue(ElevatorPairs.unbind(fixture.server, service(), devices(), pair, fixture.owner,
+                            false, boundAt[0]).ok(), "The unbind was refused");
+                    helper.assertTrue(rebind(fixture) == EndgameCode.ROOT_BUSY
+                                    && root().pairs().forStation(fixture.stationId).isEmpty(),
+                            "A bind in the unbind's tick was not refused before anything changed");
+                })
+                .thenExecuteAfter(EndgameLimits.BARRIER_SPACING_TICKS + 5, () -> helper.assertTrue(
+                        rebind(fixture) == EndgameCode.ROOT_BUSY && root().pairs().forStation(fixture.stationId)
+                                .isEmpty(), "A bind inside the station's cooldown was not refused"))
+                .thenWaitUntil(() -> helper.assertTrue(fixture.level.getGameTime()
+                        >= boundAt[0] + EndgameLimits.BARRIER_STATION_COOLDOWN_TICKS, "Inside the cooldown"))
+                .thenExecute(() -> helper.assertTrue(rebind(fixture) == EndgameCode.OK
+                        && root().pairs().forStation(fixture.stationId).isPresent(), "A bind after the cooldown"))
+                .thenExecute(fixture::close)
+                .thenSucceed();
+    }
+
+    /** A player's bind, with nothing pending in the root. */
+    private static EndgameCode rebind(Fixture fixture) {
+        service().barrier(root -> null);
+        return ElevatorPairs.bind(fixture.server, service(), devices(), fixture.terminal(),
+                fixture.anchor().deviceId().orElseThrow(), fixture.owner, false, fixture.level.getGameTime()).code();
+    }
+
     /** An operator zone around the anchor's platform that allows {@code allowed} only. */
     private static void zone(GameTestHelper helper, Fixture fixture, String name, UUID allowed) {
         BlockPos min = fixture.anchorPos.offset(-4, 0, -4);
@@ -389,10 +429,11 @@ public final class ElevatorGameTests {
                     BlockState state = fixture.level.getBlockState(fixture.anchorPos);
                     helper.assertFalse(state.getBlock().onDestroyedByPlayer(state, fixture.level, fixture.anchorPos,
                             player, true, Fluids.EMPTY.defaultFluidState()), "A paired anchor was broken");
-                    // Unbind is always possible; a fresh bind is valid again.
+                    // Unbind is always possible; a fresh bind is valid again. It is an operator's: a player's would
+                    // wait for the unbind's spacing and the station's cooldown (ADR-054 section 7).
                     helper.assertTrue(ElevatorPairs.unbind(fixture.server, service(), devices(), remapped,
                             fixture.owner, false, fixture.level.getGameTime()).ok(), "An invalid pair could not unbind");
-                    fixture.bind(helper);
+                    fixture.bind(helper, true);
                     fixture.anchor().launchForTest(fixture.owner);
                     shipped[0] = new TransitKey(fixture.anchor().deviceId().orElseThrow(), 1L);
                 })

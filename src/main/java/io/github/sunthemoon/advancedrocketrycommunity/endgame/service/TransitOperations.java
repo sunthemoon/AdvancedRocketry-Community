@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.world.item.ItemStack;
 
@@ -36,6 +37,11 @@ public final class TransitOperations {
     public interface Route {
         /** {@code OK}, or the refusal for this target. The caller has checked the target is an ACTIVE endpoint. */
         EndgameCode check(EndgameRoot root, TransitRecord record, EndpointRecord target, boolean operator);
+
+        /** The station whose 100-tick cooldown an owner's redirect to this target enters (section 7); none here. */
+        default Optional<UUID> station(EndgameRoot root, EndpointRecord target) {
+            return Optional.empty();
+        }
     }
 
     /** What a resolve did, item by item. */
@@ -47,7 +53,6 @@ public final class TransitOperations {
 
     private final EndgameService service;
     private final Map<EndgameSystem, Route> routes = new EnumMap<>(EndgameSystem.class);
-    private long lastPlayerBarrier = Long.MIN_VALUE / 2;
 
     TransitOperations(EndgameService service) {
         this.service = Objects.requireNonNull(service, "service");
@@ -60,18 +65,11 @@ public final class TransitOperations {
 
     /** Section 7: player-triggered barrier flushes share one server-wide spacing of 20 ticks. */
     public boolean playerBarrierAllowed(long now) {
-        return playerSpacing(false, now);
+        return service.barrierSpacing().admit(null, now);
     }
 
-    private boolean playerSpacing(boolean operator, long now) {
-        if (operator) {
-            return true;
-        }
-        if (now - lastPlayerBarrier < EndgameLimits.BARRIER_SPACING_TICKS) {
-            return false;
-        }
-        lastPlayerBarrier = now;
-        return true;
+    private <T> T barrier(boolean operator, Function<EndgameRoot, T> operation) {
+        return operator ? service.barrier(operation) : service.spacedBarrier(operation);
     }
 
     /**
@@ -111,17 +109,18 @@ public final class TransitOperations {
         if (routed != EndgameCode.OK) {
             return routed;
         }
-        if (!playerSpacing(operator, now)) {
+        // Section 7: owner redirects share the server-wide spacing, and an elevator's the station's cooldown.
+        if (!operator && !service.barrierSpacing().admit(route.station(root, to.get()).orElse(null), now)) {
             return EndgameCode.ROOT_BUSY;
         }
         if (service.writePending()) {
             // The removal must be durable before the redirect: write what is pending first.
-            service.barrier(r -> null);
+            barrier(operator, r -> null);
             if (service.writePending()) {
                 return EndgameCode.ROOT_BUSY;
             }
         }
-        service.barrier(r -> {
+        barrier(operator, r -> {
             r.transits().replace(r.transits().record(key).orElseThrow().redirectedTo(target));
             return null;
         });
@@ -195,6 +194,12 @@ public final class TransitOperations {
      */
     public Resolved resolve(TransitEndpoint endpoint, @Nullable UUID actor, long now,
                             @Nullable List<ItemStack> drops) {
+        return resolve(endpoint, actor, now, drops, false);
+    }
+
+    /** As {@link #resolve(TransitEndpoint, UUID, long, List)}; {@code spaced} for an owner's admitted request. */
+    public Resolved resolve(TransitEndpoint endpoint, @Nullable UUID actor, long now,
+                            @Nullable List<ItemStack> drops, boolean spaced) {
         Optional<EndgameRoot> view = service.root();
         if (view.isEmpty()) {
             return new Resolved(0, 0, 0, 0, 0);
@@ -273,7 +278,7 @@ public final class TransitOperations {
         }
         Resolved result = new Resolved(returned, moved, destroyed, receipts, left);
         if (result.anything()) {
-            service.barrier(r -> {
+            barrier(!spaced, r -> {
                 acknowledgements.forEach(record -> r.transits().replace(record));
                 return null;
             });
