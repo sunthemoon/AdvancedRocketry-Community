@@ -322,8 +322,9 @@ must handle:
    - an outline redrawn around a vanilla fill: every block of three or more
      colours then touches a moved line, so no block votes for the alignment
      (the tab template).
-   The calibration tests keep the first two as expected-`CLEAR` cases, so a
-   change in what the tool finds is visible. Lowering the `rank` threshold is
+   The calibration tests keep the first two as expected-`CLEAR` cases (five
+   filtered derivatives and a blurred low-contrast texture), so a change in
+   what the tool finds is visible. Lowering the `rank` threshold is
    no remedy: the best whole-image match of many clear files already ranks
    0.60–0.75, mostly against textures first shipped in 1.20 that cannot be
    their origins. The history rule (§4.9), origin findings (the tab template

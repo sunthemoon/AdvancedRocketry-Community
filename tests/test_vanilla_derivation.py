@@ -257,7 +257,13 @@ class VanillaDerivationCalibrationTests(unittest.TestCase):
         for y in range(16):
             for x in range(16):
                 embedded[(y + 50) * 128 + x + 60] = noisy[y * 16 + x]
+        state, stone = 601, []
+        for _ in range(256):
+            state = (state * 1103515245 + 12345) & 0x7FFFFFFF
+            stone.append((110 + state % 21,) * 3 + (255,))
+        vanilla.append(("v", "stone.png", Image(16, 16, stone)))
         limits = {
+            "3 x 3 blur of a low-contrast texture": Image(16, 16, _blur(stone, 16, 16)),
             "noise of 6 plus an 8 x 8 overlay": Image(16, 16, _overlay(_jitter(texture, 6, 7), 16, 8)),
             "3 x 3 blur plus a 6 x 6 overlay": Image(16, 16, _overlay(_blur(texture, 16, 16), 16, 6)),
             "12 x 12 crop with noise of 6": Image(12, 12, _jitter(crop, 6, 9)),
