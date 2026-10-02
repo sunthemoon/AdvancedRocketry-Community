@@ -62,7 +62,10 @@ public final class ReferenceLoadReleaseTestCommands {
         reset();
     }
 
-    /** A new load for each server: the old one holds the stopped server's Levels and menus (review C13-F8). */
+    /**
+     * A new load for each server: the old one holds the stopped server's Levels and menus (review C13-F8); the old
+     * load's configuration changes are put back first (review C13R2-N5).
+     */
     private void reset() {
         fixture = new ReferenceLoadFixture(service);
         load = fixture.load;
@@ -76,6 +79,7 @@ public final class ReferenceLoadReleaseTestCommands {
             listening = true;
             MinecraftForge.EVENT_BUS.addListener(this::tick);
             MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent stopped) -> {
+                fixture.restoreConfig();
                 reset();
                 ReleaseTestPlayers.clear();
             });

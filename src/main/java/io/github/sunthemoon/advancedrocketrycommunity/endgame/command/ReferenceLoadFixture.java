@@ -83,6 +83,16 @@ final class ReferenceLoadFixture {
         this.service = Objects.requireNonNull(service, "service");
     }
 
+    /** Puts back the configuration values the build changed. */
+    void restoreConfig() {
+        if (load.physicalBefore != null) {
+            CommonConfig.ENDGAME_LASER_PHYSICAL.set(load.physicalBefore);
+            CommonConfig.LASER_DRILL_MAX_DEPTH.set(load.depthBefore);
+            load.physicalBefore = null;
+            load.depthBefore = null;
+        }
+    }
+
     /** Owner {@code index} of the load: a stable name-based UUID, so a restart finds the same owners. */
     static UUID owner(int index) {
         return UUID.nameUUIDFromBytes(("arce-refload-owner-" + index).getBytes(StandardCharsets.UTF_8));
@@ -104,6 +114,9 @@ final class ReferenceLoadFixture {
         final Map<UUID, Long> nextClick = new HashMap<>();
         /** Each railgun source's last escrow tick when the driver last looked, to count the launches that left. */
         final Map<BlockPos, Long> lastLaunch = new HashMap<>();
+        /** The configuration values the build changed, restored at server stop (review C13R2-N5). */
+        Boolean physicalBefore;
+        Integer depthBefore;
         boolean built;
         boolean driving;
         long launches;
@@ -138,6 +151,8 @@ final class ReferenceLoadFixture {
         ServerLevel overworld = server.overworld();
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         int ownerIndex = 0;
+        load.physicalBefore = CommonConfig.ENDGAME_LASER_PHYSICAL.get();
+        load.depthBefore = CommonConfig.LASER_DRILL_MAX_DEPTH.get();
         CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
         CommonConfig.LASER_DRILL_MAX_DEPTH.set(LaserDrillSettings.MAX_DEPTH);
         // Logical drills: four owners, four drills each, on one station per owner orbiting Earth.
