@@ -124,6 +124,10 @@ must handle:
    smelting, blasting and the small plate press (which resolves its tags when
    it acts) but not yet in the kernel machines. This deviation expires with
    C16a, which must restore the tag promise above for every machine recipe.
+   Running processes store a recipe signature built from the resolved
+   alternatives and compare it after a reload; C16a must therefore build the
+   signature from the recipe's JSON form, or define what happens to an active
+   process when a tag's contents change (C15aR2-I1).
 3. Vanilla materials stay vanilla: copper, iron and gold ingots and ores, basalt
    and concrete are not re-registered.
 4. Ores follow 1.18+ conventions: stone and deepslate variants where the ore
@@ -551,10 +555,11 @@ need a new revision and review.
 - Revision 5: answers review round 4 (0 Critical, 1 High, 1 Medium, 2 Low,
   5 Info), one commit per finding; see
   [review-04-dispositions](../work/v1.8.0-preparation/review-04-dispositions.md).
-- Revision 7 (proposed, 2026-10-03): the C15a implementation review
-  (C15aR1-M2) showed that §2.2's parse-time tag limit cannot hold; kernel
-  machine recipes name items until C16a resolves tags after binding.
 - Revision 6: review round 5 accepted revision 5 (0 Critical, 0 High,
   0 Medium, 1 Low, 4 Info); the Low and the Info notes are answered in their
   own commits; see
   [review-05-dispositions](../work/v1.8.0-preparation/review-05-dispositions.md).
+- Revision 7 (proposed, 2026-10-03): the C15a implementation review
+  (C15aR1-M2) showed that §2.2's parse-time tag limit cannot hold; kernel
+  machine recipes name items until C16a resolves tags after binding; review round 2
+  added the C16a signature condition (C15aR2-I1).
