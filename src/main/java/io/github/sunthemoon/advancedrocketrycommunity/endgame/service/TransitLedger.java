@@ -58,8 +58,10 @@ public final class TransitLedger implements TransitLedgerView {
     @Nullable
     private UUID cursor;
     /**
-     * Loaded endpoints found with nothing to reconcile (C13): the pass skips them until a sweep every 20 ticks, a
-     * change in the transit table, their attachment, an observation of them or an escrow admission for them.
+     * Loaded endpoints found with nothing to reconcile (C13): the pass skips them until a sweep, their attachment, an
+     * observation of them or an escrow admission for them. A sweep runs every 20 ticks and in the tick after any change
+     * in the transit table, and re-evaluates every loaded endpoint, also once the reconciliation budget has run out
+     * (review C13-F1).
      */
     private final Set<UUID> idle = new HashSet<>();
     private long sweptVersion = -1L;
@@ -239,30 +241,24 @@ public final class TransitLedger implements TransitLedgerView {
         if (cursor != null) {
             order.addAll(loaded.headMap(cursor, true).keySet());
         }
-        for (UUID id : order) {
+        for (int i = 0; i < order.size(); i++) {
+            UUID id = order.get(i);
             if (!sweep && idle.contains(id)) {
                 cursor = id;
                 continue;
             }
             TransitEndpoint endpoint = loaded.get(id);
-            UUID endpointId = endpoint.endpointId();
-            if (endpoint.source().anythingUnpersisted() || endpoint.destination().anythingUnpersisted()) {
-                endpoint.transitChanged(); // Section 2: while anything is unpersisted the chunk stays dirty.
-            }
-            if (endpoint.transitFrozen() || endpoint.endpointOwner().isEmpty() || root.endpoint(endpointId)
-                    .filter(record -> record.state() == EndpointRecord.State.ACTIVE).isEmpty()) {
+            if (!reconcilable(root, endpoint)) {
                 cursor = id;
                 continue;
             }
-            if (!endpoint.source().holdsContents() && !endpoint.destination().holdsContents()
-                    && !root.transits().names(endpointId)
-                    && !TransitRules.rollback(endpoint.source().nextSeq(), root.dispatchedThrough(endpointId))) {
-                // Nothing to reconcile: no outbox entry, incoming payload, receipt, record or rollback (C13).
+            if (nothingToReconcile(root, endpoint)) {
                 idle.add(id);
                 cursor = id;
                 continue;
             }
             idle.remove(id);
+            UUID endpointId = endpoint.endpointId();
             UUID owner = endpoint.endpointOwner().get();
             boolean changed = endpoint.source().reconcile(this, endpointId, owner, now).changed();
             changed |= endpoint.destination().reconcile(this, endpointId, owner, endpoint.receiveBuffer(), now);
@@ -271,9 +267,48 @@ public final class TransitLedger implements TransitLedgerView {
             }
             cursor = id; // This endpoint had its turn: the next tick starts at the next one (review C12R-M1).
             if (reconciliationsLeft <= 0) {
+                if (sweep) {
+                    evaluateIdle(root, order.subList(i + 1, order.size()));
+                }
                 return;
             }
         }
+    }
+
+    /**
+     * The rest of a sweep once the budget has run out: every remaining endpoint's idle state is re-evaluated without
+     * reconciling it or moving the cursor, so one with work now joins the round robin from the next tick instead of
+     * waiting for a sweep that happens to reach it before the budget runs out (review C13-F1).
+     */
+    private void evaluateIdle(EndgameRoot root, List<UUID> rest) {
+        for (UUID id : rest) {
+            TransitEndpoint endpoint = loaded.get(id);
+            if (!reconcilable(root, endpoint)) {
+                continue;
+            }
+            if (nothingToReconcile(root, endpoint)) {
+                idle.add(id);
+            } else {
+                idle.remove(id);
+            }
+        }
+    }
+
+    /** An owned, unfrozen endpoint whose record is active; first keeps an unpersisted endpoint's chunk dirty. */
+    private static boolean reconcilable(EndgameRoot root, TransitEndpoint endpoint) {
+        if (endpoint.source().anythingUnpersisted() || endpoint.destination().anythingUnpersisted()) {
+            endpoint.transitChanged(); // Section 2: while anything is unpersisted the chunk stays dirty.
+        }
+        return !endpoint.transitFrozen() && endpoint.endpointOwner().isPresent() && root.endpoint(endpoint.endpointId())
+                .filter(record -> record.state() == EndpointRecord.State.ACTIVE).isPresent();
+    }
+
+    /** No outbox entry, incoming payload, receipt, record naming it or rollback: reconciling would do nothing (C13). */
+    private static boolean nothingToReconcile(EndgameRoot root, TransitEndpoint endpoint) {
+        UUID id = endpoint.endpointId();
+        return !endpoint.source().holdsContents() && !endpoint.destination().holdsContents()
+                && !root.transits().names(id)
+                && !TransitRules.rollback(endpoint.source().nextSeq(), root.dispatchedThrough(id));
     }
 
     /** Before an escrow at a source (section 11 "when S loads and before each escrow"). */

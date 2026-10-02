@@ -50,6 +50,8 @@ final class TransitLedgerTest {
     private static final UUID LATE_SOURCE = new UUID(0L, 50L);
     private static final BlockPos OTHER_POS = new BlockPos(400, 64, 400);
     private static final BlockPos LATE_SOURCE_POS = new BlockPos(600, 64, 600);
+    private static final UUID SECOND_HUB = new UUID(0L, 40L);
+    private static final UUID IDLE_SOURCE = new UUID(0L, 60L);
 
     @BeforeAll
     static void bootstrap() {
@@ -458,6 +460,63 @@ final class TransitLedgerTest {
         assertTrue(other.destination.incoming().containsKey(key), "the next tick did not start at the next endpoint");
         assertEquals(TransitRecord.State.ARRIVED, service.root().orElseThrow().transits()
                 .record(new TransitKey(SOURCE, 1L)).orElseThrow().state());
+    }
+
+    /**
+     * Review C13-F1: two hubs that spend the whole budget without changing the table make the cursor alternate between
+     * them, so every sweep tick starts at the same parity. An idle endpoint between them in ID order that a new record
+     * names must still claim it once it arrives, as before the idle set: within a tick, not never.
+     */
+    @Test
+    void anIdleEndpointBetweenTwoBudgetSpendingHubsClaimsItsArrival() {
+        for (long registerAt : new long[] {300L, 301L}) {
+            for (int travel : new int[] {20, 21}) {
+                long latency = claimLatency(registerAt, travel);
+                assertTrue(latency >= 0L && latency <= 1L, "registered at " + registerAt + " with travel " + travel
+                        + ": claimed " + latency + " ticks after arriving (-1: never)");
+            }
+        }
+    }
+
+    /** Ticks from the arrival of a record registered at {@code registerAt} for the idle endpoint to its claim, or -1. */
+    private static long claimLatency(long registerAt, int travel) {
+        EndgameService service = hubService();
+        service.coalesced(root -> root.register(SECOND_HUB, KIND, OWNER, LEVEL, new BlockPos(800, 64, 800).asLong(),
+                false, 2048, 64));
+        service.coalesced(root -> root.register(IDLE_SOURCE, KIND, OWNER, LEVEL, new BlockPos(1000, 64, 1000)
+                .asLong(), false, 2048, 64));
+        for (long seq = 1; seq <= 64; seq++) {
+            transit(service, SOURCE, seq, DESTINATION, TransitRecord::arrived);
+            transit(service, LATE_SOURCE, seq, SECOND_HUB, TransitRecord::arrived);
+        }
+        durable(service);
+        Endpoint hubA = new Endpoint(DESTINATION);
+        Endpoint idle = new Endpoint(OTHER);
+        Endpoint hubB = new Endpoint(SECOND_HUB);
+        for (int i = 0; i < 9; i++) {
+            hubA.received.add(new ItemStack(Items.STONE)); // Full receive buffers: every claim of the hubs waits.
+            hubB.received.add(new ItemStack(Items.STONE));
+        }
+        service.transits().attach(hubA);
+        service.transits().attach(idle);
+        service.transits().attach(hubB);
+        TransitKey key = new TransitKey(IDLE_SOURCE, 1L);
+        for (long now = 100L; now <= registerAt + 600L; now++) {
+            if (now == registerAt) {
+                long at = now;
+                service.coalesced(root -> {
+                    root.registerTransit(TransitRecord.registered(IDLE_SOURCE, new OutboxEntry(1L, OTHER, payload(), 1,
+                            travel, EndgameSystem.RAILGUN), OWNER, root.saveEpoch(), at));
+                    return null;
+                });
+                durable(service);
+            }
+            service.tick(now);
+            if (idle.destination.incoming().containsKey(key)) {
+                return now - (registerAt + travel);
+            }
+        }
+        return -1L;
     }
 
     @Test
