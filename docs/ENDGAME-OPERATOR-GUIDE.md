@@ -127,8 +127,8 @@ Purging has two edge cases:
 
 - A `CLAIMED` record's payload already sits in the paid endpoint's incoming
   area. Purging the record only removes the record, and that endpoint then
-  delivers the payload. To discard such a payload, resolve the endpoint
-  instead.
+  delivers the payload. No command discards such a payload: `endpoint
+  resolve` at a registered endpoint acts only on frozen conflicts.
 - Purging an outbox entry that has no record needs its source loaded.
 
 ## Elevators and stations
