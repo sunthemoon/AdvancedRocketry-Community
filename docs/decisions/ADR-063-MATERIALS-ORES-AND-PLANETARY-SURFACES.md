@@ -338,6 +338,17 @@ ADR-055; no batch depends on that.
 - **Surfaces.** The Moon's top and filler are the turfs over vanilla stone
   (moon turf on the highlands, dark moon turf on the lowlands); Mars has
   ferric sand top and filler over red sandstone; Venus is basalt throughout.
+- **Drops and tools.** The two turfs and ferric sand dig with a shovel and
+  drop themselves. The geode shell (hardness 6, blast resistance 2,000) drops
+  itself only for an iron pickaxe or better: the legacy geode needed the
+  jackhammer at harvest level 2, which comes in C18b. The charcoal log does
+  not burn and drops one charcoal, as the legacy log did (itself with Silk
+  Touch; Fortune adds 0 up to its level, where the legacy log added 0 up to
+  one less).
+- **Saved pieces.** Crater, volcano and geode pieces save schema version 1
+  with their numbers, so a start saved before a restart finishes the same
+  way after it; a piece of another schema is refused, and vanilla then drops
+  that start with a logged error.
 
 ### 6. Classic exoplanet worlds (C15c)
 
@@ -544,5 +555,5 @@ need a new revision and review.
 - Revision 5 (proposed, 2026-10-03): C15b decisions in §5 (two crater
   structures of one type, the Venus patch biome source, no carvers on the
   three bodies, no spawns, geode and charred-tree numbers, the five switches,
-  the surfaces). For the C15b implementation review and the owner's
-  acceptance.
+  the surfaces, the drops and tools, the saved pieces). For the C15b
+  implementation review and the owner's acceptance.
