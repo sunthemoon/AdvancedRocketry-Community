@@ -2,8 +2,9 @@
 
 ```yaml
 status: ACCEPTED
-revision: 3
-date: 2026-10-02
+revision: 4
+date: 2026-10-03
+revision_4: PROPOSED in C15a; the accepted text is revision 3 until the owner accepts revision 4
 deciders: [sunthemoon]
 owner: sunthemoon
 accepted_by: sunthemoon
@@ -123,6 +124,19 @@ or vanilla-derived file is used.
   200 FE/t; 100 mB of water each.
 - Small plate press: metal block → 4 plates; ore → 2 dust.
 
+**Revision 4 (C15a implementation findings, proposed).**
+
+- *Iron plates.* The accepted v1.2 recipe `rolling_iron_bars` already takes
+  iron ingots (two ingots → eight bars), and the rolling machine refuses an
+  input that two recipes match. An iron ingot → plate recipe would therefore
+  stop both, so iron is the one material without it: iron plates come from
+  the small plate press (iron block → 4 plates). Every other plate material
+  rolls its ingot; iron plates still roll into iron sheets.
+- *Rolling ingredients name items.* The kernel recipe type resolves its
+  ingredient when recipes load, before tags are bound, so a tag ingredient
+  would refuse to load. Rolling recipes name the item, as `rolling_iron_bars`
+  does; crafting, smelting and press recipes stay on tags.
+
 ### 3. Small plate press (C15a)
 
 A full block `small_plate_press`, always facing down, without a block entity.
@@ -134,6 +148,13 @@ normal block update and spawns the output item at its position. One operation
 per rising edge; no fluid, energy or menu. The recipe type is data-driven with
 bounded fields (one input ingredient, one output stack of at most 64). The
 press acts only within loaded chunks. Its textures are drawn new.
+
+*Revision 4 (proposed).* The ingredient may name tags (`forge:storage_blocks/…`,
+`forge:ores/…`); its JSON is bounded when the recipe loads and the tags are
+resolved when the press acts, after tags are bound. If two recipes match the
+block below, the press does nothing rather than pick one by load order. A
+switch `classic.smallPlatePress` (COMMON, default on) turns the press off; a
+disabled press keeps its blocks and does nothing on a pulse.
 
 **Protection: the piston exception.** The press has no owner (no block
 entity), so the ADR-054 §5 chain, which binds effects to a device owner, does
@@ -153,6 +174,16 @@ deepslate variants below y 0. Iridium is not placed in the Overworld, as in the
 legacy defaults, and vanilla keeps generating copper there. Data packs may
 override or remove the modifier, and a server switch turns it off (ADR-061
 §3.5).
+
+*Revision 4 (proposed).* Each vein's targets are the vanilla
+`stone_ore_replaceables` and `deepslate_ore_replaceables` tags, so the
+deepslate variant appears wherever a vein replaces deepslate (below y 0 and in
+the vanilla transition band), as vanilla ores do. The features are named
+`overworld_<ore>_ore`, leaving the plain names free for the Moon and Mars
+features of C15b. The server switch is the COMMON value
+`worldgen.overworldOres` (default on), read by a `server_switch` placement
+modifier that every Overworld ore feature lists first; turning it off stops
+the ores in new chunks without a data pack.
 
 **Moon and Mars ores (C15b).** As in the legacy game, the Moon and Mars get the
 same metal ores, through their own biomes' feature lists (§5): copper (vanilla
@@ -443,3 +474,9 @@ need a new revision and review.
 - Revision 3: review round 3 accepted revision 2; C14R3-L2 (the Moon arrival
   height) is stated in §5; see
   [review-03-dispositions](../work/v1.8.0-preparation/review-03-dispositions.md).
+- Revision 4 (proposed, 2026-10-03): C15a implementation findings in §2
+  (iron plates from the press; rolling recipes name items), §3 (tags resolved
+  when the press acts, ambiguous matches refused, the press switch) and §4
+  (vanilla replaceable tags, feature names, the ore switch). For the C15a
+  implementation review and the owner's acceptance, with the C15a evidence
+  packet (`docs/work/v1.8.0-c15a-materials`).
