@@ -174,7 +174,10 @@ must handle:
    - `EXCLUDE`: never imported;
    - `IMPORTED`: already recorded (v0.1.0).
    Each rule names its owning ledger units; an `IMPORT` or `REVIEW` rule cannot
-   own a `DEFERRED` or `REJECTED` unit. The importable assets and their ceiling
+   own a `DEFERRED` or `REJECTED` unit, its `PLANNED` owners are delivered in
+   its batch or an earlier one, and a model texture (`textures/models/…`)
+   lands no later than the model rule that shares an owner with it. The
+   importable assets and their ceiling
    (`IMPORT` or `REVIEW`) are listed in
    [`v1.8.0-asset-import-allowlist.txt`](../work/v1.8.0-asset-import-allowlist.txt),
    whose SHA-256 ADR-062 pins. A batch may tighten a rule (import fewer files,
@@ -182,7 +185,10 @@ must handle:
    or raising its ceiling needs an ADR-062 revision. A `REVIEW` file becomes
    `IMPORT` only through a recorded origin finding in
    `docs/provenance/v1.8.0-origin-findings.json` (decision `CLEARED`, reviewer,
-   date, basis); a finding with decision `EXCLUDED` forces `EXCLUDE`.
+   date, basis); a finding with decision `EXCLUDED` forces `EXCLUDE`. A
+   `CLEARED` finding is made by the owner, or by a named reviewer with
+   `"role": "independent reviewer"` whose committed `review_record` names the
+   file.
 3. **Records.** Each batch writes `docs/provenance/v1.8.0-<batch>.json` with a
    schema-2 record before the files enter the tree. Schema 2 keeps every
    schema-1 entry field (target path, status, source repository, branch,
@@ -326,8 +332,11 @@ must handle:
    `PLANNED` to `IMPLEMENTED` (or to an ADR-backed disposition) in the batch
    that delivers them, with the delivered modern IDs and the batch's evidence
    file in the `evidence` column. A row cannot be `IMPLEMENTED` or
-   `REDESIGNED` with plan `v1.8.0` without that file; work v1.8 still has to
-   build stays `PLANNED`, including redesigns.
+   `REDESIGNED` with plan `v1.8.0` without that file, which lives in the
+   batch's evidence folder (`docs/work/v1.8.0-<batch>-<name>/<file>.md`, for
+   example `docs/work/v1.8.0-c16c-machines/VERIFICATION.md`) and lists the
+   unit ID; work v1.8 still has to build stays `PLANNED`, including
+   redesigns.
    `scripts/validate_v180_content_ledger.py` checks every row; C19 runs it with
    `--require-accepted` and requires zero `PLANNED` rows.
 

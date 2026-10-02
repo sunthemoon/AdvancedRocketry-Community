@@ -125,10 +125,26 @@ class V180ContentLedgerTests(unittest.TestCase):
     def test_v18_delivery_with_evidence_passes(self) -> None:
         evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
         evidence.parent.mkdir(parents=True)
-        evidence.write_text("x", encoding="utf-8")
+        evidence.write_text("| block:centrifuge | centrifuge GameTests |", encoding="utf-8")
         self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything",
                           decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
         self.assertEqual([], self._errors())
+
+    def test_v18_evidence_must_list_the_unit(self) -> None:
+        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text("| block:crystallizer | crystallizer GameTests |", encoding="utf-8")
+        self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything",
+                          decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+        self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does "
+                      "not list the unit", self._errors())
+
+    def test_v18_evidence_must_be_a_batch_evidence_file(self) -> None:
+        self._edit_ledger("block:lathe", disposition="REDESIGNED", plan="v1.8.0",
+                          target="advancedrocketrycommunity:machine_casing", decision="ADR-061 ADR-062",
+                          evidence="docs/work/v1.8.0-content-audit.md")
+        self.assertIn("ledger: block:lathe: REDESIGNED in v1.8.0 needs the delivering batch's evidence file",
+                      self._errors())
 
     def test_planned_row_cannot_carry_evidence(self) -> None:
         self._edit_ledger("block:lathe", evidence="docs/work/v1.8.0-content-audit.md")
@@ -178,9 +194,31 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._set_rule("textures/blocks/beacon.png", handling="IMPORT")
         self.assertIn("asset plan: textures/blocks/beacon.png is IMPORT beyond its allowlist ceiling REVIEW",
                       self._errors())
-        self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "maintainer",
+        self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "sunthemoon",
                                "reviewed_at": "2026-10-02", "basis": "compared with vanilla"}])
         self.assertEqual([], self._errors())
+
+    def test_cleared_needs_the_owner_or_a_recorded_independent_review(self) -> None:
+        finding = {"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "someone",
+                   "reviewed_at": "2026-10-02", "basis": "looked fine"}
+        self._write_findings([finding])
+        self.assertTrue(any("is CLEARED by 'someone', who is neither the owner" in error for error in self._errors()))
+        record = self.root / "docs/work/v1.8.0-preparation/origin-review.md"
+        record.parent.mkdir(parents=True, exist_ok=True)
+        record.write_text("textures/blocks/beacon.png: drawn by the contributor; no vanilla source", encoding="utf-8")
+        self._write_findings([dict(finding, role="independent reviewer",
+                                   review_record="docs/work/v1.8.0-preparation/origin-review.md")])
+        self.assertFalse(any("who is neither the owner" in error for error in self._errors()))
+
+    def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
+        self._set_rule("textures/blocks/liquidtank.png", units="config:CLIENT.advancedVFX")
+        self.assertTrue(any(error.endswith("owning unit config:CLIENT.advancedVFX is delivered in C18d, after the "
+                                           "rule's batch C16a") for error in self._errors()))
+
+    def test_model_textures_do_not_land_after_their_model(self) -> None:
+        self._set_rule("textures/models/nuclearengine.png", plan="C18d")
+        self.assertTrue(any(error.endswith("model texture for block:nuclearrocketmotor lands in C18d, after its "
+                                           "model (C17a)") for error in self._errors()))
 
     def test_excluded_finding_forces_exclusion(self) -> None:
         self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "EXCLUDED", "reviewer": "maintainer",

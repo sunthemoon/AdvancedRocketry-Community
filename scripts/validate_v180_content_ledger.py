@@ -74,6 +74,8 @@ BATCHES = (
 )
 REGENERATE_PLANS = ("batch of the owning unit", "batch of the output")
 VERSION = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+# A v1.8 delivery names its batch's evidence folder, for example docs/work/v1.8.0-c16c-machines/VERIFICATION.md.
+EVIDENCE_PATH = re.compile(r"^docs/work/v1\.8\.0-(c1[5-8][a-d])-[a-z0-9-]+/[A-Za-z0-9_.-]+\.md$")
 ADR_TOKEN = re.compile(r"^ADR-(\d{3})$")
 VERSION_TOKEN = re.compile(r"^V(\d+\.\d+\.\d+)$")
 MODERN_ID = re.compile(MOD_ID + r":([a-z0-9_]+)")
@@ -292,8 +294,10 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
                 errors.append(f"{where}: {disposition} plan {plan!r} must be a version up to v1.8.0")
             elif version == CURRENT:
                 evidence = row["evidence"]
-                if not evidence.startswith("docs/work/v1.8.0-") or not (root / evidence).is_file():
+                if not EVIDENCE_PATH.match(evidence) or not (root / evidence).is_file():
                     errors.append(f"{where}: {disposition} in v1.8.0 needs the delivering batch's evidence file")
+                elif unit_id not in (root / evidence).read_text(encoding="utf-8"):
+                    errors.append(f"{where}: evidence file {evidence} does not list the unit")
         elif disposition == "DEFERRED":
             if plan != "post-2.0":
                 errors.append(f"{where}: DEFERRED plan must be post-2.0")
@@ -369,8 +373,14 @@ def load_allowlist(root: Path, errors: list[str]) -> dict[str, str]:
     return allowed
 
 
+def adr_owner(root: Path) -> str | None:
+    match = re.search(r"^owner:\s*(\S+)\s*$", (root / PLAYER_IMPACT_PATH).read_text(encoding="utf-8"), re.M)
+    return match.group(1) if match else None
+
+
 def load_origin_findings(root: Path, errors: list[str]) -> dict[str, str]:
     data = json.loads((root / ORIGIN_FINDINGS).read_text(encoding="utf-8"))
+    owner = adr_owner(root)
     findings: dict[str, str] = {}
     if data.get("schema_version") != 1 or not isinstance(data.get("findings"), list):
         errors.append(f"{ORIGIN_FINDINGS.name}: schema_version 1 with a findings list required")
@@ -382,6 +392,15 @@ def load_origin_findings(root: Path, errors: list[str]) -> dict[str, str]:
                 or not asset or asset in findings):
             errors.append(f"{ORIGIN_FINDINGS.name}: invalid or duplicate finding {asset!r}")
             continue
+        if finding["decision"] == "CLEARED" and finding["reviewer"] != owner:
+            # Anyone else clears a file only as a named independent reviewer with a committed review record.
+            record = finding.get("review_record")
+            if (finding.get("role") != "independent reviewer" or not isinstance(record, str)
+                    or not record.startswith("docs/") or not (root / record).is_file()
+                    or asset not in (root / record).read_text(encoding="utf-8")):
+                errors.append(f"{ORIGIN_FINDINGS.name}: {asset} is CLEARED by {finding['reviewer']!r}, who is neither "
+                              f"the owner nor an independent reviewer with a review record naming the asset")
+                continue
         findings[asset] = finding["decision"]
     return findings
 
@@ -467,7 +486,26 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
                 errors.append(f"{where}: owning unit {owner} is not in the ledger")
             elif row["handling"] in ("IMPORT", "REVIEW") and ledger[owner]["disposition"] in ("DEFERRED", "REJECTED"):
                 errors.append(f"{where}: {row['handling']} for {owner}, which is {ledger[owner]['disposition']}")
+            elif (row["handling"] in ("IMPORT", "REVIEW") and row["plan"] in BATCHES
+                  and ledger[owner]["disposition"] == "PLANNED" and ledger[owner]["plan"] in BATCHES
+                  and BATCHES.index(ledger[owner]["plan"]) > BATCHES.index(row["plan"])):
+                errors.append(f"{where}: owning unit {owner} is delivered in {ledger[owner]['plan']}, "
+                              f"after the rule's batch {row['plan']}")
         rules.append(row)
+    # A model's textures must not land later than the model: compare rules that share an owning unit.
+    model_batches: dict[str, int] = {}
+    for row in rules:
+        if (row["handling"] in ("IMPORT", "REVIEW") and row["plan"] in BATCHES and row["pattern"].startswith("models/")
+                and not row["pattern"].endswith(".json")):
+            for owner in ([] if row["units"] == "-" else row["units"].split()):
+                model_batches[owner] = min(model_batches.get(owner, len(BATCHES)), BATCHES.index(row["plan"]))
+    for row in rules:
+        if (row["handling"] in ("IMPORT", "REVIEW") and row["plan"] in BATCHES
+                and row["pattern"].startswith("textures/models/")):
+            for owner in ([] if row["units"] == "-" else row["units"].split()):
+                if owner in model_batches and BATCHES.index(row["plan"]) > model_batches[owner]:
+                    errors.append(f"asset plan rule {row['order']}: model texture for {owner} lands in {row['plan']}, "
+                                  f"after its model ({BATCHES[model_batches[owner]]})")
     used: Counter = Counter()
     handling_of: dict[str, str] = {}
     for asset in assets:
