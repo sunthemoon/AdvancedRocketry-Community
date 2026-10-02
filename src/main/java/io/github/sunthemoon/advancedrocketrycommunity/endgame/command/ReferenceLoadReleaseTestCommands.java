@@ -103,12 +103,16 @@ public final class ReferenceLoadReleaseTestCommands {
     }
 
     private void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !load.driving || event.getServer() == null) {
+        if (event.phase != TickEvent.Phase.END || event.getServer() == null) {
             return;
         }
         MinecraftServer server = event.getServer();
-        long now = server.overworld().getGameTime();
+        // Every tick, driven or not: the test players' channels would otherwise keep every packet sent to them.
         ReleaseTestPlayers.pump(server);
+        if (!load.driving) {
+            return;
+        }
+        long now = server.overworld().getGameTime();
         clickDue(server, load.drills, now, this::drillClick);
         clickDue(server, load.fields, now, this::fieldClick);
         if (now % 20 == 0) {
