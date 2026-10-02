@@ -375,6 +375,11 @@ public abstract class CargoEndpointBlockEntity extends EndgameDeviceBlockEntity 
                 + destination.receipts().size() + " last=" + lastCode.name();
     }
 
+    @Override
+    public boolean transitAccessible() {
+        return level != null && level.hasChunkAt(worldPosition);
+    }
+
     // ---- Lifecycle ------------------------------------------------------------------------------------------
 
     private void unloadRuntime() {

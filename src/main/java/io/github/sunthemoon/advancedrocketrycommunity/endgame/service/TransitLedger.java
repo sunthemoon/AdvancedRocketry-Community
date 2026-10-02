@@ -105,8 +105,9 @@ public final class TransitLedger implements TransitLedgerView {
         }
     }
 
+    /** The attached endpoint with this ID, when its chunk is FULL (operator actions change its state). */
     public Optional<TransitEndpoint> loaded(UUID id) {
-        return Optional.ofNullable(loaded.get(id));
+        return Optional.ofNullable(loaded.get(id)).filter(TransitEndpoint::transitAccessible);
     }
 
     private static void apply(TransitEndpoint endpoint, TransitTags.Shown shown, long tick) {
@@ -312,8 +313,14 @@ public final class TransitLedger implements TransitLedgerView {
         }
     }
 
-    /** An owned, unfrozen endpoint whose record is active; first keeps an unpersisted endpoint's chunk dirty. */
+    /**
+     * An owned, unfrozen endpoint in a FULL chunk whose record is active; first keeps an unpersisted endpoint's chunk
+     * dirty.
+     */
     private static boolean reconcilable(EndgameRoot root, TransitEndpoint endpoint) {
+        if (!endpoint.transitAccessible()) {
+            return false;
+        }
         if (endpoint.source().anythingUnpersisted() || endpoint.destination().anythingUnpersisted()) {
             endpoint.transitChanged(); // Section 2: while anything is unpersisted the chunk stays dirty.
         }

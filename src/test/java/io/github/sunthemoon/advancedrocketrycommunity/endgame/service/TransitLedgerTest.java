@@ -66,6 +66,7 @@ final class TransitLedgerTest {
         final TransitDestinationState destination = new TransitDestinationState();
         final List<ItemStack> received = new ArrayList<>();
         boolean frozen;
+        boolean accessible = true;
         int changes;
 
         Endpoint(UUID id) {
@@ -85,6 +86,11 @@ final class TransitLedgerTest {
         @Override
         public boolean transitFrozen() {
             return frozen;
+        }
+
+        @Override
+        public boolean transitAccessible() {
+            return accessible;
         }
 
         @Override
@@ -339,6 +345,29 @@ final class TransitLedgerTest {
         }
         assertTrue(stale.received.isEmpty() && stale.destination.incoming().containsKey(key),
                 "the frozen stale payload moved into the receive buffer once its record was gone (a second delivery)");
+    }
+
+    /**
+     * An attached endpoint whose chunk is held in memory below FULL is left alone: a change there would not mark the
+     * chunk unsaved. It claims once its chunk is FULL again, and operator actions do not find it meanwhile.
+     */
+    @Test
+    void anEndpointWhoseChunkIsNotFullIsLeftAlone() {
+        EndgameService service = service(TransitLimits.DEFAULTS);
+        TransitKey key = transit(service, SOURCE, 1, DESTINATION, TransitRecord::arrived);
+        durable(service);
+        Endpoint destination = new Endpoint(DESTINATION);
+        destination.accessible = false;
+        service.transits().attach(destination);
+        service.tick(100L);
+        service.tick(101L);
+        assertTrue(destination.destination.incoming().isEmpty() && destination.changes == 0,
+                "an endpoint below FULL was reconciled");
+        assertTrue(service.transits().loaded(DESTINATION).isEmpty(), "operator actions would find it");
+        destination.accessible = true;
+        service.tick(102L);
+        assertTrue(destination.destination.incoming().containsKey(key), "not claimed once FULL again");
+        assertTrue(service.transits().loaded(DESTINATION).isPresent());
     }
 
     @Test

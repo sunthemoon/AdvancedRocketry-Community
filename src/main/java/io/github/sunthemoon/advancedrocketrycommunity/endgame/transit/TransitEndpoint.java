@@ -29,4 +29,13 @@ public interface TransitEndpoint {
 
     /** A resolve returns a never-registered outbox payload to the input buffer; false when it does not all fit. */
     boolean returnToInput(List<ItemStack> stacks);
+
+    /**
+     * Whether its chunk is FULL. Minecraft marks only a FULL chunk unsaved when a block entity changes, and a chunk
+     * near forced chunks stays in memory below FULL after its own tickets went, its block entities still attached; the
+     * ledger leaves such an endpoint alone until its chunk is FULL again or unloads (found by the C13 native harness).
+     */
+    default boolean transitAccessible() {
+        return true;
+    }
 }
