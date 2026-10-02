@@ -259,7 +259,7 @@ discovery. A player reaches them in four steps, each an existing mechanism:
 1. **Discovery (ADR-037, ADR-043).** The data satellite's allowed targets gain
    `tau_ceti_f` and `tau_ceti_g` through a v1.8 copy of
    `satellite_definitions/data_satellite.json` (duration 200 ticks, yield 120,
-   discovery cost 100, unchanged), which supersedes the v1.5 copy (§7). The
+   discovery cost 100, unchanged), which supersedes the v1.5 copy (§8). The
    target is chosen at the satellite terminal and does not depend on where the
    satellite flies, as for Tau Ceti e (ADR-043), so a player discovers the
    bodies without leaving the Sun's system. A surface visit records discovery
@@ -297,7 +297,40 @@ first start. Existing discovery records stay valid; the two new bodies start
 undiscovered in every world, old and new. Data packs that already use any new
 ID in this namespace fail startup through the existing binding checks.
 
-### 8. Tests
+### 8. Generated data layout
+
+- **Output root.** DataGen writes every v1.8 resource to
+  `src/generated/v1.8/resources`, the one generated root of this version (C15
+  to C18 add to it). The run configuration switches its `--output` to that root
+  and adds `src/generated/v1.7/resources` to the `--existing` list; the root is
+  added to the main resource source set. `runData` followed by
+  `git diff --exit-code` verifies it.
+- **Superseded copies.** The v1.8 root holds new versions of resources that
+  earlier roots already contain. The earlier files stay where they are (their
+  generated-manifest checks keep passing) and are excluded from
+  `processResources` and `sourcesJar`, as ADR-043 did for the data satellite:
+  - `src/generated/v0.3/resources`: `dimension/moon.json` (the flat Moon
+    generator);
+  - `src/generated/v1.4/resources`: `dimension/mars.json`,
+    `dimension/venus.json`, `worldgen/noise_settings/mars.json` and
+    `worldgen/noise_settings/venus.json` (new biome sources and surface rules;
+    the noise router is copied unchanged);
+  - `src/generated/v1.5/resources`: `satellite_definitions/data_satellite.json`
+    (§6);
+  - the `minecraft:mineable/pickaxe` and `minecraft:needs_iron_tool` block tags
+    of `src/generated/v1.7/resources`, joining the earlier copies already
+    excluded, plus a new `minecraft:needs_stone_tool` copy for the ores.
+  The `build.gradle` exclusions are the integrator's change (ADR-060), made in
+  the same commit as the first v1.8 DataGen output, and the
+  one-authoritative-copy-per-resource audit (ADR-031, ADR-037) reruns over all
+  roots.
+- **Old biomes stay.** The v1.4 biomes `advancedrocketrycommunity:mars` and
+  `advancedrocketrycommunity:venus` stay registered and shipped, because chunks
+  generated before the upgrade store them (ADR-061 §1.4); the new biome sources
+  no longer list them. The Moon had no biome of its own; its old chunks keep
+  `minecraft:plains`, the biome of the flat generator.
+
+### 9. Tests
 
 - A0: material table completeness against the ledger; recipe and tag JSON
   audit; DataGen determinism; feature bound checks; the asset records and the
