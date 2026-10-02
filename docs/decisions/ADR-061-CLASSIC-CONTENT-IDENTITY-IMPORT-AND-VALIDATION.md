@@ -20,7 +20,8 @@ vanilla_client_sha256:
 
 v1.8 restores most of the classic content: more than 200 legacy blocks, items,
 variants, materials, fluids, biomes and features are planned (ADR-062), and the
-asset plan names 350 legacy files as import candidates. Until now the project
+asset plan names 211 legacy files as import candidates and holds 139 more
+under origin review (ADR-062 counts). Until now the project
 imported 10 upstream files (v0.1.0) and drew every other texture from its own
 three casing textures or from vanilla resource locations. The version document
 (§5) asks for frozen contracts on stable IDs, per-batch source manifests, the

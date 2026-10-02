@@ -21,7 +21,8 @@ metadata variants, 35 items with 32 variants, 15 materials (including the extra 
 entities, 10 entities, 12 registered biomes (2 more never registered), 34 world
 generation classes, 9 registered satellite kinds (3 more classes never
 registered), 3 missions, 15 sound events, 17 advancements, 13 atmosphere types,
-19 commands, 132 configuration keys, 14 XML configuration files, 41 event
+19 commands, 135 configuration units (132 key names, three of them read in
+two categories), 14 XML configuration files, 41 event
 rules, 4 coremod rules (the gravity hook in a living and an other half), 16 registered packets (and 1 never registered), 13
 integrations, 7 key bindings, 1 enchantment, and 22 LibVulpes blocks, items and
 machines that the legacy gameplay depends on (structure blocks, motors,
@@ -240,7 +241,7 @@ the observatory) that are cheap enough to deliver.
 
 ### Negative
 
-- v1.8 is large: 14 slices and about 220 planned units.
+- v1.8 is large: 14 slices and 292 planned units.
 - Several classic toys (hovercraft, terraforming) stay out of v2.0.
 
 ## Validation
