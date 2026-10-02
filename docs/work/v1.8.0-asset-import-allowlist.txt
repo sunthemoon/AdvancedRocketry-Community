@@ -44,8 +44,8 @@ models/item/models/bottomTank.obj	IMPORT
 models/item/models/endTank.mtl	IMPORT
 models/item/models/middleTank.mtl	IMPORT
 models/item/models/middleTank.obj	IMPORT
-models/item/models/motor.mtl	IMPORT
-models/item/models/motor.obj	IMPORT
+models/item/models/motor.mtl	REVIEW
+models/item/models/motor.obj	REVIEW
 models/item/models/rocketmotor.mtl	IMPORT
 models/item/models/rocketmotor.obj	IMPORT
 models/item/models/sawBlade.mtl	IMPORT
@@ -116,7 +116,7 @@ textures/blocks/liquidtank.png	IMPORT
 textures/blocks/log_blue.png	IMPORT
 textures/blocks/machineelectrolyzer.png	IMPORT
 textures/blocks/machineelectrolyzer_active.png	IMPORT
-textures/blocks/machinegeneric.png	IMPORT
+textures/blocks/machinegeneric.png	REVIEW
 textures/blocks/machinenuclear.png	IMPORT
 textures/blocks/machineorientationcontrol.png	IMPORT
 textures/blocks/machineprecisionlaseretcher.png	IMPORT

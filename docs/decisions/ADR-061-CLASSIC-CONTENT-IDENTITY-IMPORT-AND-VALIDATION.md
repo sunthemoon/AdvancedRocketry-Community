@@ -29,7 +29,8 @@ must handle:
   colours, six circuits, six upgrades, four pressure tanks) under one ID each;
 - legacy materials (titanium, steel, aluminum, …) and their product textures,
   hatches and casings come from **LibVulpes**, not from Advanced Rocketry; AR
-  resources reference 36 distinct LibVulpes resource locations;
+  resources reference 36 distinct LibVulpes resource locations, and some of
+  those LibVulpes files came from an unmerged third-party pull request;
 - some legacy files are presumed copies of vanilla files (one model JSON is
   byte-identical; iron armor layers, lava, the font and the sun share vanilla
   names); six sound events point to one silent placeholder; the sounds and the
@@ -102,20 +103,34 @@ must handle:
    - `UPSTREAM_AR_MIT`: `Advanced-Rocketry/AdvancedRocketry`, branch `1.12`,
      commit `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`, MIT,
      `Copyright (c) 2017`.
-   - `THIRD_PARTY_APPROVED` (LibVulpes): `Advanced-Rocketry/libVulpes`, branch
-     `1.12`, commit `c2ca79dc18625c9e63a191a795f1f07d078f29f0`, whose root
-     `LICENSE` is MIT with `Copyright (c) 2017` (SHA-256
-     `1f9978a442976337a86ea9ea5a0c97ae6b1bdab56d9661d05938f163b8e55be3`, added
-     on 2017-10-01 as "more permissive licence"). Allowed scope: only files that
-     Advanced Rocketry 1.12 references (material product textures, machine
-     casing and structure textures, hatches, coils and the dilithium ore). The
-     first batch that imports one adds the license copy to `docs/licenses/` and
-     an entry to `THIRD-PARTY-NOTICES.md`. Acceptance of this ADR is the
-     approval of this source and scope; the status stays per file.
    - `NEW`: community-authored files under the repository's MIT license.
    - `GENERATED`: DataGen output.
    No other source is allowed. Advanced Rocketry Reworked, ARLib, Advanced
    Rocketry 3, other forks, released JARs and texture packs stay excluded.
+
+   **LibVulpes is not an approved source in v1.8.** Its branch `1.12` at
+   `c2ca79dc18625c9e63a191a795f1f07d078f29f0` carries an MIT `LICENSE`
+   (`Copyright (c) 2017`, SHA-256
+   `1f9978a442976337a86ea9ea5a0c97ae6b1bdab56d9661d05938f163b8e55be3`, added on
+   2017-10-01), but the files Advanced Rocketry relies on do not have a clear
+   enough chain for a category approval:
+   - commit `984d67474a50494840aba551eb3baa434a24cf2f` (2020-05-04) took the
+     casing, hatch, battery and plug textures "from the unmerged Cl1ff PR",
+     that is, from a contribution that was never merged;
+   - its ingot and nugget templates match the vanilla gold ingot and nugget
+     silhouettes on 98.8 % of pixels;
+   - the tree bundles a non-MIT third-party JAR, so the root `LICENSE` is not a
+     per-file statement.
+   The material products, ores, casings, hatches, coils, motors, the linker
+   and batteries therefore use `NEW` art drawn for this project (or the
+   project's existing textures). Two Advanced Rocketry files are byte-identical
+   to LibVulpes files and are `REVIEW` for the same reason:
+   `textures/blocks/machinegeneric.png` (the `984d6747` casing) and
+   `models/item/models/motor.obj`. A later revision may approve individual
+   LibVulpes files only with a per-file manifest (path, git blob and SHA-256 at
+   a pinned commit, last commit and author, the §4.8 check and an authorship
+   finding) recorded in `docs/provenance/` before any copy; the maintainer's
+   acceptance would approve that file list, not a category.
 2. **Asset plan.** [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv)
    decides every legacy asset by its first matching rule:
    - `IMPORT`: candidate for its batch;
@@ -162,8 +177,8 @@ must handle:
    established pattern), never a copied vanilla file and never a missing
    texture.
 7. **Enforcement.** A repository check fails when:
-   - any file in the tree has the SHA-256 of a legacy-manifest asset (or of an
-     imported LibVulpes file) and no provenance record names it;
+   - any file in the tree has the SHA-256 of a legacy-manifest asset and no
+     provenance record names it;
    - a file added under `src/main/resources/` after the v1.8 baseline is
      neither inside a DataGen output root nor recorded with a matching target
      hash (files that predate the baseline keep their earlier records);
@@ -262,8 +277,8 @@ foreign namespace would collide with a real LibVulpes port.
 
 ### Negative
 
-- LibVulpes becomes a recorded third-party source that the maintainer must
-  approve.
+- Material, casing, hatch, coil and motor art is drawn new instead of taken
+  from LibVulpes.
 - The asset review becomes a maintainer task per batch.
 
 ## Validation
