@@ -16,7 +16,12 @@ The checks need only this repository:
 * every asset the plan would import has the derivation verdict ``CLEAR`` in
   the committed vanilla-derivation results (``HIT`` assets are never imported
   or reviewed, ``SUSPECT`` and ``UNSUPPORTED`` assets import only after a
-  ``CLEARED`` origin finding).
+  ``CLEARED`` origin finding);
+* the derivation results match the SHA-256 pinned in ADR-061, name the two
+  vanilla client JARs by the SHA-256 values pinned there (and in
+  ``tools/audit/fetch_vanilla_clients.py``), use the thresholds of
+  ``tools/audit/vanilla_derivation.py``, and give every asset the verdict its
+  recorded measures produce. CI regenerates the results with ``--check``.
 
 The inventory's own content (lines, display names, non-registry units) is
 checked by ``tools/audit/inventory_v180_content.py --check`` against the
@@ -33,6 +38,7 @@ import argparse
 import csv
 import fnmatch
 import hashlib
+import importlib.util
 import json
 import re
 import sys
@@ -48,6 +54,11 @@ ORIGIN_FINDINGS = Path("docs/provenance/v1.8.0-origin-findings.json")
 DERIVATION = Path("docs/work/v1.8.0-vanilla-derivation.json")
 PLAYER_IMPACT_ADR = "ADR-062"
 PLAYER_IMPACT_PATH = Path("docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md")
+DERIVATION_ADR_PATH = Path("docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md")
+DERIVATION_TOOL = Path("tools/audit/vanilla_derivation.py")
+CLIENT_FETCHER = Path("tools/audit/fetch_vanilla_clients.py")
+VANILLA_CLIENTS = ("1.12.2", "1.20.1")
+VERDICTS = ("HIT", "SUSPECT", "CLEAR", "UNSUPPORTED")
 UPSTREAM_ASSET_ROOT = "src/main/resources/assets/advancedrocketry/"
 MOD_ID = "advancedrocketrycommunity"
 
@@ -375,6 +386,60 @@ def load_origin_findings(root: Path, errors: list[str]) -> dict[str, str]:
     return findings
 
 
+def _repository_module(relative: Path):
+    """The tool code under test always comes from this checkout, never from a fixture root."""
+    spec = importlib.util.spec_from_file_location("arce_" + relative.stem, ROOT / relative)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_derivation(root: Path, errors: list[str]) -> dict[str, str]:
+    raw = (root / DERIVATION).read_bytes()
+    adr = (root / DERIVATION_ADR_PATH).read_text(encoding="utf-8")
+    where = DERIVATION.name
+    pinned = re.search(r"^derivation_results_sha256:\s*([0-9a-f]{64})\s*$", adr, re.M)
+    if not pinned or pinned.group(1) != hashlib.sha256(raw).hexdigest():
+        errors.append(f"{where}: does not match the digest pinned in ADR-061")
+    data = json.loads(raw)
+    tool = _repository_module(DERIVATION_TOOL)
+    fetcher = _repository_module(CLIENT_FETCHER)
+    if data.get("schema") != tool.SCHEMA or data.get("generator") != DERIVATION_TOOL.as_posix():
+        errors.append(f"{where}: schema {tool.SCHEMA} from {DERIVATION_TOOL.as_posix()} required")
+    if data.get("thresholds") != tool.thresholds():
+        errors.append(f"{where}: thresholds differ from {DERIVATION_TOOL.as_posix()}")
+    clients = data.get("vanilla") if isinstance(data.get("vanilla"), dict) else {}
+    if sorted(clients) != sorted(VANILLA_CLIENTS):
+        errors.append(f"{where}: must compare against exactly the clients {', '.join(VANILLA_CLIENTS)}")
+    for label in VANILLA_CLIENTS:
+        pin = re.search(r'^\s+"' + re.escape(label) + r'":\s*([0-9a-f]{64})\s*$', adr, re.M)
+        recorded = (clients.get(label) or {}).get("sha256")
+        if not pin or pin.group(1) != recorded or fetcher.CLIENTS.get(label, {}).get("sha256") != recorded:
+            errors.append(f"{where}: the {label} client SHA-256 differs from the pins in ADR-061 and "
+                          f"{CLIENT_FETCHER.as_posix()}")
+    verdicts: dict[str, str] = {}
+    for entry in data.get("assets", []):
+        asset, level = entry.get("asset"), entry.get("verdict")
+        if level not in VERDICTS or not asset or asset in verdicts:
+            errors.append(f"{where}: invalid or duplicate entry {asset!r}")
+            continue
+        verdicts[asset] = level
+        if "hash_match" in entry:
+            expected = "HIT"
+        elif isinstance(entry.get("best"), dict):
+            try:
+                expected = tool.verdict(entry["best"])
+            except (KeyError, TypeError):
+                expected = "invalid measures"
+        else:
+            expected = level if level in ("CLEAR", "UNSUPPORTED") else "CLEAR or UNSUPPORTED"
+        if level != expected:
+            errors.append(f"{where}: {asset} is {level} but its recorded measures give {expected}")
+    if dict(sorted(Counter(verdicts.values()).items())) != data.get("counts"):
+        errors.append(f"{where}: counts do not match the entries")
+    return verdicts
+
+
 def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
                     ledger: dict[str, dict[str, str]]) -> Counter:
     hashes = manifest_hashes(root)
@@ -425,8 +490,7 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             errors.append(f"asset plan: {asset} is handled as IMPORTED without a provenance record")
     allowed = load_allowlist(root, errors)
     findings = load_origin_findings(root, errors)
-    derivation = json.loads((root / DERIVATION).read_text(encoding="utf-8"))
-    verdicts = {entry["asset"]: entry["verdict"] for entry in derivation.get("assets", [])}
+    verdicts = load_derivation(root, errors)
     if set(verdicts) != set(assets):
         errors.append(f"{DERIVATION.name}: does not cover exactly the legacy assets")
     for asset, handling in sorted(handling_of.items()):

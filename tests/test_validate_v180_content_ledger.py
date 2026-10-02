@@ -1,6 +1,8 @@
 import csv
+import hashlib
 import io
 import json
+import re
 import shutil
 import tempfile
 import unittest
@@ -207,6 +209,42 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._set_verdict("textures/blocks/blastbrick.png", "SUSPECT")
         self.assertIn("asset plan: textures/blocks/blastbrick.png has derivation verdict SUSPECT and no CLEARED "
                       "origin finding", self._errors())
+
+    def _repin_derivation(self, data: dict) -> None:
+        """Write edited results and pin their digest in the fixture's ADR-061, as a careless edit would."""
+        raw = (json.dumps(data, ensure_ascii=False, indent=1) + "\n").encode("utf-8")
+        (self.root / DERIVATION).write_bytes(raw)
+        adr = self.root / "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md"
+        text = re.sub(r"^derivation_results_sha256:.*$", "derivation_results_sha256: " + hashlib.sha256(raw).hexdigest(),
+                      adr.read_text(encoding="utf-8"), flags=re.M)
+        adr.write_text(text, encoding="utf-8")
+
+    def _derivation(self) -> dict:
+        return json.loads((self.root / DERIVATION).read_text(encoding="utf-8"))
+
+    def test_derivation_results_are_pinned(self) -> None:
+        path = self.root / DERIVATION
+        path.write_bytes(path.read_bytes() + b"\n")
+        self.assertIn("v1.8.0-vanilla-derivation.json: does not match the digest pinned in ADR-061", self._errors())
+
+    def test_flipped_verdict_is_caught_even_when_repinned(self) -> None:
+        data = self._derivation()
+        flipped = next(entry for entry in data["assets"] if entry["verdict"] == "HIT" and "best" in entry)
+        flipped["verdict"] = "CLEAR"
+        data["counts"]["HIT"] -= 1
+        data["counts"]["CLEAR"] += 1
+        self._repin_derivation(data)
+        self.assertIn(f"v1.8.0-vanilla-derivation.json: {flipped['asset']} is CLEAR but its recorded measures give HIT",
+                      self._errors())
+
+    def test_derivation_thresholds_and_clients_are_checked(self) -> None:
+        data = self._derivation()
+        data["thresholds"]["hit_overlap"] = 0.99
+        del data["vanilla"]["1.20.1"]
+        self._repin_derivation(data)
+        errors = self._errors()
+        self.assertIn("v1.8.0-vanilla-derivation.json: thresholds differ from tools/audit/vanilla_derivation.py", errors)
+        self.assertIn("v1.8.0-vanilla-derivation.json: must compare against exactly the clients 1.12.2, 1.20.1", errors)
 
     def test_allowlist_is_pinned(self) -> None:
         path = self.root / ALLOWLIST

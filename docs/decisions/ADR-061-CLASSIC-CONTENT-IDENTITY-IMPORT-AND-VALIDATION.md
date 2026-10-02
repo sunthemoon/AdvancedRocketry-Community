@@ -10,6 +10,10 @@ target_version: v1.8.0
 development_dependency: ADR-016, ADR-019, ADR-021, ADR-026, ADR-027, ADR-031, ADR-054, ADR-060
 used_by: [ADR-062]
 supersedes: ""
+derivation_results_sha256: 79ee1c4f1c3d2f51ed8918f6d8dcb7cb969e7c5c2afabc38bcbbbdb33c0770f6
+vanilla_client_sha256:
+  "1.12.2": 8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f
+  "1.20.1": 56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f
 ```
 
 ## Context
@@ -247,19 +251,31 @@ must handle:
    first frame of an animated strip) and asserts that every one is `HIT`
    (false-negative rate 0 on the set), that two unrelated images and an image
    sharing only one flat colour stay `CLEAR`, and that a two-colour shape is
-   `SUSPECT`. Known limit: exact
-   sub-image matching does not see a recoloured crop; such a file is found
-   only when it is a whole image (by `rank`), so the history rule (§4.9)
-   and the record review (§4.5) remain the controls for it.
+   `SUSPECT`. Known limit: exact sub-image matching does not see a
+   recoloured crop; such a file is found only when it is a whole image (by
+   `rank`), so the history rule (§4.9) and the record review (§4.5) remain
+   the controls for it.
    A `HIT` is never imported or reviewed into the tree (docs/08 §7);
    `SUSPECT` and `UNSUPPORTED` files are `REVIEW` at most and import only
-   after a `CLEARED` origin finding. The
-   results are committed in
+   after a `CLEARED` origin finding. The results are committed in
    [`v1.8.0-vanilla-derivation.json`](../work/v1.8.0-vanilla-derivation.json);
    the validator refuses any `IMPORT` whose verdict is not `CLEAR`. The
    importer re-runs the check for each entry it writes (for derived pixels,
    on the transformed file too) and records the verdict in the entry; a
-   derivative of an `EXCLUDE` or `REVIEW` file inherits that handling.
+   derivative of an `EXCLUDE` or `REVIEW` file inherits that handling, and
+   an animation's `.mcmeta` file follows its image.
+   **Binding.** This ADR's front matter pins the results file's SHA-256 and
+   the SHA-256 of the two client JARs (Mojang's official 1.12.2 and 1.20.1
+   `client.jar`). The validator fails when the results differ from the pin,
+   name other clients or other JAR hashes (also checked against
+   `tools/audit/fetch_vanilla_clients.py`), carry thresholds other than the
+   tool's constants or another schema, give an asset a verdict that its
+   recorded measures do not produce, or miscount. CI downloads both clients
+   from Mojang's version manifest, verified by their pinned SHA-1 and
+   SHA-256 (`tools/audit/fetch_vanilla_clients.py`, outside the tree), and
+   runs `vanilla_derivation.py --check`, which regenerates the results and
+   compares them byte for byte. Any change of the results, including a
+   stricter tool, re-pins the digest here in the same commit.
 9. **History.** Each record entry lists the upstream commits that touched
    its source file. A history entry that brings in material from an issue,
    an unmerged pull request or another project (for example the plate
