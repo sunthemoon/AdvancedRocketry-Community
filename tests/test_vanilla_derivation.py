@@ -52,6 +52,36 @@ def _crop(pixels, width, x0, y0, w, h):
     return [pixels[(y0 + y) * width + x0 + x] for y in range(h) for x in range(w)]
 
 
+def _jitter(pixels, amount: int, seed: int):
+    """Add up to ``amount`` of deterministic noise per channel, as a filter would."""
+    state, out = seed, []
+    for r, g, b, a in pixels:
+        state = (state * 1103515245 + 12345) & 0x7FFFFFFF
+        delta = state % (2 * amount + 1) - amount
+        out.append((max(0, min(255, r + delta)), max(0, min(255, g + delta)), max(0, min(255, b + delta)), a))
+    return out
+
+
+def _blur(pixels, width: int, height: int):
+    """A 3 x 3 box blur."""
+    out = []
+    for y in range(height):
+        for x in range(width):
+            near = [pixels[yy * width + xx] for yy in (y - 1, y, y + 1) for xx in (x - 1, x, x + 1)
+                    if 0 <= xx < width and 0 <= yy < height]
+            out.append(tuple(sum(p[c] for p in near) // len(near) for c in range(3)) + (255,))
+    return out
+
+
+def _overlay(pixels, width: int, size: int):
+    """Paint a square in the middle, as a machine face drawn on a casing."""
+    out, start = list(pixels), (width - size) // 2
+    for y in range(start, start + size):
+        for x in range(start, start + size):
+            out[y * width + x] = (200, 30, 30, 255)
+    return out
+
+
 def _png(width: int, height: int, pixels) -> bytes:
     raw = b"".join(b"\x00" + bytes(c for pixel in pixels[y * width:(y + 1) * width] for c in pixel)
                    for y in range(height))
@@ -212,6 +242,31 @@ class VanillaDerivationCalibrationTests(unittest.TestCase):
                 sheet[(y + 33) * 96 + x + 50] = texture.pixels[y * 16 + x]
         best = analyse_images([("sheet", Image(96, 96, sheet))], [("v", "texture.png", texture)])
         self.assertEqual("HIT", best["sheet"][1])
+
+    def test_known_limits_stay_visible(self) -> None:
+        """Filtered derivatives that ADR-061 section 4.8 names as known limits: expected CLEAR.
+
+        A change in what the tool finds makes this test fail, so the limits list and the record review
+        (ADR-061 section 4.5) are revisited whenever the tool changes."""
+        texture = _noise(16, 16, seed=501, colours=12)
+        sheet = _noise(128, 128, seed=503, colours=16)
+        vanilla = [("v", "texture.png", Image(16, 16, texture)), ("v", "sheet.png", Image(128, 128, sheet))]
+        crop = _crop(sheet, 128, 20, 30, 12, 12)
+        embedded = _noise(128, 128, seed=507, colours=10)
+        noisy = _jitter(_crop(sheet, 128, 40, 40, 16, 16), 6, 11)
+        for y in range(16):
+            for x in range(16):
+                embedded[(y + 50) * 128 + x + 60] = noisy[y * 16 + x]
+        limits = {
+            "noise of 6 plus an 8 x 8 overlay": Image(16, 16, _overlay(_jitter(texture, 6, 7), 16, 8)),
+            "3 x 3 blur plus a 6 x 6 overlay": Image(16, 16, _overlay(_blur(texture, 16, 16), 16, 6)),
+            "12 x 12 crop with noise of 6": Image(12, 12, _jitter(crop, 6, 9)),
+            "blurred crop": Image(12, 12, _blur(crop, 12, 12)),
+            "noisy crop inside a 128 px sheet": Image(128, 128, embedded),
+        }
+        best = analyse_images(list(limits.items()), vanilla)
+        self.assertEqual({name: "CLEAR" for name in limits},
+                         {name: best.get(name, (None, "CLEAR"))[1] for name in limits})
 
     def test_png_decoder_reads_rgba(self) -> None:
         pixels = _noise(5, 3, seed=3)

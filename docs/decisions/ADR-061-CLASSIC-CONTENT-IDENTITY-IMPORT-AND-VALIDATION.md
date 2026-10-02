@@ -213,8 +213,12 @@ must handle:
    preferred to recoloured copies.
 5. **Review.** Records enter with review status `PENDING_HUMAN_REVIEW`. The
    maintainer's visual and license review sets `APPROVED`; G0 needs every
-   record approved. `REVIEW` assets enter only after a recorded origin finding;
-   otherwise the batch uses a `NEW` replacement.
+   record approved. The visual review compares every machine face and casing
+   by eye with its vanilla counterparts (piston, furnace, dispenser, dropper,
+   iron block, stone, cobblestone), the case the derivation check cannot
+   see (§4.8 known limits), and records the comparison in the batch record.
+   `REVIEW` assets enter only after a recorded origin finding; otherwise the
+   batch uses a `NEW` replacement.
 6. **Placeholders.** Content without an approved asset uses a model that
    references the project's own textures or vanilla resource locations (the
    established pattern), never a copied vanilla file and never a missing
@@ -294,14 +298,29 @@ must handle:
    colour and an unrelated sheet stay `CLEAR`, a two-colour shape is
    `SUSPECT`, every verdict is reproduced from its recorded measures, and
    legacy derivatives are listed as related.
-   **Known limits.** A recolour that merges colours inside most 4 × 4
-   blocks, a recoloured or colour-shifted region inside a candidate larger
-   than 64 px a side, a copy whose 4 × 4 blocks all have fewer than three
-   colours, and an outline redrawn around a vanilla fill (the equal pixels
-   are then the reference's dominant colour, which the measures leave out)
-   are found only as whole images. The history rule (§4.9), origin findings
-   (the tab template is excluded by one) and the record review (§4.5)
-   remain the controls for them.
+   **Known limits.** These derivations score `CLEAR` unless the whole image
+   still matches by `rank`:
+   - pixels filtered beyond 2 per channel (noise, blur, sharpening) in a
+     crop, in a sub-region, or together with an overlay of about a quarter
+     of the image, as in a machine face drawn on a filtered vanilla casing
+     (the plate press faces of issue #1527 are found only because they are
+     whole filtered images);
+   - a blur of a low-contrast texture;
+   - a recolour that merges colours inside most 4 × 4 blocks, and a recolour
+     of an element with fewer than six colour classes;
+   - a recoloured or colour-shifted region inside a candidate larger than
+     64 px a side;
+   - a copy whose 4 × 4 blocks all have fewer than three colours;
+   - an outline redrawn around a vanilla fill: every block of three or more
+     colours then touches a moved line, so no block votes for the alignment
+     (the tab template).
+   The calibration tests keep the first two as expected-`CLEAR` cases, so a
+   change in what the tool finds is visible. Lowering the `rank` threshold is
+   no remedy: the best whole-image match of many clear files already ranks
+   0.60–0.75, mostly against textures first shipped in 1.20 that cannot be
+   their origins. The history rule (§4.9), origin findings (the tab template
+   is excluded by one) and the record review (§4.5) remain the controls for
+   them.
    A `HIT` is never imported or reviewed into the tree (docs/08 §7);
    `SUSPECT` and `UNSUPPORTED` files are `REVIEW` at most and import only
    after a `CLEARED` origin finding.
