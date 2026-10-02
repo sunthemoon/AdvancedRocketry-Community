@@ -19,7 +19,7 @@ order,pattern,handling,plan,units,reason
 18,textures/blocks/laserbottom.png,REVIEW,C18d,block:spaceLaser,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 19,textures/blocks/laserfront.png,REVIEW,C18d,block:spaceLaser,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 20,textures/blocks/leaves_alien.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-21,textures/blocks/log_blue.png,REVIEW,C15c,block:alienWood,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+21,textures/blocks/log_blue.png,REGENERATE,C15c,block:alienWood,"C15c draws the lightwood log new instead of seeking an authorship finding for the AR 16x set (#1889); a batch may import fewer files (ADR-061 section 4.2)"
 22,textures/blocks/log_blue_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_big_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
 23,textures/blocks/log_charcoal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 24,textures/blocks/log_charcoal_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
@@ -204,11 +204,11 @@ order,pattern,handling,plan,units,reason
 203,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
 204,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
 205,textures/blocks/geode*.png,REGENERATE,C15b,block:geode,C15b draws the geode shell new (V180SurfaceArt); a batch may import fewer files (ADR-061 section 4.2)
-206,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
+206,textures/blocks/crystal.png,REGENERATE,C15c,block:crystal,C15c draws the crystal block new; a batch may import fewer files (ADR-061 section 4.2)
 207,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
 208,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
-209,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
-210,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
+209,textures/blocks/sapling_bluetree.png,REGENERATE,C15c,block:alienSapling,C15c draws the lightwood sapling new; a batch may import fewer files (ADR-061 section 4.2)
+210,textures/blocks/mushroom_electric.png,REGENERATE,C15c,block:electricMushroom,C15c draws the electric mushroom new; a batch may import fewer files (ADR-061 section 4.2)
 211,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
 212,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
 213,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
