@@ -36,6 +36,25 @@ class SmallPlatePressRecipeTest {
         assertTrue(SmallPlatePressRecipe.matching(List.of(), new ItemStack(Items.IRON_BLOCK)).isEmpty());
     }
 
+    /** C15aR1-L1: the press uses exactly one match and refuses two (ADR-063 section 3, revision 4). */
+    @Test
+    void selectionUsesOneMatchAndRefusesTwo() {
+        SmallPlatePressRecipe iron = recipe("iron", Ingredient.of(Items.IRON_BLOCK), Items.IRON_INGOT);
+        SmallPlatePressRecipe overlap = recipe("overlap", Ingredient.of(Items.IRON_BLOCK), Items.IRON_NUGGET);
+        SmallPlatePressRecipe gold = recipe("gold", Ingredient.of(Items.GOLD_BLOCK), Items.GOLD_INGOT);
+
+        SmallPlatePressRecipe.Selection none = SmallPlatePressRecipe.select(List.of(iron, gold),
+                new ItemStack(Items.STONE));
+        assertTrue(none.recipe().isEmpty() && !none.ambiguous());
+        SmallPlatePressRecipe.Selection one = SmallPlatePressRecipe.select(List.of(iron, gold),
+                new ItemStack(Items.IRON_BLOCK));
+        assertEquals(iron, one.recipe().orElseThrow());
+        assertTrue(!one.ambiguous());
+        SmallPlatePressRecipe.Selection two = SmallPlatePressRecipe.select(List.of(iron, gold, overlap),
+                new ItemStack(Items.IRON_BLOCK));
+        assertTrue(two.recipe().isEmpty() && two.ambiguous(), "two matches must be refused, not the first used");
+    }
+
     private static SmallPlatePressRecipe recipe(String name, Ingredient ingredient, net.minecraft.world.item.Item result) {
         return new SmallPlatePressRecipe(ResourceLocation.tryBuild("advancedrocketrycommunity", name), ingredient,
                 new ItemStack(result, 4));

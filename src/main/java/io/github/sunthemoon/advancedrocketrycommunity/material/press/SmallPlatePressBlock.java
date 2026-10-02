@@ -2,7 +2,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.material.press;
 
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -85,16 +84,16 @@ public final class SmallPlatePressBlock extends Block {
             return PressResult.NO_INPUT;
         }
         SimpleContainer container = new SimpleContainer(form);
-        List<SmallPlatePressRecipe> matches = SmallPlatePressRecipe.matching(
+        SmallPlatePressRecipe.Selection selection = SmallPlatePressRecipe.select(
                 level.getRecipeManager().getAllRecipesFor(MaterialContent.SMALL_PLATE_PRESS_TYPE.get()), form);
-        if (matches.isEmpty()) {
-            return PressResult.NO_RECIPE;
-        }
-        if (matches.size() > 1) {
+        if (selection.ambiguous()) {
             // Two data-pack recipes claim the same block; refuse rather than pick by load order.
             return PressResult.AMBIGUOUS;
         }
-        SmallPlatePressRecipe recipe = matches.get(0);
+        if (selection.recipe().isEmpty()) {
+            return PressResult.NO_RECIPE;
+        }
+        SmallPlatePressRecipe recipe = selection.recipe().get();
         if (MinecraftForge.EVENT_BUS.post(new PistonEvent.Pre(level, pressPosition, Direction.DOWN,
                 PistonEvent.PistonMoveType.EXTEND))) {
             return PressResult.CANCELLED;

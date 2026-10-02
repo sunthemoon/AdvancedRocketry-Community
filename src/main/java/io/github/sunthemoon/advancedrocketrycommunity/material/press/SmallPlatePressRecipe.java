@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
@@ -59,6 +60,22 @@ public final class SmallPlatePressRecipe implements Recipe<SimpleContainer> {
     @Override
     public boolean matches(SimpleContainer container, Level level) {
         return ingredient.test(container.getItem(0));
+    }
+
+    /** The press's choice for a block form: no recipe, the one matching recipe, or ambiguous (two or more). */
+    public record Selection(Optional<SmallPlatePressRecipe> recipe, boolean ambiguous) {
+    }
+
+    /**
+     * Chooses the recipe for a block form (ADR-063 section 3, revision 4): exactly one match is used; with two or
+     * more the press does nothing rather than pick one by load order.
+     */
+    public static Selection select(Iterable<SmallPlatePressRecipe> recipes, ItemStack form) {
+        List<SmallPlatePressRecipe> matches = matching(recipes, form);
+        if (matches.size() > 1) {
+            return new Selection(Optional.empty(), true);
+        }
+        return new Selection(matches.stream().findFirst(), false);
     }
 
     /** The recipes whose ingredient takes a block form, stopping at two: one is a match, two are ambiguous. */

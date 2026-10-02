@@ -405,7 +405,8 @@ ID in this namespace fail startup through the existing binding checks.
   Ceti Levels removed from the reachable set.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
   below; unpowered; repeated pulses; unloaded neighbour; a cancelled
-  `PistonEvent.Pre` leaves the block in place), smelting and rolling
+  `PistonEvent.Pre` leaves the block in place; revision 4: an ambiguous match
+  leaves the block in place), smelting and rolling
   recipes, ore feature placement in a test chunk (the Overworld set without
   iridium; the Moon and Mars sets with iridium; Moon dilithium at the airless
   count), bound tests for the crater,

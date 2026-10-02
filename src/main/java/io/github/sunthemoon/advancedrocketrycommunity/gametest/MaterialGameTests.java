@@ -19,6 +19,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -37,6 +40,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class MaterialGameTests {
     private static final String SWITCH_BATCH = "materials_switches";
+    private static final String OVERLAP_BATCH = "materials_recipe_overlap";
     private static final BlockPos ANVIL = new BlockPos(2, 1, 2);
     private static final BlockPos TARGET = new BlockPos(2, 2, 2);
     private static final BlockPos PRESS = new BlockPos(2, 3, 2);
@@ -191,6 +195,40 @@ public final class MaterialGameTests {
             CommonConfig.SMALL_PLATE_PRESS_ENABLED.set(true);
             helper.succeed();
         });
+    }
+
+    /**
+     * C15aR1-L1: with a second, overlapping press recipe loaded, the press refuses the block (AMBIGUOUS) and leaves it
+     * in place instead of using the first match. The recipe set is restored afterwards; its own batch keeps other
+     * tests from seeing the extra recipe.
+     */
+    @GameTest(template = "rocket_test", batch = OVERLAP_BATCH, timeoutTicks = 40)
+    public static void anAmbiguousBlockIsRefusedAndStays(GameTestHelper helper) {
+        RecipeManager recipes = helper.getLevel().getRecipeManager();
+        List<Recipe<?>> original = List.copyOf(recipes.getRecipes());
+        Block tin = MaterialContent.block("tin_block");
+        List<Recipe<?>> overlapping = new java.util.ArrayList<>(original);
+        overlapping.add(new SmallPlatePressRecipe(ModIdentity.id("review_probe_overlap"),
+                Ingredient.of(tin.asItem()), new ItemStack(MaterialContent.item("tin_nugget"), 3)));
+        recipes.replaceRecipes(overlapping);
+        try {
+            column(helper, 0, Blocks.OBSIDIAN, tin);
+            helper.assertTrue(SmallPlatePressBlock.press(helper.getLevel(), at(helper, 0, PRESS)) == PressResult.AMBIGUOUS,
+                    "Two matching recipes did not make the press refuse");
+            power(helper, 0);
+            helper.assertBlockPresent(tin, TARGET);
+            helper.assertTrue(items(helper, 0).isEmpty(), "An ambiguous block was pressed");
+        } finally {
+            recipes.replaceRecipes(original);
+        }
+        helper.succeed();
+    }
+
+    @AfterBatch(batch = OVERLAP_BATCH)
+    public static void checkRecipesRestored(ServerLevel level) {
+        if (level.getServer().getRecipeManager().byKey(ModIdentity.id("review_probe_overlap")).isPresent()) {
+            throw new IllegalStateException("The overlapping probe recipe was not removed");
+        }
     }
 
     /** C15aR1-M1: the dilithium ores drop themselves, so breaking one must give no experience (no XP farm). */
