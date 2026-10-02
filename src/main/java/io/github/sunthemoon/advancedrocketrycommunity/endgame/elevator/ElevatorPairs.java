@@ -155,7 +155,11 @@ public final class ElevatorPairs {
             return ElevatorRules.Check.of(written);
         }
         if (service.writePending()) {
-            // The pair is kept and written by the next flush; the bind is not reported until it is durable.
+            // The write failed: the pair is taken back, so no ride, shipment or warp check uses a bind that is not
+            // durable (review C12R-I5). Whatever else was pending stays pending.
+            service.coalesced(r -> r.pairs().remove(pair.pairId()));
+            audit(service, now, "bind", ElevatorRules.Check.of(EndgameCode.ROOT_BUSY), terminalId, actor,
+                    describe(pair) + " write=failed");
             return ElevatorRules.Check.of(EndgameCode.ROOT_BUSY);
         }
         audit(service, now, "bind", ElevatorRules.Check.OK, terminalId, actor, describe(pair));
