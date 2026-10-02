@@ -135,8 +135,9 @@ final class TransitCodecTest {
     }
 
     /**
-     * Review C12R2-I5: the restore rule alone refuses a record whose source or paid endpoint is neither an endpoint nor
-     * a tombstone. The refused roots differ from a valid one only in that, so no other check refuses them first.
+     * Review C12R2-I5: a record whose source or paid endpoint is neither an endpoint nor a tombstone is refused. Only the
+     * restore rule refuses the unknown paid endpoint; the unknown source is also refused by the dispatched_through
+     * checks, which imply the rule's source half (review C12R3-I1).
      */
     @Test
     void theRestoreRuleRefusesAnUnknownSourceOrPaidEndpoint() {
