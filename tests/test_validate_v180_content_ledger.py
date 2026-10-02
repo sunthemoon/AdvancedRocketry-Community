@@ -6,7 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_v180_content_ledger import ALLOWLIST, ASSET_PLAN, INVENTORY, LEDGER, ORIGIN_FINDINGS, ROOT, validate
+from scripts.validate_v180_content_ledger import (ALLOWLIST, ASSET_PLAN, DERIVATION, INVENTORY, LEDGER,
+                                                  ORIGIN_FINDINGS, ROOT, validate)
 from tools.audit.inventory_v180_content import lang_names, unlocalized, variants
 
 REGISTRY = Path("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry")
@@ -27,7 +28,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         for relative in COPIED:
             shutil.copytree(ROOT / relative, self.root / relative)
-        for relative in (INVENTORY, LEDGER, ASSET_PLAN, ALLOWLIST):
+        for relative in (INVENTORY, LEDGER, ASSET_PLAN, ALLOWLIST, DERIVATION):
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, self.root / relative)
 
@@ -162,8 +163,8 @@ class V180ContentLedgerTests(unittest.TestCase):
                             for error in self._errors(closure=True)))
 
     def test_loosening_an_exclusion_fails(self) -> None:
-        self._set_rule("textures/env/sun.png", handling="IMPORT", plan="C18d")
-        self.assertIn("asset plan: textures/env/sun.png is IMPORT beyond its allowlist ceiling none", self._errors())
+        self._set_rule("textures/font.png", handling="IMPORT", plan="C18d")
+        self.assertIn("asset plan: textures/font.png is IMPORT beyond its allowlist ceiling none", self._errors())
 
     def test_review_needs_a_cleared_finding_to_import(self) -> None:
         self._set_rule("textures/blocks/beacon.png", handling="IMPORT")
@@ -182,6 +183,24 @@ class V180ContentLedgerTests(unittest.TestCase):
     def test_import_for_a_deferred_unit_fails(self) -> None:
         self._set_rule("textures/blocks/beacon.png", units="block:terraformer")
         self.assertTrue(any("REVIEW for block:terraformer, which is DEFERRED" in error for error in self._errors()))
+
+    def _set_verdict(self, asset: str, verdict: str) -> None:
+        path = self.root / DERIVATION
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for entry in data["assets"]:
+            if entry["asset"] == asset:
+                entry["verdict"] = verdict
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+    def test_vanilla_derived_assets_cannot_be_imported(self) -> None:
+        self._set_verdict("textures/blocks/blastbrick.png", "HIT")
+        self.assertIn("asset plan: textures/blocks/blastbrick.png is vanilla-derived (HIT) but handled as IMPORT",
+                      self._errors())
+
+    def test_suspect_assets_need_a_cleared_finding(self) -> None:
+        self._set_verdict("textures/blocks/blastbrick.png", "SUSPECT")
+        self.assertIn("asset plan: textures/blocks/blastbrick.png has derivation verdict SUSPECT and no CLEARED "
+                      "origin finding", self._errors())
 
     def test_allowlist_is_pinned(self) -> None:
         path = self.root / ALLOWLIST
@@ -216,10 +235,10 @@ class V180ContentLedgerTests(unittest.TestCase):
     def test_imported_handling_needs_a_record(self) -> None:
         rows = self._rows(ASSET_PLAN)
         for row in rows:
-            if row["pattern"] == "textures/blocks/moon_turf*.png":
+            if row["pattern"] == "textures/blocks/blastbrick*.png":
                 row.update(handling="IMPORTED", plan="v1.8.0")
         self._write_rows(ASSET_PLAN, rows)
-        self.assertIn("asset plan: textures/blocks/moon_turf.png is handled as IMPORTED without a provenance record",
+        self.assertIn("asset plan: textures/blocks/blastbrick.png is handled as IMPORTED without a provenance record",
                       self._errors())
 
     def test_recorded_import_must_be_handled_as_imported(self) -> None:

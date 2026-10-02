@@ -120,7 +120,8 @@ must handle:
    decides every legacy asset by its first matching rule:
    - `IMPORT`: candidate for its batch;
    - `REVIEW`: quarantined until an origin review is recorded (sounds,
-     photographic planet images, files sharing a vanilla name);
+     planet images in formats the derivation check cannot read, files that
+     share a vanilla file name, and `SUSPECT` derivation verdicts);
    - `REGENERATE`: reference only; DataGen writes the modern file;
    - `EXCLUDE`: never imported;
    - `IMPORTED`: already recorded (v0.1.0).
@@ -169,6 +170,31 @@ must handle:
    - a record's target is missing or its hash differs.
    The JAR audit fails on any `QUARANTINED` or `REJECTED` target and on any
    packaged file with a legacy-manifest hash that has no record.
+8. **Vanilla derivation check.** A file name says nothing about origin: the
+   legacy Moon turf and ferric sand are recolours of the vanilla grass top
+   with a different name. `tools/audit/vanilla_derivation.py` compares every
+   legacy asset with the assets of the vanilla 1.12.2 and 1.20.1 client JARs
+   (read locally, never copied; their SHA-256 values are in the results) by
+   file hash and, for PNG images of the same size or an integer scale of 2
+   or 4, by byte-equal pixels outside the vanilla image's dominant colour
+   (`overlap`), opaque-mask intersection over union (`iou`) and luminance
+   rank correlation (`rank`). Verdicts: `HIT` when the hash is equal,
+   `overlap` ≥ 0.30, or `iou` ≥ 0.90 with `rank` ≥ 0.90; `SUSPECT` when
+   `overlap` ≥ 0.10, or `iou` ≥ 0.85 with `rank` ≥ 0.75; `UNSUPPORTED` for
+   formats it cannot decode; otherwise `CLEAR`. A `HIT` is never imported or
+   reviewed into the tree (docs/08 §7); `SUSPECT` and `UNSUPPORTED` files are
+   `REVIEW` at most and import only after a `CLEARED` origin finding. The
+   results are committed in
+   [`v1.8.0-vanilla-derivation.json`](../work/v1.8.0-vanilla-derivation.json);
+   the validator refuses any `IMPORT` whose verdict is not `CLEAR`. The
+   importer re-runs the check for each entry it writes (for derived pixels,
+   on the transformed file too) and records the verdict in the entry; a
+   derivative of an `EXCLUDE` or `REVIEW` file inherits that handling.
+9. **History.** Each record entry lists the upstream commits that touched
+   its source file. A history entry that brings in material from an issue,
+   an unmerged pull request or another project (for example the plate
+   press textures added from issue #1527, whose author describes them as a
+   filtered vanilla piston) puts the file under `REVIEW`.
 
 ### 5. Content validation and the recipe graph
 
