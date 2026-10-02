@@ -100,7 +100,9 @@ extracted).
 | Cross-system cargo | (feature of ADR-056) | routes stay inside one star system, like rockets | cargo crosses systems by station warp only |
 | Cargo access from a rocket seat | coremod rule `RocketInventoryHelper.allowAccess` | assembled rockets keep their blocks in a snapshot; opening them in flight needs a container proxy | open rocket cargo after landing, or move it with the C17a loaders |
 
-A deferred item can return only through a new ADR in a later version.
+A deferred item can return only through a new ADR in a later version. Deferred
+content registers no ID in v1.8, so no world holds it and nothing needs a
+migration; its legacy assets stay unimported.
 
 ### 4. Rejected and player impact
 
@@ -167,7 +169,7 @@ them.
 | C18a | Life support and environment rules: CO2 scrubber and cartridge, gas charge pad, atmosphere detector, airlock door, pipe seal, torch and fire rules, thermite, seal detector, atmosphere analyzer, respawn and sleeping rules, atmosphere effects and spawning for non-player entities, planet gravity on living entities, gravity-scaled fall damage, suit underwater breathing, the space Level safety return | C15a (steel fan), C16d (user interface, carbon brick) |
 | C18b | Equipment: suit workstation, pressure tanks, jetpack, upgrades, jackhammer, basic laser gun, space breathing enchantment | C18a, C16c (the chemical reactor applies the space breathing enchantment) |
 | C18c | Research: observatory, astrobody data processor, advancements, technology tree report | C16d |
-| C18d | Presentation: sounds, OBJ models, black-hole sky, capsule effect, GUI art, languages and the visual refresh of existing blocks | all batches |
+| C18d | Presentation: sounds, OBJ models, black-hole sky, capsule effect, GUI art, languages, the visual refresh of existing blocks, and a classic content guide for players | all batches |
 | C19 | Ledger and matrix closure (`--require-accepted`, zero `PLANNED`), independent review, handoff | all batches |
 
 ### 7. Change control

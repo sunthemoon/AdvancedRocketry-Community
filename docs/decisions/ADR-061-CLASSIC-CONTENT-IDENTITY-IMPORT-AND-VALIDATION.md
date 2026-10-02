@@ -112,6 +112,11 @@ must handle:
 4. Every new C2S intent follows the existing intent policy (sender, distance,
    state, loaded chunk, rate limit, bounded payload), and every new channel is
    pinned in `network-protocols.txt` with its version.
+5. Every classic machine profile and every new world feature has a server
+   switch. A disabled machine keeps its blocks, block entities and stored
+   resources but does not process; a disabled feature stops generating in new
+   chunks. This is how an unstable machine is taken out of play without a
+   migration (version document §17).
 
 ### 4. Asset import pipeline
 
