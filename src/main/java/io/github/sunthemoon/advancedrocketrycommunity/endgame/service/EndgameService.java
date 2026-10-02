@@ -503,7 +503,7 @@ public final class EndgameService {
                 .append(" settled_tombstones=").append(root.settledTombstones().size())
                 .append(" zones=").append(root.zones().size())
                 .append(" awaiting_registration=").append(registrations.waiting())
-                .append("; ").append(transits.status()).append(" ride_tickets=0")
+                .append("; ").append(transits.status())
                 .append("; audit_ring=").append(audit.ringSize()).toString();
     }
 

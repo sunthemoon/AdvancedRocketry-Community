@@ -278,6 +278,10 @@ public final class ElevatorGameTests {
                     EndgameCode requested = rides().request(member, fixture.anchor(), service(), devices()).code();
                     helper.assertTrue(requested == EndgameCode.RIDE_COUNTDOWN, "The member's ride: " + requested);
                     helper.assertTrue(arrivalTickets(fixture.space) == 1, "No pre-load ticket at the arrival");
+                    // Review C12R-L5: the status shows the tickets held, not a constant.
+                    helper.assertTrue(devices().status().contains("ride_tickets=" + rides().tickets())
+                                    && rides().tickets() >= 1 && !service().status().contains("ride_tickets"),
+                            "The status does not show the ride tickets: " + devices().status());
                 })
                 .thenWaitUntil(() -> helper.assertTrue(joined.get(0).level() == fixture.space
                         && fixture.terminal().onPlatform(joined.get(0)), "The member did not arrive up"))

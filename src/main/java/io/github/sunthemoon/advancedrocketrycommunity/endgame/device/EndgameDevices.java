@@ -273,7 +273,8 @@ public final class EndgameDevices {
                 + "; gravity_fields active=" + fields.size() + "; black_hole_generators active="
                 + active.count(EndgameSystem.BLACK_HOLE_GENERATOR) + "; railgun launches_last_tick="
                 + railgunLaunchesLastTick + " waiting=" + railgunLaunches.waitingLastTick() + "; elevator rides="
-                + elevatorRides.size() + " launches_waiting=" + elevatorLaunches.waitingLastTick() + "; intent_players="
+                + elevatorRides.size() + " ride_tickets=" + elevatorRides.tickets() + " launches_waiting="
+                + elevatorLaunches.waitingLastTick() + "; intent_players="
                 + rates.size();
     }
 

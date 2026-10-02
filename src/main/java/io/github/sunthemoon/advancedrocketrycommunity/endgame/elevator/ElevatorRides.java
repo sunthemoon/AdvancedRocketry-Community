@@ -81,6 +81,11 @@ public final class ElevatorRides {
         return pending.size();
     }
 
+    /** The arrival tickets held (ADR-054 section 13): one per pending ride, released when it ends. */
+    public int tickets() {
+        return pending.size();
+    }
+
     /** The {@code ride} intent from a player standing on the departing endpoint's platform. */
     public ElevatorRules.Check request(ServerPlayer player, ElevatorEndpointBlockEntity departure,
                                        EndgameService service, EndgameDevices devices) {
