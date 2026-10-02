@@ -36,15 +36,15 @@ atmosphere:AtmosphereVeryHotNoOxygen,REDESIGNED,v1.4.0,heat exposure without oxy
 biome:alien_forest,PLANNED,C15c,alien forest biome,ADR-062,classic exoplanet world,
 biome:crystalchasms,PLANNED,C15c,crystal chasms biome,ADR-062,classic exoplanet world,
 biome:deepswamp,PLANNED,C15c,deep swamp biome,ADR-062,classic exoplanet world,
-biome:hotdryrock,PLANNED,C15b,ferric regolith biome,ADR-062,Mars,
+biome:hotdryrock,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_regolith biome,ADR-063,Mars,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:marsh,PLANNED,C15c,marsh biome,ADR-062,classic exoplanet world,
-biome:moon,PLANNED,C15b,regolith highlands biome,ADR-062,Moon,
-biome:moondark,PLANNED,C15b,regolith lowlands biome,ADR-062,Moon,
+biome:moon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:regolith_highlands biome,ADR-063,Moon,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+biome:moondark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:regolith_lowlands biome,ADR-063,Moon,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:oceanspires,PLANNED,C15c,ocean spires biome,ADR-062,classic exoplanet world,
 biome:space,REDESIGNED,v0.3.0,space Level,ADR-031,shared space Level,
 biome:stormland,PLANNED,C15c,stormland biome,ADR-062,classic exoplanet world,
-biome:volcanic,PLANNED,C15b,volcanic biome,ADR-062,Venus,
-biome:volcanicbarren,PLANNED,C15b,volcanic lowlands biome,ADR-062,Venus,
+biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowlands biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
 block:advbipropellantRocketmotor,PLANNED,C17a,advanced bipropellant engine,ADR-062,propulsion tier with fuel and oxidizer,
@@ -55,7 +55,7 @@ block:alienSapling,PLANNED,C15c,lightwood sapling,ADR-062,alien forest flora,
 block:alienWood,PLANNED,C15c,lightwood log,ADR-062,alien forest flora,
 block:altitudeController,PLANNED,C17b,station altitude control,ADR-062,station orbit setting through the checked station commit,
 block:arcfurnace,PLANNED,C16b,electric arc furnace,ADR-062,alloys and silicon; classic machine family,
-block:basalt,PLANNED,C15b,vanilla basalt in the Venus surface,ADR-062,vanilla basalt replaces the legacy block,
+block:basalt,REDESIGNED,v1.8.0,vanilla basalt in the Venus surface,ADR-063,vanilla basalt replaces the legacy block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:beacon,PLANNED,C17c,planetary beacon,ADR-062,bounded navigation marker per body,
 block:biomeScanner,DEFERRED,post-2.0,-,ADR-062,terraforming family,
 block:bipropellantfueltank,PLANNED,C17a,bipropellant fuel tank,ADR-062,propulsion tier,
@@ -65,7 +65,7 @@ block:blastbrick,PLANNED,C16b,heat-proof brick,ADR-062,arc furnace structure,
 block:blockLens,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,"lens is a laser drill component item, not a block",
 block:blockPump,PLANNED,C16a,fluid pump,ADR-062,bounded source-block drain with protection checks,
 block:centrifuge,PLANNED,C16c,centrifuge,ADR-062,enriched lava separation,
-block:charcoalLog,PLANNED,C15b,charcoal log,ADR-062,volcanic flora,
+block:charcoalLog,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:charcoal_log,ADR-063,"volcanic flora; not flammable, as legacy",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:chemicalReactor,PLANNED,C16c,chemical reactor,ADR-062,rocket fuel and chemistry,
 block:circleLight,PLANNED,C17b,station light,ADR-062,decorative light block,
 block:concrete,PLANNED,C17b,vanilla concrete in the pad recipes,ADR-062,vanilla concrete replaces the legacy block,
@@ -81,11 +81,11 @@ block:forceField,PLANNED,C17b,force field block,ADR-062,placed only by the proje
 block:forceFieldProjector,PLANNED,C17b,force field projector,ADR-062,bounded line of field blocks through the protection chain,
 block:fuelingStation,REDESIGNED,v0.6.0,advancedrocketrycommunity:fuel_loader,V0.6.0 ADR-062,fuel loader; fluid fuels added in C17a,
 block:fuelTank,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_fuel_tank,ADR-026,,
-block:geode,PLANNED,C15b,geode shell,ADR-062,geode world feature,
+block:geode,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:geode_shell,ADR-063,geode world feature,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:gravityController,PLANNED,C17b,station gravity controller,ADR-058 ADR-062,block front-end for the v1.5 station gravity commit,
 block:gravityMachine,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:gravity_field_controller,ADR-058,,
 block:guidanceComputer,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:guidance_computer,ADR-026,,
-block:hotTurf,PLANNED,C15b,ferric sand,ADR-062,Mars surface block,
+block:hotTurf,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_sand,ADR-063,Mars surface block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:hydrogenFluid,PLANNED,C16a,hydrogen fluid,ADR-062,"gaseous fluid, no placeable block",
 block:intake,REDESIGNED,v1.6.0,advancedrocketrycommunity:gas_intake_module,ADR-051,gas collection is a logical mission,
 block:landingfloat,DEFERRED,post-2.0,-,ADR-062,landing on lava and other non-water liquids needs a landing-site rule change,
@@ -97,8 +97,8 @@ block:liquidTank,PLANNED,C16a,pressurized fluid tank,ADR-062,stackable fluid sto
 block:loader,MERGED,-,block_variant:loader/*,ADR-062,"seven variants, each with its own row",
 block:microwaveReciever,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:microwave_receiver,ADR-049,,
 block:monitoringStation,PLANNED,C17a,rocket monitoring station,ADR-062,rocket status and redstone launch through the server flight path,
-block:moonTurf,PLANNED,C15b,moon turf,ADR-062,Moon surface block,
-block:moonTurf_dark,PLANNED,C15b,dark moon turf,ADR-062,Moon lowland block,
+block:moonTurf,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:moon_turf,ADR-063,Moon surface block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+block:moonTurf_dark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:dark_moon_turf,ADR-063,Moon lowland block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:nitrogenFluid,PLANNED,C16a,nitrogen fluid,ADR-062,gaseous fluid,
 block:nuclearcore,PLANNED,C17a,nuclear thermal core,ADR-062,propulsion tier,
 block:nuclearfueltank,PLANNED,C17a,nuclear working fluid tank,ADR-062,propulsion tier,
@@ -346,36 +346,36 @@ config:STATION.pointsPerDilithium,REDESIGNED,v1.5.0,warp energy cost,ADR-044,war
 config:STATION.SpaceStationBuildRadius,REDESIGNED,v1.5.0,station regions,ADR-040,,
 config:STATION.spaceStationId,REJECTED,-,-,ADR-031 ADR-062,numeric dimension IDs are not used,
 config:STATION.warpTravelTime,REDESIGNED,v1.5.0,fixed warp countdown,ADR-044,"200 ticks, no setting",
-config:WORLDGEN.AluminumPerChunk,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.AluminumPerClump,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.CopperPerChunk,PLANNED,C15b,Moon and Mars copper placed features,ADR-062,the Overworld keeps vanilla copper generation (ADR-063 section 4),
-config:WORLDGEN.CopperPerClump,PLANNED,C15b,Moon and Mars copper placed features,ADR-062,the Overworld keeps vanilla copper generation (ADR-063 section 4),
-config:WORLDGEN.DilithiumPerChunk,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.DilithiumPerChunkLuna,PLANNED,C15b,Moon dilithium placed feature,ADR-062,"the airless count, 10 veins of 16 (ADR-063 section 4)",
-config:WORLDGEN.DilithiumPerClump,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.EnableOreGen,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.generateAluminum,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.GenerateCopper,PLANNED,C15b,Moon and Mars copper placed features,ADR-062,the Overworld keeps vanilla copper generation (ADR-063 section 4),
-config:WORLDGEN.generateCraters,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.generateDilithium,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.generateGeodes,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.generateIridium,PLANNED,C15b,Moon and Mars iridium placed features,ADR-062,the guaranteed iridium source (ADR-063 section 4); none in the Overworld,
-config:WORLDGEN.GenerateRutile,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.GenerateTin,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
+config:WORLDGEN.AluminumPerChunk,REDESIGNED,v1.8.0,"Overworld, Moon and Mars aluminum ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.AluminumPerClump,REDESIGNED,v1.8.0,"Overworld, Moon and Mars aluminum ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.CopperPerChunk,REDESIGNED,v1.8.0,Moon and Mars copper ore placed features,ADR-063,the Overworld keeps vanilla copper generation (ADR-063 section 4),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.CopperPerClump,REDESIGNED,v1.8.0,Moon and Mars copper ore placed features,ADR-063,the Overworld keeps vanilla copper generation (ADR-063 section 4),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.DilithiumPerChunk,REDESIGNED,v1.8.0,"Overworld, Moon and Mars dilithium ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.DilithiumPerChunkLuna,REDESIGNED,v1.8.0,Moon dilithium ore placed feature,ADR-063,"the airless count, 10 veins of 16 (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.DilithiumPerClump,REDESIGNED,v1.8.0,"Overworld, Moon and Mars dilithium ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.EnableOreGen,REDESIGNED,v1.8.0,overworld_ores and planet_ores server switches,ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.generateAluminum,REDESIGNED,v1.8.0,"Overworld, Moon and Mars aluminum ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.GenerateCopper,REDESIGNED,v1.8.0,Moon and Mars copper ore placed features,ADR-063,the Overworld keeps vanilla copper generation (ADR-063 section 4),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.generateCraters,REDESIGNED,v1.8.0,craters server switch and the crater structures,ADR-063,data-driven features replace config numbers,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.generateDilithium,REDESIGNED,v1.8.0,"Overworld, Moon and Mars dilithium ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.generateGeodes,REDESIGNED,v1.8.0,geodes server switch and the geode structure,ADR-063,data-driven features replace config numbers,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.generateIridium,REDESIGNED,v1.8.0,Moon and Mars iridium ore placed features,ADR-063,the guaranteed iridium source (ADR-063 section 4); none in the Overworld,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.GenerateRutile,REDESIGNED,v1.8.0,"Overworld, Moon and Mars rutile ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.GenerateTin,REDESIGNED,v1.8.0,"Overworld, Moon and Mars tin ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 config:WORLDGEN.generateVanillaStructures,DEFERRED,post-2.0,-,ADR-062,with planet villages,
-config:WORLDGEN.generateVolcanos,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.geodeBaseSize,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.geodeOres,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.geodeOres_blacklist,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.geodeVariation,PLANNED,C15b,planet feature data,ADR-062,data-driven features replace config numbers,
-config:WORLDGEN.IridiumPerChunk,PLANNED,C15b,Moon and Mars iridium placed features,ADR-062,the guaranteed iridium source (ADR-063 section 4); none in the Overworld,
-config:WORLDGEN.IridiumPerClump,PLANNED,C15b,Moon and Mars iridium placed features,ADR-062,the guaranteed iridium source (ADR-063 section 4); none in the Overworld,
+config:WORLDGEN.generateVolcanos,REDESIGNED,v1.8.0,volcanoes server switch and the volcano structure,ADR-063,data-driven features replace config numbers,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.geodeBaseSize,REDESIGNED,v1.8.0,geode structure radius 16-24,ADR-063,data-driven features replace config numbers,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.geodeOres,REDESIGNED,v1.8.0,geode_ores block tag,ADR-063,data packs choose the ores; at most 32 kinds,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.geodeOres_blacklist,REDESIGNED,v1.8.0,geode_ores block tag,ADR-063,data packs replace the tag to leave ores out,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.geodeVariation,REDESIGNED,v1.8.0,geode structure radius 16-24,ADR-063,data-driven features replace config numbers,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.IridiumPerChunk,REDESIGNED,v1.8.0,Moon and Mars iridium ore placed features,ADR-063,the guaranteed iridium source (ADR-063 section 4); none in the Overworld,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.IridiumPerClump,REDESIGNED,v1.8.0,Moon and Mars iridium ore placed features,ADR-063,the guaranteed iridium source (ADR-063 section 4); none in the Overworld,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 config:WORLDGEN.laserDrillOres,IMPLEMENTED,v1.7.0,laser drill tables,ADR-055,,
 config:WORLDGEN.laserDrillOres_blacklist,IMPLEMENTED,v1.7.0,laser drill tables,ADR-055,,
-config:WORLDGEN.RutilePerChunk,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.RutilePerClump,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.TinPerChunk,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
-config:WORLDGEN.TinPerClump,PLANNED,C15b,ore placed features,ADR-062,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",
+config:WORLDGEN.RutilePerChunk,REDESIGNED,v1.8.0,"Overworld, Moon and Mars rutile ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.RutilePerClump,REDESIGNED,v1.8.0,"Overworld, Moon and Mars rutile ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.TinPerChunk,REDESIGNED,v1.8.0,"Overworld, Moon and Mars tin ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+config:WORLDGEN.TinPerClump,REDESIGNED,v1.8.0,"Overworld, Moon and Mars tin ore placed features",ADR-063,"data-driven placement replaces config numbers; the Overworld features came in C15a, the Moon and Mars features close the row in C15b (ADR-063 section 4)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 config_file:asteroidConfig.xml,REDESIGNED,v1.6.0,asteroid resource tables,ADR-052,,
 config_file:Centrifuge.xml,PLANNED,C16c,data pack recipes,ADR-062,,
 config_file:ChemicalReactor.xml,PLANNED,C16c,data pack recipes,ADR-062,,
@@ -384,7 +384,7 @@ config_file:CuttingMachine.xml,PLANNED,C16b,data pack recipes,ADR-062,,
 config_file:ElectricArcFurnace.xml,PLANNED,C16b,data pack recipes,ADR-062,,
 config_file:Electrolyser.xml,REDESIGNED,v1.2.0,data pack recipes,ADR-016,,
 config_file:Lathe.xml,PLANNED,C16b,data pack recipes,ADR-062,,
-config_file:oreConfig.xml,PLANNED,C15b,planet ore feature data,ADR-062,ores by planet instead of by atmosphere and temperature,
+config_file:oreConfig.xml,REDESIGNED,v1.8.0,Moon and Mars ore placed features in data packs,ADR-063,ores by planet instead of by atmosphere and temperature,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 config_file:planetDefs.xml,REDESIGNED,v0.3.0,import-only XML adapter and celestial data packs,V0.3.0 ADR-062,,
 config_file:PrecisionAssembler.xml,REDESIGNED,v1.2.0,data pack recipes,ADR-016,,
 config_file:PrecisionLaserEtcher.xml,PLANNED,C16c,data pack recipes,ADR-062,,
@@ -623,27 +623,27 @@ worldgen:ChunkProviderAsteroids,REJECTED,-,-,ADR-051 ADR-062,temporary asteroid 
 worldgen:ChunkProviderCavePlanet,DEFERRED,post-2.0,-,ADR-062,cave planet terrain type,
 worldgen:ChunkProviderPlanet,REDESIGNED,v1.4.0,datapack noise settings,ADR-033,,
 worldgen:ChunkProviderSpace,REDESIGNED,v0.3.0,space Level generator,ADR-031,,
-worldgen:CustomizableOreGen,PLANNED,C15b,configured ore features,ADR-062,"data-driven ore placement; the Overworld features came in C15a, the Moon and Mars features close the row in C15b",
+worldgen:CustomizableOreGen,REDESIGNED,v1.8.0,configured ore features with the planet_ores server switch,ADR-063,"data-driven ore placement; the Overworld features came in C15a, the Moon and Mars features close the row in C15b",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:GenLayerBiomePlanet,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,,
 worldgen:GenLayerVoronoiExtended,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,,
-worldgen:MapGenCaveExt,PLANNED,C15b,vanilla cave carvers in planet data,ADR-062,,
-worldgen:MapGenCrater,PLANNED,C15b,crater structure,ADR-062,radius 8-48 with a raised rim (ADR-063 section 5),
-worldgen:MapGenCraterHuge,PLANNED,C15b,crater structure (large radii),ADR-062,legacy radius up to about 91 is capped at 48,
-worldgen:MapGenCraterSmall,PLANNED,C15b,crater structure (small radii),ADR-062,,
-worldgen:MapGenGeode,PLANNED,C15b,geode structure,ADR-062,legacy radius 24-48 is capped at 24,
-worldgen:MapGenHighCaves,PLANNED,C15b,vanilla cave carvers in planet data,ADR-062,,
+worldgen:MapGenCaveExt,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenCrater,REDESIGNED,v1.8.0,crater structures moon_crater and mars_crater,ADR-063,radius 8-48 with a raised rim (ADR-063 section 5),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenCraterHuge,REDESIGNED,v1.8.0,crater structures (radius capped at 48),ADR-063,legacy radius up to about 91 is capped at 48,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenCraterSmall,REDESIGNED,v1.8.0,crater structures (small radii),ADR-063,,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenGeode,REDESIGNED,v1.8.0,geode structure,ADR-063,legacy radius 24-48 is capped at 24,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenHighCaves,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenInvertedPillar,PLANNED,C15c,inverted pillar feature,ADR-062,ocean spires,
 worldgen:MapGenLander,DEFERRED,post-2.0,-,ADR-062,decorative lander structure,
 worldgen:MapGenLargeCrystal,PLANNED,C15c,large crystal feature,ADR-062,,
-worldgen:MapGenMassiveRavine,PLANNED,C15b,vanilla canyon carvers in planet data,ADR-062,,
-worldgen:MapGenRavineExt,PLANNED,C15b,vanilla canyon carvers in planet data,ADR-062,,
+worldgen:MapGenMassiveRavine,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenRavineExt,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenSpaceStation,REJECTED,-,-,ADR-062,never referenced in the legacy build,
 worldgen:MapGenSpaceVillage,DEFERRED,post-2.0,-,ADR-062,vanilla villages on habitable planets,
 worldgen:MapGenSwampTree,PLANNED,C15c,swamp tree feature,ADR-062,,
-worldgen:MapGenVolcano,PLANNED,C15b,volcano structure,ADR-062,cone radius at most 32 (ADR-063 section 5),
+worldgen:MapGenVolcano,REDESIGNED,v1.8.0,volcano structure,ADR-063,cone radius at most 32 (ADR-063 section 5),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:OreGenerator,REDESIGNED,v1.8.0,Overworld ore placed features and the overworld_ores biome modifier,ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 worldgen:WorldGenAlienTree,PLANNED,C15c,lightwood tree feature,ADR-062,,
-worldgen:WorldGenCharredTree,PLANNED,C15b,charred tree feature,ADR-062,,
+worldgen:WorldGenCharredTree,IMPLEMENTED,v1.8.0,charred_tree feature in the volcanic biome,ADR-063,,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:WorldGenElectricMushroom,PLANNED,C15c,electric mushroom feature,ADR-062,,
 worldgen:WorldGenLargeCrystal,PLANNED,C15c,crystal cluster feature,ADR-062,,
 worldgen:WorldGenNoTree,MERGED,-,worldgen:WorldGenAlienTree,ADR-062,internal helper,

@@ -53,8 +53,11 @@ ADR-018's campaign trigger (revision 2) and accepted the deferral of terraformin
 hovercraft past v2.0. C15a (the material set, ores and the small plate press) is delivered
 and changes the runtime identity to `1.20.1-1.8.0-dev`
 ([C15a evidence](../work/v1.8.0-c15a-materials/VERIFICATION.md)); its independent review
-and the owner's decision on ADR-063 revision 4 are pending. The next chunk is in
-[COMPLETION-PLAN](COMPLETION-PLAN.md). No Gate is claimed.
+accepted it. C15b (the Moon, Mars and Venus surfaces, structures and planet ores) is
+delivered ([C15b evidence](../work/v1.8.0-c15b-surfaces/VERIFICATION.md)); its
+independent review is pending. The owner's decision on ADR-063 revisions 4 and 5 and
+ADR-061 revision 7 is open. The next chunk is in [COMPLETION-PLAN](COMPLETION-PLAN.md).
+No Gate is claimed.
 
 Previous development version (v1.7, development handoff, release `IN_PROGRESS`):
 
