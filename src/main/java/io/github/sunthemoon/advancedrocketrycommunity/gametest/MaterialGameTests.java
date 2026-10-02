@@ -189,9 +189,16 @@ public final class MaterialGameTests {
         helper.assertTrue(SmallPlatePressBlock.press(helper.getLevel(), at(helper, 0, PRESS)) == PressResult.DISABLED,
                 "A disabled press acted");
         power(helper, 0);
+        // A failure names what happened at the rising edge and after it, so a press that acted is told apart from a
+        // block removed by something else.
+        String atEdge = "at the edge: target " + helper.getBlockState(TARGET) + ", switch "
+                + CommonConfig.smallPlatePressEnabled();
         helper.runAfterDelay(5, () -> {
-            helper.assertBlockPresent(MaterialContent.block("iridium_block"), TARGET);
-            helper.assertTrue(items(helper, 0).isEmpty(), "A disabled press made plates");
+            String seen = atEdge + "; after 5 ticks: target " + helper.getBlockState(TARGET) + ", items "
+                    + items(helper, 0) + ", switch " + CommonConfig.smallPlatePressEnabled();
+            helper.assertTrue(helper.getBlockState(TARGET).is(MaterialContent.block("iridium_block")),
+                    "The disabled press's block is gone; " + seen);
+            helper.assertTrue(items(helper, 0).isEmpty(), "A disabled press made plates; " + seen);
             CommonConfig.SMALL_PLATE_PRESS_ENABLED.set(true);
             helper.succeed();
         });
