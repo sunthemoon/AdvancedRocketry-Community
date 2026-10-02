@@ -1,0 +1,167 @@
+[
+  {
+    "bytes": 1091191,
+    "path": "logs/gradle-gametest-baseline-run2.log",
+    "sha256": "778c0680c7d3a27c880c92154f00c4a406af0574ec6b9696ac20b33cbf8f0617"
+  },
+  {
+    "bytes": 1111120,
+    "path": "logs/gradle-gametest-baseline.log",
+    "sha256": "58c0c4921938ee34435a5bd948c0f3f953d04dc440a3384e6a5f34352dec907b"
+  },
+  {
+    "bytes": 1399,
+    "path": "logs/gradle-test-baseline.log",
+    "sha256": "7dbe17cfb1be4b6e5aa60fa3c19f8ac0dee175e8b3f5ecffa260b921e71553be"
+  },
+  {
+    "bytes": 1445,
+    "path": "logs/probe-run1.log",
+    "sha256": "eb94a71ac9aa972a3172d579fe8357c93b2515e8896d8841c11a59e2dceb8cef"
+  },
+  {
+    "bytes": 1170357,
+    "path": "logs-r2/full-run1.log",
+    "sha256": "37fcdc7e5bef8651b74fee6424e112aacd08607016567e27926fd71947055cc3"
+  },
+  {
+    "bytes": 1617,
+    "path": "logs-r2/gametest-repeat-summary.txt",
+    "sha256": "d51dc9d60391c9e8e1c8d752ef45337f92dd124fd0b606c742df402b07b2616a"
+  },
+  {
+    "bytes": 1132239,
+    "path": "logs-r2/gametest-run2.log",
+    "sha256": "14b80b24a5cdfd0a1c2c173673318e03b13142483d208aeb9329e8d626e1beb7"
+  },
+  {
+    "bytes": 1130625,
+    "path": "logs-r2/gametest-run3.log",
+    "sha256": "c516687f6b1850e9fc311b547aa3dd713c9c29b7c482f3075d375514724b4adb"
+  },
+  {
+    "bytes": 1133051,
+    "path": "logs-r2/gametest-run4.log",
+    "sha256": "e44b38d29346bb4499381db2e9c038bf5500b8e1c23c8d5620fecab915075df5"
+  },
+  {
+    "bytes": 1613,
+    "path": "logs-r2/mutation-h1.log",
+    "sha256": "5cf98e661d03d8cb8cb903972fe3bde5a7ee6d172fcc6eef4e00bfcbe8d2221a"
+  },
+  {
+    "bytes": 2849,
+    "path": "logs-r2/probe-run.log",
+    "sha256": "417f949d314263aa20fe2c84b367d0d66f18a9c40f6983eda79ee934fae04a5c"
+  },
+  {
+    "bytes": 1160608,
+    "path": "logs-r3/full-run1.log",
+    "sha256": "8294472ae9a105dbfbf28a33aa7198c4c976d477409d638022b19f4a9b39e363"
+  },
+  {
+    "bytes": 1137585,
+    "path": "logs-r3/gametest-run2.log",
+    "sha256": "d4565764b18971dcfa9eb418e800f184036edb7f0cb836f98de0c676a4343b68"
+  },
+  {
+    "bytes": 1135361,
+    "path": "logs-r3/gametest-run3.log",
+    "sha256": "44ba30e5b8dded25d1e98b24430c1031e56a2425b6e94c01a4e7ea03236acf19"
+  },
+  {
+    "bytes": 1139046,
+    "path": "logs-r3/masking-probe-run.log",
+    "sha256": "746e5fd002ce294c9ca88e1478e7394825272b7b0e41fd5ac61888f8d30e6d22"
+  },
+  {
+    "bytes": 2091,
+    "path": "logs-r3/mutation-A.log",
+    "sha256": "f6018b87f5f8e4e678e8a545e180538d64490e963c1c114971c30d1fc94f222e"
+  },
+  {
+    "bytes": 1550,
+    "path": "logs-r3/mutation-B.log",
+    "sha256": "02cdb992b8b4bf34b61413f43bbb95df9e4215e9fbaa7c9fab9abe44ae0c31be"
+  },
+  {
+    "bytes": 2077,
+    "path": "logs-r3/mutation-C.log",
+    "sha256": "5802e5caac0577fd8bcbf1650ca2958a429f2d5f597b5054ef0a65d51ada2a8d"
+  },
+  {
+    "bytes": 2849,
+    "path": "logs-r3/probe-run.log",
+    "sha256": "d478b3d9d33fcf0a4a0f7a3ba52f1b88dd94ec6db3b88a6177a0ec3ade026bd2"
+  },
+  {
+    "bytes": 218,
+    "path": "logs-r3/summary.txt",
+    "sha256": "d7f2e18d72eb70e8ce40ebfba3b857ad2e40e065c9eab30451e4385afa06f160"
+  },
+  {
+    "bytes": 16467,
+    "path": "probes/C12ReviewProbeTest.java",
+    "sha256": "fd841f200fda471a8b384a98a504afec91f0056ce4cc78e9d06a3799ee66fe10"
+  },
+  {
+    "bytes": 17690,
+    "path": "probes-r2/C12ReviewProbeTest.java",
+    "sha256": "f7b6eae458bc91be40f5d90b29c4bd651041665d75e442d1b5aa6f32adb0e9d6"
+  },
+  {
+    "bytes": 478,
+    "path": "probes-r2/fill.py",
+    "sha256": "704a87f43acd81c3905330d44c8eef90a8ec2fe530d65a2fca130a588d0d5887"
+  },
+  {
+    "bytes": 8335,
+    "path": "probes-r2/new-findings.md",
+    "sha256": "631eaf8b7d8d311b2bb095c10bcfdb6df58395bc8239ef7023e49c998761c305"
+  },
+  {
+    "bytes": 185,
+    "path": "probes-r2/r1.txt",
+    "sha256": "50a8032b8123a5cd19a8844774a2dc5246cfd7868a959d9b88e2b17f3ba00e83"
+  },
+  {
+    "bytes": 206,
+    "path": "probes-r2/r2.txt",
+    "sha256": "94011eec4fadf3b12de17e26bf945e6a3fda1bdb8bb62d0e4354ea7abe2e56f2"
+  },
+  {
+    "bytes": 595,
+    "path": "probes-r2/r3.txt",
+    "sha256": "2606329ab016d4327ed1b611abfe3fb13d8de30d30e2893c5da8979366bcfef2"
+  },
+  {
+    "bytes": 334,
+    "path": "probes-r2/r4.txt",
+    "sha256": "c585ff6cd26bfb4bacc7ec64b0d652921b736c5e97d34588700fdb731e3502bc"
+  },
+  {
+    "bytes": 1611,
+    "path": "probes-r3/C12R3MaskingProbeGameTests.java",
+    "sha256": "3dca7a8e9f0d25c4bd9698ff398dec617c1e393cba1f61a8995cc0024e82d244"
+  },
+  {
+    "bytes": 17690,
+    "path": "probes-r3/C12ReviewProbeTest.java",
+    "sha256": "f7b6eae458bc91be40f5d90b29c4bd651041665d75e442d1b5aa6f32adb0e9d6"
+  },
+  {
+    "bytes": 20706,
+    "path": "REVIEW-ROUND2.md",
+    "sha256": "238f6a6bd913f2b2655a52d1d26b2d7f95098f500676d534469bd059dcf10e54"
+  },
+  {
+    "bytes": 8292,
+    "path": "REVIEW-ROUND3.md",
+    "sha256": "211624614d23bf86eb72eeea0cb67426e2ae4f2b09306acb6ce3e1114f258a8f"
+  },
+  {
+    "bytes": 34414,
+    "path": "REVIEW.md",
+    "sha256": "49dd22ad1d82a093711450be419288967c260dac0d2fc3f809196255688feb48"
+  }
+]

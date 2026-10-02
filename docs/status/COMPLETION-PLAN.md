@@ -166,7 +166,12 @@ Codex/Claude 只能推进到 `READY_FOR_AUDIT`，`PASSED`/发布由维护者决�
   （`docs/work/v1.7.0-c11-review/`，`6ace111` 处 1,304 个 JUnit、321 个 GameTest 通过）。
   不声明任何 Gate。
 
-### C12. 黑洞能源、电梯物流、目标系统 `[ ]`
+### C12. 黑洞能源、电梯物流、目标系统 `[x]`
+- 结果（2026-10-02）：C12a 黑洞发电机、C12b 转运账本、C12c 轨道炮、C12d 空间电梯各有证据包
+  （`docs/work/v1.7.0-c12a-black-hole/` 等）。独立实现审核第 1 轮 1 High / 3 Medium / 7 Low /
+  6 Info，逐项单独提交修复；第 2、3 轮四个切片全部接受，第 2 轮新增 1 Low、6 Info 与第 3 轮
+  1 Info 均已修复或记录接受（`docs/work/v1.7.0-c12-review/`，`10d9b12` 处 1,364 个 JUnit、
+  335 个 GameTest 通过）。不声明任何 Gate。
 
 ### C13. v1.7 破坏边界、性能、恢复、原生证据、审核与交付 `[ ]`
 

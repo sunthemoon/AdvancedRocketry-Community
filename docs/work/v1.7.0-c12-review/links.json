@@ -1,0 +1,94 @@
+{
+  "links": [
+    {
+      "document": "docs/provenance/v1.7.0-development-metadata.md",
+      "target": "v0.0.2-forge-mdk-and-gradle-wrapper.md"
+    },
+    {
+      "document": "docs/provenance/v1.7.0-development-metadata.md",
+      "target": "../../THIRD-PARTY-NOTICES.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "../versions/V1.7.0-ENDGAME-SYSTEMS.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-legacy-audit.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/review-04-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c11a-framework/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c11b-laser-logical/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c11c-laser-physical/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c11d-gravity-field/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c11-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c12a-black-hole/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c12b-transit-ledger/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c12c-railgun/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c12d-space-elevator/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.7.0-implementation-log.md",
+      "target": "v1.7.0-c12-review/VERIFICATION.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

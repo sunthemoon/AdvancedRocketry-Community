@@ -1,0 +1,281 @@
+{
+  "base_commit": "616b9fd0",
+  "files": [
+    {
+      "bytes": 8613,
+      "path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "83a80bb39e3cc00f8737b4e7a2a2146e773e95ba79cee2a03c4620d1af5159ee",
+      "working_sha256": "83a80bb39e3cc00f8737b4e7a2a2146e773e95ba79cee2a03c4620d1af5159ee"
+    },
+    {
+      "bytes": 20865,
+      "path": "build.gradle",
+      "sha256": "a678c21c4282d1d8d69f9146fd3e06d0601d477233e1b977cd2131fe6d7605cb",
+      "working_sha256": "a678c21c4282d1d8d69f9146fd3e06d0601d477233e1b977cd2131fe6d7605cb"
+    },
+    {
+      "bytes": 10166,
+      "path": "docs/ENDGAME-OPERATOR-GUIDE.md",
+      "sha256": "03159cb53e85b2aaf59eabb1f55681afdeffb9e853a57a9df817843ccb5797d0",
+      "working_sha256": "03159cb53e85b2aaf59eabb1f55681afdeffb9e853a57a9df817843ccb5797d0"
+    },
+    {
+      "bytes": 3325,
+      "path": "docs/provenance/v1.7.0-development-metadata.md",
+      "sha256": "a1e01015692abb4348828320d0117727479b7d39e068aaa3d05ca11a48e5723f",
+      "working_sha256": "a1e01015692abb4348828320d0117727479b7d39e068aaa3d05ca11a48e5723f"
+    },
+    {
+      "bytes": 12715,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "d99fca45c679dc4c7e7c33aac115e9efd1766fc2bb700a961603da828621a315",
+      "working_sha256": "d99fca45c679dc4c7e7c33aac115e9efd1766fc2bb700a961603da828621a315"
+    },
+    {
+      "bytes": 57180,
+      "path": "docs/work/v1.7.0-implementation-log.md",
+      "sha256": "abf912c669133642e9ad656012ff79d0bd322b8ae091ad4a997522389c748743",
+      "working_sha256": "abf912c669133642e9ad656012ff79d0bd322b8ae091ad4a997522389c748743"
+    },
+    {
+      "bytes": 6972,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java",
+      "sha256": "d36da22aab1a9849e5a3316af42f135a0aead12b84bdba5353c3871ba1bb07ec",
+      "working_sha256": "d36da22aab1a9849e5a3316af42f135a0aead12b84bdba5353c3871ba1bb07ec"
+    },
+    {
+      "bytes": 21982,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleGeneratorBlockEntity.java",
+      "sha256": "66c6db01aa1da9cb6112fe9d19e11e808eabe45d35509073752245e58e602f06",
+      "working_sha256": "66c6db01aa1da9cb6112fe9d19e11e808eabe45d35509073752245e58e602f06"
+    },
+    {
+      "bytes": 5203,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/ElevatorCommands.java",
+      "sha256": "20ca167f04bc5dedec7e7b56c081e8544ffd3cba9d4ccef8f5a76400d11c396e",
+      "working_sha256": "20ca167f04bc5dedec7e7b56c081e8544ffd3cba9d4ccef8f5a76400d11c396e"
+    },
+    {
+      "bytes": 12411,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/ElevatorReleaseTestCommands.java",
+      "sha256": "0bc5f6882f8077f1586a4dafc60c448635c812e688411403864130145c012af7",
+      "working_sha256": "0bc5f6882f8077f1586a4dafc60c448635c812e688411403864130145c012af7"
+    },
+    {
+      "bytes": 22884,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/EndgameCommands.java",
+      "sha256": "701af1764401dd12722b2833818157b4e30d156bc55d7233c1dd5e0965785cea",
+      "working_sha256": "701af1764401dd12722b2833818157b4e30d156bc55d7233c1dd5e0965785cea"
+    },
+    {
+      "bytes": 19304,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/EndgameReleaseTestCommands.java",
+      "sha256": "f13e73f85b7e0a7451e42ee35de89a7789b432fa9489af0042ff7e5f9c52cfcf",
+      "working_sha256": "f13e73f85b7e0a7451e42ee35de89a7789b432fa9489af0042ff7e5f9c52cfcf"
+    },
+    {
+      "bytes": 9933,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/TransitCommands.java",
+      "sha256": "91c8483243c3b7ea9fececd5c073441178ea58b36221af0866ce59ecaccc38c7",
+      "working_sha256": "91c8483243c3b7ea9fececd5c073441178ea58b36221af0866ce59ecaccc38c7"
+    },
+    {
+      "bytes": 14038,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevices.java",
+      "sha256": "254078cb8df7d846c49e81d16ecdd5c51d2d003ce1564c21e906f407cdebd4f3",
+      "working_sha256": "254078cb8df7d846c49e81d16ecdd5c51d2d003ce1564c21e906f407cdebd4f3"
+    },
+    {
+      "bytes": 6931,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorCargo.java",
+      "sha256": "439eeda23eea237f8300880c50d7f1f9377ef908a44a570269047f48bd10dbf5",
+      "working_sha256": "439eeda23eea237f8300880c50d7f1f9377ef908a44a570269047f48bd10dbf5"
+    },
+    {
+      "bytes": 8665,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorEndpointBlockEntity.java",
+      "sha256": "ed02d01c337beb3d492330c825c38b54e6fa566b39dabaa84fc54a58274f85b2",
+      "working_sha256": "ed02d01c337beb3d492330c825c38b54e6fa566b39dabaa84fc54a58274f85b2"
+    },
+    {
+      "bytes": 3957,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorGuard.java",
+      "sha256": "a44bc99b12778b5767b4fbc1ee949a80cab9e1d92e37712c3ffac6f972c12db9",
+      "working_sha256": "a44bc99b12778b5767b4fbc1ee949a80cab9e1d92e37712c3ffac6f972c12db9"
+    },
+    {
+      "bytes": 19233,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorMenu.java",
+      "sha256": "42ace42677e7850d993e9d15e9593b635d4f7140adafa9f0e7897c8e5382d1bb",
+      "working_sha256": "42ace42677e7850d993e9d15e9593b635d4f7140adafa9f0e7897c8e5382d1bb"
+    },
+    {
+      "bytes": 12902,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorPairs.java",
+      "sha256": "5a024ecf2d71f3f786951d537b621923356f2dc04cdd5d3c444ac60b6121e45a",
+      "working_sha256": "5a024ecf2d71f3f786951d537b621923356f2dc04cdd5d3c444ac60b6121e45a"
+    },
+    {
+      "bytes": 4144,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorRedirectRule.java",
+      "sha256": "7e99f570325b9fa4618cc8e88b75851cf1c6bc179512174dc5499b593ae46c6b",
+      "working_sha256": "7e99f570325b9fa4618cc8e88b75851cf1c6bc179512174dc5499b593ae46c6b"
+    },
+    {
+      "bytes": 17300,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorRides.java",
+      "sha256": "d31c1222ee08bfc51a2237ffe7653403a5cd6283ea0e234d851240cc4f96f228",
+      "working_sha256": "d31c1222ee08bfc51a2237ffe7653403a5cd6283ea0e234d851240cc4f96f228"
+    },
+    {
+      "bytes": 2910,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/model/ElevatorPair.java",
+      "sha256": "13f149ee50e0c6226f2140ea93c3d88c993d79659efb6e0b13afb875a7bb1126",
+      "working_sha256": "13f149ee50e0c6226f2140ea93c3d88c993d79659efb6e0b13afb875a7bb1126"
+    },
+    {
+      "bytes": 2152,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/model/ElevatorPairCodec.java",
+      "sha256": "d789b370fc11c82d06cefada2613c8c64fb17eaa04302bd2d4fbba08a293760b",
+      "working_sha256": "d789b370fc11c82d06cefada2613c8c64fb17eaa04302bd2d4fbba08a293760b"
+    },
+    {
+      "bytes": 4708,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/model/ElevatorPairTable.java",
+      "sha256": "c5d6d4b0c3423eb755ba2d2b2f31d41481418dab565417093b5a433adc8596c0",
+      "working_sha256": "c5d6d4b0c3423eb755ba2d2b2f31d41481418dab565417093b5a433adc8596c0"
+    },
+    {
+      "bytes": 23304,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameRoot.java",
+      "sha256": "20794d7556f11031b68ea9805542a20ec17ee7cef5ee2b57499ed281a17a1c24",
+      "working_sha256": "20794d7556f11031b68ea9805542a20ec17ee7cef5ee2b57499ed281a17a1c24"
+    },
+    {
+      "bytes": 11707,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/root/EndgameRootCodec.java",
+      "sha256": "6493526c6be091ee4c34d51d256515ece09c0b9612410e045bd986176d8cb318",
+      "working_sha256": "6493526c6be091ee4c34d51d256515ece09c0b9612410e045bd986176d8cb318"
+    },
+    {
+      "bytes": 2562,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/BarrierSpacing.java",
+      "sha256": "d41e4e9fcce3d5949a56300bc8dc74ea38de39f3ed20df5605c1b51635757889",
+      "working_sha256": "d41e4e9fcce3d5949a56300bc8dc74ea38de39f3ed20df5605c1b51635757889"
+    },
+    {
+      "bytes": 22036,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameService.java",
+      "sha256": "f961c84cfd1082c4c1970e9ada24b14ede557b14cee367803cad1a495686cd96",
+      "working_sha256": "f961c84cfd1082c4c1970e9ada24b14ede557b14cee367803cad1a495686cd96"
+    },
+    {
+      "bytes": 5564,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndpointObservations.java",
+      "sha256": "1a2b8352603bdb0b9ecac5457bf730854da621f81836106188565fac16268a67",
+      "working_sha256": "1a2b8352603bdb0b9ecac5457bf730854da621f81836106188565fac16268a67"
+    },
+    {
+      "bytes": 25193,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitLedger.java",
+      "sha256": "2037e66f86470c4a4566fdf732a824556a5976fff52e5b12a64aa538ef920949",
+      "working_sha256": "2037e66f86470c4a4566fdf732a824556a5976fff52e5b12a64aa538ef920949"
+    },
+    {
+      "bytes": 17013,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitOperations.java",
+      "sha256": "1ba4d170b43f3df81be1cdcb3ecda0a6be052706ecf44bf4f8f68c18f5709192",
+      "working_sha256": "1ba4d170b43f3df81be1cdcb3ecda0a6be052706ecf44bf4f8f68c18f5709192"
+    },
+    {
+      "bytes": 14797,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitDestinationState.java",
+      "sha256": "c30bd78fef40751ff3155363eed221ce1874504ac64dd8f9af6fb84ffb2bd8ab",
+      "working_sha256": "c30bd78fef40751ff3155363eed221ce1874504ac64dd8f9af6fb84ffb2bd8ab"
+    },
+    {
+      "bytes": 11821,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BlackHoleGeneratorGameTests.java",
+      "sha256": "a50d5cbb1e758b377fc0f4360f8be38162c496f61687dbdafdd25ff1b80391f3",
+      "working_sha256": "a50d5cbb1e758b377fc0f4360f8be38162c496f61687dbdafdd25ff1b80391f3"
+    },
+    {
+      "bytes": 41912,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ElevatorGameTests.java",
+      "sha256": "b3e73f8127fd5440af92fae70a2d9c5c87fa72626842e0ff6ac35cc7d435b01f",
+      "working_sha256": "b3e73f8127fd5440af92fae70a2d9c5c87fa72626842e0ff6ac35cc7d435b01f"
+    },
+    {
+      "bytes": 5392,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/EndgameDestructionGameTests.java",
+      "sha256": "6b5de2cf204d91e11a464070109de6efd991ba5132703650972694e4ae7fb07d",
+      "working_sha256": "6b5de2cf204d91e11a464070109de6efd991ba5132703650972694e4ae7fb07d"
+    },
+    {
+      "bytes": 1365,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/EntitySections.java",
+      "sha256": "aa20732a613fe7103c2c21dc12c54ed5e4b73bd54a7c6e33d6258adaafd59503",
+      "working_sha256": "aa20732a613fe7103c2c21dc12c54ed5e4b73bd54a7c6e33d6258adaafd59503"
+    },
+    {
+      "bytes": 14934,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketAdapterFailureGameTests.java",
+      "sha256": "9838259648d62155059e658dc68ab0de90434c358853cba51637dd3c42d0116c",
+      "working_sha256": "9838259648d62155059e658dc68ab0de90434c358853cba51637dd3c42d0116c"
+    },
+    {
+      "bytes": 19260,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketDisassemblyGameTests.java",
+      "sha256": "a4ae86cfd60ba7da587e59689d8a8d31cd310d0e4e8efbf406553e296100932b",
+      "working_sha256": "a4ae86cfd60ba7da587e59689d8a8d31cd310d0e4e8efbf406553e296100932b"
+    },
+    {
+      "bytes": 33298,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RocketGameTests.java",
+      "sha256": "5077f87ce7bab3ca506a0c73a43c01692d5f3fef55ed1e954bc40e8796089972",
+      "working_sha256": "5077f87ce7bab3ca506a0c73a43c01692d5f3fef55ed1e954bc40e8796089972"
+    },
+    {
+      "bytes": 16153,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorTest.java",
+      "sha256": "c7eb385ca335969e61468420f5fda20d01deb8bedc4643a5c6ae7b2940a1063d",
+      "working_sha256": "c7eb385ca335969e61468420f5fda20d01deb8bedc4643a5c6ae7b2940a1063d"
+    },
+    {
+      "bytes": 2610,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/BarrierSpacingTest.java",
+      "sha256": "9cbad8e876824df4868c7a3fec9f513cece71b18e37f997e12570d3279e49e19",
+      "working_sha256": "9cbad8e876824df4868c7a3fec9f513cece71b18e37f997e12570d3279e49e19"
+    },
+    {
+      "bytes": 6157,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/ElevatorGuardTest.java",
+      "sha256": "31ece7183f87138dea5ca2a67928042d72f233456a7bf2780403f890c88539e6",
+      "working_sha256": "31ece7183f87138dea5ca2a67928042d72f233456a7bf2780403f890c88539e6"
+    },
+    {
+      "bytes": 12292,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameServiceTest.java",
+      "sha256": "fadf23d32e85a543c15cf37b4fcc4b2c531f1af9797534f3920e173457664da6",
+      "working_sha256": "fadf23d32e85a543c15cf37b4fcc4b2c531f1af9797534f3920e173457664da6"
+    },
+    {
+      "bytes": 25135,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitLedgerTest.java",
+      "sha256": "9fe3cc35d1b288c0a8edea3a4e94eaadc7214512fa6991f84ddb5117468ded1f",
+      "working_sha256": "9fe3cc35d1b288c0a8edea3a4e94eaadc7214512fa6991f84ddb5117468ded1f"
+    },
+    {
+      "bytes": 16454,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitOperationsTest.java",
+      "sha256": "207412ca916ed6f5c742647a144c648cf61b51a77d4546916dc618a1e20b7510",
+      "working_sha256": "207412ca916ed6f5c742647a144c648cf61b51a77d4546916dc618a1e20b7510"
+    },
+    {
+      "bytes": 10278,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitCodecTest.java",
+      "sha256": "bf6855154311698a2230e75fc189e6ed85951f880f43dbc30e0416db7d5f4f24",
+      "working_sha256": "bf6855154311698a2230e75fc189e6ed85951f880f43dbc30e0416db7d5f4f24"
+    }
+  ]
+}
