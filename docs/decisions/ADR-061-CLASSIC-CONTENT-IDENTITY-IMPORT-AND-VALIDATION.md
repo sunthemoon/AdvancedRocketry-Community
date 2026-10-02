@@ -194,11 +194,13 @@ must handle:
    contract change, and the validator only checks that each finding is
    complete and linked. A cited record (`review_record`,
    `confirmation_record`) is another committed file under `docs/`, never the
-   findings file itself. A plain `CLEARED` finding on a file that matches a
-   `HIT` file at the `HIT` level (an inherited review) names that file in a
+   findings file itself (compared as resolved paths). A plain `CLEARED`
+   finding on a file that matches, at the `HIT` level, a `HIT` file or a file
+   excluded by an origin finding (an inherited review) names that file in a
    `releases` list with the reason; otherwise a near copy of a `HIT` file
    could be released more easily than the `HIT` file itself, which needs the
-   override. A plan row that cites an origin finding needs that finding.
+   override. Every file decided by a plan row that cites an origin finding
+   needs that finding.
 3. **Records.** Each batch writes `docs/provenance/v1.8.0-<batch>.json` with a
    schema-2 record before the files enter the tree. Schema 2 keeps every
    schema-1 entry field (target path, status, source repository, branch,

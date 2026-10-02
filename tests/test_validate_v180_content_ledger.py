@@ -360,6 +360,25 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._write_findings([dict(finding, releases=["textures/gui/progressbars/progressbars.png"])])
         self.assertNotIn(message, self._errors())
 
+    def test_record_paths_are_resolved(self) -> None:
+        self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "someone",
+                               "role": "independent reviewer",
+                               "review_record": "docs/../docs/provenance/v1.8.0-origin-findings.json",
+                               "reviewed_at": "2026-10-03", "basis": "looked fine"}])
+        self.assertTrue(any("is CLEARED by 'someone', who is neither the owner" in error for error in self._errors()))
+
+    def test_releases_cover_sources_excluded_by_a_finding(self) -> None:
+        self._write_findings([{"asset": "textures/gui/buttons/tabwarp.png", "decision": "CLEARED",
+                               "reviewer": "sunthemoon", "reviewed_at": "2026-10-03", "basis": "the icon is original"}])
+        self.assertIn("asset plan: the CLEARED finding for textures/gui/buttons/tabwarp.png does not name "
+                      "textures/gui/buttons/tabtemplate.png, a file excluded by an origin finding it matches at HIT "
+                      "level, in its releases list", self._errors())
+
+    def test_a_glob_row_citing_a_finding_needs_one_per_file(self) -> None:
+        self._set_rule("textures/armor/iron_layer_*.png", reason="excluded by an origin finding (mutation)")
+        self.assertIn("asset plan: textures/armor/iron_layer_1.png cites an origin finding that does not exist or "
+                      "does not exclude it", self._errors())
+
     def test_a_plan_row_citing_a_finding_needs_it(self) -> None:
         path = self.root / ORIGIN_FINDINGS
         path.write_text(json.dumps({"schema_version": 1, "findings": []}), encoding="utf-8")

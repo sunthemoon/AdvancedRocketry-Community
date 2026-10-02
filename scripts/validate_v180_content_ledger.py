@@ -389,10 +389,13 @@ def adr_owner(root: Path) -> str | None:
 
 
 def _record_names(root: Path, record, *names: str) -> bool:
-    """A committed record other than the findings file itself, naming every given text."""
-    if not isinstance(record, str) or not record.startswith("docs/") or record == ORIGIN_FINDINGS.as_posix():
+    """A committed record under docs/, other than the findings file itself (compared as resolved paths, so an
+    alias such as docs/../docs/provenance/... does not pass), naming every given text."""
+    if not isinstance(record, str):
         return False
-    path = root / record
+    path = (root / record).resolve()
+    if path == (root / ORIGIN_FINDINGS).resolve() or not path.is_relative_to((root / "docs").resolve()):
+        return False
     return path.is_file() and all(name in path.read_text(encoding="utf-8") for name in names)
 
 
@@ -562,7 +565,7 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
                 if owner in model_batches and BATCHES.index(row["plan"]) > model_batches[owner]:
                     errors.append(f"asset plan rule {row['order']}: model texture for {owner} lands in {row['plan']}, "
                                   f"after its model ({BATCHES[model_batches[owner]]})")
-    cited = [row["pattern"] for row in rules if row["reason"].startswith("excluded by an origin finding")]
+    cited: set[str] = set()
     used: Counter = Counter()
     handling_of: dict[str, str] = {}
     for asset in assets:
@@ -570,6 +573,8 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             if fnmatch.fnmatchcase(asset, rule["pattern"]):
                 used[index] += 1
                 handling_of[asset] = rule["handling"]
+                if rule["reason"].startswith("excluded by an origin finding"):
+                    cited.add(asset)
                 break
         else:
             errors.append(f"asset plan: {asset} matches no rule")
@@ -613,10 +618,13 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
         if asset in cited and findings.get(asset) != "EXCLUDED":
             errors.append(f"asset plan: {asset} cites an origin finding that does not exist or does not exclude it")
         if findings.get(asset) == "CLEARED" and asset not in overturned:
-            # A plain CLEARED finding releases a HIT-level relation to a HIT file only by naming it.
+            # A plain CLEARED finding releases a HIT-level relation to a HIT file, or to a file excluded by an
+            # origin finding, only by naming it.
             for other, relation in sorted(related.get(asset, {}).items()):
-                if relation == "HIT" and verdicts.get(other) == "HIT" and other not in releases.get(asset, set()):
-                    errors.append(f"asset plan: the CLEARED finding for {asset} does not name {other}, a HIT file it "
+                excluded = verdicts.get(other) == "HIT" or findings.get(other) == "EXCLUDED"
+                if relation == "HIT" and excluded and other not in releases.get(asset, set()):
+                    kind = "a HIT file" if verdicts.get(other) == "HIT" else "a file excluded by an origin finding"
+                    errors.append(f"asset plan: the CLEARED finding for {asset} does not name {other}, {kind} it "
                                   f"matches at HIT level, in its releases list")
         if handling == "IMPORT" and findings.get(asset) != "CLEARED":
             # ADR-061 section 4.8: a file sharing pixels with a derived, suspect or quarantined file inherits review.
