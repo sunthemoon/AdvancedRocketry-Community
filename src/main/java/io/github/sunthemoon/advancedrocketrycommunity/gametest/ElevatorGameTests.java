@@ -187,7 +187,7 @@ public final class ElevatorGameTests {
             root().pairs().forStation(stationId).ifPresent(pair -> service().barrier(root -> root.pairs()
                     .remove(pair.pairId())));
             for (int x = -2; x <= 2; x++) {
-                for (int y = -1; y <= 2; y++) {
+                for (int y = -1; y <= 3; y++) {
                     for (int z = -2; z <= 2; z++) {
                         level.setBlockAndUpdate(anchorPos.offset(x, y, z), Blocks.AIR.defaultBlockState());
                     }
@@ -656,6 +656,14 @@ public final class ElevatorGameTests {
         }
         level.setBlockAndUpdate(controller, ModBlocks.ELEVATOR_ANCHOR.get().defaultBlockState());
         clearAbove(level, controller);
+        // GameTests stand in natural terrain below the surface. Clearing a test's space can set gravel in the rock
+        // above it falling, and the platform stands high in that space: a roof three blocks above the anchor catches
+        // anything falling before it reaches the platform (seen as ARRIVAL_OBSTRUCTED rides).
+        for (int x = -2; x <= 2; x++) {
+            for (int z = -2; z <= 2; z++) {
+                level.setBlockAndUpdate(controller.offset(x, 3, z), Blocks.GLASS.defaultBlockState());
+            }
+        }
         ((ElevatorAnchorBlockEntity) level.getBlockEntity(controller)).assignOwner(owner);
     }
 
