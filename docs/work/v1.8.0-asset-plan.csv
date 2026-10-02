@@ -203,7 +203,7 @@ order,pattern,handling,plan,units,reason
 202,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
 203,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
 204,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
-205,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
+205,textures/blocks/geode*.png,REGENERATE,C15b,block:geode,C15b draws the geode shell new (V180SurfaceArt); a batch may import fewer files (ADR-061 section 4.2)
 206,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
 207,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
 208,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
