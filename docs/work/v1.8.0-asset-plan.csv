@@ -1,0 +1,183 @@
+order,pattern,handling,plan,reason
+1,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+2,textures/blocks/machinevent.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+3,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+4,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+5,textures/items/basiccircuit.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+6,textures/items/datastorageunit.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+7,textures/items/siliconwafer.png,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+8,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,recorded in docs/provenance/v0.1.0-minimal-content.json
+9,lang/en_US.lang,IMPORTED,v0.1.0,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+10,lang/zh_CN.lang,IMPORTED,v0.1.0,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+11,lang/*.lang,REVIEW,C18d,community translations; each needs its own contributor provenance before use
+12,generateFiles_*.sh,EXCLUDE,-,legacy build helper scripts
+13,models/block/orientablebottom.json,EXCLUDE,-,byte-identical to a vanilla model file
+14,textures/armor/iron_layer_*.png,EXCLUDE,-,same name as vanilla armor layers; presumed vanilla-derived
+15,textures/blocks/fluid/lava_*,EXCLUDE,-,same name as vanilla lava; presumed vanilla-derived
+16,textures/font.png,EXCLUDE,-,presumed vanilla font sheet
+17,textures/env/sun.png,EXCLUDE,-,same name as the vanilla sun; presumed vanilla-derived
+18,textures/planets/shadow.png,EXCLUDE,-,same name as a vanilla texture; presumed vanilla-derived
+19,textures/gui/eyecandy/earth.png,EXCLUDE,-,same name as a vanilla painting; presumed vanilla-derived
+20,textures/blocks/test_*,EXCLUDE,-,legacy test textures
+21,textures/blocks/oopsididitagain.png,EXCLUDE,-,legacy test texture
+22,textures/blocks/clear.png,EXCLUDE,-,technical transparent texture
+23,sounds/dummy.ogg,EXCLUDE,-,silent placeholder shared by six sound events
+24,sounds/crystallizer.ogg,EXCLUDE,-,byte-identical to the silent placeholder
+25,sounds/cuttingmachine.ogg,EXCLUDE,-,byte-identical to the silent placeholder
+26,sounds/electricarcfurnace.ogg,EXCLUDE,-,byte-identical to the silent placeholder
+27,sounds/electrolyser.ogg,EXCLUDE,-,byte-identical to the silent placeholder
+28,sounds/precass.ogg,EXCLUDE,-,byte-identical to the silent placeholder
+29,textures/blocks/pipe*.png,EXCLUDE,-,deprecated pipes were never registered
+30,textures/blocks/wirelesstransciever_*,EXCLUDE,-,wireless transceiver rejected (ADR-062)
+31,textures/items/biomechanger*.png,EXCLUDE,-,terraforming family deferred (ADR-062)
+32,textures/items/hovercraft.png,EXCLUDE,-,hovercraft deferred (ADR-062)
+33,textures/items/elevatorchip.png,EXCLUDE,-,elevator chip rejected (ADR-059)
+34,textures/items/planetidchip.png,EXCLUDE,-,redesigned into the flight star map (ADR-035)
+35,textures/items/stationidchip.png,EXCLUDE,-,redesigned into station commands (ADR-046)
+36,textures/items/asteroididchip.png,EXCLUDE,-,redesigned into terminal selection (ADR-051)
+37,textures/items/spacestationcontainer.png,EXCLUDE,-,redesigned into the station deployment kit
+38,textures/models/hovercraft.png,EXCLUDE,-,hovercraft deferred (ADR-062)
+39,models/hovercraft.obj,EXCLUDE,-,hovercraft deferred (ADR-062)
+40,models/biomescanner.obj,EXCLUDE,-,terraforming family deferred (ADR-062)
+41,models/terraformeratm.obj,EXCLUDE,-,terraforming family deferred (ADR-062)
+42,textures/models/biomescanner.png,EXCLUDE,-,terraforming family deferred (ADR-062)
+43,textures/models/distillationtower.png,EXCLUDE,-,no legacy block uses it
+44,blockstates/*.json,REGENERATE,batch of the owning unit,1.12 Forge blockstate format; DataGen writes modern files
+45,models/block/*.json,REGENERATE,batch of the owning unit,1.12 model JSON; DataGen writes modern models
+46,models/item/*.json,REGENERATE,batch of the owning unit,1.12 model JSON; DataGen writes modern models
+47,recipes/*.json,REGENERATE,batch of the output,values only; DataGen writes modern recipes
+48,advancements/normal/*.json,REGENERATE,C18c,rebuilt with modern triggers
+49,sounds.json,REGENERATE,C18d,DataGen sound definitions
+50,sounds/*.ogg,REVIEW,C18d,no embedded attribution; confirm authorship before import
+51,textures/planets/*leo.jpg,REVIEW,C18d,photographic planet imagery; confirm origin before import
+52,textures/blocks/fluid/oxygen_*,IMPORT,C16a,fluid textures
+53,textures/blocks/moon_turf*.png,IMPORT,C15b,Moon surface
+54,textures/blocks/hotdry_turf.png,IMPORT,C15b,Mars surface
+55,textures/blocks/geode*.png,IMPORT,C15b,geodes
+56,textures/blocks/crystal.png,IMPORT,C15b,crystal blocks
+57,textures/blocks/log_charcoal*.png,IMPORT,C15b,charcoal log
+58,textures/blocks/basalt.png,EXCLUDE,-,vanilla basalt replaces the block (ADR-062)
+59,textures/blocks/vitrifiedsand.png,EXCLUDE,-,vitrified sand rejected (ADR-062)
+60,textures/blocks/leaves_alien.png,IMPORT,C15c,lightwood
+61,textures/blocks/log_blue*.png,IMPORT,C15c,lightwood
+62,textures/blocks/plank_blue.png,IMPORT,C15c,lightwood
+63,textures/blocks/sapling_bluetree.png,IMPORT,C15c,lightwood
+64,textures/blocks/mushroom_electric.png,IMPORT,C15c,electric mushroom
+65,textures/blocks/platepresser_*.png,IMPORT,C15a,small plate press
+66,textures/blocks/blastbrick*.png,IMPORT,C16b,arc furnace
+67,textures/blocks/qcrucible_*.png,IMPORT,C16c,quartz crucible
+68,textures/blocks/crystallizer*.png,IMPORT,C16c,crystallizer
+69,textures/blocks/cuttingmachine*.png,IMPORT,C16b,cutting machine
+70,textures/blocks/machineprecisionlaseretcher.png,IMPORT,C16c,laser etcher
+71,textures/blocks/precisionassemblerfront*.png,IMPORT,C18d,precision assembler visual refresh
+72,textures/blocks/machineelectrolyzer*.png,IMPORT,C18d,electrolyzer visual refresh
+73,textures/blocks/liquidtank.png,IMPORT,C16a,fluid tank
+74,textures/blocks/pump*.png,IMPORT,C16a,fluid pump
+75,textures/blocks/machinegeneric.png,IMPORT,C16a,generic machine face
+76,textures/blocks/machinenuclear.png,IMPORT,C17a,nuclear core
+77,textures/blocks/intake.png,EXCLUDE,-,rocket intake redesigned (ADR-051)
+78,textures/blocks/landingfloat.png,EXCLUDE,-,landing float deferred (ADR-062)
+79,textures/blocks/combustion.png,IMPORT,C17a,engine exhaust
+80,textures/blocks/fuelingmachine.png,IMPORT,C17a,fueling
+81,textures/blocks/guidancecomputer*.png,IMPORT,C17a,guidance computer visual refresh
+82,textures/blocks/monitor*.png,IMPORT,C17a,monitoring station and terminals
+83,textures/blocks/datahatch.png,EXCLUDE,-,data bus redesigned (ADR-062)
+84,textures/blocks/satellitebay.png,IMPORT,C17c,satellite bay
+85,textures/blocks/satelliteassembler.png,IMPORT,C18d,satellite builder visual refresh
+86,textures/blocks/rocketpad_*.png,IMPORT,C17b,landing pad connected texture
+87,textures/blocks/structuretower.png,EXCLUDE,-,structure tower redesigned (ADR-062)
+88,textures/blocks/stationlight.png,IMPORT,C17b,station light
+89,textures/blocks/forcefield*,IMPORT,C17b,force field and projector
+90,textures/blocks/machineorientationcontrol.png,IMPORT,C17b,station controllers
+91,textures/blocks/controlpanel.png,IMPORT,C17b,station controllers
+92,textures/blocks/starshipcontrolpanel.png,IMPORT,C17b,warp controller
+93,textures/blocks/warpcore.png,IMPORT,C18d,warp core visual refresh
+94,textures/blocks/beacon.png,REVIEW,C17c,same name as a vanilla texture; compare before import
+95,textures/blocks/hololamp.png,EXCLUDE,-,holographic selector redesigned (ADR-035)
+96,textures/blocks/solar.png,IMPORT,C17c,solar generator
+97,textures/blocks/panelside*.png,IMPORT,C18b,suit workstation and panels
+98,textures/blocks/suitworkstation.png,IMPORT,C18b,suit workstation
+99,textures/blocks/smallconnector.png,IMPORT,C17c,solar array connector
+100,textures/blocks/atmospheredetector*.png,IMPORT,C18a,atmosphere detector
+101,textures/blocks/gaschargertop.png,IMPORT,C18a,gas charge pad
+102,textures/blocks/machinescrubber*.png,IMPORT,C18a,CO2 scrubber
+103,textures/blocks/seal.png,IMPORT,C18a,pipe seal
+104,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,airlock door
+105,textures/blocks/thermitetorch.png,IMPORT,C18a,thermite torch
+106,textures/blocks/lens1.png,IMPORT,C18d,laser drill visual refresh
+107,textures/blocks/laser*.png,IMPORT,C18d,laser drill visual refresh
+108,textures/blocks/vacuumlaserfront.png,IMPORT,C18d,laser drill visual refresh
+109,textures/blocks/railgun.png,IMPORT,C18d,railgun visual refresh
+110,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,scrubber cartridge
+111,textures/items/thermite.png,IMPORT,C18a,thermite
+112,textures/items/smallairlock.png,IMPORT,C18a,airlock door item
+113,textures/items/sealdetector.png,IMPORT,C18a,seal detector
+114,textures/items/atmanalyzer.png,IMPORT,C18a,atmosphere analyzer
+115,textures/items/orescanner.png,IMPORT,C18a,survey readout item
+116,textures/items/pressuretank*.png,IMPORT,C18b,pressure tanks
+117,textures/items/jetpack.png,IMPORT,C18b,jetpack
+118,textures/items/jackhammer.png,IMPORT,C18b,jackhammer
+119,textures/items/basiclasergun.png,IMPORT,C18b,laser gun
+120,textures/items/hoverupgrade.png,IMPORT,C18b,suit upgrades
+121,textures/items/flightspeedupgrade.png,IMPORT,C18b,suit upgrades
+122,textures/items/bioniclegs.png,IMPORT,C18b,suit upgrades
+123,textures/items/landingboots.png,IMPORT,C18b,suit upgrades
+124,textures/items/antifogvisor.png,IMPORT,C18b,suit upgrades
+125,textures/items/earthbrightvisor.png,IMPORT,C18b,suit upgrades
+126,textures/items/space*.png,IMPORT,C18d,space suit visual refresh
+127,textures/items/beaconfinder.png,IMPORT,C17c,beacon finder
+128,textures/items/holoprojector.png,EXCLUDE,-,holographic selector redesigned (ADR-035)
+129,textures/items/basiclens.png,IMPORT,C18d,laser lens visual refresh
+130,textures/items/qcrucible.png,IMPORT,C16c,quartz crucible item
+131,textures/items/sawblade*.png,IMPORT,C16b,saw blade
+132,textures/items/*circuitplate.png,IMPORT,C16d,circuit plates
+133,textures/items/trackingcircuit.png,IMPORT,C16d,components
+134,textures/items/controliocircuit.png,IMPORT,C16d,components
+135,textures/items/itemiocircuit.png,IMPORT,C16d,components
+136,textures/items/liquidiocircuit.png,IMPORT,C16d,components
+137,textures/items/userinterface.png,IMPORT,C16d,components
+138,textures/items/carbonbrick.png,IMPORT,C16d,components
+139,textures/items/anthracene.png,EXCLUDE,-,no legacy item uses it
+140,textures/items/satellite*.png,IMPORT,C18d,satellite component visual refresh
+141,textures/items/advancedsolarpanel.png,IMPORT,C18d,satellite component visual refresh
+142,textures/items/basicsolarpanel.png,IMPORT,C18d,satellite component visual refresh
+143,textures/items/compositionsensor.png,IMPORT,C18d,satellite component visual refresh
+144,textures/items/massdetector.png,IMPORT,C18d,satellite component visual refresh
+145,textures/items/microwavetransmitter.png,IMPORT,C18d,satellite component visual refresh
+146,textures/items/opticalsensor.png,IMPORT,C18d,satellite component visual refresh
+147,textures/items/oremapper.png,IMPORT,C18d,satellite component visual refresh
+148,textures/armor/spacesuit_*.png,IMPORT,C18d,space suit armor layers
+149,textures/gui/space_*.png,IMPORT,C18b,suit slot icons
+150,textures/gui/jetpack*.png,IMPORT,C18b,jetpack HUD
+151,textures/gui/blastfurnace.png,IMPORT,C16b,arc furnace screen
+152,textures/gui/crystallizer.png,IMPORT,C16c,crystallizer screen
+153,textures/gui/cuttingmachine.png,IMPORT,C16b,cutting machine screen
+154,textures/gui/precisionassembler.png,IMPORT,C18d,precision assembler screen refresh
+155,textures/gui/rocketbuilder.png,IMPORT,C18d,rocket assembler screen refresh
+156,textures/gui/rockethud.png,IMPORT,C18d,rocket HUD
+157,textures/gui/lasertile.png,IMPORT,C18d,laser drill screen refresh
+158,textures/gui/genericstation.png,IMPORT,C17b,station control screens
+159,textures/gui/videosatallite.png,EXCLUDE,-,spy telescope satellite rejected (ADR-062)
+160,textures/gui/planetuioverlay*.png,EXCLUDE,-,holographic selector redesigned (ADR-035)
+161,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,screen decoration
+162,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,planet selector redesigned (ADR-035)
+163,textures/gui/progressbars/progressbars.png,IMPORT,C16a,machine screen progress bars
+164,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,observatory asteroid tabs redesigned (C18c contract)
+165,textures/gui/buttons/*warp*.png,IMPORT,C17b,warp controller screen
+166,textures/gui/buttons/*planet*.png,IMPORT,C17b,warp controller screen
+167,textures/gui/buttons/*.png,IMPORT,C16a,shared screen buttons
+168,textures/gui/*.png,IMPORT,C16a,shared screen frames
+169,models/block/models/*,IMPORT,C17a,rocket engine and tank OBJ/MTL models
+170,models/item/models/basicLaserGun.*,IMPORT,C18b,laser gun OBJ/MTL
+171,models/item/models/sawBlade.*,IMPORT,C16b,saw blade OBJ/MTL
+172,models/item/models/*,IMPORT,C17a,rocket engine and tank item OBJ/MTL models
+173,models/jetpack.obj,IMPORT,C18b,jetpack OBJ
+174,models/atmosphere.*,IMPORT,C18d,planet atmosphere sphere model
+175,models/drill.obj,EXCLUDE,-,rocket drill redesigned (ADR-051)
+176,models/*.obj,IMPORT,C18d,machine OBJ models for the visual batch
+177,textures/models/*,IMPORT,C18d,OBJ model textures for the visual batch
+178,textures/env/*,IMPORT,C18d,"sky textures (black hole, accretion disk, suns, earth phases)"
+179,textures/planets/*,IMPORT,C18d,star map and sky body textures
+180,textures/particle/*,IMPORT,C18d,particles
+181,textures/entity/flare.png,IMPORT,C18d,rocket flare
+182,textures/tile/RemoteConnector.png,EXCLUDE,-,no registered legacy block uses it

@@ -53,6 +53,11 @@ jobs:
           python scripts/validate_v010_asset_baseline.py
           python scripts/validate_v010_release_evidence.py
 
+      - name: Verify v1.8.0 legacy content inventory, ledger and asset plan
+        run: |
+          python tools/audit/inventory_v180_content.py --upstream build/upstream/AdvancedRocketry --check
+          python scripts/validate_v180_content_ledger.py
+
       - name: Verify v0.2.0 authored DataGen inventory
         run: |
           python scripts/manage_v020_generated_manifest.py verify

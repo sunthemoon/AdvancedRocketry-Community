@@ -1,0 +1,610 @@
+unit_id,disposition,plan,target,decision,notes
+advancement:beer,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:blockpresser,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:crystalline,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:dilithium,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:electrifying,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:feeltheheat,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:flightofpheonix,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:givingitallshesgot,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:holographic,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:moonlanding,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:onesmallstep,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:rollin,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:root,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:spindoctor,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:suitedup,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:warp,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+advancement:wenttothemoon,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers
+atmosphere:AtmosphereHighPressure,REDESIGNED,v1.4.0,high pressure exposure,ADR-034,
+atmosphere:AtmosphereHighPressureNoOxygen,REDESIGNED,v1.4.0,high pressure exposure without oxygen,ADR-034,
+atmosphere:AtmosphereLowOxygen,REDESIGNED,v0.4.0,no oxygen,ADR-024 ADR-062,low oxygen folds into no oxygen
+atmosphere:AtmosphereNeedsSuit,REDESIGNED,v1.4.0,exposure protection tags,ADR-034,
+atmosphere:AtmosphereNoOxygen,IMPLEMENTED,v0.4.0,no oxygen,ADR-024,
+atmosphere:AtmosphereSuperheated,REDESIGNED,v1.4.0,heat exposure,ADR-034 ADR-062,one heat tier
+atmosphere:AtmosphereSuperheatedNoOxygen,REDESIGNED,v1.4.0,heat exposure without oxygen,ADR-034 ADR-062,one heat tier
+atmosphere:AtmosphereSuperHighPressure,REDESIGNED,v1.4.0,high pressure exposure,ADR-034 ADR-062,one pressure tier
+atmosphere:AtmosphereSuperHighPressureNoOxygen,REDESIGNED,v1.4.0,high pressure exposure without oxygen,ADR-034 ADR-062,one pressure tier
+atmosphere:AtmosphereType,IMPLEMENTED,v0.4.0,breathable air,ADR-024,
+atmosphere:AtmosphereVacuum,IMPLEMENTED,v0.4.0,vacuum,ADR-024,
+atmosphere:AtmosphereVeryHot,REDESIGNED,v1.4.0,heat exposure,ADR-034,
+atmosphere:AtmosphereVeryHotNoOxygen,REDESIGNED,v1.4.0,heat exposure without oxygen,ADR-034,
+biome:alien_forest,PLANNED,C15c,alien forest biome,ADR-062,classic exoplanet world
+biome:crystalchasms,PLANNED,C15c,crystal chasms biome,ADR-062,classic exoplanet world
+biome:deepswamp,PLANNED,C15c,deep swamp biome,ADR-062,classic exoplanet world
+biome:hotdryrock,PLANNED,C15b,ferric regolith biome,ADR-062,Mars
+biome:marsh,PLANNED,C15c,marsh biome,ADR-062,classic exoplanet world
+biome:moon,PLANNED,C15b,regolith highlands biome,ADR-062,Moon
+biome:moondark,PLANNED,C15b,regolith lowlands biome,ADR-062,Moon
+biome:oceanspires,PLANNED,C15c,ocean spires biome,ADR-062,classic exoplanet world
+biome:space,REDESIGNED,v0.3.0,space Level,ADR-031,shared space Level
+biome:stormland,PLANNED,C15c,stormland biome,ADR-062,classic exoplanet world
+biome:volcanic,PLANNED,C15b,volcanic biome,ADR-062,Venus
+biome:volcanicbarren,PLANNED,C15b,volcanic lowlands biome,ADR-062,Venus
+biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build
+biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build
+block:advbipropellantRocketmotor,PLANNED,C17a,advanced bipropellant engine,ADR-062,propulsion tier with fuel and oxidizer
+block:advRocketmotor,PLANNED,C17a,advanced monopropellant engine,ADR-062,propulsion tier
+block:airlock_door,PLANNED,C18a,airlock door,ADR-062,sealing door; block half of the small airlock
+block:alienLeaves,PLANNED,C15c,lightwood leaves,ADR-062,alien forest flora
+block:alienSapling,PLANNED,C15c,lightwood sapling,ADR-062,alien forest flora
+block:alienWood,PLANNED,C15c,lightwood log,ADR-062,alien forest flora
+block:altitudeController,PLANNED,C17b,station altitude control,ADR-062,station orbit setting through the checked station commit
+block:arcfurnace,PLANNED,C16b,electric arc furnace,ADR-062,alloys and silicon; classic machine family
+block:basalt,REDESIGNED,v1.8.0,minecraft:basalt,ADR-062,vanilla basalt replaces the legacy block
+block:beacon,PLANNED,C17c,planetary beacon,ADR-062,bounded navigation marker per body
+block:biomeScanner,DEFERRED,post-2.0,-,ADR-062,terraforming family
+block:bipropellantfueltank,PLANNED,C17a,bipropellant fuel tank,ADR-062,propulsion tier
+block:bipropellantrocketmotor,PLANNED,C17a,bipropellant engine,ADR-062,propulsion tier
+block:blackholegenerator,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:black_hole_generator,ADR-057,
+block:blastbrick,PLANNED,C16b,heat-proof brick,ADR-062,arc furnace structure
+block:blockLens,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,"lens is a laser drill component item, not a block"
+block:blockPump,PLANNED,C16a,fluid pump,ADR-062,bounded source-block drain with protection checks
+block:centrifuge,PLANNED,C16c,centrifuge,ADR-062,enriched lava separation
+block:charcoalLog,PLANNED,C15b,charcoal log,ADR-062,volcanic flora
+block:chemicalReactor,PLANNED,C16c,chemical reactor,ADR-062,rocket fuel and chemistry
+block:circleLight,PLANNED,C17b,station light,ADR-062,decorative light block
+block:concrete,REDESIGNED,v1.8.0,minecraft concrete,ADR-062,vanilla concrete replaces the legacy block
+block:crystal,PLANNED,C15b,crystal blocks,ADR-062,"six colours, crystal chasm decoration"
+block:crystallizer,PLANNED,C16c,crystallizer,ADR-062,silicon boules and dilithium; low-gravity rule
+block:cuttingMachine,PLANNED,C16b,cutting machine,ADR-062,wafers and sawmill recipes
+block:deployableRocketBuilder,REJECTED,-,-,ADR-062,station-deployed mining rockets replaced by logical missions
+block:drill,REDESIGNED,v1.6.0,advancedrocketrycommunity:asteroid_drill_module,ADR-051,asteroid mining is a logical mission
+block:electricMushroom,PLANNED,C15c,electric mushroom,ADR-062,stormland flora
+block:electrolyser,IMPLEMENTED,v0.2.0,advancedrocketrycommunity:electrolyzer,ADR-016,single-block redesign kept in the v1.2 kernel
+block:enrichedLavaFluid,PLANNED,C16a,enriched lava fluid block,ADR-062,volcanic resource fluid
+block:forceField,PLANNED,C17b,force field block,ADR-062,placed only by the projector
+block:forceFieldProjector,PLANNED,C17b,force field projector,ADR-062,bounded line of field blocks through the protection chain
+block:fuelingStation,REDESIGNED,v0.6.0,advancedrocketrycommunity:fuel_loader,ADR-062,fuel loader; fluid fuels added in C17a
+block:fuelTank,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_fuel_tank,ADR-026,
+block:geode,PLANNED,C15b,geode shell,ADR-062,geode world feature
+block:gravityController,PLANNED,C17b,station gravity controller,ADR-058 ADR-062,block front-end for the v1.5 station gravity commit
+block:gravityMachine,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:gravity_field_controller,ADR-058,
+block:guidanceComputer,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:guidance_computer,ADR-026,
+block:hotTurf,PLANNED,C15b,ferric sand,ADR-062,Mars surface block
+block:hydrogenFluid,PLANNED,C16a,hydrogen fluid,ADR-062,"gaseous fluid, no placeable block"
+block:intake,REDESIGNED,v1.6.0,advancedrocketrycommunity:gas_intake_module,ADR-051,gas collection is a logical mission
+block:landingfloat,DEFERRED,post-2.0,-,ADR-062,water landing needs a landing-site rule change
+block:landingPad,PLANNED,C17b,station landing pad,ADR-062,owned landing targets on stations
+block:lathe,PLANNED,C16b,lathe,ADR-062,rods
+block:launchpad,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_assembler,ADR-062,the assembler scans connected blocks; no pad bounds
+block:lightSource,REJECTED,-,-,ADR-055,technical light block of the legacy laser drill
+block:liquidTank,PLANNED,C16a,pressurized fluid tank,ADR-062,stackable fluid storage
+block:loader,MERGED,-,block_variant:loader/*,ADR-062,"seven variants, each with its own row"
+block:microwaveReciever,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:microwave_receiver,ADR-049,
+block:monitoringStation,PLANNED,C17a,rocket monitoring station,ADR-062,rocket status and redstone launch through the server flight path
+block:moonTurf,PLANNED,C15b,moon turf,ADR-062,Moon surface block
+block:moonTurf_dark,PLANNED,C15b,dark moon turf,ADR-062,Moon lowland block
+block:nitrogenFluid,PLANNED,C16a,nitrogen fluid,ADR-062,gaseous fluid
+block:nuclearcore,PLANNED,C17a,nuclear thermal core,ADR-062,propulsion tier
+block:nuclearfueltank,PLANNED,C17a,nuclear working fluid tank,ADR-062,propulsion tier
+block:nuclearrocketmotor,PLANNED,C17a,nuclear thermal engine,ADR-062,propulsion tier
+block:observatory,PLANNED,C18c,observatory,ADR-062,ground survey creating ADR-051 asteroid instances
+block:orientationController,PLANNED,C17b,station orientation control,ADR-062,station rotation (sky) through the checked station commit
+block:oxidizerfueltank,PLANNED,C17a,oxidizer tank,ADR-062,propulsion tier
+block:oxygenCharger,PLANNED,C18a,gas charge pad,ADR-062,refills suit tanks
+block:oxygenDetection,PLANNED,C18a,atmosphere detector,ADR-062,redstone output by atmosphere state
+block:oxygenFluid,PLANNED,C16a,oxygen fluid,ADR-062,gaseous fluid
+block:oxygenScrubber,PLANNED,C18a,CO2 scrubber,ADR-062,cartridge-based vent support
+block:oxygenVent,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:oxygen_vent,ADR-024,
+block:pipeSealer,PLANNED,C18a,pipe seal,ADR-062,sealing block that passes pipes
+block:planetAnalyser,PLANNED,C18c,astrobody data processor,ADR-062,turns survey data into research
+block:planetHoloSelector,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,holographic UI entities replaced by screens
+block:planetSelector,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,multiblock selector replaced by screens
+block:planks,PLANNED,C15c,lightwood planks,ADR-062,alien forest flora
+block:platepress,PLANNED,C15a,small plate press,ADR-062,piston-driven early plates
+block:precisionassemblingmachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:precision_assembler,ADR-016 ADR-019,
+block:precisionlaseretcher,PLANNED,C16c,precision laser etcher,ADR-062,circuit plates
+block:quartzcrucible,PLANNED,C16c,quartz crucible block,ADR-062,crystallizer structure
+block:railgun,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:railgun,ADR-056,
+block:rocketBuilder,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0,
+block:rocketfire,REJECTED,-,-,ADR-062,technical fire block; launch effects are client particles
+block:rocketFuel,PLANNED,C16a,rocket fuel fluid,ADR-062,liquid fuel
+block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-026,
+block:rollingMachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:rolling_machine,ADR-016,
+block:satelliteBuilder,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_builder,ADR-049,
+block:satelliteControlCenter,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:satellite_terminal,ADR-049,
+block:sawBlade,PLANNED,C16b,saw blade assembly,ADR-062,cutting machine structure
+block:seat,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_seat,V0.5.0,
+block:solararray,PLANNED,C17c,solar array,ADR-062,multiblock generator
+block:solararraypanel,PLANNED,C17c,solar array panel,ADR-062,solar array structure
+block:solarGenerator,PLANNED,C17c,solar generator,ADR-062,single-block generator
+block:solarPanel,PLANNED,C17c,solar panel block,ADR-062,generator structure part
+block:spaceElevatorController,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:elevator_anchor advancedrocketrycommunity:elevator_terminal,ADR-059,
+block:spaceLaser,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:orbital_laser_drill,ADR-055,
+block:stationBuilder,REDESIGNED,v0.7.0,advancedrocketrycommunity:station_deployment_kit,ADR-062,stations are deployed from a kit
+block:stationMarker,REDESIGNED,v1.5.0,station expansion commit,ADR-040 ADR-062,no station module docking
+block:structureTower,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_assembler,ADR-062,no tower bounds for assembly
+block:suitWorkStation,PLANNED,C18b,suit workstation,ADR-062,installs suit upgrades and tanks
+block:terraformer,DEFERRED,post-2.0,-,ADR-062,terraforming family
+block:thermiteTorch,PLANNED,C18a,thermite torch,ADR-062,light that works in vacuum
+block:unlitTorch,PLANNED,C18a,extinguished torch,ADR-062,torches go out without oxygen
+block:vacuumLaser,REDESIGNED,v1.7.0,advancedrocketrycommunity:endgame_casing advancedrocketrycommunity:laser_lens,ADR-055,laser drill structure is casing plus lens
+block:vitrifiedSand,REJECTED,-,-,ADR-062,"no recipe, generation or producer in the legacy build"
+block:warpCore,IMPLEMENTED,v1.5.0,advancedrocketrycommunity:warp_core,ADR-044,
+block:warpMonitor,PLANNED,C17b,warp controller screen,ADR-046 ADR-062,screen over the ADR-046 commands with a versioned bounded payload
+block:wirelessTransciever,REJECTED,-,-,ADR-062,data networks are not revived; data moves in items
+block_entity:ARAttTerraformer,MERGED,-,block:terraformer,ADR-062,block entity follows its block
+block_entity:ARBeacon,MERGED,-,block:beacon,ADR-062,block entity follows its block
+block_entity:ARBiomeScanner,MERGED,-,block:biomeScanner,ADR-062,block entity follows its block
+block_entity:ARblackholegenerator,MERGED,-,block:blackholegenerator,ADR-062,block entity follows its block
+block_entity:ARBlockSeal,MERGED,-,block:pipeSealer,ADR-062,block entity follows its block
+block_entity:ARCentrifuge,MERGED,-,block:centrifuge,ADR-062,block entity follows its block
+block_entity:ARChemicalReactor,MERGED,-,block:chemicalReactor,ADR-062,block entity follows its block
+block_entity:ARCO2Scrubber,MERGED,-,block:oxygenScrubber,ADR-062,block entity follows its block
+block_entity:ARcrystallizer,MERGED,-,block:crystallizer,ADR-062,block entity follows its block
+block_entity:ARcuttingmachine,MERGED,-,block:cuttingMachine,ADR-062,block entity follows its block
+block_entity:ARdataBus,MERGED,-,block_variant:loader/0,ADR-062,block entity follows its block
+block_entity:ARDataPipe,REJECTED,-,-,ADR-062,pipe block was not registered in the legacy build
+block_entity:ARDockingPort,MERGED,-,block:stationMarker,ADR-062,block entity follows its block
+block_entity:ARelectricArcFurnace,MERGED,-,block:arcfurnace,ADR-062,block entity follows its block
+block_entity:ARElectrolyser,MERGED,-,block:electrolyser,ADR-062,block entity follows its block
+block_entity:AREnergyPipe,REJECTED,-,-,ADR-062,pipe block was not registered in the legacy build
+block_entity:ARFluidLoader,MERGED,-,block_variant:loader/5,ADR-062,block entity follows its block
+block_entity:ARFluidTank,MERGED,-,block:liquidTank,ADR-062,block entity follows its block
+block_entity:ARFluidUnloader,MERGED,-,block_variant:loader/4,ADR-062,block entity follows its block
+block_entity:ARForceFieldProjector,MERGED,-,block:forceFieldProjector,ADR-062,block entity follows its block
+block_entity:ARfuelingStation,MERGED,-,block:fuelingStation,ADR-062,block entity follows its block
+block_entity:ARGravityControl,MERGED,-,block:gravityController,ADR-062,block entity follows its block
+block_entity:ARGravityMachine,MERGED,-,block:gravityMachine,ADR-062,block entity follows its block
+block_entity:ARguidanceComputer,MERGED,-,block:guidanceComputer,ADR-062,block entity follows its block
+block_entity:ARguidanceComputerHatch,MERGED,-,block_variant:loader/6,ADR-062,block entity follows its block
+block_entity:ARLandingPad,MERGED,-,block:landingPad,ADR-062,block entity follows its block
+block_entity:ARLiquidPipe,REJECTED,-,-,ADR-062,pipe block was not registered in the legacy build
+block_entity:ARMicrowaveReciever,MERGED,-,block:microwaveReciever,ADR-062,block entity follows its block
+block_entity:ARmonitoringStation,MERGED,-,block:monitoringStation,ADR-062,block entity follows its block
+block_entity:ARobservatory,MERGED,-,block:observatory,ADR-062,block entity follows its block
+block_entity:AROrientationControl,MERGED,-,block:orientationController,ADR-062,block entity follows its block
+block_entity:AROxygenCharger,MERGED,-,block:oxygenCharger,ADR-062,block entity follows its block
+block_entity:AROxygenDetector,MERGED,-,block:oxygenDetection,ADR-062,block entity follows its block
+block_entity:AROxygenVent,MERGED,-,block:oxygenVent,ADR-062,block entity follows its block
+block_entity:ARplanetAnalyser,MERGED,-,block:planetAnalyser,ADR-062,block entity follows its block
+block_entity:ARplanetHoloSelector,MERGED,-,block:planetHoloSelector,ADR-062,block entity follows its block
+block_entity:ARprecisionAssembler,MERGED,-,block:precisionassemblingmachine,ADR-062,block entity follows its block
+block_entity:ARPrecisionLaserEtcher,MERGED,-,block:precisionlaseretcher,ADR-062,block entity follows its block
+block_entity:ARpump,MERGED,-,block:blockPump,ADR-062,block entity follows its block
+block_entity:ARRailgun,MERGED,-,block:railgun,ADR-062,block entity follows its block
+block_entity:ARrocketBuilder,MERGED,-,block:rocketBuilder,ADR-062,block entity follows its block
+block_entity:ARRocketLoader,MERGED,-,block_variant:loader/3,ADR-062,block entity follows its block
+block_entity:ARRocketUnloader,MERGED,-,block_variant:loader/2,ADR-062,block entity follows its block
+block_entity:ARsatelliteBuilder,MERGED,-,block:satelliteBuilder,ADR-062,block entity follows its block
+block_entity:ARsatelliteHatch,MERGED,-,block_variant:loader/1,ADR-062,block entity follows its block
+block_entity:ARSolarArray,MERGED,-,block:solararray,ADR-062,block entity follows its block
+block_entity:ARSolarGenerator,MERGED,-,block:solarGenerator,ADR-062,block entity follows its block
+block_entity:ARSpaceElevator,MERGED,-,block:spaceElevatorController,ADR-062,block entity follows its block
+block_entity:ARspaceLaser,MERGED,-,block:spaceLaser,ADR-062,block entity follows its block
+block_entity:ARStationAltitudeController,MERGED,-,block:altitudeController,ADR-062,block entity follows its block
+block_entity:ARStationBuilder,MERGED,-,block:stationBuilder,ADR-062,block entity follows its block
+block_entity:ARStationDeployableRocketAssembler,MERGED,-,block:deployableRocketBuilder,ADR-062,block entity follows its block
+block_entity:ARStationMonitor,MERGED,-,block:warpMonitor,ADR-062,block entity follows its block
+block_entity:ARSuitWorkStation,MERGED,-,block:suitWorkStation,ADR-062,block entity follows its block
+block_entity:ARTileEntitySatelliteControlCenter,MERGED,-,block:satelliteControlCenter,ADR-062,block entity follows its block
+block_entity:ARTileLathe,MERGED,-,block:lathe,ADR-062,block entity follows its block
+block_entity:ARTileMaterial,REDESIGNED,v1.8.0,material blocks without block entities,ADR-062,LibVulpes material tile not needed
+block_entity:ARTileMetalBender,MERGED,-,block:rollingMachine,ADR-062,block entity follows its block
+block_entity:ARTilePlanetSelector,MERGED,-,block:planetSelector,ADR-062,block entity follows its block
+block_entity:ARTransciever,MERGED,-,block:wirelessTransciever,ADR-062,block entity follows its block
+block_entity:ARwarpCore,MERGED,-,block:warpCore,ADR-062,block entity follows its block
+block_variant:crystal/0,PLANNED,C15b,violet crystal block,ADR-062,crystal colour variant
+block_variant:crystal/1,PLANNED,C15b,blue crystal block,ADR-062,crystal colour variant
+block_variant:crystal/2,PLANNED,C15b,green crystal block,ADR-062,crystal colour variant
+block_variant:crystal/3,PLANNED,C15b,red crystal block,ADR-062,crystal colour variant
+block_variant:crystal/4,PLANNED,C15b,yellow crystal block,ADR-062,crystal colour variant
+block_variant:crystal/5,PLANNED,C15b,orange crystal block,ADR-062,crystal colour variant
+block_variant:loader/0,REDESIGNED,v0.8.0,advancedrocketrycommunity:data_storage_unit,ADR-062,"data moves in storage units, no data bus"
+block_variant:loader/1,PLANNED,C17c,rocket satellite bay,ADR-049 ADR-062,"deploy a satellite package on reaching orbit, exactly once"
+block_variant:loader/2,PLANNED,C17a,rocket item unloader,ADR-062,docked rocket inventories
+block_variant:loader/3,PLANNED,C17a,rocket item loader,ADR-062,docked rocket inventories
+block_variant:loader/4,PLANNED,C17a,rocket fluid unloader,ADR-062,docked rocket tanks
+block_variant:loader/5,PLANNED,C17a,rocket fluid loader,ADR-062,docked rocket tanks
+block_variant:loader/6,REDESIGNED,v1.4.0,flight star map destination,ADR-035 ADR-062,no chips to insert
+command:planet/delete,REJECTED,-,-,ADR-031,"bodies are data, not runtime dimensions"
+command:planet/generate,REJECTED,-,-,ADR-031,no runtime planet generation
+command:planet/get,REDESIGNED,v1.4.0,/arce celestial inspection,ADR-031,
+command:planet/help,REDESIGNED,v1.4.0,Brigadier usage,ADR-062,
+command:planet/list,REDESIGNED,v1.4.0,/arce celestial inspection,ADR-031,
+command:planet/reset,REJECTED,-,-,ADR-031,no runtime planet regeneration
+command:planet/set,REJECTED,-,-,ADR-031,body properties come from data packs
+command:root/addsolidblockoverride,REDESIGNED,v0.4.0,atmosphere sealing tags,ADR-024,
+command:root/addtorch,REDESIGNED,v1.8.0,torch tag (C18a),ADR-062,
+command:root/begintest,REJECTED,-,-,ADR-062,legacy in-game test harness; GameTests replace it
+command:root/dumpbiomes,REJECTED,-,-,ADR-062,debug dump
+command:root/fetch,REDESIGNED,v0.3.0,vanilla teleport commands,ADR-062,
+command:root/filldata,REJECTED,-,-,ADR-062,debug data fill
+command:root/givestation,REDESIGNED,v0.7.0,station commands,ADR-046,
+command:root/goto,IMPLEMENTED,v0.3.0,/arce celestial goto,V0.3.0,
+command:root/planet,MERGED,-,command:planet/get,ADR-062,subcommand group
+command:root/reloadrecipes,REDESIGNED,v0.1.0,vanilla /reload,ADR-062,
+command:root/setgravity,REDESIGNED,v1.5.0,/arce station gravity,ADR-041,planets take gravity from data
+command:root/star,REDESIGNED,v1.5.0,star system data,ADR-043,
+config:CATEGORY_GENERAL.allowTerraformingNonARWorlds,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CATEGORY_GENERAL.biomeUpdateSpeed,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CATEGORY_GENERAL.blockTankCapacity,PLANNED,C16a,fluid tank capacity,ADR-062,
+config:CATEGORY_GENERAL.buildSpeedMultiplier,REDESIGNED,v0.5.0,budgeted assembly scan,ADR-062,no build timer
+config:CATEGORY_GENERAL.crystalliserMaximumGravity,PLANNED,C16c,crystallizer gravity limit,ADR-062,
+config:CATEGORY_GENERAL.enableGravityMachine,IMPLEMENTED,v1.7.0,endgame switches,ADR-054 ADR-055 ADR-058,
+config:CATEGORY_GENERAL.EnableLaserDrill,IMPLEMENTED,v1.7.0,endgame switches,ADR-054 ADR-055 ADR-058,
+config:CATEGORY_GENERAL.EnableTerraforming,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CATEGORY_GENERAL.jetPackForce,PLANNED,C18b,jetpack force,ADR-062,
+config:CATEGORY_GENERAL.laserDrillPlanet,IMPLEMENTED,v1.7.0,endgame switches,ADR-054 ADR-055 ADR-058,
+config:CATEGORY_GENERAL.LaserDrillPowerMultiplier,IMPLEMENTED,v1.7.0,endgame switches,ADR-054 ADR-055 ADR-058,
+config:CATEGORY_GENERAL.lavaCentrifugeOutputs,PLANNED,C16c,centrifuge output table,ADR-062,data-driven outputs
+config:CATEGORY_GENERAL.lowGravityBoots,PLANNED,C18b,landing boots rule,ADR-062,
+config:CATEGORY_GENERAL.makeMaterialsForOtherMods,REDESIGNED,v1.8.0,common item tags in recipes (C16),ADR-061,
+config:CATEGORY_GENERAL.sawMillCutVanillaWood,PLANNED,C16b,sawmill vanilla wood switch,ADR-062,
+config:CATEGORY_GENERAL.spaceLaserDimIdBlackList,REDESIGNED,v1.7.0,laser drill body tables,ADR-055,"body IDs, not dimension IDs"
+config:CATEGORY_GENERAL.terraformBlockPerTick,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CATEGORY_GENERAL.TerraformerFluidConsumeRate,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CATEGORY_GENERAL.TerraformerRequiresFluids,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CATEGORY_GENERAL.terraformMult,DEFERRED,post-2.0,-,ADR-062,terraforming family
+config:CLIENT.advancedVFX,PLANNED,C18d,client effects setting,ADR-062,
+config:CLIENT.electricPlantsSpawnLightning,PLANNED,C15c,electric mushroom effect setting,ADR-062,client effect only
+config:CLIENT.EnableAtmosphericNausea,PLANNED,C18b,atmospheric nausea,ADR-062,
+config:CLIENT.overworldSkyOverride,IMPLEMENTED,v1.4.0,sky profiles,ADR-036 ADR-047,
+config:CLIENT.PlanetSkyOverride,IMPLEMENTED,v1.4.0,sky profiles,ADR-036 ADR-047,
+config:CLIENT.StationSkyOverride,IMPLEMENTED,v1.4.0,sky profiles,ADR-036 ADR-047,
+config:ENERGY.blackHoleGeneratorMultiplier,IMPLEMENTED,v1.7.0,black hole generator settings,ADR-057,
+config:ENERGY.blackHoleTimings,IMPLEMENTED,v1.7.0,black hole generator settings,ADR-057,
+config:ENERGY.defaultBurnTime,IMPLEMENTED,v1.7.0,black hole generator settings,ADR-057,
+config:ENERGY.MicrowaveRecieverMultiplier,IMPLEMENTED,v1.6.0,microwave receiver settings,ADR-049,
+config:ENERGY.solarGeneratorMultiplier,PLANNED,C17c,solar generator multiplier,ADR-062,
+config:MISSION.gasMissionMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-052,
+config:MISSION.harvestableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,
+config:MISSION.miningMissionTmeMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-052,
+config:MISSION.spawnableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,
+config:OXYGEN.dropExtinguishedTorches,PLANNED,C18a,torch rules,ADR-062,
+config:OXYGEN.EnableAtmosphericEffects,IMPLEMENTED,v0.4.0,life support switch,ADR-024,
+config:OXYGEN.entityAtmBypass,PLANNED,C18a,atmosphere bypass entity tag,ADR-062,with atmosphere effects on non-player entities
+config:OXYGEN.OverrideGCAir,REJECTED,-,-,ADR-062,Galacticraft compatibility is a product non-goal
+config:OXYGEN.oxygenVentConsumptionMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,
+config:OXYGEN.OxygenVentPowerMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,
+config:OXYGEN.scrubberRequiresCartrige,PLANNED,C18a,scrubber cartridge rule,ADR-062,
+config:OXYGEN.sealableBlockBlackList,REDESIGNED,v0.4.0,atmosphere sealing tags,ADR-024,
+config:OXYGEN.sealableBlockWhiteList,REDESIGNED,v0.4.0,atmosphere sealing tags,ADR-024,
+config:OXYGEN.spaceSuitO2Buffer,PLANNED,C18b,suit gas capacity,ADR-025 ADR-062,
+config:OXYGEN.suitTankCapacity,PLANNED,C18b,suit gas capacity,ADR-025 ADR-062,
+config:OXYGEN.torchBlocks,PLANNED,C18a,torch rules,ADR-062,
+config:OXYGEN.vacuumDamage,IMPLEMENTED,v0.4.0,vacuum damage,ADR-024,
+config:PERFORMANCE.atmosphereCalculationMethod,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,
+config:PERFORMANCE.oxygenVentSize,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,
+config:PLANET.allowPlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,
+config:PLANET.blackListVanillaBiomes,REJECTED,-,-,ADR-031,random planet generation is not revived
+config:PLANET.forcePlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,
+config:PLANET.maxBiomesPerPlanet,REJECTED,-,-,ADR-031,random planet generation is not revived
+config:PLANET.minDimension,REJECTED,-,-,ADR-031,random planet generation is not revived
+config:PLANET.planetDiscoveryChance,REJECTED,-,-,ADR-031,random planet generation is not revived
+config:PLANET.planetsMustBeDiscovered,IMPLEMENTED,v1.4.0,discovery requirement,ADR-037,
+config:PLANET.ResetOnlyOnce,REJECTED,-,-,ADR-031,random planet generation is not revived
+config:PLANET.resetPlanetsFromXML,REJECTED,-,-,ADR-031,random planet generation is not revived
+config:ROCKET.asteroidTBIBurnMult,REJECTED,-,-,ADR-051 ADR-062,no rocket asteroid or warp burns
+config:ROCKET.autoRetroRockets,REDESIGNED,v0.6.0,automatic landing,ADR-062,
+config:ROCKET.canBeFueledByHand,PLANNED,C17a,hand fueling rule,ADR-062,
+config:ROCKET.experimentalSpaceFlight,REJECTED,-,-,ADR-062,free flight in space
+config:ROCKET.fuelCapacityMultiplier,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.gravityAffectsFuels,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.launchBlockDestruction,REJECTED,-,-,ADR-062,rockets do not alter terrain
+config:ROCKET.nuclearCoreThrustRatio,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.orbitHeight,REDESIGNED,v0.6.0,flight state machine phases,ADR-062,no altitude-driven orbit
+config:ROCKET.rocketBipropellants,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.rocketBlockBlackList,REDESIGNED,v0.5.0,rocket block policy and adapters,ADR-022,
+config:ROCKET.rocketFuels,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.rocketNuclearWorkingFluids,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.rocketOxidizers,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.rocketsRequireFuel,PLANNED,C17a,fuel requirement switch,ADR-062,
+config:ROCKET.stationClearance,REDESIGNED,v0.6.0,flight state machine phases,ADR-062,no altitude-driven orbit
+config:ROCKET.thrustMultiplier,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
+config:ROCKET.transBodyInjection,REDESIGNED,v0.6.0,flight state machine phases,ADR-062,no altitude-driven orbit
+config:ROCKET.warpTBIBurnMult,REJECTED,-,-,ADR-051 ADR-062,no rocket asteroid or warp burns
+config:STATION.allowZeroGSpacestations,IMPLEMENTED,v1.5.0,station gravity bounds,ADR-041,
+config:STATION.pointsPerDilithium,REDESIGNED,v1.5.0,warp energy cost,ADR-044,warp uses FE
+config:STATION.SpaceStationBuildRadius,REDESIGNED,v1.5.0,station regions,ADR-040,
+config:STATION.spaceStationId,REJECTED,-,-,ADR-031,numeric dimension IDs are not used
+config:STATION.warpTravelTime,IMPLEMENTED,v1.5.0,warp countdown,ADR-044,
+config:WORLDGEN.AluminumPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.AluminumPerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.CopperPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.CopperPerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.DilithiumPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.DilithiumPerChunkLuna,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.DilithiumPerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.EnableOreGen,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.generateAluminum,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.GenerateCopper,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.generateCraters,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.generateDilithium,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.generateGeodes,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.generateIridium,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.GenerateRutile,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.GenerateTin,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.generateVanillaStructures,DEFERRED,post-2.0,-,ADR-062,with planet villages
+config:WORLDGEN.generateVolcanos,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.geodeBaseSize,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.geodeOres,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.geodeOres_blacklist,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.geodeVariation,REDESIGNED,v1.8.0,planet feature data (C15b),ADR-062,data-driven features replace config numbers
+config:WORLDGEN.IridiumPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.IridiumPerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.laserDrillOres,IMPLEMENTED,v1.7.0,laser drill tables,ADR-055,
+config:WORLDGEN.laserDrillOres_blacklist,IMPLEMENTED,v1.7.0,laser drill tables,ADR-055,
+config:WORLDGEN.RutilePerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.RutilePerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.TinPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+config:WORLDGEN.TinPerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
+enchantment:spacebreathing,PLANNED,C18b,space breathing enchantment,ADR-025 ADR-062,sealed armor through the suit provider API
+entity:ARAbductedItem,REDESIGNED,v1.7.0,client railgun effect,ADR-056,no entity
+entity:ARHoverCraft,DEFERRED,post-2.0,-,ADR-062,with the hovercraft item
+entity:ARPlanetUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity
+entity:ARPlanetUIItem,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity
+entity:ARSpaceElevatorCapsule,PLANNED,C18d,client capsule ride effect,ADR-059 ADR-062,visual only; rides stay server-side
+entity:ARStarUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity
+entity:deployedRocket,REJECTED,-,-,ADR-051 ADR-062,station-deployed mining rockets
+entity:laserNode,REJECTED,-,-,ADR-055,laser node with off-thread world edits
+entity:mountDummy,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_seat,ADR-062,seats are rocket passenger positions
+entity:rocket,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket,V0.5.0,
+event:AtmosphereHandler.onPlayerChangeDim(PlayerChangedDimensionEvent),REDESIGNED,v0.4.0,atmosphere service,ADR-024,
+event:AtmosphereHandler.onPlayerLogoutEvent(PlayerLoggedOutEvent),REDESIGNED,v0.4.0,atmosphere service,ADR-024,
+event:AtmosphereHandler.onTick(LivingUpdateEvent),REDESIGNED,v0.4.0,atmosphere effects on players,ADR-024 ADR-062,non-player entities are planned with config:OXYGEN.entityAtmBypass
+event:CableTickHandler.chunkLoadedEvent(Load),REJECTED,-,-,ADR-062,cable and data networks are not revived
+event:CableTickHandler.onBlockBroken(BreakEvent),REJECTED,-,-,ADR-062,cable and data networks are not revived
+event:CableTickHandler.onTick(ServerTickEvent),REJECTED,-,-,ADR-062,cable and data networks are not revived
+event:CapabilityProtectiveArmor.attachCapabilities(AttachCapabilitiesEvent),REDESIGNED,v1.3.0,suit oxygen providers,ADR-025,
+event:ClientProxy.modelBakeEvent(ModelBakeEvent),PLANNED,C18d,OBJ model loading,ADR-062,
+event:KeyBindings.onKeyInput(KeyInputEvent),MERGED,-,keybinding:toggleJetpack,ADR-062,key handler
+event:MapGenLander.populateChunkPostEvent(Post),MERGED,-,worldgen:MapGenLander,ADR-062,lander placement
+event:PlanetEventHandler.blockPlacedEvent(PlaceEvent),PLANNED,C18a,torch rules without combustion air,ADR-062,torches turn unlit; listed torch blocks refuse placement
+event:PlanetEventHandler.blockRightClicked(RightClickBlock),PLANNED,C18a,no fire starters without combustion air,ADR-062,the beer advancement is C18c
+event:PlanetEventHandler.CheckSpawn(CheckSpawn),PLANNED,C18a,mob spawning follows the atmosphere,ADR-062,
+event:PlanetEventHandler.chunkLoadEvent(Post),DEFERRED,post-2.0,-,ADR-062,terraforming family
+event:PlanetEventHandler.disconnected(ClientDisconnectionFromServerEvent),REDESIGNED,v1.4.0,client celestial cache reset,ADR-035,
+event:PlanetEventHandler.fallEvent(LivingFallEvent),PLANNED,C18a,fall damage scales with gravity,ADR-062,
+event:PlanetEventHandler.fogColor(FogColors),REDESIGNED,v1.4.0,sky profile fog colour,ADR-036,
+event:PlanetEventHandler.fogColor(RenderFogEvent),PLANNED,C18b,atmosphere-density fog and the anti-fog visor,ADR-062,
+event:PlanetEventHandler.onCrafting(ItemCraftedEvent),PLANNED,C18c,advancement crafting triggers,ADR-062,
+event:PlanetEventHandler.onWorldGen(GenerateMinable),REDESIGNED,v1.4.0,per-biome feature lists,ADR-033,vanilla ores only where a planet lists them
+event:PlanetEventHandler.playerLoggedInEvent(ServerConnectionFromClientEvent),REDESIGNED,v1.4.0,celestial sync on login,ADR-035,
+event:PlanetEventHandler.playerTick(LivingUpdateEvent),PLANNED,C18a,space Level safety return,ADR-062,players adrift in space return to a station or the Overworld; the Moon advancement is C18c
+event:PlanetEventHandler.serverTickEvent(WorldTickEvent),DEFERRED,post-2.0,-,ADR-062,terraforming family
+event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),PLANNED,C18a,no sleeping in unbreathable air,ADR-062,
+event:PlanetEventHandler.SpawnEntity(PotentialSpawns),REDESIGNED,v1.4.0,biome spawners in planet data,ADR-033,
+event:PlanetEventHandler.tick(ServerTickEvent),REDESIGNED,v0.8.0,mission scheduler and transfer journal,ADR-050,
+event:PlanetEventHandler.tickClient(ClientTickEvent),REDESIGNED,v1.4.0,client sky state,ADR-036,
+event:PlanetEventHandler.worldLoadEvent(Load),REDESIGNED,v0.3.0,SavedData lifecycle,ADR-032,
+event:PlanetEventHandler.worldSaveEvent(Save),REDESIGNED,v0.3.0,SavedData lifecycle,ADR-032,
+event:PlanetEventHandler.worldUnloadEvent(Unload),REDESIGNED,v0.3.0,SavedData lifecycle,ADR-032,
+event:RenderComponents.renderPostSpecial(Post),PLANNED,C18d,suit component rendering,ADR-062,
+event:RocketEventHandler.onRocketDeorbit(RocketDeOrbitingEvent),REDESIGNED,v0.6.0,flight state machine,ADR-062,
+event:RocketEventHandler.onRocketLaunch(RocketLaunchEvent),REDESIGNED,v0.6.0,flight state machine,ADR-062,
+event:RocketEventHandler.onScreenRender(Post),PLANNED,C18d,rocket HUD,ADR-062,
+event:RocketEventHandler.playerTeleportEvent(PlayerChangedDimensionEvent),REDESIGNED,v0.6.0,transfer journal,ADR-062,
+event:SpaceObjectManager.onPlayerTick(PlayerTickEvent),REDESIGNED,v0.7.0,station manager,ADR-040,
+event:SpaceObjectManager.onServerTick(ServerTickEvent),REDESIGNED,v1.5.0,station warp service,ADR-044,
+event:TileLandingPad.onRocketDismantle(RocketDismantleEvent),MERGED,-,block:landingPad,ADR-062,landing pad rocket events
+event:TileLandingPad.onRocketLand(RocketLandedEvent),MERGED,-,block:landingPad,ADR-062,landing pad rocket events
+event:TileLandingPad.onRocketLaunch(RocketPreLaunchEvent),MERGED,-,block:landingPad,ADR-062,landing pad rocket events
+event:TileRocketAssemblingMachine.onRocketLand(RocketLandedEvent),REDESIGNED,v0.6.0,landing and disassembly transaction,ADR-062,
+fluid:enrichedLava,PLANNED,C16a,enriched lava,ADR-062,
+fluid:hydrogen,PLANNED,C16a,hydrogen,ADR-062,canister items stay valid
+fluid:nitrogen,PLANNED,C16a,nitrogen,ADR-062,
+fluid:oxygen,PLANNED,C16a,oxygen,ADR-062,canister items stay valid
+fluid:rocketFuel,PLANNED,C16a,rocket fuel,ADR-062,
+integration:CompatibilityMgr,REDESIGNED,v1.3.0,public API and optional compat,ADR-021,
+integration:GalacticCraftHandler,REJECTED,-,-,ADR-062,Galacticraft compatibility is a product non-goal
+integration:jei/arcFurnace,PLANNED,C16b,JEI category,ADR-062,
+integration:jei/centrifuge,PLANNED,C16c,JEI category,ADR-062,
+integration:jei/chemicalReactor,PLANNED,C16c,JEI category,ADR-062,
+integration:jei/crystallizer,PLANNED,C16c,JEI category,ADR-062,
+integration:jei/electrolyser,IMPLEMENTED,v1.2.0,JEI category,V1.2.0,
+integration:jei/lathe,PLANNED,C16b,JEI category,ADR-062,
+integration:jei/platePresser,PLANNED,C15a,JEI category,ADR-062,
+integration:jei/precisionAssembler,IMPLEMENTED,v1.2.0,JEI category,V1.2.0,
+integration:jei/precisionLaserEtcher,PLANNED,C16c,JEI category,ADR-062,
+integration:jei/rollingMachine,IMPLEMENTED,v1.2.0,JEI category,V1.2.0,
+integration:jei/sawmill,PLANNED,C16b,JEI category,ADR-062,cutting machine wood recipes
+item:asteroidChip,REDESIGNED,v1.6.0,asteroid instance selection in the terminal,ADR-051,
+item:atmAnalyser,PLANNED,C18a,atmosphere analyzer,ADR-062,handheld environment readout
+item:basicLaserGun,PLANNED,C18b,basic laser gun,ADR-062,ranged mining through break events and protection
+item:beaconFinder,PLANNED,C17c,beacon finder,ADR-062,points to owned beacons
+item:biomeChanger,DEFERRED,post-2.0,-,ADR-062,terraforming family
+item:carbonScrubberCartridge,PLANNED,C18a,carbon scrubber cartridge,ADR-062,CO2 scrubber consumable
+item:dataUnit,MERGED,-,item_variant:dataUnit/0,ADR-062,
+item:elevatorChip,REJECTED,-,-,ADR-059,endpoint records replace the unbounded chip
+item:hoverCraft,DEFERRED,post-2.0,-,ADR-062,"vehicle entity, rendering and control packets"
+item:ic,MERGED,-,item_variant:ic/*,ADR-062,
+item:iquartzcrucible,PLANNED,C16c,quartz crucible item,ADR-062,crafting part of the crucible
+item:itemCircuitPlate,MERGED,-,item_variant:itemCircuitPlate/*,ADR-062,
+item:itemUpgrade,MERGED,-,item_variant:itemUpgrade/*,ADR-062,
+item:jackHammer,PLANNED,C18b,jackhammer,ADR-062,fast mining tool
+item:jetPack,PLANNED,C18b,suit jetpack,ADR-062,chest attachment using suit gas
+item:lens,MERGED,-,item_variant:lens/0,ADR-062,
+item:misc,MERGED,-,item_variant:misc/*,ADR-062,
+item:oreScanner,REDESIGNED,v1.6.0,survey scan terminal view,ADR-049,handheld readout of survey data
+item:planetIdChip,REDESIGNED,v1.4.0,flight star map destination,ADR-035 ADR-062,destinations are chosen on the rocket
+item:pressureTank,MERGED,-,item_variant:pressureTank/*,ADR-062,
+item:satellite,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_package,ADR-049,
+item:satelliteIdChip,REDESIGNED,v1.6.0,advancedrocketrycommunity:satellite_control_chip,ADR-049,
+item:satellitePowerSource,MERGED,-,item_variant:satellitePowerSource/*,ADR-062,
+item:satellitePrimaryFunction,MERGED,-,item_variant:satellitePrimaryFunction/*,ADR-062,
+item:sawBladeIron,MERGED,-,item_variant:sawBladeIron/0,ADR-062,
+item:sealDetector,PLANNED,C18a,seal detector,ADR-062,reports seal state of a block
+item:smallAirlockDoor,PLANNED,C18a,airlock door item,ADR-062,places the airlock door
+item:spaceBoots,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_boots,ADR-025,
+item:spaceChestplate,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_chestplate,ADR-025,
+item:spaceHelmet,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_helmet,ADR-025,
+item:spaceLeggings,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_leggings,ADR-025,
+item:spaceStation,REDESIGNED,v0.7.0,advancedrocketrycommunity:station_deployment_kit,ADR-062,packed station container replaced by the kit
+item:spaceStationChip,REDESIGNED,v1.5.0,station commands and star map,ADR-046 ADR-062,station identity is server-side
+item:thermite,PLANNED,C18a,thermite,ADR-062,thermite torch ingredient
+item:wafer,MERGED,-,item_variant:wafer/0,ADR-062,
+item_variant:dataUnit/0,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:data_storage_unit,V0.8.0,
+item_variant:ic/0,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:basic_circuit,V0.1.0,
+item_variant:ic/1,PLANNED,C16d,tracking circuit,ADR-062,component
+item_variant:ic/2,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:advanced_circuit,V0.1.0,
+item_variant:ic/3,PLANNED,C16d,control circuit board,ADR-062,component
+item_variant:ic/4,PLANNED,C16d,item IO circuit board,ADR-062,component
+item_variant:ic/5,PLANNED,C16d,liquid IO circuit board,ADR-062,component
+item_variant:itemCircuitPlate/0,PLANNED,C16d,basic circuit plate,ADR-062,laser etcher output
+item_variant:itemCircuitPlate/1,PLANNED,C16d,advanced circuit plate,ADR-062,laser etcher output
+item_variant:itemUpgrade/0,PLANNED,C18b,hover upgrade,ADR-062,jetpack mode
+item_variant:itemUpgrade/1,PLANNED,C18b,flight speed upgrade,ADR-062,jetpack speed
+item_variant:itemUpgrade/2,PLANNED,C18b,bionic leg upgrade,ADR-062,movement speed
+item_variant:itemUpgrade/3,PLANNED,C18b,padded landing boots,ADR-062,fall protection
+item_variant:itemUpgrade/4,PLANNED,C18b,anti-fog visor,ADR-062,removes atmospheric nausea
+item_variant:itemUpgrade/5,PLANNED,C18b,earthbright visor,ADR-062,night vision in space
+item_variant:lens/0,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,basic lens is the laser lens
+item_variant:misc/0,PLANNED,C16d,user interface,ADR-062,component
+item_variant:misc/1,PLANNED,C16d,carbon brick,ADR-062,carbon source
+item_variant:pressureTank/0,PLANNED,C18b,low pressure tank,ADR-062,suit gas capacity
+item_variant:pressureTank/1,PLANNED,C18b,pressure tank,ADR-062,suit gas capacity
+item_variant:pressureTank/2,PLANNED,C18b,high pressure tank,ADR-062,suit gas capacity
+item_variant:pressureTank/3,PLANNED,C18b,super high pressure tank,ADR-062,suit gas capacity
+item_variant:satellitePowerSource/0,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_solar_module,ADR-049,
+item_variant:satellitePowerSource/1,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:advanced_solar_panel,ADR-049,
+item_variant:satellitePrimaryFunction/0,REDESIGNED,v0.8.0,advancedrocketrycommunity:data_satellite_package,ADR-049,data kinds fold into research points
+item_variant:satellitePrimaryFunction/1,REDESIGNED,v0.8.0,advancedrocketrycommunity:data_satellite_package,ADR-049,data kinds fold into research points
+item_variant:satellitePrimaryFunction/2,REDESIGNED,v0.8.0,advancedrocketrycommunity:data_satellite_package,ADR-049,data kinds fold into research points
+item_variant:satellitePrimaryFunction/3,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:solar_transmitter_module,ADR-049,
+item_variant:satellitePrimaryFunction/4,REDESIGNED,v1.6.0,advancedrocketrycommunity:survey_scanner_module,ADR-049,ore mapping is a bounded survey scan
+item_variant:satellitePrimaryFunction/5,DEFERRED,post-2.0,-,ADR-049 ADR-062,terraforming family
+item_variant:sawBladeIron/0,PLANNED,C16b,iron saw blade,ADR-062,cutting machine part
+item_variant:wafer/0,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:silicon_wafer,V0.1.0,
+keybinding:openRocketUI,REDESIGNED,v1.0.0,interacting with the rocket opens the flight screen,ADR-062,
+keybinding:toggleJetpack,PLANNED,C18b,jetpack toggle key,ADR-062,
+keybinding:toggleRCS,REJECTED,-,-,ADR-062,RCS steering belongs to free flight in space
+keybinding:turnRocketDown,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space
+keybinding:turnRocketLeft,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space
+keybinding:turnRocketRight,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space
+keybinding:turnRocketUp,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space
+libvulpes:java/blockAdvancedMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier
+libvulpes:java/blockAdvStructureBlock,PLANNED,C16a,advanced machine casing,ADR-062,endgame devices already use endgame_casing
+libvulpes:java/blockCreativeInputPlug,REJECTED,-,-,ADR-062,creative-only infinite energy source
+libvulpes:java/blockEliteMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier
+libvulpes:java/blockEnhancedMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier
+libvulpes:java/blockMotor,PLANNED,C16a,motor component tiers,ADR-062,crafting part and machine structure part
+libvulpes:java/blockStructureBlock,REDESIGNED,v0.1.0,advancedrocketrycommunity:machine_casing,ADR-062,machine structure block
+libvulpes:java/itemBattery,REDESIGNED,v1.6.0,advancedrocketrycommunity:satellite_battery advancedrocketrycommunity:large_satellite_battery,ADR-049,satellite power storage
+libvulpes:java/itemHoloProjector,REDESIGNED,v1.2.0,multiblock pattern diagnostics,ADR-016,the validator reports each mismatched cell
+libvulpes:java/itemLinker,PLANNED,C17a,linker tool,ADR-062,"binds loaders, monitoring stations and pads server-side"
+libvulpes:java/motors,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier list
+libvulpes:ore/blockMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tag
+libvulpes:ore/itemBattery,MERGED,-,libvulpes:java/itemBattery,ADR-062,battery tag
+libvulpes:recipe/advstructuremachine,MERGED,-,libvulpes:java/blockAdvStructureBlock,ADR-062,same block
+libvulpes:recipe/battery,MERGED,-,libvulpes:java/itemBattery,ADR-062,same item
+libvulpes:recipe/forgepoweroutput,REDESIGNED,v1.2.0,energy ports,ADR-016,
+libvulpes:recipe/hatch,REDESIGNED,v1.2.0,process ports,ADR-016,item and fluid hatches are kernel ports; the C16a family adds its own
+libvulpes:recipe/holoprojector,MERGED,-,libvulpes:java/itemHoloProjector,ADR-062,same item
+libvulpes:recipe/linker,MERGED,-,libvulpes:java/itemLinker,ADR-062,same item
+libvulpes:recipe/productrod,MERGED,-,material:Titanium,ADR-062,rod product of the material sets
+libvulpes:recipe/structuremachine,MERGED,-,libvulpes:java/blockStructureBlock,ADR-062,same block
+material:Aluminum,PLANNED,C15a,aluminum material set,ADR-062,"ore, ingot, nugget, dust, plate, sheet, coil, block"
+material:Carbon,PLANNED,C16d,carbon brick,ADR-062,legacy ingotCarbon is the carbon brick
+material:Copper,REDESIGNED,v1.8.0,"minecraft:copper_ingot plus plate, stick, coil, dust",ADR-062,vanilla copper ore and ingot; products in C15a
+material:Dilithium,PLANNED,C15a,dilithium material set,ADR-062,"ore, dust, crystal"
+material:Iridium,PLANNED,C15a,iridium material set,ADR-062,"ore, ingot, nugget, plate"
+material:Rutile,PLANNED,C15a,rutile ore,ADR-062,titanium ore
+material:Silicon,PLANNED,C15a,silicon material set,ADR-062,"ingot, boule; wafer exists"
+material:Steel,PLANNED,C15a,steel material set,ADR-062,"ingot, nugget, dust, plate, sheet, stick, gear, block"
+material:Thermite,PLANNED,C18a,thermite,ADR-062,legacy dustThermite is the thermite item
+material:Tin,PLANNED,C15a,tin material set,ADR-062,"ore, ingot, nugget, dust, plate"
+material:Titanium,PLANNED,C15a,titanium material set,ADR-062,"ingot, nugget, dust, plate, sheet, stick, gear, block"
+material:TitaniumAluminide,PLANNED,C15a,titanium aluminide set,ADR-062,alloy made in the arc furnace (C16b)
+material:TitaniumIridium,PLANNED,C15a,titanium iridium set,ADR-062,alloy made in the arc furnace (C16b)
+mission:MissionGasCollection,IMPLEMENTED,v1.6.0,gas resource mission,ADR-051,
+mission:MissionOreMining,IMPLEMENTED,v1.6.0,asteroid resource mission,ADR-051,
+mission:MissionResourceCollection,MERGED,-,mission:MissionOreMining,ADR-062,base class
+packet:PacketAirParticle,REDESIGNED,v0.4.0,client vent effects,ADR-062,
+packet:PacketAsteroidInfo,REDESIGNED,v1.6.0,terminal view channel,ADR-049,
+packet:PacketAtmSync,REDESIGNED,v0.4.0,atmosphere channel,ADR-024,
+packet:PacketBiomeIDChange,DEFERRED,post-2.0,-,ADR-062,terraforming family
+packet:PacketConfigSync,REDESIGNED,v0.9.0,server-owned config,ADR-062,
+packet:PacketDimInfo,REDESIGNED,v1.4.0,celestial sync channel,ADR-035,
+packet:PacketFluidParticle,MERGED,-,fluid:rocketFuel,ADR-062,client effect
+packet:PacketInvalidLocationNotify,REDESIGNED,v0.6.0,flight diagnostics,ADR-062,
+packet:PacketLaserGun,PLANNED,C18b,laser gun intent,ADR-062,server validated
+packet:PacketMoveRocketInSpace,REJECTED,-,-,ADR-062,experimental free flight in space
+packet:PacketOxygenState,REDESIGNED,v0.4.0,oxygen HUD sync,ADR-024,
+packet:PacketSatellite,REDESIGNED,v1.6.0,satellite terminal channel,ADR-049,
+packet:PacketSpaceStationInfo,REDESIGNED,v0.7.0,station sync,ADR-047,
+packet:PacketStationUpdate,REDESIGNED,v1.5.0,station commands,ADR-046,
+packet:PacketStellarInfo,REDESIGNED,v1.5.0,star system sync,ADR-043,
+packet:PacketStorageTileUpdate,REDESIGNED,v0.5.0,rocket visual snapshot,ADR-062,
+satellite:asteroidMiner,IMPLEMENTED,v1.6.0,asteroid miner satellite kind,ADR-051,
+satellite:biomeChanger,DEFERRED,post-2.0,-,ADR-049 ADR-062,terraforming family
+satellite:composition,REDESIGNED,v0.8.0,data satellite kind,ADR-049,data kinds fold into research points
+satellite:density,REDESIGNED,v0.8.0,data satellite kind,ADR-049,data kinds fold into research points
+satellite:gasMining,IMPLEMENTED,v1.6.0,gas harvester satellite kind,ADR-051,
+satellite:mass,REDESIGNED,v0.8.0,data satellite kind,ADR-049,data kinds fold into research points
+satellite:optical,REDESIGNED,v0.8.0,data satellite kind,ADR-049,data kinds fold into research points
+satellite:oreScanner,REDESIGNED,v1.6.0,survey satellite kind,ADR-049,bounded area scan
+satellite:solarEnergy,IMPLEMENTED,v1.6.0,solar satellite kind,ADR-049,
+satellite_unregistered:SatelliteData,MERGED,-,satellite:optical,ADR-062,base class of data satellites
+satellite_unregistered:SatelliteDefunct,REDESIGNED,v1.6.0,retired satellite state,ADR-049,
+satellite_unregistered:SatelliteSpyTelescope,REJECTED,-,-,ADR-049 ADR-062,never registered; remote viewing
+sound_event:airHissLoop,PLANNED,C18d,air hiss sound,ADR-062,oxygen vent
+sound_event:basicLaserGun,PLANNED,C18d,laser gun sound,ADR-062,
+sound_event:combustionRocket,PLANNED,C18d,rocket engine sound,ADR-062,
+sound_event:crystallizer,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder
+sound_event:cuttingMachine,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder
+sound_event:electricArcFurnace,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder
+sound_event:ElectricShockSmall,PLANNED,C18d,electric shock sound,ADR-062,electric mushroom and arcs
+sound_event:electrolyser,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder
+sound_event:gravityOhhh,PLANNED,C18d,gravity controller sound,ADR-062,
+sound_event:laserDrill,PLANNED,C18d,laser drill sound,ADR-062,
+sound_event:lathe,PLANNED,C18d,lathe sound,ADR-062,same file as the rolling machine sound
+sound_event:MachineLarge,PLANNED,C18d,large machine sound,ADR-062,
+sound_event:precAss,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder
+sound_event:railgunBang,PLANNED,C18d,railgun sound,ADR-062,
+sound_event:rollingMachine,PLANNED,C18d,rolling machine sound,ADR-062,
+worldgen:ChunkManagerPlanet,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,
+worldgen:ChunkProviderAsteroids,REJECTED,-,-,ADR-051 ADR-062,temporary asteroid dimensions
+worldgen:ChunkProviderCavePlanet,DEFERRED,post-2.0,-,ADR-062,cave planet terrain type
+worldgen:ChunkProviderPlanet,REDESIGNED,v1.4.0,datapack noise settings,ADR-033,
+worldgen:ChunkProviderSpace,REDESIGNED,v0.3.0,space Level generator,ADR-031,
+worldgen:CustomizableOreGen,PLANNED,C15a,configured ore features,ADR-062,data-driven ore placement
+worldgen:GenLayerBiomePlanet,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,
+worldgen:GenLayerVoronoiExtended,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,
+worldgen:MapGenCaveExt,REDESIGNED,v1.8.0,vanilla carvers in planet data,ADR-062,
+worldgen:MapGenCrater,PLANNED,C15b,crater feature,ADR-062,
+worldgen:MapGenCraterHuge,PLANNED,C15b,large crater feature,ADR-062,
+worldgen:MapGenCraterSmall,PLANNED,C15b,small crater feature,ADR-062,
+worldgen:MapGenGeode,PLANNED,C15b,geode feature,ADR-062,
+worldgen:MapGenHighCaves,REDESIGNED,v1.8.0,vanilla carvers in planet data,ADR-062,
+worldgen:MapGenInvertedPillar,PLANNED,C15c,inverted pillar feature,ADR-062,ocean spires
+worldgen:MapGenLander,DEFERRED,post-2.0,-,ADR-062,decorative lander structure
+worldgen:MapGenLargeCrystal,PLANNED,C15b,large crystal feature,ADR-062,
+worldgen:MapGenMassiveRavine,REDESIGNED,v1.8.0,vanilla carvers in planet data,ADR-062,
+worldgen:MapGenRavineExt,REDESIGNED,v1.8.0,vanilla carvers in planet data,ADR-062,
+worldgen:MapGenSpaceStation,REJECTED,-,-,ADR-062,never referenced in the legacy build
+worldgen:MapGenSpaceVillage,DEFERRED,post-2.0,-,ADR-062,vanilla villages on habitable planets
+worldgen:MapGenSwampTree,PLANNED,C15c,swamp tree feature,ADR-062,
+worldgen:MapGenVolcano,PLANNED,C15b,volcano feature,ADR-062,
+worldgen:OreGenerator,PLANNED,C15a,overworld ore features,ADR-062,
+worldgen:WorldGenAlienTree,PLANNED,C15c,lightwood tree feature,ADR-062,
+worldgen:WorldGenCharredTree,PLANNED,C15b,charred tree feature,ADR-062,
+worldgen:WorldGenElectricMushroom,PLANNED,C15c,electric mushroom feature,ADR-062,
+worldgen:WorldGenLargeCrystal,PLANNED,C15b,crystal cluster feature,ADR-062,
+worldgen:WorldGenNoTree,MERGED,-,worldgen:WorldGenAlienTree,ADR-062,internal helper
+worldgen:WorldProviderAsteroid,REJECTED,-,-,ADR-051 ADR-062,temporary asteroid dimensions
+worldgen:WorldProviderPlanet,REDESIGNED,v1.4.0,fixed planetary Levels,ADR-031 ADR-033,
+worldgen:WorldProviderSpace,REDESIGNED,v0.3.0,space Level,ADR-031,
+worldgen:WorldTypePlanetGen,DEFERRED,post-2.0,-,ADR-062,world type starting on another planet
+worldgen:WorldTypeSpace,DEFERRED,post-2.0,-,ADR-062,world type starting in space
