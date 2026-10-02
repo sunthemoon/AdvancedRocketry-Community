@@ -8,7 +8,7 @@ deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.8.0
 development_dependency: ADR-060, ADR-061
-revisits: ADR-046 (station screens), ADR-049 (satellite bay, spy telescope, star-map overlay), ADR-051 (physical asteroid fields, observatory, rocket mining), ADR-055 (line and spiral modes), ADR-056 (cross-system cargo), ADR-057 (black-hole sky), ADR-058 (station gravity block, non-player fields, legacy gravity API), ADR-059 (capsule visuals)
+revisits: ADR-018 (campaign trigger, proposal for the owner in section 8), ADR-046 (station screens), ADR-049 (satellite bay, spy telescope, star-map overlay), ADR-051 (physical asteroid fields, observatory, rocket mining), ADR-055 (line and spiral modes), ADR-056 (cross-system cargo), ADR-057 (black-hole sky), ADR-058 (station gravity block, non-player fields, legacy gravity API), ADR-059 (capsule visuals)
 supersedes: ""
 import_allowlist_sha256: 605abff43b8b8403541a7c88f49820bdbe18f18fa4c82f09e05d7dafedf2661f
 ```
@@ -179,6 +179,34 @@ this ADR. Every `DEFERRED` and `REJECTED` ledger row cites this ADR, which
 holds the player impact. Moving a unit to `DEFERRED` or `REJECTED`,
 or reviving a deferred or rejected unit, needs a revision of this ADR with
 reasons and player impact.
+
+### 8. ADR-018's campaign trigger (owner decision)
+
+ADR-018 (accepted, reaffirmed by the owner four times) starts the full
+acceptance campaign when every original machine and dimension in the matrix is
+implemented, and says that "closing an inventory row by deferring or rejecting
+it is not completion for this trigger". This ADR defers or rejects original
+machines (the atmosphere terraformer, the biome scanner, the unmanned vehicle
+assembler, the wireless transceiver) and original dimension kinds (temporary
+asteroid dimensions, cave planets, the planet and space world types, random
+planet generation). Read literally, the trigger could then never fire, and v2.0
+could not start its campaign.
+
+This ADR does not change ADR-018. It asks the owner to choose, as part of the
+acceptance of this ADR:
+
+1. **Amend the trigger (recommended).** The campaign starts when every
+   original machine and dimension is implemented, or carries a `DEFERRED` or
+   `REJECTED` disposition that the owner has accepted as outside the v2.0
+   parity target, with its player impact published. Rows that are only
+   proposed, `MISSING` or `UNKNOWN` still block the trigger. The amendment is
+   recorded as a revision of ADR-018.
+2. **Keep the trigger.** The campaign waits until those machines and
+   dimensions are implemented; the affected rows move from `DEFERRED` or
+   `REJECTED` to `PLANNED` in a later version, and v2.0 cannot start its
+   campaign before then.
+
+Until the owner decides, ADR-018 stands as written.
 
 ## Alternatives
 

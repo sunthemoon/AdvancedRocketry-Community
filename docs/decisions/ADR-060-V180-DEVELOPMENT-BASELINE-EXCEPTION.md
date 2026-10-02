@@ -80,8 +80,9 @@ substitute for these outcomes.
 Retain short build/unit/DataGen/GameTest checks, independent actual-diff review
 and finite save/restart checks for each changed behaviour. Known loss,
 duplication or authority failures must be repaired; they are not deferred as
-long-load testing. ADR-018 continues to schedule the full campaign; this
-exception starts no remote, long-load or real-client campaign by itself.
+long-load testing. ADR-018 continues to schedule the full campaign (its
+trigger is unchanged unless the owner adopts ADR-062 §8); this exception starts
+no remote, long-load or real-client campaign by itself.
 
 Not authorized: PASSED/RELEASED or Gate PASS, candidate selection, tags,
 publication, silent schema or API changes, asset imports without a provenance
