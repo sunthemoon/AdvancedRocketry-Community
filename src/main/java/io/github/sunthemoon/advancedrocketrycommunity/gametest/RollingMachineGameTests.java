@@ -241,8 +241,9 @@ public final class RollingMachineGameTests {
                     !forgedPort.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent(),
                     "Port outside the controller part set accepted a copied binding"
             );
+            // An item no rolling recipe takes, so the stored resources stay idle (v1.8 rolls gold ingots).
             helper.assertTrue(
-                    items.insertItem(0, new ItemStack(Items.GOLD_INGOT, 3), false).isEmpty(),
+                    items.insertItem(0, new ItemStack(Items.DIAMOND, 3), false).isEmpty(),
                     "Formed Item input rejected a valid stack"
             );
             helper.assertTrue(
