@@ -284,6 +284,14 @@ public final class ReferenceLoadReleaseTestCommands {
                 instanceof BlackHoleGeneratorBlockEntity generator && generator.status() == EndgameCode.GENERATING);
         int bound = service.root().map(root -> (int) load.elevators.stream()
                 .filter(elevator -> root.pairs().forStation(elevator.stationId()).isPresent()).count()).orElse(0);
+        String fieldCodes = load.fields.stream().map(device -> device.level.getBlockEntity(device.pos)
+                instanceof GravityFieldBlockEntity field ? field.status().name() : "MISSING")
+                .collect(java.util.stream.Collectors.groupingBy(code -> code, java.util.TreeMap::new,
+                        java.util.stream.Collectors.counting())).toString().replace(" ", "");
+        String drillCodes = load.drills.stream().map(device -> device.level.getBlockEntity(device.pos)
+                instanceof OrbitalLaserDrillBlockEntity drill ? drill.status().name() : "MISSING")
+                .collect(java.util.stream.Collectors.groupingBy(code -> code, java.util.TreeMap::new,
+                        java.util.stream.Collectors.counting())).toString().replace(" ", "");
         double mspt = server.getAverageTickTime();
         return report(context, "refload status built=" + load.built + " driving=" + load.driving + " drills_running="
                 + running + " fields_active=" + active + " generators_burning=" + burning + " elevators_bound=" + bound
@@ -292,7 +300,8 @@ public final class ReferenceLoadReleaseTestCommands {
                 + service.root().map(root -> root.endpoints().size()).orElse(-1) + " root_tombstones="
                 + service.root().map(root -> root.youngTombstones().size() + root.settledTombstones().size())
                 .orElse(-1) + " accounted_bytes=" + service.root().map(root -> root.accountedBytes()).orElse(-1L)
-                + " players=" + server.getPlayerCount() + " mspt=" + String.format(java.util.Locale.ROOT, "%.2f",
+                + " field_codes=" + fieldCodes + " drill_codes=" + drillCodes + " players=" + server.getPlayerCount()
+                + " mspt=" + String.format(java.util.Locale.ROOT, "%.2f",
                 mspt));
     }
 

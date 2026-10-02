@@ -162,13 +162,15 @@ final class ReferenceLoadFixture {
                 load.generators.add(generator(space, pad.offset(6 * k, 0, 0), owner));
             }
         }
-        // Gravity fields: eight owners, eight fields each over two whole chunks (four per owner and chunk).
-        int chunkX = x0 >> 4 << 4;
-        int chunkZ = (z0 + 64) >> 4 << 4;
+        // Gravity fields: eight owners, eight fields each. A radius-8 field's box covers 2 x 2 chunks, so each field
+        // gets its own 2 x 2 chunk cell of a 32-block grid (ADR-058 density counts every chunk a box covers).
+        int gridX = (x0 >> 4 << 4) + 8;
+        int gridZ = ((z0 + 512) >> 4 << 4) + 8;
         for (int f = 0; f < FIELD_OWNERS; f++) {
             UUID owner = owner(ownerIndex++);
             for (int k = 0; k < 8; k++) {
-                BlockPos pos = new BlockPos(chunkX + 32 * f + (k / 4) * 16 + (k % 4) * 3 + 2, 200, chunkZ + 8);
+                int cell = 8 * f + k;
+                BlockPos pos = new BlockPos(gridX + 32 * (cell % 16), 200, gridZ + 32 * (cell / 16));
                 forceChunk(overworld, pos);
                 overworld.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
                 overworld.setBlockAndUpdate(pos, ModBlocks.GRAVITY_FIELD_CONTROLLER.get().defaultBlockState());
