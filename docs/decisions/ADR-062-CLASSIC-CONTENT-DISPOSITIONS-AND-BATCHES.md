@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-10-02
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -262,3 +262,6 @@ the observatory) that are cheap enough to deliver.
 - Revision 2: answers review round 1 (0 Critical, 2 High, 12 Medium, 7 Low,
   6 Info), one commit per finding; see
   [review-01-dispositions](../work/v1.8.0-preparation/review-01-dispositions.md).
+- Revision 3: answers review round 2 (0 Critical, 1 High, 6 Medium, 7 Low,
+  5 Info), one commit per finding; see
+  [review-02-dispositions](../work/v1.8.0-preparation/review-02-dispositions.md).

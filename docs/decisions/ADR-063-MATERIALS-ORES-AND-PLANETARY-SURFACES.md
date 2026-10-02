@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 1
+revision: 2
 date: 2026-10-02
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -406,3 +406,6 @@ a vanilla derivative (ADR-061 §4.8).
 ## Review history
 
 - Revision 1: proposed after C14 review round 1, for review round 2.
+- Revision 2: answers review round 2 (M3–M6, L4–L7, I4), one commit per
+  finding; see
+  [review-02-dispositions](../work/v1.8.0-preparation/review-02-dispositions.md).
