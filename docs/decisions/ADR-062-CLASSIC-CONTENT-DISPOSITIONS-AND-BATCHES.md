@@ -21,10 +21,11 @@ metadata variants, 35 items with 32 variants, 15 materials (including the extra 
 entities, 10 entities, 12 registered biomes (2 more never registered), 34 world
 generation classes, 9 registered satellite kinds (3 more classes never
 registered), 3 missions, 15 sound events, 17 advancements, 13 atmosphere types,
-19 commands, 132 configuration keys, 14 XML configuration files, 41 event rules, 3 coremod rules, 16 registered packets and 1 unregistered, 16 packets, 13
-integrations, 7 key bindings, 1 enchantment, and 22 LibVulpes blocks and items that the legacy
-gameplay depends on (structure blocks, motors, hatches, battery, linker,
-holographic projector). The [content audit](../work/v1.8.0-content-audit.md) explains the
+19 commands, 132 configuration keys, 14 XML configuration files, 41 event
+rules, 3 coremod rules, 16 registered packets (and 1 never registered), 13
+integrations, 7 key bindings, 1 enchantment, and 22 LibVulpes blocks, items and
+machines that the legacy gameplay depends on (structure blocks, motors,
+hatches, battery, linker, holographic projector, coal generator). The [content audit](../work/v1.8.0-content-audit.md) explains the
 inventory and the legacy behaviour behind each group.
 
 Earlier ADRs deferred several items to v1.8 and asked for a decision here:
