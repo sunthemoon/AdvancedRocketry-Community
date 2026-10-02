@@ -31,10 +31,12 @@ must handle:
   hatches and casings come from **LibVulpes**, not from Advanced Rocketry; AR
   resources reference 36 distinct LibVulpes resource locations, and some of
   those LibVulpes files came from an unmerged third-party pull request;
-- some legacy files are presumed copies of vanilla files (one model JSON is
-  byte-identical; iron armor layers, lava, the font and the sun share vanilla
-  names); six sound events point to one silent placeholder; the sounds and the
-  photographic planet images carry no embedded attribution;
+- legacy file names say nothing about origin: the Moon turf and ferric sand
+  are recolours of the vanilla grass top, the plate press faces a filtered
+  vanilla piston, and several GUI sheets the vanilla container frames, while
+  two model JSON files are byte-identical to vanilla models (§4.8); five
+  sound events point to one silent placeholder, and the sounds and the
+  JPEG planet images carry no embedded attribution;
 - 1.12 blockstates, models, recipes and advancements use formats that 1.20.1
   cannot load; they are reference data, not importable files.
 
