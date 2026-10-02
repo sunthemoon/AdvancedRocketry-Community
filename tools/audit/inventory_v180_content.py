@@ -187,8 +187,45 @@ def unit(kind: str, name: str, path: str, line: int, **extra: object) -> dict[st
 
 
 def conditional(lines: list[str], index: int) -> bool:
+    """True when the statement on 1-based line ``index`` is the body of a braceless if or else."""
     previous = lines[index - 2].strip() if index >= 2 else ""
     return previous.startswith("if") or previous.startswith("else")
+
+
+CONFIG_CATEGORY = r'([\w.]+|"[^"]*")'
+
+
+def config_keys(text: str) -> list[tuple[int, str]]:
+    """(offset, CATEGORY.key) for both Forge Configuration signatures, comments ignored."""
+    text = strip_java_comments(text)
+    found = [(m.start(), m.group(1), m.group(2)) for m in
+             re.finditer(r'config\.get\(\s*' + CONFIG_CATEGORY + r'\s*,\s*"([^"]+)"', text)]
+    found += [(m.start(), m.group(2), m.group(1)) for m in
+              re.finditer(r'config\.get(?:Boolean|Int|Float|String|StringList)\(\s*"([^"]+)"\s*,\s*' + CONFIG_CATEGORY,
+                          text)]
+    return [(offset, f"{group.strip(chr(34)).split('.')[-1]}.{name}") for offset, group, name in sorted(found)]
+
+
+METHOD = re.compile(r'^\s*(?:public|private|protected)[^=;(]*?\s(\w+)\s*\(', re.M)
+
+
+def command_names(text: str) -> list[tuple[int, str]]:
+    """(offset, group/name) of every switch case; the group is the enclosing commandXxx method, else root."""
+    text = strip_java_comments(text)
+    methods = [(m.start(), m.group(1)) for m in METHOD.finditer(text)]
+    result = []
+    for match in re.finditer(r'case "(\w+)":', text):
+        enclosing = [name for start, name in methods if start < match.start()]
+        method = enclosing[-1] if enclosing else ""
+        group = method[len("command"):].lower() if method.startswith("command") and len(method) > 7 else "root"
+        result.append((match.start(), f"{group}/{match.group(1)}"))
+    return result
+
+
+def registered_packets(main: str) -> list[tuple[int, str]]:
+    """(offset, class) of packets the mod registers with a discriminator, comments ignored."""
+    text = strip_java_comments(main)
+    return [(m.start(), m.group(1)) for m in re.finditer(r'addDiscriminator\(\s*(\w+)\.class\s*\)', text)]
 
 
 def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
@@ -233,7 +270,8 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
         number = line_of(main, match.start())
         if main_lines[number - 1].strip().startswith("//"):
             continue
-        units.append(unit("block_entity", match.group(2), MAIN, number, java_class=match.group(1)))
+        units.append(unit("block_entity", match.group(2), MAIN, number, java_class=match.group(1),
+                          conditional=conditional(main_lines, number) or None))
 
     for match in re.finditer(r'registerModEntity\(new ResourceLocation\(Constants\.modId,\s*"([^"]+)"\)\s*,\s*(\w+)\.class', main):
         units.append(unit("entity", match.group(1), MAIN, line_of(main, match.start()), java_class=match.group(2)))
@@ -268,15 +306,9 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
     seen_config = set()
     config_files = [CONFIG] + sorted(path for path in upstream.hashes
                                      if path.startswith(JAVA_ROOT) and path.endswith(".java") and path != CONFIG)
-    category = r'([\w.]+|"[^"]*")'
     for path in config_files:
         text = strip_java_comments(upstream.text(path))
-        found = [(m.start(), m.group(1), m.group(2)) for m in
-                 re.finditer(r'config\.get\(\s*' + category + r'\s*,\s*"([^"]+)"', text)]
-        found += [(m.start(), m.group(2), m.group(1)) for m in
-                  re.finditer(r'config\.get(?:Boolean|Int|Float|String|StringList)\(\s*"([^"]+)"\s*,\s*' + category, text)]
-        for offset, group, name in sorted(found):
-            key = f"{group.strip(chr(34)).split('.')[-1]}.{name}"
+        for offset, key in config_keys(text):
             if key not in seen_config:
                 seen_config.add(key)
                 units.append(unit("config", key, path, line_of(text, offset)))
@@ -290,11 +322,14 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
                 seen_files.add(match.group(1))
                 units.append(unit("config_file", match.group(1), path, line_of(text, match.start())))
 
-    command = upstream.text(COMMAND)
-    for match in re.finditer(r'case "(\w+)":', command):
-        number = line_of(command, match.start())
-        group = "planet" if number < 912 else "root"
-        units.append(unit("command", f"{group}/{match.group(1)}", COMMAND, number))
+    command = strip_java_comments(upstream.text(COMMAND))
+    for offset, name in command_names(command):
+        units.append(unit("command", name, COMMAND, line_of(command, offset)))
+
+    packets = registered_packets(main)
+    registered_packet_classes = {name for _, name in packets}
+    for offset, name in packets:
+        units.append(unit("packet", name, MAIN, line_of(main, offset)))
 
     materials: dict[str, set[str]] = {}
     material_lines: dict[str, tuple[str, int]] = {}
@@ -339,8 +374,8 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
             units.append(unit("satellite_unregistered", stem, path, 1))
         elif relative.startswith("mission/"):
             units.append(unit("mission", stem, path, 1))
-        elif relative.startswith("network/"):
-            units.append(unit("packet", stem, path, 1))
+        elif relative.startswith("network/") and stem not in registered_packet_classes:
+            units.append(unit("packet_unregistered", stem, path, 1))
         elif relative.startswith("integration/jei/") and relative.count("/") == 3 and stem.endswith("Category"):
             units.append(unit("integration", "jei/" + relative.split("/")[2], path, 1))
         elif relative.startswith("integration/") and relative.count("/") == 1:

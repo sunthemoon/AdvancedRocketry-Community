@@ -8,7 +8,8 @@ from pathlib import Path
 
 from scripts.validate_v180_content_ledger import (ALLOWLIST, ASSET_PLAN, DERIVATION, INVENTORY, LEDGER,
                                                   ORIGIN_FINDINGS, ROOT, validate)
-from tools.audit.inventory_v180_content import lang_names, unlocalized, variants
+from tools.audit.inventory_v180_content import (command_names, conditional, config_keys, lang_names,
+                                                registered_packets, strip_java_comments, unlocalized, variants)
 
 REGISTRY = Path("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry")
 COPIED = (
@@ -71,7 +72,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         summary, errors = validate(ROOT)
         self.assertEqual([], errors)
         self.assertEqual("PASS", summary["result"])
-        self.assertEqual(651, summary["units"])
+        self.assertEqual(652, summary["units"])
         self.assertEqual(898, sum(summary["assets"].values()))
 
     def test_copied_tree_passes(self) -> None:
@@ -272,6 +273,42 @@ class V180InventoryParsingTests(unittest.TestCase):
         main = ('AdvancedRocketryItems.itemIC = new ItemIngredient(6).setUnlocalizedName("advancedrocketry:circuitIC")'
                 '.setCreativeTab(tab);')
         self.assertEqual({"itemIC": "circuitIC"}, unlocalized(main, "AdvancedRocketryItems"))
+
+
+    def test_config_keys_cover_both_signatures_and_skip_comments(self) -> None:
+        text = "\n".join([
+            'a = config.get(OXYGEN, "vacuumDamage", 1).getInt();',
+            '// b = config.get(OXYGEN, "commented", 1);',
+            'c = config.getStringList("BlacklistedBiomes", "Planet", new String[] {}, "x");',
+            '/* d = config.getInt("hidden", PLANET, 1, 0, 2, "y"); */',
+        ])
+        self.assertEqual(["OXYGEN.vacuumDamage", "Planet.BlacklistedBiomes"], [key for _, key in config_keys(text)])
+
+    def test_command_groups_follow_the_enclosing_method(self) -> None:
+        text = "\n".join([
+            "private void commandPlanet(ICommandSender s, String[] a) {",
+            '    switch(a[0]) { case "list": break; }',
+            "}",
+            "public void execute(MinecraftServer m, ICommandSender s, String[] a) {",
+            '    switch(a[0]) { case "goto": break; }',
+            '    // case "old":',
+            "}",
+        ])
+        self.assertEqual(["planet/list", "root/goto"], [name for _, name in command_names(text)])
+
+    def test_registered_packets_ignore_commented_registrations(self) -> None:
+        text = "\n".join([
+            "PacketHandler.INSTANCE.addDiscriminator(PacketA.class);",
+            "//PacketHandler.INSTANCE.addDiscriminator(PacketB.class);",
+        ])
+        self.assertEqual(["PacketA"], [name for _, name in registered_packets(text)])
+
+    def test_conditional_registration_and_comment_stripping(self) -> None:
+        lines = ["if(enabled)", "    register(x);", "register(y);"]
+        self.assertTrue(conditional(lines, 2))
+        self.assertFalse(conditional(lines, 3))
+        stripped = strip_java_comments('a "//kept" // gone\nb /* x\ny */ c')
+        self.assertEqual(['a "//kept"', "b", "c"], [line.strip().split("  ")[0] for line in stripped.split("\n")])
 
 
 if __name__ == "__main__":

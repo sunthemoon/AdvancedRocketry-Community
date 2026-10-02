@@ -715,6 +715,7 @@
   "material": 15,
   "mission": 3,
   "packet": 16,
+  "packet_unregistered": 1,
   "satellite": 9,
   "satellite_unregistered": 3,
   "sound_event": 15,
@@ -2174,7 +2175,8 @@
    "legacy_name": "ARGravityMachine",
    "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
    "line": 420,
-   "java_class": "TileAreaGravityController"
+   "java_class": "TileAreaGravityController",
+   "conditional": true
   },
   {
    "id": "block_entity:ARguidanceComputer",
@@ -5253,112 +5255,119 @@
    "id": "packet:PacketAirParticle",
    "kind": "packet",
    "legacy_name": "PacketAirParticle",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketAirParticle.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 321
   },
   {
    "id": "packet:PacketAsteroidInfo",
    "kind": "packet",
    "legacy_name": "PacketAsteroidInfo",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketAsteroidInfo.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 320
   },
   {
    "id": "packet:PacketAtmSync",
    "kind": "packet",
    "legacy_name": "PacketAtmSync",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketAtmSync.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 316
   },
   {
    "id": "packet:PacketBiomeIDChange",
    "kind": "packet",
    "legacy_name": "PacketBiomeIDChange",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketBiomeIDChange.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 317
   },
   {
    "id": "packet:PacketConfigSync",
    "kind": "packet",
    "legacy_name": "PacketConfigSync",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketConfigSync.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 323
   },
   {
    "id": "packet:PacketDimInfo",
    "kind": "packet",
    "legacy_name": "PacketDimInfo",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketDimInfo.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 309
   },
   {
    "id": "packet:PacketFluidParticle",
    "kind": "packet",
    "legacy_name": "PacketFluidParticle",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketFluidParticle.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 324
   },
   {
    "id": "packet:PacketInvalidLocationNotify",
    "kind": "packet",
    "legacy_name": "PacketInvalidLocationNotify",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketInvalidLocationNotify.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 322
+  },
+  {
+   "id": "packet:PacketItemModifcation",
+   "kind": "packet",
+   "legacy_name": "PacketItemModifcation",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 312
   },
   {
    "id": "packet:PacketLaserGun",
    "kind": "packet",
    "legacy_name": "PacketLaserGun",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketLaserGun.java",
-   "line": 1
-  },
-  {
-   "id": "packet:PacketMoveRocketInSpace",
-   "kind": "packet",
-   "legacy_name": "PacketMoveRocketInSpace",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketMoveRocketInSpace.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 319
   },
   {
    "id": "packet:PacketOxygenState",
    "kind": "packet",
    "legacy_name": "PacketOxygenState",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketOxygenState.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 313
   },
   {
    "id": "packet:PacketSatellite",
    "kind": "packet",
    "legacy_name": "PacketSatellite",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketSatellite.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 310
   },
   {
    "id": "packet:PacketSpaceStationInfo",
    "kind": "packet",
    "legacy_name": "PacketSpaceStationInfo",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketSpaceStationInfo.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 315
   },
   {
    "id": "packet:PacketStationUpdate",
    "kind": "packet",
    "legacy_name": "PacketStationUpdate",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketStationUpdate.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 314
   },
   {
    "id": "packet:PacketStellarInfo",
    "kind": "packet",
    "legacy_name": "PacketStellarInfo",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketStellarInfo.java",
-   "line": 1
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 311
   },
   {
    "id": "packet:PacketStorageTileUpdate",
    "kind": "packet",
    "legacy_name": "PacketStorageTileUpdate",
-   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketStorageTileUpdate.java",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 318
+  },
+  {
+   "id": "packet_unregistered:PacketMoveRocketInSpace",
+   "kind": "packet_unregistered",
+   "legacy_name": "PacketMoveRocketInSpace",
+   "source": "src/main/java/zmaster587/advancedRocketry/network/PacketMoveRocketInSpace.java",
    "line": 1
   },
   {
