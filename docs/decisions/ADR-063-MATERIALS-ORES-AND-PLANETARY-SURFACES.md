@@ -1,11 +1,14 @@
 # ADR-063 — Materials, ores and planetary surfaces (C15)
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 3
 date: 2026-10-02
 deciders: [sunthemoon]
 owner: sunthemoon
+accepted_by: sunthemoon
+accepted_at: 2026-10-03
+acceptance_basis: maintainer confirmation on 2026-10-03 after five independent review rounds
 target_version: v1.8.0
 slices: [C15a, C15b, C15c]
 development_dependency: ADR-016, ADR-031, ADR-032, ADR-033, ADR-036, ADR-037, ADR-043, ADR-061, ADR-062
@@ -416,6 +419,20 @@ a vanilla derivative (ADR-061 §4.8).
 - a feature exceeds its chunk-generation budget;
 - a landing-rule ADR lands Moon rockets on the heightmap (the arrival height
   above then changes).
+
+## Acceptance record
+
+Accepted on 2026-10-03 by root after the maintainer confirmed it in the
+development session, following five independent contract-review rounds
+(rounds 1 to 4 accepted the v1.8 contracts with required changes; round 5
+accepted ADR-060..063). Every Critical, High and Medium finding is resolved,
+and the round-5 Low and Info findings are applied in this text. Reports and
+dispositions are in the [preparation
+evidence](../work/v1.8.0-preparation/VERIFICATION.md).
+
+Acceptance freezes this contract for the v1.8 batches. It is not a
+runtime-completion claim, a Gate PASS or a publication decision. Later changes
+need a new revision and review.
 
 ## Review history
 

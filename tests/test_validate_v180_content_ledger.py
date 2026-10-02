@@ -426,6 +426,10 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertIn("ledger: block:railgun: IMPLEMENTED content needs a registered modern block/item ID", self._errors())
 
     def test_require_accepted_reports_proposed_adrs(self) -> None:
+        self.assertFalse(any("which is not ACCEPTED" in error for error in self._errors(require_accepted=True)))
+        adr = self.root / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+        adr.write_text(adr.read_text(encoding="utf-8").replace("status: ACCEPTED", "status: PROPOSED", 1),
+                       encoding="utf-8")
         errors = self._errors(require_accepted=True)
         self.assertTrue(any("depend on ADR-062, which is not ACCEPTED" in error for error in errors))
 

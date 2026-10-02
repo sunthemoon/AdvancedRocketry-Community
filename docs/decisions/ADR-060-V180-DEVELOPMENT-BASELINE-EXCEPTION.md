@@ -1,13 +1,16 @@
 # ADR-060 — v1.8 development baseline exception
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 2
 date: 2026-10-02
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.8.0
-proposed_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
+accepted_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
+accepted_by: sunthemoon
+accepted_at: 2026-10-03
+acceptance_basis: maintainer confirmation on 2026-10-03 after five independent review rounds
 expires: before v1.8.0 release-candidate freeze
 recovery_condition: complete or explicitly disposition every inherited and current Required Gate before freezing a v1.8.0 candidate
 supersedes: ""
@@ -112,8 +115,14 @@ design and data samples.
 
 ## Acceptance record
 
-Not accepted yet. Acceptance needs independent contract review of ADR-060,
-ADR-061 and ADR-062 and the maintainer's confirmation.
+Recorded on 2026-10-03 after the maintainer confirmed the acceptance of the
+v1.8 contracts. Five independent contract-review rounds found no required
+change to this ADR after revision 2. ADR-061, ADR-062 and ADR-063 are ACCEPTED
+in the same step, which together with the item-by-item inventory satisfies the
+version's fourth prerequisite. Reports and dispositions are in the
+[preparation evidence](../work/v1.8.0-preparation/VERIFICATION.md). Root
+records this acceptance separately from the reviews. It permits development,
+not runtime-completion claims, inherited Gate PASS or publication.
 
 ## Review history
 

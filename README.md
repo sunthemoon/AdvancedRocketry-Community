@@ -76,13 +76,20 @@ are not available yet. Opening a world upgrades its satellite
 registry and blocks a return to v1.5 builds; use copies of backed-up worlds. The
 [implementation log](docs/work/v1.6.0-implementation-log.md) tracks the work.
 
-**v1.7 Endgame Systems is in preparation.** Its contracts are accepted: an
+**v1.7 Endgame Systems is a development handoff** (`1.20.1-1.7.0-dev`): an
 orbital laser drill, a railgun cargo launcher with endpoint targeting, a
 black-hole generator, an area gravity controller and space-elevator logistics,
 each with permission, protection, rate, energy and audit bounds. The
-[implementation log](docs/work/v1.7.0-implementation-log.md) tracks the work.
-None of these features is available yet; the runtime build remains
-`1.20.1-1.6.0-dev` until implementation begins.
+[development handoff](docs/releases/v1.7.0/RELEASE-EVIDENCE.md) lists its
+evidence and open acceptance.
+
+**v1.8 Classic Content Completion is in development.** Its contracts are
+accepted: every legacy content unit has a recorded disposition, imported legacy
+art must pass a vanilla-derivation check and a provenance record, and the first
+batch adds the classic metals, ores, the small plate press and new Moon, Mars
+and Venus surfaces. The [implementation log](docs/work/v1.8.0-implementation-log.md)
+tracks the work. None of the classic content is available yet; the runtime build
+remains `1.20.1-1.7.0-dev` until it begins.
 
 ## What this project is
 

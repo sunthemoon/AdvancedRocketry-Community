@@ -1,0 +1,173 @@
+{
+  "base_commit": "55da6a58842762c382edce0a5a842d06bb76ff6e",
+  "files": [
+    {
+      "bytes": 4552,
+      "path": ".github/workflows/repository-docs.yml",
+      "sha256": "b93b6d58cbbed6f43568d6ac62a4b9c289cc408e2c8e6068ea109d93204bc1b7",
+      "working_sha256": "b93b6d58cbbed6f43568d6ac62a4b9c289cc408e2c8e6068ea109d93204bc1b7"
+    },
+    {
+      "bytes": 26384,
+      "path": "DOCUMENT-INDEX.md",
+      "sha256": "195200efd4f935de14635e34790360e873e74b70071d8bbece73ebac7b63c7b7",
+      "working_sha256": "195200efd4f935de14635e34790360e873e74b70071d8bbece73ebac7b63c7b7"
+    },
+    {
+      "bytes": 10899,
+      "path": "README.md",
+      "sha256": "4fbea3fcb7dfe954c7984905ae8c417015dc140fc777fa18efe6cf18024f7c8a",
+      "working_sha256": "4fbea3fcb7dfe954c7984905ae8c417015dc140fc777fa18efe6cf18024f7c8a"
+    },
+    {
+      "bytes": 19777,
+      "path": "docs/PORTING_MATRIX.md",
+      "sha256": "a86520549a202d412382c6c70d41684983509be90f18de26ae95a11771179869",
+      "working_sha256": "a86520549a202d412382c6c70d41684983509be90f18de26ae95a11771179869"
+    },
+    {
+      "bytes": 4290,
+      "path": "docs/decisions/ADR-018-PARITY-FIRST-FULL-ACCEPTANCE-SCHEDULING.md",
+      "sha256": "43b8c2459bd7e46991192cf1f8ecabe2cf984903dee9e27107fb58e8dae12386",
+      "working_sha256": "43b8c2459bd7e46991192cf1f8ecabe2cf984903dee9e27107fb58e8dae12386"
+    },
+    {
+      "bytes": 6892,
+      "path": "docs/decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md",
+      "sha256": "f88d0850c13bdc8267591516ebe93ec369d56bb00993d41d7a7dd37703d1fd8e",
+      "working_sha256": "f88d0850c13bdc8267591516ebe93ec369d56bb00993d41d7a7dd37703d1fd8e"
+    },
+    {
+      "bytes": 32489,
+      "path": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "sha256": "861d105025af30c17d8f8b7b56e75cef3cee4fdf567da177c037da9a08c96971",
+      "working_sha256": "861d105025af30c17d8f8b7b56e75cef3cee4fdf567da177c037da9a08c96971"
+    },
+    {
+      "bytes": 22969,
+      "path": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "sha256": "bcc86c546ad82ba61a765cfb31296f2a4af7287a69bcbed802380284ab87e362",
+      "working_sha256": "bcc86c546ad82ba61a765cfb31296f2a4af7287a69bcbed802380284ab87e362"
+    },
+    {
+      "bytes": 26110,
+      "path": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "sha256": "a42d72c07f02e94476530c797b07136850001f81b1c71b37b5b53300aa353f5d",
+      "working_sha256": "a42d72c07f02e94476530c797b07136850001f81b1c71b37b5b53300aa353f5d"
+    },
+    {
+      "bytes": 1563,
+      "path": "docs/provenance/v1.8.0-development-metadata.md",
+      "sha256": "d1e132ff902b377bd35a500a966434e3ea6b295e63fdba3b6e9e8e7688bfa478",
+      "working_sha256": "d1e132ff902b377bd35a500a966434e3ea6b295e63fdba3b6e9e8e7688bfa478"
+    },
+    {
+      "bytes": 983,
+      "path": "docs/provenance/v1.8.0-origin-findings.json",
+      "sha256": "726572c71c282369befbd88fd31dd3abd15799746532a08308e3e7917a189993",
+      "working_sha256": "726572c71c282369befbd88fd31dd3abd15799746532a08308e3e7917a189993"
+    },
+    {
+      "bytes": 15024,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "1a33532aa79a2af6df0a23b09e919a8400cffc32e461b09d2b2b0d252ec5ee69",
+      "working_sha256": "1a33532aa79a2af6df0a23b09e919a8400cffc32e461b09d2b2b0d252ec5ee69"
+    },
+    {
+      "bytes": 10207,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "df85dfff32367cf223be074962ed9afece523df28f67dff97eb252f27be4b3c5",
+      "working_sha256": "df85dfff32367cf223be074962ed9afece523df28f67dff97eb252f27be4b3c5"
+    },
+    {
+      "bytes": 8908,
+      "path": "docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md",
+      "sha256": "46ed88fcbdf007459aeaf0c9187020d83d696276a7a9eb4dbd78e5af6f76595d",
+      "working_sha256": "46ed88fcbdf007459aeaf0c9187020d83d696276a7a9eb4dbd78e5af6f76595d"
+    },
+    {
+      "bytes": 13986,
+      "path": "docs/work/v1.8.0-asset-import-allowlist.txt",
+      "sha256": "fc5ebb60932a36a0c6d4a21ffaa4746b4377244a08d943a65d9b8de050a0660f",
+      "working_sha256": "fc5ebb60932a36a0c6d4a21ffaa4746b4377244a08d943a65d9b8de050a0660f"
+    },
+    {
+      "bytes": 52291,
+      "path": "docs/work/v1.8.0-asset-plan.csv",
+      "sha256": "638f15e19aa3fdfee39e0519ca51f7f75b6818e76d3d69ee8fd7f3ffb4feddce",
+      "working_sha256": "638f15e19aa3fdfee39e0519ca51f7f75b6818e76d3d69ee8fd7f3ffb4feddce"
+    },
+    {
+      "bytes": 21783,
+      "path": "docs/work/v1.8.0-content-audit.md",
+      "sha256": "2fcd843b08d4c14576371b7c671f83efa638e4bf99cf1667833c709f2d77fe33",
+      "working_sha256": "2fcd843b08d4c14576371b7c671f83efa638e4bf99cf1667833c709f2d77fe33"
+    },
+    {
+      "bytes": 63951,
+      "path": "docs/work/v1.8.0-content-ledger.csv",
+      "sha256": "b7642ea2e01e2a8b43370c11834ccb8e407d787d2407acebfb113ecc99f7844d",
+      "working_sha256": "b7642ea2e01e2a8b43370c11834ccb8e407d787d2407acebfb113ecc99f7844d"
+    },
+    {
+      "bytes": 6787,
+      "path": "docs/work/v1.8.0-contract-coverage.md",
+      "sha256": "09895890609e219809ff5d5d42018c8c66fc8a6d4403d6bac9f843768753e036",
+      "working_sha256": "09895890609e219809ff5d5d42018c8c66fc8a6d4403d6bac9f843768753e036"
+    },
+    {
+      "bytes": 8289,
+      "path": "docs/work/v1.8.0-implementation-log.md",
+      "sha256": "c162d33c4c972a50ab44f068d82712d176197f298d01e62fd624d72f9facd5af",
+      "working_sha256": "c162d33c4c972a50ab44f068d82712d176197f298d01e62fd624d72f9facd5af"
+    },
+    {
+      "bytes": 257698,
+      "path": "docs/work/v1.8.0-legacy-inventory.json",
+      "sha256": "b9509c8e3c17d3f1ee1dc8ba8f13c1a4ceec6e4481d84238917776bc14f62fff",
+      "working_sha256": "b9509c8e3c17d3f1ee1dc8ba8f13c1a4ceec6e4481d84238917776bc14f62fff"
+    },
+    {
+      "bytes": 752765,
+      "path": "docs/work/v1.8.0-vanilla-derivation.json",
+      "sha256": "97aaee71137312d535d129e5b7b42acd07609cb61fa717b27e5cbcd7d4bb882b",
+      "working_sha256": "97aaee71137312d535d129e5b7b42acd07609cb61fa717b27e5cbcd7d4bb882b"
+    },
+    {
+      "bytes": 37985,
+      "path": "scripts/validate_v180_content_ledger.py",
+      "sha256": "09348157737fc5fc835f1fe7767c7cbdce3ca6d1a557e97e051cd23dcb62d29d",
+      "working_sha256": "09348157737fc5fc835f1fe7767c7cbdce3ca6d1a557e97e051cd23dcb62d29d"
+    },
+    {
+      "bytes": 31546,
+      "path": "tests/test_validate_v180_content_ledger.py",
+      "sha256": "dc90caa4d2c379e5e1f231b266c6e9cfa5d31ee7e123e48fc6a2840e730c6bab",
+      "working_sha256": "dc90caa4d2c379e5e1f231b266c6e9cfa5d31ee7e123e48fc6a2840e730c6bab"
+    },
+    {
+      "bytes": 15076,
+      "path": "tests/test_vanilla_derivation.py",
+      "sha256": "202815d4b4b92dd2a59cb3f8e30edb824085de932c31c2661461847b43937a5b",
+      "working_sha256": "202815d4b4b92dd2a59cb3f8e30edb824085de932c31c2661461847b43937a5b"
+    },
+    {
+      "bytes": 2742,
+      "path": "tools/audit/fetch_vanilla_clients.py",
+      "sha256": "b94037482458304742840a9bef22beeb6ea4dc6e119648fdc9fa15e886a87e57",
+      "working_sha256": "b94037482458304742840a9bef22beeb6ea4dc6e119648fdc9fa15e886a87e57"
+    },
+    {
+      "bytes": 24750,
+      "path": "tools/audit/inventory_v180_content.py",
+      "sha256": "70334b2a6e7fd62990c3c4d77a6bcdbbf57d59888c189950e305859fe35703f6",
+      "working_sha256": "70334b2a6e7fd62990c3c4d77a6bcdbbf57d59888c189950e305859fe35703f6"
+    },
+    {
+      "bytes": 47546,
+      "path": "tools/audit/vanilla_derivation.py",
+      "sha256": "19ce7221e0f1ec1446fd21238e2398f4fe235dff71719d8b4dbfaf74cce1416d",
+      "working_sha256": "19ce7221e0f1ec1446fd21238e2398f4fe235dff71719d8b4dbfaf74cce1416d"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 51038,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-api.jar",
+        "sha256": "824813cf427f963c836e79a2dbd76661e67cc7872ba3567bdf9e84eb3555470b"
+      },
+      {
+        "bytes": 1988440,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-sources.jar",
+        "sha256": "79116f6de59c29020672588d98d90a85e9c2f71eb35a18fe21c38a78cc9cb183"
+      },
+      {
+        "bytes": 4366599,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "sha256": "4326d3d67edf417f4073af86329508fbfa19f8b9dc4d57548e82331a9ac13bbe"
+      }
+    ]
+  },
+  "base_commit": "55da6a58842762c382edce0a5a842d06bb76ff6e",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 254,
+    "tests": 1376
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    ".github/workflows/repository-docs.yml": "b93b6d58cbbed6f43568d6ac62a4b9c289cc408e2c8e6068ea109d93204bc1b7",
+    "scripts/validate_v180_content_ledger.py": "09348157737fc5fc835f1fe7767c7cbdce3ca6d1a557e97e051cd23dcb62d29d",
+    "tests/test_validate_v180_content_ledger.py": "21487680b6445c7c995ca1a73c14f1c45e2864cfe94450477610236010886924",
+    "tests/test_vanilla_derivation.py": "202815d4b4b92dd2a59cb3f8e30edb824085de932c31c2661461847b43937a5b",
+    "tools/audit/fetch_vanilla_clients.py": "b94037482458304742840a9bef22beeb6ea4dc6e119648fdc9fa15e886a87e57",
+    "tools/audit/inventory_v180_content.py": "70334b2a6e7fd62990c3c4d77a6bcdbbf57d59888c189950e305859fe35703f6",
+    "tools/audit/vanilla_derivation.py": "19ce7221e0f1ec1446fd21238e2398f4fe235dff71719d8b4dbfaf74cce1416d"
+  }
+}

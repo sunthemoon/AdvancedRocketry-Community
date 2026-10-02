@@ -25,19 +25,42 @@ frozen release-candidate commit or stable approval. See the
 
 The acceptance cursor above remains at the earliest unfinished release Gate;
 it is not the active feature-development branch. Under accepted
-[ADR-053](../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
-v1.7 development baseline is the v1.6 handoff commit. Inherited acceptance
-remains open; accepted v1.7 contracts do not imply implemented endgame gameplay:
+[ADR-060](../decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md), the accepted
+v1.8 development baseline is the v1.7 handoff commit. Inherited acceptance
+remains open; accepted v1.8 contracts do not imply implemented classic content:
 
 ```yaml
-active_development_version: v1.7.0
-active_development_branch: codex/v1.7.0-endgame-systems
+active_development_version: v1.8.0
+active_development_branch: codex/v1.8.0-classic-content
 phase: IMPLEMENTING
 execution_state: ACTIVE
-accepted_development_baseline: ab10fb53a580e53a9a1c24097a487f2a7c54ad52
-development_log: docs/work/v1.7.0-implementation-log.md
-previous_development_handoff: docs/releases/v1.6.0/RELEASE-EVIDENCE.md
+accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
+development_log: docs/work/v1.8.0-implementation-log.md
+previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.7.0-dev
+```
+
+v1.8 preparation (C14) is complete. [ADR-060](../decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md)
+accepts v1.8 development from the v1.7 handoff commit `55da6a5`, separately from
+inherited acceptance. [ADR-061](../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md)
+(identity, import pipeline, vanilla derivation check, validation),
+[ADR-062](../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) (653 legacy
+units, their dispositions and player impact, the C15a–C18d batches) and
+[ADR-063](../decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md) (the C15 batch)
+are frozen after five independent review rounds
+([preparation evidence](../work/v1.8.0-preparation/VERIFICATION.md)). The owner amended
+ADR-018's campaign trigger (revision 2) and accepted the deferral of terraforming and the
+hovercraft past v2.0. The runtime identity stays `1.20.1-1.7.0-dev` until C15 changes the
+runtime. The next chunk is C15 in [COMPLETION-PLAN](COMPLETION-PLAN.md). No Gate is
+claimed.
+
+Previous development version (v1.7, development handoff, release `IN_PROGRESS`):
+
+```yaml
+previous_development_version: v1.7.0
+previous_development_branch: codex/v1.7.0-endgame-systems
+previous_accepted_development_baseline: ab10fb53a580e53a9a1c24097a487f2a7c54ad52
+previous_development_log: docs/work/v1.7.0-implementation-log.md
 ```
 
 v1.7 preparation (C10) is complete. [ADR-053](../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md)
@@ -54,9 +77,7 @@ rounds and the operator guide) are complete. The
 [v1.7 development handoff](../releases/v1.7.0/RELEASE-EVIDENCE.md) lists the evidence and
 the open acceptance: V0/V1/V2, S2 with real players, reference-hardware performance and
 the flush-cost gate (ADR-054 §7), the candidate-bound matrix and the final audit and
-human decision. Release status remains `IN_PROGRESS`, not `PASSED`. The next development
-chunk is v1.8 (C14 in [COMPLETION-PLAN](COMPLETION-PLAN.md)), in a new session. No Gate is
-claimed. The v1.6 facts below are unchanged.
+human decision. Release status remains `IN_PROGRESS`, not `PASSED`. No Gate is claimed. The v1.6 facts below are unchanged.
 
 Previous development version (v1.6, development complete, release `IN_PROGRESS`):
 

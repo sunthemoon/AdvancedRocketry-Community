@@ -245,6 +245,14 @@ v1.0 审核入口：[开发证据与未完成验收项](docs/releases/v1.0.0/REL
 - [黑洞发电机](docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md)（第 3 版，已接受）：燃料表与每 tick 上限，唯一可产能的设备。
 - [区域重力控制器](docs/decisions/ADR-058-AREA-GRAVITY-CONTROLLER.md)（第 3 版，已接受）：信任名单、空间站内 1.00 g 上限与跳跃高度向量。
 - [太空电梯物流](docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md)（第 4 版，已接受）：基于 ADR-045 的配对、乘坐与到达预加载票据、站点守卫与货运。
+- [v1.8 实施日志](docs/work/v1.8.0-implementation-log.md)：经典内容补齐的分块任务、契约状态与实际验证范围。
+- [v1.8 准备验证](docs/work/v1.8.0-preparation/VERIFICATION.md)：五轮独立契约审核、处置表、审核报告、派生检测与校验器检查、未改动运行时的检查。
+- [v1.8 旧版内容审计](docs/work/v1.8.0-content-audit.md)：固定 MIT commit 的逐项审计、资产许可与原版派生发现、LibVulpes 依赖。
+- [v1.8 契约覆盖表](docs/work/v1.8.0-contract-coverage.md)：版本文档每一项对应的契约条款、测试等级、批次或处置。
+- [v1.8 开发基线例外](docs/decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md)（第 2 版，已接受）：本版开发与继承发布验收分离。
+- [经典内容身份、导入与校验](docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md)（第 6 版，已接受）：ID 与标签规则、来源与导入白名单、原版派生检测与继承、配方图检查与预算。
+- [经典内容处置与批次](docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md)（第 5 版，已接受）：653 项旧版内容的逐项处置与玩家影响、C15a–C18d 批次与变更控制。
+- [材料、矿石与行星地表](docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md)（第 3 版，已接受）：C15 批次的材料、矿石、小型压板机、月球/火星/金星地表与 Tau Ceti 世界。
 - [v1.4 开发基线例外](docs/decisions/ADR-030-V140-DEVELOPMENT-BASELINE-EXCEPTION.md)：只允许本版开发，不提前通过继承 Gate。
 - [行星定义与固定维度](docs/decisions/ADR-031-PLANETARY-DEFINITIONS-AND-FIXED-LEVELS.md)：schema 2、可选映射、能力与联合重载契约。
 - [天体绑定持久化](docs/decisions/ADR-032-PERSISTENT-PLANETARY-BINDINGS.md)：首次接入、保留已移除身份与重载提交顺序。

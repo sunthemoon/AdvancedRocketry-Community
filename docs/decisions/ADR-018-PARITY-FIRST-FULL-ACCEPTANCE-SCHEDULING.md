@@ -2,10 +2,13 @@
 
 ```yaml
 status: ACCEPTED
+revision: 2
 date: 2026-09-06
 deciders: [sunthemoon]
 accepted_at: 2026-09-06
 owner_reaffirmed_at: 2026-09-26
+amended_at: 2026-10-03
+amended_by: owner decision recorded in ADR-062 section 8 (option 1)
 owner: sunthemoon
 scope: v1.2.0 through classic machine and dimension completion
 expires: before the first feature-parity release candidate
@@ -54,8 +57,11 @@ The decision changes test scheduling only. It does not:
 ## Completion trigger
 
 The full campaign becomes mandatory when the porting matrix shows every original
-machine and dimension implemented. Closing an inventory row by deferring or rejecting
-it is not completion for this trigger. Finishing an individual machine, dimension,
+machine and dimension implemented, or carrying a `DEFERRED` or `REJECTED`
+disposition that the owner has accepted as outside the v2.0 parity target, with its
+player impact published (ADR-062, accepted 2026-10-03). Rows that are only proposed,
+`MISSING` or `UNKNOWN` still block the trigger, and a disposition the owner has not
+accepted is not completion for this trigger. Finishing an individual machine, dimension,
 slice or intermediate version is not a trigger for the campaign. The owner reaffirmed
 this rule on 2026-09-10, 2026-09-11, 2026-09-25 and 2026-09-26: complete the original
 machines and dimensions first, then run the complete acceptance campaign. Before
@@ -63,6 +69,14 @@ assigning the first feature-parity candidate, the owner must review the matrix,
 run or precisely disposition every deferred environment and record the resulting
 Gate status. A version number alone
 does not satisfy this trigger.
+
+## Amendment history
+
+- Revision 2 (2026-10-03): the owner amended the trigger as proposed in ADR-062
+  section 8 (option 1). The original sentence read: "Closing an inventory row by
+  deferring or rejecting it is not completion for this trigger." Without the
+  amendment, the deferred and rejected original machines and dimensions of ADR-062
+  would have made the trigger unsatisfiable. The rest of this ADR is unchanged.
 
 ## Consequences
 
