@@ -25,6 +25,29 @@ class EndgameModelTest {
                 "80000000-0000-0000-0000-000000000000"), ids.stream().map(UUID::toString).toList());
     }
 
+    /** The allocation-free order (C13) is exactly the order of the canonical lowercase strings. */
+    @Test
+    void theIdOrderIsTheCanonicalStringOrderForAnyTwoIds() {
+        java.util.Random random = new java.util.Random(54L);
+        long[] edges = {0L, 1L, -1L, Long.MIN_VALUE, Long.MAX_VALUE, 0x0fffffffffffffffL, 0x8000000000000001L};
+        List<UUID> ids = new ArrayList<>();
+        for (long high : edges) {
+            for (long low : edges) {
+                ids.add(new UUID(high, low));
+            }
+        }
+        for (int i = 0; i < 2_000; i++) {
+            ids.add(new UUID(random.nextLong(), random.nextLong()));
+        }
+        for (int i = 0; i < 20_000; i++) {
+            UUID first = ids.get(random.nextInt(ids.size()));
+            UUID second = i % 7 == 0 ? new UUID(first.getMostSignificantBits(), random.nextLong())
+                    : ids.get(random.nextInt(ids.size()));
+            assertEquals(Integer.signum(first.toString().compareTo(second.toString())),
+                    Integer.signum(EndgameIdOrder.compare(first, second)), first + " " + second);
+        }
+    }
+
     @Test
     void theAccountedMaximumFitsBelowTheGrowthThresholdWithEveryCapReached() {
         assertEquals(2_816, EndgameLimits.MAX_PINNED_TOMBSTONES);

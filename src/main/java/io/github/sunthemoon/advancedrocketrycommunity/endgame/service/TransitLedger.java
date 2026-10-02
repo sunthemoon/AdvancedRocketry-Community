@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.service;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameIdOrder;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
@@ -42,7 +43,7 @@ public final class TransitLedger implements TransitLedgerView {
 
     private final EndgameService service;
     private final Supplier<TransitLimits> limits;
-    private final TreeMap<String, TransitEndpoint> loaded = new TreeMap<>();
+    private final TreeMap<UUID, TransitEndpoint> loaded = new TreeMap<>(EndgameIdOrder.ORDER);
     private final Map<UUID, Pending> pending = new LinkedHashMap<>(16, 0.75F, false) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<UUID, Pending> eldest) {
@@ -51,7 +52,7 @@ public final class TransitLedger implements TransitLedgerView {
     };
     private final Map<TransitKey, Long> acknowledgedAt = new HashMap<>();
     @Nullable
-    private String cursor;
+    private UUID cursor;
     private int registrationsLeft = EndgameLimits.REGISTRATIONS_PER_TICK;
     private int reconciliationsLeft = RECONCILIATIONS_PER_TICK;
     private long now;
@@ -71,7 +72,7 @@ public final class TransitLedger implements TransitLedgerView {
     /** A ledger endpoint's block entity loaded on the server; an observation drained before is applied now. */
     public void attach(TransitEndpoint endpoint) {
         UUID id = endpoint.endpointId();
-        loaded.put(id.toString(), endpoint);
+        loaded.put(id, endpoint);
         Pending observed = pending.remove(id);
         if (observed != null) {
             apply(endpoint, observed.shown(), observed.tick());
@@ -79,16 +80,16 @@ public final class TransitLedger implements TransitLedgerView {
     }
 
     public void detach(UUID id) {
-        loaded.remove(id.toString());
+        loaded.remove(id);
     }
 
     /** An unloading block entity detaches only itself, never another block entity attached under its ID. */
     public void detach(UUID id, TransitEndpoint endpoint) {
-        loaded.remove(id.toString(), endpoint);
+        loaded.remove(id, endpoint);
     }
 
     public Optional<TransitEndpoint> loaded(UUID id) {
-        return Optional.ofNullable(loaded.get(id.toString()));
+        return Optional.ofNullable(loaded.get(id));
     }
 
     private static void apply(TransitEndpoint endpoint, TransitTags.Shown shown, long tick) {
@@ -119,7 +120,7 @@ public final class TransitLedger implements TransitLedgerView {
             }
         }
         shown.forEach((id, sections) -> {
-            TransitEndpoint endpoint = loaded.get(id.toString());
+            TransitEndpoint endpoint = loaded.get(id);
             if (endpoint != null) {
                 apply(endpoint, sections, tick);
             } else {
@@ -212,12 +213,12 @@ public final class TransitLedger implements TransitLedgerView {
         if (loaded.isEmpty()) {
             return;
         }
-        List<String> order = new ArrayList<>();
+        List<UUID> order = new ArrayList<>();
         order.addAll(cursor == null ? loaded.keySet() : loaded.tailMap(cursor, false).keySet());
         if (cursor != null) {
             order.addAll(loaded.headMap(cursor, true).keySet());
         }
-        for (String id : order) {
+        for (UUID id : order) {
             TransitEndpoint endpoint = loaded.get(id);
             UUID endpointId = endpoint.endpointId();
             if (endpoint.source().anythingUnpersisted() || endpoint.destination().anythingUnpersisted()) {

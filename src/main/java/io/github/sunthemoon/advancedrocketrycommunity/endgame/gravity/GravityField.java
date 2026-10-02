@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameIdOrder;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
@@ -67,7 +68,7 @@ public record GravityField(UUID id, UUID owner, ResourceLocation level, Box box,
         return candidates.stream()
                 .filter(field -> field.box().contains(x, y, z) && field.affects(player, trusted))
                 .min(Comparator.comparingLong((GravityField field) -> field.box().volume())
-                        .thenComparing(field -> field.id().toString()));
+                        .thenComparing(GravityField::id, EndgameIdOrder.ORDER));
     }
 
     /** An inclusive block box. */
