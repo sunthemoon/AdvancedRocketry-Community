@@ -235,10 +235,24 @@ must handle:
 2. The resource validator checks: model → texture, blockstate → model,
    sound definition → OGG, language key → registered object, recipe → registered
    item or tag, no case collision, unique registry IDs.
-3. A **recipe graph** tool reads the generated recipes, loot tables, world
-   generation and mission tables and proves that every registered item is
-   obtainable from vanilla survival roots. A cycle is allowed only when every
-   member also has an acyclic route. The tool writes a report (reachable items,
+3. A **recipe graph** tool proves that every registered item is obtainable
+   from a new survival world. Its nodes are items, fluids and three kinds of
+   prerequisite:
+   - **energy:** a powered recipe needs a reachable Forge Energy source (the
+     C16a combustion generator first);
+   - **Level access:** world generation, loot and surface resources of a body
+     count only once a rocket that can reach it is buildable, with its fuel,
+     route and discovery requirement (ADR-035, ADR-037), so an ore found only
+     on the Moon cannot be an input of the first Moon rocket;
+   - **research and discovery:** satellite missions, mission rewards and
+     recipes behind research count only once their satellite, terminal and
+     research gates are reachable.
+   The roots are vanilla survival items obtainable in the Overworld. A cycle is
+   allowed only when every member also has an acyclic route. Items that need no
+   route (technical blocks, fluid blocks, the force field block, the unlit
+   torch, creative-only content) are listed in a committed exemption file, each
+   with a reason, and reviewed with the batch; nothing is skipped silently. The
+   tool writes a report (reachable items, the access and energy path of each,
    unreachable items, cycles) and fails on any unreachable item or hard-locked
    cycle. It is introduced in C16d and must pass from then on.
 4. The [content ledger](../work/v1.8.0-content-ledger.csv) moves rows from
