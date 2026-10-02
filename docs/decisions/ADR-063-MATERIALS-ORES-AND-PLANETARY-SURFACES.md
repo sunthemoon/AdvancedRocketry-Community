@@ -137,10 +137,25 @@ ADR-055; no batch depends on that.
   `geode_shell`, with textures drawn new.
 - Biomes: `regolith_highlands`, `regolith_lowlands` (Moon), `ferric_regolith`
   (Mars), `volcanic`, `volcanic_lowlands` (Venus), with the legacy top and
-  filler blocks over vanilla stone (Moon, Mars) or vanilla basalt (Venus).
-- The Moon becomes a noise Level with gentle relief (the legacy base height and
-  variation) and a two-biome source; Mars and Venus switch to multi-biome
-  sources with the new biomes.
+  filler blocks over vanilla stone (Moon) or over the v1.4 base blocks, red
+  sandstone (Mars) and basalt (Venus).
+- **Moon terrain, bounded below the landing height.** The Moon becomes a noise
+  Level with a two-biome source and low relief, not the legacy height: the
+  surface lies between y 12 and y 36 (lowlands y 12–20, highlands y 20–36),
+  crater floors stay at or above y 4 and crater rims at or below y 44, so no
+  generated block lies above y 63. The legacy base height would put the
+  surface near y 75–100.
+- **Moon landing unchanged (ADR-033).** The Moon keeps its fixed pads around
+  (8, 80, 8) and the legacy minimum landing y 80 without a ground-support
+  check, exactly as on today's flat Moon, whose surface is y 4: a rocket
+  arrives at y 80 or above, over terrain that is always lower. The developer
+  platform (`SafeCelestialTravel`, a 5 × 5 floor at y 79 with three blocks of
+  clearance) therefore always sits in open sky and never inside a hill. The
+  ADR-033 support check for other surfaces is not adopted on the Moon, because
+  it would move existing Moon arrivals.
+- **Mars and Venus shape unchanged.** Mars and Venus keep their v1.4 noise
+  router, base block and heights, and switch to multi-biome sources with the
+  new biomes; only the top and filler blocks and the features change.
 - Features: craters as a carver (radius 8–48, at most one crater origin per
   chunk, Moon and Mars), volcanoes (Venus, cone radius ≤ 32 and height ≤ 48,
   at most one per 16×16 chunks), ore geodes (Venus, radius ≤ 12, ores from a
@@ -149,14 +164,22 @@ ADR-055; no batch depends on that.
   and Mars iridium ore (§4).
 - Every feature is bounded in size and count, runs only at chunk generation
   and has a server switch.
-- **Seams (ADR-033, ADR-061 §6).** The three Levels keep their IDs. Chunks
-  generated before the upgrade keep their old surface (end stone on the Moon,
-  red sand on Mars, yellow terracotta on Venus); chunks generated afterwards
-  use the new terrain, so explored areas meet new terrain at a visible step
-  and a change of block. Rocket landing uses the surface height (ADR-033), so
-  arrivals are unaffected; players who want the new terrain everywhere start a
-  new world or explore farther out. The release notes repeat this and the
-  backup advice of the celestial data guide.
+- **Seams (ADR-033, ADR-061 §6).** The three Levels keep their IDs (data-pack
+  dimension definitions take precedence over `level.dat`, so existing worlds
+  get the new generator for new chunks). Chunks generated before the upgrade
+  keep their old surface; chunks generated afterwards use the new terrain.
+  Expected seams:
+  - Moon: old chunks are flat end stone with the surface at y 4; new chunks
+    rise to y 12–36, so explored areas end in a wall of 8–32 blocks (up to 40
+    at a crater rim) and a change from end stone to moon turf over stone.
+  - Mars and Venus: no height step, because the terrain shape is unchanged; the
+    top block changes (red sand to ferric sand on Mars, yellow terracotta to
+    basalt on Venus), and craters and volcanoes appear only in new chunks.
+  Arrivals are unaffected: the Moon keeps its fixed y 80 rule over lower
+  terrain, and Mars and Venus land on the heightmap (ADR-033). Players who
+  want the new terrain everywhere start a new world or explore farther out.
+  The release notes repeat these step heights and the backup advice of the
+  celestial data guide.
 
 ### 6. Classic exoplanet worlds (C15c)
 
@@ -232,8 +255,13 @@ ID in this namespace fail startup through the existing binding checks.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
   below; unpowered; repeated pulses; unloaded neighbour), smelting and rolling
   recipes, ore feature placement in a test chunk (including iridium on the
-  Moon and Mars and none in the Overworld), a crater carver bound test,
-  rocket landing on the new Moon terrain, each server switch, and the Tau Ceti
+  Moon and Mars and none in the Overworld), a crater carver bound test, a
+  Moon height bound test (no generated block above y 63 over a sampled grid of
+  at least 4,096 columns for two seeds, crater rims included), a rocket
+  landing on the Moon over a crater and over the highest highlands (arrival at
+  y 80 or above, as before), developer platform travel to the Moon over the
+  highest highlands (open sky above the y 79 floor), each server switch, and
+  the Tau Ceti
   path: a data-satellite discovery of `tau_ceti_f`, an interstellar warp to its
   orbit, a docked rocket's landing on its surface and return to the station.
 - S1: a packaged dedicated server generates chunks in the Moon, Mars, Venus
@@ -244,8 +272,14 @@ ID in this namespace fail startup through the existing binding checks.
 
 ### A. Keep the flat Moon
 
-Avoids seams but drops the classic regolith terrain and craters; the landing
-rule already handles relief.
+Avoids seams but drops the classic regolith terrain and craters.
+
+### A2. Legacy Moon height with the ADR-033 support check
+
+Restores the legacy surface height (about y 75–100), but buries explored areas
+behind a wall of 70–95 blocks, puts terrain above the fixed y 80 landing and
+the y 79 platform, and changes where existing Moon arrivals land. Rejected in
+favour of terrain bounded below y 64.
 
 ### B. Make Tau Ceti e landable
 
