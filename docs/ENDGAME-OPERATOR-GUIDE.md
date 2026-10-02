@@ -42,9 +42,12 @@ output. `endgame.intentIntervalTicks` (at least 10) and
 - `/arce endgame status` shows the switches and the endgame root:
   - its save epoch, accounted size and whether a write is pending;
   - `exempt_barriers`, the root writes that were not spaced player requests;
-  - endpoints, `MISSING` endpoints, tombstones, zones and registrations
-    waiting for a save;
-  - the ledger's records, stubs and pending observations.
+  - endpoints, `MISSING` endpoints, young and settled tombstones, zones, and
+    registrations waiting for a save (`awaiting_registration`);
+  - the ledger's records (`transits`), `stubs`, and the ledger endpoints in
+    loaded chunks (`loaded_ledger_endpoints`), with
+    `REMOVAL_SETTLEMENT_PENDING` while a removal settlement is unwritten;
+  - the audit ring's size.
 
   A second line shows each system's activity, including elevator rides and
   `ride_tickets`, the arrival tickets held: one per pending ride.
@@ -161,6 +164,16 @@ while that owner is online with operator permissions.
   256, every escrow on the server is refused with `TRANSIT_LIMIT` until saving
   resumes. Cargo already in flight still arrives. `status` shows the stub
   count. Keep backups short, or expect railgun and elevator launches to pause.
+- **The root is written while saves are off.** `/save-off` stops the world's
+  chunk and player saves, not the endgame root: it keeps being written about
+  every 5 seconds while it has changes, and at once for binds, removals and
+  operator commands. A backup tool will find
+  `advancedrocketrycommunity_endgame.dat` changing. That is safe: the file is
+  replaced, never rewritten in place, so a copy holds one complete version,
+  and a root newer than the region files is a state the ledger recovers from
+  (ADR-054 §11). Copy the endgame file after the region files, never before
+  them. On Windows, a copy that holds the file open can make one write fail;
+  it is logged and retried as described below.
 - **Write failures.** The root is
   `world/data/advancedrocketrycommunity_endgame.dat`, written through a checked
   atomic path.
