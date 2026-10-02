@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -183,6 +184,77 @@ class V180MaterialResourcesTest {
         assertEquals("#minecraft:is_overworld", modifier.get("biomes").getAsString());
         assertEquals("underground_ores", modifier.get("step").getAsString());
         assertFalse(modifier.toString().contains("iridium"));
+    }
+
+    /**
+     * C15aR1-L2: the Overworld numbers of ADR-063 section 4, written here from the contract (not from the code): veins
+     * per chunk and blocks per vein, uniform between y -16 and 64, stone and deepslate targets with their own ores.
+     */
+    @Test
+    void overworldVeinNumbersAndTargetsAreTheContract() throws IOException {
+        Map<String, int[]> contract = Map.of("tin", new int[] {10, 6}, "rutile", new int[] {6, 6},
+                "aluminum", new int[] {1, 16}, "dilithium", new int[] {1, 16});
+        for (Map.Entry<String, int[]> vein : contract.entrySet()) {
+            String ore = vein.getKey();
+            String name = "overworld_" + ore + "_ore";
+            JsonObject configured = json(DATA.resolve(NS + "/worldgen/configured_feature/" + name + ".json"));
+            assertEquals("minecraft:ore", configured.get("type").getAsString());
+            JsonObject config = configured.getAsJsonObject("config");
+            assertEquals(vein.getValue()[1], config.get("size").getAsInt(), name + " size");
+            assertEquals(0.0, config.get("discard_chance_on_air_exposure").getAsDouble(), name);
+            JsonArray targets = config.getAsJsonArray("targets");
+            assertEquals(2, targets.size(), name);
+            assertTarget(targets.get(0).getAsJsonObject(), "minecraft:stone_ore_replaceables", NS + ":" + ore + "_ore");
+            assertTarget(targets.get(1).getAsJsonObject(), "minecraft:deepslate_ore_replaceables",
+                    NS + ":deepslate_" + ore + "_ore");
+
+            JsonArray placement = json(DATA.resolve(NS + "/worldgen/placed_feature/" + name + ".json"))
+                    .getAsJsonArray("placement");
+            assertEquals(List.of(NS + ":server_switch", "minecraft:count", "minecraft:in_square",
+                    "minecraft:height_range", "minecraft:biome"), types(placement), name);
+            assertEquals(vein.getValue()[0], placement.get(1).getAsJsonObject().get("count").getAsInt(), name);
+            JsonObject height = placement.get(3).getAsJsonObject().getAsJsonObject("height");
+            assertEquals("minecraft:uniform", height.get("type").getAsString(), name);
+            assertEquals(-16, height.getAsJsonObject("min_inclusive").get("absolute").getAsInt(), name);
+            assertEquals(64, height.getAsJsonObject("max_inclusive").get("absolute").getAsInt(), name);
+        }
+    }
+
+    /** C15aR1-L2: every ore carries its own ore tag as block and item, and rutile also the titanium tag. */
+    @Test
+    void everyOreCarriesItsOreTagsAsBlockAndItem() throws IOException {
+        int ores = 0;
+        for (Entry entry : MaterialCatalog.entries()) {
+            if (entry.kind() != MaterialCatalog.Kind.STONE_ORE && entry.kind() != MaterialCatalog.Kind.DEEPSLATE_ORE) {
+                continue;
+            }
+            ores++;
+            String id = NS + ":" + entry.id();
+            String stem = entry.material().oreName().orElseThrow();
+            List<String> tags = stem.equals("rutile") ? List.of("forge:ores/rutile", "forge:ores/titanium")
+                    : List.of("forge:ores/" + stem);
+            for (String tag : tags) {
+                assertTrue(tagValues("blocks", tag).contains(id), id + " missing from block tag " + tag);
+                assertTrue(tagValues("items", tag).contains(id), id + " missing from item tag " + tag);
+            }
+            String ground = entry.kind() == MaterialCatalog.Kind.STONE_ORE ? "forge:ores_in_ground/stone"
+                    : "forge:ores_in_ground/deepslate";
+            assertTrue(tagValues("blocks", ground).contains(id), id + " missing from " + ground);
+            assertTrue(tagValues("items", ground).contains(id), id + " missing from item " + ground);
+        }
+        assertEquals(9, ores);
+    }
+
+    private static void assertTarget(JsonObject target, String tag, String block) {
+        assertEquals("minecraft:tag_match", target.getAsJsonObject("target").get("predicate_type").getAsString());
+        assertEquals(tag, target.getAsJsonObject("target").get("tag").getAsString());
+        assertEquals(block, target.getAsJsonObject("state").get("Name").getAsString());
+    }
+
+    private static List<String> types(JsonArray placement) {
+        List<String> types = new java.util.ArrayList<>();
+        placement.forEach(modifier -> types.add(modifier.getAsJsonObject().get("type").getAsString()));
+        return types;
     }
 
     private static Set<String> names(String prefix) throws IOException {

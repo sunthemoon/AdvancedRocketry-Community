@@ -97,6 +97,9 @@ public final class MaterialRecipeGameTests {
         cooks(helper, "raw_tin", MaterialContent.item("tin_ingot"));
         cooks(helper, "tin_dust", MaterialContent.item("tin_ingot"));
         cooks(helper, "raw_aluminum", MaterialContent.item("aluminum_ingot"));
+        // C15aR1-L2: every ore block other than rutile cooks, through its ore tag.
+        cooks(helper, "aluminum_ore", MaterialContent.item("aluminum_ingot"));
+        cooks(helper, "deepslate_aluminum_ore", MaterialContent.item("aluminum_ingot"));
         cooks(helper, "iridium_ore", MaterialContent.item("iridium_ingot"));
         cooks(helper, "raw_iridium", MaterialContent.item("iridium_ingot"));
         cooks(helper, "titanium_dust", MaterialContent.item("titanium_ingot"));
