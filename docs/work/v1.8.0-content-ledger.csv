@@ -109,7 +109,7 @@ block:oxygenScrubber,PLANNED,C18a,CO2 scrubber,ADR-062,cartridge-based vent supp
 block:oxygenVent,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:oxygen_vent,ADR-024,
 block:pipeSealer,PLANNED,C18a,pipe seal,ADR-062,sealing block that passes pipes
 block:planetAnalyser,PLANNED,C18c,astrobody data processor,ADR-062,turns survey data into research
-block:planetHoloSelector,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,holographic UI entities replaced by screens
+block:planetHoloSelector,REDESIGNED,v1.5.0,station warp destination command,ADR-044 ADR-046 ADR-062,it set the station warp destination; the C17b warp screen fronts the command
 block:planetSelector,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,multiblock selector replaced by screens
 block:planks,PLANNED,C15c,lightwood planks,ADR-062,alien forest flora
 block:platepress,PLANNED,C15a,small plate press,ADR-062,piston-driven early plates
@@ -260,20 +260,20 @@ config:CATEGORY_GENERAL.terraformMult,DEFERRED,post-2.0,-,ADR-062,terraforming f
 config:CLIENT.advancedVFX,PLANNED,C18d,client effects setting,ADR-062,
 config:CLIENT.electricPlantsSpawnLightning,PLANNED,C15c,electric mushroom effect setting,ADR-062,client effect only
 config:CLIENT.EnableAtmosphericNausea,PLANNED,C18b,atmospheric nausea,ADR-062,
-config:CLIENT.overworldSkyOverride,IMPLEMENTED,v1.4.0,sky profiles,ADR-036 ADR-047,
-config:CLIENT.PlanetSkyOverride,IMPLEMENTED,v1.4.0,sky profiles,ADR-036 ADR-047,
-config:CLIENT.StationSkyOverride,IMPLEMENTED,v1.4.0,sky profiles,ADR-036 ADR-047,
+config:CLIENT.overworldSkyOverride,PLANNED,C18d,client sky renderer switches,ADR-062,the modern sky profiles have no client switch yet
+config:CLIENT.PlanetSkyOverride,PLANNED,C18d,client sky renderer switches,ADR-062,the modern sky profiles have no client switch yet
+config:CLIENT.StationSkyOverride,PLANNED,C18d,client sky renderer switches,ADR-062,the modern sky profiles have no client switch yet
 config:ENERGY.blackHoleGeneratorMultiplier,IMPLEMENTED,v1.7.0,black hole generator settings,ADR-057,
 config:ENERGY.blackHoleTimings,IMPLEMENTED,v1.7.0,black hole generator settings,ADR-057,
 config:ENERGY.defaultBurnTime,IMPLEMENTED,v1.7.0,black hole generator settings,ADR-057,
-config:ENERGY.MicrowaveRecieverMultiplier,IMPLEMENTED,v1.6.0,microwave receiver settings,ADR-049,
+config:ENERGY.MicrowaveRecieverMultiplier,REDESIGNED,v1.6.0,receiver output from blueprint statistics,ADR-049,no multiplier setting
 config:ENERGY.solarGeneratorMultiplier,PLANNED,C17c,solar generator multiplier,ADR-062,
 config:MISSION.gasMissionMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-052,
 config:MISSION.harvestableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,
 config:MISSION.miningMissionTmeMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-052,
 config:MISSION.spawnableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,
 config:OXYGEN.dropExtinguishedTorches,PLANNED,C18a,torch rules,ADR-062,
-config:OXYGEN.EnableAtmosphericEffects,IMPLEMENTED,v0.4.0,life support switch,ADR-024,
+config:OXYGEN.EnableAtmosphericEffects,REDESIGNED,v1.4.0,per-body environment_effects and atmosphere data,ADR-034,no global switch
 config:OXYGEN.entityAtmBypass,PLANNED,C18a,atmosphere bypass entity tag,ADR-062,with atmosphere effects on non-player entities
 config:OXYGEN.OverrideGCAir,REJECTED,-,-,ADR-062,Galacticraft compatibility is a product non-goal
 config:OXYGEN.oxygenVentConsumptionMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,
@@ -284,7 +284,7 @@ config:OXYGEN.sealableBlockWhiteList,REDESIGNED,v0.4.0,atmosphere sealing tags,A
 config:OXYGEN.spaceSuitO2Buffer,PLANNED,C18b,suit gas capacity,ADR-025 ADR-062,
 config:OXYGEN.suitTankCapacity,PLANNED,C18b,suit gas capacity,ADR-025 ADR-062,
 config:OXYGEN.torchBlocks,PLANNED,C18a,torch rules,ADR-062,
-config:OXYGEN.vacuumDamage,IMPLEMENTED,v0.4.0,vacuum damage,ADR-024,
+config:OXYGEN.vacuumDamage,PLANNED,C18a,vacuum damage setting,ADR-062,modern vacuum damage is fixed
 config:PERFORMANCE.atmosphereCalculationMethod,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,
 config:PERFORMANCE.oxygenVentSize,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,
 config:PLANET.allowPlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,
@@ -292,8 +292,8 @@ config:PLANET.blackListVanillaBiomes,REJECTED,-,-,ADR-031,random planet generati
 config:PLANET.forcePlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,
 config:PLANET.maxBiomesPerPlanet,REJECTED,-,-,ADR-031,random planet generation is not revived
 config:PLANET.minDimension,REJECTED,-,-,ADR-031,random planet generation is not revived
-config:PLANET.planetDiscoveryChance,REJECTED,-,-,ADR-031,random planet generation is not revived
-config:PLANET.planetsMustBeDiscovered,IMPLEMENTED,v1.4.0,discovery requirement,ADR-037,
+config:PLANET.planetDiscoveryChance,REDESIGNED,v1.4.0,shared satellite discovery,ADR-037,the warp controller discovery chance
+config:PLANET.planetsMustBeDiscovered,REDESIGNED,v1.4.0,per-body discovery_required,ADR-037,
 config:PLANET.ResetOnlyOnce,REJECTED,-,-,ADR-031,random planet generation is not revived
 config:PLANET.resetPlanetsFromXML,REJECTED,-,-,ADR-031,random planet generation is not revived
 config:ROCKET.asteroidTBIBurnMult,REJECTED,-,-,ADR-051 ADR-062,no rocket asteroid or warp burns
@@ -315,11 +315,11 @@ config:ROCKET.stationClearance,REDESIGNED,v0.6.0,flight state machine phases,ADR
 config:ROCKET.thrustMultiplier,PLANNED,C17a,propulsion tables and multipliers,ADR-027 ADR-062,
 config:ROCKET.transBodyInjection,REDESIGNED,v0.6.0,flight state machine phases,ADR-062,no altitude-driven orbit
 config:ROCKET.warpTBIBurnMult,REJECTED,-,-,ADR-051 ADR-062,no rocket asteroid or warp burns
-config:STATION.allowZeroGSpacestations,IMPLEMENTED,v1.5.0,station gravity bounds,ADR-041,
+config:STATION.allowZeroGSpacestations,REDESIGNED,v1.5.0,station gravity bounds include 0 g,ADR-041,no switch
 config:STATION.pointsPerDilithium,REDESIGNED,v1.5.0,warp energy cost,ADR-044,warp uses FE
 config:STATION.SpaceStationBuildRadius,REDESIGNED,v1.5.0,station regions,ADR-040,
 config:STATION.spaceStationId,REJECTED,-,-,ADR-031,numeric dimension IDs are not used
-config:STATION.warpTravelTime,IMPLEMENTED,v1.5.0,warp countdown,ADR-044,
+config:STATION.warpTravelTime,REDESIGNED,v1.5.0,fixed warp countdown,ADR-044,"200 ticks, no setting"
 config:WORLDGEN.AluminumPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
 config:WORLDGEN.AluminumPerClump,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers
 config:WORLDGEN.CopperPerChunk,REDESIGNED,v1.8.0,ore placed features (C15a),ADR-062,data-driven placement replaces config numbers

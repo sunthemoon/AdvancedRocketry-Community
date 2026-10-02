@@ -48,16 +48,16 @@ inventory unit exactly one disposition:
 
 | Disposition | Count | Meaning |
 |---|---:|---|
-| `IMPLEMENTED` | 61 | an existing modern ID or system delivers the unit (version and ID named) |
-| `REDESIGNED` | 157 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
-| `PLANNED` | 224 | delivered by a v1.8 batch (C15a–C18d) |
+| `IMPLEMENTED` | 52 | an existing modern ID or system delivers the unit (version and ID named) |
+| `REDESIGNED` | 163 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
+| `PLANNED` | 228 | delivered by a v1.8 batch (C15a–C18d) |
 | `MERGED` | 91 | an internal part (block entity, base class, subcommand) that follows another row |
 | `DEFERRED` | 24 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
-| `REJECTED` | 52 | not migrated; reasons and player impact in §4 |
+| `REJECTED` | 51 | not migrated; reasons and player impact in §4 |
 
 [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv) gives every one of the
-898 legacy assets exactly one handling under ADR-061 §4: 350 `IMPORT`, 30
-`REVIEW`, 430 `REGENERATE`, 78 `EXCLUDE` and 10 already `IMPORTED` (seven
+898 legacy assets exactly one handling under ADR-061 §4: 349 `IMPORT`, 30
+`REVIEW`, 430 `REGENERATE`, 79 `EXCLUDE` and 10 already `IMPORTED` (seven
 textures, one sound and the two language files whose reviewed keys v0.1.0
 extracted).
 `scripts/validate_v180_content_ledger.py` checks both files against
@@ -67,7 +67,8 @@ extracted).
 
 | Group | Legacy | Modern delivery |
 |---|---|---|
-| Destination chips and selectors | planet, station and satellite ID chips; planet selector and holographic selector with UI entities; guidance computer access hatch | the flight star map (ADR-035), station commands (ADR-046), the satellite control chip (ADR-049); a warp controller screen is planned (C17b) |
+| Destination chips and selectors | planet, station and satellite ID chips; planet selector with UI entities; guidance computer access hatch | the flight star map (ADR-035), station commands (ADR-046), the satellite control chip (ADR-049) |
+| Holographic planet selector | the block that set a station's warp destination | the station warp command (ADR-044, ADR-046); the C17b warp screen fronts it |
 | Station construction | station assembler, packed station container, docking port | the station deployment kit (v0.7) and the checked expansion commit (ADR-040) |
 | Rocket assembly bounds | launch pad, structure tower | the assembler scans connected blocks (v0.5); no pad or tower bounds |
 | Research data | three data kinds, data bus | research points (v0.8) carried in data storage units |
@@ -88,7 +89,7 @@ extracted).
 |---|---|---|---|
 | Terraforming | terraformer, biome scanner, biome changer remote, biome changer satellite and component, biome ID packet, 7 configuration keys, 2 world-tick and chunk-populate rules | global world modification needs its own threat model, chunk budget and rollback design | planets keep their generated biomes; no device changes them |
 | Hovercraft | item, entity | a new vehicle entity with control packets and rendering | no hovercraft; travel on foot, by rocket or by elevator |
-| Landing float | block | water landing changes the landing-site rule (ADR-033 rejects fluid support) | rockets cannot land on water |
+| Landing float | block | legacy rockets placed floats under a landing on a non-water liquid (such as lava) and treated water as solid; the block had no recipe. The modern landing rule (ADR-033) needs solid support and skips liquid surfaces | rockets never land on liquid: the landing-site selector skips water and lava pads instead of floating on them |
 | Cave planet terrain | `ChunkProviderCavePlanet` | a terrain type without a body that needs it | no cave-world planets |
 | World types | planet start, space start | world creation presets outside the fixed Levels | worlds always start in the Overworld |
 | Lunar lander decoration | `MapGenLander` | decorative structure | no lander structures on the Moon |

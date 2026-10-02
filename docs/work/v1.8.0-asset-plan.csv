@@ -113,7 +113,7 @@ order,pattern,handling,plan,reason
 112,textures/items/smallairlock.png,IMPORT,C18a,airlock door item
 113,textures/items/sealdetector.png,IMPORT,C18a,seal detector
 114,textures/items/atmanalyzer.png,IMPORT,C18a,atmosphere analyzer
-115,textures/items/orescanner.png,IMPORT,C18a,survey readout item
+115,textures/items/orescanner.png,EXCLUDE,-,ore scanner redesigned into the terminal survey view (ADR-049)
 116,textures/items/pressuretank*.png,IMPORT,C18b,pressure tanks
 117,textures/items/jetpack.png,IMPORT,C18b,jetpack
 118,textures/items/jackhammer.png,IMPORT,C18b,jackhammer
