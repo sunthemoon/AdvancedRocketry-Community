@@ -273,7 +273,11 @@ must handle:
    above). A file that is related to a file with a `HIT`, `SUSPECT` or
    `UNSUPPORTED` verdict, a `REVIEW` handling or an `EXCLUDED` origin finding
    is at most `REVIEW`, repeated until nothing changes; the asset plan
-   applies it and the validator enforces it. This is how the tab buttons
+   applies it and the validator enforces it. A source with a `CLEARED`
+   origin finding passes nothing on, so a reviewer who clears a false
+   positive (for example a 2017 file matching a texture first shipped in
+   1.20, which cannot be its origin; the match names the client version)
+   also releases the files related to it. This is how the tab buttons
    drawn on the excluded tab template, the overlays of the space-suit icons
    and the variants of quarantined machine faces stay out of the import.
    **Calibration.** `tests/test_vanilla_derivation.py` asserts a

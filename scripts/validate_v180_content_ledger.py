@@ -590,6 +590,8 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
         if handling == "IMPORT" and findings.get(asset) != "CLEARED":
             # ADR-061 section 4.8: a file sharing pixels with a derived, suspect or quarantined file inherits review.
             for other, relation in related.get(asset, []):
+                if findings.get(other) == "CLEARED":
+                    continue  # a cleared source passes nothing on
                 reason = (f"derivation verdict {verdicts[other]}" if verdicts.get(other) in ("HIT", "SUSPECT", "UNSUPPORTED")
                           else "REVIEW" if handling_of.get(other) == "REVIEW"
                           else "EXCLUDED origin finding" if findings.get(other) == "EXCLUDED" else None)

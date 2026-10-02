@@ -333,6 +333,15 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any("textures/items/spacehelmet_overlay.png is IMPORT but shares pixels with "
                             "textures/items/space_helmet.png" in error for error in self._errors()))
 
+    def test_a_cleared_source_passes_nothing_on(self) -> None:
+        self._set_rule("textures/blocks/panelsideworkstation.png", handling="IMPORT")
+        self.assertTrue(any("panelsideworkstation.png is IMPORT but shares pixels with textures/blocks/panelside.png"
+                            in error for error in self._errors()))
+        self._write_findings([{"asset": "textures/blocks/panelside.png", "decision": "CLEARED", "reviewer": "sunthemoon",
+                               "reviewed_at": "2026-10-02",
+                               "basis": "the matched decorated pot side first shipped in 1.20, after this file"}])
+        self.assertFalse(any("panelsideworkstation.png is IMPORT but shares pixels" in error for error in self._errors()))
+
     def test_related_entries_must_match_their_measures(self) -> None:
         data = self._derivation()
         entry = next(entry for entry in data["assets"]
