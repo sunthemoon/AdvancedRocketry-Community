@@ -128,10 +128,19 @@ or vanilla-derived file is used.
 
 - *Iron plates.* The accepted v1.2 recipe `rolling_iron_bars` already takes
   iron ingots (two ingots → eight bars), and the rolling machine refuses an
-  input that two recipes match. An iron ingot → plate recipe would therefore
-  stop both, so iron is the one material without it: iron plates come from
-  the small plate press (iron block → 4 plates). Every other plate material
-  rolls its ingot; iron plates still roll into iron sheets.
+  input that two recipes match. With an iron ingot → plate recipe, any stack
+  of two or more iron ingots would match both and roll nothing (a single
+  ingot would still match only the plate recipe), so iron is the one
+  material without it: iron plates come from the small plate press (iron
+  block → 4 plates). Every other plate material rolls its ingot; iron plates
+  still roll into iron sheets. Cost: nine ingots make four plates, where the
+  legacy game rolled one ingot into one plate; nine legacy recipes use iron
+  plates and five use iron sheets, which are made from plates. Rejected
+  alternative (C15aR1, open to the owner): re-key the project's own v1.2
+  recipe `rolling_iron_bars`, which is not a legacy recipe (for example to
+  iron plates or rods), and keep legacy iron rolling; ADR-061 §1.5 allows
+  recipe changes with release notes. The recipe graph check (C16d) sees the
+  press route.
 - *Rolling ingredients name items.* The kernel recipe type resolves its
   ingredient when recipes load, before tags are bound, so a tag ingredient
   would refuse to load on a fresh start, load against stale tags on
