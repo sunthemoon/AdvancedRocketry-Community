@@ -34,10 +34,13 @@ legacy behaviour and the asset findings:
 - the small plate press (`BlockSmallPlatePress` 95–150) is itself a downward
   piston: when it receives redstone power and the block below is a press
   recipe input and the block two below is obsidian, it removes the input block,
-  drops the output item and extends;
+  drops the output item and extends; it has no owner and checks no protection;
 - legacy ore generation defaults: copper 10 veins of 6, tin 10 of 6, rutile 6
-  of 6, aluminum 1 of 16, dilithium 1 of 16 (Overworld) and 10 per chunk on the
-  Moon, iridium off (1 of 16 when enabled); legacy players got iridium from the
+  of 6, aluminum 1 of 16, dilithium 1 of 16, iridium off (1 of 16 when
+  enabled). The generator (`OreGenerator` 43–80) ran in every dimension with
+  stone, so the Moon and Mars got the same copper, tin, rutile and aluminium;
+  the "Luna" dilithium count (10 per chunk) applied to every planet without an
+  atmosphere, not only the Moon. Legacy players got iridium from the
   "Iridium Enriched" asteroid (`asteroidConfig.xml`), which the v1.6 resource
   tables (ADR-052) replaced with a gold, diamond and emerald `rich_asteroid`, so
   no current source yields iridium;
@@ -45,8 +48,10 @@ legacy behaviour and the asset findings:
   turf (lowlands), ferric sand (hot dry rock), basalt (volcanic), snow over
   packed ice with crystals (crystal chasms), gravel (ocean spires), grass
   (alien forest);
-- craters have radii from 8 to about 70 blocks; volcanoes and geodes are large
-  generated structures;
+- craters have radii from 8 to about 91 blocks (`MapGenCrater.getBaseRadius`
+  182–192) and raise a rim; volcanoes (`MapGenVolcano`, size 64) and geodes
+  (radius 24–48) are multi-chunk generators;
+- electric mushrooms give no light (light level 0);
 - the legacy Moon turf, dark Moon turf and ferric sand textures are recolours
   of the vanilla grass top, the charcoal and lightwood log tops and leaves are
   recolours of vanilla logs and leaves, and the plate press faces are a
@@ -121,15 +126,32 @@ per rising edge; no fluid, energy or menu. The recipe type is data-driven with
 bounded fields (one input ingredient, one output stack of at most 64). The
 press acts only within loaded chunks. Its textures are drawn new.
 
+**Protection: the piston exception.** The press has no owner (no block
+entity), so the ADR-054 §5 chain, which binds effects to a device owner, does
+not apply. It is treated as a vanilla piston instead, and documented as the
+piston-equivalent exception to ADR-061 §6: before acting it posts Forge's
+cancellable `PistonEvent.Pre` for its position, direction down and move type
+extend, which claim mods already use to stop pistons crossing claim borders,
+and does nothing if the event is cancelled. Its reach is one block, the same as
+a piston's, and it removes only a block that is a press recipe input.
+
 ### 4. Ore placement (C15a)
 
 A Forge biome modifier `advancedrocketrycommunity:overworld_ores` adds placed
 features to `#minecraft:is_overworld` biomes: tin (10 veins of 6), rutile (6 of
 6), aluminum (1 of 16), dilithium (1 of 16), uniform between y −16 and 64 with
 deepslate variants below y 0. Iridium is not placed in the Overworld, as in the
-legacy defaults. Data packs may override or remove the modifier, and a server
-switch turns it off (ADR-061 §3.5). Moon and Mars placement arrives with their
-terrain in C15b (§5).
+legacy defaults, and vanilla keeps generating copper there. Data packs may
+override or remove the modifier, and a server switch turns it off (ADR-061
+§3.5).
+
+**Moon and Mars ores (C15b).** As in the legacy game, the Moon and Mars get the
+same metal ores, through their own biomes' feature lists (§5): copper (vanilla
+copper ore, 10 veins of 6), tin (10 of 6), rutile (6 of 6), aluminum (1 of 16)
+and iridium (1 of 16), uniform between y 4 and y 40. Dilithium follows the
+legacy airless rule: 10 veins of 16 on the Moon, which has no atmosphere, and 1
+of 16 on Mars. On the Moon the ores replace stone; on Mars they replace its base
+block, red sandstone. No other Level gets these ores.
 
 **Iridium source.** Iridium ore is placed on the Moon and Mars (§5), one vein
 of 16 per chunk, uniform between y 4 and y 40 (the legacy `IridiumPerChunk` and
@@ -172,11 +194,11 @@ ADR-055; no batch depends on that.
 
   | Generator | Mechanism | Bounds |
   |---|---|---|
-  | craters (Moon, Mars) | structure `crater`, one piece whose bounding box covers the bowl and the raised rim | radius 8–48; structure set spacing 6 and separation 3 chunks; Moon floor ≥ y 4 and rim ≤ y 44 (§5 Moon terrain) |
-  | volcanoes (Venus) | structure `volcano`, one piece (cone, crater and lava core) | cone radius ≤ 32, height ≤ 48 above the surface; spacing 16, separation 8 chunks |
-  | ore geodes (Venus) | structure `geode`, one piece below the surface | radius ≤ 24; ores from a block tag; spacing 8, separation 4 chunks |
+  | craters (Moon, Mars) | structure `crater`, one piece whose bounding box covers the bowl and the raised rim | radius 8–48 (legacy up to about 91, capped for the generation budget); structure set spacing 6 and separation 3 chunks; Moon floor ≥ y 4 and rim ≤ y 44 (§5 Moon terrain) |
+  | volcanoes (Venus) | structure `volcano`, one piece (cone, crater and lava core) | cone radius ≤ 32 (legacy size 64), height ≤ 48 above the surface; spacing 16, separation 8 chunks |
+  | ore geodes (Venus) | structure `geode`, one piece below the surface | radius ≤ 24 (legacy 24–48, capped for the generation budget); ores from a block tag; spacing 8, separation 4 chunks |
   | charred trees (Venus) | placed feature | ≤ 4 blocks from the origin, height ≤ 12 |
-  | ores, Moon dilithium (10 veins per chunk), Moon and Mars iridium (§4) | vanilla `ore` configured features | vein size ≤ 16 |
+  | Moon and Mars ores (§4) | vanilla `ore` configured features | vein size ≤ 16 |
   | caves and canyons | vanilla cave and canyon carvers where the legacy planets had them | vanilla bounds |
 
   A structure piece writes only into the chunk being generated (it is clipped
@@ -216,8 +238,8 @@ Level like Mars and Venus (ADR-033) and discovery required (ADR-037):
 | `tau_ceti_g` | `stormland`, `crystal_chasms` | not breathable, 1.4 atm, 255 K |
 
 Flora and features: lightwood log, leaves, sapling and planks with the large
-alien tree; electric mushrooms (light level 7; the client lightning flash is an
-effect setting, never real lightning); swamp trees; inverted pillars; six
+alien tree; electric mushrooms (no light, as in the legacy game; the client
+lightning flash is an effect setting, never real lightning); swamp trees; inverted pillars; six
 crystal block colours with large crystal clusters (moved here from C15b,
 where no world uses them). The trees, pillars and clusters are placed features
 whose writes stay within 12 blocks horizontally of the origin, inside the
@@ -284,9 +306,11 @@ ID in this namespace fail startup through the existing binding checks.
   routes stay inside one system; the recipe graph check passes with both Tau
   Ceti Levels removed from the reachable set.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
-  below; unpowered; repeated pulses; unloaded neighbour), smelting and rolling
-  recipes, ore feature placement in a test chunk (including iridium on the
-  Moon and Mars and none in the Overworld), bound tests for the crater,
+  below; unpowered; repeated pulses; unloaded neighbour; a cancelled
+  `PistonEvent.Pre` leaves the block in place), smelting and rolling
+  recipes, ore feature placement in a test chunk (the Overworld set without
+  iridium; the Moon and Mars sets with iridium; Moon dilithium at the airless
+  count), bound tests for the crater,
   volcano and geode structures (bounding box within the stated radius, every
   write inside the chunk being generated) and for each placed feature (every
   write within the 3 × 3 chunks around its origin), a

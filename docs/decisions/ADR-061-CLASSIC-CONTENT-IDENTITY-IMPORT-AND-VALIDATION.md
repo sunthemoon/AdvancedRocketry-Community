@@ -274,7 +274,10 @@ must handle:
 - Idle machines do no per-tick scanning; work is driven by events and the
   kernel's bounded revalidation.
 - Pumps, force-field projectors and world-changing tools have per-tick and
-  per-operation limits and use the ADR-054 §5 protection chain.
+  per-operation limits and use the ADR-054 §5 protection chain. The one
+  exception is an ownerless redstone block that acts like a vanilla piston on
+  the adjacent block (the small plate press, ADR-063 §3): it posts Forge's
+  cancellable `PistonEvent.Pre` before acting and stops when it is cancelled.
 - New world generation runs only in new chunks; every feature has bounded size
   and count per chunk. A batch that changes the generation of a Level that
   existing worlds already use keeps every ID (ADR-033) and discloses, in its
