@@ -42,7 +42,9 @@ No candidate or release approval is assigned.
   recipes.
 - Data packs: Rolling Machine, Precision Assembler and Electrolyzer recipes
   must name items; tag ingredients are refused until the classic machine
-  family resolves tags after they load. Small plate press recipes take
+  family resolves tags after they load. Electrolyzer ingredients also take
+  the bounded form (one `item` per entry, at most 32 entries, no Forge custom
+  ingredient types). Small plate press recipes take
   exactly `type`, `schema_version`, `ingredient` (items or tags) and
   `result`; Forge's `conditions` key is not accepted.
 
