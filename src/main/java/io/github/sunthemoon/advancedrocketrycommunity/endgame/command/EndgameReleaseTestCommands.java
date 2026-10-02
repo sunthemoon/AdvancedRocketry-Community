@@ -70,7 +70,11 @@ public final class EndgameReleaseTestCommands {
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("endgame")
                 .then(Commands.literal("release-test").requires(source -> source.hasPermission(2))
                         .then(Commands.literal("railguns").then(Commands.argument("pos", BlockPosArgument.blockPos())
-                                .then(Commands.argument("owner", UuidArgument.uuid()).executes(this::railguns))))
+                                .then(Commands.argument("owner", UuidArgument.uuid())
+                                        .executes(context -> railguns(context, 24))
+                                        .then(Commands.argument("distance", IntegerArgumentType.integer(24, 1024))
+                                                .executes(context -> railguns(context,
+                                                        IntegerArgumentType.getInteger(context, "distance")))))))
                         .then(Commands.literal("fill").then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .then(Commands.argument("item", ItemArgument.item(event.getBuildContext()))
                                         .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
@@ -99,18 +103,26 @@ public final class EndgameReleaseTestCommands {
                                                                         .executes(this::flushbench))))))))));
     }
 
-    /** Two railguns of one owner, 24 blocks apart in z (two chunks), the first selecting the second, both charged. */
-    private int railguns(CommandContext<CommandSourceStack> context) {
+    /**
+     * Two railguns of one owner, {@code distance} blocks apart in z (24 by default: two chunks; more keeps the source's
+     * chunk out of the destination's forced neighbourhood), the first selecting the second, both charged.
+     */
+    private int railguns(CommandContext<CommandSourceStack> context, int distance) {
         ServerLevel level = context.getSource().getLevel();
         BlockPos source = BlockPosArgument.getBlockPos(context, "pos");
-        BlockPos destination = source.offset(0, 0, 24);
+        BlockPos destination = source.offset(0, 0, distance);
         UUID owner = UuidArgument.getUuid(context, "owner");
         RailgunBlockEntity first = build(level, source, owner);
         RailgunBlockEntity second = build(level, destination, owner);
         first.selectForTest(second.deviceId().orElseThrow(), false);
         return report(context, "railguns source=" + first.deviceId().orElseThrow() + " destination="
-                + second.deviceId().orElseThrow() + " source_pos=" + source.toShortString() + " destination_pos="
-                + destination.toShortString());
+                + second.deviceId().orElseThrow() + " source_pos=" + compact(source) + " destination_pos="
+                + compact(destination));
+    }
+
+    /** A position as {@code x,y,z}, one token of the reply. */
+    private static String compact(BlockPos pos) {
+        return pos.getX() + "," + pos.getY() + "," + pos.getZ();
     }
 
     /** A formed railgun of {@code owner} at the controller position, facing north, its buffer full. */
