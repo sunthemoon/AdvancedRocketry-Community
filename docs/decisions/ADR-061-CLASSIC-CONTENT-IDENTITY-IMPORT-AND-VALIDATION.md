@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 4
+revision: 5
 date: 2026-10-02
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -506,3 +506,6 @@ foreign namespace would collide with a real LibVulpes port.
 - Revision 4: answers review round 3 (0 Critical, 1 High, 1 Medium, 2 Low,
   3 Info), one commit per finding; see
   [review-03-dispositions](../work/v1.8.0-preparation/review-03-dispositions.md).
+- Revision 5: answers review round 4 (0 Critical, 1 High, 1 Medium, 2 Low,
+  5 Info), one commit per finding; see
+  [review-04-dispositions](../work/v1.8.0-preparation/review-04-dispositions.md).
