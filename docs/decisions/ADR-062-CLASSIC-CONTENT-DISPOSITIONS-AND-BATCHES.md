@@ -96,7 +96,7 @@ closes; `DEFERRED` and `REJECTED` keep their names once this ADR is accepted.
 |---|---|---|---|
 | Terraforming | terraformer, biome scanner, biome changer remote, biome changer satellite and component, biome ID packet, 7 configuration keys, 2 world-tick and chunk-populate rules | global world modification needs its own threat model, chunk budget and rollback design | planets keep their generated biomes; no device changes them |
 | Hovercraft | item, entity | a new vehicle entity with control packets and rendering | no hovercraft; travel on foot, by rocket or by elevator |
-| Landing float | block | legacy rockets placed floats under a landing on a non-water liquid (such as lava) and treated water as solid; the block had no recipe. The modern landing rule (ADR-033) needs solid support and skips liquid surfaces | rockets never land on liquid: the landing-site selector skips water and lava pads instead of floating on them |
+| Landing float | block | legacy rockets placed floats under a landing on a non-water liquid (such as lava); on water they placed none and settled below the surface; the block had no recipe. The modern landing rule (ADR-033) needs solid support and skips liquid surfaces | rockets never land on liquid: the landing-site selector skips water and lava pads instead of floating on them |
 | Cave planet terrain | `ChunkProviderCavePlanet` | a terrain type without a body that needs it | no cave-world planets |
 | World types | planet start, space start | world creation presets outside the fixed Levels | worlds always start in the Overworld |
 | Lunar lander decoration | `MapGenLander` | decorative structure | no lander structures on the Moon |

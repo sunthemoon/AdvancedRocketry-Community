@@ -78,7 +78,7 @@
 | 研究、进度与科技树 | `advancements/*`、`TileObservatory.java`、`TileAstrobodyDataProcessor.java` | 数据网络 | 天文台与数据处理器、17 项进度以现代触发器重建、科技树报告；**提案**，ADR-061/062 接受前不生效 | `v1.8.0` | C18c 批次 ADR + 配方图 | PLANNED |
 | 声音、GUI 美术与语言 | `sounds/*`、`textures/gui/*`、`lang/*` | 静音占位、无署名、社区翻译 | 来源复核后导入声音；GUI 美术；DataGen 语言；占位静音事件拒绝（ADR-061 §4、ADR-062 §4）；**提案**，ADR-061/062 接受前不生效 | `v1.8.0` | C18d 批次 ADR + V1 | PLANNED |
 | 悬浮车 | `entity/EntityHoverCraft.java`、`item/ItemHovercraft.java` | 载具实体、控制包 | 推迟到 2.0 之后（ADR-062 §3）；**提案**，ADR-061/062 接受前不生效 | post-`v2.0.0` | 新 ADR | DEFERRED |
-| 着陆浮筒 | `block/BlockLandingFloat`（`landingfloat`） | 水面着陆 | 推迟到 2.0 之后，需修改着陆点规则（ADR-033、ADR-062 §3）；**提案**，ADR-061/062 接受前不生效 | post-`v2.0.0` | 新 ADR | DEFERRED |
+| 着陆浮筒 | `block/BlockLandingFloat`（`landingfloat`） | 非水液体（如熔岩）着陆时垫在火箭下的浮筒 | 推迟到 2.0 之后，需修改着陆点规则（ADR-033、ADR-062 §3）；**提案**，ADR-061/062 接受前不生效 | post-`v2.0.0` | 新 ADR | DEFERRED |
 | 洞穴行星、世界类型、月面着陆器、行星村庄 | `ChunkProviderCavePlanet.java`、`WorldTypePlanetGen.java`、`WorldTypeSpace.java`、`MapGenLander.java`、`MapGenSpaceVillage.java` | 动态地形、世界预设 | 推迟到 2.0 之后（ADR-062 §3）；**提案**，ADR-061/062 接受前不生效 | post-`v2.0.0` | 新 ADR | DEFERRED |
 | 运行时行星编辑与随机行星 | `command/WorldCommand.java`（planet generate/delete/reset/set）、`DimensionManager` | 运行时动态维度 | 拒绝；天体为数据包定义（ADR-031、ADR-062 §4）；**提案**，ADR-061/062 接受前不生效 | never unless ADR | — | REJECTED |
 | 数据网络 | `tile/cables/*`、`cable/*` | 全局网络注册表 | 拒绝；数据装在数据存储单元中移动（ADR-062 §4）；**提案**，ADR-061/062 接受前不生效 | never unless ADR | — | REJECTED |
