@@ -453,9 +453,16 @@ SEVERITY = {"CLEAR": 0, "SUSPECT": 1, "HIT": 2}
 
 
 def _strength(measure: dict) -> float:
+    """Orders matches of the same level: a measure counts only with the colours its rule needs, so the
+    recorded best match of a CLEAR file is its strongest real one, not a mapping over one colour class."""
+    colours = measure.get("colours", 0)
     if measure.get("method") == "region":
-        return max(measure["exact"], 0.5 * measure.get("near", 0.0), 0.5 * measure.get("mapped", 0.0))
-    return max(measure["overlap"], measure["iou"] * measure["rank"])
+        exact = measure["exact"] if colours >= MIN_EVIDENCE_COLOURS else 0.0
+        near = measure.get("near", 0.0) if measure.get("near_colours", 0) >= MIN_MATCHED_COLOURS else 0.0
+        mapped = measure.get("mapped", 0.0) if measure.get("classes", 0) >= MIN_MAPPED_CLASSES else 0.0
+        return max(exact, 0.5 * near, 0.5 * mapped)
+    overlap = measure["overlap"] if colours >= MIN_EVIDENCE_COLOURS else 0.0
+    return max(overlap, measure["iou"] * measure["rank"])
 
 
 def _block_cells(rgba: bytes, start: int, stride: int) -> list[bytes]:

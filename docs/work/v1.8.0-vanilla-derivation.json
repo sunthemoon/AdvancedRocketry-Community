@@ -3315,24 +3315,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/glass_black.png",
-    "reference_scale": 1,
-    "offset": [
-     -21,
-     1
-    ],
-    "votes": 1,
-    "region": 150,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "method": "same",
+    "orientation": 0,
+    "reference": "1.12.2:assets/minecraft/textures/entity/rabbit/toast.png",
+    "overlap": 0.0072,
+    "colours": 2,
+    "iou": 0.0399,
+    "rank": 0.0
    },
    "related": [
     {
@@ -3444,23 +3433,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 7,
     "candidate_scale": 2,
     "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/frosted_ice_3.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
     "reference_scale": 1,
     "offset": [
-     -16,
-     -6
+     178,
+     114
     ],
     "votes": 1,
-    "region": 135,
+    "region": 465,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "mapped": 0.4286,
+    "classes": 7
    },
    "related": [
     {
@@ -3518,24 +3507,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 7,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/items/leather_leggings.png",
-    "reference_scale": 1,
-    "offset": [
-     0,
-     8
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 4,
+    "reference": "1.20.1:assets/minecraft/textures/block/scaffolding_top.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.7,
-    "classes": 2
+    "iou": 0.9062,
+    "rank": 0.3617
    },
    "related": [
     {
@@ -4005,24 +3983,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 3,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/horse/armor/horse_armor_leather.png",
-    "reference_scale": 2,
-    "offset": [
-     22,
-     8
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 7,
+    "reference": "1.20.1:assets/minecraft/textures/entity/decorated_pot/snort_pottery_pattern.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "iou": 0.875,
+    "rank": 0.5555
    },
    "related": [
     {
@@ -6586,24 +6553,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/llama/decor/decor_brown.png",
-    "reference_scale": 2,
-    "offset": [
-     -6,
-     15
-    ],
-    "votes": 1,
-    "region": 160,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 7,
+    "reference": "1.20.1:assets/minecraft/textures/block/smooth_stone_slab_side.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 4
+    "iou": 1.0,
+    "rank": 0.4771
    },
    "related": [
     {
@@ -7698,24 +7654,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_6.png",
-    "reference_scale": 1,
-    "offset": [
-     0,
-     12
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.7037,
-    "classes": 2
+    "iou": 0.5,
+    "rank": 0.0
    }
   },
   {
@@ -7728,23 +7673,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 0,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/illager/fangs.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/entity/banner/mojang.png",
+    "reference_scale": 1,
     "offset": [
-     10,
-     4
+     32,
+     20
     ],
     "votes": 1,
     "region": 64,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.875,
-    "classes": 1
+    "exact": 0.2564,
+    "colours": 2,
+    "near": 0.2564,
+    "near_colours": 2,
+    "mapped": 0.6154,
+    "classes": 2
    }
   },
   {
@@ -8497,24 +8442,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/environment/rain.png",
-    "reference_scale": 1,
-    "offset": [
-     50,
-     7
-    ],
-    "votes": 1,
-    "region": 224,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 5,
+    "reference": "1.20.1:assets/minecraft/textures/block/loom_bottom.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "iou": 1.0,
+    "rank": 0.3319
    },
    "related": [
     {
@@ -9640,24 +9574,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/tabs.png",
-    "reference_scale": 2,
-    "offset": [
-     0,
-     16
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 2,
+    "reference": "1.20.1:assets/minecraft/textures/block/chiseled_bookshelf_empty.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.96,
-    "classes": 2
+    "iou": 1.0,
+    "rank": 0.457
    },
    "related": [
     {
@@ -10997,22 +10920,22 @@
    "best": {
     "method": "region",
     "orientation": 7,
-    "candidate_scale": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/gui/title/edition.png",
+    "reference": "1.12.2:assets/minecraft/textures/entity/armorstand/wood.png",
     "reference_scale": 1,
     "offset": [
-     468,
-     8
+     33,
+     52
     ],
     "votes": 1,
-    "region": 64,
+    "region": 136,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.5152,
+    "classes": 8
    }
   },
   {
@@ -11024,11 +10947,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "same",
-    "orientation": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/redstone_ore.png",
-    "overlap": 0.052,
-    "colours": 1,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.0
    }
@@ -11168,24 +11091,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_houstonia.png",
-    "reference_scale": 1,
-    "offset": [
-     -11,
-     -1
-    ],
-    "votes": 1,
-    "region": 75,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 3,
+    "reference": "1.20.1:assets/minecraft/textures/block/barrel_top_open.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 1.0,
+    "rank": 0.324
    },
    "related": [
     {
@@ -12374,24 +12286,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/slime/slime.png",
-    "reference_scale": 1,
-    "offset": [
-     0,
-     -6
-    ],
-    "votes": 1,
-    "region": 100,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.1875,
+    "rank": 0.0
    }
   },
   {
@@ -13981,24 +13882,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/triangle_bottom.png",
-    "reference_scale": 2,
-    "offset": [
-     1,
-     3
-    ],
-    "votes": 1,
-    "region": 256,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 4,
+    "reference": "1.20.1:assets/minecraft/textures/block/sculk_catalyst_top.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.6111,
-    "classes": 1
+    "iou": 1.0,
+    "rank": 0.2414
    },
    "related": [
     {
@@ -14548,23 +14438,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 5,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/banner/rhombus.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/gui/title/background/panorama_3.png",
+    "reference_scale": 1,
     "offset": [
-     -10,
-     4
+     177,
+     110
     ],
     "votes": 1,
-    "region": 96,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.45,
-    "classes": 1
+    "mapped": 0.4452,
+    "classes": 7
    },
    "related": [
     {
@@ -14928,24 +14818,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
+    "method": "same",
     "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/triangle_bottom.png",
-    "reference_scale": 2,
-    "offset": [
-     1,
-     3
-    ],
-    "votes": 1,
-    "region": 256,
-    "exact": 0.0,
+    "reference": "1.20.1:assets/minecraft/textures/block/red_sandstone.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.6111,
-    "classes": 1
+    "iou": 1.0,
+    "rank": 0.248
    },
    "related": [
     {
@@ -15708,24 +15587,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 5,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/llama/decor/decor_brown.png",
-    "reference_scale": 1,
-    "offset": [
-     22,
-     26
-    ],
-    "votes": 1,
-    "region": 256,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 2,
+    "reference": "1.20.1:assets/minecraft/textures/block/netherite_block.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "iou": 1.0,
+    "rank": 0.3171
    },
    "related": [
     {
@@ -15996,23 +15864,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
+    "orientation": 1,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/chest/ender.png",
+    "reference": "1.12.2:assets/minecraft/textures/entity/enderdragon/dragon.png",
     "reference_scale": 1,
     "offset": [
-     39,
-     -1
+     188,
+     64
     ],
     "votes": 1,
-    "region": 176,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7083,
-    "classes": 3
+    "mapped": 0.5159,
+    "classes": 6
    },
    "related": [
     {
@@ -16037,24 +15905,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 5,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/book.png",
-    "reference_scale": 1,
-    "offset": [
-     132,
-     38
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "iou": 0.125,
+    "rank": 0.0
    }
   },
   {
@@ -16401,24 +16258,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 5,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/mojang.png",
-    "reference_scale": 1,
-    "offset": [
-     12,
-     18
-    ],
-    "votes": 1,
-    "region": 256,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.5938,
-    "classes": 3
+    "iou": 0.6875,
+    "rank": 0.0
    }
   },
   {
@@ -17672,11 +17518,11 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "same",
-    "orientation": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/debug2.png",
-    "overlap": 0.5305,
-    "colours": 1,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
+    "colours": 0,
     "iou": 1.0,
     "rank": 0.0
    }
@@ -19091,23 +18937,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 0,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/cat/black.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
     "reference_scale": 1,
     "offset": [
-     17,
-     13
+     27,
+     64
     ],
     "votes": 1,
-    "region": 123,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 3
+    "mapped": 0.625,
+    "classes": 6
    }
   },
   {
@@ -19457,23 +19303,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
-    "candidate_scale": 4,
+    "orientation": 1,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_powder_lime.png",
+    "reference": "1.12.2:assets/minecraft/textures/gui/title/background/panorama_3.png",
     "reference_scale": 1,
     "offset": [
-     3,
-     -24
+     -24,
+     91
     ],
-    "votes": 1,
-    "region": 104,
+    "votes": 2,
+    "region": 2560,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 2
+    "mapped": 0.1111,
+    "classes": 194
    }
   },
   {
@@ -19488,9 +19334,9 @@
     "method": "scaled",
     "scale": 2,
     "sampled": 4,
-    "reference": "1.12.2:assets/minecraft/textures/environment/clouds.png",
-    "overlap": 0.043,
-    "colours": 1,
+    "reference": "1.20.1:assets/minecraft/textures/misc/spyglass_scope.png",
+    "overlap": 0.002,
+    "colours": 2,
     "iou": 0.7168,
     "rank": 0.0
    }
@@ -19506,22 +19352,22 @@
    "best": {
     "method": "region",
     "orientation": 5,
-    "candidate_scale": 2,
+    "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/entity/llama/llama_gray.png",
+    "reference_scale": 2,
     "offset": [
-     -20,
-     -26
+     20,
+     9
     ],
     "votes": 1,
-    "region": 72,
+    "region": 243,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2857,
-    "classes": 2
+    "mapped": 0.1702,
+    "classes": 15
    }
   },
   {
@@ -19534,23 +19380,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 1,
     "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_5.png",
-    "reference_scale": 2,
+    "phase": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/double_plant_paeonia_top.png",
+    "reference_scale": 1,
     "offset": [
-     -25,
-     -23
+     -14,
+     -27
     ],
     "votes": 1,
-    "region": 64,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7049,
-    "classes": 3
+    "mapped": 0.2179,
+    "classes": 7
    }
   },
   {
@@ -19582,23 +19428,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 4,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/endframe_eye.png",
+    "orientation": 0,
+    "candidate_scale": 2,
+    "phase": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png",
     "reference_scale": 1,
     "offset": [
-     -4,
-     -22
+     -45,
+     -32
     ],
     "votes": 1,
-    "region": 92,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4,
-    "classes": 2
+    "mapped": 0.2,
+    "classes": 8
    }
   },
   {
@@ -19812,22 +19658,22 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 0,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/chest/christmas.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/fire_layer_0.png",
+    "reference_scale": 1,
     "offset": [
-     -21,
-     0
+     0,
+     41
     ],
     "votes": 1,
-    "region": 120,
+    "region": 125,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3947,
+    "mapped": 0.0377,
     "classes": 4
    },
    "related": [
@@ -19879,22 +19725,22 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 0,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/chest/christmas.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/fire_layer_0.png",
+    "reference_scale": 1,
     "offset": [
-     -21,
-     0
+     0,
+     41
     ],
     "votes": 1,
-    "region": 120,
+    "region": 125,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3846,
+    "mapped": 0.0377,
     "classes": 4
    },
    "related": [
@@ -20011,23 +19857,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
+    "orientation": 3,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
+    "reference": "1.20.1:assets/minecraft/textures/gui/recipe_book.png",
     "reference_scale": 2,
     "offset": [
-     108,
-     52
+     64,
+     67
     ],
-    "votes": 1,
-    "region": 144,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "votes": 2,
+    "region": 574,
+    "exact": 0.0246,
+    "colours": 2,
+    "near": 0.0246,
+    "near_colours": 2,
+    "mapped": 0.2899,
+    "classes": 3
    },
    "related": [
     {
@@ -20075,23 +19921,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
+    "orientation": 3,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
+    "reference": "1.20.1:assets/minecraft/textures/gui/recipe_book.png",
     "reference_scale": 2,
     "offset": [
-     108,
-     52
+     64,
+     67
     ],
-    "votes": 1,
-    "region": 144,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "votes": 2,
+    "region": 574,
+    "exact": 0.0246,
+    "colours": 2,
+    "near": 0.0246,
+    "near_colours": 2,
+    "mapped": 0.2899,
+    "classes": 3
    },
    "related": [
     {
@@ -20139,23 +19985,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 0,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/shield/half_horizontal.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+    "reference_scale": 1,
     "offset": [
-     0,
-     -22
+     94,
+     84
     ],
     "votes": 1,
-    "region": 108,
+    "region": 288,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "mapped": 0.1439,
+    "classes": 3
    },
    "related": [
     {
@@ -20206,23 +20052,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 0,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/shield/half_horizontal.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+    "reference_scale": 1,
     "offset": [
-     0,
-     -22
+     94,
+     84
     ],
     "votes": 1,
-    "region": 108,
+    "region": 288,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "mapped": 0.1439,
+    "classes": 3
    },
    "related": [
     {
@@ -20273,23 +20119,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 6,
     "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/gui/book.png",
-    "reference_scale": 1,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/gui/container/villager.png",
+    "reference_scale": 2,
     "offset": [
-     43,
-     157
+     104,
+     19
     ],
-    "votes": 1,
-    "region": 121,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.735,
-    "classes": 4
+    "votes": 2,
+    "region": 143,
+    "exact": 0.0211,
+    "colours": 2,
+    "near": 0.0211,
+    "near_colours": 2,
+    "mapped": 0.6174,
+    "classes": 9
    },
    "related": [
     {
@@ -20359,23 +20205,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 2,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/zombie_villager/profession/armorer.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_chestnut.png",
+    "reference_scale": 1,
     "offset": [
-     -1,
-     -4
+     4,
+     11
     ],
     "votes": 1,
-    "region": 87,
+    "region": 144,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.9231,
-    "classes": 2
+    "mapped": 0.6796,
+    "classes": 6
    },
    "related": [
     {
@@ -20456,23 +20302,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
+    "orientation": 2,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_item_search.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_chestnut.png",
+    "reference_scale": 1,
     "offset": [
-     7,
-     6
+     4,
+     11
     ],
-    "votes": 2,
-    "region": 576,
-    "exact": 0.3896,
-    "colours": 1,
-    "near": 0.3896,
-    "near_colours": 1,
-    "mapped": 0.5973,
-    "classes": 3
+    "votes": 1,
+    "region": 144,
+    "exact": 0.0,
+    "colours": 0,
+    "near": 0.0,
+    "near_colours": 0,
+    "mapped": 0.6117,
+    "classes": 7
    },
    "related": [
     {
@@ -20553,23 +20399,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
-    "candidate_scale": 2,
+    "orientation": 4,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_oxeye_daisy.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/gui/title/minecraft.png",
+    "reference_scale": 1,
     "offset": [
-     -4,
-     0
+     97,
+     78
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 571,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.75,
-    "classes": 2
+    "mapped": 0.583,
+    "classes": 6
    },
    "related": [
     {
@@ -20639,23 +20485,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
-    "candidate_scale": 2,
+    "orientation": 4,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_oxeye_daisy.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/gui/title/minecraft.png",
+    "reference_scale": 1,
     "offset": [
-     -4,
-     0
+     97,
+     78
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 571,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.75,
-    "classes": 2
+    "mapped": 0.583,
+    "classes": 6
    },
    "related": [
     {
@@ -20725,23 +20571,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/mojang.png",
+    "orientation": 4,
+    "candidate_scale": 1,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/gui/title/background/panorama_2.png",
     "reference_scale": 1,
     "offset": [
-     35,
-     26
+     198,
+     66
     ],
-    "votes": 1,
-    "region": 121,
+    "votes": 2,
+    "region": 576,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7857,
-    "classes": 2
+    "mapped": 0.4113,
+    "classes": 6
    },
    "related": [
     {
@@ -20932,23 +20778,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/mojang.png",
+    "orientation": 6,
+    "candidate_scale": 1,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/entity/experience_orb.png",
     "reference_scale": 1,
     "offset": [
-     35,
-     26
+     10,
+     41
     ],
-    "votes": 1,
-    "region": 121,
+    "votes": 2,
+    "region": 550,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7857,
-    "classes": 2
+    "mapped": 0.4569,
+    "classes": 6
    },
    "related": [
     {
@@ -21139,23 +20985,22 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 7,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/brewing_stand.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/gui/recipe_book.png",
+    "reference_scale": 1,
     "offset": [
-     0,
-     79
+     188,
+     2
     ],
     "votes": 1,
-    "search": "reference positions",
-    "region": 576,
-    "exact": 0.0755,
-    "colours": 2,
-    "near": 0.0755,
-    "near_colours": 2,
-    "mapped": 0.9268,
+    "region": 573,
+    "exact": 0.459,
+    "colours": 3,
+    "near": 0.459,
+    "near_colours": 3,
+    "mapped": 0.6138,
     "classes": 3
    },
    "related": [
@@ -21347,22 +21192,22 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/entity/shield/triangles_bottom.png",
-    "reference_scale": 1,
+    "orientation": 7,
+    "candidate_scale": 1,
+    "phase": 0,
+    "reference": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+    "reference_scale": 4,
     "offset": [
-     3,
-     19
+     41,
+     12
     ],
     "votes": 2,
-    "region": 121,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.76,
+    "region": 576,
+    "exact": 0.258,
+    "colours": 2,
+    "near": 0.258,
+    "near_colours": 2,
+    "mapped": 0.3741,
     "classes": 2
    },
    "related": [
@@ -21761,23 +21606,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
-    "candidate_scale": 2,
+    "orientation": 7,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/sea_lantern.png",
+    "reference": "1.12.2:assets/minecraft/textures/gui/presets/madness.png",
     "reference_scale": 1,
     "offset": [
-     8,
-     71
+     135,
+     88
     ],
-    "votes": 1,
-    "region": 72,
+    "votes": 2,
+    "region": 576,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4286,
-    "classes": 1
+    "mapped": 0.2394,
+    "classes": 18
    },
    "related": [
     {
@@ -21968,7 +21813,7 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 4,
     "candidate_scale": 2,
     "phase": 1,
     "reference": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
@@ -21979,11 +21824,11 @@
     ],
     "votes": 1,
     "region": 121,
-    "exact": 0.4375,
-    "colours": 1,
-    "near": 0.4375,
-    "near_colours": 1,
-    "mapped": 0.6104,
+    "exact": 0.425,
+    "colours": 2,
+    "near": 0.425,
+    "near_colours": 2,
+    "mapped": 0.6234,
     "classes": 3
    },
    "related": [
@@ -22175,23 +22020,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/cauldron_bottom.png",
-    "reference_scale": 1,
+    "reference": "1.20.1:assets/minecraft/textures/gui/container/cartography_table.png",
+    "reference_scale": 2,
     "offset": [
-     -14,
-     5
+     104,
+     60
     ],
-    "votes": 1,
-    "region": 107,
+    "votes": 2,
+    "region": 573,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7895,
-    "classes": 2
+    "mapped": 0.5797,
+    "classes": 6
    },
    "related": [
     {
@@ -22382,22 +22227,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
-    "candidate_scale": 1,
+    "orientation": 1,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/horse/armor/horse_armor_diamond.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/gui/recipe_book.png",
+    "reference_scale": 1,
     "offset": [
-     -19,
-     32
+     8,
+     159
     ],
     "votes": 1,
-    "region": 120,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
+    "search": "reference positions",
+    "region": 143,
+    "exact": 0.3846,
+    "colours": 3,
+    "near": 0.3846,
+    "near_colours": 3,
+    "mapped": 0.5652,
     "classes": 2
    },
    "related": [
@@ -22611,23 +22457,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 1,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/endercrystal/endercrystal_beam.png",
+    "reference": "1.12.2:assets/minecraft/textures/entity/banner/diagonal_up_left.png",
     "reference_scale": 1,
     "offset": [
-     0,
-     81
+     30,
+     0
     ],
     "votes": 1,
-    "region": 142,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "region": 143,
+    "exact": 0.2378,
+    "colours": 2,
+    "near": 0.2378,
+    "near_colours": 2,
+    "mapped": 0.5468,
+    "classes": 3
    },
    "related": [
     {
@@ -22807,23 +22653,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 1,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/endercrystal/endercrystal_beam.png",
+    "reference": "1.12.2:assets/minecraft/textures/entity/banner/diagonal_up_left.png",
     "reference_scale": 1,
     "offset": [
-     0,
-     81
+     30,
+     0
     ],
     "votes": 1,
-    "region": 142,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "region": 143,
+    "exact": 0.2378,
+    "colours": 2,
+    "near": 0.2378,
+    "near_colours": 2,
+    "mapped": 0.5468,
+    "classes": 3
    },
    "related": [
     {
@@ -23407,23 +23253,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_0.png",
+    "orientation": 6,
+    "candidate_scale": 2,
+    "phase": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/double_plant_syringa_bottom.png",
     "reference_scale": 1,
     "offset": [
-     -43,
-     -30
+     4,
+     1
     ],
     "votes": 1,
-    "region": 92,
+    "region": 117,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.2083,
+    "classes": 8
    }
   },
   {
@@ -23437,22 +23283,22 @@
    "best": {
     "method": "region",
     "orientation": 0,
-    "candidate_scale": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/bat.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/waterlily.png",
     "reference_scale": 1,
     "offset": [
-     33,
-     12
+     8,
+     0
     ],
     "votes": 1,
-    "region": 153,
+    "region": 118,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.383,
+    "classes": 3
    }
   },
   {
@@ -23602,24 +23448,14 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
+    "method": "scaled",
     "orientation": 0,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/tabs.png",
-    "reference_scale": 4,
-    "offset": [
-     28,
-     28
-    ],
-    "votes": 1,
-    "region": 263,
-    "exact": 0.0,
+    "scale": -2,
+    "reference": "1.20.1:assets/minecraft/textures/font/asciillager.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.3018,
+    "rank": 0.0
    }
   },
   {
@@ -23631,24 +23467,14 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
+    "method": "scaled",
     "orientation": 0,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/tabs.png",
-    "reference_scale": 4,
-    "offset": [
-     28,
-     28
-    ],
-    "votes": 1,
-    "region": 263,
-    "exact": 0.0,
+    "scale": -2,
+    "reference": "1.20.1:assets/minecraft/textures/font/asciillager.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.3018,
+    "rank": 0.0
    }
   },
   {
@@ -23660,24 +23486,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_markings_whitedots.png",
-    "reference_scale": 1,
-    "offset": [
-     18,
-     56
-    ],
-    "votes": 1,
-    "region": 192,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.875,
+    "rank": 0.0
    },
    "related": [
     {
@@ -23702,24 +23517,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_markings_whitedots.png",
-    "reference_scale": 1,
-    "offset": [
-     18,
-     56
-    ],
-    "votes": 1,
-    "region": 192,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.875,
+    "rank": 0.0
    }
   },
   {
@@ -23731,24 +23535,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_markings_whitedots.png",
-    "reference_scale": 1,
-    "offset": [
-     18,
-     56
-    ],
-    "votes": 1,
-    "region": 192,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.8594,
+    "rank": 0.2314
    },
    "related": [
     {
@@ -23891,23 +23684,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 1,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/chorus_flower.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/door_birch_lower.png",
     "reference_scale": 1,
     "offset": [
-     -28,
-     -12
+     -26,
+     -4
     ],
     "votes": 1,
-    "region": 64,
+    "region": 96,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 3
+    "mapped": 0.3125,
+    "classes": 8
    }
   },
   {
@@ -23920,23 +23713,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 1,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_powder_black.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/farmland_wet.png",
+    "reference_scale": 1,
     "offset": [
-     -1,
-     -8
+     -4,
+     7
     ],
     "votes": 1,
-    "region": 64,
+    "region": 144,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 1
+    "mapped": 0.1875,
+    "classes": 7
    }
   },
   {
@@ -24169,24 +23962,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/border.png",
-    "reference_scale": 2,
-    "offset": [
-     1,
-     -10
-    ],
-    "votes": 1,
-    "region": 96,
-    "exact": 0.0417,
-    "colours": 1,
-    "near": 0.0417,
-    "near_colours": 1,
-    "mapped": 1.0,
-    "classes": 2
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
+    "colours": 0,
+    "iou": 0.25,
+    "rank": 0.0
    }
   },
   {
@@ -24304,23 +24086,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 5,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/cake_top.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/gui/icons.png",
+    "reference_scale": 4,
     "offset": [
-     -59,
-     -3
+     -15,
+     -39
     ],
-    "votes": 1,
-    "region": 80,
+    "votes": 2,
+    "region": 900,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7097,
-    "classes": 2
+    "mapped": 0.6868,
+    "classes": 14
    }
   },
   {
@@ -24333,23 +24115,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 7,
     "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/misc/forcefield.png",
-    "reference_scale": 1,
+    "phase": 0,
+    "reference": "1.20.1:assets/minecraft/textures/misc/nausea.png",
+    "reference_scale": 4,
     "offset": [
-     -3,
-     5
+     2,
+     2
     ],
     "votes": 2,
-    "region": 126,
+    "region": 3844,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4062,
-    "classes": 3
+    "mapped": 0.2567,
+    "classes": 60
    }
   },
   {
@@ -24361,24 +24143,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 3,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/shield/rhombus.png",
-    "reference_scale": 1,
-    "offset": [
-     -8,
-     4
-    ],
-    "votes": 2,
-    "region": 100,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.5625,
+    "rank": 0.0
    },
    "related": [
     {
@@ -24414,24 +24185,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/rhombus.png",
-    "reference_scale": 1,
-    "offset": [
-     -8,
-     20
-    ],
-    "votes": 1,
-    "region": 128,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.6486,
-    "classes": 2
+    "iou": 0.4375,
+    "rank": 0.0
    },
    "related": [
     {
@@ -24467,24 +24227,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/cake_top.png",
-    "reference_scale": 1,
-    "offset": [
-     -10,
-     1
-    ],
-    "votes": 1,
-    "region": 78,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8571,
-    "classes": 1
+    "iou": 0.5,
+    "rank": 0.0
    },
    "related": [
     {
@@ -24509,24 +24258,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 1,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
-    "reference_scale": 1,
-    "offset": [
-     111,
-     4
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8571,
-    "classes": 1
+    "iou": 0.6875,
+    "rank": 0.0
    },
    "related": [
     {
@@ -24646,23 +24384,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
-    "candidate_scale": 2,
+    "orientation": 7,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/presets/delight.png",
+    "reference": "1.12.2:assets/minecraft/textures/items/cake.png",
     "reference_scale": 1,
     "offset": [
-     188,
-     40
+     -4,
+     0
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 154,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.75,
-    "classes": 1
+    "mapped": 0.3229,
+    "classes": 10
    },
    "related": [
     {
@@ -24699,23 +24437,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
+    "orientation": 6,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/villager/type/desert.png",
+    "reference": "1.20.1:assets/minecraft/textures/misc/unknown_pack.png",
     "reference_scale": 1,
     "offset": [
-     36,
-     0
+     120,
+     33
     ],
-    "votes": 2,
-    "region": 145,
+    "votes": 1,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5312,
-    "classes": 3
+    "mapped": 0.3793,
+    "classes": 6
    },
    "related": [
     {
@@ -24783,23 +24521,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 1,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/fire_layer_1.png",
     "reference_scale": 1,
     "offset": [
-     11,
-     3
+     -5,
+     402
     ],
     "votes": 1,
-    "region": 65,
+    "region": 130,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.25,
-    "classes": 1
+    "mapped": 0.1,
+    "classes": 8
    },
    "related": [
     {
@@ -24819,23 +24557,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 5,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/fire_layer_0.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
     "reference_scale": 2,
     "offset": [
-     -1,
-     161
+     -2,
+     65
     ],
     "votes": 1,
-    "region": 93,
+    "region": 224,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 2
+    "mapped": 0.1364,
+    "classes": 21
    }
   },
   {
@@ -24890,24 +24628,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
-    "reference_scale": 1,
-    "offset": [
-     240,
-     46
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 7,
+    "reference": "1.20.1:assets/minecraft/textures/item/cake.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.7727,
-    "classes": 4
+    "iou": 0.8627,
+    "rank": 0.3709
    },
    "related": [
     {
@@ -24955,23 +24682,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/border.png",
-    "reference_scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/entity/banner/curly_border.png",
+    "reference_scale": 1,
     "offset": [
-     -7,
-     4
+     27,
+     31
     ],
     "votes": 1,
-    "region": 108,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "region": 166,
+    "exact": 0.1988,
+    "colours": 2,
+    "near": 0.1988,
+    "near_colours": 2,
+    "mapped": 0.3793,
+    "classes": 3
    },
    "related": [
     {
@@ -24997,23 +24724,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
+    "orientation": 6,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/villager/type/desert.png",
+    "reference": "1.20.1:assets/minecraft/textures/misc/unknown_pack.png",
     "reference_scale": 1,
     "offset": [
-     36,
-     0
+     120,
+     33
     ],
-    "votes": 2,
-    "region": 145,
+    "votes": 1,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5312,
-    "classes": 3
+    "mapped": 0.3793,
+    "classes": 6
    },
    "related": [
     {
@@ -25081,23 +24808,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
+    "orientation": 5,
+    "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_0.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/portal.png",
     "reference_scale": 1,
     "offset": [
-     -22,
-     -8
+     -7,
+     170
     ],
     "votes": 1,
-    "region": 88,
+    "region": 144,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.2727,
+    "classes": 8
    }
   },
   {
@@ -25109,24 +24836,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 3,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/bars.png",
-    "reference_scale": 1,
-    "offset": [
-     165,
-     77
-    ],
-    "votes": 1,
-    "region": 107,
-    "exact": 0.0,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.7,
-    "classes": 2
+    "iou": 0.1875,
+    "rank": 0.0
    },
    "related": [
     {
@@ -25163,23 +24879,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
-    "candidate_scale": 2,
+    "orientation": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/water_flow.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/door_birch_lower.png",
     "reference_scale": 1,
     "offset": [
-     1,
-     588
+     0,
+     -9
     ],
     "votes": 1,
-    "region": 64,
+    "region": 112,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6667,
-    "classes": 2
+    "mapped": 0.2857,
+    "classes": 7
    },
    "related": [
     {
@@ -25242,23 +24958,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/arrow.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
     "reference_scale": 1,
     "offset": [
-     -4,
-     11
+     91,
+     56
     ],
     "votes": 1,
-    "region": 114,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.3482,
+    "classes": 6
    },
    "related": [
     {
@@ -25284,23 +25000,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/widgets.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+    "reference_scale": 1,
     "offset": [
-     25,
-     53
+     -6,
+     124
     ],
     "votes": 1,
-    "region": 124,
+    "region": 160,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6667,
-    "classes": 2
+    "mapped": 0.4375,
+    "classes": 9
    },
    "related": [
     {
@@ -25342,23 +25058,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 7,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/end_portal.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/entity/villager/butcher.png",
+    "reference_scale": 1,
     "offset": [
-     52,
-     7
+     16,
+     21
     ],
     "votes": 1,
-    "region": 256,
+    "region": 226,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8,
-    "classes": 3
+    "mapped": 0.4655,
+    "classes": 9
    }
   },
   {
@@ -25389,23 +25105,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/cat/black.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
+    "reference_scale": 2,
     "offset": [
-     -7,
-     18
+     -5,
+     26
     ],
-    "votes": 1,
-    "region": 105,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.7857,
-    "classes": 5
+    "votes": 2,
+    "region": 128,
+    "exact": 0.0417,
+    "colours": 1,
+    "near": 0.0417,
+    "near_colours": 1,
+    "mapped": 0.6111,
+    "classes": 6
    }
   },
   {
@@ -25418,23 +25134,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/villager.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/environment/sun.png",
+    "reference_scale": 4,
     "offset": [
-     209,
-     11
+     -3,
+     -3
     ],
     "votes": 1,
-    "region": 231,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5294,
-    "classes": 3
+    "mapped": 0.3659,
+    "classes": 12
    },
    "related": [
     {
@@ -25528,24 +25244,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 1,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/presets/drought.png",
-    "reference_scale": 1,
-    "offset": [
-     173,
-     38
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 4,
+    "reference": "1.20.1:assets/minecraft/textures/item/white_candle.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "iou": 0.9072,
+    "rank": 0.0998
    }
   },
   {
@@ -25601,14 +25306,14 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 5,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
-    "reference_scale": 1,
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minceraft.png",
+    "reference_scale": 4,
     "offset": [
-     4,
-     25
+     69,
+     9
     ],
     "votes": 1,
     "region": 64,
@@ -25616,8 +25321,8 @@
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8,
-    "classes": 5
+    "mapped": 0.6923,
+    "classes": 6
    },
    "related": [
     {
@@ -25643,23 +25348,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
-    "candidate_scale": 2,
+    "orientation": 0,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/brewing_stand.png",
-    "reference_scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/entity/shulker/shulker_black.png",
+    "reference_scale": 1,
     "offset": [
-     7,
-     2
+     41,
+     26
     ],
     "votes": 1,
-    "region": 64,
+    "region": 217,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7273,
-    "classes": 3
+    "mapped": 0.4722,
+    "classes": 6
    },
    "related": [
     {
@@ -25684,24 +25389,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 7,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/cat/black.png",
-    "reference_scale": 1,
-    "offset": [
-     5,
-     -7
-    ],
-    "votes": 1,
-    "region": 144,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 4,
+    "reference": "1.20.1:assets/minecraft/textures/block/stonecutter_side.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 3
+    "iou": 0.8533,
+    "rank": 0.2645
    }
   },
   {
@@ -25715,22 +25409,22 @@
    "best": {
     "method": "region",
     "orientation": 6,
-    "candidate_scale": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/presets/delight.png",
+    "reference": "1.12.2:assets/minecraft/textures/entity/illager/illusionist.png",
     "reference_scale": 1,
     "offset": [
-     169,
-     64
+     42,
+     51
     ],
     "votes": 1,
-    "region": 64,
+    "region": 171,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7,
-    "classes": 2
+    "mapped": 0.3214,
+    "classes": 6
    }
   },
   {
@@ -25743,23 +25437,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
-    "candidate_scale": 2,
+    "orientation": 0,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/brewing_stand.png",
-    "reference_scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/entity/shulker/shulker_black.png",
+    "reference_scale": 1,
     "offset": [
-     7,
-     2
+     41,
+     26
     ],
     "votes": 1,
-    "region": 64,
+    "region": 217,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.7273,
-    "classes": 3
+    "mapped": 0.4722,
+    "classes": 6
    },
    "related": [
     {
@@ -25838,23 +25532,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 2,
+    "orientation": 0,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/end_portal.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/nether_wart_stage_1.png",
     "reference_scale": 1,
     "offset": [
-     232,
-     162
+     -2,
+     -1
     ],
     "votes": 1,
-    "region": 64,
+    "region": 136,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6,
-    "classes": 2
+    "mapped": 0.4091,
+    "classes": 6
    }
   },
   {
@@ -25867,23 +25561,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
+    "orientation": 7,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/creeper.png",
+    "reference": "1.12.2:assets/minecraft/textures/gui/presets/isles.png",
     "reference_scale": 1,
     "offset": [
-     40,
-     3
+     67,
+     24
     ],
     "votes": 1,
-    "region": 211,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.6216,
+    "classes": 6
    }
   },
   {
@@ -25896,23 +25590,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
+    "orientation": 4,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_inventory.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/trip_wire_source.png",
+    "reference_scale": 1,
     "offset": [
-     37,
-     24
+     -3,
+     -6
     ],
     "votes": 1,
-    "region": 64,
+    "region": 85,
     "exact": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8333,
-    "classes": 2
+    "near": 0.0357,
+    "near_colours": 3,
+    "mapped": 0.0714,
+    "classes": 4
    }
   },
   {
@@ -25981,20 +25675,20 @@
     "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/enderdragon/dragon_eyes.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
     "reference_scale": 1,
     "offset": [
-     200,
-     32
+     108,
+     123
     ],
     "votes": 1,
-    "region": 153,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.3455,
+    "classes": 17
    },
    "related": [
     {
@@ -26014,23 +25708,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 3,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/melon_stem_connected.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/gui/icons.png",
+    "reference_scale": 2,
     "offset": [
-     -4,
-     5
+     24,
+     10
     ],
     "votes": 1,
-    "region": 101,
+    "region": 202,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3846,
-    "classes": 5
+    "mapped": 0.3478,
+    "classes": 6
    },
    "related": [
     {
@@ -26071,24 +25765,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/cross.png",
-    "reference_scale": 1,
-    "offset": [
-     24,
-     34
-    ],
-    "votes": 2,
-    "region": 232,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 0,
+    "reference": "1.12.2:assets/minecraft/textures/gui/stream_indicator.png#frame0",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8372,
-    "classes": 2
+    "iou": 0.851,
+    "rank": 0.3814
    },
    "related": [
     {
@@ -26108,23 +25791,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/gold_block.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
     "reference_scale": 1,
     "offset": [
-     -3,
-     -2
+     208,
+     113
     ],
     "votes": 1,
-    "region": 182,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3889,
-    "classes": 1
+    "mapped": 0.2817,
+    "classes": 9
    },
    "related": [
     {
@@ -26166,23 +25849,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 1,
+    "orientation": 5,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/border.png",
-    "reference_scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+    "reference_scale": 1,
     "offset": [
-     -8,
-     -2
+     235,
+     243
     ],
     "votes": 1,
-    "region": 110,
-    "exact": 0.3727,
-    "colours": 1,
-    "near": 0.3727,
-    "near_colours": 1,
-    "mapped": 0.8333,
-    "classes": 3
+    "region": 64,
+    "exact": 0.0,
+    "colours": 0,
+    "near": 0.0,
+    "near_colours": 0,
+    "mapped": 0.6216,
+    "classes": 6
    },
    "related": [
     {
@@ -26202,14 +25885,14 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 5,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
-    "reference_scale": 1,
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minceraft.png",
+    "reference_scale": 4,
     "offset": [
-     4,
-     25
+     69,
+     9
     ],
     "votes": 1,
     "region": 64,
@@ -26217,8 +25900,8 @@
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8,
-    "classes": 5
+    "mapped": 0.6923,
+    "classes": 6
    },
    "related": [
     {
@@ -26474,23 +26157,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 1,
+    "orientation": 2,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_allium.png",
+    "reference": "1.12.2:assets/minecraft/textures/gui/presets/madness.png",
     "reference_scale": 1,
     "offset": [
-     3,
-     -4
+     75,
+     79
     ],
     "votes": 1,
-    "region": 114,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3,
-    "classes": 3
+    "mapped": 0.2143,
+    "classes": 9
    }
   },
   {
@@ -26503,14 +26186,14 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 5,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
-    "reference_scale": 1,
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minceraft.png",
+    "reference_scale": 4,
     "offset": [
-     4,
-     25
+     69,
+     9
     ],
     "votes": 1,
     "region": 64,
@@ -26518,8 +26201,8 @@
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8,
-    "classes": 5
+    "mapped": 0.6923,
+    "classes": 6
    },
    "related": [
     {
@@ -26567,23 +26250,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
-    "candidate_scale": 2,
+    "orientation": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/water_flow.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/door_birch_lower.png",
     "reference_scale": 1,
     "offset": [
-     1,
-     588
+     0,
+     -9
     ],
     "votes": 1,
-    "region": 64,
+    "region": 112,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6667,
-    "classes": 2
+    "mapped": 0.2857,
+    "classes": 7
    },
    "related": [
     {
@@ -26603,23 +26286,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 1,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/fire_layer_1.png",
     "reference_scale": 1,
     "offset": [
-     11,
-     3
+     -5,
+     402
     ],
     "votes": 1,
-    "region": 65,
+    "region": 130,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.25,
-    "classes": 1
+    "mapped": 0.1,
+    "classes": 8
    },
    "related": [
     {
@@ -26638,24 +26321,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/cross.png",
-    "reference_scale": 1,
-    "offset": [
-     24,
-     34
-    ],
-    "votes": 2,
-    "region": 232,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 0,
+    "reference": "1.12.2:assets/minecraft/textures/gui/stream_indicator.png#frame0",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8372,
-    "classes": 2
+    "iou": 0.851,
+    "rank": 0.3814
    },
    "related": [
     {
@@ -26675,23 +26347,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/container/villager.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/environment/sun.png",
+    "reference_scale": 4,
     "offset": [
-     209,
-     11
+     -3,
+     -3
     ],
     "votes": 1,
-    "region": 231,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5294,
-    "classes": 3
+    "mapped": 0.3659,
+    "classes": 12
    },
    "related": [
     {
@@ -26736,20 +26408,20 @@
     "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/enderdragon/dragon_eyes.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
     "reference_scale": 1,
     "offset": [
-     200,
-     32
+     108,
+     123
     ],
     "votes": 1,
-    "region": 153,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.3455,
+    "classes": 17
    },
    "related": [
     {
@@ -26769,23 +26441,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 3,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/melon_stem_connected.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/gui/icons.png",
+    "reference_scale": 2,
     "offset": [
-     -4,
-     5
+     24,
+     10
     ],
     "votes": 1,
-    "region": 101,
+    "region": 202,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3846,
-    "classes": 5
+    "mapped": 0.3478,
+    "classes": 6
    },
    "related": [
     {
@@ -26827,23 +26499,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/gold_block.png",
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
     "reference_scale": 1,
     "offset": [
-     -3,
-     -2
+     208,
+     113
     ],
     "votes": 1,
-    "region": 182,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3889,
-    "classes": 1
+    "mapped": 0.2817,
+    "classes": 9
    },
    "related": [
     {
@@ -26885,23 +26557,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 2,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/widgets.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+    "reference_scale": 1,
     "offset": [
-     25,
-     53
+     -6,
+     124
     ],
     "votes": 1,
-    "region": 124,
+    "region": 160,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6667,
-    "classes": 2
+    "mapped": 0.4375,
+    "classes": 9
    },
    "related": [
     {
@@ -26943,23 +26615,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 7,
     "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png",
     "reference_scale": 1,
     "offset": [
-     -13,
-     -13
+     -22,
+     -19
     ],
     "votes": 1,
-    "region": 230,
+    "region": 130,
     "exact": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.25,
-    "classes": 1
+    "near": 0.0091,
+    "near_colours": 1,
+    "mapped": 0.1364,
+    "classes": 8
    }
   },
   {
@@ -26990,23 +26662,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 1,
+    "orientation": 5,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/border.png",
-    "reference_scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+    "reference_scale": 1,
     "offset": [
-     -8,
-     -2
+     235,
+     243
     ],
     "votes": 1,
-    "region": 110,
-    "exact": 0.3727,
-    "colours": 1,
-    "near": 0.3727,
-    "near_colours": 1,
-    "mapped": 0.8333,
-    "classes": 3
+    "region": 64,
+    "exact": 0.0,
+    "colours": 0,
+    "near": 0.0,
+    "near_colours": 0,
+    "mapped": 0.6216,
+    "classes": 6
    },
    "related": [
     {
@@ -27068,23 +26740,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 2,
+    "orientation": 1,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/title/background/panorama_0.png",
+    "reference": "1.12.2:assets/minecraft/textures/gui/widgets.png",
     "reference_scale": 1,
     "offset": [
-     188,
-     112
+     114,
+     43
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 208,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6364,
-    "classes": 2
+    "mapped": 0.4409,
+    "classes": 6
    }
   },
   {
@@ -27585,24 +27257,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
+    "method": "same",
     "orientation": 0,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/frosted_ice_0.png",
-    "reference_scale": 1,
-    "offset": [
-     -10,
-     -2
-    ],
-    "votes": 1,
-    "region": 84,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8462,
-    "classes": 2
+    "reference": "1.12.2:assets/minecraft/textures/items/diamond_chestplate.png",
+    "overlap": 0.1288,
+    "colours": 2,
+    "iou": 0.1489,
+    "rank": 0.0
    },
    "related": [
     {
@@ -27718,24 +27379,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 1,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/end_portal.png",
-    "reference_scale": 2,
-    "offset": [
-     112,
-     38
-    ],
-    "votes": 1,
-    "region": 256,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "method": "same",
+    "orientation": 0,
+    "reference": "1.12.2:assets/minecraft/textures/items/diamond_chestplate.png",
+    "overlap": 0.0921,
+    "colours": 2,
+    "iou": 0.2727,
+    "rank": 0.0
    },
    "related": [
     {
@@ -27881,14 +27531,14 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 5,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
-    "reference_scale": 1,
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minceraft.png",
+    "reference_scale": 4,
     "offset": [
-     4,
-     25
+     69,
+     9
     ],
     "votes": 1,
     "region": 64,
@@ -27896,8 +27546,8 @@
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8,
-    "classes": 5
+    "mapped": 0.6923,
+    "classes": 6
    },
    "related": [
     {
@@ -27945,14 +27595,14 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
-    "candidate_scale": 2,
+    "orientation": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/farmland_wet.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/purpur_pillar_top.png",
+    "reference_scale": 2,
     "offset": [
-     2,
-     5
+     -4,
+     -1
     ],
     "votes": 1,
     "region": 64,
@@ -27960,8 +27610,8 @@
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3077,
-    "classes": 4
+    "mapped": 0.15,
+    "classes": 6
    }
   },
   {
@@ -27973,24 +27623,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 0,
-    "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/gui/advancements/window.png",
-    "reference_scale": 1,
-    "offset": [
-     4,
-     25
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": 1,
+    "reference": "1.20.1:assets/minecraft/textures/item/cake.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.8,
-    "classes": 5
+    "iou": 0.8676,
+    "rank": 0.4223
    },
    "related": [
     {
@@ -28037,24 +27676,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 7,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/cross.png",
-    "reference_scale": 1,
-    "offset": [
-     24,
-     -11
-    ],
-    "votes": 1,
-    "region": 80,
-    "exact": 0.525,
-    "colours": 1,
-    "near": 0.525,
-    "near_colours": 1,
-    "mapped": 0.6528,
-    "classes": 2
+    "method": "same",
+    "orientation": 2,
+    "reference": "1.20.1:assets/minecraft/textures/block/barrel_bottom.png",
+    "overlap": 0.0,
+    "colours": 0,
+    "iou": 0.9531,
+    "rank": 0.5244
    }
   },
   {
@@ -28205,23 +27833,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 5,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_allium.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/end_rod.png",
     "reference_scale": 1,
     "offset": [
-     -17,
-     7
+     -6,
+     -50
     ],
     "votes": 1,
-    "region": 108,
+    "region": 196,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 1
+    "mapped": 0.3182,
+    "classes": 11
    },
    "related": [
     {
@@ -28376,23 +28004,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 4,
     "candidate_scale": 2,
     "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/cobblestone_mossy.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/brewing_stand.png",
     "reference_scale": 1,
     "offset": [
-     -4,
-     -19
+     -38,
+     -9
     ],
     "votes": 1,
-    "region": 256,
+    "region": 226,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 1
+    "mapped": 0.2292,
+    "classes": 14
    }
   },
   {
@@ -28405,23 +28033,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 4,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_blue_orchid.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/brewing_stand.png",
     "reference_scale": 1,
     "offset": [
-     -19,
-     -22
+     -36,
+     5
     ],
     "votes": 1,
-    "region": 92,
+    "region": 167,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6,
-    "classes": 2
+    "mapped": 0.2745,
+    "classes": 9
    }
   },
   {
@@ -28503,23 +28131,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 6,
     "candidate_scale": 2,
     "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_lower.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/anvil_top_damaged_0.png",
     "reference_scale": 1,
     "offset": [
-     -12,
-     -9
+     -4,
+     -4
     ],
     "votes": 1,
-    "region": 256,
+    "region": 184,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4,
-    "classes": 2
+    "mapped": 0.2553,
+    "classes": 9
    },
    "related": [
     {
@@ -28583,22 +28211,22 @@
    "best": {
     "method": "region",
     "orientation": 6,
-    "candidate_scale": 4,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/llama/decor/decor_gray.png",
-    "reference_scale": 2,
+    "reference": "1.12.2:assets/minecraft/textures/entity/armorstand/wood.png",
+    "reference_scale": 1,
     "offset": [
-     3,
-     4
+     41,
+     36
     ],
     "votes": 2,
-    "region": 457,
+    "region": 145,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4545,
-    "classes": 2
+    "mapped": 0.4513,
+    "classes": 9
    }
   },
   {
@@ -28611,23 +28239,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 2,
+    "orientation": 0,
+    "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/entity/shield/gradient.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/purpur_pillar.png",
     "reference_scale": 2,
     "offset": [
      -5,
-     3
+     -4
     ],
-    "votes": 2,
-    "region": 168,
+    "votes": 1,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 5
+    "mapped": 0.25,
+    "classes": 15
    },
    "related": [
     {
@@ -28887,22 +28515,22 @@
    "best": {
     "method": "region",
     "orientation": 3,
-    "candidate_scale": 4,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/double_plant_fern_top.png",
-    "reference_scale": 1,
+    "candidate_scale": 2,
+    "phase": 1,
+    "reference": "1.20.1:assets/minecraft/textures/entity/banner/border.png",
+    "reference_scale": 2,
     "offset": [
-     8,
-     -8
+     -10,
+     -20
     ],
-    "votes": 1,
-    "region": 81,
+    "votes": 2,
+    "region": 400,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6667,
-    "classes": 2
+    "mapped": 0.2222,
+    "classes": 6
    },
    "related": [
     {
@@ -29032,23 +28660,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 6,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/stripe_middle.png",
+    "reference": "1.12.2:assets/minecraft/textures/gui/container/anvil.png",
     "reference_scale": 4,
     "offset": [
-     8,
-     -45
+     -7,
+     -36
     ],
-    "votes": 1,
-    "region": 128,
+    "votes": 2,
+    "region": 1368,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "mapped": 0.5635,
+    "classes": 6
    }
   },
   {
@@ -29221,23 +28849,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 2,
+    "orientation": 1,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png",
-    "reference_scale": 4,
+    "reference": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+    "reference_scale": 2,
     "offset": [
-     -8,
-     -8
+     110,
+     -15
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 544,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8056,
-    "classes": 3
+    "mapped": 0.3379,
+    "classes": 6
    }
   },
   {
@@ -29268,24 +28896,14 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/flower_oxeye_daisy.png",
-    "reference_scale": 2,
-    "offset": [
-     -12,
-     -33
-    ],
-    "votes": 1,
-    "region": 64,
-    "exact": 0.0,
-    "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "method": "same",
+    "orientation": 1,
+    "sampled": 2,
+    "reference": "1.20.1:assets/minecraft/textures/misc/unknown_pack.png",
+    "overlap": 0.0003,
+    "colours": 1,
+    "iou": 1.0,
+    "rank": 0.4875
    }
   },
   {
@@ -29298,23 +28916,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
-    "candidate_scale": 2,
+    "orientation": 0,
+    "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_powder_purple.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/portal.png",
+    "reference_scale": 2,
     "offset": [
-     -14,
-     -25
+     -19,
+     184
     ],
     "votes": 1,
-    "region": 256,
+    "region": 128,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.2,
+    "classes": 8
    },
    "related": [
     {
@@ -29441,23 +29059,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
+    "orientation": 5,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/endframe_eye.png",
-    "reference_scale": 2,
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minecraft.png",
+    "reference_scale": 1,
     "offset": [
-     -27,
-     -9
+     558,
+     128
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 2048,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 3
+    "mapped": 0.4916,
+    "classes": 27
    }
   },
   {
@@ -29519,23 +29137,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 7,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/cauldron_bottom.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/door_acacia_upper.png",
     "reference_scale": 1,
     "offset": [
-     -24,
-     -35
+     -22,
+     -45
     ],
     "votes": 1,
-    "region": 84,
+    "region": 184,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2308,
-    "classes": 2
+    "mapped": 0.2143,
+    "classes": 10
    }
   },
   {
@@ -29803,23 +29421,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/quartz_ore.png",
-    "reference_scale": 1,
+    "orientation": 4,
+    "candidate_scale": 4,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/water_still.png",
+    "reference_scale": 2,
     "offset": [
-     -26,
-     4
+     -5,
+     148
     ],
     "votes": 1,
-    "region": 192,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 3
+    "mapped": 0.1852,
+    "classes": 14
    },
    "related": [
     {
@@ -29906,23 +29524,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 0,
     "candidate_scale": 4,
     "phase": 0,
     "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_3.png",
     "reference_scale": 1,
     "offset": [
-     -34,
-     -23
+     -30,
+     -4
     ],
     "votes": 1,
-    "region": 125,
+    "region": 138,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2222,
-    "classes": 4
+    "mapped": 0.2,
+    "classes": 8
    },
    "related": [
     {
@@ -29967,23 +29585,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.20.1:assets/minecraft/textures/trims/models/armor/ward_leggings.png",
-    "reference_scale": 1,
+    "orientation": 2,
+    "candidate_scale": 4,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/entity/llama/decor/decor_black.png",
+    "reference_scale": 2,
     "offset": [
-     -4,
-     -8
+     8,
+     4
     ],
     "votes": 2,
-    "region": 774,
+    "region": 434,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 2
+    "mapped": 0.32,
+    "classes": 8
    }
   },
   {
@@ -30015,23 +29633,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 5,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.20.1:assets/minecraft/textures/gui/title/mojangstudios.png",
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minecraft.png",
     "reference_scale": 1,
     "offset": [
-     415,
-     141
+     568,
+     101
     ],
     "votes": 2,
-    "region": 2038,
+    "region": 2048,
     "exact": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 0.5397,
-    "classes": 4
+    "near": 0.0017,
+    "near_colours": 2,
+    "mapped": 0.3628,
+    "classes": 33
    }
   },
   {
@@ -30063,23 +29681,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
-    "candidate_scale": 2,
+    "orientation": 0,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "reference": "1.12.2:assets/minecraft/textures/misc/shadow.png",
     "reference_scale": 1,
     "offset": [
-     -16,
-     7
+     -1,
+     -1
     ],
-    "votes": 1,
-    "region": 91,
+    "votes": 2,
+    "region": 3121,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2857,
-    "classes": 2
+    "mapped": 0.2417,
+    "classes": 10
    }
   },
   {
@@ -30091,12 +29709,12 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "same",
-    "orientation": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/redstone_dust_dot.png",
-    "overlap": 0.1172,
-    "colours": 1,
-    "iou": 0.2266,
+    "method": "scaled",
+    "scale": 4,
+    "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+    "overlap": 0.0,
+    "colours": 0,
+    "iou": 0.625,
     "rank": 0.0
    }
   },
@@ -30109,24 +29727,13 @@
    ],
    "verdict": "CLEAR",
    "best": {
-    "method": "region",
-    "orientation": 4,
-    "candidate_scale": 1,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png",
-    "reference_scale": 1,
-    "offset": [
-     25,
-     -58
-    ],
-    "votes": 2,
-    "region": 96,
-    "exact": 0.0,
+    "method": "same",
+    "orientation": "frame0",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/anvil_base.png",
+    "overlap": 0.0,
     "colours": 0,
-    "near": 0.1146,
-    "near_colours": 1,
-    "mapped": 0.9,
-    "classes": 2
+    "iou": 0.2461,
+    "rank": 0.0
    }
   },
   {
@@ -30139,23 +29746,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
-    "candidate_scale": 2,
+    "orientation": 2,
+    "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_markings_whitedots.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/environment/moon_phases.png",
+    "reference_scale": 4,
     "offset": [
-     80,
-     36
+     1,
+     1
     ],
     "votes": 1,
-    "region": 233,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 2
+    "mapped": 0.8182,
+    "classes": 19
    },
    "related": [
     {
@@ -30241,23 +29848,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 3,
     "candidate_scale": 2,
     "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/anvil_top_damaged_0.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/gui/presets/madness.png",
+    "reference_scale": 2,
     "offset": [
-     6,
-     4
+     53,
+     17
     ],
-    "votes": 1,
-    "region": 84,
+    "votes": 2,
+    "region": 1225,
     "exact": 0.0,
     "colours": 0,
-    "near": 0.0128,
-    "near_colours": 1,
-    "mapped": 0.25,
-    "classes": 1
+    "near": 0.0,
+    "near_colours": 0,
+    "mapped": 0.0135,
+    "classes": 12
    }
   },
   {
@@ -30271,22 +29878,22 @@
    "best": {
     "method": "region",
     "orientation": 4,
-    "candidate_scale": 2,
+    "candidate_scale": 1,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/fire_layer_0.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/anvil_top_damaged_0.png",
     "reference_scale": 1,
     "offset": [
-     -20,
-     174
+     -43,
+     3
     ],
     "votes": 1,
-    "region": 322,
+    "region": 156,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2,
-    "classes": 5
+    "mapped": 0.1569,
+    "classes": 6
    }
   },
   {
@@ -30299,23 +29906,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "orientation": 0,
+    "candidate_scale": 1,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/dirt_podzol_top.png",
     "reference_scale": 1,
     "offset": [
-     -13,
-     -9
+     -1,
+     -11
     ],
     "votes": 1,
-    "region": 169,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.1429,
-    "classes": 1
+    "mapped": 0.0606,
+    "classes": 9
    }
   },
   {
@@ -30328,23 +29935,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
-    "candidate_scale": 1,
+    "orientation": 6,
+    "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png",
     "reference_scale": 1,
     "offset": [
-     3,
-     -46
+     8,
+     -16
     ],
     "votes": 1,
-    "region": 208,
+    "region": 128,
     "exact": 0.0,
     "colours": 0,
-    "near": 0.0121,
-    "near_colours": 2,
-    "mapped": 0.5,
-    "classes": 1
+    "near": 0.0081,
+    "near_colours": 1,
+    "mapped": 0.1333,
+    "classes": 6
    }
   },
   {
@@ -30375,23 +29982,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 5,
+    "orientation": 3,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/chorus_flower.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/door_birch_lower.png",
     "reference_scale": 1,
     "offset": [
-     -13,
-     3
+     -6,
+     2
     ],
     "votes": 1,
-    "region": 65,
+    "region": 168,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 5
+    "mapped": 0.2222,
+    "classes": 6
    }
   },
   {
@@ -30515,21 +30122,21 @@
     "method": "region",
     "orientation": 4,
     "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_0.png",
+    "phase": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/melon_stem_connected.png",
     "reference_scale": 1,
     "offset": [
-     3,
-     2
+     -23,
+     -7
     ],
     "votes": 1,
-    "region": 69,
+    "region": 134,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.3333,
+    "classes": 7
    },
    "related": [
     {
@@ -30633,23 +30240,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 4,
+    "orientation": 0,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "reference": "1.12.2:assets/minecraft/textures/items/ender_eye.png",
     "reference_scale": 1,
     "offset": [
-     -19,
-     1
+     -3,
+     -3
     ],
-    "votes": 1,
-    "region": 120,
+    "votes": 2,
+    "region": 208,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.1429,
-    "classes": 1
+    "mapped": 0.04,
+    "classes": 7
    },
    "related": [
     {
@@ -30777,23 +30384,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 7,
+    "orientation": 5,
     "candidate_scale": 2,
-    "phase": 1,
+    "phase": 0,
     "reference": "1.12.2:assets/minecraft/textures/blocks/chorus_flower.png",
     "reference_scale": 1,
     "offset": [
      -29,
-     -6
+     -7
     ],
     "votes": 1,
-    "region": 96,
+    "region": 112,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2222,
-    "classes": 5
+    "mapped": 0.1818,
+    "classes": 6
    },
    "related": [
     {
@@ -30849,23 +30456,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 6,
+    "orientation": 0,
     "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/gui/presets/madness.png",
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/gui/presets/chaos.png",
     "reference_scale": 1,
     "offset": [
-     150,
-     69
+     27,
+     141
     ],
     "votes": 2,
-    "region": 1225,
+    "region": 1296,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.0185,
-    "classes": 3
+    "mapped": 0.0079,
+    "classes": 8
    },
    "related": [
     {
@@ -30933,23 +30540,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 4,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/misc/shadow.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_powder_black.png",
+    "reference_scale": 2,
     "offset": [
-     3,
-     3
+     -14,
+     -17
     ],
-    "votes": 2,
-    "region": 1179,
+    "votes": 1,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4286,
-    "classes": 4
+    "mapped": 0.2174,
+    "classes": 11
    },
    "related": [
     {
@@ -30993,23 +30600,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 4,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/gold_block.png",
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minecraft.png",
     "reference_scale": 2,
     "offset": [
-     -26,
-     -25
+     79,
+     60
     ],
-    "votes": 1,
-    "region": 64,
+    "votes": 2,
+    "region": 1096,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "mapped": 0.5468,
+    "classes": 17
    }
   },
   {
@@ -31027,23 +30634,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 1,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/misc/shadow.png",
-    "reference_scale": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_powder_black.png",
+    "reference_scale": 2,
     "offset": [
-     3,
-     3
+     -10,
+     -17
     ],
-    "votes": 2,
-    "region": 1179,
+    "votes": 1,
+    "region": 64,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.1429,
-    "classes": 1
+    "mapped": 0.087,
+    "classes": 11
    },
    "related": [
     {
@@ -31126,20 +30733,20 @@
     "orientation": 4,
     "candidate_scale": 4,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_powder_blue.png",
     "reference_scale": 1,
     "offset": [
-     -12,
-     6
+     -23,
+     -5
     ],
     "votes": 1,
-    "region": 79,
+    "region": 112,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.2857,
-    "classes": 2
+    "mapped": 0.2,
+    "classes": 7
    }
   },
   {
@@ -31157,23 +30764,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 1,
     "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/misc/shadow.png",
-    "reference_scale": 1,
+    "phase": 1,
+    "reference": "1.12.2:assets/minecraft/textures/gui/presets/chaos.png",
+    "reference_scale": 2,
     "offset": [
-     4,
-     22
+     29,
+     34
     ],
     "votes": 2,
-    "region": 1365,
+    "region": 1444,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.3333,
-    "classes": 1
+    "mapped": 0.0088,
+    "classes": 32
    }
   },
   {
@@ -31186,23 +30793,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 3,
+    "orientation": 0,
     "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/cocoa_stage_1.png",
-    "reference_scale": 1,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/entity/enderdragon/dragon_exploding.png",
+    "reference_scale": 4,
     "offset": [
-     -10,
-     2
+     13,
+     4
     ],
-    "votes": 1,
-    "region": 86,
+    "votes": 2,
+    "region": 1119,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.5,
-    "classes": 1
+    "mapped": 0.0161,
+    "classes": 10
    }
   },
   {
@@ -31215,23 +30822,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
+    "orientation": 4,
     "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/destroy_stage_2.png",
+    "phase": 1,
+    "reference": "1.20.1:assets/minecraft/textures/gui/title/minceraft.png",
     "reference_scale": 1,
     "offset": [
-     -23,
-     -1
+     811,
+     139
     ],
-    "votes": 1,
-    "region": 208,
+    "votes": 2,
+    "region": 1225,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.6556,
-    "classes": 2
+    "mapped": 0.3606,
+    "classes": 15
    }
   },
   {
@@ -31244,23 +30851,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/misc/shadow.png",
+    "orientation": 0,
+    "candidate_scale": 4,
+    "phase": 0,
+    "reference": "1.12.2:assets/minecraft/textures/gui/widgets.png",
     "reference_scale": 1,
     "offset": [
-     17,
-     -17
+     91,
+     10
     ],
     "votes": 2,
-    "region": 588,
+    "region": 324,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.8333,
-    "classes": 1
+    "mapped": 0.7209,
+    "classes": 6
    }
   },
   {
@@ -31282,23 +30889,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 0,
+    "orientation": 3,
     "candidate_scale": 2,
-    "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "phase": 1,
+    "reference": "1.12.2:assets/minecraft/textures/blocks/bone_block_side.png",
     "reference_scale": 1,
     "offset": [
-     -19,
-     2
+     -12,
+     -3
     ],
     "votes": 1,
-    "region": 111,
+    "region": 256,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.4,
-    "classes": 1
+    "mapped": 0.2541,
+    "classes": 22
    },
    "related": [
     {
@@ -31354,23 +30961,23 @@
    "verdict": "CLEAR",
    "best": {
     "method": "region",
-    "orientation": 1,
+    "orientation": 7,
     "candidate_scale": 2,
     "phase": 0,
-    "reference": "1.12.2:assets/minecraft/textures/blocks/beetroots_stage_1.png",
+    "reference": "1.12.2:assets/minecraft/textures/items/ender_eye.png",
     "reference_scale": 1,
     "offset": [
-     -19,
-     1
+     -3,
+     -3
     ],
-    "votes": 1,
-    "region": 120,
+    "votes": 2,
+    "region": 208,
     "exact": 0.0,
     "colours": 0,
     "near": 0.0,
     "near_colours": 0,
-    "mapped": 0.1429,
-    "classes": 1
+    "mapped": 0.04,
+    "classes": 7
    },
    "related": [
     {
@@ -31427,22 +31034,22 @@
    "best": {
     "method": "region",
     "orientation": 2,
-    "candidate_scale": 2,
-    "phase": 1,
-    "reference": "1.12.2:assets/minecraft/textures/entity/illager/fangs.png",
-    "reference_scale": 2,
+    "candidate_scale": 1,
+    "phase": 0,
+    "reference": "1.20.1:assets/minecraft/textures/gui/recipe_book.png",
+    "reference_scale": 1,
     "offset": [
-     -6,
-     8
+     164,
+     200
     ],
-    "votes": 1,
-    "region": 67,
+    "votes": 2,
+    "region": 744,
     "exact": 0.0,
     "colours": 0,
-    "near": 0.0,
-    "near_colours": 0,
-    "mapped": 1.0,
-    "classes": 1
+    "near": 0.0013,
+    "near_colours": 1,
+    "mapped": 0.5767,
+    "classes": 12
    }
   }
  ]

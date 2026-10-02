@@ -10,7 +10,7 @@ target_version: v1.8.0
 development_dependency: ADR-016, ADR-019, ADR-021, ADR-026, ADR-027, ADR-031, ADR-054, ADR-060
 used_by: [ADR-062]
 supersedes: ""
-derivation_results_sha256: 6139156042e570168bc3d962a62d019a98ad916dcff52a5ebc9841cdb1006a04
+derivation_results_sha256: 27149ba84720d71af2ac5e2395127bca855ac4c180b1e00e477fa7de5661000f
 vanilla_client_sha256:
   "1.12.2": 8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f
   "1.20.1": 56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f
