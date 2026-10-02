@@ -100,12 +100,25 @@ public final class TransitLedger implements TransitLedgerView {
     // ---- Observations (sections 2 and 11) ---------------------------------------------------------------------
 
     /**
-     * A chunk tag showed these endpoints' transit sections: they count as persisted from now. Stubs paid at an endpoint
-     * of this chunk are pruned once the tag, at least 40 ticks after the acknowledgement, holds no incoming payload for
-     * them; an unreadable endgame block entity at the endpoint's position counts as holding it (review R3-L1).
+     * A chunk tag showed these endpoints' transit sections: they count as persisted from now, each only from the block
+     * entity at its ID's recorded position in this chunk; a same-ID copy elsewhere is inert (section 9, review
+     * C12R-L3). Stubs paid at an endpoint of this chunk are pruned once the tag, at least 40 ticks after the
+     * acknowledgement, holds no incoming payload for them; an unreadable endgame block entity at the endpoint's
+     * position counts as holding it (review R3-L1).
      */
     void observed(EndpointChunkIndex.ChunkKey chunk, Map<Long, Optional<UUID>> scan,
-                  Map<UUID, TransitTags.Shown> shown, long tick) {
+                  List<EndpointObservations.ShownAt> shownAt, long tick) {
+        Optional<EndgameRoot> view = service.root();
+        if (view.isEmpty()) {
+            return;
+        }
+        EndgameRoot root = view.get();
+        Map<UUID, TransitTags.Shown> shown = new HashMap<>();
+        for (EndpointObservations.ShownAt at : shownAt) {
+            if (position(root, at.id(), chunk).filter(pos -> pos == at.pos()).isPresent()) {
+                shown.put(at.id(), at.shown());
+            }
+        }
         shown.forEach((id, sections) -> {
             TransitEndpoint endpoint = loaded.get(id.toString());
             if (endpoint != null) {
@@ -114,11 +127,6 @@ public final class TransitLedger implements TransitLedgerView {
                 pending.put(id, new Pending(sections, tick));
             }
         });
-        Optional<EndgameRoot> view = service.root();
-        if (view.isEmpty()) {
-            return;
-        }
-        EndgameRoot root = view.get();
         List<TransitKey> prunable = new ArrayList<>();
         for (TransitRecord record : root.transits().records()) {
             UUID paid = record.paidEndpoint();
@@ -149,7 +157,7 @@ public final class TransitLedger implements TransitLedgerView {
         }
     }
 
-    /** The paid endpoint's recorded position when it lies in this chunk. */
+    /** The endpoint's recorded position (index record or tombstone) when it lies in this chunk. */
     private static Optional<Long> position(EndgameRoot root, UUID id, EndpointChunkIndex.ChunkKey chunk) {
         Optional<EndpointRecord> record = root.endpoint(id);
         if (record.isPresent()) {

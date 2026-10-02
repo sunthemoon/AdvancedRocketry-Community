@@ -2,7 +2,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.service;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceTags;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTags;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,9 +43,16 @@ public final class EndpointObservations {
         return found;
     }
 
-    /** The transit sections (ADR-054 section 11) of the readable endgame block entities a chunk tag holds. */
-    public static Map<UUID, TransitTags.Shown> transit(CompoundTag chunk, Set<String> endgameTypes) {
-        Map<UUID, TransitTags.Shown> found = new HashMap<>();
+    /** A transit section a chunk tag shows, with the ID and position of the block entity that holds it. */
+    public record ShownAt(UUID id, long pos, TransitTags.Shown shown) {
+    }
+
+    /**
+     * The transit sections (ADR-054 section 11) of the readable endgame block entities a chunk tag holds, each with
+     * its block entity's position: only the one at the ID's recorded position counts (review C12R-L3).
+     */
+    public static List<ShownAt> transit(CompoundTag chunk, Set<String> endgameTypes) {
+        List<ShownAt> found = new ArrayList<>();
         if (!(chunk.get(BLOCK_ENTITIES) instanceof ListTag list) || list.getElementType() != Tag.TAG_COMPOUND) {
             return found;
         }
@@ -53,7 +62,9 @@ public final class EndpointObservations {
                     && blockEntity.contains(EndgameDeviceTags.ROOT, Tag.TAG_COMPOUND)) {
                 CompoundTag root = blockEntity.getCompound(EndgameDeviceTags.ROOT);
                 if (root.contains(TransitTags.SECTION, Tag.TAG_COMPOUND)) {
-                    readId(blockEntity).ifPresent(id -> found.put(id, TransitTags.scan(root)));
+                    long pos = new BlockPos(blockEntity.getInt("x"), blockEntity.getInt("y"),
+                            blockEntity.getInt("z")).asLong();
+                    readId(blockEntity).ifPresent(id -> found.add(new ShownAt(id, pos, TransitTags.scan(root))));
                 }
             }
         }

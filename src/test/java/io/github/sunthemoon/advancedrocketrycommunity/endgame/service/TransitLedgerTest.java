@@ -296,7 +296,35 @@ final class TransitLedgerTest {
         Endpoint empty = new Endpoint(new UUID(0L, 98L));
         assertEquals(Optional.of(false), EndpointObservations.persisted(empty.chunkTag(SOURCE_POS), Set.of(TYPE),
                 empty.id, SOURCE_POS.asLong()));
-        assertEquals(Set.of(copy.id), EndpointObservations.transit(tag, Set.of(TYPE)).keySet());
+        assertEquals(List.of(copy.id), EndpointObservations.transit(tag, Set.of(TYPE)).stream()
+                .map(EndpointObservations.ShownAt::id).toList());
+    }
+
+    /**
+     * Review C12R-L3: a same-ID copy of the source in another (indexed) chunk is inert; its chunk's save does not
+     * count as the source's own, so the escrowed entry waits for the source's chunk.
+     */
+    @Test
+    void aCopysChunkSaveDoesNotPersistTheRegisteredSourcesEntry() {
+        EndgameService service = hubService();
+        Endpoint source = new Endpoint(SOURCE);
+        service.transits().attach(source);
+        assertEquals(EndgameCode.OK, service.transits().admitEscrow(SOURCE, OWNER));
+        source.source.escrow(DESTINATION, payload(), 25_000, 20, EndgameSystem.RAILGUN);
+        BlockPos copyAt = OTHER_POS.east();
+        CompoundTag chunk = new Endpoint(OTHER).chunkTag(OTHER_POS);
+        chunk.getList("block_entities", 10).add(source.chunkTag(copyAt).getList("block_entities", 10).get(0));
+        service.observe(LEVEL, new ChunkPos(copyAt).toLong(), chunk, false);
+        service.tick(10L);
+        service.tick(50L);
+        TransitKey key = new TransitKey(SOURCE, 1L);
+        assertTrue(service.root().orElseThrow().transits().record(key).isEmpty(),
+                "the copy's chunk save registered the source's entry");
+        save(service, source, SOURCE_POS);
+        service.tick(51L);
+        service.tick(91L);
+        assertTrue(service.root().orElseThrow().transits().record(key).isPresent(),
+                "the source's own chunk save did not register the entry");
     }
 
     /**

@@ -10,7 +10,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedD
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.Tombstone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTags;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -520,7 +519,7 @@ public final class EndgameService {
     }
 
     record Observation(EndpointChunkIndex.ChunkKey key, Map<Long, Optional<UUID>> scan,
-                       Map<UUID, TransitTags.Shown> transit, boolean load) {
+                       List<EndpointObservations.ShownAt> transit, boolean load) {
     }
 
     /** For commands and tests: the Level key hash a settled tombstone stores. */
