@@ -13,12 +13,15 @@ import net.minecraft.network.protocol.game.ServerboundKeepAlivePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * Release-test players for the C13 packaged-server hooks: connected players with an embedded channel instead of a
- * client, so the server treats them as real (menus, intents, rides, field lookups). {@link #pump} drains what the
- * server sends them and answers keep-alives, so a long run neither times them out nor buffers their packets.
+ * client, so the server treats them as real (menus, intents, rides, field lookups). {@link #pump} ticks them, drains
+ * what the server sends them and answers keep-alives, so a long run neither times them out nor buffers their packets.
+ * They play in creative mode: drill owners and riders stand in vacuum, and nothing in the endgame systems depends on
+ * the game mode.
  */
 final class ReleaseTestPlayers {
     private static final Map<UUID, EmbeddedChannel> CHANNELS = new HashMap<>();
@@ -34,12 +37,17 @@ final class ReleaseTestPlayers {
             Connection connection = new Connection(PacketFlow.SERVERBOUND);
             CHANNELS.put(id, new EmbeddedChannel(connection));
             server.getPlayerList().placeNewPlayer(connection, player);
+            player.setGameMode(GameType.CREATIVE);
         }
         player.teleportTo(level, at.x, at.y, at.z, 0.0F, 0.0F);
         return player;
     }
 
-    /** Drains every test player's outbound packets and answers keep-alives; forgets players who left. */
+    /**
+     * Ticks every test player as the server ticks a connected one, then drains its outbound packets and answers
+     * keep-alives; forgets players who left. The server ticks only the connections it accepted, so without this a test
+     * player would never run its player tick, nor the gravity-field lookup in it.
+     */
     static void pump(MinecraftServer server) {
         Iterator<Map.Entry<UUID, EmbeddedChannel>> entries = CHANNELS.entrySet().iterator();
         while (entries.hasNext()) {
@@ -49,6 +57,7 @@ final class ReleaseTestPlayers {
                 entries.remove();
                 continue;
             }
+            player.connection.tick();
             Object message;
             while ((message = entry.getValue().readOutbound()) != null) {
                 if (message instanceof ClientboundKeepAlivePacket keepAlive) {
