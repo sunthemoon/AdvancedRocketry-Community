@@ -125,7 +125,10 @@ public final class V180MaterialData {
                     tag(hard ? BlockTags.NEEDS_IRON_TOOL : BlockTags.NEEDS_STONE_TOOL).add(block);
                     for (ResourceLocation ore : MaterialTags.oreTags(material)) {
                         tag(blockTag(ore)).add(block);
-                        tag(Tags.Blocks.ORES).addTag(blockTag(ore));
+                        if (entry.kind() == Kind.STONE_ORE) {
+                            // Once per material: every ore has a stone variant (C15aR1-I1).
+                            tag(Tags.Blocks.ORES).addTag(blockTag(ore));
+                        }
                     }
                     tag(entry.kind() == Kind.STONE_ORE ? Tags.Blocks.ORES_IN_GROUND_STONE
                             : Tags.Blocks.ORES_IN_GROUND_DEEPSLATE).add(block);
@@ -157,7 +160,9 @@ public final class V180MaterialData {
                     case STONE_ORE, DEEPSLATE_ORE -> {
                         for (ResourceLocation ore : MaterialTags.oreTags(material)) {
                             tag(itemTag(ore)).add(item);
-                            tag(Tags.Items.ORES).addTag(itemTag(ore));
+                            if (entry.kind() == Kind.STONE_ORE) {
+                                tag(Tags.Items.ORES).addTag(itemTag(ore));
+                            }
                         }
                         tag(entry.kind() == Kind.STONE_ORE ? Tags.Items.ORES_IN_GROUND_STONE
                                 : Tags.Items.ORES_IN_GROUND_DEEPSLATE).add(item);

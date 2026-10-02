@@ -243,6 +243,10 @@ class V180MaterialResourcesTest {
             assertTrue(tagValues("items", ground).contains(id), id + " missing from item " + ground);
         }
         assertEquals(9, ores);
+        for (String registry : List.of("blocks", "items")) {
+            List<String> umbrella = tagValues(registry, "forge:ores");
+            assertEquals(new HashSet<>(umbrella).size(), umbrella.size(), "duplicate entries in " + registry + " forge:ores");
+        }
     }
 
     private static void assertTarget(JsonObject target, String tag, String block) {
