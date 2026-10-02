@@ -37,6 +37,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 
 /**
  * C13 packaged-server hooks for the ADR-054 section 7 endgame reference load, registered only with
@@ -52,14 +53,19 @@ public final class ReferenceLoadReleaseTestCommands {
     private static final int RIDE_INTERVAL_TICKS = 300;
 
     private final EndgameService service;
-    private final ReferenceLoadFixture fixture;
-    private final ReferenceLoadFixture.Load load;
+    private ReferenceLoadFixture fixture;
+    private ReferenceLoadFixture.Load load;
     private boolean listening;
 
     public ReferenceLoadReleaseTestCommands(EndgameService service) {
         this.service = Objects.requireNonNull(service, "service");
-        this.fixture = new ReferenceLoadFixture(service);
-        this.load = fixture.load;
+        reset();
+    }
+
+    /** A new load for each server: the old one holds the stopped server's Levels and menus (review C13-F8). */
+    private void reset() {
+        fixture = new ReferenceLoadFixture(service);
+        load = fixture.load;
     }
 
     public void register(RegisterCommandsEvent event) {
@@ -69,6 +75,10 @@ public final class ReferenceLoadReleaseTestCommands {
         if (!listening) {
             listening = true;
             MinecraftForge.EVENT_BUS.addListener(this::tick);
+            MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent stopped) -> {
+                reset();
+                ReleaseTestPlayers.clear();
+            });
         }
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("endgame")
                 .then(Commands.literal("release-test").requires(source -> source.hasPermission(2))

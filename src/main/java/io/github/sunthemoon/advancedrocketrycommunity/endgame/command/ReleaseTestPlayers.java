@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
  * client, so the server treats them as real (menus, intents, rides, field lookups). {@link #pump} ticks them, drains
  * what the server sends them and answers keep-alives, so a long run neither times them out nor buffers their packets.
  * They play in creative mode: drill owners and riders stand in vacuum, and nothing in the endgame systems depends on
- * the game mode.
+ * the game mode. Their channels belong to one server: {@link #clear} forgets them when it stops (review C13-F8).
  */
 final class ReleaseTestPlayers {
     private static final Map<UUID, EmbeddedChannel> CHANNELS = new HashMap<>();
@@ -65,5 +65,11 @@ final class ReleaseTestPlayers {
                 }
             }
         }
+    }
+
+    /** At server stop: the channels reach that server's players and Levels. */
+    static void clear() {
+        CHANNELS.values().forEach(EmbeddedChannel::close);
+        CHANNELS.clear();
     }
 }
