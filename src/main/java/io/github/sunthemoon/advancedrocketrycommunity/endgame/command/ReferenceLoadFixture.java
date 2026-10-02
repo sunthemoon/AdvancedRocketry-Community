@@ -50,7 +50,7 @@ import net.minecraft.world.phys.Vec3;
  * ({@link ReferenceLoadReleaseTestCommands}): its devices and how they are built. Around an Overworld column and on
  * stations it creates: 16 logical and 4 physical laser drills, 32 railguns (16 pairs), 16 black-hole generators at
  * Cygnus X-1, 64 gravity fields with 20 test players inside, and 8 elevator pairs; and synthetic root mass up to the
- * reference root (1,024 endpoints, 1,024 tombstones, and 192 transfers to which the live ones add up to about 256).
+ * reference root (1,024 endpoints, 1,024 tombstones, and 192 transfers to which the live ones add about 40).
  * Owners are stable name-based UUIDs, at most four drills or generators and eight fields each, as the per-owner
  * limits allow; each railgun pair has its own owner, so one owner's transit limit does not throttle the launches
  * (review C13-F3). The physical drills dig the deepest shaft the configuration allows, so they keep drilling through
@@ -67,8 +67,8 @@ final class ReferenceLoadFixture {
     private static final int REFERENCE_ENDPOINTS = 1024;
     private static final int REFERENCE_TOMBSTONES = 1024;
     /**
-     * Synthetic transfers with four-stack payloads; with the live railgun records the root holds about the 256 records
-     * and 1.1 MiB of the reference root, which the flush and ledger budgets are measured at. The railguns cannot also
+     * Synthetic transfers with four-stack payloads; with the live railgun records the root holds about 230 records and
+     * 1.0 MiB, close to the reference root the flush and ledger budgets are defined at. The railguns cannot also
      * launch 16 times a second: each holds at most four outbox entries, each waiting for its chunk's save and 40 ticks,
      * so the persistence gates allow about 3 escrows a second whatever the synthetic share (review C13R2-N2: with 64
      * synthetic transfers the root held 118 records at 3 a second; with these, about 230 at 2.3 a second).
