@@ -37,7 +37,10 @@ legacy behaviour and the asset findings:
   drops the output item and extends;
 - legacy ore generation defaults: copper 10 veins of 6, tin 10 of 6, rutile 6
   of 6, aluminum 1 of 16, dilithium 1 of 16 (Overworld) and 10 per chunk on the
-  Moon, iridium off;
+  Moon, iridium off (1 of 16 when enabled); legacy players got iridium from the
+  "Iridium Enriched" asteroid (`asteroidConfig.xml`), which the v1.6 resource
+  tables (ADR-052) replaced with a gold, diamond and emerald `rich_asteroid`, so
+  no current source yields iridium;
 - legacy biomes set the top and filler blocks: moon turf (highlands), dark moon
   turf (lowlands), ferric sand (hot dry rock), basalt (volcanic), snow over
   packed ice with crystals (crystal chasms), gravel (ocean spires), grass
@@ -62,7 +65,7 @@ noise Levels of vanilla blocks with a fixed biome each.
 | aluminum | ingot, nugget, dust, plate, sheet, rod, coil, block | `aluminum_ore`, `deepslate_aluminum_ore`, `raw_aluminum` |
 | tin | ingot, nugget, dust, plate, rod, block | `tin_ore`, `deepslate_tin_ore`, `raw_tin` |
 | steel | ingot, nugget, dust, plate, sheet, rod, gear, fan, block | — |
-| iridium | ingot, nugget, dust, plate, rod, block | `iridium_ore`, `raw_iridium` (no Overworld placement) |
+| iridium | ingot, nugget, dust, plate, rod, block | `iridium_ore`, `raw_iridium` (Moon and Mars placement, §5; none in the Overworld) |
 | dilithium | dust, crystal, block | `dilithium_ore`, `deepslate_dilithium_ore`, `moon_dilithium_ore` |
 | silicon | ingot, boule | — (wafer exists) |
 | titanium aluminide | ingot, nugget, dust, plate, sheet, rod, gear | — |
@@ -113,11 +116,20 @@ press acts only within loaded chunks. Its textures are drawn new.
 A Forge biome modifier `advancedrocketrycommunity:overworld_ores` adds placed
 features to `#minecraft:is_overworld` biomes: tin (10 veins of 6), rutile (6 of
 6), aluminum (1 of 16), dilithium (1 of 16), uniform between y −16 and 64 with
-deepslate variants below y 0. Iridium is not placed in the Overworld; asteroid
-and laser drill tables may list it (their table versions change only by data
-revision under ADR-052 and ADR-055). Data packs may override or remove the
-modifier, and a server switch turns it off (ADR-061 §3.5). Moon placement
-arrives with the Moon terrain in C15b.
+deepslate variants below y 0. Iridium is not placed in the Overworld, as in the
+legacy defaults. Data packs may override or remove the modifier, and a server
+switch turns it off (ADR-061 §3.5). Moon and Mars placement arrives with their
+terrain in C15b (§5).
+
+**Iridium source.** Iridium ore is placed on the Moon and Mars (§5), one vein
+of 16 per chunk, uniform between y 4 and y 40 (the legacy `IridiumPerChunk` and
+`IridiumPerClump` defaults). This replaces the legacy iridium-enriched asteroid
+as the guaranteed source: the Moon is the first rocket destination, so the
+titanium-iridium alloy (C16b) and the advanced bipropellant and nuclear engines
+(C17a) that need it stay reachable, and the recipe graph check (ADR-061 §5.3)
+finds the Moon as the Level that gives access to iridium. Asteroid and laser
+drill tables may list iridium later only by a data revision under ADR-052 or
+ADR-055; no batch depends on that.
 
 ### 5. Moon, Mars and Venus (C15b)
 
@@ -133,7 +145,8 @@ arrives with the Moon terrain in C15b.
   chunk, Moon and Mars), volcanoes (Venus, cone radius ≤ 32 and height ≤ 48,
   at most one per 16×16 chunks), ore geodes (Venus, radius ≤ 12, ores from a
   tag), charred trees (Venus), vanilla cave and canyon carvers where the legacy
-  planets had them, and the Moon dilithium ore (10 veins per chunk).
+  planets had them, the Moon dilithium ore (10 veins per chunk) and the Moon
+  and Mars iridium ore (§4).
 - Every feature is bounded in size and count, runs only at chunk generation
   and has a server switch.
 - **Seams (ADR-033, ADR-061 §6).** The three Levels keep their IDs. Chunks
@@ -177,7 +190,8 @@ startup through the existing binding checks.
   derivation check for every imported file.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
   below; unpowered; repeated pulses; unloaded neighbour), smelting and rolling
-  recipes, ore feature placement in a test chunk, a crater carver bound test,
+  recipes, ore feature placement in a test chunk (including iridium on the
+  Moon and Mars and none in the Overworld), a crater carver bound test,
   rocket landing on the new Moon terrain, each server switch.
 - S1: a packaged dedicated server generates chunks in the Moon, Mars, Venus
   and both new Levels without errors, within the tick budget of a reference
