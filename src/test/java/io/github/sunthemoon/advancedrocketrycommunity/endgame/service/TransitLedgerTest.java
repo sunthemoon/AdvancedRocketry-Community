@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSyste
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.OutboxEntry;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitDestinationState;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitEndpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitKey;
@@ -261,6 +262,48 @@ final class TransitLedgerTest {
         service.tick(184L);
         service.tick(185L);
         assertEquals(0, destination.changes, "the chunk stays dirty after the stub was pruned");
+    }
+
+    /**
+     * Review C13R2-N3: an incoming payload frozen as a conflict (here one whose item no longer decodes) is frozen and
+     * audited once, not on every pass of its endpoint.
+     */
+    @Test
+    void aFrozenIncomingPayloadIsAuditedOnce() {
+        EndgameService service = service(TransitLimits.DEFAULTS);
+        TransitKey key = transit(service, SOURCE, 1, DESTINATION,
+                record -> record.arrived().claimed(DESTINATION).acknowledged(record.dispatchEpoch()));
+        durable(service);
+        ListTag raw = new ListTag();
+        CompoundTag gizmo = new CompoundTag();
+        gizmo.putString("id", "removedmod:gizmo");
+        gizmo.putByte("Count", (byte) 1);
+        raw.add(gizmo);
+        CompoundTag section = new CompoundTag();
+        ListTag incoming = new ListTag();
+        incoming.add(TransitCodec.encodeIncoming(key, TransitPayload.raw(raw)));
+        ListTag receipts = new ListTag();
+        receipts.add(TransitCodec.encodeKey(key));
+        section.put("incoming", incoming);
+        section.put("receipts", receipts);
+        section.put("conflicts", new ListTag());
+        Endpoint destination = new Endpoint(DESTINATION);
+        destination.destination.read(section);
+        service.transits().attach(destination);
+        save(service, destination, DESTINATION_POS);
+        for (long now = 100L; now <= 300L; now++) {
+            service.tick(now);
+        }
+        assertTrue(destination.destination.incoming().containsKey(key), "the undecodable payload was dropped");
+        int lines = 0;
+        for (int page = 0; page < 64; page++) {
+            List<String> audit = service.audit().page(null, page);
+            if (audit.isEmpty()) {
+                break;
+            }
+            lines += (int) audit.stream().filter(line -> line.contains("action=INCOMING_QUARANTINED ")).count();
+        }
+        assertEquals(1, lines, "a frozen payload was frozen and audited again on later passes");
     }
 
     @Test

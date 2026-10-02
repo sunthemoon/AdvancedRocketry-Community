@@ -161,6 +161,9 @@ public final class TransitDestinationState {
         }
         for (Map.Entry<TransitKey, TransitPayload> entry : new ArrayList<>(incoming.entrySet())) {
             TransitKey key = entry.getKey();
+            if (conflicts.contains(key)) {
+                continue; // Frozen once, until a resolve (review C13R2-N3: it was frozen and audited every pass).
+            }
             Optional<TransitRecord> record = ledger.record(key);
             TransitRules.RecordFacts facts = record.map(found -> found.facts(self, epoch)).orElse(null);
             if (facts != null && !facts.paidHere() && !facts.destinedHere()) {
