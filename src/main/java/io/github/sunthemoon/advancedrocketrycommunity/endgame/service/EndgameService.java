@@ -357,8 +357,10 @@ public final class EndgameService {
         drainObservations(now);
         settleAgedAbsences(now);
         housekeep(now);
+        long ledger = System.nanoTime();
+        timings.add(EndgameTimings.Place.INDEX, ledger - start);
         ledgerPasses(now);
-        timings.add(EndgameTimings.Place.LEDGER, System.nanoTime() - start);
+        timings.add(EndgameTimings.Place.LEDGER, System.nanoTime() - ledger);
         if (data.flushPending() && now - lastCoalescedFlush >= EndgameLimits.COALESCED_FLUSH_INTERVAL_TICKS) {
             lastCoalescedFlush = now;
             flush();

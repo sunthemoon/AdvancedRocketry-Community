@@ -25,6 +25,9 @@ public final class EndgameTimings {
         GRAVITY_FIELD,
         SPACE_ELEVATOR,
         FIELD_LOOKUPS,
+        /** The endpoint index: registrations, chunk observations, absences and tombstone housekeeping. */
+        INDEX,
+        /** The ledger passes of section 11: arrivals, payload drops, reconciliation. */
         LEDGER,
         RIDES,
         FLUSH
