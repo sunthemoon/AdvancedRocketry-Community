@@ -48,6 +48,26 @@ ADR-063 revision 4 **accept with changes**. The main findings:
 
 Every finding has a disposition in [review-01-dispositions](review-01-dispositions.md).
 
+## Implementation review round 2
+
+The same reviewer confirmed the fixes on `1a9f956` ([report](reviews/REVIEW-02.md)): it
+rebuilt the export (353 GameTests, 1,404 JUnit tests, the three JAR hashes and every
+JAR entry equal to this packet), re-ran the round-1 mutants (all now fail) and new
+ones, and probed tag recipes for all three kernel machines (refused at start) and
+dilithium experience (0). Findings: 0 Critical, 0 High, 0 Medium, 1 Low, 4 Info, no
+new defect. Verdicts: **C15a accept**; **ADR-063 revision 4 accept as written**;
+**ADR-061 revision 7 accept as written**. The Low (network-side tag refusal tested
+only for rolling) and two Info notes are answered in their own commits
+([review-02-dispositions](review-02-dispositions.md)).
+
+## Changed after the run
+
+`post-run-changes.json` lists the tested files changed after the run on `a89f700`: two
+test classes (C15aR2-L1, `f00e2a3`) and the CHANGELOG's data-pack note (C15aR2-I4,
+`d18a58f`). The affected test classes were re-run on `d18a58f`
+(`post-run/junit-r2.log`, exit 0): `PrecisionAssemblerRecipeTest` 8 tests,
+`BoundedItemIngredientCodecTest` 3, `RollingMachineRecipeTest` 5, all passing.
+
 ## Delivered ledger units
 
 | Unit | Disposition | Delivery |
@@ -186,5 +206,6 @@ The three JARs (`artifacts.json`, with every entry in `artifact-entries.json`): 
 - The CI workflow on GitHub (this branch has no pull request).
 - ADR-063 revision 4 and ADR-061 revision 7 are proposed, not accepted.
 
-Next: the owner's decision on ADR-063 revision 4 and ADR-061 revision 7 (including the
-iron-plate route), then C15b in [COMPLETION-PLAN](../../status/COMPLETION-PLAN.md).
+Next: the owner's decision on ADR-063 revision 4 and ADR-061 revision 7 (both recommended
+for acceptance as written by the review; including the iron-plate route), then C15b in
+[COMPLETION-PLAN](../../status/COMPLETION-PLAN.md).

@@ -1380,9 +1380,39 @@
     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   {
-    "bytes": 14,
+    "bytes": 41,
+    "path": "post-run/head.txt",
+    "sha256": "608d9b754296cdb7b371759879d47bd09dc9469fbd62b5468f921a4c8150e5a6"
+  },
+  {
+    "bytes": 2,
+    "path": "post-run/junit-r2.exit",
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+    "bytes": 1425,
+    "path": "post-run/junit-r2.log",
+    "sha256": "7d8a788d7fe3bc20313b59b3b1e4f83624aa7acf3cf730cb0588858435b7a600"
+  },
+  {
+    "bytes": 2059,
+    "path": "post-run/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipeTest.xml",
+    "sha256": "8ab10714d40b27c041219ab8d20493dc6cf705524c3695273037cae0cdf0b7db"
+  },
+  {
+    "bytes": 957,
+    "path": "post-run/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodecTest.xml",
+    "sha256": "f237d4719a42415c37c14266cf46f035c9b0a734ea22d7dc99f4255f2b67d59d"
+  },
+  {
+    "bytes": 1327,
+    "path": "post-run/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipeTest.xml",
+    "sha256": "ec93c1269414d431190461de246fad2cba7ba8b3972df763674c38f5620a302f"
+  },
+  {
+    "bytes": 1207,
     "path": "post-run-changes.json",
-    "sha256": "de0d5c1d1a8e641b7b33343d6e48c1d5752d8f0f4f5a7fe82bb7035908f364ed"
+    "sha256": "af9cbb93ee67fef4c9ba3a28aae096334860aeed841a738bde2ce22815e5a8ac"
   },
   {
     "bytes": 160,
@@ -1565,13 +1595,13 @@
     "sha256": "3cb452c671385e06cd5c6b359d0b5a0b2b220b4bfb14b59eb91d11470e02d885"
   },
   {
-    "bytes": 13590,
+    "bytes": 14806,
     "path": "scripts/verification-template.md",
-    "sha256": "37789f832e8768b0e900341b48127074378d693d0ec6214910e724854b1af129"
+    "sha256": "18a7fa3e65894ff9c5f79fe339188b72e738628d456757aad7a6477e4001747e"
   },
   {
-    "bytes": 4526,
+    "bytes": 4599,
     "path": "scripts/write_verification.py",
-    "sha256": "4b1aeff8a5d9a5bb8da279db45b83641d0d369210e459164b1242a485a49870d"
+    "sha256": "00c4778dab9da958ab4b97af5b458e1b6243f53ccded04fdc7c1e6a1a7fe8c44"
   }
 ]

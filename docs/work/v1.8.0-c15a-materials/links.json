@@ -322,6 +322,14 @@
     },
     {
       "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
+      "target": "reviews/REVIEW-02.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
+      "target": "review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
       "target": "../../status/COMPLETION-PLAN.md"
     },
     {
@@ -331,6 +339,10 @@
     {
       "document": "docs/work/v1.8.0-c15a-materials/review-01-dispositions.md",
       "target": "VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/review-02-dispositions.md",
+      "target": "reviews/REVIEW-02.md"
     },
     {
       "document": "docs/work/v1.8.0-implementation-log.md",
@@ -387,6 +399,10 @@
     {
       "document": "docs/work/v1.8.0-implementation-log.md",
       "target": "v1.8.0-c15a-materials/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15a-materials/review-02-dispositions.md"
     }
   ],
   "result": "PASS",
