@@ -238,6 +238,13 @@ public final class ReferenceLoadReleaseTestCommands {
                 for (int slot = 0; slot < target.storage().receive().getSlots(); slot++) {
                     target.storage().receive().extractItem(slot, 64, false);
                 }
+                // One request per 20 ticks, one attempt each: the attempt since the last look escrowed if it moved
+                // the cadence and left OK (a refusal moves the cadence too).
+                long last = railgun.lastLaunch();
+                if (last != load.lastLaunch.getOrDefault(source.pos, last) && railgun.lastCode() == EndgameCode.OK) {
+                    load.escrows++;
+                }
+                load.lastLaunch.put(source.pos, last);
                 railgun.requestLaunch(source.owner);
                 load.launches++;
             }
@@ -309,7 +316,8 @@ public final class ReferenceLoadReleaseTestCommands {
         double mspt = server.getAverageTickTime();
         return report(context, "refload status built=" + load.built + " driving=" + load.driving + " drills_running="
                 + running + " fields_active=" + active + " generators_burning=" + burning + " elevators_bound=" + bound
-                + " launches_requested=" + load.launches + " rides_requested=" + load.rides + " root_records="
+                + " launches_requested=" + load.launches + " launches_escrowed=" + load.escrows + " rides_requested="
+                + load.rides + " root_records="
                 + service.root().map(root -> root.transits().size()).orElse(-1) + " root_endpoints="
                 + service.root().map(root -> root.endpoints().size()).orElse(-1) + " root_tombstones="
                 + service.root().map(root -> root.youngTombstones().size() + root.settledTombstones().size())

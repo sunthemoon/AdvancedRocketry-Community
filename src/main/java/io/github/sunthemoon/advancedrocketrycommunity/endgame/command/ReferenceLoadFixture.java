@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHol
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
@@ -49,8 +50,10 @@ import net.minecraft.world.phys.Vec3;
  * ({@link ReferenceLoadReleaseTestCommands}): its devices and how they are built. Around an Overworld column and on
  * stations it creates: 16 logical and 4 physical laser drills, 32 railguns (16 pairs), 16 black-hole generators at
  * Cygnus X-1, 64 gravity fields with 20 test players inside, and 8 elevator pairs; and synthetic root mass up to the
- * reference root (1,024 endpoints, 1,024 tombstones, 256 transfers with the live ones). Owners are stable name-based
- * UUIDs, at most four drills or generators and eight fields each, as the per-owner limits allow.
+ * reference root (1,024 endpoints, 1,024 tombstones, 256 transfers once the live ones fill the global limit). Owners
+ * are stable name-based UUIDs, at most four drills or generators and eight fields each, as the per-owner limits allow;
+ * each railgun pair has its own owner, so one owner's transit limit does not throttle the launches (review C13-F3).
+ * The physical drills dig the deepest shaft the configuration allows, so they keep drilling through the measurement.
  */
 final class ReferenceLoadFixture {
     static final int FIELD_VISITORS = 20;
@@ -91,9 +94,12 @@ final class ReferenceLoadFixture {
         final List<Elevator> elevators = new ArrayList<>();
         final List<Device> markers = new ArrayList<>();
         final Map<UUID, Long> nextClick = new HashMap<>();
+        /** Each railgun source's last escrow tick when the driver last looked, to count the launches that left. */
+        final Map<BlockPos, Long> lastLaunch = new HashMap<>();
         boolean built;
         boolean driving;
         long launches;
+        long escrows;
         long rides;
         int nextRide;
     }
@@ -125,6 +131,7 @@ final class ReferenceLoadFixture {
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         int ownerIndex = 0;
         CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
+        CommonConfig.LASER_DRILL_MAX_DEPTH.set(LaserDrillSettings.MAX_DEPTH);
         // Logical drills: four owners, four drills each, on one station per owner orbiting Earth.
         for (int o = 0; o < LOGICAL_DRILL_OWNERS; o++) {
             UUID owner = owner(ownerIndex++);
@@ -138,11 +145,11 @@ final class ReferenceLoadFixture {
             UUID owner = owner(ownerIndex++);
             BlockPos pad = station(server, space, owner, CelestialIds.EARTH_ID);
             load.drills.add(drill(space, pad, owner, true));
-            BlockPos marker = new BlockPos(x0 + 48 * p, 160, z0 - 96);
+            BlockPos marker = new BlockPos(x0 + 48 * p, 300, z0 - 96);
             forceChunk(overworld, marker);
             overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
             ((LaserTargetBlockEntity) overworld.getBlockEntity(marker)).assignOwner(owner);
-            for (int depth = 1; depth <= 64; depth++) {
+            for (int depth = 1; depth <= LaserDrillSettings.MAX_DEPTH; depth++) {
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dz = -1; dz <= 1; dz++) {
                         BlockPos cell = marker.offset(dx, -depth, dz);
@@ -188,9 +195,9 @@ final class ReferenceLoadFixture {
             ReleaseTestPlayers.place(server, visitor(v), "arceVisitor" + v, overworld,
                     Vec3.atCenterOf(field.pos.above(2)));
         }
-        // Railguns: one owner, sixteen pairs 24 blocks apart in z.
-        UUID railgunOwner = owner(ownerIndex++);
+        // Railguns: sixteen pairs 24 blocks apart in z, one owner each.
         for (int r = 0; r < RAILGUN_PAIRS; r++) {
+            UUID railgunOwner = owner(ownerIndex++);
             BlockPos source = new BlockPos(x0 + 16 * r, 200, z0 + 160);
             BlockPos destination = source.offset(0, 0, 24);
             forceChunk(overworld, source);
@@ -210,8 +217,8 @@ final class ReferenceLoadFixture {
             ElevatorReleaseTestCommands.Built built = ElevatorReleaseTestCommands.buildPair(server, anchor, owner, rider);
             load.elevators.add(new Elevator(built.stationId(), anchor, built.terminalPos(), owner, rider));
         }
-        int synthetic = synthetic(load.drills.size() + load.markers.size() + load.generators.size()
-                + load.fields.size() + 2 * RAILGUN_PAIRS + 2 * ELEVATOR_PAIRS);
+        // Root endpoints are the ledger endpoints and laser markers; drills, generators and fields are not.
+        int synthetic = synthetic(load.markers.size() + 2 * RAILGUN_PAIRS + 2 * ELEVATOR_PAIRS);
         load.built = true;
         return "refload built drills=" + load.drills.size() + " markers=" + load.markers.size()
                 + " generators=" + load.generators.size() + " fields=" + load.fields.size() + " railguns="
