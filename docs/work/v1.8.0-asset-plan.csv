@@ -8,8 +8,8 @@ order,pattern,handling,plan,units,reason
 7,textures/blocks/crystallizer_active.png,REVIEW,C16c,block:crystallizer,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 8,textures/blocks/cuttingmachine.png,REVIEW,C16b,block:cuttingMachine,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 9,textures/blocks/cuttingmachine_active.png,REVIEW,C16b,block:cuttingMachine,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-10,textures/blocks/fluid/oxygen_flow.png,REVIEW,C16a,fluid:oxygen,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/water_flow.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.88); origin review"
-11,textures/blocks/fluid/oxygen_still.png,REVIEW,C16a,fluid:oxygen,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/water_still.png#frame0, orientation frame0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.84); origin review"
+10,textures/blocks/fluid/oxygen_flow.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/water_flow.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.94)"
+11,textures/blocks/fluid/oxygen_still.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/water_still.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
 12,textures/blocks/forcefieldprojector.png,REVIEW,C17b,block:forceField block:forceFieldProjector,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 13,textures/blocks/forcefieldprojector_off.png,REVIEW,C17b,block:forceField block:forceFieldProjector,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 14,textures/blocks/forcefieldprojectorfront.png,REVIEW,C17b,block:forceField block:forceFieldProjector,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.87); origin review"
@@ -26,290 +26,306 @@ order,pattern,handling,plan,units,reason
 25,textures/blocks/machineelectrolyzer.png,REVIEW,C18d,block:electrolyser,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 26,textures/blocks/machineelectrolyzer_active.png,REVIEW,C18d,block:electrolyser,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 27,textures/blocks/machineorientationcontrol.png,REVIEW,C17b,block:orientationController,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-28,textures/blocks/machineprecisionlaseretcher.png,REVIEW,C16c,block:precisionlaseretcher,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/stripe_downleft.png, scale -4 (overlap 0.11 over 2 colours, mask 0.47, rank 0.00); origin review"
-29,textures/blocks/machinescrubber.png,REVIEW,C18a,block:oxygenScrubber,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-30,textures/blocks/machinescrubber_active.png,REVIEW,C18a,block:oxygenScrubber,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-31,textures/blocks/monitorfrontleft.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/square_top_right.png contains it at (11, 14) (orientation 2; 99% of its pixels equal, 2 colours); origin review"
-32,textures/blocks/monitorfrontmid.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/square_bottom_right.png contains it at (11, 12) (orientation 0; 100% of its pixels equal, 2 colours); origin review"
-33,textures/blocks/monitormoon.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/diagonal_up_right.png, scale -4 (overlap 0.11 over 2 colours, mask 0.47, rank 0.00); origin review"
-34,textures/blocks/monitorplanet.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.13 over 2 colours, mask 0.47, rank 0.00); origin review"
-35,textures/blocks/monitorplanet_active.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.13 over 2 colours, mask 0.47, rank 0.00); origin review"
-36,textures/blocks/monitorrocket.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.24 over 2 colours, mask 0.47, rank 0.00); origin review"
-37,textures/blocks/monitorsatellite.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png, scale -4 (overlap 0.20 over 2 colours, mask 0.47, rank 0.00); origin review"
-38,textures/blocks/monitorside.png,REVIEW,C17a,block:monitoringStation,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-39,textures/blocks/moon_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-40,textures/blocks/moon_turf_dark.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-41,textures/blocks/panelside.png,REVIEW,C18b,block:suitWorkStation,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/entity/decorated_pot/decorated_pot_side.png, orientation 4 (overlap 0.00 over 0 colours, mask 0.88, rank 0.83); origin review"
-42,textures/blocks/plank_blue.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/planks_big_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-43,textures/blocks/platepresser_bottom.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
-44,textures/blocks/platepresser_internal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
-45,textures/blocks/platepresser_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
-46,textures/blocks/platepresser_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/furnace_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
-47,textures/blocks/precisionassemblerfront.png,REVIEW,C18d,block:precisionassemblingmachine,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-48,textures/blocks/precisionassemblerfront_active.png,REVIEW,C18d,block:precisionassemblingmachine,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-49,textures/blocks/pumpbottom.png,REVIEW,C16a,block:blockPump,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-50,textures/blocks/pumpside.png,REVIEW,C16a,block:blockPump,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-51,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-52,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 0.97, rank 0.98)"
-53,textures/blocks/qcrucible_top.png,REVIEW,C16c,block:quartzcrucible,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/composter_top.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.78); origin review"
-54,textures/blocks/railgun.png,REVIEW,C18d,block:railgun,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/stripe_center.png, scale -4 (overlap 0.15 over 2 colours, mask 0.47, rank 0.00); origin review; AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-55,textures/blocks/satelliteassembler.png,REVIEW,C18d,block:satelliteBuilder,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-56,textures/blocks/satellitebay.png,REVIEW,C17c,block_variant:loader/1,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/small_stripes.png, scale -4 (overlap 0.11 over 2 colours, mask 0.47, rank 0.00); origin review; AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-57,textures/blocks/seal.png,REVIEW,C18a,block:pipeSealer,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/diamond_block.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
-58,textures/blocks/smallairlockdoor_lower.png,REVIEW,C18a,block:airlock_door,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png, orientation 1 (overlap 0.20 over 2 colours, mask 1.00, rank 0.44); origin review"
-59,textures/blocks/smallairlockdoor_upper.png,REVIEW,C18a,block:airlock_door,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png, orientation 7 (overlap 0.12 over 2 colours, mask 0.75, rank 0.00); origin review"
-60,textures/blocks/solar.png,REVIEW,C17c,block:solarGenerator,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-61,textures/blocks/starshipcontrolpanel.png,REVIEW,C17b,block:warpMonitor,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-62,textures/blocks/stationlight.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
-63,textures/blocks/warpcore.png,REVIEW,C18d,block:warpCore,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-64,textures/env/earth_phases.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/moon_phases.png, orientation 0 (overlap 0.95 over 43 colours, mask 1.00, rank 1.00)"
-65,textures/env/sun2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale 4 (overlap 0.00 over 0 colours, mask 0.90, rank 0.98)"
-66,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/furnace.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.92, rank 0.37)"
-67,textures/gui/buttons/buttonautoeject.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/advancements/tabs.png contains it at (102, 94) (orientation 7; 69% of its pixels equal, 3 colours); origin review"
-68,textures/gui/buttons/tabdata.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/advancements/widgets.png contains it at (2, 156) (orientation 0; 52% of its pixels equal, 4 colours); origin review"
-69,textures/gui/buttons/tabtemplate.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/advancements/tabs.png contains it at (129, 92) (orientation 5; 81% of its pixels equal, 4 colours)"
-70,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/horse.png, orientation 7 (overlap 0.45 over 5 colours, mask 0.82, rank 0.00)"
-71,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/furnace.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.94, rank 0.43)"
-72,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.56 over 5 colours, mask 0.92, rank 0.46)"
-73,textures/gui/genericneibackground.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.92, rank 0.41)"
-74,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 0 (overlap 0.66 over 5 colours, mask 0.93, rank 0.49)"
-75,textures/gui/precisionassembler.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.58 over 5 colours, mask 0.93, rank 0.42)"
-76,textures/gui/progressbars/progressbars.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 0 (overlap 0.20 over 4 colours, mask 0.60, rank 0.00); origin review"
-77,textures/gui/rocketbuilder.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 7 (overlap 0.37 over 5 colours, mask 0.89, rank 0.19)"
-78,textures/gui/rockethud.png,REVIEW,C18d,event:RocketEventHandler.onScreenRender(Post),"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_items.png, orientation 7 (overlap 0.13 over 2 colours, mask 0.33, rank 0.00); origin review"
-79,textures/items/advancedsolarpanel.png,REVIEW,C18d,item_variant:satellitePowerSource/1,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-80,textures/items/antifogvisor.png,REVIEW,C18b,item_variant:itemUpgrade/4,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png, scale -4 (overlap 0.12 over 2 colours, mask 0.31, rank 0.00); origin review"
-81,textures/items/atmanalyzer.png,REVIEW,C18a,item:atmAnalyser,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-82,textures/items/basicsolarpanel.png,REVIEW,C18d,item_variant:satellitePowerSource/0,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-83,textures/items/beaconfinder.png,REVIEW,C17c,item:beaconFinder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png, scale -4 (overlap 0.16 over 2 colours, mask 0.35, rank 0.00); origin review"
-84,textures/items/bioniclegs.png,REVIEW,C18b,item_variant:itemUpgrade/2,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-85,textures/items/carbonbrick.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_ingot.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-86,textures/items/earthbrightvisor.png,REVIEW,C18b,item_variant:itemUpgrade/5,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/triangles_bottom.png, scale -4 (overlap 0.16 over 2 colours, mask 0.35, rank 0.00); origin review"
-87,textures/items/landingboots.png,REVIEW,C18b,item_variant:itemUpgrade/3,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-88,textures/items/pressuretank0.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-89,textures/items/pressuretank1.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-90,textures/items/pressuretank2.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-91,textures/items/pressuretank3.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-92,textures/items/qcrucible.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/cauldron.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-93,textures/items/satellitepowersource0.png,REVIEW,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-94,textures/items/satellitepowersource1.png,REVIEW,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-95,textures/items/sawbladeiron.png,REVIEW,C16b,item_variant:sawBladeIron/0 block:sawBlade,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-96,textures/items/space_boots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/iron_boots.png, orientation 0 (overlap 0.27 over 2 colours, mask 1.00, rank 0.68); origin review"
-97,textures/items/space_chestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
-98,textures/items/space_helmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
-99,textures/items/space_leggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
-100,textures/items/spaceboots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/iron_boots.png, orientation 0 (overlap 0.27 over 2 colours, mask 1.00, rank 0.68); origin review"
-101,textures/items/spacechestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
-102,textures/items/spacechestplate_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/diamond_chestplate.png, orientation 0 (overlap 0.13 over 2 colours, mask 0.15, rank 0.00); origin review"
-103,textures/items/spacehelmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
-104,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
-105,textures/models/girder.png,REVIEW,C18d,block:rocketBuilder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/curly_border.png, scale -4 (overlap 0.18 over 2 colours, mask 0.47, rank 0.00); origin review"
-106,textures/models/jetpack.png,REVIEW,C18b,item:jetPack,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/creeper.png, scale 2 (overlap 0.18 over 2 colours, mask 0.42, rank 0.00); origin review"
-107,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png, orientation 6 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
-108,textures/planets/asteroid.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-109,textures/planets/atmglow.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-110,textures/planets/atmosphere.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-111,textures/planets/atmosphere2.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-112,textures/planets/carbonworld.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-113,textures/planets/desertworld.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-114,textures/planets/earthlike.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-115,textures/planets/gasgiantblue.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-116,textures/planets/gasgiantbrown.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-117,textures/planets/gasgiantred.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-118,textures/planets/iceworld.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-119,textures/planets/marslike.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-120,textures/planets/moon.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-121,textures/planets/rings.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-122,textures/planets/ringshadow.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-123,textures/planets/shadow3.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-124,textures/planets/venusian.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-125,textures/planets/waterworld.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-126,textures/blocks/fluid/oxygen_flow.png.mcmeta,REVIEW,C16a,fluid:oxygen,"animation metadata of oxygen_flow.png, which is REVIEW for its pixels"
-127,textures/blocks/fluid/oxygen_still.png.mcmeta,REVIEW,C16a,fluid:oxygen,"animation metadata of oxygen_still.png, which is REVIEW for its pixels"
-128,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-129,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-130,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-131,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-132,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-133,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-134,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-135,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-136,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
-137,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
-138,lang/*.lang,REVIEW,C18d,-,community translations; each needs its own contributor provenance before use
-139,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
-140,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
-141,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
-142,textures/blocks/fluid/lava_*,REVIEW,C16a,-,shares the vanilla lava file names; origin review
-143,textures/font.png,EXCLUDE,-,-,no planned consumer
-144,textures/env/sun.png,REVIEW,C18d,-,shares the vanilla sun file name; origin review
-145,textures/planets/shadow.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-146,textures/gui/eyecandy/earth.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-147,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
-148,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
-149,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
-150,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
-151,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-152,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-153,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-154,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-155,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-156,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
-157,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
-158,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-159,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-160,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
-161,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
-162,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
-163,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
-164,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
-165,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-166,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-167,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-168,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-169,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-170,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
-171,textures/blocks/machinegeneric.png,REVIEW,C16a,libvulpes:java/blockAdvStructureBlock,byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review
-172,models/item/models/motor.*,REVIEW,C16a,libvulpes:java/blockMotor,motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established
-173,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
-174,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
-175,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
-176,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
-177,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
-178,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
-179,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
-180,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
-181,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
-182,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
-183,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
-184,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
-185,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
-186,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
-187,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
-188,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
-189,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
-190,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
-191,textures/blocks/machinenuclear.png,IMPORT,C17a,block:nuclearcore,nuclear core
-192,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
-193,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
-194,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
-195,textures/blocks/fuelingmachine.png,IMPORT,C17a,block:fuelingStation,fueling
-196,textures/blocks/guidancecomputer*.png,IMPORT,C17a,block:guidanceComputer,guidance computer visual refresh
-197,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
-198,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
-199,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
-200,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
-201,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
-202,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
-203,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-204,textures/blocks/panelside*.png,IMPORT,C18b,block:suitWorkStation,suit workstation and panels
-205,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
-206,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
-207,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
-208,textures/blocks/lens1.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-209,textures/blocks/vacuumlaserfront.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-210,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
-211,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
-212,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
-213,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
-214,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
-215,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
-216,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
-217,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
-218,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
-219,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
-220,textures/items/space*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit visual refresh
-221,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-222,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
-223,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
-224,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
-225,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
-226,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
-227,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
-228,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
-229,textures/items/userinterface.png,IMPORT,C16d,item_variant:misc/0,components
-230,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
-231,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-232,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
-233,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
-234,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
-235,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
-236,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-237,textures/armor/spacesuit_*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit armor layers
-238,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
-239,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
-240,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
-241,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
-242,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-243,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
-244,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
-245,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
-246,textures/gui/buttons/*warp*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
-247,textures/gui/buttons/*planet*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
-248,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
-249,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
-250,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-251,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
-252,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
-253,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-254,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
-255,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
-256,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
-257,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-258,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
-259,models/areagravitycontroller.obj,IMPORT,C18d,block:gravityMachine,machine OBJ model for the visual batch
-260,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
-261,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
-262,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
-263,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
-264,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
-265,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
-266,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
-267,models/electrolyser.obj,IMPORT,C18d,block:electrolyser,machine OBJ model for the visual batch
-268,models/lathe.obj,IMPORT,C18d,block:lathe,machine OBJ model for the visual batch
-269,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
-270,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
-271,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
-272,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
-273,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
-274,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
-275,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
-276,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
-277,models/warpcore.obj,IMPORT,C18d,block:warpCore,machine OBJ model for the visual batch
-278,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
-279,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
-280,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
-281,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
-282,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
-283,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
-284,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
-285,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
-286,textures/models/areagravitycontroller.png,IMPORT,C18d,block:gravityMachine,model texture for the visual batch
-287,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
-288,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
-289,textures/models/centrifuge.png,IMPORT,C18d,block:centrifuge,model texture for the visual batch
-290,textures/models/chemicalreactor.png,IMPORT,C18d,block:chemicalReactor,model texture for the visual batch
-291,textures/models/crystalliser.png,IMPORT,C18d,block:crystallizer,model texture for the visual batch
-292,textures/models/cuttingmachine.png,IMPORT,C18d,block:cuttingMachine,model texture for the visual batch
-293,textures/models/diamondmetal.png,IMPORT,C18d,-,model texture for the visual batch
-294,textures/models/electrolyser.png,IMPORT,C18d,block:electrolyser,model texture for the visual batch
-295,textures/models/fan.png,IMPORT,C18d,-,model texture for the visual batch
-296,textures/models/grid.png,IMPORT,C18d,block:rocketBuilder,model texture for the visual batch
-297,textures/models/lathe.png,IMPORT,C18d,block:lathe,model texture for the visual batch
-298,textures/models/metalplate.png,IMPORT,C18d,-,model texture for the visual batch
-299,textures/models/observatory.png,IMPORT,C18d,block:observatory,model texture for the visual batch
-300,textures/models/orbitallaserdrill.png,IMPORT,C18d,block:spaceLaser,model texture for the visual batch
-301,textures/models/precisionassembler.png,IMPORT,C18d,block:precisionassemblingmachine,model texture for the visual batch
-302,textures/models/precisionlaseretcher.png,IMPORT,C18d,block:precisionlaseretcher,model texture for the visual batch
-303,textures/models/railgun.png,IMPORT,C18d,block:railgun,model texture for the visual batch
-304,textures/models/rollingmachine.png,IMPORT,C18d,block:rollingMachine,model texture for the visual batch
-305,textures/models/solararray.png,IMPORT,C18d,block:solararray,model texture for the visual batch
-306,textures/models/spaceelevator.png,IMPORT,C18d,block:spaceElevatorController,model texture for the visual batch
-307,textures/models/spaceelevatorcapsule.png,IMPORT,C18d,entity:ARSpaceElevatorCapsule,model texture for the visual batch
-308,textures/models/warpcore.png,IMPORT,C18d,block:warpCore,model texture for the visual batch
-309,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
-310,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-311,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
-312,textures/particle/*,IMPORT,C18d,-,particles
-313,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
-314,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it
+28,textures/blocks/machinescrubber.png,REVIEW,C18a,block:oxygenScrubber,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+29,textures/blocks/machinescrubber_active.png,REVIEW,C18a,block:oxygenScrubber,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+30,textures/blocks/monitorfrontleft.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.32 over 2 colours, mask 0.47, rank 0.00); origin review"
+31,textures/blocks/monitorfrontmid.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.32 over 2 colours, mask 0.47, rank 0.00); origin review"
+32,textures/blocks/monitorfrontright.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/cross.png, region of 80 px at offset (24, -11) (orientation 7, scale 1/1; exact 0.90 over 2 colours, near 0.90, mapped 0.92); origin review"
+33,textures/blocks/monitormoon.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/beacon.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.89); origin review"
+34,textures/blocks/monitorplanet.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/beacon.png, orientation 7 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+35,textures/blocks/monitorplanet_active.png,REVIEW,C17a,block:monitoringStation,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/beacon.png, orientation 7 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+36,textures/blocks/monitorside.png,REVIEW,C17a,block:monitoringStation,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+37,textures/blocks/moon_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+38,textures/blocks/moon_turf_dark.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+39,textures/blocks/panelside.png,REVIEW,C18b,block:suitWorkStation,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/entity/decorated_pot/decorated_pot_side.png, orientation 4 (overlap 0.00 over 0 colours, mask 0.88, rank 0.83); origin review"
+40,textures/blocks/plank_blue.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/planks_big_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+41,textures/blocks/platepresser_bottom.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
+42,textures/blocks/platepresser_internal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
+43,textures/blocks/platepresser_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
+44,textures/blocks/platepresser_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/furnace_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
+45,textures/blocks/precisionassemblerfront.png,REVIEW,C18d,block:precisionassemblingmachine,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+46,textures/blocks/precisionassemblerfront_active.png,REVIEW,C18d,block:precisionassemblingmachine,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+47,textures/blocks/pumpbottom.png,REVIEW,C16a,block:blockPump,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+48,textures/blocks/pumpside.png,REVIEW,C16a,block:blockPump,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+49,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+50,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 0.97, rank 0.98)"
+51,textures/blocks/qcrucible_top.png,REVIEW,C16c,block:quartzcrucible,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/composter_top.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.78); origin review"
+52,textures/blocks/railgun.png,REVIEW,C18d,block:railgun,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+53,textures/blocks/satelliteassembler.png,REVIEW,C18d,block:satelliteBuilder,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+54,textures/blocks/satellitebay.png,REVIEW,C17c,block_variant:loader/1,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+55,textures/blocks/seal.png,REVIEW,C18a,block:pipeSealer,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/diamond_block.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+56,textures/blocks/solar.png,REVIEW,C17c,block:solarGenerator,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+57,textures/blocks/starshipcontrolpanel.png,REVIEW,C17b,block:warpMonitor,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+58,textures/blocks/stationlight.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
+59,textures/blocks/warpcore.png,REVIEW,C18d,block:warpCore,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+60,textures/env/earth_phases.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/moon_phases.png, orientation 0 (overlap 0.95 over 42 colours, mask 1.00, rank 1.00)"
+61,textures/env/sun2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale 4 (overlap 0.00 over 0 colours, mask 0.90, rank 0.98)"
+62,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/brewing_stand.png, orientation 0 (overlap 0.56 over 4 colours, mask 0.94, rank 0.39)"
+63,textures/gui/buttons/buttonautoeject.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_item_search.png, region of 576 px at offset (73, 2) (orientation 7, scale 1/1; exact 0.50 over 3 colours, near 0.50, mapped 0.59); origin review"
+64,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/horse.png, orientation 7 (overlap 0.48 over 3 colours, mask 0.82, rank 0.00)"
+65,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 6016 px at offset (0, -19) (orientation 0, scale 2/2; exact 0.76 over 5 colours, near 0.00, mapped 0.00)"
+66,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 6016 px at offset (0, -19) (orientation 0, scale 2/2; exact 0.76 over 5 colours, near 0.00, mapped 0.00)"
+67,textures/gui/genericneibackground.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, region of 256 px at offset (-176, -198) (orientation 6, scale 1/1; exact 1.00 over 94 colours, near 0.00, mapped 0.00)"
+68,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 6070 px at offset (0, -19) (orientation 0, scale 2/2; exact 0.86 over 5 colours, near 0.00, mapped 0.00)"
+69,textures/gui/precisionassembler.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.56 over 3 colours, mask 0.93, rank 0.47)"
+70,textures/gui/progressbars/progressbars.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/obsidian.png, region of 256 px at offset (0, -140) (orientation 0, scale 1/1; exact 1.00 over 72 colours, near 0.00, mapped 0.00)"
+71,textures/gui/rocketbuilder.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 7 (overlap 0.39 over 4 colours, mask 0.90, rank 0.28)"
+72,textures/items/advancedsolarpanel.png,REVIEW,C18d,item_variant:satellitePowerSource/1,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+73,textures/items/antifogvisor.png,REVIEW,C18b,item_variant:itemUpgrade/4,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png, scale -4 (overlap 0.15 over 3 colours, mask 0.51, rank 0.00); origin review"
+74,textures/items/atmanalyzer.png,REVIEW,C18a,item:atmAnalyser,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+75,textures/items/basicsolarpanel.png,REVIEW,C18d,item_variant:satellitePowerSource/0,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+76,textures/items/beaconfinder.png,REVIEW,C17c,item:beaconFinder,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png, scale -4 (overlap 0.17 over 3 colours, mask 0.54, rank 0.00); origin review"
+77,textures/items/bioniclegs.png,REVIEW,C18b,item_variant:itemUpgrade/2,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+78,textures/items/carbonbrick.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_ingot.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+79,textures/items/earthbrightvisor.png,REVIEW,C18b,item_variant:itemUpgrade/5,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png, scale -4 (overlap 0.17 over 3 colours, mask 0.54, rank 0.00); origin review"
+80,textures/items/landingboots.png,REVIEW,C18b,item_variant:itemUpgrade/3,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+81,textures/items/pressuretank0.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+82,textures/items/pressuretank1.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+83,textures/items/pressuretank2.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+84,textures/items/pressuretank3.png,REVIEW,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+85,textures/items/qcrucible.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/cauldron.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+86,textures/items/satellitepowersource0.png,REVIEW,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+87,textures/items/satellitepowersource1.png,REVIEW,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+88,textures/items/sawbladeiron.png,REVIEW,C16b,item_variant:sawBladeIron/0 block:sawBlade,"AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+89,textures/items/space_boots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/chainmail_boots.png, orientation 0 (overlap 0.27 over 3 colours, mask 1.00, rank 0.64); origin review"
+90,textures/items/space_chestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
+91,textures/items/space_helmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
+92,textures/items/space_leggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
+93,textures/items/spaceboots.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/chainmail_boots.png, orientation 0 (overlap 0.27 over 3 colours, mask 1.00, rank 0.64); origin review"
+94,textures/items/spacechestplate.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
+95,textures/items/spacehelmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
+96,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
+97,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png, orientation 6 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
+98,textures/planets/asteroid.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+99,textures/planets/atmglow.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+100,textures/planets/atmosphere.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+101,textures/planets/atmosphere2.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+102,textures/planets/carbonworld.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+103,textures/planets/desertworld.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+104,textures/planets/earthlike.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+105,textures/planets/gasgiantblue.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+106,textures/planets/gasgiantbrown.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+107,textures/planets/gasgiantred.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+108,textures/planets/iceworld.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+109,textures/planets/marslike.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+110,textures/planets/moon.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+111,textures/planets/rings.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+112,textures/planets/ringshadow.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+113,textures/planets/shadow3.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+114,textures/planets/venusian.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+115,textures/planets/waterworld.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+116,textures/gui/buttons/tabtemplate.png,EXCLUDE,-,-,excluded by an origin finding (docs/provenance/v1.8.0-origin-findings.json)
+117,textures/armor/spacesuit_layer2_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/armor/spacesuit_layer2.png (SUSPECT, same), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+118,textures/blocks/fuelingmachine.png,REVIEW,C17a,block:fuelingStation,"shares pixels with textures/blocks/beacon.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+119,textures/blocks/guidancecomputer.png,REVIEW,C17a,block:guidanceComputer,"shares pixels with textures/blocks/beacon.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+120,textures/blocks/machinenuclear.png,REVIEW,C17a,block:nuclearcore,"shares pixels with textures/blocks/gaschargertop.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+121,textures/blocks/machineprecisionlaseretcher.png,REVIEW,C16c,block:precisionlaseretcher,"shares pixels with textures/blocks/beacon.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+122,textures/blocks/monitorfront.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/beacon.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+123,textures/blocks/monitorrocket.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/monitorfrontleft.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+124,textures/blocks/monitorsatellite.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/monitorfrontleft.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+125,textures/blocks/panelsideworkstation.png,REVIEW,C18b,block:suitWorkStation,"shares pixels with textures/blocks/panelside.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+126,textures/blocks/vacuumlaserfront.png,REVIEW,C18d,block:spaceLaser,"shares pixels with textures/blocks/forcefieldprojectorfront.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+127,textures/gui/buttons/buttonautoeject_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabtemplate.png (SUSPECT, same), whose origin finding EXCLUDED; origin review inherited (ADR-061 section 4.8)"
+128,textures/gui/buttons/buttonautoeject_pressed.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+129,textures/gui/buttons/tabdata.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+130,textures/gui/buttons/tabdata_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+131,textures/gui/buttons/tabguidance.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+132,textures/gui/buttons/tabguidance_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+133,textures/gui/buttons/tabplanet.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+134,textures/gui/buttons/tabplanet_hover.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+135,textures/gui/buttons/tabwarp.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+136,textures/gui/buttons/tabwarp_hover.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+137,textures/gui/warning.png,REVIEW,C16a,-,"shares pixels with textures/gui/progressbars/progressbars.png (HIT, region), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+138,textures/items/spaceboots_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_boots.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+139,textures/items/spacechestplate_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_chestplate.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+140,textures/items/spacehelmet_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_helmet.png (HIT, same), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+141,textures/armor/spacesuit_layer1_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/armor/spacesuit_layer2_overlay.png (SUSPECT, region), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+142,textures/gui/buttons/buttonredstoneinverted.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabdata_hover.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+143,textures/gui/buttons/copy.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+144,textures/gui/buttons/copy_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+145,textures/gui/buttons/kill.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+146,textures/gui/buttons/kill_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+147,textures/blocks/fluid/oxygen_flow.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_flow.png, which is EXCLUDE for its pixels"
+148,textures/blocks/fluid/oxygen_still.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_still.png, which is EXCLUDE for its pixels"
+149,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+150,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+151,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+152,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+153,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+154,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+155,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+156,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+157,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+158,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+159,lang/*.lang,REVIEW,C18d,-,community translations; each needs its own contributor provenance before use
+160,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
+161,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
+162,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
+163,textures/blocks/fluid/lava_*,REVIEW,C16a,-,shares the vanilla lava file names; origin review
+164,textures/font.png,EXCLUDE,-,-,no planned consumer
+165,textures/env/sun.png,REVIEW,C18d,-,shares the vanilla sun file name; origin review
+166,textures/planets/shadow.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+167,textures/gui/eyecandy/earth.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+168,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
+169,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
+170,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
+171,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
+172,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+173,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+174,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+175,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+176,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+177,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
+178,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
+179,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+180,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+181,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
+182,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
+183,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
+184,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
+185,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
+186,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+187,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+188,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+189,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+190,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+191,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
+192,textures/blocks/machinegeneric.png,REVIEW,C16a,libvulpes:java/blockAdvStructureBlock,byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review
+193,models/item/models/motor.*,REVIEW,C16a,libvulpes:java/blockMotor,motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established
+194,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
+195,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+196,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+197,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
+198,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
+199,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
+200,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
+201,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
+202,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
+203,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
+204,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
+205,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
+206,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
+207,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
+208,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
+209,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
+210,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
+211,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
+212,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
+213,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
+214,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
+215,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
+216,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
+217,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
+218,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
+219,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
+220,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
+221,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+222,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
+223,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
+224,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,block:airlock_door,airlock door
+225,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
+226,textures/blocks/lens1.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+227,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
+228,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
+229,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
+230,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
+231,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
+232,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
+233,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
+234,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
+235,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
+236,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
+237,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+238,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
+239,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
+240,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
+241,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
+242,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
+243,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
+244,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
+245,textures/items/userinterface.png,IMPORT,C16d,item_variant:misc/0,components
+246,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
+247,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+248,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
+249,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
+250,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
+251,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
+252,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+253,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
+254,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
+255,textures/gui/rockethud.png,IMPORT,C18d,event:RocketEventHandler.onScreenRender(Post),rocket HUD
+256,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
+257,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
+258,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+259,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
+260,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
+261,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
+262,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
+263,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
+264,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+265,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
+266,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+267,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+268,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
+269,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
+270,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
+271,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+272,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
+273,models/areagravitycontroller.obj,IMPORT,C18d,block:gravityMachine,machine OBJ model for the visual batch
+274,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
+275,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
+276,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
+277,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
+278,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
+279,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
+280,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
+281,models/electrolyser.obj,IMPORT,C18d,block:electrolyser,machine OBJ model for the visual batch
+282,models/lathe.obj,IMPORT,C18d,block:lathe,machine OBJ model for the visual batch
+283,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
+284,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
+285,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
+286,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
+287,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
+288,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
+289,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
+290,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
+291,models/warpcore.obj,IMPORT,C18d,block:warpCore,machine OBJ model for the visual batch
+292,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
+293,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
+294,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
+295,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
+296,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
+297,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+298,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
+299,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
+300,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
+301,textures/models/areagravitycontroller.png,IMPORT,C18d,block:gravityMachine,model texture for the visual batch
+302,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
+303,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
+304,textures/models/centrifuge.png,IMPORT,C18d,block:centrifuge,model texture for the visual batch
+305,textures/models/chemicalreactor.png,IMPORT,C18d,block:chemicalReactor,model texture for the visual batch
+306,textures/models/crystalliser.png,IMPORT,C18d,block:crystallizer,model texture for the visual batch
+307,textures/models/cuttingmachine.png,IMPORT,C18d,block:cuttingMachine,model texture for the visual batch
+308,textures/models/diamondmetal.png,IMPORT,C18d,-,model texture for the visual batch
+309,textures/models/electrolyser.png,IMPORT,C18d,block:electrolyser,model texture for the visual batch
+310,textures/models/fan.png,IMPORT,C18d,-,model texture for the visual batch
+311,textures/models/girder.png,IMPORT,C18d,block:rocketBuilder,model texture for the visual batch
+312,textures/models/grid.png,IMPORT,C18d,block:rocketBuilder,model texture for the visual batch
+313,textures/models/lathe.png,IMPORT,C18d,block:lathe,model texture for the visual batch
+314,textures/models/metalplate.png,IMPORT,C18d,-,model texture for the visual batch
+315,textures/models/observatory.png,IMPORT,C18d,block:observatory,model texture for the visual batch
+316,textures/models/orbitallaserdrill.png,IMPORT,C18d,block:spaceLaser,model texture for the visual batch
+317,textures/models/precisionassembler.png,IMPORT,C18d,block:precisionassemblingmachine,model texture for the visual batch
+318,textures/models/precisionlaseretcher.png,IMPORT,C18d,block:precisionlaseretcher,model texture for the visual batch
+319,textures/models/railgun.png,IMPORT,C18d,block:railgun,model texture for the visual batch
+320,textures/models/rollingmachine.png,IMPORT,C18d,block:rollingMachine,model texture for the visual batch
+321,textures/models/solararray.png,IMPORT,C18d,block:solararray,model texture for the visual batch
+322,textures/models/spaceelevator.png,IMPORT,C18d,block:spaceElevatorController,model texture for the visual batch
+323,textures/models/spaceelevatorcapsule.png,IMPORT,C18d,entity:ARSpaceElevatorCapsule,model texture for the visual batch
+324,textures/models/warpcore.png,IMPORT,C18d,block:warpCore,model texture for the visual batch
+325,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
+326,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+327,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
+328,textures/particle/*,IMPORT,C18d,-,particles
+329,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
+330,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it

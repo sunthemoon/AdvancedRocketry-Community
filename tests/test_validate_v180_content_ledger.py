@@ -302,6 +302,21 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._write_findings([dict(finding, confirmed_by="second reviewer")])
         self.assertEqual([], self._errors())
 
+    def test_derivatives_of_quarantined_files_inherit_review(self) -> None:
+        self._set_rule("textures/items/spacehelmet_overlay.png", handling="IMPORT")
+        self.assertTrue(any("textures/items/spacehelmet_overlay.png is IMPORT but shares pixels with "
+                            "textures/items/space_helmet.png" in error for error in self._errors()))
+
+    def test_related_entries_must_match_their_measures(self) -> None:
+        data = self._derivation()
+        entry = next(entry for entry in data["assets"]
+                     if any(match["level"] == "SUSPECT" and match.get("method") != "hash" for match in entry.get("related", [])))
+        match = next(match for match in entry["related"] if match["level"] == "SUSPECT" and match.get("method") != "hash")
+        match["level"] = "HIT"
+        self._repin_derivation(data)
+        self.assertIn(f"v1.8.0-vanilla-derivation.json: {entry['asset']} lists {match['asset']} as HIT, which its "
+                      "recorded measures do not give", self._errors())
+
     def test_allowlist_is_pinned(self) -> None:
         path = self.root / ALLOWLIST
         path.write_text(path.read_text(encoding="utf-8") + "textures/env/sun.png\tIMPORT\n", encoding="utf-8")

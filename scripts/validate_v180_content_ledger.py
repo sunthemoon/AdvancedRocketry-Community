@@ -423,7 +423,8 @@ def _repository_module(relative: Path):
     return module
 
 
-def load_derivation(root: Path, errors: list[str]) -> dict[str, str]:
+def load_derivation(root: Path, errors: list[str]) -> tuple[dict[str, str], dict[str, list[tuple[str, str]]]]:
+    """Verdicts by asset, and the legacy files each asset shares pixels with (ADR-061 section 4.8)."""
     raw = (root / DERIVATION).read_bytes()
     adr = (root / DERIVATION_ADR_PATH).read_text(encoding="utf-8")
     where = DERIVATION.name
@@ -447,12 +448,30 @@ def load_derivation(root: Path, errors: list[str]) -> dict[str, str]:
             errors.append(f"{where}: the {label} client SHA-256 differs from the pins in ADR-061 and "
                           f"{CLIENT_FETCHER.as_posix()}")
     verdicts: dict[str, str] = {}
+    related: dict[str, list[tuple[str, str]]] = {}
+    digests = {entry.get("asset"): entry.get("sha256") for entry in data.get("assets", [])}
     for entry in data.get("assets", []):
         asset, level = entry.get("asset"), entry.get("verdict")
         if level not in VERDICTS or not asset or asset in verdicts:
             errors.append(f"{where}: invalid or duplicate entry {asset!r}")
             continue
         verdicts[asset] = level
+        for match in entry.get("related", []):
+            other, relation = match.get("asset"), match.get("level")
+            if other not in digests or other == asset or relation not in ("HIT", "SUSPECT"):
+                errors.append(f"{where}: {asset} has an invalid related entry {other!r}")
+                continue
+            if match.get("method") == "hash":
+                agrees = relation == "HIT" and digests[other] == entry.get("sha256")
+            else:
+                try:
+                    agrees = tool.verdict(match) == relation
+                except (KeyError, TypeError):
+                    agrees = False
+            if not agrees:
+                errors.append(f"{where}: {asset} lists {other} as {relation}, which its recorded measures do not give")
+                continue
+            related.setdefault(asset, []).append((other, relation))
         if "hash_match" in entry:
             expected = "HIT"
         elif isinstance(entry.get("best"), dict):
@@ -466,7 +485,7 @@ def load_derivation(root: Path, errors: list[str]) -> dict[str, str]:
             errors.append(f"{where}: {asset} is {level} but its recorded measures give {expected}")
     if dict(sorted(Counter(verdicts.values()).items())) != data.get("counts"):
         errors.append(f"{where}: counts do not match the entries")
-    return verdicts
+    return verdicts, related
 
 
 def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
@@ -538,7 +557,7 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             errors.append(f"asset plan: {asset} is handled as IMPORTED without a provenance record")
     allowed = load_allowlist(root, errors)
     findings, overturned = load_origin_findings(root, errors)
-    verdicts = load_derivation(root, errors)
+    verdicts, related = load_derivation(root, errors)
     if set(verdicts) != set(assets):
         errors.append(f"{DERIVATION.name}: does not cover exactly the legacy assets")
     for asset, handling in sorted(handling_of.items()):
@@ -555,6 +574,16 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             errors.append(f"asset plan: {asset} is REVIEW but not in the import allowlist")
         if findings.get(asset) == "EXCLUDED" and handling != "EXCLUDE":
             errors.append(f"asset plan: {asset} was excluded by an origin finding but is {handling}")
+        if handling == "IMPORT" and findings.get(asset) != "CLEARED":
+            # ADR-061 section 4.8: a file sharing pixels with a derived, suspect or quarantined file inherits review.
+            for other, relation in related.get(asset, []):
+                reason = (f"derivation verdict {verdicts[other]}" if verdicts.get(other) in ("HIT", "SUSPECT", "UNSUPPORTED")
+                          else "REVIEW" if handling_of.get(other) == "REVIEW"
+                          else "EXCLUDED origin finding" if findings.get(other) == "EXCLUDED" else None)
+                if reason:
+                    errors.append(f"asset plan: {asset} is IMPORT but shares pixels with {other} ({relation}), "
+                                  f"whose {reason} it inherits (ADR-061 section 4.8)")
+                    break
     return Counter(handling_of.values())
 
 

@@ -10,7 +10,7 @@ target_version: v1.8.0
 development_dependency: ADR-016, ADR-019, ADR-021, ADR-026, ADR-027, ADR-031, ADR-054, ADR-060
 used_by: [ADR-062]
 supersedes: ""
-derivation_results_sha256: 79ee1c4f1c3d2f51ed8918f6d8dcb7cb969e7c5c2afabc38bcbbbdb33c0770f6
+derivation_results_sha256: 23f8af0043aaaf0d2197912c18759cc6dcb81e95e389e3fee935c24ebc3c5053
 vanilla_client_sha256:
   "1.12.2": 8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f
   "1.20.1": 56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f
@@ -20,7 +20,7 @@ vanilla_client_sha256:
 
 v1.8 restores most of the classic content: more than 200 legacy blocks, items,
 variants, materials, fluids, biomes and features are planned (ADR-062), and the
-asset plan names 211 legacy files as import candidates and holds 139 more
+asset plan names 190 legacy files as import candidates and holds 155 more
 under origin review (ADR-062 counts). Until now the project
 imported 10 upstream files (v0.1.0) and drew every other texture from its own
 three casing textures or from vanilla resource locations. The version document
@@ -229,39 +229,69 @@ must handle:
    legacy Moon turf and ferric sand are recolours of the vanilla grass top
    with a different name. `tools/audit/vanilla_derivation.py` compares every
    legacy asset with the assets of the vanilla 1.12.2 and 1.20.1 client JARs
-   (read locally, never copied; their SHA-256 values are in the results):
+   (read locally, never copied; their SHA-256 values are in the results) and
+   with the other legacy assets:
    - by file hash;
-   - for PNG images, in all eight orientations (four rotations, each
-     mirrored), at the same size, at an integer scale of 2 or 4 in either
-     direction, and between the first frames of animated strips, by
-     byte-equal pixels over the opaque union, leaving out the vanilla
-     image's dominant colour when it has at least four colours (`overlap`,
-     with the number of distinct matched colours), opaque-mask intersection
-     over union (`iou`) and luminance rank correlation over the shared
-     opaque pixels when both images have at least three luminance levels
-     and share at least 32 pixels (`rank`);
-   - by a sub-image search: each candidate up to 64 × 64, in all eight
-     orientations, inside every larger vanilla image up to 512 × 512,
-     scored by the share of its opaque pixels that are byte-equal at the
-     best offset (`sub`, with the number of distinct matched colours).
+   - for PNG images, by whole-image measures in all eight orientations (four
+     rotations, each mirrored), at the same size, at an integer scale of 2 or
+     4 in either direction, and between the first frames of animated strips:
+     byte-equal pixels over the opaque union, leaving out the reference's
+     dominant colour when it has at least four colours (`overlap`, with the
+     number of distinct matched colours), opaque-mask intersection over union
+     (`iou`) and luminance rank correlation over the shared opaque pixels when
+     both images have at least three luminance levels (`rank`). Images larger
+     than 64 px a side are compared on every k-th pixel of both images, which
+     keeps the run's memory small; the region search covers them in full;
+   - by a region search over 4 × 4 blocks of at least three colours. Every
+     block of the candidate, in all eight orientations and downscaled by 2
+     (two phases) and 4, is looked up among the grid-aligned blocks of every
+     reference at scales 1, 1/2 and 1/4, by exact pixels and, for candidates
+     up to 64 px a side, by colour-equality pattern; and the grid-aligned
+     blocks of every candidate up to 64 px a side are looked up at every
+     position of every vanilla image. Matching blocks vote for alignments,
+     and the best are verified pixel by pixel over the overlapping rectangle
+     (at least 64 pixels): `exact` (byte-equal informative pixels, with
+     `colours`), `near` (within 2 per channel) and `mapped` (how consistently
+     colours map to one another in both directions, a recolour). This finds
+     crops, edited crops, scaled crops and vanilla sprites inside larger
+     legacy sheets.
    Verdicts: `HIT` when the hash is equal, `iou` ≥ 0.90 with `rank` ≥ 0.90,
-   or an exact match of at least three distinct colours with `overlap` ≥ 0.30
-   or `sub` ≥ 0.75; `SUSPECT` when `iou` ≥ 0.85 with `rank` ≥ 0.75, or an
-   exact match of at least two colours with `overlap` ≥ 0.10 or `sub` ≥ 0.50
-   (an exact match of two colours matches a shape rather than pixel art, and
-   one colour is a shared flat fill, which is no evidence); `UNSUPPORTED` for
-   formats it cannot decode; otherwise `CLEAR`. The
-   tool's constants are the thresholds, and the results file repeats them.
-   **Calibration.** `tests/test_vanilla_derivation.py` builds a synthetic
-   calibration set (an exact copy, a recolour, a low-palette icon and its
-   recolour, a crop of a sheet, a mirror, a rotation, a ×2 upscale and the
-   first frame of an animated strip) and asserts that every one is `HIT`
-   (false-negative rate 0 on the set), that two unrelated images and an image
-   sharing only one flat colour stay `CLEAR`, and that a two-colour shape is
-   `SUSPECT`. Known limit: exact sub-image matching does not see a
-   recoloured crop; such a file is found only when it is a whole image (by
-   `rank`), so the history rule (§4.9) and the record review (§4.5) remain
-   the controls for it.
+   or an exact match over at least three distinct colours with `overlap` ≥
+   0.30 or region `exact` ≥ 0.75; `SUSPECT` when `iou` ≥ 0.85 with `rank` ≥
+   0.75, an exact match over at least three colours with `overlap` ≥ 0.10 or
+   region `exact` ≥ 0.50 (over two colours only at the `HIT` level), region
+   `near` ≥ 0.75 over three colours, or region `mapped` ≥ 0.90 over at least
+   six colour classes on each side; `UNSUPPORTED` for formats it cannot
+   decode; otherwise `CLEAR`. One shared flat colour is no evidence and two
+   colours match a shape rather than pixel art. The tool's constants are the
+   thresholds, and the results file repeats them.
+   **Inheritance.** The same measures between legacy files are recorded per
+   asset as `related` (the other legacy files it matches at `SUSPECT` level or
+   above). A file that is related to a file with a `HIT`, `SUSPECT` or
+   `UNSUPPORTED` verdict, a `REVIEW` handling or an `EXCLUDED` origin finding
+   is at most `REVIEW`, repeated until nothing changes; the asset plan
+   applies it and the validator enforces it. This is how the tab buttons
+   drawn on the excluded tab template, the overlays of the space-suit icons
+   and the variants of quarantined machine faces stay out of the import.
+   **Calibration.** `tests/test_vanilla_derivation.py` asserts a
+   false-negative rate of 0 for each kind of derivation in a synthetic set:
+   whole images (copy, recolour, low-palette icon and its recolour, 40 % of
+   the pixels), orientations (mirror, rotation, a 1 px shift), scale and
+   frames (×2 upscale, first animation frame, upscaled crop), crops (small
+   and over 64 px), edited crops (one new pixel, a painted icon, every
+   channel +1 and a recolour, the last two `SUSPECT`) and vanilla inside a
+   legacy sheet (64 px and 256 px sheets). Unrelated art, a shared flat
+   colour and an unrelated sheet stay `CLEAR`, a two-colour shape is
+   `SUSPECT`, every verdict is reproduced from its recorded measures, and
+   legacy derivatives are listed as related.
+   **Known limits.** A recolour that merges colours inside most 4 × 4
+   blocks, a recoloured or colour-shifted region inside a candidate larger
+   than 64 px a side, a copy whose 4 × 4 blocks all have fewer than three
+   colours, and an outline redrawn around a vanilla fill (the equal pixels
+   are then the reference's dominant colour, which the measures leave out)
+   are found only as whole images. The history rule (§4.9), origin findings
+   (the tab template is excluded by one) and the record review (§4.5)
+   remain the controls for them.
    A `HIT` is never imported or reviewed into the tree (docs/08 §7);
    `SUSPECT` and `UNSUPPORTED` files are `REVIEW` at most and import only
    after a `CLEARED` origin finding.
@@ -280,8 +310,9 @@ must handle:
    the validator refuses any `IMPORT` whose verdict is not `CLEAR`. The
    importer re-runs the check for each entry it writes (for derived pixels,
    on the transformed file too) and records the verdict in the entry; a
-   derivative of an `EXCLUDE` or `REVIEW` file inherits that handling, and
-   an animation's `.mcmeta` file follows its image.
+   derivative of an `EXCLUDE` or `REVIEW` file inherits that handling (the
+   inheritance rule above), and an animation's `.mcmeta` file follows its
+   image.
    **Binding.** This ADR's front matter pins the results file's SHA-256 and
    the SHA-256 of the two client JARs (Mojang's official 1.12.2 and 1.20.1
    `client.jar`). The validator fails when the results differ from the pin,

@@ -2,7 +2,7 @@ import struct
 import unittest
 import zlib
 
-from tools.audit.vanilla_derivation import Image, analyse_images, decode_png
+from tools.audit.vanilla_derivation import LEGACY, Image, analyse_images, decode_png, match_images, verdict
 
 
 def _noise(width: int, height: int, seed: int, colours: int = 24) -> list[tuple[int, int, int, int]]:
@@ -48,6 +48,10 @@ def _recolour(pixels):
     return out
 
 
+def _crop(pixels, width, x0, y0, w, h):
+    return [pixels[(y0 + y) * width + x0 + x] for y in range(h) for x in range(w)]
+
+
 def _png(width: int, height: int, pixels) -> bytes:
     raw = b"".join(b"\x00" + bytes(c for pixel in pixels[y * width:(y + 1) * width] for c in pixel)
                    for y in range(height))
@@ -60,48 +64,95 @@ def _png(width: int, height: int, pixels) -> bytes:
 
 
 class VanillaDerivationCalibrationTests(unittest.TestCase):
-    """Positive cases must all be found (false-negative rate 0); unrelated art stays CLEAR."""
+    """Every derivation kind must be found (false-negative rate 0 per kind); unrelated art stays CLEAR."""
 
     @classmethod
     def setUpClass(cls) -> None:
         texture = Image(16, 16, _noise(16, 16, seed=7))
         icon = Image(16, 16, _icon())
         sheet_pixels = _noise(64, 64, seed=11)
-        sheet = Image(64, 64, sheet_pixels)
+        large_pixels = _noise(128, 128, seed=13)
         frame = Image(16, 16, _noise(16, 16, seed=19))
         pattern = Image(32, 32, _pattern(32, 32))
-        cls.vanilla = [("v", "texture.png", texture), ("v", "icon.png", icon), ("v", "sheet.png", sheet),
+        cls.vanilla = [("v", "texture.png", texture), ("v", "icon.png", icon),
+                       ("v", "sheet.png", Image(64, 64, sheet_pixels)), ("v", "large.png", Image(128, 128, large_pixels)),
                        ("v", "frame.png", frame), ("v", "pattern.png", pattern)]
-        crop = [sheet_pixels[(20 + y) * 64 + 30 + x] for y in range(12) for x in range(12)]
+        crop = _crop(sheet_pixels, 64, 30, 20, 12, 12)
+        base = _crop(large_pixels, 128, 40, 30, 24, 24)
         upscaled = [texture.pixels[(y // 2) * 16 + x // 2] for y in range(32) for x in range(32)]
-        strip = frame.pixels + _noise(16, 48, seed=23)
-        cls.positives = {
-            "exact copy": Image(16, 16, list(texture.pixels)),
-            "recolour": Image(16, 16, _recolour(texture.pixels)),
-            "low-palette icon copy": Image(16, 16, list(icon.pixels)),
-            "crop of a sheet": Image(12, 12, crop),
-            "mirrored copy": texture.transformed(4),
-            "rotated copy": texture.transformed(1),
-            "x2 upscale": Image(32, 32, upscaled),
-            "first frame of a strip": Image(16, 64, strip),
-            "recoloured icon": Image(16, 16, _recolour(icon.pixels)),
+        one_new = list(base)
+        one_new[5 * 24 + 5] = (1, 2, 3, 255)
+        painted = list(base)
+        for i, (x, y) in enumerate([(x, y) for y in range(10, 14) for x in range(10, 14)]):
+            painted[y * 24 + x] = ((i * 40) % 250 + 3, 7, 9, 255)
+        embedded = _noise(64, 64, seed=999, colours=10)
+        for y in range(16):
+            for x in range(16):
+                embedded[(y + 20) * 64 + x + 24] = texture.pixels[y * 16 + x]
+        gui = [(198, 198, 198, 255)] * (256 * 256)
+        for y in range(16):
+            for x in range(16):
+                gui[(y + 100) * 256 + x + 60] = texture.pixels[y * 16 + x]
+        partial = [p if (i % 5) < 2 else (i % 7 + 1, 0, 200, 255) for i, p in enumerate(texture.pixels)]
+        # Kind of derivation -> case -> (image, expected verdict).
+        cls.cases = {
+            "whole image": {
+                "exact copy": (Image(16, 16, list(texture.pixels)), "HIT"),
+                "recolour": (Image(16, 16, _recolour(texture.pixels)), "HIT"),
+                "low-palette icon copy": (Image(16, 16, list(icon.pixels)), "HIT"),
+                "recoloured icon": (Image(16, 16, _recolour(icon.pixels)), "HIT"),
+                "40 % of a texture copied": (Image(16, 16, partial), "HIT"),
+            },
+            "orientation": {
+                "mirrored copy": (texture.transformed(4), "HIT"),
+                "rotated copy": (texture.transformed(1), "HIT"),
+                "texture shifted by 1 px": (Image(16, 16, [texture.pixels[y * 16 + (x + 1) % 16]
+                                                           for y in range(16) for x in range(16)]), "HIT"),
+            },
+            "scale and frames": {
+                "x2 upscale": (Image(32, 32, upscaled), "HIT"),
+                "first frame of a strip": (Image(16, 64, frame.pixels + _noise(16, 48, seed=23)), "HIT"),
+                "crop upscaled x2": (Image(48, 48, [base[(y // 2) * 24 + x // 2] for y in range(48) for x in range(48)]),
+                                     "HIT"),
+            },
+            "crop": {
+                "crop of a sheet": (Image(12, 12, crop), "HIT"),
+                "70 x 70 crop": (Image(70, 70, _crop(large_pixels, 128, 10, 10, 70, 70)), "HIT"),
+            },
+            "edited crop": {
+                "crop with one new-colour pixel": (Image(24, 24, one_new), "HIT"),
+                "crop with an icon painted on it": (Image(24, 24, painted), "HIT"),
+                "crop with every channel +1": (Image(24, 24, [(min(r + 1, 255), min(g + 1, 255), min(b + 1, 255), a)
+                                                             for r, g, b, a in base]), "SUSPECT"),
+                "recoloured crop": (Image(24, 24, [(int((0.299 * r + 0.587 * g + 0.114 * b) * 0.5) + 20, 30, 40, a)
+                                                   for r, g, b, a in base]), "SUSPECT"),
+            },
+            "vanilla inside a legacy sheet": {
+                "texture inside a 64 x 64 sheet": (Image(64, 64, embedded), "HIT"),
+                "texture inside a 256 x 256 sheet": (Image(256, 256, gui), "HIT"),
+            },
         }
-        flat = [(0, 0, 0, 255) if index % 16 < 9 else pixel for index, pixel in enumerate(_noise(16, 16, seed=107))]
         cls.negatives = {
-            "shares one flat colour with a pattern": Image(16, 16, flat),
+            "shares one flat colour with a pattern": Image(16, 16, [(0, 0, 0, 255) if index % 16 < 9 else pixel
+                                                                    for index, pixel in enumerate(_noise(16, 16, 107))]),
             "unrelated texture": Image(16, 16, _noise(16, 16, seed=101)),
             "unrelated small art": Image(12, 12, _noise(12, 12, seed=103, colours=6)),
+            "unrelated sheet": Image(64, 64, _noise(64, 64, seed=109)),
         }
-        cls.shapes = {
-            "two-colour shape inside a pattern": Image(16, 16, _pattern(16, 16)),
-        }
-        candidates = list(cls.positives.items()) + list(cls.negatives.items()) + list(cls.shapes.items())
-        cls.results = {name: level for name, (_, level, _) in analyse_images(candidates, cls.vanilla).items()}
+        cls.shapes = {"two-colour shape inside a pattern": Image(16, 16, _pattern(16, 16))}
+        candidates = [(name, image) for kind in cls.cases.values() for name, (image, _) in kind.items()]
+        candidates += list(cls.negatives.items()) + list(cls.shapes.items())
+        best = analyse_images(candidates, cls.vanilla)
+        cls.results = {name: entry[1] for name, entry in best.items()}
+        cls.records = {name: entry[2] for name, entry in best.items()}
 
-    def test_every_derivation_is_found(self) -> None:
-        missed = [name for name in self.positives if self.results.get(name) != "HIT"]
-        false_negative_rate = len(missed) / len(self.positives)
-        self.assertEqual([], missed, f"false-negative rate {false_negative_rate:.2f}")
+    def test_every_derivation_kind_is_found(self) -> None:
+        rates = {}
+        for kind, cases in self.cases.items():
+            missed = [name for name, (_, expected) in cases.items() if self.results.get(name, "CLEAR") != expected]
+            rates[kind] = (len(missed) / len(cases), missed)
+        self.assertEqual({kind: (0.0, []) for kind in self.cases}, rates,
+                         "false-negative rate per kind of derivation (rate, missed cases)")
 
     def test_unrelated_art_stays_clear(self) -> None:
         for name in self.negatives:
@@ -111,11 +162,35 @@ class VanillaDerivationCalibrationTests(unittest.TestCase):
         for name in self.shapes:
             self.assertEqual("SUSPECT", self.results.get(name), name)
 
+    def test_recorded_measures_reproduce_the_verdict(self) -> None:
+        for name, record in self.records.items():
+            self.assertEqual(self.results[name], verdict(record), name)
+
+    def test_legacy_derivatives_are_related(self) -> None:
+        """ADR-061 §4.8 inheritance: legacy files that share pixels with each other are listed as related."""
+        base = _noise(16, 16, seed=211)
+        overlay = [(0, 0, 0, 0) if (x + y) % 3 else base[y * 16 + x] for y in range(16) for x in range(16)]
+        variant = list(base)
+        for x in range(16):
+            variant[8 * 16 + x] = (250, 10, 10, 255)
+        legacy = [("helmet.png", Image(16, 16, base)), ("helmet_overlay.png", Image(16, 16, overlay)),
+                  ("helmet_variant.png", Image(16, 16, variant)), ("unrelated.png", Image(16, 16, _noise(16, 16, 223)))]
+        matcher = match_images(legacy, [(LEGACY, name, image) for name, image in legacy])
+        related = {name: sorted(table) for name, table in matcher.related.items()}
+        self.assertIn("helmet.png", related.get("helmet_overlay.png", []))
+        self.assertIn("helmet.png", related.get("helmet_variant.png", []))
+        self.assertNotIn("unrelated.png", related.get("helmet.png", []))
+        self.assertNotIn("unrelated.png", related)
+
     def test_png_decoder_reads_rgba(self) -> None:
         pixels = _noise(5, 3, seed=3)
         width, height, decoded = decode_png(_png(5, 3, pixels))
         self.assertEqual((5, 3), (width, height))
         self.assertEqual(pixels, decoded)
+
+    def test_png_decoder_clears_transparent_colour(self) -> None:
+        pixels = [(10, 20, 30, 0), (40, 50, 60, 255)]
+        self.assertEqual([(0, 0, 0, 0), (40, 50, 60, 255)], decode_png(_png(2, 1, pixels))[2])
 
 
 if __name__ == "__main__":
