@@ -519,6 +519,53 @@ final class TransitLedgerTest {
         return -1L;
     }
 
+    /**
+     * The C13 idle set over consecutive ticks (review C13-F7): an endpoint with nothing to reconcile is skipped until
+     * an escrow admission, a table change naming it or its attachment wakes it; a change outside the table (here a raw
+     * escrow, as a block-entity reload makes one) is seen by the next sweep, within 20 ticks.
+     */
+    @Test
+    void idleEndpointsAreWokenAndSweptWithinTwentyTicks() {
+        EndgameService service = hubService();
+        TransitLedger ledger = service.transits();
+        Endpoint other = new Endpoint(OTHER);
+        ledger.attach(other);
+        assertFalse(ledger.idleForTest(OTHER), "an attached endpoint starts awake");
+        service.tick(100L);
+        assertTrue(ledger.idleForTest(OTHER), "nothing to reconcile");
+        service.tick(101L);
+        assertTrue(ledger.idleForTest(OTHER));
+        assertEquals(EndgameCode.OK, ledger.admitEscrow(OTHER, OWNER));
+        assertFalse(ledger.idleForTest(OTHER), "an escrow admission wakes the source");
+        service.tick(102L);
+        assertTrue(ledger.idleForTest(OTHER), "idle again: the admission was not followed by an escrow");
+        TransitKey key = transit(service, SOURCE, 1, OTHER, record -> record);
+        service.tick(103L);
+        assertFalse(ledger.idleForTest(OTHER), "a record naming it woke it in the next tick");
+        service.coalesced(root -> {
+            root.transits().remove(key);
+            return null;
+        });
+        service.tick(104L);
+        assertTrue(ledger.idleForTest(OTHER), "the record is gone");
+        ledger.detach(OTHER, other);
+        ledger.attach(other);
+        assertFalse(ledger.idleForTest(OTHER), "a new attachment wakes it");
+        service.tick(105L);
+        assertTrue(ledger.idleForTest(OTHER));
+        other.source.escrow(DESTINATION, payload(), 25_000, 20, EndgameSystem.RAILGUN);
+        service.tick(106L);
+        assertTrue(ledger.idleForTest(OTHER), "a change outside the table waits for a sweep");
+        long woken = -1L;
+        for (long now = 107L; now <= 126L && woken < 0; now++) {
+            service.tick(now);
+            if (!ledger.idleForTest(OTHER)) {
+                woken = now;
+            }
+        }
+        assertTrue(woken >= 0L, "no sweep within 20 ticks saw the escrow");
+    }
+
     @Test
     void aPassTheBudgetCutShortResumesAtTheRecordItStoppedAt() {
         EndgameService service = hubService();

@@ -14,7 +14,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,6 +38,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BlackHoleGeneratorGameTests {
     private static final String BATCH = "endgame_black_hole";
+    private static final String IDLE_BATCH = "endgame_black_hole_idle";
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_black_hole",
             Comparator.comparing(UUID::toString));
 
@@ -136,6 +136,90 @@ public final class BlackHoleGeneratorGameTests {
                     helper.assertTrue(generator.energy() == 0 && generator.remaining() == 0 && count(generator) == 3,
                             "A disabled generator burned");
                     CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.set(true);
+                    generator.fuel().setStackInSlot(0, ItemStack.EMPTY);
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dy = -1; dy <= 1; dy++) {
+                            for (int dz = 0; dz <= 2; dz++) {
+                                space.setBlockAndUpdate(controller.offset(dx, dy, dz), Blocks.AIR.defaultBlockState());
+                            }
+                        }
+                    }
+                    space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
+                    space.setChunkForced(chunk.x, chunk.z, false);
+                    stations.delete(stationId);
+                    stations.flush(server);
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Review C13-F7: an idle generator (nothing to burn or push) re-derives its state every 20 ticks, so a warp away
+     * shows within 21 ticks; new fuel ends the idle state at once; and a facing change of a burning generator is
+     * validated at once, because the structure's box is recomputed when the facing changes.
+     */
+    @GameTest(template = "empty", batch = IDLE_BATCH, timeoutTicks = 1200)
+    public static void anIdleGeneratorRechecksWithinTwentyTicksAndSeesFuelAndFacingAtOnce(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
+        StationRegistrySavedData stations = StationRegistrySavedData.get(server);
+        UUID owner = UUID.randomUUID();
+        UUID stationId = UUID.randomUUID();
+        stations.reserve(stationId, owner, "Idle singularity fixture", SingularityContent.CYGNUS_X1,
+                helper.getLevel().getGameTime());
+        StationState station = stations.commit(stationId);
+        BlockPos controller = new BlockPos(station.landingPad().x() + 6, StationLimits.LANDING_Y + 6,
+                station.landingPad().z() + 6);
+        ChunkPos chunk = new ChunkPos(controller);
+        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
+        space.setChunkForced(chunk.x, chunk.z, true);
+        space.getChunkAt(controller);
+        build(space, controller);
+        BlackHoleGeneratorBlockEntity generator = (BlackHoleGeneratorBlockEntity) space.getBlockEntity(controller);
+        helper.assertTrue(generator.assignOwner(owner), "Owner not assigned");
+        long[] at = new long[2];
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.NO_FUEL,
+                        "An empty generator at Cygnus X-1 did not idle: " + generator.describe()))
+                .thenExecute(() -> {
+                    warp(helper, server, stations, stationId, CelestialIds.EARTH_ID);
+                    at[0] = space.getGameTime();
+                })
+                .thenWaitUntil(() -> {
+                    helper.assertTrue(generator.status() == EndgameCode.NO_SINGULARITY, "The warp away is not seen");
+                    at[1] = space.getGameTime();
+                })
+                .thenExecute(() -> {
+                    helper.assertTrue(at[1] - at[0] <= 21, "An idle generator saw the warp after "
+                            + (at[1] - at[0]) + " ticks, not within its 20-tick re-check");
+                    warp(helper, server, stations, stationId, SingularityContent.CYGNUS_X1);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.NO_FUEL,
+                        "The warp back is not seen"))
+                .thenExecute(() -> {
+                    generator.fuel().insertItem(0, new ItemStack(Items.STICK, 4), false);
+                    at[0] = space.getGameTime();
+                })
+                .thenWaitUntil(() -> {
+                    helper.assertTrue(generator.status() == EndgameCode.GENERATING, "New fuel is not burned");
+                    at[1] = space.getGameTime();
+                })
+                .thenExecute(() -> {
+                    helper.assertTrue(at[1] - at[0] <= 2, "New fuel waited " + (at[1] - at[0])
+                            + " ticks for the idle re-check");
+                    space.setBlock(controller, space.getBlockState(controller)
+                            .setValue(BlackHoleGeneratorBlock.FACING, Direction.EAST), 2);
+                    helper.assertTrue(space.getBlockEntity(controller) == generator, "The facing change replaced "
+                            + "the block entity");
+                    at[0] = space.getGameTime();
+                })
+                .thenWaitUntil(() -> {
+                    helper.assertTrue(generator.status() == EndgameCode.UNFORMED, "The turned controller still "
+                            + "counts as formed: " + generator.describe());
+                    at[1] = space.getGameTime();
+                })
+                .thenExecute(() -> {
+                    helper.assertTrue(at[1] - at[0] <= 3, "A facing change waited " + (at[1] - at[0])
+                            + " ticks: the structure box was not recomputed");
                     generator.fuel().setStackInSlot(0, ItemStack.EMPTY);
                     for (int dx = -1; dx <= 1; dx++) {
                         for (int dy = -1; dy <= 1; dy++) {

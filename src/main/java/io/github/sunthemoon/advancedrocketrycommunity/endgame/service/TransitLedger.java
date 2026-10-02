@@ -603,6 +603,11 @@ public final class TransitLedger implements TransitLedgerView {
 
     // ---- Diagnostics -------------------------------------------------------------------------------------------
 
+    /** Unit tests: whether reconciliation currently skips this loaded endpoint as idle. */
+    boolean idleForTest(UUID id) {
+        return idle.contains(id);
+    }
+
     String status() {
         Optional<EndgameRoot> view = service.root();
         int records = view.map(root -> root.transits().size()).orElse(0);
