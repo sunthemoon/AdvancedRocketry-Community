@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSetti
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.OutboxEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitDestinationState;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitEndpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitKey;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -44,6 +46,10 @@ final class TransitLedgerTest {
     private static final UUID DESTINATION = new UUID(0L, 20L);
     private static final BlockPos SOURCE_POS = new BlockPos(8, 64, 8);
     private static final BlockPos DESTINATION_POS = new BlockPos(200, 64, 200);
+    private static final UUID OTHER = new UUID(0L, 30L);
+    private static final UUID LATE_SOURCE = new UUID(0L, 50L);
+    private static final BlockPos OTHER_POS = new BlockPos(400, 64, 400);
+    private static final BlockPos LATE_SOURCE_POS = new BlockPos(600, 64, 600);
 
     @BeforeAll
     static void bootstrap() {
@@ -326,5 +332,109 @@ final class TransitLedgerTest {
         assertTrue(reloaded.operational(), "the written root does not load");
         assertEquals(DESTINATION, reloaded.view().transits().record(new TransitKey(SOURCE, 1L)).orElseThrow()
                 .destination());
+    }
+
+    // ---- Review C12R-M1: one busy endpoint does not starve the others -------------------------------------------
+
+    /** The destination (the hub, first in ID order) and {@link #OTHER} and {@link #LATE_SOURCE} are registered. */
+    private static EndgameService hubService() {
+        EndgameService service = service(TransitLimits.DEFAULTS);
+        service.coalesced(root -> root.register(OTHER, KIND, OWNER, LEVEL, OTHER_POS.asLong(), false, 2048, 64));
+        service.coalesced(root -> root.register(LATE_SOURCE, KIND, OWNER, LEVEL, LATE_SOURCE_POS.asLong(), false,
+                2048, 64));
+        persist(service);
+        return service;
+    }
+
+    /** A record from {@code source} registered in the root, shaped by {@code state}, durable after two writes. */
+    private static TransitKey transit(EndgameService service, UUID source, long seq, UUID destination,
+                                      UnaryOperator<TransitRecord> state) {
+        service.coalesced(root -> {
+            root.registerTransit(state.apply(TransitRecord.registered(source, new OutboxEntry(seq, destination,
+                    payload(), 1, 20, EndgameSystem.RAILGUN), OWNER, root.saveEpoch(), 0L)));
+            return null;
+        });
+        return new TransitKey(source, seq);
+    }
+
+    private static void durable(EndgameService service) {
+        persist(service);
+        persist(service);
+    }
+
+    @Test
+    void recordsWithoutAnApplicableRowCostNoReconciliation() {
+        EndgameService service = hubService();
+        for (long seq = 1; seq <= 64; seq++) {
+            transit(service, SOURCE, seq, DESTINATION, seq <= 32
+                    ? record -> new TransitRecord(record.key(), record.system(), record.owner(),
+                    record.destination(), record.payload(), record.paidFe(), record.dispatchEpoch(), 1_000_000L,
+                    TransitRecord.State.IN_TRANSIT, null, false, 0L, false)
+                    : record -> record.arrived().claimed(DESTINATION).acknowledged(record.dispatchEpoch())
+                    .asStub());
+        }
+        TransitKey key = transit(service, SOURCE, 65, OTHER, TransitRecord::arrived);
+        durable(service);
+        Endpoint hub = new Endpoint(DESTINATION);
+        Endpoint other = new Endpoint(OTHER);
+        service.transits().attach(hub);
+        service.transits().attach(other);
+        service.tick(100L);
+        assertTrue(other.destination.incoming().containsKey(key),
+                "the hub's stubs and records in transit spent the budget the other endpoint's claim needed");
+    }
+
+    @Test
+    void aHubThatSpendsTheBudgetGivesTheNextEndpointTheFirstTurn() {
+        EndgameService service = hubService();
+        for (long seq = 1; seq <= 64; seq++) {
+            transit(service, SOURCE, seq, DESTINATION, TransitRecord::arrived);
+        }
+        TransitKey key = transit(service, SOURCE, 65, OTHER, TransitRecord::arrived);
+        durable(service);
+        Endpoint hub = new Endpoint(DESTINATION);
+        for (int i = 0; i < 9; i++) {
+            hub.received.add(new ItemStack(Items.STONE)); // A full receive buffer: every claim of the hub waits.
+        }
+        Endpoint other = new Endpoint(OTHER);
+        service.transits().attach(hub);
+        service.transits().attach(other);
+        service.tick(100L);
+        assertTrue(other.destination.incoming().isEmpty(), "the hub goes first and spends all 64 reconciliations");
+        service.tick(101L);
+        assertTrue(other.destination.incoming().containsKey(key), "the next tick did not start at the next endpoint");
+        assertEquals(TransitRecord.State.ARRIVED, service.root().orElseThrow().transits()
+                .record(new TransitKey(SOURCE, 1L)).orElseThrow().state());
+    }
+
+    @Test
+    void aPassTheBudgetCutShortResumesAtTheRecordItStoppedAt() {
+        EndgameService service = hubService();
+        TransitKey late = transit(service, LATE_SOURCE, 1, DESTINATION, TransitRecord::arrived);
+        durable(service);
+        Endpoint hub = new Endpoint(DESTINATION);
+        service.transits().attach(hub);
+        service.tick(100L);
+        assertTrue(hub.destination.receipts().contains(late), "the hub did not claim the late source's record");
+        // The ledger falls behind the claim (an operator's restore of an older root), and 64 records that cannot
+        // land come first in key order.
+        service.coalesced(root -> {
+            root.transits().replace(root.transits().record(late).orElseThrow().returned());
+            return null;
+        });
+        for (int i = 0; i < 9; i++) {
+            hub.received.add(new ItemStack(Items.STONE));
+        }
+        for (long seq = 1; seq <= 64; seq++) {
+            transit(service, SOURCE, seq, DESTINATION, TransitRecord::arrived);
+        }
+        durable(service);
+        service.tick(101L);
+        assertEquals(TransitRecord.State.ARRIVED, service.root().orElseThrow().transits().record(late).orElseThrow()
+                .state(), "64 earlier records spend the budget first");
+        service.tick(102L);
+        TransitRecord recovered = service.root().orElseThrow().transits().record(late).orElseThrow();
+        assertEquals(TransitRecord.State.CLAIMED, recovered.state(), "the next pass did not resume at the record");
+        assertEquals(DESTINATION, recovered.paidEndpoint());
     }
 }

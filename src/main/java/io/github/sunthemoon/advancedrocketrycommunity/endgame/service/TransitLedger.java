@@ -230,11 +230,10 @@ public final class TransitLedger implements TransitLedgerView {
             if (changed) {
                 endpoint.transitChanged();
             }
+            cursor = id; // This endpoint had its turn: the next tick starts at the next one (review C12R-M1).
             if (reconciliationsLeft <= 0) {
-                cursor = loaded.lowerKey(id); // Resume at this endpoint next tick.
                 return;
             }
-            cursor = id;
         }
     }
 

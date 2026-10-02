@@ -36,6 +36,14 @@ public final class TransitDestinationState {
     private final TreeSet<TransitKey> conflicts = new TreeSet<>(TransitKey.ORDER);
     private final Map<TransitKey, Long> incomingObservedAt = new HashMap<>();
     private final Map<TransitKey, Long> receiptObservedAt = new HashMap<>();
+    /** Runtime: the record a pass the budget cut short stopped at; the next pass starts there (review C12R-M1). */
+    @Nullable
+    private TransitKey resumeAt;
+
+    /** The destination rows a record can take, in order; a record with none costs no reconciliation. */
+    private enum Row {
+        RECOVER, CLAIM, ACKNOWLEDGE, REMATERIALIZE
+    }
 
     /** The device's receive buffer: room for whole payloads, and the insertion of a moved one. */
     public interface ReceiveBuffer {
@@ -66,6 +74,7 @@ public final class TransitDestinationState {
         conflicts.clear();
         incomingObservedAt.clear();
         receiptObservedAt.clear();
+        resumeAt = null;
     }
 
     /** Incoming payloads, receipts or frozen conflicts: the endpoint is busy and refuses a non-operator break. */
@@ -109,35 +118,45 @@ public final class TransitDestinationState {
     /**
      * The destination rows for a live, registered endpoint, within the shared reconciliation budget: claims and their
      * recovery, acknowledgement and rematerialization of the records for this endpoint; then the incoming gate; then
-     * receipts. Returns whether anything changed.
+     * receipts. Only a record a row applies to costs a reconciliation; when the budget runs out the rows stop at that
+     * record and the next pass starts there, while the gate and the receipts (at most 64 each) still run. Returns
+     * whether anything changed.
      */
     public boolean reconcile(TransitLedgerView ledger, UUID self, @Nullable UUID owner, ReceiveBuffer buffer,
                              long now) {
         boolean changed = false;
         long epoch = ledger.saveEpoch();
         boolean registrationDurable = ledger.registrationDurable(self);
-        for (TransitRecord record : ledger.forEndpoint(self)) {
+        TransitKey start = resumeAt;
+        resumeAt = null;
+        for (TransitRecord record : fromResume(ledger.forEndpoint(self), start)) {
             TransitKey key = record.key();
             if (conflicts.contains(key) || record.state() == TransitRecord.State.QUARANTINED) {
                 continue;
             }
-            if (!ledger.takeReconciliation()) {
-                return changed;
-            }
             TransitRules.RecordFacts facts = record.facts(self, epoch);
             boolean receiptHere = receipts.contains(key);
-            boolean incomingHere = incoming.containsKey(key);
-            if (TransitRules.recovers(facts, receiptHere)) {
-                ledger.recover(key, self);
-                ledger.audit("CLAIM_RECOVERED", "OK", self, owner, "transfer=" + key);
-                changed = true;
-            } else if (TransitRules.claims(facts, receiptHere, registrationDurable)) {
-                changed |= land(ledger, self, owner, record, buffer, false);
-            } else if (TransitRules.acknowledges(facts, aged(receiptObservedAt, key, now), incomingHere)) {
-                ledger.acknowledge(key);
-                changed = true;
-            } else if (TransitRules.rematerializes(facts, receiptHere)) {
-                changed |= land(ledger, self, owner, record, buffer, true);
+            Row row = row(facts, key, receiptHere, registrationDurable, now);
+            if (row == null) {
+                continue;
+            }
+            if (!ledger.takeReconciliation()) {
+                resumeAt = key;
+                break;
+            }
+            switch (row) {
+                case RECOVER -> {
+                    ledger.recover(key, self);
+                    ledger.audit("CLAIM_RECOVERED", "OK", self, owner, "transfer=" + key);
+                    changed = true;
+                }
+                case CLAIM -> changed |= land(ledger, self, owner, record, buffer, false);
+                case ACKNOWLEDGE -> {
+                    ledger.acknowledge(key);
+                    changed = true;
+                }
+                case REMATERIALIZE -> changed |= land(ledger, self, owner, record, buffer, true);
+                default -> throw new IllegalStateException("Unknown row " + row);
             }
         }
         for (Map.Entry<TransitKey, TransitPayload> entry : new ArrayList<>(incoming.entrySet())) {
@@ -185,6 +204,40 @@ public final class TransitDestinationState {
             }
         }
         return changed;
+    }
+
+    @Nullable
+    private Row row(TransitRules.RecordFacts facts, TransitKey key, boolean receiptHere, boolean registrationDurable,
+                    long now) {
+        if (TransitRules.recovers(facts, receiptHere)) {
+            return Row.RECOVER;
+        }
+        if (TransitRules.claims(facts, receiptHere, registrationDurable)) {
+            return Row.CLAIM;
+        }
+        if (TransitRules.acknowledges(facts, aged(receiptObservedAt, key, now), incoming.containsKey(key))) {
+            return Row.ACKNOWLEDGE;
+        }
+        return TransitRules.rematerializes(facts, receiptHere) ? Row.REMATERIALIZE : null;
+    }
+
+    /** The records in key order, starting at {@code start} (when given) and wrapping around to the ones before it. */
+    private static List<TransitRecord> fromResume(List<TransitRecord> records, @Nullable TransitKey start) {
+        if (start == null) {
+            return records;
+        }
+        List<TransitRecord> ordered = new ArrayList<>(records.size());
+        for (TransitRecord record : records) {
+            if (TransitKey.ORDER.compare(record.key(), start) >= 0) {
+                ordered.add(record);
+            }
+        }
+        for (TransitRecord record : records) {
+            if (TransitKey.ORDER.compare(record.key(), start) < 0) {
+                ordered.add(record);
+            }
+        }
+        return ordered;
     }
 
     /** A claim or a rematerialization: the payload lands in incoming with a new receipt, when it all fits. */
