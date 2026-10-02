@@ -15,13 +15,13 @@ import_allowlist_sha256: 605abff43b8b8403541a7c88f49820bdbe18f18fa4c82f09e05d7da
 
 ## Context
 
-The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 645 legacy
+The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 648 legacy
 content units of the pinned upstream commit `c5cd5af`: 101 blocks with 13
 metadata variants, 35 items with 32 variants, 13 materials, 5 fluids, 61 block
 entities, 10 entities, 12 registered biomes (2 more never registered), 34 world
 generation classes, 9 registered satellite kinds (3 more classes never
 registered), 3 missions, 15 sound events, 17 advancements, 13 atmosphere types,
-19 commands, 132 configuration keys, 14 XML configuration files, 41 event rules, 16 packets, 13
+19 commands, 132 configuration keys, 14 XML configuration files, 41 event rules, 3 coremod rules, 16 packets, 13
 integrations, 7 key bindings, 1 enchantment, and 21 LibVulpes blocks and items that the legacy
 gameplay depends on (structure blocks, motors, hatches, battery, linker,
 holographic projector). The [content audit](../work/v1.8.0-content-audit.md) explains the
@@ -50,10 +50,10 @@ inventory unit exactly one disposition:
 | Disposition | Count | Meaning |
 |---|---:|---|
 | `IMPLEMENTED` | 52 | an existing modern ID or system delivers the unit (version and ID named) |
-| `REDESIGNED` | 131 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
-| `PLANNED` | 289 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
+| `REDESIGNED` | 132 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
+| `PLANNED` | 290 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
 | `MERGED` | 93 | an internal part (block entity, base class, subcommand) that follows another row |
-| `DEFERRED` | 24 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
+| `DEFERRED` | 25 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
 | `REJECTED` | 56 | not migrated; reasons and player impact in §4 |
 
 [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv) gives every one of the
@@ -98,6 +98,7 @@ extracted).
 | Satellite star-map overlay | (feature of ADR-049 §10) | client overlay with its own sync | satellite positions appear in the terminal list, not on the star map |
 | Fields on non-player entities | (feature of ADR-058) | entity scans and push rules | area fields affect players only |
 | Cross-system cargo | (feature of ADR-056) | routes stay inside one star system, like rockets | cargo crosses systems by station warp only |
+| Cargo access from a rocket seat | coremod rule `RocketInventoryHelper.allowAccess` | assembled rockets keep their blocks in a snapshot; opening them in flight needs a container proxy | open rocket cargo after landing, or move it with the C17a loaders |
 
 A deferred item can return only through a new ADR in a later version.
 
@@ -122,6 +123,7 @@ A deferred item can return only through a new ADR in a later version.
 | Creative energy plug | LibVulpes creative input plug | creative-only infinite energy | use another mod's creative energy source |
 | Laser drill line and spiral modes | (feature of ADR-055) | automatic target stepping across chunks | move the laser target to drill elsewhere |
 | Legacy gravity API | (feature of ADR-058) | per-entity static overrides | use the v1.3 public API |
+| Planet gravity on non-living entities | the non-living half of coremod rule `GravityHandler.applyGravity` | items, projectiles, minecarts, falling blocks and primed TNT have no gravity attribute; changing them needs a coremod or per-tick motion edits for every such entity (AGENTS.md rejects coremods) | items and projectiles fall at Overworld speed on every body; players and mobs follow the body's gravity (C18a) |
 
 ### 5. Earlier deferrals resolved here
 
@@ -161,7 +163,7 @@ them.
 | C17a | Propulsion tiers (bipropellant, advanced, nuclear), oxidizer and fuel tables, fluid fueling, rocket item and fluid loaders, monitoring station | C16a |
 | C17b | Station controls (warp controller screen, gravity, altitude and orientation blocks), landing pads, station light, force field projector | ADR-046 revision in the batch ADR |
 | C17c | Beacon and beacon finder, rocket satellite bay, solar generator and solar array | C17a |
-| C18a | Life support and environment rules: CO2 scrubber and cartridge, gas charge pad, atmosphere detector, airlock door, pipe seal, torch and fire rules, thermite, seal detector, atmosphere analyzer, respawn and sleeping rules, atmosphere effects and spawning for non-player entities, gravity-scaled fall damage, the space Level safety return | C16a |
+| C18a | Life support and environment rules: CO2 scrubber and cartridge, gas charge pad, atmosphere detector, airlock door, pipe seal, torch and fire rules, thermite, seal detector, atmosphere analyzer, respawn and sleeping rules, atmosphere effects and spawning for non-player entities, planet gravity on living entities, gravity-scaled fall damage, suit underwater breathing, the space Level safety return | C16a |
 | C18b | Equipment: suit workstation, pressure tanks, jetpack, upgrades, jackhammer, basic laser gun, space breathing enchantment | C18a |
 | C18c | Research: observatory, astrobody data processor, advancements, technology tree report | C16d |
 | C18d | Presentation: sounds, OBJ models, black-hole sky, capsule effect, GUI art, languages and the visual refresh of existing blocks | all batches |

@@ -38,6 +38,7 @@ COMMAND = JAVA_ROOT + "command/WorldCommand.java"
 LANG = ASSET_ROOT + "lang/en_US.lang"
 CRYSTAL = JAVA_ROOT + "block/BlockCrystal.java"
 KEYS = JAVA_ROOT + "client/KeyBindings.java"
+TRANSFORMER = JAVA_ROOT + "asm/ClassTransformer.java"
 # Classes whose @SubscribeEvent methods carry gameplay rules (registration plumbing and rejected bridges excluded).
 EVENT_CLASSES = (
     "event/PlanetEventHandler.java", "event/RocketEventHandler.java", "event/CableTickHandler.java",
@@ -346,6 +347,15 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
         for match in re.finditer(pattern, text):
             event_type = match.group(2).rsplit(".", 1)[-1]
             units.append(unit("event", f"{stem}.{match.group(1)}({event_type})", path, line_of(text, match.start())))
+
+    # Gameplay rules the coremod injects into vanilla classes: its live calls into the mod.
+    transformer = strip_java_comments(upstream.text(TRANSFORMER))
+    seen_hooks = set()
+    for match in re.finditer(r'INVOKESTATIC,\s*"zmaster587/[\w/]*?/(\w+)",\s*"(\w+)"', transformer):
+        name = f"{match.group(1)}.{match.group(2)}"
+        if name not in seen_hooks:
+            seen_hooks.add(name)
+            units.append(unit("asm_rule", name, TRANSFORMER, line_of(transformer, match.start())))
 
     # LibVulpes content that Advanced Rocketry gameplay depends on: fields used from Java, items named in recipes.
     libvulpes: dict[str, tuple[str, int]] = {}

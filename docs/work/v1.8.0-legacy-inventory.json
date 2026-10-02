@@ -693,6 +693,7 @@
  },
  "counts": {
   "advancement": 17,
+  "asm_rule": 3,
   "atmosphere": 13,
   "biome": 12,
   "biome_unregistered": 2,
@@ -838,6 +839,27 @@
    "legacy_name": "wenttothemoon",
    "source": "src/main/resources/assets/advancedrocketry/advancements/normal/wenttothemoon.json",
    "line": 1
+  },
+  {
+   "id": "asm_rule:AtmosphereHandler.onBlockChange",
+   "kind": "asm_rule",
+   "legacy_name": "AtmosphereHandler.onBlockChange",
+   "source": "src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java",
+   "line": 786
+  },
+  {
+   "id": "asm_rule:GravityHandler.applyGravity",
+   "kind": "asm_rule",
+   "legacy_name": "GravityHandler.applyGravity",
+   "source": "src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java",
+   "line": 756
+  },
+  {
+   "id": "asm_rule:RocketInventoryHelper.allowAccess",
+   "kind": "asm_rule",
+   "legacy_name": "RocketInventoryHelper.allowAccess",
+   "source": "src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java",
+   "line": 670
   },
   {
    "id": "atmosphere:AtmosphereHighPressure",
