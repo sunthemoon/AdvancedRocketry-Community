@@ -276,7 +276,10 @@ must handle:
 - Pumps, force-field projectors and world-changing tools have per-tick and
   per-operation limits and use the ADR-054 §5 protection chain.
 - New world generation runs only in new chunks; every feature has bounded size
-  and count per chunk.
+  and count per chunk. A batch that changes the generation of a Level that
+  existing worlds already use keeps every ID (ADR-033) and discloses, in its
+  batch ADR and release notes, the seam between explored and new chunks and
+  what players will see.
 
 ### 7. Rollback
 
