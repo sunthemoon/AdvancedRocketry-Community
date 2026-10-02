@@ -9,6 +9,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItem
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import net.minecraft.core.NonNullList;
@@ -57,6 +59,20 @@ public final class SmallPlatePressRecipe implements Recipe<SimpleContainer> {
     @Override
     public boolean matches(SimpleContainer container, Level level) {
         return ingredient.test(container.getItem(0));
+    }
+
+    /** The recipes whose ingredient takes a block form, stopping at two: one is a match, two are ambiguous. */
+    public static List<SmallPlatePressRecipe> matching(Iterable<SmallPlatePressRecipe> recipes, ItemStack form) {
+        List<SmallPlatePressRecipe> matches = new ArrayList<>(2);
+        for (SmallPlatePressRecipe recipe : recipes) {
+            if (recipe.ingredient.test(form)) {
+                matches.add(recipe);
+                if (matches.size() == 2) {
+                    break;
+                }
+            }
+        }
+        return List.copyOf(matches);
     }
 
     @Override
