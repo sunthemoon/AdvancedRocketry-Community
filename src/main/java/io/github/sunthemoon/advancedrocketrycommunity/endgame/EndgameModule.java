@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ElevatorCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameReleaseTestCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.TransitCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorGuard;
@@ -65,6 +66,8 @@ public final class EndgameModule {
         MinecraftForge.EVENT_BUS.addListener(new EndgameCommands(service, devices)::register);
         MinecraftForge.EVENT_BUS.addListener(new TransitCommands(service)::register);
         MinecraftForge.EVENT_BUS.addListener(new ElevatorCommands(service, devices)::register);
+        // C13 evidence hooks; they register nothing unless the release-test JVM flag is set.
+        MinecraftForge.EVENT_BUS.addListener(new EndgameReleaseTestCommands(service)::register);
         // ADR-059 section 8: rides tick after the ledger's END pass; their tickets go at server stop.
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
             if (event.phase == TickEvent.Phase.END && service.operational()) {
