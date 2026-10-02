@@ -110,7 +110,8 @@ public final class EndgameReleaseTestCommands {
                 + destination.toShortString());
     }
 
-    private static RailgunBlockEntity build(ServerLevel level, BlockPos controller, UUID owner) {
+    /** A formed railgun of {@code owner} at the controller position, facing north, its buffer full. */
+    static RailgunBlockEntity build(ServerLevel level, BlockPos controller, UUID owner) {
         BlockState casing = ModBlocks.ENDGAME_CASING.get().defaultBlockState();
         for (int x = -1; x <= 1; x++) {
             for (int y = 0; y <= 5; y++) {
@@ -224,14 +225,14 @@ public final class EndgameReleaseTestCommands {
         List<String> parts = new ArrayList<>();
         for (EndgameTimings.Place place : EndgameTimings.Place.values()) {
             EndgameTimings.Summary summary = timings.summary(place);
-            parts.add(summary.name() + "=" + String.format(java.util.Locale.ROOT, "%.1f/%.1f", summary.meanMicros(),
-                    summary.p99Micros()));
+            parts.add(summary.name() + "=" + String.format(java.util.Locale.ROOT, "%.1f/%.1f/%.1f",
+                    summary.meanMicros(), summary.p99Micros(), summary.maxMicros()));
         }
         EndgameTimings.Summary total = timings.total(false);
         EndgameTimings.Summary quiet = timings.total(true);
         return report(context, "timing ticks=" + total.ticks() + " total_mean_us=" + String.format(java.util.Locale.ROOT,
                 "%.1f", total.meanMicros()) + " total_p99_quiet_us=" + String.format(java.util.Locale.ROOT, "%.1f",
-                quiet.p99Micros()) + " places_mean/p99_us=" + String.join(",", parts) + " "
+                quiet.p99Micros()) + " places_mean/p99/max_us=" + String.join(",", parts) + " "
                 + timings.report().get(timings.report().size() - 1));
     }
 

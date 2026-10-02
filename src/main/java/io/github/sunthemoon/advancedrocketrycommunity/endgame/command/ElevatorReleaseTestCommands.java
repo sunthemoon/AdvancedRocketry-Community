@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.command;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
@@ -17,7 +16,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.command.ReleaseT
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
-import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,15 +24,12 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
 
 /**
@@ -72,14 +67,23 @@ public final class ElevatorReleaseTestCommands {
                                         .executes(this::state)))))));
     }
 
+    /** What {@link #buildPair} built. */
+    record Built(UUID stationId, UUID anchorId, UUID terminalId, BlockPos anchorPos, BlockPos terminalPos) {
+    }
+
     /** A station orbiting Earth with its terminal (chunk forced), and the anchor at the given Overworld position. */
     private int build(CommandContext<CommandSourceStack> context) {
-        MinecraftServer server = context.getSource().getServer();
+        Built built = buildPair(context.getSource().getServer(), BlockPosArgument.getBlockPos(context, "anchor"),
+                UuidArgument.getUuid(context, "owner"), UuidArgument.getUuid(context, "rider"));
+        return report(context, "elevator built station=" + built.stationId() + " anchor=" + built.anchorId()
+                + " terminal=" + built.terminalId() + " anchor_pos=" + compact(built.anchorPos()) + " terminal_pos="
+                + compact(built.terminalPos()));
+    }
+
+    /** The station, its terminal and the anchor of one owner, with the rider a station member; both buffers full. */
+    static Built buildPair(MinecraftServer server, BlockPos anchorPos, UUID owner, UUID rider) {
         ServerLevel overworld = server.overworld();
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
-        BlockPos anchorPos = BlockPosArgument.getBlockPos(context, "anchor");
-        UUID owner = UuidArgument.getUuid(context, "owner");
-        UUID rider = UuidArgument.getUuid(context, "rider");
         UUID stationId = UUID.randomUUID();
         StationRegistrySavedData stations = StationRegistrySavedData.get(server);
         stations.reserve(stationId, owner, "Release elevator", CelestialIds.EARTH_ID, overworld.getGameTime());
@@ -108,9 +112,8 @@ public final class ElevatorReleaseTestCommands {
         ElevatorAnchorBlockEntity anchor = (ElevatorAnchorBlockEntity) overworld.getBlockEntity(anchorPos);
         anchor.assignOwner(owner);
         anchor.storage().energy().set(ElevatorEndpointBlockEntity.ENERGY_CAPACITY);
-        return report(context, "elevator built station=" + stationId + " anchor=" + anchor.deviceId().orElseThrow()
-                + " terminal=" + terminal.deviceId().orElseThrow() + " anchor_pos=" + compact(anchorPos)
-                + " terminal_pos=" + compact(terminalPos));
+        return new Built(stationId, anchor.deviceId().orElseThrow(), terminal.deviceId().orElseThrow(), anchorPos,
+                terminalPos);
     }
 
     private static void clearAbove(ServerLevel level, BlockPos endpoint) {
@@ -164,15 +167,8 @@ public final class ElevatorReleaseTestCommands {
         if (devices.isEmpty() || !(level.getBlockEntity(pos) instanceof ElevatorEndpointBlockEntity endpoint)) {
             return report(context, "elevator ride missing");
         }
-        ServerPlayer rider = server.getPlayerList().getPlayer(riderId);
-        if (rider == null) {
-            rider = new ServerPlayer(server, level, new GameProfile(riderId, RIDER_NAME));
-            Connection connection = new Connection(PacketFlow.SERVERBOUND);
-            new EmbeddedChannel(connection);
-            server.getPlayerList().placeNewPlayer(connection, rider);
-        }
-        Vec3 at = ElevatorEndpointBlockEntity.arrival(pos);
-        rider.teleportTo(level, at.x, at.y, at.z, 0.0F, 0.0F);
+        ServerPlayer rider = ReleaseTestPlayers.place(server, riderId, RIDER_NAME, level,
+                ElevatorEndpointBlockEntity.arrival(pos));
         String code = devices.get().elevatorRides().request(rider, endpoint, service, devices.get()).code().name();
         return report(context, "elevator ride code=" + code + " " + describe(server, riderId, devices.get()));
     }
