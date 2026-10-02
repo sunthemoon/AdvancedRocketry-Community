@@ -14,10 +14,10 @@
       "working_sha256": "a4efc6919a2161097f4450040e5d70e51fc7a328555b0deaea2b3321659132c2"
     },
     {
-      "bytes": 45216,
+      "bytes": 45836,
       "path": "CHANGELOG.md",
-      "sha256": "a8a39fd7553cbabc3cf9f0dcd430b7d4ffb8ac7e67a78fb5b8f4882269d554d2",
-      "working_sha256": "a8a39fd7553cbabc3cf9f0dcd430b7d4ffb8ac7e67a78fb5b8f4882269d554d2"
+      "sha256": "083763164baa08a4710b65ad0fdb709f6d3c34cf2680592aab46a6a764daba0e",
+      "working_sha256": "083763164baa08a4710b65ad0fdb709f6d3c34cf2680592aab46a6a764daba0e"
     },
     {
       "bytes": 8637,
@@ -38,10 +38,16 @@
       "working_sha256": "10cdb59cde4b0094ce72432123667938467ea9aa7914b71217ed0192383917b3"
     },
     {
-      "bytes": 28480,
+      "bytes": 33952,
+      "path": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "sha256": "af938801d566e23dc95e536deaef4badb10e9b99c61b01215bd09fbcbdc17738",
+      "working_sha256": "af938801d566e23dc95e536deaef4badb10e9b99c61b01215bd09fbcbdc17738"
+    },
+    {
+      "bytes": 29848,
       "path": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
-      "sha256": "25cf76d9e4afc2ebf0cd4314787f58fc670baf3262609ac2094d2a6aca617a02",
-      "working_sha256": "25cf76d9e4afc2ebf0cd4314787f58fc670baf3262609ac2094d2a6aca617a02"
+      "sha256": "98ca4fb92bd946abe73fe703fbc98fada4d7a6fe5969cf93dfc779f15c7cb001",
+      "working_sha256": "98ca4fb92bd946abe73fe703fbc98fada4d7a6fe5969cf93dfc779f15c7cb001"
     },
     {
       "bytes": 3418,
@@ -50,10 +56,10 @@
       "working_sha256": "0b99a9fbf326347e3279ddda24f26d5f350b2052821ba1f87b8abe3357598ea3"
     },
     {
-      "bytes": 15219,
+      "bytes": 15402,
       "path": "docs/status/COMPLETION-PLAN.md",
-      "sha256": "ec439bcc11e2e902a8f4c5fd9c3e5deda4dac5a57b4049dcc1f3ffc119f37f3a",
-      "working_sha256": "ec439bcc11e2e902a8f4c5fd9c3e5deda4dac5a57b4049dcc1f3ffc119f37f3a"
+      "sha256": "a7db51f7fe30a958fa576f80d0148fd48a8d1063f66a6c246172570a3f6fe19a",
+      "working_sha256": "a7db51f7fe30a958fa576f80d0148fd48a8d1063f66a6c246172570a3f6fe19a"
     },
     {
       "bytes": 10399,
@@ -74,10 +80,10 @@
       "working_sha256": "d0353ccbb9eef29ede83d27392ed4ea4be7c4187be8fcdf3cbf21a7b847a1595"
     },
     {
-      "bytes": 10990,
+      "bytes": 12457,
       "path": "docs/work/v1.8.0-implementation-log.md",
-      "sha256": "aeb68ccf570dbd9843ada22a51b391e364b00067a7fb4f99d619f60f587f0bb8",
-      "working_sha256": "aeb68ccf570dbd9843ada22a51b391e364b00067a7fb4f99d619f60f587f0bb8"
+      "sha256": "035be159095bf42ef3fed5d6fc400d1dac9254e9466ff92d341a953851eb08d5",
+      "working_sha256": "035be159095bf42ef3fed5d6fc400d1dac9254e9466ff92d341a953851eb08d5"
     },
     {
       "bytes": 2242,
@@ -1886,12 +1892,6 @@
       "working_sha256": "6d0191a372a62140881fc9c2d7a7f6f88b4fc86cc2f2191b050330bbbc5e9355"
     },
     {
-      "bytes": 227,
-      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_titanium_dust.json",
-      "sha256": "fd08915cbef02b24d3828dd3ad203eb22f1decd10dbb76aa8b878d30ef1b0cdd",
-      "working_sha256": "fd08915cbef02b24d3828dd3ad203eb22f1decd10dbb76aa8b878d30ef1b0cdd"
-    },
-    {
       "bytes": 254,
       "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_titanium_iridium_plate.json",
       "sha256": "38fe26ef3a7a2a653bf46fdeb1c3a0d41d2133ce4fc10ac169eab4f46162e97a",
@@ -2486,10 +2486,10 @@
       "working_sha256": "44315481b79dc7c465c9bd0997e0b9c5a7c7828f4b524c4bc98bb40791c160a5"
     },
     {
-      "bytes": 315,
+      "bytes": 181,
       "path": "src/generated/v1.8/resources/data/forge/tags/blocks/ores.json",
-      "sha256": "f64fd004bae71f68c88abce4771a2ee5d9e20d8cd5eb301baa2dbf47cbbe84ec",
-      "working_sha256": "f64fd004bae71f68c88abce4771a2ee5d9e20d8cd5eb301baa2dbf47cbbe84ec"
+      "sha256": "db05f1d7cb0219226034d9cfd265db2f20e3cc9a0771975b2853c4e81cccd166",
+      "working_sha256": "db05f1d7cb0219226034d9cfd265db2f20e3cc9a0771975b2853c4e81cccd166"
     },
     {
       "bytes": 122,
@@ -2822,10 +2822,10 @@
       "working_sha256": "c16539f56202595242f190c65100f7f5dfa3e478bc6dc9a0299cd85c1541a330"
     },
     {
-      "bytes": 315,
+      "bytes": 181,
       "path": "src/generated/v1.8/resources/data/forge/tags/items/ores.json",
-      "sha256": "f64fd004bae71f68c88abce4771a2ee5d9e20d8cd5eb301baa2dbf47cbbe84ec",
-      "working_sha256": "f64fd004bae71f68c88abce4771a2ee5d9e20d8cd5eb301baa2dbf47cbbe84ec"
+      "sha256": "db05f1d7cb0219226034d9cfd265db2f20e3cc9a0771975b2853c4e81cccd166",
+      "working_sha256": "db05f1d7cb0219226034d9cfd265db2f20e3cc9a0771975b2853c4e81cccd166"
     },
     {
       "bytes": 122,
@@ -3140,10 +3140,10 @@
       "working_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3"
     },
     {
-      "bytes": 9444,
+      "bytes": 9729,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialData.java",
-      "sha256": "5ecfc432b534801284304753b90ac33ddbcbc6cf59a0e061aa466c548a58938d",
-      "working_sha256": "5ecfc432b534801284304753b90ac33ddbcbc6cf59a0e061aa466c548a58938d"
+      "sha256": "ba97ba68f09f68be75b65b6c0391c9267765ac773015d9fa2a82d37ec882181e",
+      "working_sha256": "ba97ba68f09f68be75b65b6c0391c9267765ac773015d9fa2a82d37ec882181e"
     },
     {
       "bytes": 6159,
@@ -3152,10 +3152,10 @@
       "working_sha256": "b386bd6ee814bae7d57189bba6e86124cdcba2251f2b222d703cbe1d856291bb"
     },
     {
-      "bytes": 12706,
+      "bytes": 13018,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialRecipes.java",
-      "sha256": "4df687859e8a3738d486a7eea57b19dba2ca9799380a9683c3ba43befca3275e",
-      "working_sha256": "4df687859e8a3738d486a7eea57b19dba2ca9799380a9683c3ba43befca3275e"
+      "sha256": "224c2834d7e8451250c31a093b95c11ea76a546ea0c74a968f7c12da588df5e3",
+      "working_sha256": "224c2834d7e8451250c31a093b95c11ea76a546ea0c74a968f7c12da588df5e3"
     },
     {
       "bytes": 5167,
@@ -3164,16 +3164,16 @@
       "working_sha256": "343e7a26fc21aeff0dbeeab5b089a1afb02d50f0b53b33d83eaa8e9214e195d2"
     },
     {
-      "bytes": 12480,
+      "bytes": 16427,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialGameTests.java",
-      "sha256": "668b53dca10640c8818a81034ba420c02421c93fcd02be323287af79179936cd",
-      "working_sha256": "668b53dca10640c8818a81034ba420c02421c93fcd02be323287af79179936cd"
+      "sha256": "a966b9c8bbe071900f1e2211e515ab8bae0de7b1ddd0444ce3285432ba20cfcf",
+      "working_sha256": "a966b9c8bbe071900f1e2211e515ab8bae0de7b1ddd0444ce3285432ba20cfcf"
     },
     {
-      "bytes": 18453,
+      "bytes": 18705,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialRecipeGameTests.java",
-      "sha256": "57ff541bb3cecbdba0500000b410a4b7adc280975406ced77767ed770c874bea",
-      "working_sha256": "57ff541bb3cecbdba0500000b410a4b7adc280975406ced77767ed770c874bea"
+      "sha256": "543621210189fb0914fc67cfb615fb0b8680c1d190cc0d9354d68dbc27913a0a",
+      "working_sha256": "543621210189fb0914fc67cfb615fb0b8680c1d190cc0d9354d68dbc27913a0a"
     },
     {
       "bytes": 41164,
@@ -3182,16 +3182,40 @@
       "working_sha256": "a51b9d48e79e9178356c2887f8ae5ae931bb0938b692472fdf6301f538f723af"
     },
     {
+      "bytes": 18569,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipe.java",
+      "sha256": "312da50b670210f32736039c09fecfda0f451731f633d4bd008df1ad9e58ebe7",
+      "working_sha256": "312da50b670210f32736039c09fecfda0f451731f633d4bd008df1ad9e58ebe7"
+    },
+    {
+      "bytes": 20149,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerRecipe.java",
+      "sha256": "78572fc87e2f04a656eaa51774868b34569339a5ad1be0674cc6cb0c5d64552e",
+      "working_sha256": "78572fc87e2f04a656eaa51774868b34569339a5ad1be0674cc6cb0c5d64552e"
+    },
+    {
+      "bytes": 6755,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/BoundedItemIngredientCodec.java",
+      "sha256": "2e77f6112db49b463afd791984bd4b625b84cfe7eceb42268d6d2b038042d48f",
+      "working_sha256": "2e77f6112db49b463afd791984bd4b625b84cfe7eceb42268d6d2b038042d48f"
+    },
+    {
+      "bytes": 18150,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineRecipe.java",
+      "sha256": "88e329fdb4c91c697b22c49e84811fd1604fc0c732abd8e60ddd4096a23c73d8",
+      "working_sha256": "88e329fdb4c91c697b22c49e84811fd1604fc0c732abd8e60ddd4096a23c73d8"
+    },
+    {
       "bytes": 9260,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialCatalog.java",
       "sha256": "fdece1ec3f8a73d8df098f8e80007a6ffc6b556c1dcb81421e50f636210e2d71",
       "working_sha256": "fdece1ec3f8a73d8df098f8e80007a6ffc6b556c1dcb81421e50f636210e2d71"
     },
     {
-      "bytes": 8499,
+      "bytes": 8418,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialContent.java",
-      "sha256": "e9edd5f727bbcef0b89221c518066155b3c248f155513d9eda345a70b5125288",
-      "working_sha256": "e9edd5f727bbcef0b89221c518066155b3c248f155513d9eda345a70b5125288"
+      "sha256": "26393b417c937eaa0793a0c998d14e10293c39ac013a45ab6c26a164a7d181a7",
+      "working_sha256": "26393b417c937eaa0793a0c998d14e10293c39ac013a45ab6c26a164a7d181a7"
     },
     {
       "bytes": 3475,
@@ -3200,16 +3224,16 @@
       "working_sha256": "3454d2c470b0a3fa7dc8082e0f3f61f230fbe0e8255ec3cb778c423f9f6a00a3"
     },
     {
-      "bytes": 5328,
+      "bytes": 5333,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressBlock.java",
-      "sha256": "d5ee048fefcd66414c41f32d0bc341d0ed2f9c877a5fe58a2a85f99282f5e722",
-      "working_sha256": "d5ee048fefcd66414c41f32d0bc341d0ed2f9c877a5fe58a2a85f99282f5e722"
+      "sha256": "96bcc5ce11f1635a4ffd45f8ee06f690a9c0b9bd07cdfd09683c0668ab8372d1",
+      "working_sha256": "96bcc5ce11f1635a4ffd45f8ee06f690a9c0b9bd07cdfd09683c0668ab8372d1"
     },
     {
-      "bytes": 8989,
+      "bytes": 9767,
       "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipe.java",
-      "sha256": "45a44193e5fd175846d9ef716b718dfe49a122e97531e0e94b2797dc3fd5f1a7",
-      "working_sha256": "45a44193e5fd175846d9ef716b718dfe49a122e97531e0e94b2797dc3fd5f1a7"
+      "sha256": "bc94c6d06aa4186a7f518f9b03f4f8c9583dbb1bf6bee2bad22988e5ef413fe4",
+      "working_sha256": "bc94c6d06aa4186a7f518f9b03f4f8c9583dbb1bf6bee2bad22988e5ef413fe4"
     },
     {
       "bytes": 2135,
@@ -3254,22 +3278,46 @@
       "working_sha256": "727ce91c8d9f99970f9dc89d176e11a1c247fc408382d32e617edc958b078503"
     },
     {
+      "bytes": 13885,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerRecipeTest.java",
+      "sha256": "25c80f263c745e89018d9a739ddc29ffcde1e8b5a1f750def50b617f6ad74a70",
+      "working_sha256": "25c80f263c745e89018d9a739ddc29ffcde1e8b5a1f750def50b617f6ad74a70"
+    },
+    {
+      "bytes": 3439,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/BoundedItemIngredientCodecTest.java",
+      "sha256": "91fb0e959e48de7818ba7d90f758f906773b1fbfacac911d3c34cafbf901cebc",
+      "working_sha256": "91fb0e959e48de7818ba7d90f758f906773b1fbfacac911d3c34cafbf901cebc"
+    },
+    {
+      "bytes": 6904,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineRecipeTest.java",
+      "sha256": "26aadcae62b4c1d2fe8cf34ba7dbcfffe7756d32424ea12747848402157c6643",
+      "working_sha256": "26aadcae62b4c1d2fe8cf34ba7dbcfffe7756d32424ea12747848402157c6643"
+    },
+    {
       "bytes": 4857,
       "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialCatalogTest.java",
       "sha256": "cb64afa8d246240e5272fdc1947911c8838b8bc74216b77ac22d7f0c3ed32f7b",
       "working_sha256": "cb64afa8d246240e5272fdc1947911c8838b8bc74216b77ac22d7f0c3ed32f7b"
     },
     {
-      "bytes": 11818,
+      "bytes": 16666,
       "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/V180MaterialResourcesTest.java",
-      "sha256": "24be17b2d41f2847565da92e0d7470af01c9c914b1c014d2ecef33bf5a1eca6d",
-      "working_sha256": "24be17b2d41f2847565da92e0d7470af01c9c914b1c014d2ecef33bf5a1eca6d"
+      "sha256": "b4319f0c6fb13ff676bea0b0e0097781b9ea02b9d550df4cb3dbb1026885dc9c",
+      "working_sha256": "b4319f0c6fb13ff676bea0b0e0097781b9ea02b9d550df4cb3dbb1026885dc9c"
     },
     {
-      "bytes": 2275,
+      "bytes": 8818,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipeSerializerTest.java",
+      "sha256": "06298853cf2a1fe8b4a337d39b8f8fdec02ec0fe3c808a625457dec9b8ebfc42",
+      "working_sha256": "06298853cf2a1fe8b4a337d39b8f8fdec02ec0fe3c808a625457dec9b8ebfc42"
+    },
+    {
+      "bytes": 3481,
       "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipeTest.java",
-      "sha256": "ff133dfcf82d8f8485dd6550b051c942e25a5088d7090066c3e225c4ed299384",
-      "working_sha256": "ff133dfcf82d8f8485dd6550b051c942e25a5088d7090066c3e225c4ed299384"
+      "sha256": "a7769cb7ad2d38646b52a33c3b99569258028a86d00f7518a4e11da886217d9b",
+      "working_sha256": "a7769cb7ad2d38646b52a33c3b99569258028a86d00f7518a4e11da886217d9b"
     },
     {
       "bytes": 1903,

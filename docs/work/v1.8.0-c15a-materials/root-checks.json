@@ -7,14 +7,14 @@
         "sha256": "252463ff81bdfc1d48c9e6c3ea397e7ca1bb00f4ebf9e5b804405bd27fe6b2eb"
       },
       {
-        "bytes": 2210000,
+        "bytes": 2211413,
         "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
-        "sha256": "9d7159982458e6820d6a33b1d11b683fe9943e0825e0295570042c2e87e7a7c1"
+        "sha256": "a5581ebea5b0989d56ab1f6611f80a9abcb9311b838dd899fd850df4badbc4e5"
       },
       {
-        "bytes": 4658640,
+        "bytes": 4661620,
         "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
-        "sha256": "6e9238b84ad12949e37ee3169871c69eea31f1894d90be9d17e41059e94aa349"
+        "sha256": "fcc5a8786943d85d8f55ba8245906d1051ab9e95cf45a709f8baeea546a952db"
       }
     ]
   },
@@ -23,14 +23,14 @@
     "errors": 0,
     "failures": 0,
     "skipped": 0,
-    "suites": 260,
-    "tests": 1393
+    "suites": 262,
+    "tests": 1404
   },
   "scope": "Short development checks, not independent review or Required Gate approval",
   "tested_implementation_files": {
     ".github/workflows/repository-docs.yml": "8f5f2234e6c8f1f2194abad8b3718c00f5fe2622e9200ca529c607aace3521fd",
     ".gitignore": "a4efc6919a2161097f4450040e5d70e51fc7a328555b0deaea2b3321659132c2",
-    "CHANGELOG.md": "a8a39fd7553cbabc3cf9f0dcd430b7d4ffb8ac7e67a78fb5b8f4882269d554d2",
+    "CHANGELOG.md": "083763164baa08a4710b65ad0fdb709f6d3c34cf2680592aab46a6a764daba0e",
     "THIRD-PARTY-NOTICES.md": "35e26f1214b090b432934b51e342b1f75c6f897b4e5c9146fa85ea7b94ccd88c",
     "build.gradle": "14adcefb2945f209fa5b0ed4f54657de111be285892a68097828a043e4779e1d",
     "gradle.properties": "16adf8b99f96381b6e3991cf72bc201a8c70f25b56cfec9ee4bb6cb4b4fe30c9",
@@ -334,7 +334,6 @@
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_tin_dust.json": "1ff97ea7747a38909a0e86174cf6498bb546b446b89a804f976b8355d64c402c",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_tin_plate.json": "ccf4b77b3a4d8d1823cc1f9a7684dc9113ce2ada928db09e1774eaf7ac53dc38",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_titanium_aluminide_plate.json": "6d0191a372a62140881fc9c2d7a7f6f88b4fc86cc2f2191b050330bbbc5e9355",
-    "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_titanium_dust.json": "fd08915cbef02b24d3828dd3ad203eb22f1decd10dbb76aa8b878d30ef1b0cdd",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_titanium_iridium_plate.json": "38fe26ef3a7a2a653bf46fdeb1c3a0d41d2133ce4fc10ac169eab4f46162e97a",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/pressing_titanium_plate.json": "b0d7ee8a42181ada0b4ae4815f1a49725168166d4c471ce23605c125acf6074e",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/rolling_aluminum_plate.json": "8855845647f766700f4bbb6cc2a779136481d99c272dffd1623dd8d239797fb2",
@@ -434,7 +433,7 @@
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/overworld_dilithium_ore.json": "8b07e4bafda7c2a383efbfe7903324a3ac09bf04446134185b969db91429e87b",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/overworld_rutile_ore.json": "bb3475d9e726614f57a7a0121713b3eb401e35c19ce42028323c6e8b8c43d348",
     "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/overworld_tin_ore.json": "44315481b79dc7c465c9bd0997e0b9c5a7c7828f4b524c4bc98bb40791c160a5",
-    "src/generated/v1.8/resources/data/forge/tags/blocks/ores.json": "f64fd004bae71f68c88abce4771a2ee5d9e20d8cd5eb301baa2dbf47cbbe84ec",
+    "src/generated/v1.8/resources/data/forge/tags/blocks/ores.json": "db05f1d7cb0219226034d9cfd265db2f20e3cc9a0771975b2853c4e81cccd166",
     "src/generated/v1.8/resources/data/forge/tags/blocks/ores/aluminum.json": "d6d10b6a6ce47c4b3cf1d7660860d077e1fe5771321f07e982a9ffed4a764892",
     "src/generated/v1.8/resources/data/forge/tags/blocks/ores/dilithium.json": "fb5e0a23063f4f28aade45061791b8bbd844a504ad562111677294ef62554597",
     "src/generated/v1.8/resources/data/forge/tags/blocks/ores/iridium.json": "f23c1218619aed32c605c891b74883651f5bbbacffba052e988063f2619a37a0",
@@ -490,7 +489,7 @@
     "src/generated/v1.8/resources/data/forge/tags/items/nuggets/titanium.json": "03842691a8514f5aa40843977f5ab76fe15ce2972255cb0b667fce6128ca5a9c",
     "src/generated/v1.8/resources/data/forge/tags/items/nuggets/titanium_aluminide.json": "8b0c3eb5ffee55b4c5182dcb307360ea2cc6bcd1c458f406b9d4b80f48148f8c",
     "src/generated/v1.8/resources/data/forge/tags/items/nuggets/titanium_iridium.json": "c16539f56202595242f190c65100f7f5dfa3e478bc6dc9a0299cd85c1541a330",
-    "src/generated/v1.8/resources/data/forge/tags/items/ores.json": "f64fd004bae71f68c88abce4771a2ee5d9e20d8cd5eb301baa2dbf47cbbe84ec",
+    "src/generated/v1.8/resources/data/forge/tags/items/ores.json": "db05f1d7cb0219226034d9cfd265db2f20e3cc9a0771975b2853c4e81cccd166",
     "src/generated/v1.8/resources/data/forge/tags/items/ores/aluminum.json": "d6d10b6a6ce47c4b3cf1d7660860d077e1fe5771321f07e982a9ffed4a764892",
     "src/generated/v1.8/resources/data/forge/tags/items/ores/dilithium.json": "fb5e0a23063f4f28aade45061791b8bbd844a504ad562111677294ef62554597",
     "src/generated/v1.8/resources/data/forge/tags/items/ores/iridium.json": "f23c1218619aed32c605c891b74883651f5bbbacffba052e988063f2619a37a0",
@@ -543,18 +542,22 @@
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java": "9fedf918d8433c0617482c48959f89a43e4d13a572dd056957e0891d77f54f43",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java": "2c7ef9ab0846ae2d2088b066f4f44ff197187db50c695f3d60f1b74a7f86cd2d",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialData.java": "5ecfc432b534801284304753b90ac33ddbcbc6cf59a0e061aa466c548a58938d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialData.java": "ba97ba68f09f68be75b65b6c0391c9267765ac773015d9fa2a82d37ec882181e",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialModels.java": "b386bd6ee814bae7d57189bba6e86124cdcba2251f2b222d703cbe1d856291bb",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialRecipes.java": "4df687859e8a3738d486a7eea57b19dba2ca9799380a9683c3ba43befca3275e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialRecipes.java": "224c2834d7e8451250c31a093b95c11ea76a546ea0c74a968f7c12da588df5e3",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialWorldgen.java": "343e7a26fc21aeff0dbeeab5b089a1afb02d50f0b53b33d83eaa8e9214e195d2",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialGameTests.java": "668b53dca10640c8818a81034ba420c02421c93fcd02be323287af79179936cd",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialRecipeGameTests.java": "57ff541bb3cecbdba0500000b410a4b7adc280975406ced77767ed770c874bea",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialGameTests.java": "a966b9c8bbe071900f1e2211e515ab8bae0de7b1ddd0444ce3285432ba20cfcf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialRecipeGameTests.java": "543621210189fb0914fc67cfb615fb0b8680c1d190cc0d9354d68dbc27913a0a",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RollingMachineGameTests.java": "a51b9d48e79e9178356c2887f8ae5ae931bb0938b692472fdf6301f538f723af",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/electrolyzer/ElectrolyzerRecipe.java": "312da50b670210f32736039c09fecfda0f451731f633d4bd008df1ad9e58ebe7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerRecipe.java": "78572fc87e2f04a656eaa51774868b34569339a5ad1be0674cc6cb0c5d64552e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/BoundedItemIngredientCodec.java": "2e77f6112db49b463afd791984bd4b625b84cfe7eceb42268d6d2b038042d48f",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineRecipe.java": "88e329fdb4c91c697b22c49e84811fd1604fc0c732abd8e60ddd4096a23c73d8",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialCatalog.java": "fdece1ec3f8a73d8df098f8e80007a6ffc6b556c1dcb81421e50f636210e2d71",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialContent.java": "e9edd5f727bbcef0b89221c518066155b3c248f155513d9eda345a70b5125288",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialContent.java": "26393b417c937eaa0793a0c998d14e10293c39ac013a45ab6c26a164a7d181a7",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialTags.java": "3454d2c470b0a3fa7dc8082e0f3f61f230fbe0e8255ec3cb778c423f9f6a00a3",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressBlock.java": "d5ee048fefcd66414c41f32d0bc341d0ed2f9c877a5fe58a2a85f99282f5e722",
-    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipe.java": "45a44193e5fd175846d9ef716b718dfe49a122e97531e0e94b2797dc3fd5f1a7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressBlock.java": "96bcc5ce11f1635a4ffd45f8ee06f690a9c0b9bd07cdfd09683c0668ab8372d1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipe.java": "bc94c6d06aa4186a7f518f9b03f4f8c9583dbb1bf6bee2bad22988e5ef413fe4",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/worldgen/OverworldOres.java": "b3464ee93d74ad644db7933e0253fc9620541fd594fa934455a93a6474dd26fb",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/worldgen/SwitchPlacement.java": "490f084655e16796fc3b8d4140607bb31d5208370670505ed73fe44034fbf0d2",
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.java": "69a3612d22e5d88f93557bbea0bf00451d3ccd5a98b8828eacba22756a2f0561",
@@ -562,11 +565,16 @@
     "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/compat/jei/SmallPlatePressViewTest.java": "cb25126934b1e5131681aef57e3ea69087a63c8e5f9fb73a3128bf53426536a7",
     "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java": "cf73dfc6526b377c6a883194c92b2906386104523237490dfaf665395c803488",
     "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArtTest.java": "727ce91c8d9f99970f9dc89d176e11a1c247fc408382d32e617edc958b078503",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerRecipeTest.java": "25c80f263c745e89018d9a739ddc29ffcde1e8b5a1f750def50b617f6ad74a70",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/BoundedItemIngredientCodecTest.java": "91fb0e959e48de7818ba7d90f758f906773b1fbfacac911d3c34cafbf901cebc",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineRecipeTest.java": "26aadcae62b4c1d2fe8cf34ba7dbcfffe7756d32424ea12747848402157c6643",
     "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialCatalogTest.java": "cb64afa8d246240e5272fdc1947911c8838b8bc74216b77ac22d7f0c3ed32f7b",
-    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/V180MaterialResourcesTest.java": "24be17b2d41f2847565da92e0d7470af01c9c914b1c014d2ecef33bf5a1eca6d",
-    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipeTest.java": "ff133dfcf82d8f8485dd6550b051c942e25a5088d7090066c3e225c4ed299384",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/V180MaterialResourcesTest.java": "b4319f0c6fb13ff676bea0b0e0097781b9ea02b9d550df4cb3dbb1026885dc9c",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipeSerializerTest.java": "06298853cf2a1fe8b4a337d39b8f8fdec02ec0fe3c808a625457dec9b8ebfc42",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/press/SmallPlatePressRecipeTest.java": "a7769cb7ad2d38646b52a33c3b99569258028a86d00f7518a4e11da886217d9b",
     "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/worldgen/SwitchPlacementTest.java": "fedbc4ea5b0dddf95350d897ac655cb71dfc67fa6b56c9983d9d08c0cbee418c",
     "tests/test_screen_generated_art.py": "40a6698e09754c05933dfad5118d584688a6bf88a90d84a209b69cea0e7756c8",
+    "tests/test_validate_v180_content_ledger.py": "46e287808e5bd332e9220ef882889bdcd2ade62b9f9bccb10b8e200f905b902e",
     "tools/audit/screen_generated_art.py": "bb9935fbf7fcc62818084b68ef4784208fb15304adc62db666f5462374c04516"
   }
 }

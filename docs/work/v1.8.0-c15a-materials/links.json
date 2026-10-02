@@ -49,6 +49,50 @@
       "target": "work/v1.0.0-core-baseline-audit.md"
     },
     {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-content-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-asset-plan.csv"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-asset-import-allowlist.txt"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-vanilla-derivation.json"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-content-ledger.csv"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-preparation/review-04-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "target": "../work/v1.8.0-preparation/review-05-dispositions.md"
+    },
+    {
       "document": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
       "target": "../work/v1.8.0-content-audit.md"
     },
@@ -266,7 +310,27 @@
     },
     {
       "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
+      "target": "review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
+      "target": "reviews/REVIEW-01.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
+      "target": "review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/VERIFICATION.md",
       "target": "../../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/review-01-dispositions.md",
+      "target": "reviews/REVIEW-01.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15a-materials/review-01-dispositions.md",
+      "target": "VERIFICATION.md"
     },
     {
       "document": "docs/work/v1.8.0-implementation-log.md",
@@ -319,6 +383,10 @@
     {
       "document": "docs/work/v1.8.0-implementation-log.md",
       "target": "v1.8.0-c15a-materials/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15a-materials/review-01-dispositions.md"
     }
   ],
   "result": "PASS",
