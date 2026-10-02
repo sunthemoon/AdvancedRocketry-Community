@@ -258,6 +258,7 @@ public final class TransitLedger implements TransitLedgerView {
                 continue;
             }
             idle.remove(id);
+            awaitPruningSave(root, endpoint);
             UUID endpointId = endpoint.endpointId();
             UUID owner = endpoint.endpointOwner().get();
             boolean changed = endpoint.source().reconcile(this, endpointId, owner, now).changed();
@@ -290,6 +291,23 @@ public final class TransitLedger implements TransitLedgerView {
                 idle.add(id);
             } else {
                 idle.remove(id);
+            }
+        }
+    }
+
+    /**
+     * A stub paid at this endpoint is pruned by a save of its chunk at least 40 ticks after the acknowledgement. Once
+     * a durable acknowledgement is that old, the chunk is kept dirty until such a save prunes it: the saves of a quiet
+     * chunk may all fall inside the 40 ticks, and nothing would save it again (found by the C13R-F4 crash cuts).
+     */
+    private void awaitPruningSave(EndgameRoot root, TransitEndpoint endpoint) {
+        UUID id = endpoint.endpointId();
+        for (TransitRecord record : root.transits().forEndpoint(id)) {
+            if (record.acknowledged() && id.equals(record.paidEndpoint()) && record.ackDurable(root.saveEpoch())
+                    && now - acknowledgedAt.getOrDefault(record.key(), Long.MIN_VALUE / 2)
+                    >= EndgameLimits.PERSISTENCE_AGE_TICKS) {
+                endpoint.transitChanged();
+                return;
             }
         }
     }

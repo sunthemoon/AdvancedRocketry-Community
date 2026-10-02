@@ -219,6 +219,50 @@ final class TransitLedgerTest {
         assertTrue(service.status().contains("transits=0 stubs=0"), service.status());
     }
 
+    /**
+     * A stub is pruned by a save of its paid endpoint's chunk at least 40 ticks after the acknowledgement. When the
+     * only save came earlier, the ledger keeps that chunk dirty from the 40th tick on until a later save prunes it
+     * (found by the C13R-F4 crash cuts: a quiet chunk was never saved again, and the stub stayed).
+     */
+    @Test
+    void aStubWhoseOnlySaveCameTooEarlyKeepsItsChunkDirtyUntilPruned() {
+        EndgameService service = service(TransitLimits.DEFAULTS);
+        Endpoint destination = new Endpoint(DESTINATION);
+        TransitLedger ledger = service.transits();
+        ledger.attach(destination);
+        TransitKey key = transit(service, SOURCE, 1, DESTINATION, TransitRecord::arrived);
+        durable(service);
+        service.tick(100L);
+        assertTrue(destination.destination.incoming().containsKey(key), "not claimed");
+        persist(service);
+        save(service, destination, DESTINATION_POS);
+        service.tick(101L);
+        service.tick(141L);
+        assertEquals(1, destination.received.size(), "the aged incoming payload did not move");
+        persist(service);
+        service.tick(142L);
+        assertTrue(service.root().orElseThrow().transits().record(key).orElseThrow().stub(), "not a stub");
+        save(service, destination, DESTINATION_POS);
+        service.tick(143L);
+        assertTrue(service.root().orElseThrow().transits().record(key).isPresent(),
+                "pruned by a save 2 ticks after the acknowledgement");
+        destination.changes = 0;
+        for (long now = 144L; now < 181L; now++) {
+            service.tick(now);
+        }
+        assertEquals(0, destination.changes, "the chunk was marked dirty before the acknowledgement aged");
+        service.tick(181L);
+        service.tick(182L);
+        assertTrue(destination.changes > 0, "nothing keeps the quiet chunk dirty for the save that prunes the stub");
+        save(service, destination, DESTINATION_POS);
+        service.tick(183L);
+        assertTrue(service.root().orElseThrow().transits().record(key).isEmpty(), "the aged save did not prune it");
+        destination.changes = 0;
+        service.tick(184L);
+        service.tick(185L);
+        assertEquals(0, destination.changes, "the chunk stays dirty after the stub was pruned");
+    }
+
     @Test
     void escrowAdmissionCountsKnownOutboxEntriesAndAPendingObservationAppliesAtLoad() {
         EndgameService service = service(new TransitLimits(256, 2));
