@@ -84,12 +84,12 @@ public final class EndgameService {
         return timings;
     }
 
-    /** Operator and owner actions on the ledger (redirect, purge, resettle, resolve). */
     /** Section 7: the spacing and per-station cooldown of player-triggered barrier flushes. */
     public BarrierSpacing barrierSpacing() {
         return barrierSpacing;
     }
 
+    /** Operator and owner actions on the ledger (redirect, purge, resettle, resolve). */
     public TransitOperations transitOperations() {
         return transitOperations;
     }
