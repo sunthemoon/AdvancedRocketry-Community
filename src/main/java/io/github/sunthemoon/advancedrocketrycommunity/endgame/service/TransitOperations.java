@@ -215,7 +215,9 @@ public final class TransitOperations {
         int receipts = 0;
         int left = 0;
         if (frozen) {
-            boolean tombstone = root.tombstone(id).isPresent();
+            // A tombstone, or a MISSING index record (review C12R-L2), keeps dispatched_through: it proves an entry
+            // above it was never registered.
+            boolean tombstone = root.retired(id);
             long dispatched = root.dispatchedThrough(id);
             if (TransitRules.rollback(endpoint.source().nextSeq(), dispatched)) {
                 service.audit().line(now, SYSTEM, "SOURCE_ROLLBACK", "OK", id, owner, actor, "resolve next_seq="

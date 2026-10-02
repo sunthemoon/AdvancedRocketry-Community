@@ -267,4 +267,40 @@ final class TransitOperationsTest {
         assertTrue(root.transits().record(ownClaim).orElseThrow().acknowledged(), "the claim was not acknowledged");
         assertFalse(copy.source.holdsContents() || copy.destination.holdsContents());
     }
+
+    /**
+     * Review C12R-L2: a MISSING endpoint keeps its index record and dispatched_through; a resolve of its returning
+     * copy gives back the entry above dispatched_through and discards the registered one.
+     */
+    @Test
+    void aResolveOfAReturningMissingEndpointReturnsWhatItsDispatchedThroughProvesUnregistered() {
+        EndgameService service = service();
+        service.barrier(root -> {
+            root.registerTransit(TransitRecord.registered(DESTINATION, new OutboxEntry(1L, SPARE, payload(), 1, 20,
+                    EndgameSystem.RAILGUN), OWNER, root.saveEpoch(), 0L));
+            root.markMissing(DESTINATION);
+            return null;
+        });
+        EndgameRoot root = service.root().orElseThrow();
+        assertTrue(root.endpoint(DESTINATION).isPresent() && root.tombstone(DESTINATION).isEmpty(),
+                "a MISSING endpoint keeps its index record and has no tombstone");
+        Retired copy = new Retired();
+        CompoundTag section = new CompoundTag();
+        section.putLong("next_seq", 3L);
+        ListTag outbox = new ListTag();
+        outbox.add(io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitCodec.encodeEntry(
+                new OutboxEntry(1L, SPARE, payload(), 1, 20, EndgameSystem.RAILGUN)));
+        outbox.add(io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitCodec.encodeEntry(
+                new OutboxEntry(2L, SPARE, payload(), 1, 20, EndgameSystem.RAILGUN)));
+        section.put("outbox", outbox);
+        section.put("incoming", new ListTag());
+        section.put("receipts", new ListTag());
+        section.put("conflicts", new ListTag());
+        copy.source.read(section);
+        copy.destination.read(section);
+        TransitOperations.Resolved resolved = service.transitOperations().resolve(copy, OWNER, 0L, null);
+        assertEquals(new TransitOperations.Resolved(1, 0, 1, 0, 0), resolved);
+        assertEquals(1, copy.input.size(), "the unregistered entry (seq 2) did not go back to the input");
+        assertFalse(copy.source.holdsContents());
+    }
 }
