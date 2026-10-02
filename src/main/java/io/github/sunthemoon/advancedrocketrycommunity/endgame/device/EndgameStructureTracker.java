@@ -62,7 +62,7 @@ public final class EndgameStructureTracker {
     }
 
     public boolean consumeDirty(ResourceKey<Level> level, BlockPos controller) {
-        return dirty.remove(new Key(level, controller));
+        return !dirty.isEmpty() && dirty.remove(new Key(level, controller));
     }
 
     public int tracked() {

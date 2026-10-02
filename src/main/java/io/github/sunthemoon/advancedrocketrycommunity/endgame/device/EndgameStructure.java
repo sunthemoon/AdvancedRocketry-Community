@@ -41,6 +41,10 @@ public final class EndgameStructure {
     private ServerLevel trackedLevel;
     @Nullable
     private BlockPos trackedController;
+    @Nullable
+    private Direction trackedFacing;
+    @Nullable
+    private MultiblockPatternDefinition trackedDefinition;
 
     public EndgameStructure(String patternId, Block controllerBlock) {
         this.patternId = Objects.requireNonNull(patternId, "patternId");
@@ -66,14 +70,20 @@ public final class EndgameStructure {
             return;
         }
         PatternTransform transform = forFacing(facing);
-        BoundingBox box = box(definition.get(), transform, controller);
-        if (!box.equals(trackedBox) || trackedLevel != level) {
-            untrack(devices);
-            devices.structures().track(level.dimension(), controller, box);
-            trackedBox = box;
-            trackedLevel = level;
-            trackedController = controller.immutable();
-            pending = true;
+        // The box is recomputed only when what it depends on changed (C13: an idle controller ticks cheaply).
+        if (definition.get() != trackedDefinition || facing != trackedFacing || trackedLevel != level
+                || !controller.equals(trackedController)) {
+            BoundingBox box = box(definition.get(), transform, controller);
+            if (!box.equals(trackedBox) || trackedLevel != level) {
+                untrack(devices);
+                devices.structures().track(level.dimension(), controller, box);
+                trackedBox = box;
+                trackedLevel = level;
+                trackedController = controller.immutable();
+                pending = true;
+            }
+            trackedFacing = facing;
+            trackedDefinition = definition.get();
         }
         if (devices.structures().consumeDirty(level.dimension(), controller)) {
             pending = true;
@@ -106,6 +116,8 @@ public final class EndgameStructure {
         trackedBox = null;
         trackedLevel = null;
         trackedController = null;
+        trackedFacing = null;
+        trackedDefinition = null;
         code = EndgameCode.UNFORMED;
         known = false;
         pending = true;
