@@ -58,6 +58,7 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
     public static final String PATTERN_ID = "advancedrocketrycommunity:black_hole_generator";
     public static final int FUEL_SLOTS = 9;
     public static final int ENERGY_CAPACITY = 2_000_000;
+    private static final int IDLE_CHECK_TICKS = 20;
     public static final int MAX_OUTPUT_PER_TICK = 20_000;
     private static final Set<String> STATE_KEYS = Set.of("fuel", "remaining_ticks", "burn_rate", "energy");
 
@@ -78,6 +79,7 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
     private int energy;
     private int remaining;
     private int rate;
+    private long nextIdleCheck;
 
     private final EndgameStructure structure = new EndgameStructure(PATTERN_ID, ModBlocks.BLACK_HOLE_GENERATOR.get());
     private EndgameCode status = EndgameCode.NO_FUEL;
@@ -203,6 +205,12 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
         if (!structure.known()) {
             return;
         }
+        // C13: with nothing to burn and nothing to push, the generator re-derives its state every 20 ticks only.
+        boolean idle = remaining == 0 && energy == 0 && firstFuelSlot() < 0;
+        if (idle && now < nextIdleCheck) {
+            return;
+        }
+        nextIdleCheck = idle ? now + IDLE_CHECK_TICKS : now;
         BlackHoleSettings settings = devices.get().blackHoleSettings();
         Eligibility eligibility = eligibility(level, devices.get());
         if (eligibility.code() != EndgameCode.OK) {

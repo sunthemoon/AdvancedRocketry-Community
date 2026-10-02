@@ -22,7 +22,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class ElevatorTerminalBlockEntity extends ElevatorEndpointBlockEntity {
     public static final ResourceLocation KIND = ModIdentity.id("elevator_terminal");
 
+    private static final int PLACEMENT_CHECK_TICKS = 20;
+
     private EndgameCode placement = EndgameCode.TERMINAL_UNAVAILABLE;
+    private long nextPlacementCheck;
     private Optional<UUID> station = Optional.empty();
 
     public ElevatorTerminalBlockEntity(BlockPos position, BlockState state) {
@@ -41,6 +44,11 @@ public final class ElevatorTerminalBlockEntity extends ElevatorEndpointBlockEnti
 
     @Override
     protected boolean placementReady(ServerLevel level, BlockState state, UUID id, EndgameDevices devices, long now) {
+        // C13: the station lookup runs every 20 ticks; every action re-derives what it needs at use.
+        if (now < nextPlacementCheck) {
+            return true;
+        }
+        nextPlacementCheck = now + PLACEMENT_CHECK_TICKS;
         Optional<StationState> found = EndgameStations.at(level, worldPosition).station();
         station = found.map(StationState::stationId);
         placement = found.isEmpty() ? EndgameCode.TERMINAL_UNAVAILABLE
