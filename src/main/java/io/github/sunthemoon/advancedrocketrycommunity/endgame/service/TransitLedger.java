@@ -15,7 +15,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRec
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRules;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTags;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -187,10 +186,7 @@ public final class TransitLedger implements TransitLedgerView {
     }
 
     private void arrive(EndgameRoot root) {
-        List<TransitRecord> due = root.transits().records().stream()
-                .filter(record -> record.state() == TransitRecord.State.IN_TRANSIT && record.arriveAt() <= now)
-                .sorted(Comparator.comparingLong(TransitRecord::arriveAt).thenComparing(TransitRecord::key))
-                .limit(ARRIVALS_PER_TICK).toList();
+        List<TransitRecord> due = root.transits().due(now, ARRIVALS_PER_TICK);
         if (!due.isEmpty()) {
             service.coalesced(r -> {
                 due.forEach(record -> r.transits().replace(record.arrived()));
@@ -202,8 +198,8 @@ public final class TransitLedger implements TransitLedgerView {
 
     /** A durably acknowledged record keeps no payload: it is a stub until its paid endpoint's move is saved. */
     private void dropPayloadsOfDurableAcknowledgements(EndgameRoot root) {
-        List<TransitRecord> stubs = root.transits().records().stream()
-                .filter(record -> !record.stub() && record.ackDurable(root.saveEpoch())).toList();
+        List<TransitRecord> stubs = root.transits().acknowledgedWithPayload().stream()
+                .filter(record -> record.ackDurable(root.saveEpoch())).toList();
         if (!stubs.isEmpty()) {
             service.coalesced(r -> {
                 stubs.forEach(record -> r.transits().replace(record.asStub()));
@@ -229,6 +225,13 @@ public final class TransitLedger implements TransitLedgerView {
             }
             if (endpoint.transitFrozen() || endpoint.endpointOwner().isEmpty() || root.endpoint(endpointId)
                     .filter(record -> record.state() == EndpointRecord.State.ACTIVE).isEmpty()) {
+                cursor = id;
+                continue;
+            }
+            if (!endpoint.source().holdsContents() && !endpoint.destination().holdsContents()
+                    && !root.transits().names(endpointId)
+                    && !TransitRules.rollback(endpoint.source().nextSeq(), root.dispatchedThrough(endpointId))) {
+                // Nothing to reconcile: no outbox entry, incoming payload, receipt, record or rollback (C13).
                 cursor = id;
                 continue;
             }
