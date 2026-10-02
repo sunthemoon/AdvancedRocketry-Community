@@ -177,22 +177,65 @@ derivation check excluded (the lightwood leaves and log top) are drawn new.
 Bindings for the two new Levels are added at startup by the existing ADR-032
 rules; Tau Ceti e is unchanged.
 
+**Access path.** Both bodies are orbitable and landable, and both require
+discovery. A player reaches them in four steps, each an existing mechanism:
+
+1. **Discovery (ADR-037, ADR-043).** The data satellite's allowed targets gain
+   `tau_ceti_f` and `tau_ceti_g` through a v1.8 copy of
+   `satellite_definitions/data_satellite.json` (duration 200 ticks, yield 120,
+   discovery cost 100, unchanged), which supersedes the v1.5 copy (§7). The
+   target is chosen at the satellite terminal and does not depend on where the
+   satellite flies, as for Tau Ceti e (ADR-043), so a player discovers the
+   bodies without leaving the Sun's system. A surface visit records discovery
+   as for every mapped body.
+2. **Warp (ADR-044).** A known, orbitable body is a warp target. A station warps
+   to the orbit of `tau_ceti_f` or `tau_ceti_g` at the interstellar cost
+   (`stations.warpCostInterstellar`, default 8,000,000 FE), or between them at
+   the in-system cost. Rockets never fly between systems (ADR-043), so the
+   station is the only way in and out.
+3. **Routes.** Three bidirectional routes, all inside the Tau Ceti system, are
+   added in the same v1.8 output: `tau_ceti_f_surface_orbit` (25 distance
+   units) and `tau_ceti_g_surface_orbit` (35) between each surface and its
+   orbit, and `tau_ceti_f_g` (60) between the two surfaces. A rocket docked at a
+   station plans from the station's orbit body (ADR-044 §5), so it can land on
+   the surface below, return to the station, and fly between the two surfaces.
+   No Earth route is added; it would be interstellar and the route validator
+   rejects it (ADR-043).
+4. **Landing.** The bodies use the heightmap landing rule of Mars and Venus
+   (ADR-033), not the Moon's fixed pads.
+
+Tau Ceti e keeps no route, as ADR-043 disclosed.
+
+**Optional content.** Nothing in the classic progression depends on C15c. The
+lightwood, electric mushrooms, swamp trees and crystal blocks feed no recipe of
+another batch; the only legacy consumer of a crystal (`crystal@3` in the vacuum
+laser recipe) was redesigned by ADR-055, whose laser drill is built from the
+endgame casing and a laser lens without crystals. The recipe graph check
+(ADR-061 §5.3) treats both Levels as reachable only after an interstellar warp
+and must still find every C16–C18 output reachable without them.
+
 ### 7. Persistence and migration
 
 No saved-data schema changes. New IDs only (ADR-061 §1). New Levels bind on
-first start. Data packs that already use any new ID in this namespace fail
-startup through the existing binding checks.
+first start. Existing discovery records stay valid; the two new bodies start
+undiscovered in every world, old and new. Data packs that already use any new
+ID in this namespace fail startup through the existing binding checks.
 
 ### 8. Tests
 
 - A0: material table completeness against the ledger; recipe and tag JSON
   audit; DataGen determinism; feature bound checks; the asset records and the
   derivation check for every imported file.
+- A0: the data satellite definition lists both new bodies; the three Tau Ceti
+  routes stay inside one system; the recipe graph check passes with both Tau
+  Ceti Levels removed from the reachable set.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
   below; unpowered; repeated pulses; unloaded neighbour), smelting and rolling
   recipes, ore feature placement in a test chunk (including iridium on the
   Moon and Mars and none in the Overworld), a crater carver bound test,
-  rocket landing on the new Moon terrain, each server switch.
+  rocket landing on the new Moon terrain, each server switch, and the Tau Ceti
+  path: a data-satellite discovery of `tau_ceti_f`, an interstellar warp to its
+  orbit, a docked rocket's landing on its surface and return to the station.
 - S1: a packaged dedicated server generates chunks in the Moon, Mars, Venus
   and both new Levels without errors, within the tick budget of a reference
   chunk-generation run, and an upgraded v1.7 world keeps its explored chunks.
