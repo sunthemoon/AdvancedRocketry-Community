@@ -116,7 +116,7 @@ block:planetAnalyser,PLANNED,C18c,astrobody data processor,ADR-062,turns survey 
 block:planetHoloSelector,REDESIGNED,v1.5.0,station warp destination command,ADR-044 ADR-046 ADR-062,it set the station warp destination; the C17b warp screen fronts the command,
 block:planetSelector,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,multiblock selector replaced by screens,
 block:planks,PLANNED,C15c,lightwood planks,ADR-062,alien forest flora,
-block:platepress,PLANNED,C15a,small plate press,ADR-062,redstone-powered press over obsidian; early plates,
+block:platepress,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:small_plate_press,ADR-063,redstone-powered press over obsidian; early plates,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 block:precisionassemblingmachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:precision_assembler,ADR-016 ADR-019,,
 block:precisionlaseretcher,PLANNED,C16c,precision laser etcher,ADR-062,circuit plates,
 block:quartzcrucible,PLANNED,C16c,quartz crucible block,ADR-062,crystallizer structure,
@@ -389,7 +389,7 @@ config_file:planetDefs.xml,REDESIGNED,v0.3.0,import-only XML adapter and celesti
 config_file:PrecisionAssembler.xml,REDESIGNED,v1.2.0,data pack recipes,ADR-016,,
 config_file:PrecisionLaserEtcher.xml,PLANNED,C16c,data pack recipes,ADR-062,,
 config_file:RollingMachine.xml,REDESIGNED,v1.2.0,data pack recipes,ADR-016,,
-config_file:SmallPlatePress.xml,PLANNED,C15a,data pack recipes,ADR-062,,
+config_file:SmallPlatePress.xml,REDESIGNED,v1.8.0,small_plate_press recipe type (data pack recipes),ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 enchantment:spacebreathing,PLANNED,C18b,space breathing enchantment,ADR-025 ADR-062,sealed armor through the suit provider API,
 entity:ARAbductedItem,REDESIGNED,v1.7.0,client railgun effect,ADR-056,no entity,
 entity:ARHoverCraft,DEFERRED,post-2.0,-,ADR-062,with the hovercraft item,
@@ -455,7 +455,7 @@ integration:jei/chemicalReactor,PLANNED,C16c,JEI category,ADR-062,,
 integration:jei/crystallizer,PLANNED,C16c,JEI category,ADR-062,,
 integration:jei/electrolyser,IMPLEMENTED,v1.2.0,JEI category,V1.2.0,,
 integration:jei/lathe,PLANNED,C16b,JEI category,ADR-062,,
-integration:jei/platePresser,PLANNED,C15a,JEI category,ADR-062,,
+integration:jei/platePresser,IMPLEMENTED,v1.8.0,JEI small plate press category,ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 integration:jei/precisionAssembler,IMPLEMENTED,v1.2.0,JEI category,V1.2.0,,
 integration:jei/precisionLaserEtcher,PLANNED,C16c,JEI category,ADR-062,,
 integration:jei/rollingMachine,IMPLEMENTED,v1.2.0,JEI category,V1.2.0,,
@@ -556,21 +556,21 @@ libvulpes:recipe/holoprojector,MERGED,-,libvulpes:java/itemHoloProjector,ADR-062
 libvulpes:recipe/linker,MERGED,-,libvulpes:java/itemLinker,ADR-062,same item,
 libvulpes:recipe/productrod,MERGED,-,material:Titanium,ADR-062,rod product of the material sets,
 libvulpes:recipe/structuremachine,MERGED,-,libvulpes:java/blockStructureBlock,ADR-062,same block,
-material:Aluminum,PLANNED,C15a,aluminum material set,ADR-062,"ore, ingot, nugget, dust, plate, sheet, coil, block (ADR-063 section 1)",
+material:Aluminum,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:aluminum_ingot and the aluminum set,ADR-063,"ore, ingot, nugget, dust, plate, sheet, coil, block (ADR-063 section 1)",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 material:Carbon,PLANNED,C16d,carbon brick,ADR-062,legacy ingotCarbon is the carbon brick,
-material:Copper,PLANNED,C15a,copper products on the vanilla ingot,ADR-062,"vanilla copper ore, ingot and block; nugget, dust, plate, sheet, rod and coil added",
-material:Dilithium,PLANNED,C15a,dilithium material set,ADR-062,"ore, dust, crystal (ADR-063 section 1)",
-material:Gold,PLANNED,C15a,"gold plate, dust and coil",ADR-062,vanilla ingot; products added,
-material:Iridium,PLANNED,C15a,iridium material set,ADR-062,"ore, ingot, nugget, dust, plate, rod, coil, block; placed on the Moon and Mars in C15b",
-material:Iron,PLANNED,C15a,"iron plate, rod, sheet and dust",ADR-062,vanilla ingot; products added,
-material:Rutile,PLANNED,C15a,rutile ore,ADR-062,titanium ore,
-material:Silicon,PLANNED,C15a,silicon material set,ADR-062,"ingot, nugget, dust, plate, boule; wafer exists",
-material:Steel,PLANNED,C15a,steel material set,ADR-062,"ingot, nugget, dust, plate, sheet, rod, gear, fan, block",
+material:Copper,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:copper_plate and the copper products,ADR-063,"vanilla copper ore, ingot and block; nugget, dust, plate, sheet, rod and coil added",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Dilithium,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:dilithium_crystal and the dilithium set,ADR-063,"ore, dust, crystal (ADR-063 section 1)",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Gold,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:gold_plate and the gold products,ADR-063,vanilla ingot; products added,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Iridium,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:iridium_ingot and the iridium set,ADR-063,"ore, ingot, nugget, dust, plate, rod, coil, block; placed on the Moon and Mars in C15b",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Iron,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:iron_plate and the iron products,ADR-063,vanilla ingot; products added,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Rutile,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rutile_ore,ADR-063,titanium ore,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Silicon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:silicon_ingot and the silicon set,ADR-063,"ingot, nugget, dust, plate, boule; wafer exists",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Steel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:steel_ingot and the steel set,ADR-063,"ingot, nugget, dust, plate, sheet, rod, gear, fan, block",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 material:Thermite,PLANNED,C18a,thermite,ADR-062,legacy dustThermite is the thermite item,
-material:Tin,PLANNED,C15a,tin material set,ADR-062,"ore, ingot, nugget, dust, plate, block",
-material:Titanium,PLANNED,C15a,titanium material set,ADR-062,"ingot, nugget, dust, plate, sheet, rod, gear, coil, block",
-material:TitaniumAluminide,PLANNED,C15a,titanium aluminide set,ADR-062,"ingot, nugget, dust, plate, sheet, rod, gear, block; alloy made in the arc furnace (C16b)",
-material:TitaniumIridium,PLANNED,C15a,titanium iridium set,ADR-062,"ingot, nugget, dust, plate, sheet, rod, gear, block; alloy made in the arc furnace (C16b)",
+material:Tin,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:tin_ingot and the tin set,ADR-063,"ore, ingot, nugget, dust, plate, block",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:Titanium,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:titanium_ingot and the titanium set,ADR-063,"ingot, nugget, dust, plate, sheet, rod, gear, coil, block",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:TitaniumAluminide,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:titanium_aluminide_ingot and its set,ADR-063,"ingot, nugget, dust, plate, sheet, rod, gear, block; alloy made in the arc furnace (C16b)",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
+material:TitaniumIridium,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:titanium_iridium_ingot and its set,ADR-063,"ingot, nugget, dust, plate, sheet, rod, gear, block; alloy made in the arc furnace (C16b)",docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 mission:MissionGasCollection,IMPLEMENTED,v1.6.0,gas resource mission,ADR-051,,
 mission:MissionOreMining,IMPLEMENTED,v1.6.0,asteroid resource mission,ADR-051,,
 mission:MissionResourceCollection,MERGED,-,mission:MissionOreMining,ADR-062,base class,
@@ -641,7 +641,7 @@ worldgen:MapGenSpaceStation,REJECTED,-,-,ADR-062,never referenced in the legacy 
 worldgen:MapGenSpaceVillage,DEFERRED,post-2.0,-,ADR-062,vanilla villages on habitable planets,
 worldgen:MapGenSwampTree,PLANNED,C15c,swamp tree feature,ADR-062,,
 worldgen:MapGenVolcano,PLANNED,C15b,volcano structure,ADR-062,cone radius at most 32 (ADR-063 section 5),
-worldgen:OreGenerator,PLANNED,C15a,overworld ore features,ADR-062,,
+worldgen:OreGenerator,REDESIGNED,v1.8.0,Overworld ore placed features and the overworld_ores biome modifier,ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 worldgen:WorldGenAlienTree,PLANNED,C15c,lightwood tree feature,ADR-062,,
 worldgen:WorldGenCharredTree,PLANNED,C15b,charred tree feature,ADR-062,,
 worldgen:WorldGenElectricMushroom,PLANNED,C15c,electric mushroom feature,ADR-062,,

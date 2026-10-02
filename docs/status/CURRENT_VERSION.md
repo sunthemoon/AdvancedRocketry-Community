@@ -37,7 +37,7 @@ execution_state: ACTIVE
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
-runtime_build: 1.20.1-1.7.0-dev
+runtime_build: 1.20.1-1.8.0-dev
 ```
 
 v1.8 preparation (C14) is complete. [ADR-060](../decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md)
@@ -50,9 +50,11 @@ units, their dispositions and player impact, the C15a–C18d batches) and
 are frozen after five independent review rounds
 ([preparation evidence](../work/v1.8.0-preparation/VERIFICATION.md)). The owner amended
 ADR-018's campaign trigger (revision 2) and accepted the deferral of terraforming and the
-hovercraft past v2.0. The runtime identity stays `1.20.1-1.7.0-dev` until C15 changes the
-runtime. The next chunk is C15 in [COMPLETION-PLAN](COMPLETION-PLAN.md). No Gate is
-claimed.
+hovercraft past v2.0. C15a (the material set, ores and the small plate press) is delivered
+and changes the runtime identity to `1.20.1-1.8.0-dev`
+([C15a evidence](../work/v1.8.0-c15a-materials/VERIFICATION.md)); its independent review
+and the owner's decision on ADR-063 revision 4 are pending. The next chunk is in
+[COMPLETION-PLAN](COMPLETION-PLAN.md). No Gate is claimed.
 
 Previous development version (v1.7, development handoff, release `IN_PROGRESS`):
 
