@@ -35,6 +35,15 @@ final class EndgameTimingsTest {
         }
         assertEquals(0.0D, timings.summary(EndgameTimings.Place.RAILGUN).maxMicros(), 1e-9,
                 "the window holds the last 1,200 ticks only");
+        // Review C13-F2: the flush maximum and the flushes over the budget cover the run, not the window.
+        timings.flushed(EndgameTimings.FLUSH_BUDGET_NANOS + 1L);
+        for (int tick = 0; tick < EndgameTimings.WINDOW + 1; tick++) {
+            timings.endTick();
+        }
+        timings.flushed(1_000_000L);
+        String flushes = timings.report().get(timings.report().size() - 1);
+        assertTrue(flushes.contains("flushes=3") && flushes.contains("last_ms=1.00") && flushes.contains("max_ms=60.00")
+                && flushes.contains("over_60ms=1"), flushes);
         timings.clear();
         assertEquals(0, timings.summary(EndgameTimings.Place.LEDGER).ticks());
     }

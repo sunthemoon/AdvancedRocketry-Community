@@ -16,6 +16,8 @@ import java.util.Objects;
  */
 public final class EndgameTimings {
     public static final int WINDOW = 1200;
+    /** ADR-054 section 7: one flush at the reference root takes at most 60 ms. */
+    public static final long FLUSH_BUDGET_NANOS = 60_000_000L;
 
     /** Where endgame work runs. */
     public enum Place {
@@ -42,12 +44,17 @@ public final class EndgameTimings {
     private long flushes;
     private long lastFlushNanos;
     private long maxFlushNanos;
+    private long overBudgetFlushes;
 
     public void add(Place place, long nanos) {
         current[place.ordinal()] += Math.max(0L, nanos);
     }
 
-    /** A root flush took {@code nanos}; its tick is a flush tick (ADR-054 section 7, review R2-L3). */
+    /**
+     * A root flush took {@code nanos}; its tick is a flush tick (ADR-054 section 7, review R2-L3). The count, the last,
+     * the maximum and the flushes over the reference-root budget cover the whole server run, not only the window
+     * (review C13-F2).
+     */
     public void flushed(long nanos) {
         long spent = Math.max(0L, nanos);
         add(Place.FLUSH, spent);
@@ -55,6 +62,9 @@ public final class EndgameTimings {
         flushes++;
         lastFlushNanos = spent;
         maxFlushNanos = Math.max(maxFlushNanos, spent);
+        if (spent > FLUSH_BUDGET_NANOS) {
+            overBudgetFlushes++;
+        }
     }
 
     /** Closes a server tick; runs after every endgame END handler. */
@@ -120,7 +130,7 @@ public final class EndgameTimings {
                 sorted[sorted.length - 1] / 1000.0D);
     }
 
-    /** One bounded report for {@code /arce endgame timing}: every place, the totals and the flushes. */
+    /** One bounded report for {@code /arce endgame timing}: every place, the totals and the flushes since start. */
     public List<String> report() {
         List<String> lines = new ArrayList<>();
         for (Place place : Place.values()) {
@@ -128,8 +138,8 @@ public final class EndgameTimings {
         }
         lines.add(total(false).line());
         lines.add(total(true).line());
-        lines.add(String.format(Locale.ROOT, "flushes=%d last_ms=%.2f max_ms=%.2f", flushes, lastFlushNanos / 1e6D,
-                maxFlushNanos / 1e6D));
+        lines.add(String.format(Locale.ROOT, "flushes=%d last_ms=%.2f max_ms=%.2f over_60ms=%d", flushes,
+                lastFlushNanos / 1e6D, maxFlushNanos / 1e6D, overBudgetFlushes));
         return lines;
     }
 
@@ -145,5 +155,6 @@ public final class EndgameTimings {
         flushes = 0L;
         lastFlushNanos = 0L;
         maxFlushNanos = 0L;
+        overBudgetFlushes = 0L;
     }
 }
