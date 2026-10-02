@@ -19,23 +19,32 @@ No candidate or release approval is assigned.
   the five coils form `advancedrocketrycommunity:coils`. They have their own
   creative tab, "Advanced Rocketry: Materials".
 - Add tin, rutile (titanium), aluminum, iridium and dilithium ores with
-  deepslate variants (iridium has none) and raw items. New Overworld chunks
-  get tin, rutile, aluminum and dilithium between y −16 and 64; chunks
-  generated before the upgrade keep what they had, and iridium is not placed
-  in the Overworld. The COMMON value `worldgen.overworldOres` turns the
-  Overworld ores off; data packs may override the
+  deepslate variants (iridium has none). Tin, rutile, aluminum and iridium
+  ores drop raw items; dilithium ore drops itself. New Overworld chunks get
+  tin, rutile, aluminum and dilithium between y −16 and 64; chunks generated
+  before the upgrade keep what they had, and iridium is not placed in the
+  Overworld. The COMMON value `worldgen.overworldOres` turns the Overworld
+  ores off; data packs may override the
   `advancedrocketrycommunity:overworld_ores` biome modifier.
 - Recipes: nuggets, blocks, rods, gears, coils and the steel fan are crafted;
   ores, raw items and dusts smelt and blast into ingots (dilithium ore gives
   dilithium dust; rutile waits for the electric arc furnace); the Rolling
   Machine rolls ingots into plates (20 FE/t) and plates into sheets
-  (200 FE/t) with water. Iron ingots still roll into iron bars, so iron plates
-  come from the press.
+  (200 FE/t) with water. Two or more iron ingots still roll into iron bars,
+  so iron plates come from the press.
+- Upgraded worlds: a Rolling Machine that holds copper or gold ingots (or any
+  newly rollable ingot) starts rolling them into plates.
 - Add the Small Plate Press. Put a metal block or an ore under it, obsidian
   under that block, and give the press a redstone pulse: a block becomes four
-  plates, an ore two dust (not rutile). One operation per pulse; claim mods that stop
-  pistons stop it too. The COMMON value `classic.smallPlatePress` turns it
-  off. JEI shows its recipes.
+  plates, an ore two dust (not rutile). One operation per pulse. It is
+  protected like a vanilla piston: mods that cancel Forge's piston event stop
+  it. The COMMON value `classic.smallPlatePress` turns it off. JEI shows its
+  recipes.
+- Data packs: Rolling Machine, Precision Assembler and Electrolyzer recipes
+  must name items; tag ingredients are refused until the classic machine
+  family resolves tags after they load. Small plate press recipes take
+  exactly `type`, `schema_version`, `ingredient` (items or tags) and
+  `result`; Forge's `conditions` key is not accepted.
 
 ## v1.7.0 — in development
 
