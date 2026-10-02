@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffect;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
@@ -120,7 +121,12 @@ public final class GravityFieldBlockEntity extends EndgameDeviceBlockEntity impl
 
     public static void serverTick(Level level, BlockPos position, BlockState state, GravityFieldBlockEntity device) {
         if (level instanceof ServerLevel server) {
-            device.tick(server);
+            long start = System.nanoTime();
+            try {
+                device.tick(server);
+            } finally {
+                EndgameRuntime.timings().add(EndgameTimings.Place.GRAVITY_FIELD, System.nanoTime() - start);
+            }
         }
     }
 

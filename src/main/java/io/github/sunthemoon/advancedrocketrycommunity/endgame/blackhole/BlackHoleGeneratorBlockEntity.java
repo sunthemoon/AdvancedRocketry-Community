@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
@@ -166,7 +167,12 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
     public static void serverTick(Level level, BlockPos position, BlockState state,
                                   BlackHoleGeneratorBlockEntity generator) {
         if (level instanceof ServerLevel server) {
-            generator.tick(server, state);
+            long start = System.nanoTime();
+            try {
+                generator.tick(server, state);
+            } finally {
+                EndgameRuntime.timings().add(EndgameTimings.Place.BLACK_HOLE_GENERATOR, System.nanoTime() - start);
+            }
         }
     }
 

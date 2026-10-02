@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
@@ -165,7 +166,12 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
 
     public static void serverTick(Level level, BlockPos position, BlockState state, OrbitalLaserDrillBlockEntity drill) {
         if (level instanceof ServerLevel server) {
-            drill.tick(server, state);
+            long start = System.nanoTime();
+            try {
+                drill.tick(server, state);
+            } finally {
+                EndgameRuntime.timings().add(EndgameTimings.Place.LASER_DRILL, System.nanoTime() - start);
+            }
         }
     }
 

@@ -54,6 +54,7 @@ public final class EndgameCommands {
     public void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("endgame")
                 .then(op(Commands.literal("status")).executes(this::status))
+                .then(op(Commands.literal("timing")).executes(this::timing))
                 .then(Commands.literal("audit")
                         .then(op(Commands.literal("all")).executes(context -> audit(context, null, 0))
                                 .then(Commands.argument("page", IntegerArgumentType.integer(0, 31))
@@ -121,6 +122,13 @@ public final class EndgameCommands {
     private int status(CommandContext<CommandSourceStack> context) {
         context.getSource().sendSuccess(() -> Component.literal(service.status()), false);
         context.getSource().sendSuccess(() -> Component.literal(devices.status()), false);
+        return 1;
+    }
+
+    /** ADR-054 section 7: endgame work per tick by place over the last 1,200 ticks, the totals and the flushes. */
+    private int timing(CommandContext<CommandSourceStack> context) {
+        service.timings().report().forEach(line -> context.getSource().sendSuccess(() -> Component.literal(line),
+                false));
         return 1;
     }
 

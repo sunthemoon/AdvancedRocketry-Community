@@ -51,6 +51,7 @@ public final class EndgameService {
     private final EndpointRegistrations registrations = new EndpointRegistrations();
     private final EndpointChunkIndex index = new EndpointChunkIndex();
     private final TransitLedger transits;
+    private final EndgameTimings timings = new EndgameTimings();
     private final TransitOperations transitOperations;
     private long nextHousekeeping;
     private MinecraftServer server;
@@ -76,6 +77,11 @@ public final class EndgameService {
     /** The running server, for lookups that need it outside a level (the railgun's redirect rule). */
     public Optional<MinecraftServer> server() {
         return Optional.ofNullable(server);
+    }
+
+    /** Endgame work per tick by place, and the root flushes (ADR-054 section 7). */
+    public EndgameTimings timings() {
+        return timings;
     }
 
     /** Operator and owner actions on the ledger (redirect, purge, resettle, resolve). */
@@ -139,6 +145,7 @@ public final class EndgameService {
         index.clear();
         nextHousekeeping = 0L;
         audit.clear();
+        timings.clear();
         writeFailureLogged = false;
         lastCoalescedFlush = Long.MIN_VALUE / 2;
     }
@@ -195,8 +202,10 @@ public final class EndgameService {
             }
             return;
         }
+        long start = System.nanoTime();
         try {
             data.flush(server);
+            timings.flushed(System.nanoTime() - start);
             writeFailureLogged = false;
             if (!data.isDirty()) {
                 transits.written();
@@ -322,11 +331,13 @@ public final class EndgameService {
     }
 
     void tick(long now) {
+        long start = System.nanoTime();
         drainRegistrations(now);
         drainObservations(now);
         settleAgedAbsences(now);
         housekeep(now);
         ledgerPasses(now);
+        timings.add(EndgameTimings.Place.LEDGER, System.nanoTime() - start);
         if (data.flushPending() && now - lastCoalescedFlush >= EndgameLimits.COALESCED_FLUSH_INTERVAL_TICKS) {
             lastCoalescedFlush = now;
             flush();

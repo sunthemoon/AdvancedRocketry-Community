@@ -153,9 +153,16 @@ public final class EndgameDevices {
         if (fields.size() == 0 || !settings.get().enabled(EndgameSystem.GRAVITY_FIELD)) {
             return OptionalDouble.empty();
         }
-        BlockPos position = player.blockPosition();
-        return fields.at(player.level().dimension().location(), position.getX(), position.getY(), position.getZ(),
-                player.getUUID(), trust.trusted(player));
+        long start = System.nanoTime();
+        try {
+            BlockPos position = player.blockPosition();
+            return fields.at(player.level().dimension().location(), position.getX(), position.getY(),
+                    position.getZ(), player.getUUID(), trust.trusted(player));
+        } finally {
+            io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime.timings().add(
+                    io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings.Place.FIELD_LOOKUPS,
+                    System.nanoTime() - start);
+        }
     }
 
     public Optional<MultiblockPatternDefinition> pattern(String id) {

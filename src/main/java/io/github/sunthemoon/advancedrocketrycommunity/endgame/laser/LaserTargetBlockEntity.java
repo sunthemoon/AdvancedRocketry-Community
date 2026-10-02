@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceTags;
@@ -154,7 +155,12 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
 
     public static void serverTick(Level level, BlockPos position, BlockState state, LaserTargetBlockEntity target) {
         if (level instanceof ServerLevel server) {
-            target.tick(server);
+            long start = System.nanoTime();
+            try {
+                target.tick(server);
+            } finally {
+                EndgameRuntime.timings().add(EndgameTimings.Place.LASER_DRILL, System.nanoTime() - start);
+            }
         }
     }
 

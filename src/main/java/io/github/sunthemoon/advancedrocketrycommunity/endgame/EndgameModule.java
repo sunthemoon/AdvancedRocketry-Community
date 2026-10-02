@@ -16,12 +16,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunRed
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import java.util.Set;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 
 /** Wires the v1.7 endgame framework (ADR-054) into the server lifecycle; the mod constructor calls it once. */
@@ -66,7 +68,15 @@ public final class EndgameModule {
         // ADR-059 section 8: rides tick after the ledger's END pass; their tickets go at server stop.
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
             if (event.phase == TickEvent.Phase.END && service.operational()) {
+                long start = System.nanoTime();
                 devices.elevatorRides().tick(event.getServer(), service, devices);
+                service.timings().add(EndgameTimings.Place.RIDES, System.nanoTime() - start);
+            }
+        });
+        // ADR-054 section 7: the measured tick closes after every endgame END handler.
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (TickEvent.ServerTickEvent event) -> {
+            if (event.phase == TickEvent.Phase.END) {
+                service.timings().endTick();
             }
         });
         MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent event) ->

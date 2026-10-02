@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoEndpointBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.RoundRobinBudget;
@@ -82,7 +83,12 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
     public static void serverTick(Level level, BlockPos position, BlockState state,
                                   ElevatorEndpointBlockEntity endpoint) {
         if (level instanceof ServerLevel server) {
-            endpoint.tickServer(server, state);
+            long start = System.nanoTime();
+            try {
+                endpoint.tickServer(server, state);
+            } finally {
+                EndgameRuntime.timings().add(EndgameTimings.Place.SPACE_ELEVATOR, System.nanoTime() - start);
+            }
         }
     }
 

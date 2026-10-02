@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoEndpointBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
@@ -106,7 +107,12 @@ public final class RailgunBlockEntity extends CargoEndpointBlockEntity implement
 
     public static void serverTick(Level level, BlockPos position, BlockState state, RailgunBlockEntity railgun) {
         if (level instanceof ServerLevel server) {
-            railgun.tickServer(server, state);
+            long start = System.nanoTime();
+            try {
+                railgun.tickServer(server, state);
+            } finally {
+                EndgameRuntime.timings().add(EndgameTimings.Place.RAILGUN, System.nanoTime() - start);
+            }
         }
     }
 

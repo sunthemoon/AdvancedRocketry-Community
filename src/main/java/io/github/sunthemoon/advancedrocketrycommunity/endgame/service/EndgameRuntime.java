@@ -8,6 +8,7 @@ import java.util.Optional;
 public final class EndgameRuntime {
     private static volatile EndgameService service;
     private static volatile EndgameDevices devices;
+    private static final EndgameTimings DETACHED = new EndgameTimings();
 
     private EndgameRuntime() {
     }
@@ -24,6 +25,12 @@ public final class EndgameRuntime {
 
     public static Optional<EndgameService> service() {
         return Optional.ofNullable(service);
+    }
+
+    /** The installed service's work measurement (ADR-054 section 7); a detached one before installation. */
+    public static EndgameTimings timings() {
+        EndgameService current = service;
+        return current == null ? DETACHED : current.timings();
     }
 
     public static void installDevices(EndgameDevices installed) {
