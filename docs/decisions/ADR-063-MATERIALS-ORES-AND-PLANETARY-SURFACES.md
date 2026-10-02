@@ -301,7 +301,11 @@ ID in this namespace fail startup through the existing binding checks.
 
 - A0: material table completeness against the ledger; recipe and tag JSON
   audit; DataGen determinism; feature bound checks; the asset records and the
-  derivation check for every imported file.
+  derivation check for every imported file; the JEI plugin registers a plate
+  press category whose recipe views list every `small_plate_press` recipe
+  (`integration:jei/platePresser`), tested through the client compat package
+  as for the v1.2 machines (ADR-061 §3.3), and the game starts with and without
+  JEI.
 - A0: the data satellite definition lists both new bodies; the three Tau Ceti
   routes stay inside one system; the recipe graph check passes with both Tau
   Ceti Levels removed from the reachable set.
