@@ -10,6 +10,7 @@ target_version: v1.8.0
 development_dependency: ADR-060, ADR-061
 revisits: ADR-046 (station screens), ADR-049 (satellite bay, spy telescope, star-map overlay), ADR-051 (physical asteroid fields, observatory, rocket mining), ADR-055 (line and spiral modes), ADR-056 (cross-system cargo), ADR-057 (black-hole sky), ADR-058 (station gravity block, non-player fields, legacy gravity API), ADR-059 (capsule visuals)
 supersedes: ""
+import_allowlist_sha256: ed25c89589471af0e55e5a0cb5d2a9c902925282f9711b6fbd9a64fef46ff696
 ```
 
 ## Context
@@ -169,7 +170,10 @@ them.
 ### 7. Change control
 
 A batch may implement fewer files or move a planned unit to an earlier or later
-batch inside v1.8 in its own commit. Moving a unit to `DEFERRED` or `REJECTED`,
+batch inside v1.8 in its own commit. The `import_allowlist_sha256` field above
+pins the importable assets (ADR-061 §4.2); changing that list is a revision of
+this ADR. Every `DEFERRED` and `REJECTED` ledger row cites this ADR, which
+holds the player impact. Moving a unit to `DEFERRED` or `REJECTED`,
 or reviving a deferred or rejected unit, needs a revision of this ADR with
 reasons and player impact.
 

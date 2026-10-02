@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_v180_content_ledger import ASSET_PLAN, INVENTORY, LEDGER, ROOT, validate
+from scripts.validate_v180_content_ledger import ALLOWLIST, ASSET_PLAN, INVENTORY, LEDGER, ORIGIN_FINDINGS, ROOT, validate
 from tools.audit.inventory_v180_content import lang_names, unlocalized, variants
 
 REGISTRY = Path("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry")
@@ -16,6 +16,8 @@ COPIED = (
     Path("docs/versions"),
     Path("docs/provenance"),
     REGISTRY,
+    Path("src/generated"),
+    Path("src/main/resources"),
 )
 
 
@@ -25,7 +27,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         for relative in COPIED:
             shutil.copytree(ROOT / relative, self.root / relative)
-        for relative in (INVENTORY, LEDGER, ASSET_PLAN):
+        for relative in (INVENTORY, LEDGER, ASSET_PLAN, ALLOWLIST):
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, self.root / relative)
 
@@ -50,8 +52,19 @@ class V180ContentLedgerTests(unittest.TestCase):
                 row.update(changes)
         self._write_rows(LEDGER, rows)
 
-    def _errors(self, require_accepted: bool = False) -> list[str]:
-        return validate(self.root, require_accepted)[1]
+    def _errors(self, require_accepted: bool = False, closure: bool = False) -> list[str]:
+        return validate(self.root, require_accepted, closure)[1]
+
+    def _set_rule(self, pattern: str, **changes: str) -> None:
+        rows = self._rows(ASSET_PLAN)
+        for row in rows:
+            if row["pattern"] == pattern:
+                row.update(changes)
+        self._write_rows(ASSET_PLAN, rows)
+
+    def _write_findings(self, findings: list[dict[str, str]]) -> None:
+        (self.root / ORIGIN_FINDINGS).write_text(json.dumps({"schema_version": 1, "findings": findings}),
+                                                 encoding="utf-8")
 
     def test_repository_passes(self) -> None:
         summary, errors = validate(ROOT)
@@ -129,6 +142,53 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertIn("ledger: block_entity:ARCentrifuge: merge target block_entity:ARTileLathe is itself MERGED",
                       errors)
 
+    def test_tag_names_are_not_registered_ids(self) -> None:
+        self._edit_ledger("block:railgun", target="advancedrocketrycommunity:machine_casings")
+        self.assertIn("ledger: block:railgun: target advancedrocketrycommunity:machine_casings is not registered",
+                      self._errors())
+
+    def test_implemented_id_must_be_in_the_matching_family(self) -> None:
+        self._edit_ledger("block:railgun", target="advancedrocketrycommunity:rocket")
+        self.assertIn("ledger: block:railgun: IMPLEMENTED content needs a registered modern block/item ID",
+                      self._errors())
+
+    def test_rejected_rows_need_the_player_impact_adr(self) -> None:
+        self._edit_ledger("entity:laserNode", decision="ADR-055")
+        self.assertIn("ledger: entity:laserNode: REJECTED needs ADR-062, which records the player impact",
+                      self._errors())
+
+    def test_closure_requires_no_planned_rows(self) -> None:
+        self.assertTrue(any(error.startswith("closure: ") and "PLANNED" in error
+                            for error in self._errors(closure=True)))
+
+    def test_loosening_an_exclusion_fails(self) -> None:
+        self._set_rule("textures/env/sun.png", handling="IMPORT", plan="C18d")
+        self.assertIn("asset plan: textures/env/sun.png is IMPORT beyond its allowlist ceiling none", self._errors())
+
+    def test_review_needs_a_cleared_finding_to_import(self) -> None:
+        self._set_rule("textures/blocks/beacon.png", handling="IMPORT")
+        self.assertIn("asset plan: textures/blocks/beacon.png is IMPORT beyond its allowlist ceiling REVIEW",
+                      self._errors())
+        self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "maintainer",
+                               "reviewed_at": "2026-10-02", "basis": "compared with vanilla"}])
+        self.assertEqual([], self._errors())
+
+    def test_excluded_finding_forces_exclusion(self) -> None:
+        self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "EXCLUDED", "reviewer": "maintainer",
+                               "reviewed_at": "2026-10-02", "basis": "vanilla-derived"}])
+        self.assertIn("asset plan: textures/blocks/beacon.png was excluded by an origin finding but is REVIEW",
+                      self._errors())
+
+    def test_import_for_a_deferred_unit_fails(self) -> None:
+        self._set_rule("textures/blocks/beacon.png", units="block:terraformer")
+        self.assertTrue(any("REVIEW for block:terraformer, which is DEFERRED" in error for error in self._errors()))
+
+    def test_allowlist_is_pinned(self) -> None:
+        path = self.root / ALLOWLIST
+        path.write_text(path.read_text(encoding="utf-8") + "textures/env/sun.png\tIMPORT\n", encoding="utf-8")
+        self.assertIn("asset plan: v1.8.0-asset-import-allowlist.txt does not match the digest pinned in ADR-062",
+                      self._errors())
+
     def test_modern_target_must_be_registered(self) -> None:
         self._edit_ledger("block:railgun", target="advancedrocketrycommunity:rail_cannon")
         self.assertIn("ledger: block:railgun: target advancedrocketrycommunity:rail_cannon is not registered",
@@ -136,7 +196,7 @@ class V180ContentLedgerTests(unittest.TestCase):
 
     def test_implemented_content_needs_a_modern_id(self) -> None:
         self._edit_ledger("block:railgun", target="railgun")
-        self.assertIn("ledger: block:railgun: IMPLEMENTED content needs a registered modern ID", self._errors())
+        self.assertIn("ledger: block:railgun: IMPLEMENTED content needs a registered modern block/item ID", self._errors())
 
     def test_require_accepted_reports_proposed_adrs(self) -> None:
         errors = self._errors(require_accepted=True)

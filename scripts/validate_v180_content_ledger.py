@@ -9,11 +9,18 @@ The checks need only this repository:
 * the content ledger gives every inventory unit exactly one disposition, and
   every disposition carries the plan, target and decision its kind requires;
 * the asset plan assigns every legacy asset exactly one handling (first
-  matching rule), has no dead rule, and agrees with the provenance records of
-  files already imported.
+  matching rule), has no dead rule, names existing owning units, keeps every
+  importable asset inside the import allowlist pinned by ADR-062, and agrees
+  with the provenance records of files already imported and with the recorded
+  origin findings.
+
+The inventory's own content (lines, display names, non-registry units) is
+checked by ``tools/audit/inventory_v180_content.py --check`` against the
+upstream tree; CI runs both.
 
 ``--require-accepted`` additionally fails while any referenced ADR is not
-ACCEPTED; release closure (C19) runs with it.
+ACCEPTED. ``--closure`` (C19) implies it and also fails on any PLANNED row or
+any asset still handled as REVIEW.
 """
 
 from __future__ import annotations
@@ -21,6 +28,7 @@ from __future__ import annotations
 import argparse
 import csv
 import fnmatch
+import hashlib
 import json
 import re
 import sys
@@ -31,11 +39,15 @@ ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = Path("docs/work/v1.8.0-legacy-inventory.json")
 LEDGER = Path("docs/work/v1.8.0-content-ledger.csv")
 ASSET_PLAN = Path("docs/work/v1.8.0-asset-plan.csv")
+ALLOWLIST = Path("docs/work/v1.8.0-asset-import-allowlist.txt")
+ORIGIN_FINDINGS = Path("docs/provenance/v1.8.0-origin-findings.json")
+PLAYER_IMPACT_ADR = "ADR-062"
+PLAYER_IMPACT_PATH = Path("docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md")
 UPSTREAM_ASSET_ROOT = "src/main/resources/assets/advancedrocketry/"
 MOD_ID = "advancedrocketrycommunity"
 
 LEDGER_COLUMNS = ["unit_id", "disposition", "plan", "target", "decision", "notes", "evidence"]
-ASSET_COLUMNS = ["order", "pattern", "handling", "plan", "reason"]
+ASSET_COLUMNS = ["order", "pattern", "handling", "plan", "units", "reason"]
 DISPOSITIONS = ("IMPLEMENTED", "REDESIGNED", "PLANNED", "MERGED", "DEFERRED", "REJECTED")
 ASSET_HANDLINGS = ("IMPORTED", "IMPORT", "REVIEW", "REGENERATE", "EXCLUDE")
 BATCHES = (
@@ -49,6 +61,13 @@ VERSION = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 ADR_TOKEN = re.compile(r"^ADR-(\d{3})$")
 VERSION_TOKEN = re.compile(r"^V(\d+\.\d+\.\d+)$")
 MODERN_ID = re.compile(MOD_ID + r":([a-z0-9_]+)")
+DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# Kinds whose IMPLEMENTED rows must name a modern ID registered in the matching family.
+ID_FAMILIES = {
+    "block": ("block", "item"), "block_variant": ("block", "item"), "item": ("item",), "item_variant": ("item",),
+    "entity": ("entity",), "fluid": ("fluid",), "enchantment": ("enchantment",), "sound_event": ("sound",),
+    "biome": ("biome",),
+}
 CURRENT = (1, 8, 0)
 MAX_FIELD = 512
 
@@ -103,13 +122,36 @@ def manifest_registrations(root: Path) -> dict[str, set[str]]:
     return found
 
 
-def modern_ids(root: Path) -> set[str]:
-    """String literals of the registry classes: every registered modern ID appears there."""
-    ids: set[str] = set()
-    registry = root / "src/main/java/io/github/sunthemoon" / MOD_ID / "registry"
-    for path in sorted(registry.glob("*.java")):
-        ids.update(re.findall(r'"([a-z0-9_]+)"', path.read_text(encoding="utf-8")))
-    return ids
+def resource_roots(root: Path) -> list[Path]:
+    roots = [root / "src/main/resources", root / "src/generated/resources"]
+    roots.extend(sorted((root / "src/generated").glob("v*/resources")))
+    return [path for path in roots if path.is_dir()]
+
+
+def registered_ids(root: Path) -> dict[str, set[str]]:
+    """Registered modern IDs by family, read from the generated resources.
+
+    Every registered block, item, entity, enchantment and fluid type has an
+    English name; sound events are keys of sounds.json; biomes are data files.
+    """
+    families: dict[str, set[str]] = {name: set() for name in ("block", "item", "entity", "enchantment", "fluid",
+                                                               "sound", "biome")}
+    prefixes = {"block": "block", "item": "item", "entity": "entity", "enchantment": "enchantment",
+                "fluid_type": "fluid"}
+    for base in resource_roots(root):
+        # DataGen writes each version's language file into its own pseudo-namespace.
+        for lang in sorted(base.glob(f"assets/{MOD_ID}*/lang/en_us.json")):
+            for key in json.loads(lang.read_text(encoding="utf-8")):
+                parts = key.split(".")
+                if len(parts) == 3 and parts[1] == MOD_ID and parts[0] in prefixes:
+                    families[prefixes[parts[0]]].add(parts[2])
+        sounds = base / "assets" / MOD_ID / "sounds.json"
+        if sounds.is_file():
+            families["sound"].update(json.loads(sounds.read_text(encoding="utf-8")))
+        biomes = base / "data" / MOD_ID / "worldgen" / "biome"
+        if biomes.is_dir():
+            families["biome"].update(path.stem for path in biomes.glob("*.json"))
+    return families
 
 
 def adr_statuses(root: Path) -> dict[str, str]:
@@ -176,7 +218,8 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
     known = set(unit_ids)
     statuses = adr_statuses(root)
     versions = version_documents(root)
-    registered = modern_ids(root)
+    families = registered_ids(root)
+    registered = set().union(*families.values())
     by_id: dict[str, dict[str, str]] = {}
     pending_adrs: Counter = Counter()
     for row in rows:
@@ -215,6 +258,8 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
                 errors.append(f"{where}: decision token {token!r} is neither an ADR nor a version document")
         if disposition in ("REDESIGNED", "DEFERRED", "REJECTED", "MERGED", "PLANNED") and not adrs:
             errors.append(f"{where}: {disposition} needs an ADR")
+        if disposition in ("DEFERRED", "REJECTED") and PLAYER_IMPACT_ADR not in tokens:
+            errors.append(f"{where}: {disposition} needs {PLAYER_IMPACT_ADR}, which records the player impact")
         if row["evidence"] and not (disposition in ("IMPLEMENTED", "REDESIGNED") and plan == "v1.8.0"):
             errors.append(f"{where}: evidence is recorded only for rows delivered in v1.8.0")
         if disposition == "PLANNED":
@@ -250,13 +295,18 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
         for modern in MODERN_ID.findall(target):
             if modern not in registered:
                 errors.append(f"{where}: target {MOD_ID}:{modern} is not registered")
-        if disposition == "IMPLEMENTED" and unit_id.split(":", 1)[0] in ("block", "item", "item_variant", "entity") \
-                and not MODERN_ID.search(target):
-            errors.append(f"{where}: IMPLEMENTED content needs a registered modern ID")
+        kind = unit_id.split(":", 1)[0]
+        if disposition == "IMPLEMENTED" and kind in ID_FAMILIES:
+            wanted = set().union(*(families[family] for family in ID_FAMILIES[kind]))
+            if not any(modern in wanted for modern in MODERN_ID.findall(target)):
+                errors.append(f"{where}: IMPLEMENTED content needs a registered modern "
+                              f"{'/'.join(ID_FAMILIES[kind])} ID")
     if require_accepted:
         for adr, count in sorted(pending_adrs.items()):
             errors.append(f"ledger: {count} rows depend on {adr}, which is not ACCEPTED")
-    return Counter((row["disposition"], row["plan"] if row["disposition"] == "PLANNED" else "") for row in by_id.values())
+    counter = Counter((row["disposition"], row["plan"] if row["disposition"] == "PLANNED" else "")
+                      for row in by_id.values())
+    return counter, by_id
 
 
 def provenance_imports(root: Path) -> set[str]:
@@ -278,7 +328,45 @@ def provenance_imports(root: Path) -> set[str]:
     return imported
 
 
-def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str]) -> Counter:
+def pinned_allowlist_digest(root: Path) -> str | None:
+    match = re.search(r"^import_allowlist_sha256:\s*([0-9a-f]{64})\s*$",
+                      (root / PLAYER_IMPACT_PATH).read_text(encoding="utf-8"), re.M)
+    return match.group(1) if match else None
+
+
+def load_allowlist(root: Path, errors: list[str]) -> dict[str, str]:
+    data = (root / ALLOWLIST).read_bytes()
+    if pinned_allowlist_digest(root) != hashlib.sha256(data).hexdigest():
+        errors.append(f"asset plan: {ALLOWLIST.name} does not match the digest pinned in {PLAYER_IMPACT_ADR}")
+    allowed: dict[str, str] = {}
+    for number, line in enumerate(data.decode("utf-8").splitlines(), start=1):
+        asset, _, handling = line.partition("\t")
+        if handling not in ("IMPORT", "REVIEW") or not asset or asset in allowed:
+            errors.append(f"{ALLOWLIST.name}:{number}: expected a unique asset, a tab and IMPORT or REVIEW")
+            continue
+        allowed[asset] = handling
+    return allowed
+
+
+def load_origin_findings(root: Path, errors: list[str]) -> dict[str, str]:
+    data = json.loads((root / ORIGIN_FINDINGS).read_text(encoding="utf-8"))
+    findings: dict[str, str] = {}
+    if data.get("schema_version") != 1 or not isinstance(data.get("findings"), list):
+        errors.append(f"{ORIGIN_FINDINGS.name}: schema_version 1 with a findings list required")
+        return findings
+    for finding in data["findings"]:
+        asset = finding.get("asset")
+        if (finding.get("decision") not in ("CLEARED", "EXCLUDED") or not finding.get("reviewer")
+                or not DATE.match(str(finding.get("reviewed_at", ""))) or not finding.get("basis")
+                or not asset or asset in findings):
+            errors.append(f"{ORIGIN_FINDINGS.name}: invalid or duplicate finding {asset!r}")
+            continue
+        findings[asset] = finding["decision"]
+    return findings
+
+
+def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
+                    ledger: dict[str, dict[str, str]]) -> Counter:
     hashes = manifest_hashes(root)
     assets = sorted(path[len(UPSTREAM_ASSET_ROOT):] for path in hashes if path.startswith(UPSTREAM_ASSET_ROOT))
     rules = []
@@ -298,6 +386,12 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str]) -
             errors.append(f"{where}: IMPORTED plan must be the importing version")
         if not row["reason"]:
             errors.append(f"{where}: reason is required")
+        owners = [] if row["units"] == "-" else row["units"].split()
+        for owner in owners:
+            if owner not in ledger:
+                errors.append(f"{where}: owning unit {owner} is not in the ledger")
+            elif row["handling"] in ("IMPORT", "REVIEW") and ledger[owner]["disposition"] in ("DEFERRED", "REJECTED"):
+                errors.append(f"{where}: {row['handling']} for {owner}, which is {ledger[owner]['disposition']}")
         rules.append(row)
     used: Counter = Counter()
     handling_of: dict[str, str] = {}
@@ -319,17 +413,34 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str]) -
     for asset, handling in sorted(handling_of.items()):
         if handling == "IMPORTED" and asset not in imported:
             errors.append(f"asset plan: {asset} is handled as IMPORTED without a provenance record")
+    allowed = load_allowlist(root, errors)
+    findings = load_origin_findings(root, errors)
+    for asset, handling in sorted(handling_of.items()):
+        ceiling = allowed.get(asset)
+        cleared = ceiling == "REVIEW" and findings.get(asset) == "CLEARED"
+        if handling == "IMPORT" and not (ceiling == "IMPORT" or cleared):
+            errors.append(f"asset plan: {asset} is IMPORT beyond its allowlist ceiling {ceiling or 'none'}")
+        elif handling == "REVIEW" and ceiling is None:
+            errors.append(f"asset plan: {asset} is REVIEW but not in the import allowlist")
+        if findings.get(asset) == "EXCLUDED" and handling != "EXCLUDE":
+            errors.append(f"asset plan: {asset} was excluded by an origin finding but is {handling}")
     return Counter(handling_of.values())
 
 
-def validate(root: Path, require_accepted: bool = False) -> tuple[dict, list[str]]:
+def validate(root: Path, require_accepted: bool = False, closure: bool = False) -> tuple[dict, list[str]]:
     errors: list[str] = []
     inventory = json.loads((root / INVENTORY).read_text(encoding="utf-8"))
     units = validate_inventory(root, inventory, errors)
     ledger_rows = read_csv(root / LEDGER, LEDGER_COLUMNS, errors)
-    dispositions = validate_ledger(root, units, ledger_rows, errors, require_accepted)
+    dispositions, ledger = validate_ledger(root, units, ledger_rows, errors, require_accepted or closure)
     asset_rows = read_csv(root / ASSET_PLAN, ASSET_COLUMNS, errors)
-    handlings = validate_assets(root, asset_rows, errors)
+    handlings = validate_assets(root, asset_rows, errors, ledger)
+    if closure:
+        planned = sum(count for key, count in dispositions.items() if key[0] == "PLANNED")
+        if planned:
+            errors.append(f"closure: {planned} ledger rows are still PLANNED")
+        if handlings.get("REVIEW"):
+            errors.append(f"closure: {handlings['REVIEW']} assets are still handled as REVIEW")
     summary = {
         "units": len(units),
         "dispositions": dict(sorted(Counter(key[0] for key in dispositions.elements()).items())),
@@ -344,8 +455,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--require-accepted", action="store_true")
+    parser.add_argument("--closure", action="store_true", help="C19: accepted ADRs, no PLANNED row, no REVIEW asset")
     arguments = parser.parse_args(argv)
-    summary, errors = validate(arguments.root, arguments.require_accepted)
+    summary, errors = validate(arguments.root, arguments.require_accepted, arguments.closure)
     for error in errors[:200]:
         print(error, file=sys.stderr)
     print(json.dumps(summary, indent=2, sort_keys=True))

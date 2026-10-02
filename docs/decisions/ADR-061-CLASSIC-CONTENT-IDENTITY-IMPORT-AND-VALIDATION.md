@@ -124,9 +124,16 @@ must handle:
    - `REGENERATE`: reference only; DataGen writes the modern file;
    - `EXCLUDE`: never imported;
    - `IMPORTED`: already recorded (v0.1.0).
-   A batch may tighten a rule (import fewer files, move a file to `EXCLUDE`) by
-   editing the plan in its own commit; loosening `EXCLUDE` or `REVIEW` needs an
-   ADR-062 revision.
+   Each rule names its owning ledger units; an `IMPORT` or `REVIEW` rule cannot
+   own a `DEFERRED` or `REJECTED` unit. The importable assets and their ceiling
+   (`IMPORT` or `REVIEW`) are listed in
+   [`v1.8.0-asset-import-allowlist.txt`](../work/v1.8.0-asset-import-allowlist.txt),
+   whose SHA-256 ADR-062 pins. A batch may tighten a rule (import fewer files,
+   move a file to `EXCLUDE`) in its own commit; adding a file to the allowlist
+   or raising its ceiling needs an ADR-062 revision. A `REVIEW` file becomes
+   `IMPORT` only through a recorded origin finding in
+   `docs/provenance/v1.8.0-origin-findings.json` (decision `CLEARED`, reviewer,
+   date, basis); a finding with decision `EXCLUDED` forces `EXCLUDE`.
 3. **Records.** Each batch writes `docs/provenance/v1.8.0-<batch>.json` with a
    schema-2 record before the files enter the tree. Schema 2 keeps every
    schema-1 entry field (target path, status, source repository, branch,
