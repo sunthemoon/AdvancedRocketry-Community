@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 2
+revision: 3
 date: 2026-10-02
 deciders: [sunthemoon]
 owner: sunthemoon
@@ -423,3 +423,6 @@ a vanilla derivative (ADR-061 §4.8).
 - Revision 2: answers review round 2 (M3–M6, L4–L7, I4), one commit per
   finding; see
   [review-02-dispositions](../work/v1.8.0-preparation/review-02-dispositions.md).
+- Revision 3: review round 3 accepted revision 2; C14R3-L2 (the Moon arrival
+  height) is stated in §5; see
+  [review-03-dispositions](../work/v1.8.0-preparation/review-03-dispositions.md).
