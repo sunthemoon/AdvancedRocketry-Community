@@ -71,7 +71,7 @@ noise Levels of vanilla blocks with a fixed biome each.
 | tin | ingot, nugget, dust, plate, block | `tin_ore`, `deepslate_tin_ore`, `raw_tin` |
 | steel | ingot, nugget, dust, plate, sheet, rod, gear, fan, block | — |
 | iridium | ingot, nugget, dust, plate, rod, coil, block | `iridium_ore`, `raw_iridium` (Moon and Mars placement, §5; none in the Overworld) |
-| dilithium | dust, crystal | `dilithium_ore`, `deepslate_dilithium_ore`, `moon_dilithium_ore` |
+| dilithium | dust, crystal | `dilithium_ore`, `deepslate_dilithium_ore` |
 | silicon | ingot, nugget, dust, plate, boule | — (wafer exists) |
 | titanium aluminide | ingot, nugget, dust, plate, sheet, rod, gear, block | — |
 | titanium iridium | ingot, nugget, dust, plate, sheet, rod, gear, block | — |
@@ -93,6 +93,12 @@ IDs follow vanilla word order (`titanium_ingot`, `raw_tin`, `tin_ore`,
 is an item. Tags follow ADR-061 §2 (`forge:` tags, plus
 `advancedrocketrycommunity:sheets/…`, `coils/…`, `fans/…`, `boules/…` and the
 `advancedrocketrycommunity:coils` group that replaces the legacy `blockCoil`).
+Rutile ore and its deepslate variant carry both `forge:ores/rutile` and
+`forge:ores/titanium`, because the legacy game registered rutile under both
+`oreRutile` and `oreTitanium`; raw rutile carries `forge:raw_materials/rutile`
+only. There is no separate Moon dilithium ore: the Moon's base block is
+vanilla stone (§5), so the ordinary `dilithium_ore` serves it, as the legacy
+generator used one dilithium block everywhere.
 Rutile does not smelt in a furnace: titanium comes from the electric arc
 furnace (C16b), as in the legacy game. Steel, the alloys and silicon boules
 likewise wait for C16b and C16c; the recipe graph check (ADR-061 §5.3) starts
