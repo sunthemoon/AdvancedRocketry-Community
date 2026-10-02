@@ -33,7 +33,7 @@ import net.minecraft.world.level.material.Fluids;
  * v1.8 recipes of the material set (ADR-063 section 2), with the legacy shapes (RecipeHandler 60-170) and on tags:
  * nuggets and blocks, rods (three ingots on a diagonal make four), gears, coils, the steel fan, smelting and blasting,
  * the rolling machine (ingot to plate at 20 FE/t, plate to sheet at 200 FE/t, 300 ticks and 100 mB of water each)
- * and the small plate press (block to four plates, ore to two dust).
+ * and the small plate press (block to four plates, ore to two dust; rutile neither smelts nor presses).
  *
  * <p>Rolling recipes name items, as the v1.2 {@code rolling_iron_bars} recipe does: the kernel recipe type resolves its
  * ingredient when recipes load, before tags are bound. Iron is the one rolling exception: {@code rolling_iron_bars}
@@ -165,7 +165,10 @@ public final class V180MaterialRecipes extends RecipeProvider {
             output.accept(new Pressing(ModIdentity.id("pressing_" + id + "_plate"),
                     MaterialTags.item(material, Product.BLOCK), new ItemStack(MaterialContent.item(id + "_plate"), 4)));
         }
-        boolean hasOre = material.hasOwnOre() || material.oreKind() == OreKind.VANILLA;
+        // Ore to dust only for a material with its own ore and dust; titanium's ore is rutile, a separate legacy
+        // material without dust, so rutile does not press: titanium waits for the electric arc furnace (C16b).
+        boolean hasOre = (material.hasOwnOre() && material != Material.TITANIUM)
+                || material.oreKind() == OreKind.VANILLA;
         if (material.has(Product.DUST) && hasOre) {
             output.accept(new Pressing(ModIdentity.id("pressing_" + id + "_dust"),
                     MaterialTags.oreItem(material), new ItemStack(MaterialContent.item(id + "_dust"), 2)));

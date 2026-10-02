@@ -33,7 +33,7 @@ No candidate or release approval is assigned.
   come from the press.
 - Add the Small Plate Press. Put a metal block or an ore under it, obsidian
   under that block, and give the press a redstone pulse: a block becomes four
-  plates, an ore two dust. One operation per pulse; claim mods that stop
+  plates, an ore two dust (not rutile). One operation per pulse; claim mods that stop
   pistons stop it too. The COMMON value `classic.smallPlatePress` turns it
   off. JEI shows its recipes.
 

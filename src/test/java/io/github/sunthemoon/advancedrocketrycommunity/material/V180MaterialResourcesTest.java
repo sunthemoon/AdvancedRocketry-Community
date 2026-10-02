@@ -75,7 +75,8 @@ class V180MaterialResourcesTest {
             if (material.has(Product.PLATE) && block) {
                 expected.add("pressing_" + material.id() + "_plate");
             }
-            boolean ore = material.hasOwnOre() || material.vanillaIngot();
+            // Titanium's ore is rutile, which waits for the electric arc furnace (ADR-063 section 1).
+            boolean ore = (material.hasOwnOre() && material != Material.TITANIUM) || material.vanillaIngot();
             if (material.has(Product.DUST) && ore) {
                 expected.add("pressing_" + material.id() + "_dust");
             }

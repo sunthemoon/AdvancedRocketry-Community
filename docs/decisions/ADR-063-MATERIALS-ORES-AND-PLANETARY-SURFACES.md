@@ -154,7 +154,11 @@ press acts only within loaded chunks. Its textures are drawn new.
 resolved when the press acts, after tags are bound. If two recipes match the
 block below, the press does nothing rather than pick one by load order. A
 switch `classic.smallPlatePress` (COMMON, default on) turns the press off; a
-disabled press keeps its blocks and does nothing on a pulse.
+disabled press keeps its blocks and does nothing on a pulse. Rutile does not
+press (C15aR1-H1): the legacy recipe generator made ore → dust press recipes
+only for a material with its own ore and dust, and titanium's ore is rutile, a
+separate material without dust. A press route would give titanium dust that
+smelts in a furnace and bypasses the electric arc furnace §1 requires.
 
 **Protection: the piston exception.** The press has no owner (no block
 entity), so the ADR-054 §5 chain, which binds effects to a device owner, does

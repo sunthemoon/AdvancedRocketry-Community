@@ -68,18 +68,23 @@ public final class MaterialGameTests {
     @GameTest(template = "rocket_test", timeoutTicks = 40)
     public static void aPulsePressesAnOreIntoTwoDust(GameTestHelper helper) {
         column(helper, 0, Blocks.OBSIDIAN, MaterialContent.block("tin_ore"));
-        column(helper, 3, Blocks.OBSIDIAN, MaterialContent.block("deepslate_rutile_ore"));
+        column(helper, 3, Blocks.OBSIDIAN, MaterialContent.block("deepslate_aluminum_ore"));
         column(helper, 6, Blocks.OBSIDIAN, Blocks.IRON_ORE);
         column(helper, 9, Blocks.OBSIDIAN, MaterialContent.block("dilithium_ore"));
-        for (int x : new int[] {0, 3, 6, 9}) {
+        column(helper, 12, Blocks.OBSIDIAN, MaterialContent.block("deepslate_rutile_ore"));
+        // Rutile is a titanium ore, but titanium comes only from the electric arc furnace (ADR-063 section 1).
+        helper.assertTrue(SmallPlatePressBlock.press(helper.getLevel(), at(helper, 12, PRESS)) == PressResult.NO_RECIPE,
+                "Rutile pressed into dust");
+        for (int x : new int[] {0, 3, 6, 9, 12}) {
             power(helper, x);
         }
         helper.succeedWhen(() -> {
             assertPressed(helper, 0, MaterialContent.item("tin_dust"), 2);
-            // Rutile carries forge:ores/titanium (ADR-063 section 1), so it presses into titanium dust.
-            assertPressed(helper, 3, MaterialContent.item("titanium_dust"), 2);
+            assertPressed(helper, 3, MaterialContent.item("aluminum_dust"), 2);
             assertPressed(helper, 6, MaterialContent.item("iron_dust"), 2);
             assertPressed(helper, 9, MaterialContent.item("dilithium_dust"), 2);
+            helper.assertBlockPresent(MaterialContent.block("deepslate_rutile_ore"), TARGET.offset(12, 0, 0));
+            helper.assertTrue(items(helper, 12).isEmpty(), "Rutile was pressed");
         });
     }
 
@@ -193,7 +198,11 @@ public final class MaterialGameTests {
         ServerLevel level = helper.getLevel();
         List<SmallPlatePressRecipe> recipes = level.getRecipeManager().getAllRecipesFor(
                 MaterialContent.SMALL_PLATE_PRESS_TYPE.get());
-        helper.assertTrue(recipes.size() == 18, "Expected 18 press recipes, found " + recipes.size());
+        helper.assertTrue(recipes.size() == 17, "Expected 17 press recipes, found " + recipes.size());
+        for (SmallPlatePressRecipe recipe : recipes) {
+            helper.assertFalse(recipe.ingredient().test(new ItemStack(MaterialContent.item("rutile_ore"))),
+                    recipe.getId() + " presses rutile");
+        }
         for (SmallPlatePressRecipe recipe : recipes) {
             ItemStack[] inputs = recipe.ingredient().getItems();
             helper.assertTrue(inputs.length > 0, recipe.getId() + " has no input after tags load");
