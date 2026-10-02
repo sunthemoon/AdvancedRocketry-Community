@@ -9,8 +9,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorA
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPair;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPairs;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRides;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRules;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorTerminalBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
@@ -55,6 +59,7 @@ public final class ElevatorGameTests {
     private static final String CARGO = "endgame_elevator_cargo";
     private static final String RIDES = "endgame_elevator_rides";
     private static final String VALIDITY = "endgame_elevator_validity";
+    private static final String ZONE = "endgame_elevator_zone";
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
             Comparator.comparing(UUID::toString));
     private static final String ARRIVAL_TICKET = "advancedrocketrycommunity:elevator_arrival";
@@ -74,6 +79,7 @@ public final class ElevatorGameTests {
         final ServerLevel space;
         final StationRegistrySavedData stations;
         final UUID owner = UUID.randomUUID();
+        final UUID anchorOwner;
         final UUID stationId = UUID.randomUUID();
         final StationState station;
         final BlockPos anchorPos;
@@ -81,12 +87,21 @@ public final class ElevatorGameTests {
         final ChunkPos terminalChunk;
 
         Fixture(GameTestHelper helper) {
+            this(helper, null);
+        }
+
+        /** With {@code anchorOwner}, a station member owns the anchor and the station's owner the terminal. */
+        Fixture(GameTestHelper helper, @Nullable UUID anchorOwner) {
+            this.anchorOwner = anchorOwner == null ? owner : anchorOwner;
             level = helper.getLevel();
             server = level.getServer();
             space = server.getLevel(CelestialIds.SPACE_LEVEL);
             stations = StationRegistrySavedData.get(server);
             stations.reserve(stationId, owner, "Elevator fixture", CelestialIds.EARTH_ID, level.getGameTime());
             station = stations.commit(stationId);
+            if (!this.anchorOwner.equals(owner)) {
+                stations.addMember(stationId, this.anchorOwner);
+            }
             terminalPos = new BlockPos(station.landingPad().x() + 6, StationLimits.LANDING_Y + 6,
                     station.landingPad().z() + 6);
             terminalChunk = new ChunkPos(terminalPos);
@@ -96,7 +111,7 @@ public final class ElevatorGameTests {
             space.getChunkAt(terminalPos);
             // High above the test origin, so no fluid near it reaches the platform.
             anchorPos = helper.absolutePos(new BlockPos(3, 14, 3));
-            buildAnchor(level, anchorPos, owner);
+            buildAnchor(level, anchorPos, this.anchorOwner);
             space.setBlockAndUpdate(terminalPos, ModBlocks.ELEVATOR_TERMINAL.get().defaultBlockState());
             clearAbove(space, terminalPos);
             terminal().assignOwner(owner);
@@ -120,9 +135,14 @@ public final class ElevatorGameTests {
         }
 
         ElevatorPair bind(GameTestHelper helper) {
+            return bind(helper, false);
+        }
+
+        /** An operator binds an anchor of another owner. */
+        ElevatorPair bind(GameTestHelper helper, boolean operator) {
             service().barrier(root -> null);
             EndgameCode code = ElevatorPairs.bind(server, service(), devices(), terminal(),
-                    anchor().deviceId().orElseThrow(), owner, false, level.getGameTime()).code();
+                    anchor().deviceId().orElseThrow(), owner, operator, level.getGameTime()).code();
             helper.assertTrue(code == EndgameCode.OK, "The bind failed: " + code);
             return root().pairs().forStation(stationId).orElseThrow();
         }
@@ -279,6 +299,66 @@ public final class ElevatorGameTests {
                     fixture.close();
                 })
                 .thenSucceed();
+    }
+
+    /**
+     * Review C12R-M2: a ride's protection check names the departing endpoint's owner (ADR-054 section 5.1). A member
+     * rides down from the station owner's terminal to an anchor of another member, inside a zone that allows only the
+     * anchor's owner: the commit is refused; once the zone allows the terminal's owner instead, the ride commits.
+     */
+    @GameTest(template = "empty", batch = ZONE, timeoutTicks = 2400)
+    public static void aZoneJudgesARideByTheDepartingEndpointsOwner(GameTestHelper helper) {
+        UUID anchorOwner = UUID.randomUUID();
+        Fixture fixture = new Fixture(helper, anchorOwner);
+        UUID memberId = UUID.randomUUID();
+        fixture.stations.addMember(fixture.stationId, memberId);
+        String zone = "gt_ride_" + memberId.toString().substring(0, 8);
+        List<ServerPlayer> joined = new ArrayList<>();
+        helper.startSequence()
+                .thenWaitUntil(() -> fixture.registered(helper))
+                .thenExecute(() -> {
+                    fixture.bind(helper, true);
+                    fixture.terminal().storage().energy().set(200_000);
+                    zone(helper, fixture, zone, anchorOwner);
+                    ServerPlayer member = ConnectedTestPlayers.join(fixture.server, memberId, "elevatorZoneRider",
+                            fixture.space, fixture.terminalPos.above(), new ArrayList<>());
+                    joined.add(member);
+                    EndgameCode requested = rides().request(member, fixture.terminal(), service(), devices()).code();
+                    helper.assertTrue(requested == EndgameCode.RIDE_COUNTDOWN, "The ride down: " + requested);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(rides().pending(memberId).isEmpty(), "The ride did not end"))
+                .thenExecute(() -> {
+                    helper.assertTrue(joined.get(0).level() == fixture.space
+                                    && fixture.terminal().storage().energy().energy() == 200_000,
+                            "A zone allowing only the arrival's owner let the departing owner's ride through");
+                    UUID terminalId = fixture.terminal().deviceId().orElseThrow();
+                    helper.assertTrue(service().audit().page(EndgameSystem.SPACE_ELEVATOR.id(), 0).stream()
+                                    .anyMatch(line -> line.contains("ride_cancel") && line.contains("TARGET_PROTECTED")
+                                            && line.contains(terminalId.toString())),
+                            "The ride was not refused by the zone");
+                    service().barrier(root -> root.removeZone(zone));
+                    zone(helper, fixture, zone, fixture.owner);
+                })
+                .thenExecuteAfter(ElevatorRules.CANCEL_COOLDOWN_TICKS + 5, () -> helper.assertTrue(rides()
+                        .request(joined.get(0), fixture.terminal(), service(), devices()).code()
+                        == EndgameCode.RIDE_COUNTDOWN, "The second ride down was refused"))
+                .thenWaitUntil(() -> helper.assertTrue(joined.get(0).level() == fixture.level
+                        && fixture.anchor().onPlatform(joined.get(0)), "A zone allowing the departing owner refused"))
+                .thenExecute(() -> {
+                    service().barrier(root -> root.removeZone(zone));
+                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
+                    fixture.close();
+                })
+                .thenSucceed();
+    }
+
+    /** An operator zone around the anchor's platform that allows {@code allowed} only. */
+    private static void zone(GameTestHelper helper, Fixture fixture, String name, UUID allowed) {
+        BlockPos min = fixture.anchorPos.offset(-4, 0, -4);
+        BlockPos max = fixture.anchorPos.offset(4, 0, 4);
+        helper.assertTrue(service().barrier(root -> root.addZone(ProtectedZone.of(name,
+                fixture.level.dimension().location(), min.getX(), min.getZ(), max.getX(), max.getZ(),
+                List.of(allowed)), 256)) == EndgameCode.OK, "The zone was not added");
     }
 
     @GameTest(template = "empty", batch = VALIDITY, timeoutTicks = 1600)

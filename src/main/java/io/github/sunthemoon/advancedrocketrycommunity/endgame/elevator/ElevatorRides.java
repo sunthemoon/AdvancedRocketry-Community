@@ -201,10 +201,17 @@ public final class ElevatorRides {
         }
     }
 
-    /** ADR-054 section 5 steps 2, 3 and 6 for the arrival box; step 4 is the access rule, spawn protection none. */
+    /**
+     * ADR-054 section 5 steps 2, 3 and 6 for the arrival box; step 4 is the access rule, spawn protection none. The
+     * device owner is the departing endpoint's owner (section 5.1, review C12R-M2); validity has just found it ACTIVE.
+     */
     private static EndgameCode protection(ServerLevel level, EndgameRoot root, Ride ride, ServerPlayer rider) {
         ForgeProtectionView forge = new ForgeProtectionView(level, root.zones());
-        UUID owner = root.endpoint(ride.arrival()).map(EndpointRecord::owner).orElse(rider.getUUID());
+        Optional<UUID> departingOwner = root.endpoint(ride.departure()).map(EndpointRecord::owner);
+        if (departingOwner.isEmpty()) {
+            return EndgameCode.TARGET_PROTECTED;
+        }
+        UUID owner = departingOwner.get();
         BlockPos platform = ride.arrivalPos().above();
         return EndgameProtection.check(new EndgameProtection.Batch(EndgameSystem.SPACE_ELEVATOR, EndgameEffect.TELEPORT,
                 owner, Optional.of(rider.getUUID()), level.dimension(), platform.offset(-1, 0, -1),
