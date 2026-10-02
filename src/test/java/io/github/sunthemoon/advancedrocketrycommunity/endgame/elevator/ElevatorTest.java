@@ -1,5 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPair;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPairCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPairTable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;

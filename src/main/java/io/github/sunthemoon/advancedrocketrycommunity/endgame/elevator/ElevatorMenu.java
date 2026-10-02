@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevi
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameItemSlot;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPair;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.IntentKind;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;

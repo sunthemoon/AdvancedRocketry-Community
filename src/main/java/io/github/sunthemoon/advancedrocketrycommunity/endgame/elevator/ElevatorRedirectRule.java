@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPair;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord;

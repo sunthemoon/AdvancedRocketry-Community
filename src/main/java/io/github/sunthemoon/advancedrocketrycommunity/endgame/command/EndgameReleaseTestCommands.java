@@ -3,7 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoEndpointBlockEntity;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPair;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPair;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunBlock;

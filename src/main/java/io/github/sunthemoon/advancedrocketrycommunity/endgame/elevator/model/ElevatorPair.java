@@ -1,4 +1,4 @@
-package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator;
+package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model;
 
 import java.util.Objects;
 import java.util.UUID;

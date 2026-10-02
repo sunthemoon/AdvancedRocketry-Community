@@ -1,6 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.root;
 
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPairCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPairCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;

@@ -1,4 +1,4 @@
-package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator;
+package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameIdOrder;

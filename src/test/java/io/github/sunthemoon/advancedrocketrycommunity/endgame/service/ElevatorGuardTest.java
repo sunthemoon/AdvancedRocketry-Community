@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorGuard;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPair;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPair;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameSavedData;
@@ -13,8 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLim
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
-import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModel;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
 import java.util.Set;

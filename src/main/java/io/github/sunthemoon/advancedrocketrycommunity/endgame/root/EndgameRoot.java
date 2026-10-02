@@ -1,11 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.root;
 
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPair;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.model.ElevatorPairTable;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameIdOrder;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPair;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPairTable;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitTable;
 import java.util.ArrayList;
