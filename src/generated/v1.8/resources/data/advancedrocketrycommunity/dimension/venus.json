@@ -1,0 +1,16 @@
+{
+  "type": "advancedrocketrycommunity:venus",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "advancedrocketrycommunity:patches",
+      "biomes": [
+        "advancedrocketrycommunity:volcanic",
+        "advancedrocketrycommunity:volcanic_lowlands"
+      ],
+      "cell_size": 32,
+      "salt": 6216460989029759024
+    },
+    "settings": "advancedrocketrycommunity:venus"
+  }
+}

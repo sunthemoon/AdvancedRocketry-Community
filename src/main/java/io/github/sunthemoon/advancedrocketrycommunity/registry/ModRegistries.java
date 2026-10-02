@@ -18,5 +18,8 @@ public final class ModRegistries {
         ModCreativeTabs.register(modBus);
         // v1.8 (ADR-063): the classic material set, its ores and the small plate press.
         io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent.register(modBus);
+        // v1.8 (ADR-063 section 5): the Moon, Mars and Venus surface blocks and world generators.
+        io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent.register(modBus);
+        io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.SurfaceWorldgen.register(modBus);
     }
 }

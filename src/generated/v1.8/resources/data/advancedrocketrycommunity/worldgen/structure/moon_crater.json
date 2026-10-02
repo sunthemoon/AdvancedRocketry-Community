@@ -1,0 +1,10 @@
+{
+  "type": "advancedrocketrycommunity:crater",
+  "biomes": "#advancedrocketrycommunity:has_structure/moon_crater",
+  "floor_min_y": 5,
+  "max_radius": 48,
+  "min_radius": 8,
+  "rim_max_y": 44,
+  "spawn_overrides": {},
+  "step": "raw_generation"
+}

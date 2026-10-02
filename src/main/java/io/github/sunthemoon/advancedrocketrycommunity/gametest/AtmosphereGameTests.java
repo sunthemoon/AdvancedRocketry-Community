@@ -53,6 +53,8 @@ import net.minecraftforge.items.IItemHandler;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class AtmosphereGameTests {
+    /** Above the v1.8 Moon terrain bound (ADR-063 section 5); the flat Moon's surface was y 3. */
+    private static final int MOON_ROOM_Y = 64;
     private static final String TEMPLATE = "atmosphere_test";
 
     private AtmosphereGameTests() {
@@ -83,7 +85,8 @@ public final class AtmosphereGameTests {
         ServerLevel moon = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable for open-room test");
         BlockPos allocation = helper.absolutePos(new BlockPos(3, 1, 3));
-        BlockPos ventPosition = new BlockPos(allocation.getX(), 16, allocation.getZ());
+        // Above the v1.8 Moon terrain (top blocks y 12-36, crater rims y 44 or lower), in open sky.
+        BlockPos ventPosition = new BlockPos(allocation.getX(), MOON_ROOM_Y, allocation.getZ());
         OxygenVentBlockEntity vent = buildOneCellRoom(moon, ventPosition);
         moon.setBlock(ventPosition.offset(0, 2, 0), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         AtmosphereLevelService service = testService(moon, AtmosphereLimits.MAX_VOLUME_CELLS);
@@ -113,7 +116,8 @@ public final class AtmosphereGameTests {
         ServerLevel moon = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable for door test");
         BlockPos allocation = helper.absolutePos(new BlockPos(3, 1, 3));
-        BlockPos ventPosition = new BlockPos(allocation.getX(), 16, allocation.getZ());
+        // Above the v1.8 Moon terrain (top blocks y 12-36, crater rims y 44 or lower), in open sky.
+        BlockPos ventPosition = new BlockPos(allocation.getX(), MOON_ROOM_Y, allocation.getZ());
         OxygenVentBlockEntity vent = buildOneCellRoom(moon, ventPosition);
         BlockPos doorPosition = ventPosition.offset(1, 1, 0);
         buildShell(moon, ventPosition.offset(1, 0, -1), ventPosition.offset(4, 2, 1));

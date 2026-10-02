@@ -1,6 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.SurfaceWorldgen;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Entry;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Kind;
@@ -24,11 +26,15 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.registries.RegistryObject;
 
 /** v1.8 loot tables and tags of the material set and the small plate press (ADR-061 section 2, ADR-063). */
 public final class V180MaterialData {
@@ -61,6 +67,17 @@ public final class V180MaterialData {
                 }
             }
             dropSelf(MaterialContent.SMALL_PLATE_PRESS.get());
+            // C15b surface blocks drop themselves (ADR-063 section 5), except the charcoal log, which drops one
+            // charcoal as the legacy log did: itself with Silk Touch, and Fortune adds up to its level.
+            for (RegistryObject<Block> block : SurfaceContent.blocks()) {
+                if (block != SurfaceContent.CHARCOAL_LOG) {
+                    dropSelf(block.get());
+                }
+            }
+            Block log = SurfaceContent.CHARCOAL_LOG.get();
+            add(log, createSilkTouchDispatchTable(log, applyExplosionDecay(log, LootItem.lootTableItem(
+                    net.minecraft.world.item.Items.CHARCOAL)
+                    .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE)))));
         }
 
         @Override
@@ -68,6 +85,7 @@ public final class V180MaterialData {
             List<Block> blocks = new ArrayList<>();
             MaterialContent.blocks().values().forEach(block -> blocks.add(block.get()));
             blocks.add(MaterialContent.SMALL_PLATE_PRESS.get());
+            SurfaceContent.blocks().forEach(block -> blocks.add(block.get()));
             return blocks;
         }
     }
@@ -112,6 +130,17 @@ public final class V180MaterialData {
             tag(BlockTags.NEEDS_IRON_TOOL).add(earlier);
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(MaterialContent.SMALL_PLATE_PRESS.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(MaterialContent.SMALL_PLATE_PRESS.get());
+            // C15b surfaces (ADR-063 section 5): soft turfs dig with a shovel, the charcoal log with an axe, the
+            // geode shell needs an iron pickaxe (legacy: the jackhammer at level 2, which comes in C18b); geode ores
+            // default to the legacy list (iron, gold, copper, tin, redstone).
+            tag(BlockTags.MINEABLE_WITH_SHOVEL).add(SurfaceContent.MOON_TURF.get(), SurfaceContent.DARK_MOON_TURF.get(),
+                    SurfaceContent.FERRIC_SAND.get());
+            tag(BlockTags.MINEABLE_WITH_AXE).add(SurfaceContent.CHARCOAL_LOG.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(SurfaceContent.GEODE_SHELL.get());
+            tag(BlockTags.NEEDS_IRON_TOOL).add(SurfaceContent.GEODE_SHELL.get());
+            tag(SurfaceWorldgen.GEODE_ORES).add(net.minecraft.world.level.block.Blocks.IRON_ORE,
+                    net.minecraft.world.level.block.Blocks.GOLD_ORE, net.minecraft.world.level.block.Blocks.COPPER_ORE,
+                    MaterialContent.block("tin_ore"), net.minecraft.world.level.block.Blocks.REDSTONE_ORE);
             for (Entry entry : MaterialCatalog.entries()) {
                 if (!entry.isBlock()) {
                     continue;

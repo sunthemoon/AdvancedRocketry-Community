@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 180504,
+    "separation": 4,
+    "spacing": 8
+  },
+  "structures": [
+    {
+      "structure": "advancedrocketrycommunity:geode",
+      "weight": 1
+    }
+  ]
+}

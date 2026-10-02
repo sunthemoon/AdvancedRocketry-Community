@@ -40,6 +40,29 @@ No candidate or release approval is assigned.
   protected like a vanilla piston: mods that cancel Forge's piston event stop
   it. The COMMON value `classic.smallPlatePress` turns it off. JEI shows its
   recipes.
+- The Moon, Mars and Venus get new surfaces (ADR-063 section 5). The Moon
+  becomes rolling terrain between y 12 and 36 with two biomes, Regolith
+  Highlands (Moon Turf) and Regolith Lowlands (Dark Moon Turf), over stone,
+  with impact craters. Mars is covered in Oxidized Ferric Sand (Ferric
+  Regolith Wasteland) over red sandstone, with craters. Venus is basalt, with
+  Volcanic and Volcanic Lowlands biomes, volcanoes with lava, buried ore geodes
+  lined with Geode Blocks, and charred trees of Charcoal Logs. The Moon and
+  Mars carry copper, tin, rutile, aluminum, iridium and dilithium ores between
+  y 4 and 40 (dilithium is common on the airless Moon). Charcoal Logs do not
+  burn and drop one charcoal (the log itself with Silk Touch); Geode Blocks
+  need an iron pickaxe.
+- Existing worlds: only chunks generated after the upgrade get the new
+  terrain. On the Moon, explored areas end in a wall of 8–32 blocks (up to 40
+  at a crater rim) where old flat end-stone chunks meet the new terrain; on
+  Mars and Venus the height is unchanged and only the top block changes (red
+  sand to ferric sand, yellow terracotta to basalt). Moon rockets still arrive
+  at y 80 above the terrain, so the drop is now 44–68 blocks. Back up the world
+  before upgrading, or explore farther out for new terrain.
+- New COMMON values turn each feature off in new chunks:
+  `worldgen.planetOres`, `worldgen.craters`, `worldgen.volcanoes`,
+  `worldgen.geodes` and `worldgen.charredTrees`. Structures already started
+  still finish. Data packs can change the ores a geode holds through the block
+  tag `advancedrocketrycommunity:geode_ores`.
 - Data packs: Rolling Machine, Precision Assembler and Electrolyzer recipes
   must name items; tag ingredients are refused until the classic machine
   family resolves tags after they load. Electrolyzer ingredients also take

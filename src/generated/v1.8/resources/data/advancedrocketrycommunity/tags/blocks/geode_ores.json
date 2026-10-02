@@ -1,0 +1,9 @@
+{
+  "values": [
+    "minecraft:iron_ore",
+    "minecraft:gold_ore",
+    "minecraft:copper_ore",
+    "advancedrocketrycommunity:tin_ore",
+    "minecraft:redstone_ore"
+  ]
+}

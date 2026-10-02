@@ -32,6 +32,17 @@ public final class V180LanguageProvider extends LanguageProvider {
         add("block." + NS + ".small_plate_press", chinese ? "小型压板机" : "Small Plate Press");
         add("jei." + NS + ".small_plate_press.redstone",
                 chinese ? "红石脉冲" : "Redstone pulse");
+        // C15b surface blocks and biomes (ADR-063 section 5), with the legacy names where the legacy game had them.
+        add("block." + NS + ".moon_turf", chinese ? "月面土" : "Moon Turf");
+        add("block." + NS + ".dark_moon_turf", chinese ? "暗色月面土" : "Dark Moon Turf");
+        add("block." + NS + ".ferric_sand", chinese ? "氧化铁砂" : "Oxidized Ferric Sand");
+        add("block." + NS + ".charcoal_log", chinese ? "炭化原木" : "Charcoal Log");
+        add("block." + NS + ".geode_shell", chinese ? "晶簇方块" : "Geode Block");
+        add("biome." + NS + ".regolith_highlands", chinese ? "月面高地" : "Regolith Highlands");
+        add("biome." + NS + ".regolith_lowlands", chinese ? "月面低地" : "Regolith Lowlands");
+        add("biome." + NS + ".ferric_regolith", chinese ? "氧化铁风化层荒原" : "Ferric Regolith Wasteland");
+        add("biome." + NS + ".volcanic", chinese ? "火山" : "Volcanic");
+        add("biome." + NS + ".volcanic_lowlands", chinese ? "火山低地" : "Volcanic Lowlands");
         Map<Material, String[]> names = materialNames();
         for (Entry entry : MaterialCatalog.entries()) {
             String key = (entry.isBlock() ? "block." : "item.") + NS + "." + entry.id();

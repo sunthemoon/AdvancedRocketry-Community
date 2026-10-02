@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -68,13 +69,22 @@ public final class PlanetaryWorldGameTests {
                 world.getChunkAt(new BlockPos(x, 0, 1024));
                 int y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, 1024);
                 var top = world.getBlockState(new BlockPos(x, y - 1, 1024));
-                var rock = world.getBlockState(new BlockPos(x, y - 5, 1024));
+                var rock = world.getBlockState(new BlockPos(x, y - 12, 1024));
                 boolean mars = id.equals(PlanetaryContent.MARS);
                 helper.assertTrue(y > 4 && y < 240, "Generated terrain height is unsafe");
-                helper.assertTrue(top.is(mars ? Blocks.RED_SAND : Blocks.YELLOW_TERRACOTTA), "Unexpected planetary surface");
-                helper.assertTrue(rock.is(mars ? Blocks.RED_SANDSTONE : Blocks.BASALT), "Unexpected planetary interior");
-                helper.assertTrue(world.getBiome(new BlockPos(x, y, 1024)).unwrapKey().orElseThrow().location().equals(id),
-                        "Planet uses another biome");
+                // v1.8 (ADR-063 section 5): Mars has ferric sand over red sandstone, Venus is basalt throughout; a
+                // volcano's lava pool may also be the top. The base blocks and heights are the v1.4 ones.
+                helper.assertTrue(mars ? top.is(SurfaceContent.FERRIC_SAND.get()) : top.is(Blocks.BASALT) || top.is(Blocks.LAVA),
+                        "Unexpected planetary surface " + top);
+                // A Venus geode's hollow or a volcano's lava can lie under a sampled column.
+                helper.assertTrue(rock.is(mars ? Blocks.RED_SANDSTONE : Blocks.BASALT) || rock.is(Blocks.LAVA)
+                                || rock.is(Blocks.CAVE_AIR)
+                                || rock.is(SurfaceContent.GEODE_SHELL.get()),
+                        "Unexpected planetary interior " + rock);
+                var biome = world.getBiome(new BlockPos(x, y, 1024)).unwrapKey().orElseThrow().location();
+                helper.assertTrue(mars ? biome.getPath().equals("ferric_regolith")
+                                : biome.getPath().equals("volcanic") || biome.getPath().equals("volcanic_lowlands"),
+                        "Planet uses another biome: " + biome);
                 heights.add(y);
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_PLANETARY_TERRAIN body={} x={} z=1024 height={} top={} rock={}",
                         id, x, y, top, rock);

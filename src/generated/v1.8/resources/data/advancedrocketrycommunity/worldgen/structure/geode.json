@@ -1,0 +1,6 @@
+{
+  "type": "advancedrocketrycommunity:geode",
+  "biomes": "#advancedrocketrycommunity:has_structure/geode",
+  "spawn_overrides": {},
+  "step": "underground_structures"
+}

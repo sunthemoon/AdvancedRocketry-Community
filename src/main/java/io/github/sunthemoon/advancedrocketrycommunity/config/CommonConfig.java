@@ -257,6 +257,25 @@ public final class CommonConfig {
             .comment("Generate the classic tin, rutile, aluminum and dilithium ores in new Overworld chunks",
                     "(ADR-063 section 4). Chunks already generated keep their ores.")
             .define("worldgen.overworldOres", true);
+    public static final ForgeConfigSpec.BooleanValue PLANET_ORES_ENABLED = BUILDER
+            .comment("Generate the classic ores on the Moon and Mars in new chunks (ADR-063 section 4).",
+                    "Chunks already generated keep their ores.")
+            .define("worldgen.planetOres", true);
+    public static final ForgeConfigSpec.BooleanValue CRATERS_ENABLED = BUILDER
+            .comment("Start impact craters on the Moon and Mars in new chunks (ADR-063 section 5).",
+                    "Craters already started still finish.")
+            .define("worldgen.craters", true);
+    public static final ForgeConfigSpec.BooleanValue VOLCANOES_ENABLED = BUILDER
+            .comment("Start volcanoes on Venus in new chunks (ADR-063 section 5).",
+                    "Volcanoes already started still finish.")
+            .define("worldgen.volcanoes", true);
+    public static final ForgeConfigSpec.BooleanValue GEODES_ENABLED = BUILDER
+            .comment("Start ore geodes on Venus in new chunks (ADR-063 section 5).",
+                    "Geodes already started still finish.")
+            .define("worldgen.geodes", true);
+    public static final ForgeConfigSpec.BooleanValue CHARRED_TREES_ENABLED = BUILDER
+            .comment("Place charred trees on Venus in new chunks (ADR-063 section 5).")
+            .define("worldgen.charredTrees", true);
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -389,6 +408,27 @@ public final class CommonConfig {
     /** ADR-063 section 4: whether the Overworld ores generate; the default until the COMMON config is loaded. */
     public static boolean overworldOresEnabled() {
         return SPEC.isLoaded() ? OVERWORLD_ORES_ENABLED.get() : OVERWORLD_ORES_ENABLED.getDefault();
+    }
+
+    /** ADR-063 sections 4 and 5: the C15b world-feature switches; each reads its default until the config loads. */
+    public static boolean planetOresEnabled() {
+        return SPEC.isLoaded() ? PLANET_ORES_ENABLED.get() : PLANET_ORES_ENABLED.getDefault();
+    }
+
+    public static boolean cratersEnabled() {
+        return SPEC.isLoaded() ? CRATERS_ENABLED.get() : CRATERS_ENABLED.getDefault();
+    }
+
+    public static boolean volcanoesEnabled() {
+        return SPEC.isLoaded() ? VOLCANOES_ENABLED.get() : VOLCANOES_ENABLED.getDefault();
+    }
+
+    public static boolean geodesEnabled() {
+        return SPEC.isLoaded() ? GEODES_ENABLED.get() : GEODES_ENABLED.getDefault();
+    }
+
+    public static boolean charredTreesEnabled() {
+        return SPEC.isLoaded() ? CHARRED_TREES_ENABLED.get() : CHARRED_TREES_ENABLED.getDefault();
     }
 
     private CommonConfig() {

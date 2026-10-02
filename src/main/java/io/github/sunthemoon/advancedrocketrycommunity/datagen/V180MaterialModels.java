@@ -93,6 +93,7 @@ public final class V180MaterialModels extends BlockStateProvider {
                 modLoc("block/small_plate_press_bottom"), modLoc("block/small_plate_press_top"));
         simpleBlock(MaterialContent.SMALL_PLATE_PRESS.get(), press);
         simpleBlockItem(MaterialContent.SMALL_PLATE_PRESS.get(), press);
+        V180SurfaceModels.register(this, existingFiles);
     }
 
     private ModelFile ore(ModelFile template, String name, String base, String overlay) {

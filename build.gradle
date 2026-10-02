@@ -145,6 +145,18 @@ def currentSupersededV030Types = [
 
 def currentSatelliteDefinition = 'data/advancedrocketrycommunity/satellite_definitions/data_satellite.json'
 
+// ADR-063 section 8: the v1.8 copies of the Moon, Mars and Venus dimensions and of the Mars and Venus noise
+// settings (new biome sources and surface rules, the noise router unchanged) supersede these earlier copies.
+def supersededV030Planets = [
+        'data/advancedrocketrycommunity/dimension/moon.json'
+] as Set
+def supersededV140Planets = [
+        'data/advancedrocketrycommunity/dimension/mars.json',
+        'data/advancedrocketrycommunity/dimension/venus.json',
+        'data/advancedrocketrycommunity/worldgen/noise_settings/mars.json',
+        'data/advancedrocketrycommunity/worldgen/noise_settings/venus.json'
+] as Set
+
 tasks.named('processResources') {
     eachFile { details ->
         // ADR-043: the v1.5 copy is authoritative; the v0.8 and v1.4 copies are superseded.
@@ -175,6 +187,12 @@ tasks.named('processResources') {
         }
         if (details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
                 && currentSupersededV030Types.contains(details.path)) {
+            details.exclude()
+        }
+        if ((details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
+                && supersededV030Planets.contains(details.path))
+                || (details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath())
+                && supersededV140Planets.contains(details.path))) {
             details.exclude()
         }
     }
@@ -210,6 +228,12 @@ tasks.named('sourcesJar') {
         }
         if (details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
                 && currentSupersededV030Types.contains(details.path)) {
+            details.exclude()
+        }
+        if ((details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
+                && supersededV030Planets.contains(details.path))
+                || (details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath())
+                && supersededV140Planets.contains(details.path))) {
             details.exclude()
         }
     }

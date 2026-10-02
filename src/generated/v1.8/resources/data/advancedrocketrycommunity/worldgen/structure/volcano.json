@@ -1,0 +1,6 @@
+{
+  "type": "advancedrocketrycommunity:volcano",
+  "biomes": "#advancedrocketrycommunity:has_structure/volcano",
+  "spawn_overrides": {},
+  "step": "surface_structures"
+}

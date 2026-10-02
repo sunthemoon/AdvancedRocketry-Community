@@ -46,7 +46,7 @@ public final class AtmospherePerformanceGameTests {
             for (int gridZ = 0; gridZ < 4; gridZ++) {
                 ventPositions.add(new BlockPos(
                         allocation.getX() + 1 + gridX * 4,
-                        32,
+                        64, // above the v1.8 Moon terrain bound (ADR-063 section 5)
                         allocation.getZ() + 1 + gridZ * 4
                 ));
             }

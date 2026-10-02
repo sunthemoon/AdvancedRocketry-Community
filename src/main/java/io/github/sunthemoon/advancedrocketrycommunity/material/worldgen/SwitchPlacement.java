@@ -2,10 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.material.worldgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.WorldgenSwitches;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
-import java.util.Map;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -18,15 +16,11 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
  * a switch off stops a feature in new chunks without a data pack. Unknown switch names fail to decode.
  */
 public final class SwitchPlacement extends PlacementModifier {
-    public static final String OVERWORLD_ORES = "overworld_ores";
-
-    private static final Map<String, BooleanSupplier> SWITCHES = Map.of(
-            OVERWORLD_ORES, CommonConfig::overworldOresEnabled
-    );
+    public static final String OVERWORLD_ORES = WorldgenSwitches.OVERWORLD_ORES;
 
     /** A map codec, so the placement JSON stays flat: {@code {"type": ..., "switch": "overworld_ores"}}. */
     public static final Codec<SwitchPlacement> CODEC = Codec.STRING.fieldOf("switch").<SwitchPlacement>flatXmap(
-            name -> SWITCHES.containsKey(name) ? DataResult.success(new SwitchPlacement(name))
+            name -> WorldgenSwitches.known(name) ? DataResult.success(new SwitchPlacement(name))
                     : DataResult.error(() -> "Unknown server switch " + name),
             placement -> DataResult.success(placement.name)).codec();
 
@@ -37,7 +31,7 @@ public final class SwitchPlacement extends PlacementModifier {
     }
 
     public static SwitchPlacement of(String name) {
-        if (!SWITCHES.containsKey(name)) {
+        if (!WorldgenSwitches.known(name)) {
             throw new IllegalArgumentException("Unknown server switch " + name);
         }
         return new SwitchPlacement(name);
@@ -48,7 +42,7 @@ public final class SwitchPlacement extends PlacementModifier {
     }
 
     public boolean enabled() {
-        return SWITCHES.get(name).getAsBoolean();
+        return WorldgenSwitches.enabled(name);
     }
 
     @Override

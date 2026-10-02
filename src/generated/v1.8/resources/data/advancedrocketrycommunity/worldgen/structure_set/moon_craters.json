@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 180501,
+    "separation": 3,
+    "spacing": 6
+  },
+  "structures": [
+    {
+      "structure": "advancedrocketrycommunity:moon_crater",
+      "weight": 1
+    }
+  ]
+}

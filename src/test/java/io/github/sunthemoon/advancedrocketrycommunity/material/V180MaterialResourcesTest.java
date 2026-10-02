@@ -169,6 +169,7 @@ class V180MaterialResourcesTest {
         Set<String> features;
         try (Stream<Path> files = Files.list(placed)) {
             features = files.map(path -> path.getFileName().toString().replace(".json", ""))
+                    .filter(name -> name.startsWith("overworld_"))
                     .collect(Collectors.toCollection(TreeSet::new));
         }
         assertEquals(new TreeSet<>(List.of("overworld_aluminum_ore", "overworld_dilithium_ore",
