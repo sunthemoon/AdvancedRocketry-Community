@@ -19,6 +19,7 @@ COPIED = (
     Path("docs/decisions"),
     Path("docs/versions"),
     Path("docs/provenance"),
+    Path("docs/work/v1.8.0-preparation"),
     REGISTRY,
     Path("src/generated"),
     Path("src/main/resources"),
@@ -67,7 +68,11 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._write_rows(ASSET_PLAN, rows)
 
     def _write_findings(self, findings: list[dict[str, str]]) -> None:
-        (self.root / ORIGIN_FINDINGS).write_text(json.dumps({"schema_version": 1, "findings": findings}),
+        """Add findings to the repository's own (replacing any for the same asset)."""
+        existing = json.loads((ROOT / ORIGIN_FINDINGS).read_text(encoding="utf-8"))["findings"]
+        assets = {finding["asset"] for finding in findings}
+        merged = [finding for finding in existing if finding["asset"] not in assets] + findings
+        (self.root / ORIGIN_FINDINGS).write_text(json.dumps({"schema_version": 1, "findings": merged}),
                                                  encoding="utf-8")
 
     def test_repository_passes(self) -> None:
@@ -332,6 +337,34 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._set_rule("textures/items/spacehelmet_overlay.png", handling="IMPORT")
         self.assertTrue(any("textures/items/spacehelmet_overlay.png is IMPORT but shares pixels with "
                             "textures/items/space_helmet.png" in error for error in self._errors()))
+
+    def test_records_cannot_be_the_findings_file(self) -> None:
+        findings = "docs/provenance/v1.8.0-origin-findings.json"
+        self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "someone",
+                               "role": "independent reviewer", "review_record": findings,
+                               "reviewed_at": "2026-10-02", "basis": "looked fine"}])
+        self.assertTrue(any("is CLEARED by 'someone', who is neither the owner" in error for error in self._errors()))
+        self._write_findings([{"asset": "textures/blocks/stationlight.png", "decision": "CLEARED",
+                               "reviewer": "sunthemoon", "reviewed_at": "2026-10-02", "basis": "a radial glow",
+                               "overrides": "HIT", "confirmed_by": "second reviewer",
+                               "confirmation_record": findings}])
+        self.assertTrue(any("stationlight.png overrides a verdict without" in error for error in self._errors()))
+
+    def test_a_plain_clearance_names_the_hit_relation_it_releases(self) -> None:
+        finding = {"asset": "textures/gui/warning.png", "decision": "CLEARED", "reviewer": "sunthemoon",
+                   "reviewed_at": "2026-10-03", "basis": "another region of the progress bar sheet"}
+        self._write_findings([finding])
+        message = ("asset plan: the CLEARED finding for textures/gui/warning.png does not name "
+                   "textures/gui/progressbars/progressbars.png, a HIT file it matches at HIT level, in its releases list")
+        self.assertIn(message, self._errors())
+        self._write_findings([dict(finding, releases=["textures/gui/progressbars/progressbars.png"])])
+        self.assertNotIn(message, self._errors())
+
+    def test_a_plan_row_citing_a_finding_needs_it(self) -> None:
+        path = self.root / ORIGIN_FINDINGS
+        path.write_text(json.dumps({"schema_version": 1, "findings": []}), encoding="utf-8")
+        self.assertIn("asset plan: textures/gui/buttons/tabtemplate.png cites an origin finding that does not exist "
+                      "or does not exclude it", self._errors())
 
     def test_inheritance_reads_relations_from_either_side(self) -> None:
         """monitorrear.png lists nothing itself; crystallizer_active.png (REVIEW) lists it."""

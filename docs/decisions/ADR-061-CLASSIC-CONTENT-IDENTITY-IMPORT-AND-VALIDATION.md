@@ -192,7 +192,13 @@ must handle:
    file. Names in a finding are text: the control is that the findings file
    changes only in a commit by its reviewer or the owner, reviewed like any
    contract change, and the validator only checks that each finding is
-   complete and linked.
+   complete and linked. A cited record (`review_record`,
+   `confirmation_record`) is another committed file under `docs/`, never the
+   findings file itself. A plain `CLEARED` finding on a file that matches a
+   `HIT` file at the `HIT` level (an inherited review) names that file in a
+   `releases` list with the reason; otherwise a near copy of a `HIT` file
+   could be released more easily than the `HIT` file itself, which needs the
+   override. A plan row that cites an origin finding needs that finding.
 3. **Records.** Each batch writes `docs/provenance/v1.8.0-<batch>.json` with a
    schema-2 record before the files enter the tree. Schema 2 keeps every
    schema-1 entry field (target path, status, source repository, branch,

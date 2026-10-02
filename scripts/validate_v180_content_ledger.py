@@ -388,15 +388,25 @@ def adr_owner(root: Path) -> str | None:
     return match.group(1) if match else None
 
 
-def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str], set[str]]:
-    """Decisions by asset, and the assets whose HIT verdict the owner overturned (ADR-061 section 4.8)."""
+def _record_names(root: Path, record, *names: str) -> bool:
+    """A committed record other than the findings file itself, naming every given text."""
+    if not isinstance(record, str) or not record.startswith("docs/") or record == ORIGIN_FINDINGS.as_posix():
+        return False
+    path = root / record
+    return path.is_file() and all(name in path.read_text(encoding="utf-8") for name in names)
+
+
+def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str], set[str], dict[str, set[str]]]:
+    """Decisions by asset, the assets whose HIT verdict the owner overturned, and the HIT relations each
+    CLEARED finding releases (ADR-061 section 4.8)."""
     data = json.loads((root / ORIGIN_FINDINGS).read_text(encoding="utf-8"))
     owner = adr_owner(root)
     findings: dict[str, str] = {}
     overturned: set[str] = set()
+    releases: dict[str, set[str]] = {}
     if data.get("schema_version") != 1 or not isinstance(data.get("findings"), list):
         errors.append(f"{ORIGIN_FINDINGS.name}: schema_version 1 with a findings list required")
-        return findings, overturned
+        return findings, overturned, releases
     for finding in data["findings"]:
         asset = finding.get("asset")
         if (finding.get("decision") not in ("CLEARED", "EXCLUDED") or not finding.get("reviewer")
@@ -406,26 +416,30 @@ def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str],
             continue
         if finding["decision"] == "CLEARED" and finding["reviewer"] != owner:
             # Anyone else clears a file only as a named independent reviewer with a committed review record.
-            record = finding.get("review_record")
-            if (finding.get("role") != "independent reviewer" or not isinstance(record, str)
-                    or not record.startswith("docs/") or not (root / record).is_file()
-                    or asset not in (root / record).read_text(encoding="utf-8")):
+            if finding.get("role") != "independent reviewer" or not _record_names(root, finding.get("review_record"), asset):
                 errors.append(f"{ORIGIN_FINDINGS.name}: {asset} is CLEARED by {finding['reviewer']!r}, who is neither "
                               f"the owner nor an independent reviewer with a review record naming the asset")
                 continue
         if "overrides" in finding:
-            confirmed, record = finding.get("confirmed_by"), finding.get("confirmation_record")
+            confirmed = finding.get("confirmed_by")
             if (finding["overrides"] != "HIT" or finding["decision"] != "CLEARED" or finding["reviewer"] != owner
                     or not isinstance(confirmed, str) or not confirmed or confirmed == finding["reviewer"]
-                    or not isinstance(record, str) or not record.startswith("docs/") or not (root / record).is_file()
-                    or asset not in (root / record).read_text(encoding="utf-8")
-                    or confirmed not in (root / record).read_text(encoding="utf-8")):
+                    or not _record_names(root, finding.get("confirmation_record"), asset, confirmed)):
                 errors.append(f"{ORIGIN_FINDINGS.name}: {asset} overrides a verdict without the owner's CLEARED "
                               f"decision and a second person's confirmation")
                 continue
             overturned.add(asset)
+        if "review_record" in finding and not _record_names(root, finding["review_record"], asset):
+            errors.append(f"{ORIGIN_FINDINGS.name}: {asset} cites a review record that is missing, is the findings "
+                          f"file itself or does not name the asset")
+            continue
+        released = finding.get("releases", [])
+        if not isinstance(released, list) or not all(isinstance(item, str) for item in released):
+            errors.append(f"{ORIGIN_FINDINGS.name}: {asset} has an invalid releases list")
+            continue
+        releases[asset] = set(released)
         findings[asset] = finding["decision"]
-    return findings, overturned
+    return findings, overturned, releases
 
 
 def _repository_module(relative: Path):
@@ -548,6 +562,7 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
                 if owner in model_batches and BATCHES.index(row["plan"]) > model_batches[owner]:
                     errors.append(f"asset plan rule {row['order']}: model texture for {owner} lands in {row['plan']}, "
                                   f"after its model ({BATCHES[model_batches[owner]]})")
+    cited = [row["pattern"] for row in rules if row["reason"].startswith("excluded by an origin finding")]
     used: Counter = Counter()
     handling_of: dict[str, str] = {}
     for asset in assets:
@@ -569,7 +584,7 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
         if handling == "IMPORTED" and asset not in imported:
             errors.append(f"asset plan: {asset} is handled as IMPORTED without a provenance record")
     allowed = load_allowlist(root, errors)
-    findings, overturned = load_origin_findings(root, errors)
+    findings, overturned, releases = load_origin_findings(root, errors)
     verdicts, listed = load_derivation(root, errors)
     # A relation counts when either file lists the other: the measures are not symmetric (ADR-061 section 4.8).
     related: dict[str, dict[str, str]] = {}
@@ -595,6 +610,14 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             errors.append(f"asset plan: {asset} is REVIEW but not in the import allowlist")
         if findings.get(asset) == "EXCLUDED" and handling != "EXCLUDE":
             errors.append(f"asset plan: {asset} was excluded by an origin finding but is {handling}")
+        if asset in cited and findings.get(asset) != "EXCLUDED":
+            errors.append(f"asset plan: {asset} cites an origin finding that does not exist or does not exclude it")
+        if findings.get(asset) == "CLEARED" and asset not in overturned:
+            # A plain CLEARED finding releases a HIT-level relation to a HIT file only by naming it.
+            for other, relation in sorted(related.get(asset, {}).items()):
+                if relation == "HIT" and verdicts.get(other) == "HIT" and other not in releases.get(asset, set()):
+                    errors.append(f"asset plan: the CLEARED finding for {asset} does not name {other}, a HIT file it "
+                                  f"matches at HIT level, in its releases list")
         if handling == "IMPORT" and findings.get(asset) != "CLEARED":
             # ADR-061 section 4.8: a file sharing pixels with a derived, suspect or quarantined file inherits review.
             for other, relation in sorted(related.get(asset, {}).items()):
