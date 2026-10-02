@@ -60,7 +60,7 @@ public final class ElevatorGuard implements ElevatorStationGuard {
     }
 
     /** Whether the endpoint, or its tombstone, stands in the Space Level inside the station's region. */
-    private static boolean inRegion(EndgameRoot root, StationState station, UUID id) {
+    static boolean inRegion(EndgameRoot root, StationState station, UUID id) {
         Optional<EndpointRecord> record = root.endpoint(id);
         long pos;
         boolean space;

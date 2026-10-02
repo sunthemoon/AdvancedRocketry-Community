@@ -18,7 +18,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.Protect
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.OutboxEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitKey;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitPayload;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -62,6 +65,7 @@ public final class ElevatorGameTests {
     private static final String VALIDITY = "endgame_elevator_validity";
     private static final String ZONE = "endgame_elevator_zone";
     private static final String SPACING = "endgame_elevator_spacing";
+    private static final String REDIRECT = "endgame_elevator_redirect";
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
             Comparator.comparing(UUID::toString));
     private static final String ARRIVAL_TICKET = "advancedrocketrycommunity:elevator_arrival";
@@ -94,6 +98,11 @@ public final class ElevatorGameTests {
 
         /** With {@code anchorOwner}, a station member owns the anchor and the station's owner the terminal. */
         Fixture(GameTestHelper helper, @Nullable UUID anchorOwner) {
+            this(helper, anchorOwner, new BlockPos(3, 14, 3));
+        }
+
+        /** With the anchor at {@code anchorAt} relative to the test, so two fixtures fit in one test. */
+        Fixture(GameTestHelper helper, @Nullable UUID anchorOwner, BlockPos anchorAt) {
             this.anchorOwner = anchorOwner == null ? owner : anchorOwner;
             level = helper.getLevel();
             server = level.getServer();
@@ -112,7 +121,7 @@ public final class ElevatorGameTests {
             space.setChunkForced(terminalChunk.x, terminalChunk.z, true);
             space.getChunkAt(terminalPos);
             // High above the test origin, so no fluid near it reaches the platform.
-            anchorPos = helper.absolutePos(new BlockPos(3, 14, 3));
+            anchorPos = helper.absolutePos(anchorAt);
             buildAnchor(level, anchorPos, this.anchorOwner);
             space.setBlockAndUpdate(terminalPos, ModBlocks.ELEVATOR_TERMINAL.get().defaultBlockState());
             clearAbove(space, terminalPos);
@@ -382,6 +391,60 @@ public final class ElevatorGameTests {
                 .thenExecute(() -> helper.assertTrue(rebind(fixture) == EndgameCode.OK
                         && root().pairs().forStation(fixture.stationId).isPresent(), "A bind after the cooldown"))
                 .thenExecute(fixture::close)
+                .thenSucceed();
+    }
+
+    /**
+     * Review C12R-L1: elevator cargo whose destination is gone is redirected only to its source or to the endpoint in
+     * the original station's current valid pair; a valid pair of another station is refused.
+     */
+    @GameTest(template = "empty", batch = REDIRECT, timeoutTicks = 1200)
+    public static void aRedirectStaysWithTheOriginalStation(GameTestHelper helper) {
+        Fixture first = new Fixture(helper, null, new BlockPos(3, 14, 3));
+        Fixture second = new Fixture(helper, null, new BlockPos(12, 14, 3));
+        UUID source = UUID.randomUUID();
+        UUID gone = UUID.randomUUID();
+        TransitKey key = new TransitKey(source, 1L);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    first.registered(helper);
+                    second.registered(helper);
+                })
+                .thenExecute(() -> {
+                    first.bind(helper, true);
+                    second.bind(helper, true);
+                    // A transfer from an anchor that is gone to a terminal of the first station that is gone too.
+                    BlockPos from = first.anchorPos.offset(40, 0, 0);
+                    BlockPos to = first.terminalPos.east();
+                    TransitPayload payload = TransitPayload.of(List.of(new ItemStack(Items.COPPER_INGOT, 3)))
+                            .orElseThrow();
+                    service().barrier(root -> {
+                        root.register(source, ElevatorAnchorBlockEntity.KIND, first.owner,
+                                first.level.dimension().location(), from.asLong(), false, 2048, 64);
+                        root.register(gone, ElevatorTerminalBlockEntity.KIND, first.owner,
+                                CelestialIds.SPACE_LEVEL.location(), to.asLong(), false, 2048, 64);
+                        root.registerTransit(TransitRecord.registered(source, new OutboxEntry(1L, gone, payload, 1,
+                                200, EndgameSystem.SPACE_ELEVATOR), first.owner, root.saveEpoch(),
+                                first.level.getGameTime()).arrived());
+                        root.remove(source);
+                        root.remove(gone);
+                        return null;
+                    });
+                    long now = first.level.getGameTime();
+                    EndgameCode other = service().transitOperations().redirect(key,
+                            second.terminal().deviceId().orElseThrow(), first.owner, true, now);
+                    helper.assertTrue(other == EndgameCode.ROUTE_REFUSED,
+                            "Cargo was redirected to another station's pair: " + other);
+                    EndgameCode own = service().transitOperations().redirect(key,
+                            first.terminal().deviceId().orElseThrow(), first.owner, true, now);
+                    helper.assertTrue(own == EndgameCode.OK, "The original station's pair was refused: " + own);
+                    helper.assertTrue(service().transitOperations().purge(key, first.owner, now) == EndgameCode.OK,
+                            "The test transfer was not purged");
+                })
+                .thenExecute(() -> {
+                    first.close();
+                    second.close();
+                })
                 .thenSucceed();
     }
 

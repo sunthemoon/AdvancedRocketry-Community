@@ -8,6 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecor
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.TransitOperations;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,9 +19,11 @@ import net.minecraft.server.MinecraftServer;
 
 /**
  * ADR-054 section 11 and ADR-059 section 6 (review R3-L4): elevator cargo whose destination is gone goes back to its
- * source, or to the endpoint of the original destination's kind in a currently valid pair, so a pair rebuilt after both
- * ends were removed can still receive it. The original destination's kind is the opposite of the source's while the
- * source is indexed; without it, either kind in a valid pair is accepted.
+ * source, or to the endpoint of the original destination's kind in the station's current valid pair, so a pair rebuilt
+ * after both ends were removed can still receive it. The original destination's kind is the opposite of the source's
+ * while the source is indexed; without it, either kind in a valid pair is accepted. The station is the one whose
+ * region holds the transfer's terminal side, its source or its destination, from the index or a tombstone (review
+ * C12R-L1); when neither is known any more, only the source is a target.
  */
 public final class ElevatorRedirectRule implements TransitOperations.Route {
     private final EndgameService service;
@@ -51,6 +55,11 @@ public final class ElevatorRedirectRule implements TransitOperations.Route {
         Optional<EndgameDevices> current = devices.get();
         if (server.isEmpty() || current.isEmpty()) {
             return EndgameCode.ROOT_UNAVAILABLE;
+        }
+        Optional<StationState> station = StationRegistrySavedData.get(server.get()).find(pair.get().stationId());
+        if (station.isEmpty() || !ElevatorGuard.inRegion(root, station.get(), record.key().source())
+                && !ElevatorGuard.inRegion(root, station.get(), record.destination())) {
+            return EndgameCode.ROUTE_REFUSED; // Another station's pair.
         }
         return ElevatorPairs.validity(server.get(), root, current.get(), pair.get()).code();
     }
