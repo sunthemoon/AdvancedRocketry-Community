@@ -59,7 +59,7 @@ order,pattern,handling,plan,units,reason
 58,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/chainmail_leggings.png (overlap 0.34, mask 0.90, rank 0.00)"
 59,textures/items/userinterface.png,REVIEW,C16d,item_variant:misc/0,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/map/map_icons.png (overlap 0.20, mask 0.68, rank 0.00); origin review"
 60,textures/models/girder.png,REVIEW,C18d,block:arcfurnace,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/debug2.png (overlap 0.24, mask 1.00, rank 0.00); origin review"
-61,textures/models/jetpack.png,REVIEW,C18d,block:arcfurnace,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png (overlap 0.11, mask 1.00, rank 0.30); origin review"
+61,textures/models/jetpack.png,REVIEW,C18b,item:jetPack,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png (overlap 0.11, mask 1.00, rank 0.30); origin review"
 62,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png (overlap 0.00, mask 1.00, rank 0.91)"
 63,textures/particle/hardsquare.png,REVIEW,C18d,-,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/light_14.png (overlap 0.11, mask 0.37, rank 0.00); origin review"
 64,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
@@ -210,19 +210,25 @@ order,pattern,handling,plan,units,reason
 209,textures/gui/buttons/*planet*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
 210,textures/gui/buttons/*.png,IMPORT,C16a,block:arcfurnace,shared screen buttons
 211,textures/gui/*.png,IMPORT,C16a,block:arcfurnace,shared screen frames
-212,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
-213,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
-214,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-215,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
-216,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
-217,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
-218,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-219,models/*.obj,IMPORT,C18d,block:arcfurnace,machine OBJ models for the visual batch
-220,textures/models/beacon.png,REVIEW,C17c,-,shares a vanilla file name; origin review
-221,textures/models/*,IMPORT,C18d,block:arcfurnace,OBJ model textures for the visual batch
-222,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
-223,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-224,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
-225,textures/particle/*,IMPORT,C18d,-,particles
-226,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
-227,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it
+212,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+213,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
+214,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+215,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+216,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
+217,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
+218,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
+219,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+220,models/*.obj,IMPORT,C18d,block:arcfurnace,machine OBJ models for the visual batch
+221,textures/models/beacon.png,REVIEW,C17c,-,shares a vanilla file name; origin review
+222,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
+223,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
+224,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
+225,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
+226,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+227,textures/models/*,IMPORT,C18d,block:arcfurnace,OBJ model textures for the visual batch
+228,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
+229,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+230,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
+231,textures/particle/*,IMPORT,C18d,-,particles
+232,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
+233,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it
