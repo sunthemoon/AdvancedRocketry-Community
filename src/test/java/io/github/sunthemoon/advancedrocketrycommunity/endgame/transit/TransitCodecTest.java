@@ -118,8 +118,14 @@ final class TransitCodecTest {
         assertTrue(decoded.retired(DESTINATION));
 
         CompoundTag orphan = encoded.copy();
-        orphan.getList("transits", 10).getCompound(0).putUUID("destination", new UUID(9L, 9L));
-        assertThrows(IllegalArgumentException.class, () -> EndgameRootCodec.decode(orphan), "names no endpoint");
+        orphan.getList("transits", 10).getCompound(0).putUUID("source", new UUID(9L, 9L));
+        assertThrows(IllegalArgumentException.class, () -> EndgameRootCodec.decode(orphan),
+                "a record whose source is no endpoint or tombstone");
+        // Review C12R-H1: a destination that is gone, its tombstone evicted, is DESTINATION_MISSING, not a defect.
+        CompoundTag missing = encoded.copy();
+        missing.getList("transits", 10).getCompound(0).putUUID("destination", new UUID(9L, 9L));
+        assertEquals(new UUID(9L, 9L), EndgameRootCodec.decode(missing).transits().records().iterator().next()
+                .destination());
         CompoundTag ahead = encoded.copy();
         ahead.getList("transits", 10).getCompound(0).putLong("seq", 2L);
         assertThrows(IllegalArgumentException.class, () -> EndgameRootCodec.decode(ahead), "above dispatched_through");

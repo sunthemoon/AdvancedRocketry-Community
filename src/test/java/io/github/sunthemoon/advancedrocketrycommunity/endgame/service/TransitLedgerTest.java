@@ -292,4 +292,39 @@ final class TransitLedgerTest {
                 empty.id, SOURCE_POS.asLong()));
         assertEquals(Set.of(copy.id), EndpointObservations.transit(tag, Set.of(TYPE)).keySet());
     }
+
+    /**
+     * Review C12R-H1: an entry escrowed to a destination that is then removed, settled and evicted still registers
+     * (ADR-054 section 11 step 2), and the root that names the unknown destination is written and loads again.
+     */
+    @Test
+    void aRegistrationToAnEvictedDestinationKeepsTheRootLoadable() {
+        EndgameSavedData data = EndgameSavedData.create();
+        EndgameService service = new EndgameService(() -> EndgameSettings.DEFAULTS, () -> Set.of(TYPE),
+                () -> TransitLimits.DEFAULTS);
+        service.startForTest(data);
+        service.coalesced(root -> root.register(SOURCE, KIND, OWNER, LEVEL, SOURCE_POS.asLong(), false, 2048, 64));
+        service.coalesced(root -> root.register(DESTINATION, KIND, OWNER, LEVEL, DESTINATION_POS.asLong(), false, 2048,
+                64));
+        persist(service);
+        Endpoint source = new Endpoint(SOURCE);
+        service.transits().attach(source);
+        assertEquals(EndgameCode.OK, service.transits().admitEscrow(SOURCE, OWNER));
+        source.source.escrow(DESTINATION, payload(), 25_000, 20, EndgameSystem.RAILGUN);
+        service.endpointRemoved(DESTINATION, 5L);
+        service.coalesced(root -> root.settle(DESTINATION, root::pinned));
+        assertEquals(List.of(DESTINATION), service.barrier(root -> root.evictOwner(OWNER, root::pinned)),
+                "no record pins the destination yet");
+        save(service, source, SOURCE_POS);
+        service.tick(10L);
+        service.tick(50L);
+        EndgameRoot root = service.root().orElseThrow();
+        TransitRecord registered = root.transits().record(new TransitKey(SOURCE, 1L)).orElseThrow();
+        assertEquals(DESTINATION, registered.destination());
+        assertTrue(root.endpoint(DESTINATION).isEmpty() && root.tombstone(DESTINATION).isEmpty());
+        EndgameSavedData reloaded = EndgameSavedData.load(data.save(new CompoundTag()));
+        assertTrue(reloaded.operational(), "the written root does not load");
+        assertEquals(DESTINATION, reloaded.view().transits().record(new TransitKey(SOURCE, 1L)).orElseThrow()
+                .destination());
+    }
 }

@@ -501,8 +501,11 @@ public final class EndgameRoot {
             throw new IllegalArgumentException("The zone list exceeds its fixed bound");
         }
         for (TransitRecord record : transits.records()) {
-            // Pins keep every ID a record names; dispatched_through never falls below a registered seq.
-            for (UUID id : new UUID[] {record.key().source(), record.destination(), record.paidEndpoint()}) {
+            // Pins keep the source and the paid endpoint a record names; dispatched_through never falls below a
+            // registered seq. The destination may be unknown: section 11 step 2 registers an entry whose destination
+            // was removed meanwhile, and its tombstone may have been evicted before (review C12R-H1); such a record
+            // is DESTINATION_MISSING until a redirect or a purge.
+            for (UUID id : new UUID[] {record.key().source(), record.paidEndpoint()}) {
                 if (id != null && !endpoints.containsKey(id) && !young.containsKey(id) && !settled.containsKey(id)) {
                     throw new IllegalArgumentException("A transit record names no endpoint or tombstone");
                 }
