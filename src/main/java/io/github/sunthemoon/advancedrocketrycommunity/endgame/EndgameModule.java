@@ -87,8 +87,11 @@ public final class EndgameModule {
         return service;
     }
 
-    /** The block entity type IDs of endgame endpoints, whose presence the chunk observations read. */
-    static Set<String> endgameBlockEntityIds() {
+    /**
+     * The block entity type IDs of endgame endpoints, whose presence the chunk observations read; the destruction
+     * GameTests check every block of these types (ADR-054 section 9.1).
+     */
+    public static Set<String> endgameBlockEntityIds() {
         return Set.of(ModBlockEntities.LASER_TARGET.getId().toString(), ModBlockEntities.RAILGUN.getId().toString(),
                 ModBlockEntities.ELEVATOR_ANCHOR.getId().toString(), ModBlockEntities.ELEVATOR_TERMINAL.getId().toString());
     }
