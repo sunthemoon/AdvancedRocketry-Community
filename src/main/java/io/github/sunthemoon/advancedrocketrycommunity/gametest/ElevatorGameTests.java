@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
@@ -41,6 +42,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -65,6 +67,7 @@ public final class ElevatorGameTests {
     private static final String VALIDITY = "endgame_elevator_validity";
     private static final String ZONE = "endgame_elevator_zone";
     private static final String SPACING = "endgame_elevator_spacing";
+    private static final String AUTOMATION = "endgame_elevator_automation";
     private static final String REDIRECT = "endgame_elevator_redirect";
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
             Comparator.comparing(UUID::toString));
@@ -448,6 +451,47 @@ public final class ElevatorGameTests {
                 .thenExecute(() -> {
                     first.close();
                     second.close();
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Review C12R-L7: an automatic shipment never inherits its owner's operator exemption. An operator owns an anchor
+     * that an operator bound to a station they are not a member of; while they are online, a launch without a player
+     * actor is refused, and their own launch intent passes the access rule.
+     */
+    @GameTest(template = "empty", batch = AUTOMATION, timeoutTicks = 1200)
+    public static void automaticShipmentsDoNotInheritTheOwnersOperatorExemption(GameTestHelper helper) {
+        UUID operatorId = UUID.randomUUID();
+        Fixture fixture = new Fixture(helper, operatorId);
+        GameProfile profile = new GameProfile(operatorId, "elevatorOperator");
+        List<ServerPlayer> joined = new ArrayList<>();
+        helper.startSequence()
+                .thenWaitUntil(() -> fixture.registered(helper))
+                .thenExecute(() -> {
+                    fixture.bind(helper, true);
+                    fixture.stations.removeMember(fixture.stationId, operatorId);
+                    // PlayerList.op uses the GameTest server's operator level (0); an explicit level-4 entry is one.
+                    fixture.server.getPlayerList().getOps().add(new ServerOpListEntry(profile, 4, false));
+                    ServerPlayer operator = ConnectedTestPlayers.join(fixture.server, operatorId, "elevatorOperator",
+                            fixture.level, fixture.anchorPos.above(4), new ArrayList<>(), true);
+                    joined.add(operator);
+                    helper.assertTrue(operator.hasPermissions(2), "The anchor's owner is not an online operator");
+                    fixture.anchor().storage().input().setStackInSlot(0, new ItemStack(Items.COPPER_INGOT, 4));
+                    fixture.anchor().storage().energy().set(100_000);
+                    EndgameCode automatic = fixture.anchor().launch(fixture.level, service(), devices(), null, false);
+                    helper.assertTrue(automatic == EndgameCode.UNAUTHORIZED
+                                    || automatic == EndgameCode.ANCHOR_OWNER_NOT_MEMBER,
+                            "An automatic launch used the online owner's operator exemption: " + automatic);
+                    EndgameCode intent = fixture.anchor().launch(fixture.level, service(), devices(), operatorId,
+                            false);
+                    helper.assertTrue(intent == EndgameCode.OK, "The operator's own launch was refused: " + intent);
+                })
+                .thenExecute(() -> {
+                    fixture.server.getPlayerList().getOps().remove(profile);
+                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
+                    fixture.anchor().storage().input().setStackInSlot(0, ItemStack.EMPTY);
+                    fixture.close();
                 })
                 .thenSucceed();
     }

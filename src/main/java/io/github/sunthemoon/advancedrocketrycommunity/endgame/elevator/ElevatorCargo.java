@@ -31,9 +31,9 @@ final class ElevatorCargo {
 
     /**
      * The first refusal, in order: the root, the switch, the endpoint's own state, a pair, its validity, ship access
-     * (as the actor, or for an automatic launch as the endpoint's owner), a payload within the stack bound, the
-     * destination's durable registration, the energy, a source rollback, a free outbox slot and the ledger's
-     * admission. A dry check ({@code escrow} false) changes nothing.
+     * (as the actor, or for an automatic launch as the endpoint's owner, never an operator), a payload within the
+     * stack bound, the destination's durable registration, the energy, a source rollback, a free outbox slot and the
+     * ledger's admission. A dry check ({@code escrow} false) changes nothing.
      */
     static ElevatorRules.Check launch(ElevatorEndpointBlockEntity endpoint, ServerLevel level, EndgameService service,
                                       EndgameDevices devices, @Nullable UUID actor, boolean escrow) {
@@ -61,7 +61,9 @@ final class ElevatorCargo {
             return validity;
         }
         UUID shipper = actor != null ? actor : endpoint.ownerId().orElseThrow();
-        ServerPlayer online = server.getPlayerList().getPlayer(shipper);
+        // Only a player's intent carries the operator exemption; automation never inherits its owner's (ADR-054
+        // section 3, review C12R-L7).
+        ServerPlayer online = actor == null ? null : server.getPlayerList().getPlayer(shipper);
         EndgameCode access = ElevatorPairs.access(server, root, pair.get(), shipper,
                 online != null && online.hasPermissions(2));
         if (access != EndgameCode.OK) {
