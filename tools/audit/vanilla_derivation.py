@@ -891,7 +891,9 @@ def analyse(upstream: Path, specs: list[str], repository: Path) -> dict:
     for name, (_, level, record) in matcher.best.items():
         if "hash_match" not in entries[name]:
             entries[name]["verdict"] = level
-            entries[name]["best"] = dict(record)
+            # A CLEAR file whose matches meet no colour rule has no meaningful best match to show.
+            if level != "CLEAR" or _strength(record) > 0:
+                entries[name]["best"] = dict(record)
     for name in entries:
         related = _related_entries(matcher, name)
         twins = [other for other in by_hash[entries[name]["sha256"]] if other != name]
