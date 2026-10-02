@@ -10,7 +10,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PlanetWorldgen
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PlanetWorldgen.PlanetVein;
 import io.github.sunthemoon.advancedrocketrycommunity.material.worldgen.SwitchPlacement;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
@@ -19,6 +22,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -166,6 +170,30 @@ public final class PlanetFeatureGameTests {
         switchStopsStarts(helper, mars, V180PlanetWorldgen.MARS_CRATER, CommonConfig.CRATERS_ENABLED);
         switchStopsStarts(helper, venus, V180PlanetWorldgen.VOLCANO, CommonConfig.VOLCANOES_ENABLED);
         switchStopsStarts(helper, venus, V180PlanetWorldgen.GEODE, CommonConfig.GEODES_ENABLED);
+        helper.succeed();
+    }
+
+    /**
+     * Each body's generator lists exactly its own structure sets, so worldgen tries them: the structures' biome tags
+     * meet the bodies' biome sources. (A generation point alone does not show this; vanilla only tries the sets of a
+     * generator's structure state.)
+     */
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 20)
+    public static void eachBodysGeneratorTriesItsOwnStructureSets(GameTestHelper helper) {
+        Set<String> ours = Set.of("moon_craters", "mars_craters", "volcanoes", "geodes");
+        Map<ResourceKey<Level>, Set<String>> expected = Map.of(
+                CelestialIds.MOON_LEVEL, Set.of("moon_craters"),
+                PlanetaryContent.level(PlanetaryContent.MARS), Set.of("mars_craters"),
+                PlanetaryContent.level(PlanetaryContent.VENUS), Set.of("volcanoes", "geodes"));
+        for (Map.Entry<ResourceKey<Level>, Set<String>> body : expected.entrySet()) {
+            ServerLevel level = level(helper, body.getKey());
+            Set<String> tried = level.getChunkSource().getGeneratorState().possibleStructureSets().stream()
+                    .map(set -> set.unwrapKey().orElseThrow().location())
+                    .filter(id -> id.getNamespace().equals(AdvancedRocketryCommunity.MOD_ID))
+                    .map(ResourceLocation::getPath).filter(ours::contains).collect(Collectors.toSet());
+            helper.assertTrue(tried.equals(body.getValue()), body.getKey().location() + " tries " + tried
+                    + ", not " + body.getValue());
+        }
         helper.succeed();
     }
 
