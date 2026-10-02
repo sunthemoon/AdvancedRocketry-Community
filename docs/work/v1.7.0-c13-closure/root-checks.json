@@ -1,0 +1,67 @@
+{
+  "artifacts": {
+    "artifacts": [
+      {
+        "bytes": 51038,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-api.jar",
+        "sha256": "824813cf427f963c836e79a2dbd76661e67cc7872ba3567bdf9e84eb3555470b"
+      },
+      {
+        "bytes": 1988440,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev-sources.jar",
+        "sha256": "79116f6de59c29020672588d98d90a85e9c2f71eb35a18fe21c38a78cc9cb183"
+      },
+      {
+        "bytes": 4366599,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "sha256": "4326d3d67edf417f4073af86329508fbfa19f8b9dc4d57548e82331a9ac13bbe"
+      }
+    ]
+  },
+  "base_commit": "80fc15a9",
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suites": 254,
+    "tests": 1376
+  },
+  "scope": "Short development checks, not independent review or Required Gate approval",
+  "tested_implementation_files": {
+    "CHANGELOG.md": "a2f6b1d0b2f805f0d844fbe883ed92112e2d56960cb436dd4331e033a374bb46",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/EndgameModule.java": "73fa12877c7d8a95524ca6e3880b47dd25a40a0f02fe1b98b80c00f5f77c4302",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleGeneratorBlockEntity.java": "089616cca174f15c6907993dc3dbe886b59839b1dafd2630e6259f15fec666bd",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/cargo/CargoEndpointBlockEntity.java": "ce83d941518e8e1f2d4b00079e169b11752b81d6c4c2ef60638405311a4ba781",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/ElevatorReleaseTestCommands.java": "beea50dcb1c04521fd43baa032be6c0438f90b7c50be6d95005347a027c37fa7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/EndgameReleaseTestCommands.java": "c8e20d01fc7e0ecaa23ab04e9c5756e46e6f6580f5f6ae00ccd31911ba8f4313",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/ReferenceLoadFixture.java": "226d652836c2cc98c56345be2e0a67f67b2294806d138cbe3453a8186e8b5669",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/ReferenceLoadReleaseTestCommands.java": "ba9851de97fd0f4ec2176c45b648620f4cec99a9168eba24a0dbe8587109ee2e",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/command/ReleaseTestPlayers.java": "2eadb41814544e61b8192c845e4217c87693fbb0ae3d3f172db0983bc476f33c",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevices.java": "f7e53b433082c8c98d0747fb2efa07d7308a6ee8178b1692b3b08ae8936dd594",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameStructure.java": "a9c0f9b334a6d983027fcf148ba0bfbcf9c5b68af3e5fa14896ae5df9b54ec3b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameStructureTracker.java": "4b10f2dffcbcec1eeb27ae3b689634f395ba11d7ed9cbfa8994c5835d547e3d3",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorCargo.java": "a3d92e3065f3e957cd6bd76201cde7ace941e88c5bb5964c9a402de827a4c13b",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorEndpointBlockEntity.java": "ebb7e64b60089d7baeab9343dde075ca979c85f9d09c3216f0dff01913d8ad5d",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorPairs.java": "edcfbbd6a5c57e463546ff98aabd4b977792ad10ec9619c2980c37ddcca615c5",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorTerminalBlockEntity.java": "a083d52d563e89fb6ece8fbc5745bdb6ddc2be3861591a451e4b6a1241d50e80",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityField.java": "63853ec564ea65a79438c1b8f782eb3a4e28840d08006844240ec95ad6c6d0d2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameIdOrder.java": "81256d4ec4b1effc3875d0bf9c955d5f774c393e53e185233b51c7920dc52e97",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameService.java": "f70aa3994d12a775da726f858c6c111fa33df74bf2d3ee0605a1481bda3a4e02",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameTimings.java": "dd04740022de47834050b9498f92dc80edc47d641eaea24268aa6ae9a80e4479",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitLedger.java": "22b65cd52fba062b7db248290021273efecd995ffcb286a7c7729cf4fa0ef8ec",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitDestinationState.java": "4eeccf7366da5473bb9f7013a20b6c826e55122eacf763fcd9bbe3913c0f9777",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitEndpoint.java": "b05602a26910ad87a373a1369c1f5bb4f3d994dde775a1f9fb80d5aa009a6fd1",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitTable.java": "d000abc824a2bf336dd4a54e9d3456c0143a35baaf3121c6bbc2cd0efb8097d2",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BlackHoleGeneratorGameTests.java": "c85e8527a3cda7f3bc57cc2ddd1c5010af22b1a92448f6719c54ddbb70c652bf",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ElevatorGameTests.java": "8ec94cd79e29515d2d0270474ce52376a7f1a10c0c8b1544c7a6aef335f24da7",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/forge/PatternBlockCache.java": "5d3e6c10c29c26960f4fb74cb34d3a042639570120346e081bea9f96246d26f0",
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/forge/ServerLevelPatternWorldView.java": "5c0e7a0e7fb72a89835bc8d7f47cbb35bca7d39e21347181268ac05fc7ffa31b",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDevicesPatternCacheTest.java": "ff5379df88c465d2b6b2bec71710b83c29ba48c6366a074375b4faa0421f8a87",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameModelTest.java": "7cff2d3776e9a82dc505353b38423e3dda920ef2a80b47d9faf8f4a1b6d4f21c",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameServiceTest.java": "603492ba354af12f598f2b5669b473843453f95746fef5687d4d9891b98bb6aa",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/EndgameTimingsTest.java": "a645fb01501c0a2a4a69728c6f0c02c96266d7f73c1150ca6edbfc478f612679",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/service/TransitLedgerTest.java": "f45ab171898dea7ac5a74cd3092f187fd64044d85727fb9ed5e674b8c299ed48",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/transit/TransitTableIndexTest.java": "9a5fe54d6a95445cdbfaabed2d3bab605ce60726eb861045c28033b88561c1f8",
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/forge/PatternBlockCacheTest.java": "38ee8b19df68f3d478387606de0e4f8563a7d81cc2a8879872d8c2b28d5a2649"
+  }
+}

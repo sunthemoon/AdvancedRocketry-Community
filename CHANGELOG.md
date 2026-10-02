@@ -119,7 +119,8 @@ No candidate or release approval is assigned.
   that does not load is kept unchanged and the device stays inert; only
   operators can break it.
 - Operator command `/arce endgame timing` reports each endgame system's work
-  per tick over the last minute. `/arce endgame status` also shows the root
+  per tick over the last minute, and the endgame root writes since the server
+  started, with how many took over 60 ms. `/arce endgame status` also shows the root
   writes exempt from player spacing (`exempt_barriers`) and the elevator ride
   tickets held. The [endgame operator guide](docs/ENDGAME-OPERATOR-GUIDE.md)
   covers switches, limits, commands, cargo in flight, backups and saves.
@@ -128,10 +129,21 @@ No candidate or release approval is assigned.
   station's last bind; a bind too soon answers `ROOT_BUSY`. Operators are
   exempt. Automatic elevator shipments never use their owner's operator
   status.
-- An idle black-hole generator notices new fuel, and an elevator terminal its
-  station, within one second. Endgame devices cost less per tick when idle:
-  the C13 reference load measures 0.05 ms of endgame work per tick with all
-  systems loaded and idle on the development host.
+- An idle black-hole generator notices new fuel at once and a lost
+  singularity within one second. An elevator terminal re-checks its station
+  every second, and binds and shipments look it up again when they start.
+  Endgame devices cost less per tick when idle: the C13 reference load
+  measures 0.05 ms of endgame work per tick with all systems loaded and idle
+  on the development host.
+- Railgun and elevator cargo: a delivered transfer's record is now always
+  cleared, also when its destination's chunk was saved only right after the
+  delivery (the record kept counting against the 256-record limit). Cargo at
+  a railgun or elevator endpoint whose chunk is kept in memory near
+  force-loaded chunks, but not fully loaded, waits until the chunk is fully
+  loaded again. A payload frozen as a conflict stays frozen, and is logged
+  once, until an operator resolves it; before, it was logged every tick and
+  could be delivered a second time after an operator restored an older
+  endgame file.
 
 ## v1.6.0 — in development
 

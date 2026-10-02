@@ -1,0 +1,192 @@
+{
+  "candidate_commit": null,
+  "development_parent_commit": "33cb72b2f1a0cbabde6e7937305410a8349939f7",
+  "manifest_bytes_checked": 8786794,
+  "manifest_count": 11,
+  "manifest_failures": [],
+  "manifest_files_checked": 90,
+  "not_indexed": {
+    "packet": "docs/work/v1.7.0-c13-closure",
+    "reason": "Committed with this handoff. Its source-identity.json and SHA256SUMS.txt bind this directory, so indexing it here would be circular."
+  },
+  "records": [
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1245403,
+      "files_checked": 9,
+      "manifest": {
+        "bytes": 774,
+        "path": "docs/work/v1.7.0-c11-review/SHA256SUMS.txt",
+        "sha256": "2eb2931f5ffaf38babecf296edce852f6ff190a13f59e37a762c4ce313f4aad3"
+      },
+      "packet": "docs/work/v1.7.0-c11-review",
+      "report": {
+        "bytes": 13983,
+        "path": "docs/work/v1.7.0-c11-review/VERIFICATION.md",
+        "sha256": "335ef0830f1586804d9ca617812646f9113bde819b1b5e09701800b696a5585c"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 389569,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c11a-framework/SHA256SUMS.txt",
+        "sha256": "a3ab5e090fc2f1e9b03c6f8eac62922d901471e969599bda52f98aaf9bdcf5f2"
+      },
+      "packet": "docs/work/v1.7.0-c11a-framework",
+      "report": {
+        "bytes": 5030,
+        "path": "docs/work/v1.7.0-c11a-framework/VERIFICATION.md",
+        "sha256": "a476d130e0e728509f1ffe706a0b119d65f905fa9399dec7842e13266b19e07f"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 548655,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c11b-laser-logical/SHA256SUMS.txt",
+        "sha256": "2c8e0da25cd3e15dbc9a45711ac84e5122f6d13d6ecfca66ded8b8626a32ad63"
+      },
+      "packet": "docs/work/v1.7.0-c11b-laser-logical",
+      "report": {
+        "bytes": 5722,
+        "path": "docs/work/v1.7.0-c11b-laser-logical/VERIFICATION.md",
+        "sha256": "e07924115fc6d551305e3f5153558ed9247b0c975cbe3eb14c0b8784fec3f363"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 623866,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c11c-laser-physical/SHA256SUMS.txt",
+        "sha256": "220eb00e0a04956d76ea4b54a1f2f779b553e3e35ebe89a3bc4908b31ad57b35"
+      },
+      "packet": "docs/work/v1.7.0-c11c-laser-physical",
+      "report": {
+        "bytes": 4860,
+        "path": "docs/work/v1.7.0-c11c-laser-physical/VERIFICATION.md",
+        "sha256": "b2b78eb7c97b1646c0871150dedb060083ec58ffc74f4f0d5ac8602376fef1a1"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 854142,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c11d-gravity-field/SHA256SUMS.txt",
+        "sha256": "ebf5c481e0edd97bcac4eda567796addaba9e9145183bedd13ffadc37392a906"
+      },
+      "packet": "docs/work/v1.7.0-c11d-gravity-field",
+      "report": {
+        "bytes": 5263,
+        "path": "docs/work/v1.7.0-c11d-gravity-field/VERIFICATION.md",
+        "sha256": "52e37aded39b8823e7ab009d902949940306b3f418522a6d4128bcfe13c301f1"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1507181,
+      "files_checked": 9,
+      "manifest": {
+        "bytes": 774,
+        "path": "docs/work/v1.7.0-c12-review/SHA256SUMS.txt",
+        "sha256": "7d5fe878dfefe08c31d16a97d29545d289f448ed4b2cc05194dc6cacd9fd5b80"
+      },
+      "packet": "docs/work/v1.7.0-c12-review",
+      "report": {
+        "bytes": 10273,
+        "path": "docs/work/v1.7.0-c12-review/VERIFICATION.md",
+        "sha256": "e502f3c30ab88505a1fb33795bd315c97ff83f0806c8aad3417290de69fa2065"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 681488,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c12a-black-hole/SHA256SUMS.txt",
+        "sha256": "f6d6d5bf1ad54619b095615a3b2b4c7f0de3846054dc17f31228de23631ff512"
+      },
+      "packet": "docs/work/v1.7.0-c12a-black-hole",
+      "report": {
+        "bytes": 5103,
+        "path": "docs/work/v1.7.0-c12a-black-hole/VERIFICATION.md",
+        "sha256": "89520defb219fd53e2e3a71bc86019b191f469b219f65ee03a75711c5b6dc9c0"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 405937,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c12b-transit-ledger/SHA256SUMS.txt",
+        "sha256": "cdcb10d54c20e3fc969b87b07a78075e64ae66b2f4b11b2431d7aae23067e944"
+      },
+      "packet": "docs/work/v1.7.0-c12b-transit-ledger",
+      "report": {
+        "bytes": 7717,
+        "path": "docs/work/v1.7.0-c12b-transit-ledger/VERIFICATION.md",
+        "sha256": "743edff2ce799cfcae71f5c63fdb45cc1011fa8f8ac196f3005951782e45cb52"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 819152,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c12c-railgun/SHA256SUMS.txt",
+        "sha256": "cb1bba3f41fb42c6cfad095f2d4bf2459fc6399bdf53e971f282b62a2a5a0daa"
+      },
+      "packet": "docs/work/v1.7.0-c12c-railgun",
+      "report": {
+        "bytes": 8108,
+        "path": "docs/work/v1.7.0-c12c-railgun/VERIFICATION.md",
+        "sha256": "8428d0d7f14ef7e46ce68c8304c6611185b2bf9a61c54cedcc7ac222439f0c8f"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 425023,
+      "files_checked": 7,
+      "manifest": {
+        "bytes": 589,
+        "path": "docs/work/v1.7.0-c12d-space-elevator/SHA256SUMS.txt",
+        "sha256": "abe3b663292af138bcd799071d24319ed8ed425555b14a4979442b5553fddb7f"
+      },
+      "packet": "docs/work/v1.7.0-c12d-space-elevator",
+      "report": {
+        "bytes": 8613,
+        "path": "docs/work/v1.7.0-c12d-space-elevator/VERIFICATION.md",
+        "sha256": "d2502b0166fd1d0cd0094816d2cf4b00d2a1d9441b78fb54ac1975e303dd8c64"
+      }
+    },
+    {
+      "artifact_scope": "historical artifact of that slice",
+      "bytes_checked": 1286378,
+      "files_checked": 16,
+      "manifest": {
+        "bytes": 1391,
+        "path": "docs/work/v1.7.0-preparation/SHA256SUMS.txt",
+        "sha256": "38e4935f1652177c05dd82f75693ddf85322021b6dfe178e10255ac28bb2e82c"
+      },
+      "packet": "docs/work/v1.7.0-preparation",
+      "report": {
+        "bytes": 10715,
+        "path": "docs/work/v1.7.0-preparation/VERIFICATION.md",
+        "sha256": "6274b494e613eba3c601d7dd9963f37f5dc6c721bcf9628423d72775f739f572"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Verifies each earlier v1.7 packet against its own SHA256SUMS. It does not relabel historical runs as tests of the current artifacts."
+}

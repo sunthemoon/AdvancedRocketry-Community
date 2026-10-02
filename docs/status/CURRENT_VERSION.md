@@ -32,12 +32,12 @@ remains open; accepted v1.7 contracts do not imply implemented endgame gameplay:
 ```yaml
 active_development_version: v1.7.0
 active_development_branch: codex/v1.7.0-endgame-systems
-phase: CONTRACT_FROZEN
+phase: IMPLEMENTING
 execution_state: ACTIVE
 accepted_development_baseline: ab10fb53a580e53a9a1c24097a487f2a7c54ad52
 development_log: docs/work/v1.7.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.6.0/RELEASE-EVIDENCE.md
-runtime_build: 1.20.1-1.6.0-dev
+runtime_build: 1.20.1-1.7.0-dev
 ```
 
 v1.7 preparation (C10) is complete. [ADR-053](../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md)
@@ -46,9 +46,17 @@ inherited acceptance. ADR-054..059 freeze the endgame framework (authority,
 protection, rate, energy, the transit ledger and audit) and the laser drill,
 railgun, black-hole generator, gravity controller and space-elevator contracts
 after four independent review rounds and a confirmation round
-([preparation evidence](../work/v1.7.0-preparation/VERIFICATION.md)). The runtime is
-unchanged: the rebuilt JARs are byte-identical to the v1.6 handoff build. The next
-chunk is C11 in [COMPLETION-PLAN](COMPLETION-PLAN.md). The v1.6 facts below are unchanged.
+([preparation evidence](../work/v1.7.0-preparation/VERIFICATION.md)). The runtime identity
+is `1.20.1-1.7.0-dev`. C11 (the framework, the laser drill and the gravity field), C12
+(the black-hole generator, the transit ledger, the railgun and the space elevator) and
+C13 (destruction bounds, performance, native recovery evidence, three independent review
+rounds and the operator guide) are complete. The
+[v1.7 development handoff](../releases/v1.7.0/RELEASE-EVIDENCE.md) lists the evidence and
+the open acceptance: V0/V1/V2, S2 with real players, reference-hardware performance and
+the flush-cost gate (ADR-054 §7), the candidate-bound matrix and the final audit and
+human decision. Release status remains `IN_PROGRESS`, not `PASSED`. The next development
+chunk is v1.8 (C14 in [COMPLETION-PLAN](COMPLETION-PLAN.md)), in a new session. No Gate is
+claimed. The v1.6 facts below are unchanged.
 
 Previous development version (v1.6, development complete, release `IN_PROGRESS`):
 
