@@ -134,8 +134,13 @@ or vanilla-derived file is used.
   rolls its ingot; iron plates still roll into iron sheets.
 - *Rolling ingredients name items.* The kernel recipe type resolves its
   ingredient when recipes load, before tags are bound, so a tag ingredient
-  would refuse to load. Rolling recipes name the item, as `rolling_iron_bars`
-  does; crafting, smelting and press recipes stay on tags.
+  would refuse to load on a fresh start, load against stale tags on
+  `/reload`, and could break a joining client's recipe sync (recipes are sent
+  before tags). Rolling recipes name the item, as `rolling_iron_bars` does,
+  and the kernel codec now rejects tags (ADR-061 §2.2, revision 7); crafting,
+  smelting and press recipes stay on tags. This gives up ADR-061 §2.2's tag
+  interoperability for the rolling machine until C16a: another mod's
+  titanium, aluminum or copper ingot does not roll yet.
 
 ### 3. Small plate press (C15a)
 

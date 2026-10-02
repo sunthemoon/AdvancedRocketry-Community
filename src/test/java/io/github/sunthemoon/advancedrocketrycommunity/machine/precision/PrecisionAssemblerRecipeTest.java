@@ -167,6 +167,17 @@ class PrecisionAssemblerRecipeTest {
         JsonObject invalidEnergy = twoInputJson();
         invalidEnergy.addProperty("energy_per_tick", ProcessDefinition.MAX_ENERGY_PER_TICK + 1);
         assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, invalidEnergy));
+
+        // C15aR1-M2: kernel recipes name items until tags resolve after binding (ADR-061 section 2.2, revision 7).
+        JsonObject tagged = twoInputJson();
+        tagged.getAsJsonArray("inputs").get(0).getAsJsonObject()
+                .add("ingredient", JsonParser.parseString("{\"tag\": \"forge:ingots/iron\"}"));
+        RuntimeException tag = assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, tagged));
+        Throwable cause = tag;
+        while (cause.getCause() != null && !String.valueOf(cause.getMessage()).contains("tag ingredients")) {
+            cause = cause.getCause();
+        }
+        assertTrue(String.valueOf(cause.getMessage()).contains("tag ingredients are not supported"), tag.toString());
     }
 
     @Test

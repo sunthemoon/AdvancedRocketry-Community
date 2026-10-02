@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -9,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessInp
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessOutput;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.nio.charset.StandardCharsets;
@@ -242,7 +244,9 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
                 if (encodedSizeBytes < 1 || encodedSizeBytes > ProcessDefinition.MAX_DEFINITION_BYTES) {
                     throw new IllegalArgumentException("recipe JSON exceeds the 64 KiB limit");
                 }
-                Ingredient ingredient = Ingredient.fromJson(GsonHelper.getNonNull(json, "ingredient"));
+                JsonElement ingredientJson = GsonHelper.getNonNull(json, "ingredient");
+                BoundedItemIngredientCodec.requireItemsOnly(ingredientJson);
+                Ingredient ingredient = Ingredient.fromJson(ingredientJson);
                 JsonObject fluidObject = GsonHelper.getAsJsonObject(json, FLUID_FIELD);
                 Fluid fluid = requireFluid(GsonHelper.getAsString(fluidObject, FLUID_FIELD));
                 ItemStack hydrogen = ShapedRecipe.itemStackFromJson(
@@ -278,7 +282,9 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
         public ElectrolyzerRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
             try {
                 String ingredientJson = buffer.readUtf(MAX_INGREDIENT_JSON_CHARS);
-                Ingredient ingredient = Ingredient.fromJson(JsonParser.parseString(ingredientJson));
+                JsonElement parsed = JsonParser.parseString(ingredientJson);
+                BoundedItemIngredientCodec.requireItemsOnly(parsed);
+                Ingredient ingredient = Ingredient.fromJson(parsed);
                 Fluid fluid = requireFluid(buffer.readUtf(MAX_RESOURCE_ID_CHARS));
                 int schemaVersion = buffer.readVarInt();
                 int inputCount = buffer.readVarInt();

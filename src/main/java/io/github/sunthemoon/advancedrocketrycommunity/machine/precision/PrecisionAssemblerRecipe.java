@@ -322,7 +322,7 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 for (JsonElement element : inputArray) {
                     JsonObject input = exactObject(element, INPUT_FIELDS, "input");
                     inputs.add(new Input(
-                            BoundedItemIngredientCodec.decode(input.get("ingredient")),
+                            BoundedItemIngredientCodec.decodeItemsOnly(input.get("ingredient")),
                             requireInt(input, "count")
                     ));
                 }
@@ -359,7 +359,7 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 for (int index = 0; index < inputCount; index++) {
                     String ingredientJson = buffer.readUtf(BoundedItemIngredientCodec.MAX_INGREDIENT_JSON_CHARS);
                     inputs.add(new Input(
-                            BoundedItemIngredientCodec.decode(JsonParser.parseString(ingredientJson)),
+                            BoundedItemIngredientCodec.decodeItemsOnly(JsonParser.parseString(ingredientJson)),
                             buffer.readVarInt()
                     ));
                 }

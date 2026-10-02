@@ -278,7 +278,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                     throw new IllegalArgumentException("unsupported recipe schema");
                 }
                 JsonElement ingredientJson = GsonHelper.getNonNull(json, "ingredient");
-                Ingredient ingredient = BoundedItemIngredientCodec.decode(ingredientJson);
+                Ingredient ingredient = BoundedItemIngredientCodec.decodeItemsOnly(ingredientJson);
                 JsonObject fluidJson = exactObject(json, "fluid", FLUID_FIELDS);
                 JsonObject resultJson = exactObject(json, "result", RESULT_FIELDS);
                 return new RollingMachineRecipe(
@@ -312,7 +312,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                 }
                 String ingredientText = buffer.readUtf(MAX_INGREDIENT_JSON_CHARS);
                 JsonElement ingredientJson = JsonParser.parseString(ingredientText);
-                Ingredient ingredient = BoundedItemIngredientCodec.decode(ingredientJson);
+                Ingredient ingredient = BoundedItemIngredientCodec.decodeItemsOnly(ingredientJson);
                 int inputCount = buffer.readVarInt();
                 Fluid fluid = requireWater(buffer.readUtf(MAX_RESOURCE_ID_CHARS));
                 int fluidAmount = buffer.readVarInt();

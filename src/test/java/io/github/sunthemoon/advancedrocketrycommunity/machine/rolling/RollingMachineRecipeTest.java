@@ -88,6 +88,33 @@ class RollingMachineRecipeTest {
         assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, customIngredient));
     }
 
+    /** C15aR1-M2: kernel recipes name items until tags resolve after binding (ADR-061 section 2.2, revision 7). */
+    @Test
+    void tagIngredientsAreRejectedFromJsonAndFromTheNetwork() {
+        RollingMachineRecipe.Serializer serializer = new RollingMachineRecipe.Serializer();
+        JsonObject tagged = validJson();
+        tagged.add("ingredient", JsonParser.parseString("{\"tag\": \"forge:ingots/iron\"}"));
+        RuntimeException json = assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, tagged));
+        assertTrue(String.valueOf(json.getMessage()).contains("tag ingredients are not supported"), json.getMessage());
+
+        JsonObject mixed = validJson();
+        mixed.add("ingredient", JsonParser.parseString(
+                "[{\"item\": \"minecraft:iron_ingot\"}, {\"tag\": \"forge:ingots/iron\"}]"));
+        assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, mixed));
+
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        serializer.toNetwork(buffer, serializer.fromJson(ID, validJson()));
+        byte[] written = new byte[buffer.readableBytes()];
+        buffer.readBytes(written);
+        String wire = new String(written, java.nio.charset.StandardCharsets.UTF_8);
+        String item = "{\"item\":\"minecraft:iron_ingot\"}";
+        String tag = "{\"tag\":\"forge:ingots/iron_abc\"}";
+        assertTrue(wire.contains(item) && item.length() == tag.length(), "the probe swaps the ingredient in place");
+        FriendlyByteBuf swapped = new FriendlyByteBuf(Unpooled.wrappedBuffer(
+                wire.replace(item, tag).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        assertThrows(RuntimeException.class, () -> serializer.fromNetwork(ID, swapped));
+    }
+
     @Test
     void recipeRemainsOutsideTheVanillaRecipeBookContract() {
         RollingMachineRecipe recipe = new RollingMachineRecipe.Serializer().fromJson(ID, validJson());

@@ -2,8 +2,9 @@
 
 ```yaml
 status: ACCEPTED
-revision: 6
-date: 2026-10-02
+revision: 7
+date: 2026-10-03
+revision_7: PROPOSED in C15a (C15aR1-M2); the accepted text is revision 6 until the owner accepts revision 7
 deciders: [sunthemoon]
 owner: sunthemoon
 accepted_by: sunthemoon
@@ -107,6 +108,22 @@ must handle:
    tag rarely holds more than a handful of items; a pack that pushes one past
    32 loses that machine recipe and sees the error in the log. Vanilla
    crafting, smelting and blasting recipes have no such limit.
+
+   *Revision 7 (proposed, C15aR1-M2): kernel machine recipes name items until
+   C16a.* The limit above cannot be enforced when a recipe is parsed:
+   Minecraft parses recipes before it binds tags (on a fresh start and on
+   `/reload`), and sends recipes to a joining client before its tags, while
+   the v1.2 kernel recipes (rolling, precision assembling, electrolyzing)
+   resolve their ingredient when they are built. A tag would therefore fail on
+   a fresh start, load against the previous tags on `/reload`, and could break
+   a client's recipe sync. Until the C16a machine family resolves tag
+   ingredients after binding (on first lookup, rebuilt when tags change, with
+   the 32-variant limit enforced there), the ingredient codec rejects tag
+   entries in kernel recipes outright, so all three cases behave the same, and
+   kernel recipes name items. Other mods' materials therefore work in crafting,
+   smelting, blasting and the small plate press (which resolves its tags when
+   it acts) but not yet in the kernel machines. This deviation expires with
+   C16a, which must restore the tag promise above for every machine recipe.
 3. Vanilla materials stay vanilla: copper, iron and gold ingots and ores, basalt
    and concrete are not re-registered.
 4. Ores follow 1.18+ conventions: stone and deepslate variants where the ore
@@ -534,6 +551,9 @@ need a new revision and review.
 - Revision 5: answers review round 4 (0 Critical, 1 High, 1 Medium, 2 Low,
   5 Info), one commit per finding; see
   [review-04-dispositions](../work/v1.8.0-preparation/review-04-dispositions.md).
+- Revision 7 (proposed, 2026-10-03): the C15a implementation review
+  (C15aR1-M2) showed that §2.2's parse-time tag limit cannot hold; kernel
+  machine recipes name items until C16a resolves tags after binding.
 - Revision 6: review round 5 accepted revision 5 (0 Critical, 0 High,
   0 Medium, 1 Low, 4 Info); the Low and the Info notes are answered in their
   own commits; see

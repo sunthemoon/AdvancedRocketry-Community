@@ -50,6 +50,27 @@ public final class BoundedItemIngredientCodec {
         validate(raw);
     }
 
+    /**
+     * The kernel machine recipes' form: the bounded subset with item entries only (ADR-061 section 2.2, revision 7).
+     * Kernel recipes resolve their ingredient when they are constructed, and Minecraft parses recipes (and sends them
+     * to a joining client) before tags are bound, so a tag would fail on a fresh start, load against stale tags on
+     * {@code /reload}, and could break a client's recipe sync. Until the C16a machine family resolves tags after
+     * binding, kernel recipes reject tag entries outright, so all three cases behave the same.
+     */
+    public static Ingredient decodeItemsOnly(JsonElement raw) {
+        requireItemsOnly(raw);
+        return decode(raw);
+    }
+
+    /** Validates the bounded subset and refuses any tag entry (see {@link #decodeItemsOnly}). */
+    public static void requireItemsOnly(JsonElement raw) {
+        for (JsonObject entry : validate(raw)) {
+            if (!entry.has("item")) {
+                throw new IllegalArgumentException("machine recipes name items; tag ingredients are not supported yet");
+            }
+        }
+    }
+
     public static List<String> resolveAlternatives(Ingredient ingredient) {
         if (ingredient == null || ingredient.isEmpty()) {
             throw new IllegalArgumentException("machine ingredient cannot be empty");
