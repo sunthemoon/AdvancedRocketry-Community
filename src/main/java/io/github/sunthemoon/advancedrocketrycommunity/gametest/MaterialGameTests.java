@@ -18,6 +18,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -190,6 +191,26 @@ public final class MaterialGameTests {
             CommonConfig.SMALL_PLATE_PRESS_ENABLED.set(true);
             helper.succeed();
         });
+    }
+
+    /** C15aR1-M1: the dilithium ores drop themselves, so breaking one must give no experience (no XP farm). */
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void dilithiumOreDropsItselfWithoutExperience(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos position = helper.absolutePos(BlockPos.ZERO);
+        ItemStack pickaxe = new ItemStack(Items.IRON_PICKAXE);
+        for (String id : java.util.List.of("dilithium_ore", "deepslate_dilithium_ore")) {
+            Block ore = MaterialContent.block(id);
+            var state = ore.defaultBlockState();
+            var drops = Block.getDrops(state, level, position, null, null, pickaxe);
+            helper.assertTrue(drops.size() == 1 && drops.get(0).is(ore.asItem()) && drops.get(0).getCount() == 1,
+                    id + " drops " + drops);
+            for (int attempt = 0; attempt < 20; attempt++) {
+                helper.assertTrue(state.getExpDrop(level, level.getRandom(), position, 0, 0) == 0,
+                        id + " gives experience when broken");
+            }
+        }
+        helper.succeed();
     }
 
     /** Each press recipe input matches exactly one press recipe, so the press never meets an ambiguous block. */

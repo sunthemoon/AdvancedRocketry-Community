@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -22,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
@@ -106,9 +104,9 @@ public final class MaterialContent {
                     .requiresCorrectToolForDrops()
                     .strength(deepslate ? 4.5F : 3.0F, 3.0F)
                     .sound(deepslate ? SoundType.DEEPSLATE : SoundType.STONE);
-            // Dilithium ore drops itself and yields experience like other gem ores.
-            return material == Material.DILITHIUM ? new DropExperienceBlock(properties, UniformInt.of(2, 5))
-                    : new Block(properties);
+            // No ore gives mining experience: each drops itself or a raw item, and its smelting recipe gives the
+            // experience. Dilithium ore drops itself, so experience on breaking would repeat forever (C15aR1-M1).
+            return new Block(properties);
         }
         boolean coil = entry.product().filter(product -> product == Product.COIL).isPresent();
         return new Block(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
