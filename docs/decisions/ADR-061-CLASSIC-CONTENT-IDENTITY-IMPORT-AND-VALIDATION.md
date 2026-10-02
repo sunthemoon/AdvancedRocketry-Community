@@ -321,7 +321,12 @@ must handle:
    - a copy whose 4 × 4 blocks all have fewer than three colours;
    - an outline redrawn around a vanilla fill: every block of three or more
      colours then touches a moved line, so no block votes for the alignment
-     (the tab template).
+     (the tab template);
+   - between legacy files, a relation that runs only through a 4 × 4 block
+     found at more than 64 reference positions (the posting cap): a sheet
+     embedding a tile shared by very many files then lists the tile's own
+     file but not every sharer. Inheritance still flows through the tile's
+     file; the largest relation count today is 22 per file.
    The calibration tests keep the first two as expected-`CLEAR` cases (five
    filtered derivatives and a blurred low-contrast texture), so a change in
    what the tool finds is visible. Lowering the `rank` threshold is
