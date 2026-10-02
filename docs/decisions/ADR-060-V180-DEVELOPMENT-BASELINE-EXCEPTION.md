@@ -72,6 +72,11 @@ All player-visible outcomes of the version remain required:
   statement;
 - each machine has happy-path, failure and restart tests and uses the v1.2
   kernel or an exception ADR;
+- no forced or persistent chunk loading: the monitoring station's remote
+  launch, beacons, the force field projector and the pump act only on loaded
+  chunks;
+- every new machine and world feature can be disabled by the server without
+  breaking world load (ADR-061 §3.5);
 - zero Critical/High findings.
 
 A ledger row, a registered placeholder or passing unit tests alone cannot

@@ -65,6 +65,11 @@ extracted).
 `scripts/validate_v180_content_ledger.py` checks both files against
 `legacy-manifest`.
 
+The ledger's vocabulary is not the parity verdict of docs/16 §5: `IMPLEMENTED`
+and `REDESIGNED` become `PASSED_EQUIVALENT` and `PASSED_REDESIGNED` only after
+behaviour acceptance with evidence; `PLANNED` is `MISSING` until its batch
+closes; `DEFERRED` and `REJECTED` keep their names once this ADR is accepted.
+
 ### 2. Redesigned groups
 
 | Group | Legacy | Modern delivery |
@@ -76,7 +81,7 @@ extracted).
 | Research data | three data kinds, data bus | research points (v0.8) carried in data storage units |
 | Mining rockets | rocket intake and drill blocks | gas intake and asteroid drill satellite modules with logical missions (ADR-051) |
 | Vanilla equivalents | concrete, basalt, copper | vanilla blocks and the copper ingot, used by the batches that need them (copper products C15a, basalt C15b, concrete C17b) |
-| Atmosphere tiers | low oxygen, super high pressure, superheated | no oxygen, one pressure tier and one heat tier (ADR-024, ADR-034) |
+| Atmosphere tiers | low oxygen, super high pressure, superheated | no oxygen, one pressure tier and one heat tier (ADR-024, ADR-034); legacy low oxygen needed only a helmet, so folding it into no oxygen asks for a full suit |
 | Configuration | ore, crater, geode, sealing and torch lists | data-driven features, tags and data packs |
 | Protocol | 16 packets | the existing versioned channels; new intents follow ADR-061 §3.4 |
 | LibVulpes machine parts | structure block, item and fluid hatches, power plug, holographic projector, battery | the machine casing (v0.1), kernel ports (ADR-016), pattern diagnostics that name each mismatched cell, satellite batteries (ADR-049) |
@@ -101,6 +106,9 @@ extracted).
 | Cross-system cargo | (feature of ADR-056) | routes stay inside one star system, like rockets | cargo crosses systems by station warp only |
 | Cargo access from a rocket seat | coremod rule `RocketInventoryHelper.allowAccess` | assembled rockets keep their blocks in a snapshot; opening them in flight needs a container proxy | open rocket cargo after landing, or move it with the C17a loaders |
 
+Deferring terraforming and the hovercraft past v2.0 narrows the v2.0 parity
+target (PRODUCT.md lists terraforming among later-restored features); that is
+a product choice for the owner at acceptance, not a technical conclusion.
 A deferred item can return only through a new ADR in a later version. Deferred
 content registers no ID in v1.8, so no world holds it and nothing needs a
 migration; its legacy assets stay unimported.
