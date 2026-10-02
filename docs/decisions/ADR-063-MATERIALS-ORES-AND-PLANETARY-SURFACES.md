@@ -61,17 +61,27 @@ noise Levels of vanilla blocks with a fixed biome each.
 
 | Material | Products registered by this project | Ore and raw |
 |---|---|---|
-| titanium | ingot, nugget, dust, plate, sheet, rod, gear, block | `rutile_ore`, `deepslate_rutile_ore`, `raw_rutile` |
-| aluminum | ingot, nugget, dust, plate, sheet, rod, coil, block | `aluminum_ore`, `deepslate_aluminum_ore`, `raw_aluminum` |
-| tin | ingot, nugget, dust, plate, rod, block | `tin_ore`, `deepslate_tin_ore`, `raw_tin` |
+| titanium | ingot, nugget, dust, plate, sheet, rod, gear, coil, block | `rutile_ore`, `deepslate_rutile_ore`, `raw_rutile` |
+| aluminum | ingot, nugget, dust, plate, sheet, coil, block | `aluminum_ore`, `deepslate_aluminum_ore`, `raw_aluminum` |
+| tin | ingot, nugget, dust, plate, block | `tin_ore`, `deepslate_tin_ore`, `raw_tin` |
 | steel | ingot, nugget, dust, plate, sheet, rod, gear, fan, block | — |
-| iridium | ingot, nugget, dust, plate, rod, block | `iridium_ore`, `raw_iridium` (Moon and Mars placement, §5; none in the Overworld) |
-| dilithium | dust, crystal, block | `dilithium_ore`, `deepslate_dilithium_ore`, `moon_dilithium_ore` |
-| silicon | ingot, boule | — (wafer exists) |
-| titanium aluminide | ingot, nugget, dust, plate, sheet, rod, gear | — |
-| titanium iridium | ingot, nugget, dust, plate, rod | — |
-| copper (vanilla ingot) | nugget, dust, plate, rod, coil | vanilla |
-| iron, gold (vanilla) | iron dust, plate, sheet and rod; gold dust and plate | vanilla |
+| iridium | ingot, nugget, dust, plate, rod, coil, block | `iridium_ore`, `raw_iridium` (Moon and Mars placement, §5; none in the Overworld) |
+| dilithium | dust, crystal | `dilithium_ore`, `deepslate_dilithium_ore`, `moon_dilithium_ore` |
+| silicon | ingot, nugget, dust, plate, boule | — (wafer exists) |
+| titanium aluminide | ingot, nugget, dust, plate, sheet, rod, gear, block | — |
+| titanium iridium | ingot, nugget, dust, plate, sheet, rod, gear, block | — |
+| copper (vanilla ingot and block) | nugget, dust, plate, sheet, rod, coil | vanilla |
+| iron (vanilla ingot and block) | dust, plate, sheet, rod | vanilla |
+| gold (vanilla ingot and block) | dust, plate, coil | vanilla |
+
+The product lists are the legacy ones: the LibVulpes material flags
+(`LibVulpes.java` 349–359 at `c2ca79d`, read for facts only, ADR-061 §4.1)
+and Advanced Rocketry's two alloys (`AdvancedRocketry.java` 897–898). No
+legacy product is dropped and none is added; vanilla supplies the copper, iron
+and gold ingots and blocks. The silicon nugget stays because the legacy boule
+recipe (silicon ingots plus a silicon nugget) uses it unless C16c changes
+that recipe. The five coils (copper, gold, aluminum, titanium, iridium) form
+the `advancedrocketrycommunity:coils` group.
 
 IDs follow vanilla word order (`titanium_ingot`, `raw_tin`, `tin_ore`,
 `deepslate_tin_ore`, `titanium_block`). Coils are blocks; every other product
