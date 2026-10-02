@@ -39,6 +39,9 @@ LANG = ASSET_ROOT + "lang/en_US.lang"
 CRYSTAL = JAVA_ROOT + "block/BlockCrystal.java"
 KEYS = JAVA_ROOT + "client/KeyBindings.java"
 TRANSFORMER = JAVA_ROOT + "asm/ClassTransformer.java"
+# GravityHandler.applyGravity (util/GravityHandler.java 48-98) scales gravity for living entities and,
+# separately, for items, projectiles, boats, minecarts, falling blocks and primed TNT.
+SPLIT_HOOKS = {"GravityHandler.applyGravity": ("living", "other")}
 # Classes whose @SubscribeEvent methods carry gameplay rules (registration plumbing and rejected bridges excluded).
 EVENT_CLASSES = (
     "event/PlanetEventHandler.java", "event/RocketEventHandler.java", "event/CableTickHandler.java",
@@ -399,14 +402,17 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
             event_type = match.group(2).rsplit(".", 1)[-1]
             units.append(unit("event", f"{stem}.{match.group(1)}({event_type})", path, line_of(text, match.start())))
 
-    # Gameplay rules the coremod injects into vanilla classes: its live calls into the mod.
+    # Gameplay rules the coremod injects into vanilla classes: its live calls into the mod. A hook whose
+    # handler treats entity groups differently is split, so each half can carry its own disposition.
     transformer = strip_java_comments(upstream.text(TRANSFORMER))
     seen_hooks = set()
     for match in re.finditer(r'INVOKESTATIC,\s*"zmaster587/[\w/]*?/(\w+)",\s*"(\w+)"', transformer):
         name = f"{match.group(1)}.{match.group(2)}"
         if name not in seen_hooks:
             seen_hooks.add(name)
-            units.append(unit("asm_rule", name, TRANSFORMER, line_of(transformer, match.start())))
+            for part in SPLIT_HOOKS.get(name, ("",)):
+                units.append(unit("asm_rule", name + (f"({part})" if part else ""), TRANSFORMER,
+                                  line_of(transformer, match.start())))
 
     # LibVulpes content that Advanced Rocketry gameplay depends on: fields used from Java, items named in recipes.
     libvulpes: dict[str, tuple[str, int]] = {}

@@ -74,7 +74,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         summary, errors = validate(ROOT)
         self.assertEqual([], errors)
         self.assertEqual("PASS", summary["result"])
-        self.assertEqual(652, summary["units"])
+        self.assertEqual(653, summary["units"])
         self.assertEqual(898, sum(summary["assets"].values()))
 
     def test_copied_tree_passes(self) -> None:

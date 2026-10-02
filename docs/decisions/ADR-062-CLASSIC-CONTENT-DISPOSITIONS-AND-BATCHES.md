@@ -15,14 +15,14 @@ import_allowlist_sha256: bb0927f344f51bb1385ad2fbf72a638dfb9abae21fc79a9b981636c
 
 ## Context
 
-The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 652 legacy
+The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 653 legacy
 content units of the pinned upstream commit `c5cd5af`: 101 blocks with 13
 metadata variants, 35 items with 32 variants, 15 materials (including the extra products of vanilla iron and gold), 5 fluids, 61 block
 entities, 10 entities, 12 registered biomes (2 more never registered), 34 world
 generation classes, 9 registered satellite kinds (3 more classes never
 registered), 3 missions, 15 sound events, 17 advancements, 13 atmosphere types,
 19 commands, 132 configuration keys, 14 XML configuration files, 41 event
-rules, 3 coremod rules, 16 registered packets (and 1 never registered), 13
+rules, 4 coremod rules (the gravity hook in a living and an other half), 16 registered packets (and 1 never registered), 13
 integrations, 7 key bindings, 1 enchantment, and 22 LibVulpes blocks, items and
 machines that the legacy gameplay depends on (structure blocks, motors,
 hatches, battery, linker, holographic projector, coal generator). The [content audit](../work/v1.8.0-content-audit.md) explains the
@@ -55,7 +55,7 @@ inventory unit exactly one disposition:
 | `PLANNED` | 292 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
 | `MERGED` | 93 | an internal part (block entity, base class, subcommand) that follows another row |
 | `DEFERRED` | 25 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
-| `REJECTED` | 57 | not migrated; reasons and player impact in §4 |
+| `REJECTED` | 58 | not migrated; reasons and player impact in §4 |
 
 [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv) gives every one of the
 898 legacy assets exactly one handling under ADR-061 §4: 211 `IMPORT`, 139
@@ -134,7 +134,7 @@ migration; its legacy assets stay unimported.
 | Creative energy plug | LibVulpes creative input plug | creative-only infinite energy | use another mod's creative energy source |
 | Laser drill line and spiral modes | (feature of ADR-055) | automatic target stepping across chunks | move the laser target to drill elsewhere |
 | Legacy gravity API | (feature of ADR-058) | per-entity static overrides | use the v1.3 public API |
-| Planet gravity on non-living entities | the non-living half of coremod rule `GravityHandler.applyGravity` | items, projectiles, minecarts, falling blocks and primed TNT have no gravity attribute; changing them needs a coremod or per-tick motion edits for every such entity (AGENTS.md rejects coremods) | items and projectiles fall at Overworld speed on every body; players and mobs follow the body's gravity (C18a) |
+| Planet gravity on non-living entities | coremod rule `GravityHandler.applyGravity(other)`, the non-living half of the gravity hook | items, projectiles, minecarts, falling blocks and primed TNT have no gravity attribute; changing them needs a coremod or per-tick motion edits for every such entity (AGENTS.md rejects coremods) | items and projectiles fall at Overworld speed on every body; players and mobs follow the body's gravity (C18a) |
 
 ### 5. Earlier deferrals resolved here
 

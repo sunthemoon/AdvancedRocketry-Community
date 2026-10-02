@@ -693,7 +693,7 @@
  },
  "counts": {
   "advancement": 17,
-  "asm_rule": 3,
+  "asm_rule": 4,
   "atmosphere": 13,
   "biome": 12,
   "biome_unregistered": 2,
@@ -849,9 +849,16 @@
    "line": 786
   },
   {
-   "id": "asm_rule:GravityHandler.applyGravity",
+   "id": "asm_rule:GravityHandler.applyGravity(living)",
    "kind": "asm_rule",
-   "legacy_name": "GravityHandler.applyGravity",
+   "legacy_name": "GravityHandler.applyGravity(living)",
+   "source": "src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java",
+   "line": 756
+  },
+  {
+   "id": "asm_rule:GravityHandler.applyGravity(other)",
+   "kind": "asm_rule",
+   "legacy_name": "GravityHandler.applyGravity(other)",
    "source": "src/main/java/zmaster587/advancedRocketry/asm/ClassTransformer.java",
    "line": 756
   },
