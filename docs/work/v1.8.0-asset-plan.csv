@@ -84,7 +84,7 @@ order,pattern,handling,plan,units,reason
 83,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
 84,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
 85,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
-86,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder shared by six sound events
+86,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
 87,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
 88,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
 89,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
@@ -114,121 +114,122 @@ order,pattern,handling,plan,units,reason
 113,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
 114,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
 115,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
-116,textures/planets/*leo.jpg,REVIEW,C18d,-,photographic planet imagery; confirm origin before import
-117,textures/blocks/fluid/oxygen_*,IMPORT,C16a,fluid:oxygen,fluid textures
-118,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
-119,textures/blocks/crystal.png,IMPORT,C15b,block:crystal,crystal blocks
-120,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
-121,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
-122,textures/blocks/log_blue*.png,IMPORT,C15c,block:alienWood,lightwood
-123,textures/blocks/plank_blue.png,IMPORT,C15c,block:planks,lightwood
-124,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
-125,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
-126,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
-127,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
-128,textures/blocks/crystallizer*.png,IMPORT,C16c,block:crystallizer,crystallizer
-129,textures/blocks/cuttingmachine*.png,IMPORT,C16b,block:cuttingMachine,cutting machine
-130,textures/blocks/machineprecisionlaseretcher.png,IMPORT,C16c,block:precisionlaseretcher,laser etcher
-131,textures/blocks/precisionassemblerfront*.png,IMPORT,C18d,block:precisionassemblingmachine,precision assembler visual refresh
-132,textures/blocks/machineelectrolyzer*.png,IMPORT,C18d,block:electrolyser,electrolyzer visual refresh
-133,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
-134,textures/blocks/pump*.png,IMPORT,C16a,block:blockPump,fluid pump
-135,textures/blocks/machinenuclear.png,IMPORT,C17a,block:nuclearcore,nuclear core
-136,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
-137,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
-138,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
-139,textures/blocks/guidancecomputer*.png,IMPORT,C17a,block:guidanceComputer,guidance computer visual refresh
-140,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
-141,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
-142,textures/blocks/satellitebay.png,IMPORT,C17c,block_variant:loader/1,satellite bay
-143,textures/blocks/satelliteassembler.png,IMPORT,C18d,block:satelliteBuilder,satellite builder visual refresh
-144,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
-145,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
-146,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
-147,textures/blocks/forcefield*,IMPORT,C17b,block:forceField block:forceFieldProjector,force field and projector
-148,textures/blocks/machineorientationcontrol.png,IMPORT,C17b,block:orientationController,station controllers
-149,textures/blocks/controlpanel.png,IMPORT,C17b,block:altitudeController block:gravityController,station controllers
-150,textures/blocks/warpcore.png,IMPORT,C18d,block:warpCore,warp core visual refresh
-151,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
-152,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-153,textures/blocks/solar.png,IMPORT,C17c,block:solarGenerator,solar generator
-154,textures/blocks/panelside*.png,IMPORT,C18b,block:suitWorkStation,suit workstation and panels
-155,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
-156,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
-157,textures/blocks/atmospheredetector*.png,IMPORT,C18a,block:oxygenDetection,atmosphere detector
-158,textures/blocks/gaschargertop.png,IMPORT,C18a,block:oxygenCharger,gas charge pad
-159,textures/blocks/machinescrubber*.png,IMPORT,C18a,block:oxygenScrubber,CO2 scrubber
-160,textures/blocks/seal.png,IMPORT,C18a,block:pipeSealer,pipe seal
-161,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,block:airlock_door,airlock door
-162,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
-163,textures/blocks/laser*.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-164,textures/blocks/vacuumlaserfront.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-165,textures/blocks/railgun.png,IMPORT,C18d,block:railgun,railgun visual refresh
-166,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
-167,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
-168,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
-169,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
-170,textures/items/atmanalyzer.png,IMPORT,C18a,item:atmAnalyser,atmosphere analyzer
-171,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
-172,textures/items/pressuretank*.png,IMPORT,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,pressure tanks
-173,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
-174,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
-175,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
-176,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
-177,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
-178,textures/items/bioniclegs.png,IMPORT,C18b,item_variant:itemUpgrade/2,suit upgrades
-179,textures/items/landingboots.png,IMPORT,C18b,item_variant:itemUpgrade/3,suit upgrades
-180,textures/items/space*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit visual refresh
-181,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-182,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
-183,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
-184,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
-185,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
-186,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
-187,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
-188,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
-189,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
-190,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-191,textures/items/advancedsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/1,satellite component visual refresh
-192,textures/items/basicsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/0,satellite component visual refresh
-193,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
-194,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
-195,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
-196,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
-197,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-198,textures/armor/spacesuit_*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit armor layers
-199,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
-200,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
-201,textures/gui/rockethud.png,IMPORT,C18d,event:RocketEventHandler.onScreenRender(Post),rocket HUD
-202,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
-203,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
-204,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-205,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
-206,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
-207,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
-208,textures/gui/buttons/*warp*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
-209,textures/gui/buttons/*planet*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
-210,textures/gui/buttons/*.png,IMPORT,C16a,block:arcfurnace,shared screen buttons
-211,textures/gui/*.png,IMPORT,C16a,block:arcfurnace,shared screen frames
-212,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-213,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
-214,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
-215,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-216,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
-217,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
-218,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
-219,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-220,models/*.obj,IMPORT,C18d,block:arcfurnace,machine OBJ models for the visual batch
-221,textures/models/beacon.png,REVIEW,C17c,-,shares a vanilla file name; origin review
-222,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
-223,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
-224,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
-225,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
-226,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
-227,textures/models/*,IMPORT,C18d,block:arcfurnace,OBJ model textures for the visual batch
-228,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
-229,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-230,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
-231,textures/particle/*,IMPORT,C18d,-,particles
-232,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
-233,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it
+116,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
+117,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
+118,textures/blocks/fluid/oxygen_*,IMPORT,C16a,fluid:oxygen,fluid textures
+119,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
+120,textures/blocks/crystal.png,IMPORT,C15b,block:crystal,crystal blocks
+121,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
+122,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
+123,textures/blocks/log_blue*.png,IMPORT,C15c,block:alienWood,lightwood
+124,textures/blocks/plank_blue.png,IMPORT,C15c,block:planks,lightwood
+125,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
+126,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
+127,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
+128,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
+129,textures/blocks/crystallizer*.png,IMPORT,C16c,block:crystallizer,crystallizer
+130,textures/blocks/cuttingmachine*.png,IMPORT,C16b,block:cuttingMachine,cutting machine
+131,textures/blocks/machineprecisionlaseretcher.png,IMPORT,C16c,block:precisionlaseretcher,laser etcher
+132,textures/blocks/precisionassemblerfront*.png,IMPORT,C18d,block:precisionassemblingmachine,precision assembler visual refresh
+133,textures/blocks/machineelectrolyzer*.png,IMPORT,C18d,block:electrolyser,electrolyzer visual refresh
+134,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
+135,textures/blocks/pump*.png,IMPORT,C16a,block:blockPump,fluid pump
+136,textures/blocks/machinenuclear.png,IMPORT,C17a,block:nuclearcore,nuclear core
+137,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
+138,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
+139,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
+140,textures/blocks/guidancecomputer*.png,IMPORT,C17a,block:guidanceComputer,guidance computer visual refresh
+141,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
+142,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
+143,textures/blocks/satellitebay.png,IMPORT,C17c,block_variant:loader/1,satellite bay
+144,textures/blocks/satelliteassembler.png,IMPORT,C18d,block:satelliteBuilder,satellite builder visual refresh
+145,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
+146,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
+147,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
+148,textures/blocks/forcefield*,IMPORT,C17b,block:forceField block:forceFieldProjector,force field and projector
+149,textures/blocks/machineorientationcontrol.png,IMPORT,C17b,block:orientationController,station controllers
+150,textures/blocks/controlpanel.png,IMPORT,C17b,block:altitudeController block:gravityController,station controllers
+151,textures/blocks/warpcore.png,IMPORT,C18d,block:warpCore,warp core visual refresh
+152,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
+153,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+154,textures/blocks/solar.png,IMPORT,C17c,block:solarGenerator,solar generator
+155,textures/blocks/panelside*.png,IMPORT,C18b,block:suitWorkStation,suit workstation and panels
+156,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
+157,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
+158,textures/blocks/atmospheredetector*.png,IMPORT,C18a,block:oxygenDetection,atmosphere detector
+159,textures/blocks/gaschargertop.png,IMPORT,C18a,block:oxygenCharger,gas charge pad
+160,textures/blocks/machinescrubber*.png,IMPORT,C18a,block:oxygenScrubber,CO2 scrubber
+161,textures/blocks/seal.png,IMPORT,C18a,block:pipeSealer,pipe seal
+162,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,block:airlock_door,airlock door
+163,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
+164,textures/blocks/laser*.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+165,textures/blocks/vacuumlaserfront.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+166,textures/blocks/railgun.png,IMPORT,C18d,block:railgun,railgun visual refresh
+167,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
+168,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
+169,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
+170,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
+171,textures/items/atmanalyzer.png,IMPORT,C18a,item:atmAnalyser,atmosphere analyzer
+172,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
+173,textures/items/pressuretank*.png,IMPORT,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,pressure tanks
+174,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
+175,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
+176,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
+177,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
+178,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
+179,textures/items/bioniclegs.png,IMPORT,C18b,item_variant:itemUpgrade/2,suit upgrades
+180,textures/items/landingboots.png,IMPORT,C18b,item_variant:itemUpgrade/3,suit upgrades
+181,textures/items/space*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit visual refresh
+182,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+183,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
+184,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
+185,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
+186,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
+187,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
+188,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
+189,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
+190,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
+191,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+192,textures/items/advancedsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/1,satellite component visual refresh
+193,textures/items/basicsolarpanel.png,IMPORT,C18d,item_variant:satellitePowerSource/0,satellite component visual refresh
+194,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
+195,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
+196,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
+197,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
+198,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+199,textures/armor/spacesuit_*.png,IMPORT,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,space suit armor layers
+200,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
+201,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
+202,textures/gui/rockethud.png,IMPORT,C18d,event:RocketEventHandler.onScreenRender(Post),rocket HUD
+203,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
+204,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
+205,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+206,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
+207,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
+208,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
+209,textures/gui/buttons/*warp*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
+210,textures/gui/buttons/*planet*.png,IMPORT,C17b,block:warpMonitor,warp controller screen
+211,textures/gui/buttons/*.png,IMPORT,C16a,block:arcfurnace,shared screen buttons
+212,textures/gui/*.png,IMPORT,C16a,block:arcfurnace,shared screen frames
+213,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+214,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
+215,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+216,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+217,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
+218,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
+219,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
+220,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+221,models/*.obj,IMPORT,C18d,block:arcfurnace,machine OBJ models for the visual batch
+222,textures/models/beacon.png,REVIEW,C17c,-,shares a vanilla file name; origin review
+223,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
+224,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
+225,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
+226,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
+227,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+228,textures/models/*,IMPORT,C18d,block:arcfurnace,OBJ model textures for the visual batch
+229,textures/env/*,IMPORT,C18d,block:blackholegenerator,"sky textures (black hole, accretion disk, suns)"
+230,textures/planets/lava.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+231,textures/planets/*,IMPORT,C18d,-,star map and sky body textures
+232,textures/particle/*,IMPORT,C18d,-,particles
+233,textures/entity/flare.png,IMPORT,C18d,block:rocketmotor,rocket flare
+234,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it

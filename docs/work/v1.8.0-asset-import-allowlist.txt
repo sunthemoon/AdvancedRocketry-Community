@@ -325,7 +325,7 @@ textures/planets/asteroidleo.png	IMPORT
 textures/planets/atmglow.png	IMPORT
 textures/planets/atmosphere.png	IMPORT
 textures/planets/atmosphere2.png	IMPORT
-textures/planets/atmosphereleo.png	IMPORT
+textures/planets/atmosphereleo.png	REVIEW
 textures/planets/carbonworld.png	IMPORT
 textures/planets/carbonworldleo.jpg	REVIEW
 textures/planets/desertworld.png	IMPORT

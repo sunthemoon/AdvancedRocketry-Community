@@ -10,7 +10,7 @@ target_version: v1.8.0
 development_dependency: ADR-060, ADR-061
 revisits: ADR-018 (campaign trigger, proposal for the owner in section 8), ADR-046 (station screens), ADR-049 (satellite bay, spy telescope, star-map overlay), ADR-051 (physical asteroid fields, observatory, rocket mining), ADR-055 (line and spiral modes), ADR-056 (cross-system cargo), ADR-057 (black-hole sky), ADR-058 (station gravity block, non-player fields, legacy gravity API), ADR-059 (capsule visuals)
 supersedes: ""
-import_allowlist_sha256: 605abff43b8b8403541a7c88f49820bdbe18f18fa4c82f09e05d7dafedf2661f
+import_allowlist_sha256: 81de623cef0ac7d9c7296ec5a0aab9d6dbc1738a96bf616056792e5302aa286f
 ```
 
 ## Context
@@ -51,13 +51,13 @@ inventory unit exactly one disposition:
 |---|---:|---|
 | `IMPLEMENTED` | 52 | an existing modern ID or system delivers the unit (version and ID named) |
 | `REDESIGNED` | 132 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
-| `PLANNED` | 293 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
+| `PLANNED` | 292 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
 | `MERGED` | 93 | an internal part (block entity, base class, subcommand) that follows another row |
 | `DEFERRED` | 25 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
-| `REJECTED` | 56 | not migrated; reasons and player impact in §4 |
+| `REJECTED` | 57 | not migrated; reasons and player impact in §4 |
 
 [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv) gives every one of the
-898 legacy assets exactly one handling under ADR-061 §4: 279 `IMPORT`, 78
+898 legacy assets exactly one handling under ADR-061 §4: 278 `IMPORT`, 79
 `REVIEW`, 430 `REGENERATE`, 101 `EXCLUDE` and 10 already `IMPORTED` (seven
 textures, one sound and the two language files whose reviewed keys v0.1.0
 extracted).
@@ -106,7 +106,7 @@ A deferred item can return only through a new ADR in a later version.
 
 | Item | Ledger rows | Reason | Player impact |
 |---|---|---|---|
-| Never shipped | pumpkin and watermelon biomes, spy telescope satellite, three deprecated pipe block entities, `MapGenSpaceStation` | not registered or not referenced in the pinned legacy build | none |
+| Never shipped | pumpkin and watermelon biomes, spy telescope satellite, three pipe block entities whose blocks were never registered, `MapGenSpaceStation`, the no-op crafting event | not registered, not referenced or without behaviour in the pinned legacy build | none |
 | Station-deployed mining rockets | unmanned vehicle assembler, deployed rocket entity | single-tick cross-dimension moves and forced loading; logical missions deliver the same resources | mine asteroids and gas giants with satellites and the terminal |
 | Temporary asteroid dimensions | asteroid chunk provider and world provider | runtime dimension creation (ADR-031 fixed Levels) | asteroids are logical instances (ADR-051) |
 | Rocket asteroid and warp burns, free flight | two configuration keys, `PacketMoveRocketInSpace`, `experimentalSpaceFlight`, the RCS and four rocket-turning key bindings | client-driven movement in space | rockets fly server-planned routes |

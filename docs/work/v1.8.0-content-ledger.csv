@@ -418,7 +418,7 @@ event:PlanetEventHandler.disconnected(ClientDisconnectionFromServerEvent),REDESI
 event:PlanetEventHandler.fallEvent(LivingFallEvent),PLANNED,C18a,fall damage scales with gravity,ADR-062,,
 event:PlanetEventHandler.fogColor(FogColors),REDESIGNED,v1.4.0,sky profile fog colour,ADR-036,,
 event:PlanetEventHandler.fogColor(RenderFogEvent),PLANNED,C18b,atmosphere-density fog and the anti-fog visor,ADR-062,,
-event:PlanetEventHandler.onCrafting(ItemCraftedEvent),PLANNED,C18c,advancement crafting triggers,ADR-062,,
+event:PlanetEventHandler.onCrafting(ItemCraftedEvent),REJECTED,-,-,ADR-062,the handler body is commented out in the legacy build,
 event:PlanetEventHandler.onWorldGen(GenerateMinable),REDESIGNED,v1.4.0,per-biome feature lists,ADR-033,vanilla ores only where a planet lists them,
 event:PlanetEventHandler.playerLoggedInEvent(ServerConnectionFromClientEvent),REDESIGNED,v1.4.0,celestial sync on login,ADR-035,,
 event:PlanetEventHandler.playerTick(LivingUpdateEvent),PLANNED,C18a,space Level safety return and suit underwater breathing,ADR-062,players adrift in space return to a station or the Overworld; sealed suits keep air under water; the Moon advancement is C18c,
