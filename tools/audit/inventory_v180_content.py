@@ -251,18 +251,31 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
         if match.group(1) != "name":
             units.append(unit("sound_event", match.group(1), AUDIO, line_of(audio, match.start())))
 
-    config = upstream.text(CONFIG)
+    # Configuration keys of every Java file, both Forge Configuration signatures; ARConfiguration first.
     seen_config = set()
-    for match in re.finditer(r'config\.get\(\s*([\w.]+)\s*,\s*"([^"]+)"', config):
-        key = f"{match.group(1).split('.')[-1]}.{match.group(2)}"
-        if key not in seen_config:
-            seen_config.add(key)
-            units.append(unit("config", key, CONFIG, line_of(config, match.start())))
-    for match in re.finditer(r'config\.get(?:Boolean|Int|Float|String|StringList)\(\s*"([^"]+)"\s*,\s*([\w.]+)', config):
-        key = f"{match.group(2).split('.')[-1]}.{match.group(1)}"
-        if key not in seen_config:
-            seen_config.add(key)
-            units.append(unit("config", key, CONFIG, line_of(config, match.start())))
+    config_files = [CONFIG] + sorted(path for path in upstream.hashes
+                                     if path.startswith(JAVA_ROOT) and path.endswith(".java") and path != CONFIG)
+    category = r'([\w.]+|"[^"]*")'
+    for path in config_files:
+        text = strip_java_comments(upstream.text(path))
+        found = [(m.start(), m.group(1), m.group(2)) for m in
+                 re.finditer(r'config\.get\(\s*' + category + r'\s*,\s*"([^"]+)"', text)]
+        found += [(m.start(), m.group(2), m.group(1)) for m in
+                  re.finditer(r'config\.get(?:Boolean|Int|Float|String|StringList)\(\s*"([^"]+)"\s*,\s*' + category, text)]
+        for offset, group, name in sorted(found):
+            key = f"{group.strip(chr(34)).split('.')[-1]}.{name}"
+            if key not in seen_config:
+                seen_config.add(key)
+                units.append(unit("config", key, path, line_of(text, offset)))
+
+    # XML configuration files the legacy mod writes and reads.
+    seen_files = set()
+    for path in sorted(p for p in upstream.hashes if p.startswith(JAVA_ROOT) and p.endswith(".java")):
+        text = strip_java_comments(upstream.text(path))
+        for match in re.finditer(r'"/([A-Za-z]+\.xml)"', text):
+            if match.group(1) not in seen_files:
+                seen_files.add(match.group(1))
+                units.append(unit("config_file", match.group(1), path, line_of(text, match.start())))
 
     command = upstream.text(COMMAND)
     for match in re.finditer(r'case "(\w+)":', command):

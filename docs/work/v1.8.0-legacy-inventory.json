@@ -700,7 +700,8 @@
   "block_entity": 61,
   "block_variant": 13,
   "command": 19,
-  "config": 113,
+  "config": 135,
+  "config_file": 14,
   "enchantment": 1,
   "entity": 10,
   "event": 41,
@@ -2793,6 +2794,13 @@
    "line": 413
   },
   {
+   "id": "config:CATEGORY_GENERAL.resetPlanetsFromXML",
+   "kind": "config",
+   "legacy_name": "CATEGORY_GENERAL.resetPlanetsFromXML",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 298
+  },
+  {
    "id": "config:CATEGORY_GENERAL.sawMillCutVanillaWood",
    "kind": "config",
    "legacy_name": "CATEGORY_GENERAL.sawMillCutVanillaWood",
@@ -2805,6 +2813,13 @@
    "legacy_name": "CATEGORY_GENERAL.spaceLaserDimIdBlackList",
    "source": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
    "line": 425
+  },
+  {
+   "id": "config:CATEGORY_GENERAL.spaceStationId",
+   "kind": "config",
+   "legacy_name": "CATEGORY_GENERAL.spaceStationId",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 1241
   },
   {
    "id": "config:CATEGORY_GENERAL.terraformBlockPerTick",
@@ -2842,6 +2857,34 @@
    "line": 487
   },
   {
+   "id": "config:CLIENT.atmBarModeX",
+   "kind": "config",
+   "legacy_name": "CLIENT.atmBarModeX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 443
+  },
+  {
+   "id": "config:CLIENT.atmBarModeY",
+   "kind": "config",
+   "legacy_name": "CLIENT.atmBarModeY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 444
+  },
+  {
+   "id": "config:CLIENT.atmBarX",
+   "kind": "config",
+   "legacy_name": "CLIENT.atmBarX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 441
+  },
+  {
+   "id": "config:CLIENT.atmBarY",
+   "kind": "config",
+   "legacy_name": "CLIENT.atmBarY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 442
+  },
+  {
    "id": "config:CLIENT.electricPlantsSpawnLightning",
    "kind": "config",
    "legacy_name": "CLIENT.electricPlantsSpawnLightning",
@@ -2856,11 +2899,67 @@
    "line": 488
   },
   {
+   "id": "config:CLIENT.hydrogenBarModeX",
+   "kind": "config",
+   "legacy_name": "CLIENT.hydrogenBarModeX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 438
+  },
+  {
+   "id": "config:CLIENT.hydrogenBarModeY",
+   "kind": "config",
+   "legacy_name": "CLIENT.hydrogenBarModeY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 439
+  },
+  {
+   "id": "config:CLIENT.hydrogenBarX",
+   "kind": "config",
+   "legacy_name": "CLIENT.hydrogenBarX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 436
+  },
+  {
+   "id": "config:CLIENT.hydrogenBarY",
+   "kind": "config",
+   "legacy_name": "CLIENT.hydrogenBarY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 437
+  },
+  {
    "id": "config:CLIENT.overworldSkyOverride",
    "kind": "config",
    "legacy_name": "CLIENT.overworldSkyOverride",
    "source": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
    "line": 486
+  },
+  {
+   "id": "config:CLIENT.oxygenBarModeX",
+   "kind": "config",
+   "legacy_name": "CLIENT.oxygenBarModeX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 433
+  },
+  {
+   "id": "config:CLIENT.oxygenBarModeY",
+   "kind": "config",
+   "legacy_name": "CLIENT.oxygenBarModeY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 434
+  },
+  {
+   "id": "config:CLIENT.oxygenBarX",
+   "kind": "config",
+   "legacy_name": "CLIENT.oxygenBarX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 431
+  },
+  {
+   "id": "config:CLIENT.oxygenBarY",
+   "kind": "config",
+   "legacy_name": "CLIENT.oxygenBarY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 432
   },
   {
    "id": "config:CLIENT.PlanetSkyOverride",
@@ -2875,6 +2974,34 @@
    "legacy_name": "CLIENT.StationSkyOverride",
    "source": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
    "line": 484
+  },
+  {
+   "id": "config:CLIENT.suitPanelModeX",
+   "kind": "config",
+   "legacy_name": "CLIENT.suitPanelModeX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 428
+  },
+  {
+   "id": "config:CLIENT.suitPanelModeY",
+   "kind": "config",
+   "legacy_name": "CLIENT.suitPanelModeY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 429
+  },
+  {
+   "id": "config:CLIENT.suitPanelX",
+   "kind": "config",
+   "legacy_name": "CLIENT.suitPanelX",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 426
+  },
+  {
+   "id": "config:CLIENT.suitPanelY",
+   "kind": "config",
+   "legacy_name": "CLIENT.suitPanelY",
+   "source": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+   "line": 427
   },
   {
    "id": "config:ENERGY.blackHoleGeneratorMultiplier",
@@ -3052,6 +3179,13 @@
    "line": 478
   },
   {
+   "id": "config:Planet.BlacklistedBiomes",
+   "kind": "config",
+   "legacy_name": "Planet.BlacklistedBiomes",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 949
+  },
+  {
    "id": "config:PLANET.blackListVanillaBiomes",
    "kind": "config",
    "legacy_name": "PLANET.blackListVanillaBiomes",
@@ -3066,6 +3200,13 @@
    "line": 479
   },
   {
+   "id": "config:Planet.HighPressureBiomes",
+   "kind": "config",
+   "legacy_name": "Planet.HighPressureBiomes",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 950
+  },
+  {
    "id": "config:PLANET.maxBiomesPerPlanet",
    "kind": "config",
    "legacy_name": "PLANET.maxBiomesPerPlanet",
@@ -3078,6 +3219,13 @@
    "legacy_name": "PLANET.minDimension",
    "source": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
    "line": 477
+  },
+  {
+   "id": "config:Planet.minDimension",
+   "kind": "config",
+   "legacy_name": "Planet.minDimension",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 1240
   },
   {
    "id": "config:PLANET.planetDiscoveryChance",
@@ -3106,6 +3254,13 @@
    "legacy_name": "PLANET.resetPlanetsFromXML",
    "source": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
    "line": 476
+  },
+  {
+   "id": "config:Planet.SingleBiomes",
+   "kind": "config",
+   "legacy_name": "Planet.SingleBiomes",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 951
   },
   {
    "id": "config:ROCKET.asteroidTBIBurnMult",
@@ -3484,6 +3639,104 @@
    "legacy_name": "WORLDGEN.TinPerClump",
    "source": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
    "line": 523
+  },
+  {
+   "id": "config_file:asteroidConfig.xml",
+   "kind": "config_file",
+   "legacy_name": "asteroidConfig.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 1140
+  },
+  {
+   "id": "config_file:Centrifuge.xml",
+   "kind": "config_file",
+   "legacy_name": "Centrifuge.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 433
+  },
+  {
+   "id": "config_file:ChemicalReactor.xml",
+   "kind": "config_file",
+   "legacy_name": "ChemicalReactor.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 426
+  },
+  {
+   "id": "config_file:Crystallizer.xml",
+   "kind": "config_file",
+   "legacy_name": "Crystallizer.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 427
+  },
+  {
+   "id": "config_file:CuttingMachine.xml",
+   "kind": "config_file",
+   "legacy_name": "CuttingMachine.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 424
+  },
+  {
+   "id": "config_file:ElectricArcFurnace.xml",
+   "kind": "config_file",
+   "legacy_name": "ElectricArcFurnace.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 429
+  },
+  {
+   "id": "config_file:Electrolyser.xml",
+   "kind": "config_file",
+   "legacy_name": "Electrolyser.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 428
+  },
+  {
+   "id": "config_file:Lathe.xml",
+   "kind": "config_file",
+   "legacy_name": "Lathe.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 430
+  },
+  {
+   "id": "config_file:oreConfig.xml",
+   "kind": "config_file",
+   "legacy_name": "oreConfig.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 1187
+  },
+  {
+   "id": "config_file:planetDefs.xml",
+   "kind": "config_file",
+   "legacy_name": "planetDefs.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/dimension/DimensionManager.java",
+   "line": 61
+  },
+  {
+   "id": "config_file:PrecisionAssembler.xml",
+   "kind": "config_file",
+   "legacy_name": "PrecisionAssembler.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 425
+  },
+  {
+   "id": "config_file:PrecisionLaserEtcher.xml",
+   "kind": "config_file",
+   "legacy_name": "PrecisionLaserEtcher.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 434
+  },
+  {
+   "id": "config_file:RollingMachine.xml",
+   "kind": "config_file",
+   "legacy_name": "RollingMachine.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 431
+  },
+  {
+   "id": "config_file:SmallPlatePress.xml",
+   "kind": "config_file",
+   "legacy_name": "SmallPlatePress.xml",
+   "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
+   "line": 432
   },
   {
    "id": "enchantment:spacebreathing",

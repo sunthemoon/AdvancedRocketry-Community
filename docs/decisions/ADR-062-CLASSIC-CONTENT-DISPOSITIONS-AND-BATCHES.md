@@ -15,13 +15,13 @@ import_allowlist_sha256: 605abff43b8b8403541a7c88f49820bdbe18f18fa4c82f09e05d7da
 
 ## Context
 
-The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 609 legacy
+The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 645 legacy
 content units of the pinned upstream commit `c5cd5af`: 101 blocks with 13
 metadata variants, 35 items with 32 variants, 13 materials, 5 fluids, 61 block
 entities, 10 entities, 12 registered biomes (2 more never registered), 34 world
 generation classes, 9 registered satellite kinds (3 more classes never
 registered), 3 missions, 15 sound events, 17 advancements, 13 atmosphere types,
-19 commands, 113 configuration keys, 41 event rules, 16 packets, 13
+19 commands, 132 configuration keys, 14 XML configuration files, 41 event rules, 16 packets, 13
 integrations, 7 key bindings, 1 enchantment, and 21 LibVulpes blocks and items that the legacy
 gameplay depends on (structure blocks, motors, hatches, battery, linker,
 holographic projector). The [content audit](../work/v1.8.0-content-audit.md) explains the
@@ -50,11 +50,11 @@ inventory unit exactly one disposition:
 | Disposition | Count | Meaning |
 |---|---:|---|
 | `IMPLEMENTED` | 52 | an existing modern ID or system delivers the unit (version and ID named) |
-| `REDESIGNED` | 126 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
-| `PLANNED` | 264 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
-| `MERGED` | 92 | an internal part (block entity, base class, subcommand) that follows another row |
+| `REDESIGNED` | 131 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
+| `PLANNED` | 289 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
+| `MERGED` | 93 | an internal part (block entity, base class, subcommand) that follows another row |
 | `DEFERRED` | 24 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
-| `REJECTED` | 51 | not migrated; reasons and player impact in §4 |
+| `REJECTED` | 56 | not migrated; reasons and player impact in §4 |
 
 [`v1.8.0-asset-plan.csv`](../work/v1.8.0-asset-plan.csv) gives every one of the
 898 legacy assets exactly one handling under ADR-061 §4: 279 `IMPORT`, 78
@@ -111,8 +111,8 @@ A deferred item can return only through a new ADR in a later version.
 | Rocket asteroid and warp burns, free flight | two configuration keys, `PacketMoveRocketInSpace`, `experimentalSpaceFlight`, the RCS and four rocket-turning key bindings | client-driven movement in space | rockets fly server-planned routes |
 | Terrain damage at launch | `launchBlockDestruction` | grief by launch | launches never alter terrain |
 | Vitrified sand | block | unobtainable in survival in the legacy build | none |
-| Runtime planet editing | planet generate, delete, reset and set commands; six random-planet and dimension-range configuration keys | bodies are data pack definitions | edit data packs and restart |
-| Numeric station dimension | `spaceStationId` | numeric dimension IDs are not persistent identity | none |
+| Runtime planet editing | planet generate, delete, reset and set commands; random-planet, biome-list, XML-reset and dimension-range configuration keys | bodies are data pack definitions | edit data packs and restart |
+| Numeric station dimension | `spaceStationId` (read in two categories) | numeric dimension IDs are not persistent identity | none |
 | Data networks | wireless transceiver, three cable tick and break rules | research data moves in storage units | carry data units by hand or automation |
 | Space elevator chip | item | unbounded position list; endpoint records replace it (ADR-059) | bind elevators through their endpoints |
 | Technical blocks and entities | light source, rocket fire, laser node | replaced by client effects (ADR-055) | none |
