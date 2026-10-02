@@ -109,8 +109,8 @@ public final class ElevatorReleaseTestCommands {
         anchor.assignOwner(owner);
         anchor.storage().energy().set(ElevatorEndpointBlockEntity.ENERGY_CAPACITY);
         return report(context, "elevator built station=" + stationId + " anchor=" + anchor.deviceId().orElseThrow()
-                + " terminal=" + terminal.deviceId().orElseThrow() + " anchor_pos=" + anchorPos.toShortString()
-                + " terminal_pos=" + terminalPos.toShortString());
+                + " terminal=" + terminal.deviceId().orElseThrow() + " anchor_pos=" + compact(anchorPos)
+                + " terminal_pos=" + compact(terminalPos));
     }
 
     private static void clearAbove(ServerLevel level, BlockPos endpoint) {
@@ -188,9 +188,14 @@ public final class ElevatorReleaseTestCommands {
         ServerPlayer rider = server.getPlayerList().getPlayer(riderId);
         ElevatorRides rides = devices.elevatorRides();
         String where = rider == null ? "rider=offline" : "rider=" + rider.level().dimension().location() + " at="
-                + rider.blockPosition().toShortString();
+                + compact(rider.blockPosition());
         return where + " pending=" + rides.pending(riderId).isPresent() + " rides=" + rides.size() + " tickets="
                 + rides.tickets();
+    }
+
+    /** A position as {@code x,y,z}, one token of the reply. */
+    private static String compact(BlockPos pos) {
+        return pos.getX() + "," + pos.getY() + "," + pos.getZ();
     }
 
     private static int report(CommandContext<CommandSourceStack> context, String line) {
