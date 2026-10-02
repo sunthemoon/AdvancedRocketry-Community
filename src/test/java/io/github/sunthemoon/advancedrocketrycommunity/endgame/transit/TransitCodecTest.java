@@ -134,6 +134,37 @@ final class TransitCodecTest {
         assertThrows(IllegalArgumentException.class, () -> EndgameRootCodec.decode(newer), "a future epoch");
     }
 
+    /**
+     * Review C12R2-I5: the restore rule alone refuses a record whose source or paid endpoint is neither an endpoint nor
+     * a tombstone. The refused roots differ from a valid one only in that, so no other check refuses them first.
+     */
+    @Test
+    void theRestoreRuleRefusesAnUnknownSourceOrPaidEndpoint() {
+        EndgameRoot root = EndgameRoot.create();
+        root.register(SOURCE, KIND, OWNER, LEVEL, 0L, false, 2048, 64);
+        root.register(DESTINATION, KIND, OWNER, LEVEL, 64L, false, 2048, 64);
+        OutboxEntry entry = new OutboxEntry(1L, DESTINATION, payload(), 25_000, 20, EndgameSystem.RAILGUN);
+        root.registerTransit(TransitRecord.registered(SOURCE, entry, OWNER, root.saveEpoch(), 100L).arrived()
+                .claimed(DESTINATION));
+        root.remove(SOURCE);
+        CompoundTag encoded = EndgameRootCodec.encode(root, new CompoundTag());
+        assertEquals(SOURCE, EndgameRootCodec.decode(encoded).transits().records().iterator().next().key().source(),
+                "a source known by its tombstone decodes");
+
+        EndgameRoot withoutSource = EndgameRoot.create();
+        withoutSource.register(DESTINATION, KIND, OWNER, LEVEL, 64L, false, 2048, 64);
+        CompoundTag unknownSource = encoded.copy();
+        unknownSource.put(EndgameRootCodec.ENDPOINTS, EndgameRootCodec.encode(withoutSource, new CompoundTag())
+                .get(EndgameRootCodec.ENDPOINTS));
+        assertThrows(IllegalArgumentException.class, () -> EndgameRootCodec.decode(unknownSource),
+                "a source that is neither an endpoint nor a tombstone");
+
+        CompoundTag unknownPaid = encoded.copy();
+        unknownPaid.getList(EndgameRootCodec.TRANSITS, 10).getCompound(0).putUUID("paid_endpoint", new UUID(9L, 9L));
+        assertThrows(IllegalArgumentException.class, () -> EndgameRootCodec.decode(unknownPaid),
+                "a paid endpoint that is neither an endpoint nor a tombstone");
+    }
+
     private static void assertRejected(CompoundTag valid, Consumer<CompoundTag> change) {
         CompoundTag broken = valid.copy();
         change.accept(broken);
