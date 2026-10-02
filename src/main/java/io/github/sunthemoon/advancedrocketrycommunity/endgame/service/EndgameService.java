@@ -60,6 +60,8 @@ public final class EndgameService {
     private long lastCoalescedFlush = Long.MIN_VALUE / 2;
     private boolean writeFailureLogged;
     private boolean testWrites;
+    /** Release-test hooks only (review C13-F4): coalesced flushes wait; barrier flushes still write. */
+    private boolean coalescedHeld;
 
     public EndgameService(Supplier<EndgameSettings> settings, Supplier<Set<String>> endgameTypes) {
         this(settings, endgameTypes, () -> TransitLimits.DEFAULTS);
@@ -154,6 +156,15 @@ public final class EndgameService {
         barrierSpacing.clear();
         writeFailureLogged = false;
         lastCoalescedFlush = Long.MIN_VALUE / 2;
+        coalescedHeld = false;
+    }
+
+    /**
+     * Release-test hooks only: holds the coalesced flush, so a crash cut can halt with a ledger change in memory only
+     * (ADR-054 section 11 "Registered, ledger not flushed"); a barrier flush still writes. Cleared at server stop.
+     */
+    public void holdCoalescedForTest(boolean held) {
+        coalescedHeld = held;
     }
 
     public boolean operational() {
@@ -361,7 +372,8 @@ public final class EndgameService {
         timings.add(EndgameTimings.Place.INDEX, ledger - start);
         ledgerPasses(now);
         timings.add(EndgameTimings.Place.LEDGER, System.nanoTime() - ledger);
-        if (data.flushPending() && now - lastCoalescedFlush >= EndgameLimits.COALESCED_FLUSH_INTERVAL_TICKS) {
+        if (!coalescedHeld && data.flushPending()
+                && now - lastCoalescedFlush >= EndgameLimits.COALESCED_FLUSH_INTERVAL_TICKS) {
             lastCoalescedFlush = now;
             flush();
         }

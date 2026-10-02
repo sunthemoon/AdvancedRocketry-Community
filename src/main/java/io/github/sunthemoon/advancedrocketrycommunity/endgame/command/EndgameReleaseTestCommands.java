@@ -50,8 +50,8 @@ import net.minecraftforge.event.RegisterCommandsEvent;
  * C13 packaged-server evidence hooks for v1.7, registered only with
  * {@code -Dadvancedrocketrycommunity.releaseTestHooks=true} (never in normal play). They build a railgun pair, put a
  * payload in, request a launch, report one endpoint or the ledger on one line, persist only the chunks or only the
- * endgame root, halt the JVM for a crash cut, benchmark root flushes on synthetic roots and print the measured
- * endgame work. Every line they print starts with {@code ARCE_RELEASE_TEST}.
+ * endgame root, hold the coalesced root flush, halt the JVM for a crash cut, benchmark root flushes on synthetic roots
+ * and print the measured endgame work. Every line they print starts with {@code ARCE_RELEASE_TEST}.
  */
 public final class EndgameReleaseTestCommands {
     private static final ResourceLocation TARGET = ResourceLocation.tryBuild("advancedrocketrycommunity",
@@ -82,7 +82,10 @@ public final class EndgameReleaseTestCommands {
                         .then(Commands.literal("ledger").executes(this::ledger))
                         .then(Commands.literal("persist")
                                 .then(Commands.literal("chunks").executes(this::persistChunks))
-                                .then(Commands.literal("root").executes(this::persistRoot)))
+                                .then(Commands.literal("root").executes(this::persistRoot))
+                                .then(Commands.literal("hold")
+                                        .then(Commands.literal("on").executes(context -> hold(context, true)))
+                                        .then(Commands.literal("off").executes(context -> hold(context, false)))))
                         .then(Commands.literal("halt").executes(this::halt))
                         .then(Commands.literal("timing").executes(this::timing))
                         .then(Commands.literal("flushbench")
@@ -211,6 +214,12 @@ public final class EndgameReleaseTestCommands {
         service.barrier(root -> null);
         return report(context, "persist root pending=" + service.writePending() + " save_epoch="
                 + service.root().map(EndgameRoot::saveEpoch).orElse(-1L));
+    }
+
+    /** Holds or releases the coalesced root flush; {@code persist root} still writes (review C13-F4). */
+    private int hold(CommandContext<CommandSourceStack> context, boolean held) {
+        service.holdCoalescedForTest(held);
+        return report(context, "persist hold held=" + held + " pending=" + service.writePending());
     }
 
     /** Ends the JVM at once with the crash-cut status: nothing more is saved. */

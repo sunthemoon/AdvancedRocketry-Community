@@ -188,6 +188,26 @@ class EndgameServiceTest {
         assertTrue(status.contains("write_pending=true"), status);
     }
 
+    /** Review C13-F4: a held coalesced flush waits past its interval; a barrier still writes; release lets it run. */
+    @Test
+    void aHeldCoalescedFlushWaitsAndABarrierStillWrites() {
+        EndgameService service = new EndgameService(() -> EndgameSettings.DEFAULTS, () -> Set.of(TYPE));
+        service.startForTest(EndgameSavedData.create(), true);
+        service.holdCoalescedForTest(true);
+        service.coalesced(root -> root.register(new UUID(0L, 40L), KIND, OWNER, LEVEL, POS.asLong(), false, 2048,
+                64));
+        service.tick(5_000L);
+        service.tick(5_200L);
+        assertTrue(service.writePending(), "a held coalesced flush wrote");
+        service.barrier(root -> null);
+        assertFalse(service.writePending(), "a barrier waited for the hold");
+        service.coalesced(root -> root.register(new UUID(0L, 41L), KIND, OWNER, LEVEL, POS.above().asLong(), false,
+                2048, 64));
+        service.holdCoalescedForTest(false);
+        service.tick(5_400L);
+        assertFalse(service.writePending(), "the released flush did not run");
+    }
+
     private static EndgameService service() {
         EndgameService service = new EndgameService(() -> EndgameSettings.DEFAULTS, () -> Set.of(TYPE));
         service.startForTest(EndgameSavedData.create());
