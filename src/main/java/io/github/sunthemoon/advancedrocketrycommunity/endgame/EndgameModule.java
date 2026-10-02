@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ElevatorCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ElevatorReleaseTestCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameReleaseTestCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.TransitCommands;
@@ -13,8 +14,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorR
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunRedirectRule;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunRedirectRule;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
@@ -24,8 +25,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorS
 import java.util.Set;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 
 /** Wires the v1.7 endgame framework (ADR-054) into the server lifecycle; the mod constructor calls it once. */
 public final class EndgameModule {
@@ -68,6 +69,7 @@ public final class EndgameModule {
         MinecraftForge.EVENT_BUS.addListener(new ElevatorCommands(service, devices)::register);
         // C13 evidence hooks; they register nothing unless the release-test JVM flag is set.
         MinecraftForge.EVENT_BUS.addListener(new EndgameReleaseTestCommands(service)::register);
+        MinecraftForge.EVENT_BUS.addListener(new ElevatorReleaseTestCommands(service)::register);
         // ADR-059 section 8: rides tick after the ledger's END pass; their tickets go at server stop.
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
             if (event.phase == TickEvent.Phase.END && service.operational()) {
