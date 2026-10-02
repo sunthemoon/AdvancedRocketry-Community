@@ -303,13 +303,16 @@ public final class LaserPhysicalGameTests {
                     int breakEvents = BREAK_EVENTS.get();
                     int entities = overworld.getEntitiesOfClass(ItemEntity.class, around).stream()
                             .mapToInt(entity -> entity.getItem().getCount()).sum();
+                    List<String> dropped = overworld.getEntitiesOfClass(ItemEntity.class, around).stream()
+                            .map(entity -> entity.getItem() + "@" + entity.blockPosition().subtract(marker)
+                                    .toShortString()).toList();
                     int torches = count(target, Items.TORCH);
                     int ladders = count(target, Items.LADDER);
                     int buttons = count(target, Items.STONE_BUTTON);
                     int cobblestone = count(target, Items.COBBLESTONE);
                     overworld.getEntitiesOfClass(ItemEntity.class, around).forEach(ItemEntity::discard);
                     cleanup(fixture, joined, overworld, marker, layer1, layer2, target);
-                    helper.assertTrue(entities == 0, entities + " items dropped into the world");
+                    helper.assertTrue(entities == 0, entities + " items dropped into the world: " + dropped);
                     // Review C11R-L1: one break event per breakable cell of the layer, not one per planning.
                     helper.assertTrue(breakEvents == 9, breakEvents + " break events for 9 cells");
                     helper.assertTrue(torches == 1 && ladders == 1 && buttons == 1 && cobblestone == 6,

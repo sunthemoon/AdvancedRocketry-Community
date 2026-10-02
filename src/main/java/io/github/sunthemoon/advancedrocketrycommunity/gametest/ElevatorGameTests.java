@@ -43,6 +43,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -50,6 +51,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -130,6 +132,25 @@ public final class ElevatorGameTests {
             space.setBlockAndUpdate(terminalPos, ModBlocks.ELEVATOR_TERMINAL.get().defaultBlockState());
             clearAbove(space, terminalPos);
             terminal().assignOwner(owner);
+        }
+
+        /** What occupies the anchor's arrival platform (non-air cells and entities), for failure messages. */
+        String arrivalReport() {
+            StringBuilder report = new StringBuilder("arrival platform:");
+            for (int dy = 1; dy <= 2; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        BlockState state = level.getBlockState(anchorPos.offset(dx, dy, dz));
+                        if (!state.isAir()) {
+                            report.append(' ').append(dx).append(',').append(dy).append(',').append(dz).append('=')
+                                    .append(state);
+                        }
+                    }
+                }
+            }
+            return report.append(" entities=").append(level.getEntities((Entity) null, new AABB(anchorPos).inflate(2.0D))
+                    .stream().map(entity -> entity.getType().toShortString() + "@" + entity.blockPosition().toShortString())
+                    .toList()).toString();
         }
 
         ElevatorAnchorBlockEntity anchor() {
@@ -312,7 +333,8 @@ public final class ElevatorGameTests {
                 .thenExecuteAfter(105, () -> helper.assertTrue(rides().request(joined.get(0), fixture.terminal(),
                         service(), devices()).code() == EndgameCode.RIDE_COUNTDOWN, "The second ride down was refused"))
                 .thenWaitUntil(() -> helper.assertTrue(joined.get(0).level() == fixture.level
-                        && fixture.anchor().onPlatform(joined.get(0)), "The member did not arrive down"))
+                        && fixture.anchor().onPlatform(joined.get(0)), "The member did not arrive down; "
+                        + fixture.arrivalReport()))
                 .thenExecute(() -> helper.assertTrue(fixture.terminal().storage().energy().energy() == 150_000
                                 && arrivalTickets(fixture.level) == 0 && arrivalTickets(fixture.space) == 0,
                         "The ride down cost the wrong energy or left a ticket"))
@@ -366,7 +388,7 @@ public final class ElevatorGameTests {
                     helper.assertTrue(service().audit().page(EndgameSystem.SPACE_ELEVATOR.id(), 0).stream()
                                     .anyMatch(line -> line.contains("ride_cancel") && line.contains("TARGET_PROTECTED")
                                             && line.contains(terminalId.toString())),
-                            "The ride was not refused by the zone");
+                            "The ride was not refused by the zone; " + fixture.arrivalReport());
                     service().barrier(root -> root.removeZone(zone));
                     zone(helper, fixture, zone, fixture.owner);
                 })
