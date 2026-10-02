@@ -11,7 +11,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -22,13 +21,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * C15b packaged-server hooks for ADR-063 section 9 (S1), registered only with
  * {@code -Dadvancedrocketrycommunity.releaseTestHooks=true}. {@code generate <dimension> <chunkX> <chunkZ> <radius>}
  * generates a square of chunks (radius at most 8) on the server thread and reports the time, the highest surface
- * and the structure starts found; {@code sample <dimension> <x> <z>} reports one column's top block. Every line
- * starts with {@code ARCE_RELEASE_TEST}.
+ * and the structure starts found; {@code sample <dimension> <x> <z>} loads one column's chunk and reports its top
+ * block and stored biome. Every line starts with {@code ARCE_RELEASE_TEST}.
  */
 public final class SurfaceReleaseTestCommands {
     private static final int MAX_RADIUS = 8;
@@ -97,10 +97,14 @@ public final class SurfaceReleaseTestCommands {
         ServerLevel level = DimensionArgument.getDimension(context, "dimension");
         int x = IntegerArgumentType.getInteger(context, "x");
         int z = IntegerArgumentType.getInteger(context, "z");
+        // Level.getHeight reports the minimum build height for an unloaded column, and an unloaded column's biome
+        // comes from the biome source rather than the saved chunk: load the column's chunk first (one chunk, on the
+        // server thread, like generate).
+        level.getChunkAt(new BlockPos(x, 0, z));
         int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
         BlockPos position = new BlockPos(x, top, z);
         String line = "ARCE_RELEASE_TEST surface sample dim=" + level.dimension().location() + " x=" + x + " z=" + z
-                + " top=" + top + " block=" + BuiltInRegistries.BLOCK.getKey(level.getBlockState(position).getBlock())
+                + " top=" + top + " block=" + ForgeRegistries.BLOCKS.getKey(level.getBlockState(position).getBlock())
                 + " biome=" + level.getBiome(position).unwrapKey().map(key -> key.location().toString()).orElse("?");
         AdvancedRocketryCommunity.LOGGER.info(line);
         context.getSource().sendSuccess(() -> Component.literal(line), false);
