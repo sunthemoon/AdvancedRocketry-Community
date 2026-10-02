@@ -32,6 +32,9 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         for relative in COPIED:
             shutil.copytree(ROOT / relative, self.root / relative)
+        # Delivered rows name their batch's evidence folder (EVIDENCE_PATH), so the copy carries every one.
+        for folder in sorted((ROOT / "docs/work").glob("v1.8.0-c1[5-8][a-d]-*")):
+            shutil.copytree(folder, self.root / folder.relative_to(ROOT))
         for relative in (INVENTORY, LEDGER, ASSET_PLAN, ALLOWLIST, DERIVATION):
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, self.root / relative)
