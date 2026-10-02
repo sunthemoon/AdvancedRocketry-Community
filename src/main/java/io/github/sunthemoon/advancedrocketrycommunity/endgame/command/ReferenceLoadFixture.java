@@ -50,10 +50,11 @@ import net.minecraft.world.phys.Vec3;
  * ({@link ReferenceLoadReleaseTestCommands}): its devices and how they are built. Around an Overworld column and on
  * stations it creates: 16 logical and 4 physical laser drills, 32 railguns (16 pairs), 16 black-hole generators at
  * Cygnus X-1, 64 gravity fields with 20 test players inside, and 8 elevator pairs; and synthetic root mass up to the
- * reference root (1,024 endpoints, 1,024 tombstones, 256 transfers once the live ones fill the global limit). Owners
- * are stable name-based UUIDs, at most four drills or generators and eight fields each, as the per-owner limits allow;
- * each railgun pair has its own owner, so one owner's transit limit does not throttle the launches (review C13-F3).
- * The physical drills dig the deepest shaft the configuration allows, so they keep drilling through the measurement.
+ * reference root (1,024 endpoints, 1,024 tombstones, and 64 transfers to which the live ones add up to the global
+ * limit of 256). Owners are stable name-based UUIDs, at most four drills or generators and eight fields each, as the
+ * per-owner limits allow; each railgun pair has its own owner, so one owner's transit limit does not throttle the
+ * launches (review C13-F3). The physical drills dig the deepest shaft the configuration allows, so they keep drilling
+ * through the measurement.
  */
 final class ReferenceLoadFixture {
     static final int FIELD_VISITORS = 20;
@@ -65,7 +66,12 @@ final class ReferenceLoadFixture {
     private static final int ELEVATOR_PAIRS = 8;
     private static final int REFERENCE_ENDPOINTS = 1024;
     private static final int REFERENCE_TOMBSTONES = 1024;
-    private static final int REFERENCE_TRANSFERS = 192;
+    /**
+     * Synthetic transfers with four-stack payloads, standing for the elevator cargo the driver does not ship; the live
+     * railgun traffic fills the rest of the global limit of 256 records (review C13-F3: with 192 synthetic ones, the
+     * limit held the railguns to about 2 launches a second).
+     */
+    private static final int REFERENCE_TRANSFERS = 64;
     private static final ResourceLocation OVERWORLD = ResourceLocation.tryBuild("minecraft", "overworld");
 
     private final EndgameService service;
