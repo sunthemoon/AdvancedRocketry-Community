@@ -52,7 +52,19 @@ EVENT_CLASSES = (
 VANILLA_MATERIALS = frozenset(
     {"Iron", "Gold", "Redstone", "Diamond", "Glowstone", "Lapis", "Quartz", "Emerald", "Coal", "Glass", "Wood", "Stone"}
 )
-PRODUCT_PREFIXES = ("ingot", "plate", "dust", "stick", "gear", "sheet", "coil", "block", "nugget", "ore", "boule", "crystal")
+PRODUCT_PREFIXES = ("ingot", "plate", "dust", "stick", "rod", "gear", "sheet", "coil", "fan", "block", "nugget", "ore",
+                    "boule", "crystal", "gem")
+# Products vanilla already provides for its own materials; any other product of a vanilla material is a unit.
+VANILLA_NATIVE = {
+    "Iron": {"ingot", "nugget", "block", "ore"}, "Gold": {"ingot", "nugget", "block", "ore"},
+    "Redstone": {"dust", "block", "ore"}, "Glowstone": {"dust"}, "Diamond": {"gem", "block", "ore"},
+    "Emerald": {"gem", "block", "ore"}, "Lapis": {"gem", "block", "ore"}, "Quartz": {"gem", "block", "ore"},
+    "Coal": {"block", "ore"},
+}
+# LibVulpes content that a legacy install used without Advanced Rocketry naming it.
+CURATED_LIBVULPES = {
+    "gameplay/coalGenerator": "LibVulpes coal generator: the only early Forge Energy source of a legacy install",
+}
 # Ore-dictionary words that are not materials (legacy block or tag names).
 NOT_MATERIALS = frozenset(
     {"blockWarpCoreRim", "blockWarpCoreCore", "blockCoil", "blockTankCapacity", "blockPump", "blockLens",
@@ -297,7 +309,11 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
     for path in scanned:
         text = upstream.text(path)
         for match in word.finditer(text):
-            if match.group(0).strip('"') in NOT_MATERIALS or match.group(2) in VANILLA_MATERIALS:
+            if match.group(0).strip('"') in NOT_MATERIALS:
+                continue
+            if match.group(2) in VANILLA_MATERIALS and match.group(1) in VANILLA_NATIVE.get(match.group(2), set()):
+                continue
+            if match.group(2) in VANILLA_MATERIALS and match.group(2) not in VANILLA_NATIVE:
                 continue
             materials.setdefault(match.group(2), set()).add(match.group(1))
             material_lines.setdefault(match.group(2), (path, line_of(text, match.start())))
@@ -306,8 +322,8 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
             material_lines.setdefault(match.group(1), (path, line_of(text, match.start())))
     for name in sorted(materials):
         path, number = material_lines[name]
-        units.append(unit("material", name, path, number, products=sorted(materials[name]),
-                          registered_by="advancedrocketry" if name in ar_materials else "libvulpes"))
+        owner = "advancedrocketry" if name in ar_materials else "vanilla" if name in VANILLA_MATERIALS else "libvulpes"
+        units.append(unit("material", name, path, number, products=sorted(materials[name]), registered_by=owner))
 
     java_files = sorted(path for path in upstream.hashes if path.startswith(JAVA_ROOT) and path.endswith(".java"))
     for path in java_files:
@@ -373,6 +389,8 @@ def collect(upstream: Upstream, repository: Path) -> list[dict[str, object]]:
     for name in sorted(libvulpes):
         path, number = libvulpes[name]
         units.append(unit("libvulpes", name, path, number))
+    for name, reason in sorted(CURATED_LIBVULPES.items()):
+        units.append(unit("libvulpes", name, "curated", 0, reason=reason))
 
     for path in sorted(upstream.hashes):
         if path.startswith(ASSET_ROOT + "advancements/") and path.endswith(".json"):

@@ -73,7 +73,7 @@ must handle:
    `forge:dusts/…`, `forge:nuggets/…`, `forge:gears/…`, `forge:storage_blocks/…`,
    `forge:ores/…`, `forge:raw_materials/…`), plus `advancedrocketrycommunity:`
    tags for the products Forge does not name (`sheets/…`, `coils/…`,
-   `boules/…`).
+   `fans/…`, `boules/…`); dilithium crystals use `forge:gems/dilithium`.
 2. Recipes consume tags, not item IDs, wherever a material is meant. Other
    mods' titanium therefore works in our machines, and our products work in
    theirs. This replaces the legacy `makeMaterialsForOtherMods` switch.

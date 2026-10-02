@@ -15,14 +15,14 @@ import_allowlist_sha256: 605abff43b8b8403541a7c88f49820bdbe18f18fa4c82f09e05d7da
 
 ## Context
 
-The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 648 legacy
+The [legacy inventory](../work/v1.8.0-legacy-inventory.json) lists 651 legacy
 content units of the pinned upstream commit `c5cd5af`: 101 blocks with 13
-metadata variants, 35 items with 32 variants, 13 materials, 5 fluids, 61 block
+metadata variants, 35 items with 32 variants, 15 materials (including the extra products of vanilla iron and gold), 5 fluids, 61 block
 entities, 10 entities, 12 registered biomes (2 more never registered), 34 world
 generation classes, 9 registered satellite kinds (3 more classes never
 registered), 3 missions, 15 sound events, 17 advancements, 13 atmosphere types,
 19 commands, 132 configuration keys, 14 XML configuration files, 41 event rules, 3 coremod rules, 16 packets, 13
-integrations, 7 key bindings, 1 enchantment, and 21 LibVulpes blocks and items that the legacy
+integrations, 7 key bindings, 1 enchantment, and 22 LibVulpes blocks and items that the legacy
 gameplay depends on (structure blocks, motors, hatches, battery, linker,
 holographic projector). The [content audit](../work/v1.8.0-content-audit.md) explains the
 inventory and the legacy behaviour behind each group.
@@ -51,7 +51,7 @@ inventory unit exactly one disposition:
 |---|---:|---|
 | `IMPLEMENTED` | 52 | an existing modern ID or system delivers the unit (version and ID named) |
 | `REDESIGNED` | 132 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
-| `PLANNED` | 290 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
+| `PLANNED` | 293 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
 | `MERGED` | 93 | an internal part (block entity, base class, subcommand) that follows another row |
 | `DEFERRED` | 25 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
 | `REJECTED` | 56 | not migrated; reasons and player impact in §4 |
@@ -153,10 +153,10 @@ them.
 
 | Slice | Scope | Depends on |
 |---|---|---|
-| C15a | Materials and ores: titanium, aluminum, steel, tin, silicon, iridium, dilithium, titanium aluminide, titanium iridium, copper products; ores and Overworld/Moon placement; smelting; common tags; the small plate press | ADR-061 |
+| C15a | Materials and ores: titanium, aluminum, steel, tin, silicon, iridium, dilithium, titanium aluminide, titanium iridium, copper, iron and gold products (including the steel fan used by ten legacy recipes); ores and Overworld placement; smelting; common tags; the small plate press | ADR-061 |
 | C15b | Moon, Mars and Venus surfaces: moon turf, ferric sand, crystals, geodes, charcoal logs; their biomes; craters, volcanoes, geodes and crystal features | C15a |
 | C15c | Classic exoplanet worlds for the alien forest, stormland, crystal chasms, deep swamp, marsh and ocean spires biomes; lightwood and electric mushrooms | C15b |
-| C16a | Classic machine family on the v1.2 kernel; oxygen, hydrogen, nitrogen, rocket fuel and enriched lava fluids; pressurized tank; pump | C15a |
+| C16a | Classic machine family on the v1.2 kernel; a combustion generator as the first Forge Energy source (a legacy install had the LibVulpes coal generator; without it the C16 machines would need another mod's power); motor tiers and the advanced casing; oxygen, hydrogen, nitrogen, rocket fuel and enriched lava fluids; pressurized tank; pump | C15a |
 | C16b | Electric arc furnace, lathe, cutting machine (with sawmill recipes) and their structure parts | C16a |
 | C16c | Crystallizer, chemical reactor, precision laser etcher, centrifuge and their parts | C16a |
 | C16d | Components (circuit plates and boards, user interface, carbon brick) and the recipe graph tool; progression rebalance of existing recipes | C16b, C16c |

@@ -711,8 +711,8 @@
   "item": 35,
   "item_variant": 32,
   "keybinding": 7,
-  "libvulpes": 21,
-  "material": 13,
+  "libvulpes": 22,
+  "material": 15,
   "mission": 3,
   "packet": 16,
   "satellite": 9,
@@ -4875,6 +4875,14 @@
    "line": 103
   },
   {
+   "id": "libvulpes:gameplay/coalGenerator",
+   "kind": "libvulpes",
+   "legacy_name": "gameplay/coalGenerator",
+   "source": "curated",
+   "line": 0,
+   "reason": "LibVulpes coal generator: the only early Forge Energy source of a legacy install"
+  },
+  {
    "id": "libvulpes:java/blockAdvancedMotor",
    "kind": "libvulpes",
    "legacy_name": "java/blockAdvancedMotor",
@@ -5071,9 +5079,22 @@
    "source": "src/main/java/zmaster587/advancedRocketry/AdvancedRocketry.java",
    "line": 923,
    "products": [
-    "dust"
+    "dust",
+    "gem"
    ],
    "registered_by": "libvulpes"
+  },
+  {
+   "id": "material:Gold",
+   "kind": "material",
+   "legacy_name": "Gold",
+   "source": "src/main/resources/assets/advancedrocketry/recipes/advcircuitplateetcher.json",
+   "line": 10,
+   "products": [
+    "dust",
+    "plate"
+   ],
+   "registered_by": "vanilla"
   },
   {
    "id": "material:Iridium",
@@ -5085,6 +5106,21 @@
     "ingot"
    ],
    "registered_by": "libvulpes"
+  },
+  {
+   "id": "material:Iron",
+   "kind": "material",
+   "legacy_name": "Iron",
+   "source": "src/main/resources/assets/advancedrocketry/recipes/beacon.json",
+   "line": 33,
+   "products": [
+    "dust",
+    "plate",
+    "rod",
+    "sheet",
+    "stick"
+   ],
+   "registered_by": "vanilla"
   },
   {
    "id": "material:Rutile",
@@ -5117,6 +5153,7 @@
    "line": 160,
    "products": [
     "block",
+    "fan",
     "gear",
     "ingot",
     "plate",

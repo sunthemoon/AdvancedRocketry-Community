@@ -199,7 +199,10 @@ def validate_inventory(root: Path, inventory: dict, errors: list[str]) -> list[d
     if dict(sorted(counts.items())) != inventory.get("counts"):
         errors.append("inventory: counts do not match the units")
     for unit in units:
-        if unit.get("source") not in sources:
+        if unit.get("source") == "curated":
+            if unit.get("kind") != "libvulpes" or not unit.get("reason"):
+                errors.append(f"inventory: {unit.get('id')} is curated without a LibVulpes kind and a reason")
+        elif unit.get("source") not in sources:
             errors.append(f"inventory: {unit.get('id')} source is not a recorded input")
         if unit.get("id") != f"{unit.get('kind')}:{unit.get('legacy_name')}":
             errors.append(f"inventory: {unit.get('id')} does not match its kind and name")
