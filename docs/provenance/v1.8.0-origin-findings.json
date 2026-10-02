@@ -4,9 +4,10 @@
   {
    "asset": "textures/gui/buttons/tabtemplate.png",
    "decision": "EXCLUDED",
-   "reviewer": "independent contract reviewer (C14 review rounds 2 and 3)",
+   "reviewer": "independent contract reviewer (C14 review rounds 2 to 4)",
+   "review_record": "docs/work/v1.8.0-preparation/reviews/REVIEW-02.md",
    "reviewed_at": "2026-10-02",
-   "basis": "The vanilla creative-inventory tab with its outline redrawn: 92 % of its opaque pixels equal 1.20.1 creative_inventory/tabs.png at (1, 34) and 94 % flipped in five more vanilla sheets (C14R2-H1). The equal pixels are the tab fill and one bevel edge, which the derivation check's dominant-colour rule does not count, so the check alone scores it SUSPECT or CLEAR; this finding keeps it excluded, and its tab-button derivatives inherit review (ADR-061 section 4.8)."
+   "basis": "The vanilla creative-inventory tab with its bevel lines redrawn: 522 of its 570 opaque pixels equal 1.20.1 creative_inventory/tabs.png at (1, 34) and again at (157, 34), where the sheet repeats the tab; the equal pixels are the fill (456), all 41 white bevel pixels and 25 of the 32 dark ones (C14R2-H1, C14R3-H1, C14R4-L2; reports in docs/work/v1.8.0-preparation/reviews/). The derivation check scores it CLEAR: every 4 x 4 block of three or more colours touches a moved bevel line, so no block votes for the alignment (ADR-061 section 4.8, known limits). This finding keeps it excluded, and its tab-button derivatives inherit review (ADR-061 section 4.8)."
   }
  ]
 }
