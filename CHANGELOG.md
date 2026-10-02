@@ -67,8 +67,8 @@ No candidate or release approval is assigned.
   (`singularities`, `black_hole_fuels`). New COMMON values
   `endgame.blackHoleGenerator.*`: output percent (10–400) and generators per
   owner and on the server.
-- Add the endgame transit ledger (ADR-054), which the railgun and the coming
-  space elevator use to move items. Cargo stays at its source until a world save
+- Add the endgame transit ledger (ADR-054), which the railgun and the space
+  elevator use to move items. Cargo stays at its source until a world save
   has recorded it in the endgame file, and a destination releases it only
   after its own chunk was saved holding it, so a crash, a rollback or a
   restored chunk never duplicates or loses it. New COMMON values
@@ -94,6 +94,21 @@ No candidate or release approval is assigned.
   Each railgun launches at most once per second, and the server at most
   `endgame.railgun.launchesPerTick` (≤ 4) per tick. A railgun holding cargo
   can only be broken by an operator.
+- Add the space elevator (ADR-059): a Space Elevator Anchor on a planet's
+  surface (a 5 × 2 × 5 structure: a casing base, an iron ring around the
+  anchor on top and a casing rim) and a Space Elevator Terminal inside a
+  station orbiting that planet, at least 3 blocks from the landing pad. The
+  station owner binds them from the terminal's menu; the station owner, the
+  anchor's owner or an operator unbinds them from either menu or with
+  `/arce endgame elevator unbind <station_id>`. Station members ride from one
+  platform (the 3 × 3 area on top of either end) to the other after a
+  5-second countdown (50,000 FE) and ship the whole input buffer both ways
+  (20,000 FE, 10 seconds) through the transit ledger, so cargo is never
+  duplicated or lost. A bound station cannot warp or be deleted until it is
+  unbound. Operators inspect a pair with
+  `/arce endgame elevator inspect <station_id>`. New COMMON values
+  `endgame.spaceElevator.energyPercent` (10–1000) and
+  `endgame.spaceElevator.launchesPerTick` (≤ 4).
 - New COMMON values `endgame.gravityField.*`: fields per chunk, per owner and
   chunk, per owner, per Level and on the server.
 - New COMMON values `endgame.laserDrill.*`: energy percent, operation
