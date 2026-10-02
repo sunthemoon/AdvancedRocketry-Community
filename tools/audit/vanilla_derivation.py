@@ -53,6 +53,9 @@ reviewed like ``SUSPECT``):
 
 One shared flat colour is no evidence, and two colours match a shape rather
 than pixel art, so a two-colour match counts only when it is strong.
+``related`` lists every such match from this file's side of the search; the
+measures are not symmetric (the dominant colour left out is the reference's),
+so a relation counts for inheritance when either file lists the other.
 ``mapped`` is the lower of the two directions' consistency (reference colour to
 candidate colour and back), so a flat candidate area does not map onto a
 detailed reference. Each legacy asset also lists the other legacy assets it matches
@@ -115,7 +118,6 @@ SUSPECT_NEAR = 0.75
 NEAR_DELTA = 2
 SUSPECT_MAPPED = 0.90
 MIN_MAPPED_CLASSES = 6
-MAX_RELATED = 8
 WHOLE_IMAGE_MAX_SIDE = 64
 REFERENCE_SCAN_CAP = 4096
 MAX_PIXELS = 1 << 20
@@ -134,7 +136,7 @@ def thresholds() -> dict:
         "min_votes_large": MIN_VOTES_LARGE, "pattern_max_side": PATTERN_MAX_SIDE,
         "min_region_pixels": MIN_REGION_PIXELS, "hit_region": HIT_REGION, "suspect_region": SUSPECT_REGION,
         "suspect_near": SUSPECT_NEAR, "near_delta": NEAR_DELTA, "suspect_mapped": SUSPECT_MAPPED,
-        "min_mapped_classes": MIN_MAPPED_CLASSES, "max_related": MAX_RELATED,
+        "min_mapped_classes": MIN_MAPPED_CLASSES,
         "whole_image_max_side": WHOLE_IMAGE_MAX_SIDE, "reference_scan_cap": REFERENCE_SCAN_CAP,
     }
 
@@ -785,11 +787,13 @@ class Matcher:
         for (number, dx, dy), count in votes.items():
             if count >= minimum:
                 per_reference.setdefault(number, []).append((-count, dx, dy))
-        chosen = []
+        chosen, related = [], []
         for number, offsets in per_reference.items():
             for negative, dx, dy in sorted(offsets)[:OFFSETS_PER_REFERENCE]:
-                chosen.append((negative, number, dx, dy))
-        for negative, number, dx, dy in sorted(chosen)[:OFFSETS_PER_VARIANT]:
+                (related if variants[number][0] == LEGACY else chosen).append((negative, number, dx, dy))
+        # Vanilla references share one budget; every legacy reference keeps its own two alignments, so a tile
+        # shared by many legacy files cannot crowd out a relation.
+        for negative, number, dx, dy in sorted(chosen)[:OFFSETS_PER_VARIANT] + sorted(related):
             label, reference, scale, other = variants[number]
             measure = _region_measures(variant, other, dx, dy, full)
             if measure is None:
@@ -839,9 +843,9 @@ def load_vanilla(specs: list[str]) -> tuple[dict[str, dict], dict[str, list[tupl
 
 
 def _related_entries(matcher: Matcher, name: str) -> list[dict]:
+    """Every legacy file this one matches at SUSPECT level or above, from this file's side of the search."""
     table = matcher.related.get(name, {})
-    strongest = sorted(table.items(), key=lambda item: item[1][0], reverse=True)[:MAX_RELATED]
-    return [dict({"asset": other, "level": level}, **record) for other, (_, level, record) in sorted(strongest)]
+    return [dict({"asset": other, "level": level}, **record) for other, (_, level, record) in sorted(table.items())]
 
 
 def analyse(upstream: Path, specs: list[str], repository: Path) -> dict:

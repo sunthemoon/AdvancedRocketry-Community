@@ -125,7 +125,7 @@ textures/blocks/monitorfrontright.png	REVIEW
 textures/blocks/monitormoon.png	REVIEW
 textures/blocks/monitorplanet.png	REVIEW
 textures/blocks/monitorplanet_active.png	REVIEW
-textures/blocks/monitorrear.png	IMPORT
+textures/blocks/monitorrear.png	REVIEW
 textures/blocks/monitorrocket.png	REVIEW
 textures/blocks/monitorsatellite.png	REVIEW
 textures/blocks/monitorside.png	REVIEW
@@ -267,7 +267,7 @@ textures/items/trackingcircuit.png	IMPORT
 textures/items/userinterface.png	IMPORT
 textures/models/advbipropellantcombustion.png	IMPORT
 textures/models/advcombustion.png	IMPORT
-textures/models/areagravitycontroller.png	IMPORT
+textures/models/areagravitycontroller.png	REVIEW
 textures/models/astrobodydataprocessor.png	IMPORT
 textures/models/basiclasergun.png	IMPORT
 textures/models/beacon.png	REVIEW

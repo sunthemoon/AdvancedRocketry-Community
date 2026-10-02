@@ -63,10 +63,10 @@ order,pattern,handling,plan,units,reason
 62,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/brewing_stand.png, orientation 0 (overlap 0.56 over 4 colours, mask 0.94, rank 0.39)"
 63,textures/gui/buttons/buttonautoeject.png,REVIEW,C16a,-,"possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_item_search.png, region of 576 px at offset (73, 2) (orientation 7, scale 1/1; exact 0.50 over 3 colours, near 0.50, mapped 0.59); origin review"
 64,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/horse.png, orientation 7 (overlap 0.48 over 3 colours, mask 0.82, rank 0.00)"
-65,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 6016 px at offset (0, -19) (orientation 0, scale 2/2; exact 0.76 over 5 colours, near 0.00, mapped 0.00)"
-66,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 6016 px at offset (0, -19) (orientation 0, scale 2/2; exact 0.76 over 5 colours, near 0.00, mapped 0.00)"
+65,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 23895 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.77 over 5 colours, near 0.00, mapped 0.00)"
+66,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 23895 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.78 over 5 colours, near 0.00, mapped 0.00)"
 67,textures/gui/genericneibackground.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, region of 256 px at offset (-176, -198) (orientation 6, scale 1/1; exact 1.00 over 94 colours, near 0.00, mapped 0.00)"
-68,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 6070 px at offset (0, -19) (orientation 0, scale 2/2; exact 0.86 over 5 colours, near 0.00, mapped 0.00)"
+68,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 24111 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.87 over 5 colours, near 0.00, mapped 0.00)"
 69,textures/gui/precisionassembler.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.56 over 3 colours, mask 0.93, rank 0.47)"
 70,textures/gui/progressbars/progressbars.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/obsidian.png, region of 256 px at offset (0, -140) (orientation 0, scale 1/1; exact 1.00 over 72 colours, near 0.00, mapped 0.00)"
 71,textures/gui/rocketbuilder.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 7 (overlap 0.39 over 4 colours, mask 0.90, rank 0.28)"
@@ -115,191 +115,191 @@ order,pattern,handling,plan,units,reason
 114,textures/planets/venusian.png,REVIEW,C18d,-,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 115,textures/planets/waterworld.png,REVIEW,C18d,-,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 116,textures/gui/buttons/tabtemplate.png,EXCLUDE,-,-,excluded by an origin finding (docs/provenance/v1.8.0-origin-findings.json)
-117,textures/armor/spacesuit_layer2_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/armor/spacesuit_layer2.png (SUSPECT, same), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+117,textures/armor/spacesuit_layer2_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/armor/spacesuit_layer2.png (SUSPECT, region), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
 118,textures/blocks/fuelingmachine.png,REVIEW,C17a,block:fuelingStation,"shares pixels with textures/blocks/beacon.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-119,textures/blocks/guidancecomputer.png,REVIEW,C17a,block:guidanceComputer,"shares pixels with textures/blocks/beacon.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-120,textures/blocks/machinenuclear.png,REVIEW,C17a,block:nuclearcore,"shares pixels with textures/blocks/gaschargertop.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+119,textures/blocks/guidancecomputer.png,REVIEW,C17a,block:guidanceComputer,"shares pixels with textures/blocks/fuelingmachine.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+120,textures/blocks/machinenuclear.png,REVIEW,C17a,block:nuclearcore,"shares pixels with textures/blocks/atmospheredetector.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
 121,textures/blocks/machineprecisionlaseretcher.png,REVIEW,C16c,block:precisionlaseretcher,"shares pixels with textures/blocks/beacon.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-122,textures/blocks/monitorfront.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/beacon.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-123,textures/blocks/monitorrocket.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/monitorfrontleft.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-124,textures/blocks/monitorsatellite.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/monitorfrontleft.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-125,textures/blocks/panelsideworkstation.png,REVIEW,C18b,block:suitWorkStation,"shares pixels with textures/blocks/panelside.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-126,textures/blocks/vacuumlaserfront.png,REVIEW,C18d,block:spaceLaser,"shares pixels with textures/blocks/forcefieldprojectorfront.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-127,textures/gui/buttons/buttonautoeject_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabtemplate.png (SUSPECT, same), whose origin finding EXCLUDED; origin review inherited (ADR-061 section 4.8)"
-128,textures/gui/buttons/buttonautoeject_pressed.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-129,textures/gui/buttons/tabdata.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-130,textures/gui/buttons/tabdata_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-131,textures/gui/buttons/tabguidance.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-132,textures/gui/buttons/tabguidance_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (SUSPECT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-133,textures/gui/buttons/tabplanet.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-134,textures/gui/buttons/tabplanet_hover.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-135,textures/gui/buttons/tabwarp.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-136,textures/gui/buttons/tabwarp_hover.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-137,textures/gui/warning.png,REVIEW,C16a,-,"shares pixels with textures/gui/progressbars/progressbars.png (HIT, region), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
-138,textures/items/spaceboots_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_boots.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-139,textures/items/spacechestplate_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_chestplate.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
-140,textures/items/spacehelmet_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_helmet.png (HIT, same), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
-141,textures/armor/spacesuit_layer1_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/armor/spacesuit_layer2_overlay.png (SUSPECT, region), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-142,textures/gui/buttons/buttonredstoneinverted.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabdata_hover.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-143,textures/gui/buttons/copy.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-144,textures/gui/buttons/copy_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-145,textures/gui/buttons/kill.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-146,textures/gui/buttons/kill_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
-147,textures/blocks/fluid/oxygen_flow.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_flow.png, which is EXCLUDE for its pixels"
-148,textures/blocks/fluid/oxygen_still.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_still.png, which is EXCLUDE for its pixels"
-149,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-150,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-151,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-152,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-153,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-154,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-155,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-156,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
-157,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
-158,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
-159,lang/*.lang,REVIEW,C18d,-,community translations; each needs its own contributor provenance before use
-160,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
-161,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
-162,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
-163,textures/blocks/fluid/lava_*,REVIEW,C16a,-,shares the vanilla lava file names; origin review
-164,textures/font.png,EXCLUDE,-,-,no planned consumer
-165,textures/env/sun.png,REVIEW,C18d,-,shares the vanilla sun file name; origin review
-166,textures/planets/shadow.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-167,textures/gui/eyecandy/earth.png,REVIEW,C18d,-,shares a vanilla file name; origin review
-168,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
-169,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
-170,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
-171,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
-172,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-173,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-174,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-175,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-176,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
-177,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
-178,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
-179,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-180,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-181,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
-182,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
-183,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
-184,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
-185,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
-186,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-187,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
-188,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-189,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-190,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
-191,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
-192,textures/blocks/machinegeneric.png,REVIEW,C16a,libvulpes:java/blockAdvStructureBlock,byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review
-193,models/item/models/motor.*,REVIEW,C16a,libvulpes:java/blockMotor,motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established
-194,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
-195,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
-196,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
-197,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
-198,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
-199,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
-200,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
-201,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
-202,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
-203,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
-204,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
-205,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
-206,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
-207,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
-208,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
-209,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
-210,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
-211,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
-212,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
-213,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
-214,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
-215,textures/blocks/monitor*.png,IMPORT,C17a,block:monitoringStation,monitoring station and terminals
-216,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
-217,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
-218,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
-219,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
-220,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
-221,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-222,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
-223,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
-224,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,block:airlock_door,airlock door
-225,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
-226,textures/blocks/lens1.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
-227,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
-228,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
-229,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
-230,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
-231,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
-232,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
-233,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
-234,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
-235,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
-236,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
-237,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-238,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
-239,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
-240,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
-241,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
-242,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
-243,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
-244,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
-245,textures/items/userinterface.png,IMPORT,C16d,item_variant:misc/0,components
-246,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
-247,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-248,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
-249,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
-250,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
-251,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
-252,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
-253,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
-254,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
-255,textures/gui/rockethud.png,IMPORT,C18d,event:RocketEventHandler.onScreenRender(Post),rocket HUD
-256,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
-257,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
-258,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
-259,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
-260,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
-261,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
-262,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
-263,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
-264,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-265,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
-266,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
-267,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-268,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
-269,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
-270,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
-271,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-272,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
-273,models/areagravitycontroller.obj,IMPORT,C18d,block:gravityMachine,machine OBJ model for the visual batch
-274,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
-275,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
-276,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
-277,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
-278,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
-279,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
-280,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
-281,models/electrolyser.obj,IMPORT,C18d,block:electrolyser,machine OBJ model for the visual batch
-282,models/lathe.obj,IMPORT,C18d,block:lathe,machine OBJ model for the visual batch
-283,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
-284,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
-285,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
-286,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
-287,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
-288,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
-289,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
-290,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
-291,models/warpcore.obj,IMPORT,C18d,block:warpCore,machine OBJ model for the visual batch
-292,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
-293,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
-294,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
-295,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
-296,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
-297,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
-298,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
-299,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
-300,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
-301,textures/models/areagravitycontroller.png,IMPORT,C18d,block:gravityMachine,model texture for the visual batch
+122,textures/blocks/monitorfront.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/laserfront.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+123,textures/blocks/monitorrear.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/crystallizer_active.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+124,textures/blocks/monitorrocket.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/monitorfrontright.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+125,textures/blocks/monitorsatellite.png,REVIEW,C17a,block:monitoringStation,"shares pixels with textures/blocks/monitorfrontright.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+126,textures/blocks/panelsideworkstation.png,REVIEW,C18b,block:suitWorkStation,"shares pixels with textures/blocks/panelside.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+127,textures/blocks/vacuumlaserfront.png,REVIEW,C18d,block:spaceLaser,"shares pixels with textures/blocks/forcefieldprojectorfront.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+128,textures/gui/buttons/buttonautoeject_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabtemplate.png (SUSPECT, same), whose origin finding EXCLUDED; origin review inherited (ADR-061 section 4.8)"
+129,textures/gui/buttons/buttonautoeject_pressed.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+130,textures/gui/buttons/buttonredstoneinverted.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabtemplate.png (SUSPECT, same), whose origin finding EXCLUDED; origin review inherited (ADR-061 section 4.8)"
+131,textures/gui/buttons/copy.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+132,textures/gui/buttons/copy_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/copy.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+133,textures/gui/buttons/kill.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+134,textures/gui/buttons/kill_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+135,textures/gui/buttons/tabdata.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+136,textures/gui/buttons/tabdata_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+137,textures/gui/buttons/tabguidance.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabdata_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+138,textures/gui/buttons/tabguidance_hover.png,REVIEW,C16a,-,"shares pixels with textures/gui/buttons/tabdata_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+139,textures/gui/buttons/tabplanet.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+140,textures/gui/buttons/tabplanet_hover.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+141,textures/gui/buttons/tabwarp.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+142,textures/gui/buttons/tabwarp_hover.png,REVIEW,C17b,block:warpMonitor,"shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+143,textures/gui/warning.png,REVIEW,C16a,-,"shares pixels with textures/gui/progressbars/progressbars.png (HIT, region), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+144,textures/items/spaceboots_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_boots.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+145,textures/items/spacechestplate_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_chestplate.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+146,textures/items/spacehelmet_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/items/space_helmet.png (HIT, same), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+147,textures/models/areagravitycontroller.png,REVIEW,C18d,block:gravityMachine,"shares pixels with textures/blocks/warpcore.png (HIT, region), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+148,textures/armor/spacesuit_layer1_overlay.png,REVIEW,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,"shares pixels with textures/armor/spacesuit_layer2_overlay.png (SUSPECT, region), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+149,textures/blocks/fluid/oxygen_flow.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_flow.png, which is EXCLUDE for its pixels"
+150,textures/blocks/fluid/oxygen_still.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_still.png, which is EXCLUDE for its pixels"
+151,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+152,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+153,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+154,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+155,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+156,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+157,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+158,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+159,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+160,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+161,lang/*.lang,REVIEW,C18d,-,community translations; each needs its own contributor provenance before use
+162,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
+163,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
+164,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
+165,textures/blocks/fluid/lava_*,REVIEW,C16a,-,shares the vanilla lava file names; origin review
+166,textures/font.png,EXCLUDE,-,-,no planned consumer
+167,textures/env/sun.png,REVIEW,C18d,-,shares the vanilla sun file name; origin review
+168,textures/planets/shadow.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+169,textures/gui/eyecandy/earth.png,REVIEW,C18d,-,shares a vanilla file name; origin review
+170,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
+171,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
+172,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
+173,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
+174,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+175,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+176,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+177,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+178,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+179,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
+180,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
+181,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+182,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+183,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
+184,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
+185,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
+186,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
+187,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
+188,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+189,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+190,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+191,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+192,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+193,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
+194,textures/blocks/machinegeneric.png,REVIEW,C16a,libvulpes:java/blockAdvStructureBlock,byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review
+195,models/item/models/motor.*,REVIEW,C16a,libvulpes:java/blockMotor,motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established
+196,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
+197,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+198,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+199,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
+200,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
+201,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
+202,sounds/*.ogg,REVIEW,C18d,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,no embedded attribution; confirm authorship before import
+203,textures/planets/*leo.jpg,REVIEW,C18d,-,"low-orbit planet images without source notes, in a format the derivation check cannot read; origin review"
+204,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
+205,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
+206,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
+207,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
+208,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
+209,textures/blocks/sapling_bluetree.png,IMPORT,C15c,block:alienSapling,lightwood
+210,textures/blocks/mushroom_electric.png,IMPORT,C15c,block:electricMushroom,electric mushroom
+211,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
+212,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
+213,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
+214,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
+215,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
+216,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust
+217,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
+218,textures/blocks/rocketpad_*.png,IMPORT,C17b,block:landingPad,landing pad connected texture
+219,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
+220,textures/blocks/forcefield.png*,REVIEW,C17b,-,shares a vanilla file name; origin review
+221,textures/blocks/beacon.png,REVIEW,C17c,block:beacon,same name as a vanilla texture; compare before import
+222,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+223,textures/blocks/suitworkstation.png,IMPORT,C18b,block:suitWorkStation,suit workstation
+224,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
+225,textures/blocks/smallairlockdoor_*.png,IMPORT,C18a,block:airlock_door,airlock door
+226,textures/blocks/thermitetorch.png,IMPORT,C18a,block:thermiteTorch,thermite torch
+227,textures/blocks/lens1.png,IMPORT,C18d,block:spaceLaser,laser drill visual refresh
+228,textures/items/carbonscrubbercartrige.png,IMPORT,C18a,item:carbonScrubberCartridge,scrubber cartridge
+229,textures/items/thermite.png,IMPORT,C18a,item:thermite,thermite
+230,textures/items/smallairlock.png,IMPORT,C18a,item:smallAirlockDoor,airlock door item
+231,textures/items/sealdetector.png,IMPORT,C18a,item:sealDetector,seal detector
+232,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
+233,textures/items/jetpack.png,IMPORT,C18b,item:jetPack,jetpack
+234,textures/items/jackhammer.png,IMPORT,C18b,item:jackHammer,jackhammer
+235,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
+236,textures/items/hoverupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/0,suit upgrades
+237,textures/items/flightspeedupgrade.png,IMPORT,C18b,item_variant:itemUpgrade/1,suit upgrades
+238,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+239,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
+240,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
+241,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
+242,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
+243,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
+244,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
+245,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
+246,textures/items/userinterface.png,IMPORT,C16d,item_variant:misc/0,components
+247,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
+248,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+249,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
+250,textures/items/massdetector.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/2,satellite component visual refresh
+251,textures/items/microwavetransmitter.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/3,satellite component visual refresh
+252,textures/items/opticalsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/0,satellite component visual refresh
+253,textures/items/oremapper.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/4,satellite component visual refresh
+254,textures/gui/space_*.png,IMPORT,C18b,block:suitWorkStation,suit slot icons
+255,textures/gui/jetpack*.png,IMPORT,C18b,item:jetPack,jetpack HUD
+256,textures/gui/rockethud.png,IMPORT,C18d,event:RocketEventHandler.onScreenRender(Post),rocket HUD
+257,textures/gui/genericstation.png,IMPORT,C17b,block:warpMonitor,station control screens
+258,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
+259,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+260,textures/gui/eyecandy/spinnything.png,IMPORT,C18d,block:warpMonitor,screen decoration
+261,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
+262,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
+263,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
+264,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
+265,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+266,models/block/models/*,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor block:nuclearrocketmotor block:fuelTank,rocket engine and tank OBJ/MTL models
+267,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+268,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+269,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
+270,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
+271,models/atmosphere.*,IMPORT,C18d,-,planet atmosphere sphere model
+272,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+273,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
+274,models/areagravitycontroller.obj,IMPORT,C18d,block:gravityMachine,machine OBJ model for the visual batch
+275,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
+276,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
+277,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
+278,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
+279,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
+280,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
+281,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
+282,models/electrolyser.obj,IMPORT,C18d,block:electrolyser,machine OBJ model for the visual batch
+283,models/lathe.obj,IMPORT,C18d,block:lathe,machine OBJ model for the visual batch
+284,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
+285,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
+286,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
+287,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
+288,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
+289,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
+290,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
+291,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
+292,models/warpcore.obj,IMPORT,C18d,block:warpCore,machine OBJ model for the visual batch
+293,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
+294,textures/models/*combustion.png,IMPORT,C17a,block:rocketmotor block:bipropellantrocketmotor block:advRocketmotor block:advbipropellantRocketmotor,"rocket engine model textures, with their models"
+295,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
+296,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
+297,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
+298,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+299,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
+300,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
+301,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
 302,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
 303,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
 304,textures/models/centrifuge.png,IMPORT,C18d,block:centrifuge,model texture for the visual batch

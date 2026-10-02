@@ -10,7 +10,7 @@ target_version: v1.8.0
 development_dependency: ADR-016, ADR-019, ADR-021, ADR-026, ADR-027, ADR-031, ADR-054, ADR-060
 used_by: [ADR-062]
 supersedes: ""
-derivation_results_sha256: 23f8af0043aaaf0d2197912c18759cc6dcb81e95e389e3fee935c24ebc3c5053
+derivation_results_sha256: 6139156042e570168bc3d962a62d019a98ad916dcff52a5ebc9841cdb1006a04
 vanilla_client_sha256:
   "1.12.2": 8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f
   "1.20.1": 56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f
@@ -20,7 +20,7 @@ vanilla_client_sha256:
 
 v1.8 restores most of the classic content: more than 200 legacy blocks, items,
 variants, materials, fluids, biomes and features are planned (ADR-062), and the
-asset plan names 190 legacy files as import candidates and holds 155 more
+asset plan names 188 legacy files as import candidates and holds 157 more
 under origin review (ADR-062 counts). Until now the project
 imported 10 upstream files (v0.1.0) and drew every other texture from its own
 three casing textures or from vanilla resource locations. The version document
@@ -269,8 +269,11 @@ must handle:
    colours match a shape rather than pixel art. The tool's constants are the
    thresholds, and the results file repeats them.
    **Inheritance.** The same measures between legacy files are recorded per
-   asset as `related` (the other legacy files it matches at `SUSPECT` level or
-   above). A file that is related to a file with a `HIT`, `SUSPECT` or
+   asset as `related` (every other legacy file it matches at `SUSPECT` level or
+   above, uncapped; each legacy reference has its own verification budget, so
+   a tile shared by many files cannot crowd out a relation). The measures are
+   not symmetric, so a relation counts when either file lists the other. A
+   file that is related to a file with a `HIT`, `SUSPECT` or
    `UNSUPPORTED` verdict, a `REVIEW` handling or an `EXCLUDED` origin finding
    is at most `REVIEW`, repeated until nothing changes; the asset plan
    applies it and the validator enforces it. A source with a `CLEARED`

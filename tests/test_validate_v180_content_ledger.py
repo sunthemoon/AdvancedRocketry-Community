@@ -333,6 +333,12 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any("textures/items/spacehelmet_overlay.png is IMPORT but shares pixels with "
                             "textures/items/space_helmet.png" in error for error in self._errors()))
 
+    def test_inheritance_reads_relations_from_either_side(self) -> None:
+        """monitorrear.png lists nothing itself; crystallizer_active.png (REVIEW) lists it."""
+        self._set_rule("textures/blocks/monitorrear.png", handling="IMPORT")
+        self.assertTrue(any("textures/blocks/monitorrear.png is IMPORT but shares pixels with "
+                            "textures/blocks/crystallizer_active.png" in error for error in self._errors()))
+
     def test_a_cleared_source_passes_nothing_on(self) -> None:
         self._set_rule("textures/blocks/panelsideworkstation.png", handling="IMPORT")
         self.assertTrue(any("panelsideworkstation.png is IMPORT but shares pixels with textures/blocks/panelside.png"

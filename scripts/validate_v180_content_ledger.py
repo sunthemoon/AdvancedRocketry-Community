@@ -570,7 +570,15 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             errors.append(f"asset plan: {asset} is handled as IMPORTED without a provenance record")
     allowed = load_allowlist(root, errors)
     findings, overturned = load_origin_findings(root, errors)
-    verdicts, related = load_derivation(root, errors)
+    verdicts, listed = load_derivation(root, errors)
+    # A relation counts when either file lists the other: the measures are not symmetric (ADR-061 section 4.8).
+    related: dict[str, dict[str, str]] = {}
+    for asset, matches in listed.items():
+        for other, relation in matches:
+            for one, two in ((asset, other), (other, asset)):
+                current = related.setdefault(one, {}).get(two)
+                if current != "HIT":
+                    related[one][two] = relation
     if set(verdicts) != set(assets):
         errors.append(f"{DERIVATION.name}: does not cover exactly the legacy assets")
     for asset, handling in sorted(handling_of.items()):
@@ -589,7 +597,7 @@ def validate_assets(root: Path, rows: list[dict[str, str]], errors: list[str],
             errors.append(f"asset plan: {asset} was excluded by an origin finding but is {handling}")
         if handling == "IMPORT" and findings.get(asset) != "CLEARED":
             # ADR-061 section 4.8: a file sharing pixels with a derived, suspect or quarantined file inherits review.
-            for other, relation in related.get(asset, []):
+            for other, relation in sorted(related.get(asset, {}).items()):
                 if findings.get(other) == "CLEARED":
                     continue  # a cleared source passes nothing on
                 reason = (f"derivation verdict {verdicts[other]}" if verdicts.get(other) in ("HIT", "SUSPECT", "UNSUPPORTED")

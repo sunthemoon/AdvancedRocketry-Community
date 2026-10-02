@@ -182,6 +182,37 @@ class VanillaDerivationCalibrationTests(unittest.TestCase):
         self.assertNotIn("unrelated.png", related.get("helmet.png", []))
         self.assertNotIn("unrelated.png", related)
 
+    def test_relations_are_complete_when_a_tile_is_widely_shared(self) -> None:
+        """A tile shared by many legacy files neither crowds out another relation nor is cut at a fixed count."""
+        tile = _noise(16, 16, seed=301)
+        other = _noise(16, 16, seed=307)
+        legacy = []
+        for index in range(12):
+            copy = list(tile)
+            copy[index] = (index * 9 + 1, 2, 3, 255)
+            legacy.append((f"machine_{index:02d}.png", Image(16, 16, copy)))
+        sheet = _noise(128, 64, seed=311, colours=8)
+        for y in range(16):
+            for x in range(16):
+                for left in (0, 32, 64):
+                    sheet[(y + 8) * 128 + left + x] = tile[y * 16 + x]
+                sheet[(y + 37) * 128 + 101 + x] = other[y * 16 + x]
+        legacy += [("tile.png", Image(16, 16, tile)), ("other.png", Image(16, 16, other)),
+                   ("sheet.png", Image(128, 64, sheet))]
+        matcher = match_images(legacy, [(LEGACY, name, image) for name, image in legacy])
+        self.assertIn("other.png", matcher.related.get("sheet.png", {}))
+        self.assertIn("tile.png", matcher.related.get("sheet.png", {}))
+        self.assertGreater(len(matcher.related.get("tile.png", {})), 8)
+
+    def test_vanilla_texture_off_the_block_grid_inside_a_sheet(self) -> None:
+        texture = Image(16, 16, _noise(16, 16, seed=401))
+        sheet = _noise(96, 96, seed=409, colours=10)
+        for y in range(16):
+            for x in range(16):
+                sheet[(y + 33) * 96 + x + 50] = texture.pixels[y * 16 + x]
+        best = analyse_images([("sheet", Image(96, 96, sheet))], [("v", "texture.png", texture)])
+        self.assertEqual("HIT", best["sheet"][1])
+
     def test_png_decoder_reads_rgba(self) -> None:
         pixels = _noise(5, 3, seed=3)
         width, height, decoded = decode_png(_png(5, 3, pixels))
