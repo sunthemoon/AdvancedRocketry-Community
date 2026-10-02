@@ -90,6 +90,32 @@ class PrecisionAssemblerRecipeTest {
         assertEquals("item_input_4", longRecipe.processDefinition().inputs().get(4).channel());
     }
 
+    /** C15aR2-L1: a tag ingredient arriving over the network is refused like one from JSON. */
+    @Test
+    void aTagIngredientFromTheNetworkIsRefused() {
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            serializer.toNetwork(buffer, serializer.fromJson(ID, twoInputJson()));
+            byte[] written = new byte[buffer.readableBytes()];
+            buffer.readBytes(written);
+            String wire = new String(written, java.nio.charset.StandardCharsets.ISO_8859_1);
+            String item = "{\"item\":\"minecraft:iron_ingot\"}";
+            String tag = "{\"tag\":\"forge:ingots/iron_abc\"}";
+            assertTrue(wire.contains(item) && item.length() == tag.length(), "the probe swaps the ingredient in place");
+            FriendlyByteBuf swapped = new FriendlyByteBuf(Unpooled.wrappedBuffer(
+                    wire.replace(item, tag).getBytes(java.nio.charset.StandardCharsets.ISO_8859_1)));
+            RuntimeException refused = assertThrows(RuntimeException.class, () -> serializer.fromNetwork(ID, swapped));
+            Throwable cause = refused;
+            while (cause.getCause() != null && !String.valueOf(cause.getMessage()).contains("tag ingredients")) {
+                cause = cause.getCause();
+            }
+            assertTrue(String.valueOf(cause.getMessage()).contains("tag ingredients are not supported"),
+                    refused.toString());
+        } finally {
+            buffer.release();
+        }
+    }
+
     @Test
     void networkRoundTripRetainsDefinitionAndSemanticSignature() {
         PrecisionAssemblerRecipe original = serializer.fromJson(ID, fiveInputJson());
