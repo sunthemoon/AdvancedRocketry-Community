@@ -515,7 +515,7 @@ public final class TransitLedger implements TransitLedgerView {
             return new EndgameRoot.Change(EndgameCode.ENDPOINT_NOT_FOUND, List.of());
         }
         retireWithoutLiveState(root, id, true);
-        return root.retireLost(id, EndgameService::pinned);
+        return root.retireLost(id, root::pinned);
     }
 
     public static int retireWithoutLiveState(EndgameRoot root, UUID id, boolean pruneStubs) {

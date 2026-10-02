@@ -295,7 +295,7 @@ public final class EndgameCommands {
             return refuse(context, EndgameCode.ENDPOINT_NOT_FOUND);
         }
         EndgameRoot.Change change = service.coalesced(root -> root.forget(id, player.getUUID(), operator,
-                EndgameService::pinned));
+                root::pinned));
         service.auditEvictions(source.getServer().overworld().getGameTime(), change.evicted());
         return reply(context, "endpoint_forget", change.code(), id, change.evicted().isEmpty() ? ""
                 : "evicted=" + change.evicted().size());
@@ -312,7 +312,7 @@ public final class EndgameCommands {
         if (service.root().isEmpty()) {
             return reply(context, "tombstone_evict", EndgameCode.ROOT_UNAVAILABLE, null, "");
         }
-        List<UUID> evicted = service.barrier(root -> root.evictOwner(owner, EndgameService::pinned));
+        List<UUID> evicted = service.barrier(root -> root.evictOwner(owner, root::pinned));
         long now = context.getSource().getServer().overworld().getGameTime();
         service.auditEvictions(now, evicted);
         return reply(context, "tombstone_evict", EndgameCode.OK, null, "owner=" + owner + " evicted=" + evicted.size());
@@ -320,7 +320,7 @@ public final class EndgameCommands {
 
     private int settle(CommandContext<CommandSourceStack> context) {
         UUID id = UuidArgument.getUuid(context, "id");
-        return changeWithEvictions(context, "tombstone_settle", id, root -> root.settle(id, EndgameService::pinned));
+        return changeWithEvictions(context, "tombstone_settle", id, root -> root.settle(id, root::pinned));
     }
 
     private static UUID single(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

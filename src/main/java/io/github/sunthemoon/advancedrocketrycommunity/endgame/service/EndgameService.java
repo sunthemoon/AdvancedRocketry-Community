@@ -413,7 +413,7 @@ public final class EndgameService {
                 audit.line(now, "endgame", "endpoint_missing", EndgameCode.ENDPOINT_RETIRED.name(), id,
                         record.get().owner(), null, "kind=" + record.get().kind());
             } else if (root.tombstone(id).orElse(null) instanceof Tombstone.Young young) {
-                EndgameRoot.Change change = coalesced(r -> r.settle(id, EndgameService::pinned));
+                EndgameRoot.Change change = coalesced(r -> r.settle(id, r::pinned));
                 audit.line(now, "endgame", "tombstone_settled", change.code().name(), id, young.owner(), null, "");
                 auditEvictions(now, change.evicted());
             }
@@ -430,7 +430,7 @@ public final class EndgameService {
             return;
         }
         List<UUID> evicted = coalesced(r -> r.housekeep(id -> readBackAt.containsKey(id)
-                && now - readBackAt.get(id) >= EndgameLimits.TOMBSTONE_HOUSEKEEPING_AGE_TICKS, EndgameService::pinned));
+                && now - readBackAt.get(id) >= EndgameLimits.TOMBSTONE_HOUSEKEEPING_AGE_TICKS, r::pinned));
         evicted.forEach(readBackAt::remove);
         auditEvictions(now, evicted);
     }
@@ -440,11 +440,6 @@ public final class EndgameService {
             readBackAt.remove(id);
             audit.line(now, "endgame", "tombstone_evicted", "TOMBSTONE_EVICTED", id, null, null, "");
         }
-    }
-
-    /** Tombstones that a transit record or an elevator pair names are pinned; neither exists before C12. */
-    public static boolean pinned(UUID id) {
-        return false;
     }
 
     private static Optional<Long> position(EndgameRoot root, UUID id) {
