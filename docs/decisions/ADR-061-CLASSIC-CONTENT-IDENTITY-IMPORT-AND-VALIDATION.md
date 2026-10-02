@@ -281,6 +281,18 @@ must handle:
    an unmerged pull request or another project (for example the plate
    press textures added from issue #1527, whose author describes them as a
    filtered vanilla piston) puts the file under `REVIEW`.
+   **The AR 16x texture set.** Pull requests #1809, #1811 and #1889 (2020)
+   and the follow-up #1976 (2021) were merged by the contributor whose
+   LibVulpes commit `984d6747`, two days before #1809, took its 16x textures
+   "from the unmerged Cl1ff PR"; the pull requests credit no author, and no Cl1ff contribution can be found in
+   either repository. The rule above therefore applies to every asset whose
+   history includes one of them: each is `REVIEW` until an authorship finding
+   is recorded (for example that the textures are the merger's own work, or
+   that Cl1ff contributed them under the repository's licence). The three
+   v0.1.0 imports last changed by #1811 (`machinevent.png`,
+   `machinewarning.png`, `datastorageunit.png`) share the question; their
+   v0.1.0 records stay as they are, and the finding, when recorded, covers
+   them too. Until then each batch draws `NEW` replacements for the set.
 
 ### 5. Content validation and the recipe graph
 
