@@ -44,17 +44,28 @@ public final class ElevatorTerminalBlockEntity extends ElevatorEndpointBlockEnti
 
     @Override
     protected boolean placementReady(ServerLevel level, BlockState state, UUID id, EndgameDevices devices, long now) {
-        // C13: the station lookup runs every 20 ticks; every action re-derives what it needs at use.
+        // C13: the tick looks the station up every 20 ticks; bind and launch look it up again at use (C13R-F9).
         if (now < nextPlacementCheck) {
             return true;
         }
         nextPlacementCheck = now + PLACEMENT_CHECK_TICKS;
+        derivePlacement(level);
+        return true;
+    }
+
+    @Override
+    public void refreshPlacement() {
+        if (level instanceof ServerLevel server) {
+            derivePlacement(server);
+        }
+    }
+
+    private void derivePlacement(ServerLevel level) {
         Optional<StationState> found = EndgameStations.at(level, worldPosition).station();
         station = found.map(StationState::stationId);
         placement = found.isEmpty() ? EndgameCode.TERMINAL_UNAVAILABLE
                 : ElevatorTerminalBlockEntity.onPad(found.get(), worldPosition) ? EndgameCode.TERMINAL_ON_PAD
                 : EndgameCode.OK;
-        return true;
     }
 
     /** Within 2 blocks horizontally of the station's landing-pad column. */
@@ -68,7 +79,7 @@ public final class ElevatorTerminalBlockEntity extends ElevatorEndpointBlockEnti
         return placement;
     }
 
-    /** The committed station whose region holds the terminal, as the last tick found it. */
+    /** The committed station whose region holds the terminal, as the last lookup found it. */
     public Optional<UUID> station() {
         return station;
     }

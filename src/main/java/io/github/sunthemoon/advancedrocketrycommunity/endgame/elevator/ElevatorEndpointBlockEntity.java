@@ -53,6 +53,10 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
     /** The endpoint's own placement state ({@code OK}, or why it cannot be used: structure, region, landing pad). */
     public abstract EndgameCode placement();
 
+    /** Re-derives a placement that the tick caches, for an action about to use it (review C13-F9). */
+    public void refreshPlacement() {
+    }
+
     /** Updates the placement each tick; false while it is not known yet. */
     protected abstract boolean placementReady(ServerLevel level, BlockState state, UUID id, EndgameDevices devices,
                                               long now);

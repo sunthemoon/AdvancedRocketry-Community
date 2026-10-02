@@ -69,6 +69,7 @@ public final class ElevatorGameTests {
     private static final String SPACING = "endgame_elevator_spacing";
     private static final String AUTOMATION = "endgame_elevator_automation";
     private static final String REDIRECT = "endgame_elevator_redirect";
+    private static final String PLACEMENT = "endgame_elevator_placement";
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
             Comparator.comparing(UUID::toString));
     private static final String ARRIVAL_TICKET = "advancedrocketrycommunity:elevator_arrival";
@@ -505,6 +506,29 @@ public final class ElevatorGameTests {
                     fixture.anchor().storage().input().setStackInSlot(0, ItemStack.EMPTY);
                     fixture.close();
                 })
+                .thenSucceed();
+    }
+
+    /**
+     * Review C13-F9: the terminal's tick looks its station up every 20 ticks, but a bind looks it up again, so a bind
+     * in the tick the station is deleted is refused as {@code TERMINAL_UNAVAILABLE} instead of judged on the cached
+     * station.
+     */
+    @GameTest(template = "empty", batch = PLACEMENT, timeoutTicks = 1200)
+    public static void aBindLooksTheTerminalsStationUpAgain(GameTestHelper helper) {
+        Fixture fixture = new Fixture(helper);
+        helper.startSequence()
+                .thenWaitUntil(() -> fixture.registered(helper))
+                .thenExecute(() -> {
+                    fixture.stations.delete(fixture.stationId);
+                    helper.assertTrue(fixture.terminal().station().isPresent(),
+                            "The terminal's tick already saw the deletion; the test proves nothing");
+                    EndgameCode code = rebind(fixture);
+                    helper.assertTrue(code == EndgameCode.TERMINAL_UNAVAILABLE
+                                    && root().pairs().forStation(fixture.stationId).isEmpty(),
+                            "A bind after the station's deletion was judged on the cached station: " + code);
+                })
+                .thenExecute(fixture::close)
                 .thenSucceed();
     }
 

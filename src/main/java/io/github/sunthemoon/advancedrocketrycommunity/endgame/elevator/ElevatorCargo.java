@@ -45,6 +45,7 @@ final class ElevatorCargo {
         if (!devices.settings().enabled(EndgameSystem.SPACE_ELEVATOR)) {
             return ElevatorRules.Check.of(EndgameCode.SYSTEM_DISABLED);
         }
+        endpoint.refreshPlacement();
         EndgameCode own = ownState(endpoint);
         if (own != EndgameCode.OK) {
             return ElevatorRules.Check.of(own);

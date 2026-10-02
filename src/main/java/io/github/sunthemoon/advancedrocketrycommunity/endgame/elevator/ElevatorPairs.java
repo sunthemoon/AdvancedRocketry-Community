@@ -107,6 +107,7 @@ public final class ElevatorPairs {
             return ElevatorRules.Check.of(EndgameCode.ROOT_UNAVAILABLE);
         }
         EndgameRoot root = view.get();
+        terminal.refreshPlacement();
         Optional<UUID> stationId = terminal.station();
         Optional<EndpointRecord> anchor = root.endpoint(anchorId)
                 .filter(record -> record.kind().equals(ElevatorAnchorBlockEntity.KIND));
