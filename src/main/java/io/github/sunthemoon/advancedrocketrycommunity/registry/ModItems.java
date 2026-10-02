@@ -178,6 +178,9 @@ public final class ModItems {
     public static final RegistryObject<Item> BLACK_HOLE_GENERATOR = blockItem("black_hole_generator",
             ModBlocks.BLACK_HOLE_GENERATOR);
     public static final RegistryObject<Item> RAILGUN = blockItem("railgun", ModBlocks.RAILGUN);
+    public static final RegistryObject<Item> ELEVATOR_ANCHOR = blockItem("elevator_anchor", ModBlocks.ELEVATOR_ANCHOR);
+    public static final RegistryObject<Item> ELEVATOR_TERMINAL = blockItem("elevator_terminal",
+            ModBlocks.ELEVATOR_TERMINAL);
 
     private ModItems() {
     }

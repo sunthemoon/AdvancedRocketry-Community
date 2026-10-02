@@ -65,6 +65,14 @@ public final class V170EndgameProviders {
                     modLoc("block/machine_casing_front"), mcLoc("block/iron_block"));
             horizontalBlock(ModBlocks.RAILGUN.get(), railgun);
             simpleBlockItem(ModBlocks.RAILGUN.get(), railgun);
+            ModelFile anchor = models().cubeBottomTop("elevator_anchor", modLoc("block/machine_casing_side"),
+                    mcLoc("block/iron_block"), modLoc("block/machine_casing_top"));
+            simpleBlock(ModBlocks.ELEVATOR_ANCHOR.get(), anchor);
+            simpleBlockItem(ModBlocks.ELEVATOR_ANCHOR.get(), anchor);
+            ModelFile terminal = models().cubeBottomTop("elevator_terminal", modLoc("block/machine_casing_front"),
+                    modLoc("block/machine_casing_top"), mcLoc("block/iron_block"));
+            simpleBlock(ModBlocks.ELEVATOR_TERMINAL.get(), terminal);
+            simpleBlockItem(ModBlocks.ELEVATOR_TERMINAL.get(), terminal);
             itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
         }
     }
@@ -87,13 +95,16 @@ public final class V170EndgameProviders {
             dropSelf(ModBlocks.GRAVITY_FIELD_CONTROLLER.get());
             dropSelf(ModBlocks.BLACK_HOLE_GENERATOR.get());
             dropSelf(ModBlocks.RAILGUN.get());
+            dropSelf(ModBlocks.ELEVATOR_ANCHOR.get());
+            dropSelf(ModBlocks.ELEVATOR_TERMINAL.get());
         }
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
             return List.of(ModBlocks.ENDGAME_CASING.get(), ModBlocks.ORBITAL_LASER_DRILL.get(),
                     ModBlocks.LASER_TARGET.get(), ModBlocks.GRAVITY_FIELD_CONTROLLER.get(),
-                    ModBlocks.BLACK_HOLE_GENERATOR.get(), ModBlocks.RAILGUN.get());
+                    ModBlocks.BLACK_HOLE_GENERATOR.get(), ModBlocks.RAILGUN.get(), ModBlocks.ELEVATOR_ANCHOR.get(),
+                    ModBlocks.ELEVATOR_TERMINAL.get());
         }
     }
 
@@ -158,6 +169,20 @@ public final class V170EndgameProviders {
                     .define('X', ModItems.ENDGAME_CASING.get())
                     .unlockedBy("has_endgame_casing", has(ModItems.ENDGAME_CASING.get()))
                     .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ELEVATOR_ANCHOR.get())
+                    .pattern("ICI").pattern("IXI").pattern("ICI")
+                    .define('I', Tags.Items.STORAGE_BLOCKS_IRON)
+                    .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('X', ModItems.ENDGAME_CASING.get())
+                    .unlockedBy("has_endgame_casing", has(ModItems.ENDGAME_CASING.get()))
+                    .save(output);
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ELEVATOR_TERMINAL.get())
+                    .pattern(" E ").pattern("CMC").pattern(" E ")
+                    .define('E', Tags.Items.ENDER_PEARLS)
+                    .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                    .define('M', ModItems.MACHINE_CASING.get())
+                    .unlockedBy("has_advanced_circuit", has(ModItems.ADVANCED_CIRCUIT.get()))
+                    .save(output);
         }
     }
 
@@ -190,13 +215,16 @@ public final class V170EndgameProviders {
                     ModBlocks.LASER_TARGET.get(),
                     ModBlocks.GRAVITY_FIELD_CONTROLLER.get(),
                     ModBlocks.BLACK_HOLE_GENERATOR.get(),
-                    ModBlocks.RAILGUN.get()
+                    ModBlocks.RAILGUN.get(),
+                    ModBlocks.ELEVATOR_ANCHOR.get(),
+                    ModBlocks.ELEVATOR_TERMINAL.get()
             };
             tag(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE).add(blocks);
             tag(net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL).add(blocks);
             // ADR-054 section 9.1: endpoints resist withers and the dragon and opt out of common block movers
             // (shipped with replace false, harmless without those mods).
-            Block[] endpoints = {ModBlocks.LASER_TARGET.get(), ModBlocks.RAILGUN.get()};
+            Block[] endpoints = {ModBlocks.LASER_TARGET.get(), ModBlocks.RAILGUN.get(), ModBlocks.ELEVATOR_ANCHOR.get(),
+                    ModBlocks.ELEVATOR_TERMINAL.get()};
             tag(net.minecraft.tags.BlockTags.WITHER_IMMUNE).add(endpoints);
             tag(net.minecraft.tags.BlockTags.DRAGON_IMMUNE).add(endpoints);
             tag(foreign("create", "non_movable")).add(endpoints);

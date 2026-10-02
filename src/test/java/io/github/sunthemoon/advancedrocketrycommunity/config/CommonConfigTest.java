@@ -38,7 +38,7 @@ class CommonConfigTest {
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values.
-        assertEquals(52, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(54, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
@@ -85,6 +85,15 @@ class CommonConfigTest {
         assertRange("endgame.blackHoleGenerator.activeGlobal", CommonConfig.BLACK_HOLE_ACTIVE_GLOBAL, 1, 64);
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleSettings.DEFAULTS,
                 CommonConfig.blackHoleSettings(), "the defaults apply until the config loads");
+    }
+
+    @Test
+    void elevatorValuesHaveTheirContractRanges() {
+        assertRangeAndDefault("endgame.spaceElevator.energyPercent", CommonConfig.ELEVATOR_ENERGY_PERCENT, 10, 1000,
+                100);
+        assertRange("endgame.spaceElevator.launchesPerTick", CommonConfig.ELEVATOR_LAUNCHES_PER_TICK, 1, 4);
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorSettings.DEFAULTS,
+                CommonConfig.elevatorSettings(), "the defaults apply until the config loads");
     }
 
     @Test

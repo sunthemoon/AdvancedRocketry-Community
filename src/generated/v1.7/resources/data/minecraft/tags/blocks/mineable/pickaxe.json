@@ -19,6 +19,8 @@
     "advancedrocketrycommunity:laser_target",
     "advancedrocketrycommunity:gravity_field_controller",
     "advancedrocketrycommunity:black_hole_generator",
-    "advancedrocketrycommunity:railgun"
+    "advancedrocketrycommunity:railgun",
+    "advancedrocketrycommunity:elevator_anchor",
+    "advancedrocketrycommunity:elevator_terminal"
   ]
 }

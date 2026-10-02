@@ -123,6 +123,11 @@ public final class StationWarpService {
         return countdowns.get(stationId);
     }
 
+    /** A warp confirmation or countdown is pending for the station: an elevator bind waits (ADR-059 section 3). */
+    public boolean warpPending(MinecraftServer server, UUID stationId) {
+        return countdowns.get(stationId).isPresent() || confirmations.pending(stationId, server.getTickCount());
+    }
+
     public WarpSettings settings() {
         return settings.get();
     }

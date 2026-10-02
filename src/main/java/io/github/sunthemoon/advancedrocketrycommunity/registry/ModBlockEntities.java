@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorAnchorBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorTerminalBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlockEntity;
@@ -182,6 +184,24 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             RailgunBlockEntity::new,
                             ModBlocks.RAILGUN.get()
+                    ).build(null)
+            );
+
+    /** ADR-059: the elevator anchor and terminal. */
+    public static final RegistryObject<BlockEntityType<ElevatorAnchorBlockEntity>> ELEVATOR_ANCHOR =
+            BLOCK_ENTITIES.register(
+                    "elevator_anchor",
+                    () -> BlockEntityType.Builder.of(
+                            ElevatorAnchorBlockEntity::new,
+                            ModBlocks.ELEVATOR_ANCHOR.get()
+                    ).build(null)
+            );
+    public static final RegistryObject<BlockEntityType<ElevatorTerminalBlockEntity>> ELEVATOR_TERMINAL =
+            BLOCK_ENTITIES.register(
+                    "elevator_terminal",
+                    () -> BlockEntityType.Builder.of(
+                            ElevatorTerminalBlockEntity::new,
+                            ModBlocks.ELEVATOR_TERMINAL.get()
                     ).build(null)
             );
 

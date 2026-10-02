@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillMenu;
@@ -80,6 +81,11 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<RailgunMenu>> RAILGUN = MENUS.register(
             "railgun",
             () -> IForgeMenuType.create(RailgunMenu::new)
+    );
+
+    public static final RegistryObject<MenuType<ElevatorMenu>> ELEVATOR = MENUS.register(
+            "elevator",
+            () -> IForgeMenuType.create(ElevatorMenu::new)
     );
 
     private ModMenuTypes() {

@@ -45,6 +45,17 @@ public final class StationWarpConfirmations {
         return new Outcome(Status.READY, pending.quote());
     }
 
+    /** Whether a live confirmation is pending for this station (ADR-059 section 3 step 5). */
+    public boolean pending(UUID stationId, long nowTick) {
+        Objects.requireNonNull(stationId, "stationId");
+        for (Pending pending : byActor.values()) {
+            if (!expired(pending, nowTick) && pending.quote().stationId().equals(stationId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void clear(UUID actorId) {
         byActor.remove(Objects.requireNonNull(actorId, "actorId"));
     }

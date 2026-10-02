@@ -3,10 +3,12 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ElevatorCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.EndgameCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.TransitCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorGuard;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRedirectRule;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillTableReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
@@ -19,6 +21,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import java.util.Set;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 
 /** Wires the v1.7 endgame framework (ADR-054) into the server lifecycle; the mod constructor calls it once. */
 public final class EndgameModule {
@@ -34,7 +38,9 @@ public final class EndgameModule {
         EndgameRuntime.install(service);
         EndgameDevices devices = new EndgameDevices(CommonConfig::endgameSettings, CommonConfig::laserDrillSettings,
                 CommonConfig::gravityFieldLimits, CommonConfig::blackHoleSettings, CommonConfig::railgunSettings,
-                patterns, celestial, laserTables, blackHoleData);
+                CommonConfig::elevatorSettings, patterns, celestial, laserTables, blackHoleData);
+        service.transitOperations().route(EndgameSystem.SPACE_ELEVATOR, new ElevatorRedirectRule(service,
+                EndgameRuntime::devices));
         service.transitOperations().route(EndgameSystem.RAILGUN, new RailgunRedirectRule(service,
                 EndgameRuntime::devices));
         // ADR-059 section 5: the station module reaches the pair set only through this port.
@@ -56,11 +62,21 @@ public final class EndgameModule {
         MinecraftForge.EVENT_BUS.addListener(new GravityFieldCommands()::register);
         MinecraftForge.EVENT_BUS.addListener(new EndgameCommands(service, devices)::register);
         MinecraftForge.EVENT_BUS.addListener(new TransitCommands(service)::register);
+        MinecraftForge.EVENT_BUS.addListener(new ElevatorCommands(service, devices)::register);
+        // ADR-059 section 8: rides tick after the ledger's END pass; their tickets go at server stop.
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
+            if (event.phase == TickEvent.Phase.END && service.operational()) {
+                devices.elevatorRides().tick(event.getServer(), service, devices);
+            }
+        });
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent event) ->
+                devices.elevatorRides().clear(event.getServer()));
         return service;
     }
 
     /** The block entity type IDs of endgame endpoints, whose presence the chunk observations read. */
     static Set<String> endgameBlockEntityIds() {
-        return Set.of(ModBlockEntities.LASER_TARGET.getId().toString(), ModBlockEntities.RAILGUN.getId().toString());
+        return Set.of(ModBlockEntities.LASER_TARGET.getId().toString(), ModBlockEntities.RAILGUN.getId().toString(),
+                ModBlockEntities.ELEVATOR_ANCHOR.getId().toString(), ModBlockEntities.ELEVATOR_TERMINAL.getId().toString());
     }
 }

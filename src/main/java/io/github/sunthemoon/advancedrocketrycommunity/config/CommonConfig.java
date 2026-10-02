@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleSettings;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRules;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserDrillSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimits;
@@ -236,6 +238,15 @@ public final class CommonConfig {
             "endgame.railgun.launchesPerTick", "Railgun launches the server starts in one tick (ADR-056).",
             RailgunSettings.MAX_LAUNCHES_PER_TICK);
 
+    // ADR-059 sections 6 and 8: elevator cargo and ride costs, and the cargo launches per tick.
+    public static final ForgeConfigSpec.IntValue ELEVATOR_ENERGY_PERCENT = BUILDER
+            .comment("Space elevator cargo (20,000 FE) and ride (50,000 FE) costs in percent (ADR-059; 10..1000).")
+            .defineInRange("endgame.spaceElevator.energyPercent", 100, ElevatorRules.MIN_PERCENT,
+                    ElevatorRules.MAX_PERCENT);
+    public static final ForgeConfigSpec.IntValue ELEVATOR_LAUNCHES_PER_TICK = limit(
+            "endgame.spaceElevator.launchesPerTick", "Elevator cargo launches the server starts in one tick (ADR-059).",
+            ElevatorSettings.MAX_LAUNCHES_PER_TICK);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -272,6 +283,14 @@ public final class CommonConfig {
             return RailgunSettings.DEFAULTS;
         }
         return new RailgunSettings(RAILGUN_ENERGY_PERCENT.get(), RAILGUN_LAUNCHES_PER_TICK.get());
+    }
+
+    /** ADR-059 elevator settings; the defaults until the COMMON config is loaded. */
+    public static ElevatorSettings elevatorSettings() {
+        if (!SPEC.isLoaded()) {
+            return ElevatorSettings.DEFAULTS;
+        }
+        return new ElevatorSettings(ELEVATOR_ENERGY_PERCENT.get(), ELEVATOR_LAUNCHES_PER_TICK.get());
     }
 
     /** ADR-058 section 4 gravity field caps; the defaults until the COMMON config is loaded. */

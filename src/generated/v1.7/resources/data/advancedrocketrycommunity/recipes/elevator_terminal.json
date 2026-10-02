@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "E": {
+      "tag": "forge:ender_pearls"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    }
+  },
+  "pattern": [
+    " E ",
+    "CMC",
+    " E "
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:elevator_terminal"
+  },
+  "show_notification": true
+}

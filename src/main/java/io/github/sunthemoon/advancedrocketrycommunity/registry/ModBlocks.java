@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorEndpointBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.OrbitalLaserDrillBlock;
@@ -220,6 +221,26 @@ public final class ModBlocks {
                     .strength(5.0F, 1200.0F)
                     .pushReaction(PushReaction.BLOCK)
                     .sound(SoundType.METAL))
+    );
+
+    /** ADR-059: the elevator anchor controller and the terminal, ledger endpoints. */
+    public static final RegistryObject<Block> ELEVATOR_ANCHOR = BLOCKS.register(
+            "elevator_anchor",
+            () -> new ElevatorEndpointBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 1200.0F)
+                    .pushReaction(PushReaction.BLOCK)
+                    .sound(SoundType.METAL), true)
+    );
+    public static final RegistryObject<Block> ELEVATOR_TERMINAL = BLOCKS.register(
+            "elevator_terminal",
+            () -> new ElevatorEndpointBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .requiresCorrectToolForDrops()
+                    .strength(5.0F, 1200.0F)
+                    .pushReaction(PushReaction.BLOCK)
+                    .sound(SoundType.METAL), false)
     );
 
     private static BlockBehaviour.Properties metalProperties() {

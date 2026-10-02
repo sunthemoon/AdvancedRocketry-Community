@@ -5,6 +5,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleData;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleDataReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleSettings;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRides;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldIndex;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityTrust;
@@ -46,6 +48,7 @@ public final class EndgameDevices {
     private final Supplier<GravityFieldLimits> gravityLimits;
     private final Supplier<BlackHoleSettings> blackHoleSettings;
     private final Supplier<RailgunSettings> railgunSettings;
+    private final Supplier<ElevatorSettings> elevatorSettings;
     private final BlackHoleDataReloadListener.Manager blackHoleData;
     private final GravityFieldIndex fields = new GravityFieldIndex();
     private final GravityTrust trust = new GravityTrust();
@@ -57,6 +60,8 @@ public final class EndgameDevices {
     private final RoundRobinBudget laserLayers = new RoundRobinBudget();
     private final RoundRobinBudget structureBudget = new RoundRobinBudget();
     private final RoundRobinBudget railgunLaunches = new RoundRobinBudget();
+    private final RoundRobinBudget elevatorLaunches = new RoundRobinBudget();
+    private final ElevatorRides elevatorRides = new ElevatorRides();
     private final EndgameStructureTracker structures = new EndgameStructureTracker();
     private final EndgameRateLimiter rates = new EndgameRateLimiter();
     private int laserOperationsLastTick;
@@ -65,7 +70,8 @@ public final class EndgameDevices {
 
     public EndgameDevices(Supplier<EndgameSettings> settings, Supplier<LaserDrillSettings> laserSettings,
                           Supplier<GravityFieldLimits> gravityLimits, Supplier<BlackHoleSettings> blackHoleSettings,
-                          Supplier<RailgunSettings> railgunSettings, MultiblockPatternCatalogManager patterns,
+                          Supplier<RailgunSettings> railgunSettings, Supplier<ElevatorSettings> elevatorSettings,
+                          MultiblockPatternCatalogManager patterns,
                           CelestialCatalogManager celestial,
                           LaserDrillTableReloadListener.Manager laserTables,
                           BlackHoleDataReloadListener.Manager blackHoleData) {
@@ -74,6 +80,7 @@ public final class EndgameDevices {
         this.gravityLimits = Objects.requireNonNull(gravityLimits, "gravityLimits");
         this.blackHoleSettings = Objects.requireNonNull(blackHoleSettings, "blackHoleSettings");
         this.railgunSettings = Objects.requireNonNull(railgunSettings, "railgunSettings");
+        this.elevatorSettings = Objects.requireNonNull(elevatorSettings, "elevatorSettings");
         this.blackHoleData = Objects.requireNonNull(blackHoleData, "blackHoleData");
         this.patterns = Objects.requireNonNull(patterns, "patterns");
         this.celestial = Objects.requireNonNull(celestial, "celestial");
@@ -99,6 +106,20 @@ public final class EndgameDevices {
     /** ADR-056 section 4: launches per server tick (at most 4), granted in railgun ID order, round-robin. */
     public RoundRobinBudget railgunLaunches() {
         return railgunLaunches;
+    }
+
+    public ElevatorSettings elevatorSettings() {
+        return elevatorSettings.get();
+    }
+
+    /** ADR-059 section 6: elevator cargo launches per server tick (at most 4), round-robin in endpoint ID order. */
+    public RoundRobinBudget elevatorLaunches() {
+        return elevatorLaunches;
+    }
+
+    /** ADR-059 section 8: pending passenger rides, runtime only. */
+    public ElevatorRides elevatorRides() {
+        return elevatorRides;
     }
 
     /** ADR-054 section 9: a position's live body and star system over the current catalog. */
@@ -184,6 +205,7 @@ public final class EndgameDevices {
         laserOperations.resetCounters();
         laserLayers.resetCounters();
         railgunLaunches.resetCounters();
+        elevatorLaunches.resetCounters();
         structureBudget.resetCounters();
         laserOperations.endTick(laserSettings.get().logicalOperationsPerTick());
         if (!settings.get().enabled(EndgameSystem.GRAVITY_FIELD)) {
@@ -193,6 +215,7 @@ public final class EndgameDevices {
         laserLayers.endTick(laserSettings.get().layersPerTick());
         structureBudget.endTick(EndgameLimits.STRUCTURE_VALIDATIONS_PER_TICK);
         railgunLaunches.endTick(railgunSettings.get().launchesPerTick());
+        elevatorLaunches.endTick(elevatorSettings.get().launchesPerTick());
     }
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
@@ -242,7 +265,8 @@ public final class EndgameDevices {
                 + structures.tracked() + " validations_waiting=" + structureBudget.waitingLastTick()
                 + "; gravity_fields active=" + fields.size() + "; black_hole_generators active="
                 + active.count(EndgameSystem.BLACK_HOLE_GENERATOR) + "; railgun launches_last_tick="
-                + railgunLaunchesLastTick + " waiting=" + railgunLaunches.waitingLastTick() + "; intent_players="
+                + railgunLaunchesLastTick + " waiting=" + railgunLaunches.waitingLastTick() + "; elevator rides="
+                + elevatorRides.size() + " launches_waiting=" + elevatorLaunches.waitingLastTick() + "; intent_players="
                 + rates.size();
     }
 
@@ -252,6 +276,7 @@ public final class EndgameDevices {
         laserLayers.clear();
         structureBudget.clear();
         railgunLaunches.clear();
+        elevatorLaunches.clear();
         structures.clear();
         rates.clear();
         fields.clear();

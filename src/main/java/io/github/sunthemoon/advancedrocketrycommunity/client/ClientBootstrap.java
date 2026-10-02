@@ -79,6 +79,10 @@ public final class ClientBootstrap {
                 ModMenuTypes.RAILGUN.get(),
                 RailgunScreen::new
         ));
+        event.enqueueWork(() -> MenuScreens.register(
+                ModMenuTypes.ELEVATOR.get(),
+                ElevatorScreen::new
+        ));
         AdvancedRocketryCommunity.LOGGER.debug("Client bootstrap initialized");
     }
 
@@ -109,6 +113,8 @@ public final class ClientBootstrap {
         event.registerBlockEntityRenderer(ModBlockEntities.LASER_TARGET.get(), LaserBeamRenderer::forTarget);
         event.registerBlockEntityRenderer(ModBlockEntities.ORBITAL_LASER_DRILL.get(), LaserBeamRenderer::forDrill);
         event.registerBlockEntityRenderer(ModBlockEntities.BLACK_HOLE_GENERATOR.get(), AccretionDiscRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ELEVATOR_ANCHOR.get(), TetherRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ELEVATOR_TERMINAL.get(), TetherRenderer::new);
     }
 
     @SubscribeEvent
