@@ -143,6 +143,7 @@ A deferred item can return only through a new ADR in a later version.
 | ADR-058 | legacy gravity API | rejected (§4) |
 | ADR-059 | capsule entity and animation | planned in C18d as a client effect; rides stay server-side |
 | v1.7 audit §8 | force field projector | planned in C17b through the protection chain |
+| ADR-046 UI-02 (also the v1.5 known issues) | station and warp messages are literal English; notices do not name the station, visitors are not notified, offline members get no notice at login; the waiver expires no later than v1.8.0 | fixed in C17b with the station screens: translatable keys in the `advancedrocketrycommunity_v150` namespace, GameTests that assert `StationManagementCode` tokens instead of prose, and the three notice gaps closed |
 
 ### 6. Batches
 
@@ -161,7 +162,7 @@ them.
 | C16c | Crystallizer, chemical reactor, precision laser etcher, centrifuge and their parts | C16a |
 | C16d | Components (circuit plates and boards, user interface, carbon brick) and the recipe graph tool; progression rebalance of existing recipes | C16b, C16c |
 | C17a | Propulsion tiers (bipropellant, advanced, nuclear), oxidizer and fuel tables, fluid fueling, rocket item and fluid loaders, monitoring station | C16b (titanium aluminide and titanium iridium for the advanced and nuclear engines), C16c (dilithium crystals), C16d (tracking circuits) |
-| C17b | Station controls (warp controller screen, gravity, altitude and orientation blocks), landing pads, station light, force field projector | C16d (circuits and the user interface of the warp controller); the ADR-046 revision in the batch ADR |
+| C17b | Station controls (warp controller screen, gravity, altitude and orientation blocks), landing pads, station light, force field projector; the ADR-046 UI-02 language and notice gaps | C16d (circuits and the user interface of the warp controller); the ADR-046 revision in the batch ADR |
 | C17c | Beacon and beacon finder, rocket satellite bay, solar generator and solar array | C17a, C16d (beacon circuits) |
 | C18a | Life support and environment rules: CO2 scrubber and cartridge, gas charge pad, atmosphere detector, airlock door, pipe seal, torch and fire rules, thermite, seal detector, atmosphere analyzer, respawn and sleeping rules, atmosphere effects and spawning for non-player entities, planet gravity on living entities, gravity-scaled fall damage, suit underwater breathing, the space Level safety return | C15a (steel fan), C16d (user interface, carbon brick) |
 | C18b | Equipment: suit workstation, pressure tanks, jetpack, upgrades, jackhammer, basic laser gun, space breathing enchantment | C18a, C16c (the chemical reactor applies the space breathing enchantment) |
