@@ -166,8 +166,8 @@ them.
 | Slice | Scope | Depends on |
 |---|---|---|
 | C15a | Materials and ores: titanium, aluminum, steel, tin, silicon, iridium, dilithium, titanium aluminide, titanium iridium, copper, iron and gold products (including the steel fan used by ten legacy recipes); ores and Overworld placement; smelting; common tags; the small plate press | ADR-061 |
-| C15b | Moon, Mars and Venus surfaces: moon turf, ferric sand, crystals, geodes, charcoal logs; their biomes; craters, volcanoes, geodes and crystal features; Moon ore placement. It changes Levels that existing worlds use, so its batch ADR discloses the seams (ADR-061 §6) | C15a |
-| C15c | Classic exoplanet worlds for the alien forest, stormland, crystal chasms, deep swamp, marsh and ocean spires biomes; lightwood and electric mushrooms | C15b |
+| C15b | Moon, Mars and Venus surfaces: moon turf, ferric sand, geodes, charcoal logs; their biomes; craters, volcanoes and geodes; Moon ore placement. It changes Levels that existing worlds use, so its batch ADR discloses the seams (ADR-061 §6) | C15a |
+| C15c | Classic exoplanet worlds for the alien forest, stormland, crystal chasms, deep swamp, marsh and ocean spires biomes; lightwood, electric mushrooms, crystal blocks and crystal clusters | C15b |
 | C16a | Classic machine family on the v1.2 kernel; a combustion generator as the first Forge Energy source (a legacy install had the LibVulpes coal generator; without it the C16 machines would need another mod's power); motor tiers and the advanced casing; oxygen, hydrogen, nitrogen, rocket fuel and enriched lava fluids; pressurized tank; pump | C15a |
 | C16b | Electric arc furnace, lathe, cutting machine (with sawmill recipes) and their structure parts | C16a |
 | C16c | Crystallizer, chemical reactor, precision laser etcher, centrifuge and their parts | C16a |

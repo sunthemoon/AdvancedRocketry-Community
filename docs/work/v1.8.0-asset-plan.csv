@@ -118,7 +118,7 @@ order,pattern,handling,plan,units,reason
 117,textures/planets/atmosphereleo.png,REVIEW,C18d,-,added and downsized with the low-orbit set; origin review
 118,textures/blocks/fluid/oxygen_*,IMPORT,C16a,fluid:oxygen,fluid textures
 119,textures/blocks/geode*.png,IMPORT,C15b,block:geode,geodes
-120,textures/blocks/crystal.png,IMPORT,C15b,block:crystal,crystal blocks
+120,textures/blocks/crystal.png,IMPORT,C15c,block:crystal,crystal blocks
 121,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
 122,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
 123,textures/blocks/log_blue*.png,IMPORT,C15c,block:alienWood,lightwood
