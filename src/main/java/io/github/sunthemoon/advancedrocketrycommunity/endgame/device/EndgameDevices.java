@@ -18,12 +18,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimit
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunSettings;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -53,6 +57,9 @@ public final class EndgameDevices {
     private final GravityFieldIndex fields = new GravityFieldIndex();
     private final GravityTrust trust = new GravityTrust();
     private final MultiblockPatternCatalogManager patterns;
+    private final Map<String, Optional<MultiblockPatternDefinition>> patternCache = new HashMap<>();
+    @Nullable
+    private MultiblockPatternCatalog patternCatalog;
     private final CelestialCatalogManager celestial;
     private final LaserDrillTableReloadListener.Manager laserTables;
     private final EndgameActiveDevices active = new EndgameActiveDevices();
@@ -165,8 +172,20 @@ public final class EndgameDevices {
         }
     }
 
+    /**
+     * A pattern of the current catalog. Lookups are cached per catalog instance (C13: every structure controller asks
+     * every tick, and the catalog validates the ID string); a reload's new catalog starts a new cache.
+     */
     public Optional<MultiblockPatternDefinition> pattern(String id) {
-        return patterns.current().flatMap(catalog -> catalog.get(id));
+        Optional<MultiblockPatternCatalog> current = patterns.current();
+        if (current.isEmpty()) {
+            return Optional.empty();
+        }
+        if (current.get() != patternCatalog) {
+            patternCatalog = current.get();
+            patternCache.clear();
+        }
+        return patternCache.computeIfAbsent(id, key -> patternCatalog.get(key));
     }
 
     public Optional<CelestialCatalog> celestial() {
@@ -279,6 +298,8 @@ public final class EndgameDevices {
     }
 
     public void clear() {
+        patternCache.clear();
+        patternCatalog = null;
         active.clear();
         laserOperations.clear();
         laserLayers.clear();
