@@ -91,6 +91,14 @@ must handle:
 2. Recipes consume tags, not item IDs, wherever a material is meant. Other
    mods' titanium therefore works in our machines, and our products work in
    theirs. This replaces the legacy `makeMaterialsForOtherMods` switch.
+   Limit: a kernel machine recipe resolves each ingredient tag to at most 32
+   item variants (`ProcessInput.MAX_VARIANTS`, enforced by
+   `BoundedItemIngredientCodec` when the recipe is parsed). A recipe whose tag
+   resolves to more is rejected at load, logged by the vanilla recipe manager
+   like any invalid recipe, and leaves every other recipe working. A material
+   tag rarely holds more than a handful of items; a pack that pushes one past
+   32 loses that machine recipe and sees the error in the log. Vanilla
+   crafting, smelting and blasting recipes have no such limit.
 3. Vanilla materials stay vanilla: copper, iron and gold ingots and ores, basalt
    and concrete are not re-registered.
 4. Ores follow 1.18+ conventions: stone and deepslate variants where the ore
