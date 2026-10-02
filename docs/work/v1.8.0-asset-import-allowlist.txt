@@ -54,7 +54,7 @@ models/item/models/topTank.mtl	IMPORT
 models/item/models/topTank.obj	IMPORT
 models/jetpack.obj	IMPORT
 models/lathe.obj	IMPORT
-models/motor.obj	IMPORT
+models/motor.obj	REVIEW
 models/observatory.obj	IMPORT
 models/orbitallaserdrill.obj	IMPORT
 models/precisionassembler.obj	IMPORT
@@ -290,7 +290,6 @@ textures/models/crystalliser.png	IMPORT
 textures/models/cuttingmachine.png	IMPORT
 textures/models/cuttingmachine2.png	IMPORT
 textures/models/diamondmetal.png	IMPORT
-textures/models/drill.png	IMPORT
 textures/models/electrolyser.png	IMPORT
 textures/models/fan.png	IMPORT
 textures/models/girder.png	REVIEW
@@ -309,7 +308,6 @@ textures/models/solararray.png	IMPORT
 textures/models/spaceelevator.png	IMPORT
 textures/models/spaceelevatorcapsule.png	IMPORT
 textures/models/tank.png	IMPORT
-textures/models/tubes.png	IMPORT
 textures/models/warpcore.png	IMPORT
 textures/particle/donut.png	IMPORT
 textures/particle/hardsquare.png	REVIEW
