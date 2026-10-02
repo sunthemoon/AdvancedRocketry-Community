@@ -118,6 +118,20 @@ No candidate or release approval is assigned.
   a command, does nothing until an operator gives it an owner). Device data
   that does not load is kept unchanged and the device stays inert; only
   operators can break it.
+- Operator command `/arce endgame timing` reports each endgame system's work
+  per tick over the last minute. `/arce endgame status` also shows the root
+  writes exempt from player spacing (`exempt_barriers`) and the elevator ride
+  tickets held. The [endgame operator guide](docs/ENDGAME-OPERATOR-GUIDE.md)
+  covers switches, limits, commands, cargo in flight, backups and saves.
+- Elevator binds wait at least one second after the server's last player
+  bind, owner redirect, owner resolve or unbind, and five seconds after the
+  station's last bind; a bind too soon answers `ROOT_BUSY`. Operators are
+  exempt. Automatic elevator shipments never use their owner's operator
+  status.
+- An idle black-hole generator notices new fuel, and an elevator terminal its
+  station, within one second. Endgame devices cost less per tick when idle:
+  the C13 reference load measures 0.05 ms of endgame work per tick with all
+  systems loaded and idle on the development host.
 
 ## v1.6.0 — in development
 
