@@ -34,7 +34,7 @@ ASSET_PLAN = Path("docs/work/v1.8.0-asset-plan.csv")
 UPSTREAM_ASSET_ROOT = "src/main/resources/assets/advancedrocketry/"
 MOD_ID = "advancedrocketrycommunity"
 
-LEDGER_COLUMNS = ["unit_id", "disposition", "plan", "target", "decision", "notes"]
+LEDGER_COLUMNS = ["unit_id", "disposition", "plan", "target", "decision", "notes", "evidence"]
 ASSET_COLUMNS = ["order", "pattern", "handling", "plan", "reason"]
 DISPOSITIONS = ("IMPLEMENTED", "REDESIGNED", "PLANNED", "MERGED", "DEFERRED", "REJECTED")
 ASSET_HANDLINGS = ("IMPORTED", "IMPORT", "REVIEW", "REGENERATE", "EXCLUDE")
@@ -215,6 +215,8 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
                 errors.append(f"{where}: decision token {token!r} is neither an ADR nor a version document")
         if disposition in ("REDESIGNED", "DEFERRED", "REJECTED", "MERGED", "PLANNED") and not adrs:
             errors.append(f"{where}: {disposition} needs an ADR")
+        if row["evidence"] and not (disposition in ("IMPLEMENTED", "REDESIGNED") and plan == "v1.8.0"):
+            errors.append(f"{where}: evidence is recorded only for rows delivered in v1.8.0")
         if disposition == "PLANNED":
             if plan not in BATCHES:
                 errors.append(f"{where}: PLANNED plan {plan!r} is not a v1.8 batch")
@@ -222,6 +224,10 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
             version = _version(plan)
             if version is None or version > CURRENT:
                 errors.append(f"{where}: {disposition} plan {plan!r} must be a version up to v1.8.0")
+            elif version == CURRENT:
+                evidence = row["evidence"]
+                if not evidence.startswith("docs/work/v1.8.0-") or not (root / evidence).is_file():
+                    errors.append(f"{where}: {disposition} in v1.8.0 needs the delivering batch's evidence file")
         elif disposition == "DEFERRED":
             if plan != "post-2.0":
                 errors.append(f"{where}: DEFERRED plan must be post-2.0")

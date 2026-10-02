@@ -179,7 +179,10 @@ must handle:
    cycle. It is introduced in C16d and must pass from then on.
 4. The [content ledger](../work/v1.8.0-content-ledger.csv) moves rows from
    `PLANNED` to `IMPLEMENTED` (or to an ADR-backed disposition) in the batch
-   that delivers them, with the delivered modern IDs.
+   that delivers them, with the delivered modern IDs and the batch's evidence
+   file in the `evidence` column. A row cannot be `IMPLEMENTED` or
+   `REDESIGNED` with plan `v1.8.0` without that file; work v1.8 still has to
+   build stays `PLANNED`, including redesigns.
    `scripts/validate_v180_content_ledger.py` checks every row; C19 runs it with
    `--require-accepted` and requires zero `PLANNED` rows.
 

@@ -100,6 +100,23 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._edit_ledger("block:railgun", plan="v1.9.0")
         self.assertTrue(any("block:railgun: IMPLEMENTED plan 'v1.9.0'" in error for error in self._errors()))
 
+    def test_v18_delivery_needs_evidence(self) -> None:
+        self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything")
+        self.assertIn("ledger: block:centrifuge: REDESIGNED in v1.8.0 needs the delivering batch's evidence file",
+                      self._errors())
+
+    def test_v18_delivery_with_evidence_passes(self) -> None:
+        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text("x", encoding="utf-8")
+        self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything",
+                          evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+        self.assertEqual([], self._errors())
+
+    def test_planned_row_cannot_carry_evidence(self) -> None:
+        self._edit_ledger("block:lathe", evidence="docs/work/v1.8.0-content-audit.md")
+        self.assertIn("ledger: block:lathe: evidence is recorded only for rows delivered in v1.8.0", self._errors())
+
     def test_unknown_disposition_fails(self) -> None:
         self._edit_ledger("block:lathe", disposition="UNKNOWN")
         self.assertTrue(any("block:lathe: disposition 'UNKNOWN'" in error for error in self._errors()))

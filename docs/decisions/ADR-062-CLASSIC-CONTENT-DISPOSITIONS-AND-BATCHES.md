@@ -49,9 +49,9 @@ inventory unit exactly one disposition:
 | Disposition | Count | Meaning |
 |---|---:|---|
 | `IMPLEMENTED` | 52 | an existing modern ID or system delivers the unit (version and ID named) |
-| `REDESIGNED` | 163 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
-| `PLANNED` | 228 | delivered by a v1.8 batch (C15a–C18d) |
-| `MERGED` | 91 | an internal part (block entity, base class, subcommand) that follows another row |
+| `REDESIGNED` | 126 | the gameplay goal is delivered by a different modern mechanism (named, with its ADR) |
+| `PLANNED` | 264 | delivered by a v1.8 batch (C15a–C18d), including redesigns that v1.8 itself builds |
+| `MERGED` | 92 | an internal part (block entity, base class, subcommand) that follows another row |
 | `DEFERRED` | 24 | not in v1.8 or v2.0 commitments; reasons and player impact in §3 |
 | `REJECTED` | 51 | not migrated; reasons and player impact in §4 |
 
@@ -73,7 +73,7 @@ extracted).
 | Rocket assembly bounds | launch pad, structure tower | the assembler scans connected blocks (v0.5); no pad or tower bounds |
 | Research data | three data kinds, data bus | research points (v0.8) carried in data storage units |
 | Mining rockets | rocket intake and drill blocks | gas intake and asteroid drill satellite modules with logical missions (ADR-051) |
-| Vanilla equivalents | concrete, basalt, copper | vanilla blocks and copper ingot; copper products in C15a |
+| Vanilla equivalents | concrete, basalt, copper | vanilla blocks and the copper ingot, used by the batches that need them (copper products C15a, basalt C15b, concrete C17b) |
 | Atmosphere tiers | low oxygen, super high pressure, superheated | no oxygen, one pressure tier and one heat tier (ADR-024, ADR-034) |
 | Configuration | ore, crater, geode, sealing and torch lists | data-driven features, tags and data packs |
 | Protocol | 16 packets | the existing versioned channels; new intents follow ADR-061 §3.4 |
