@@ -2,9 +2,10 @@
 
 ```yaml
 status: ACCEPTED
-revision: 4
+revision: 5
 date: 2026-10-03
 revision_4: PROPOSED in C15a; the accepted text is revision 3 until the owner accepts revision 4
+revision_5: PROPOSED in C15b; section 5 as settled while implementing it
 deciders: [sunthemoon]
 owner: sunthemoon
 accepted_by: sunthemoon
@@ -297,6 +298,47 @@ ADR-055; no batch depends on that.
   landing-rule ADR, which must keep existing Moon pads and recovery
   identities working; v1.8 does not make that change.
 
+*Revision 5 (proposed, C15b).* Settled while implementing §5:
+
+- **Crater structures.** One structure type `crater` with two structures:
+  `moon_crater` (floor ≥ y 5, rim ≤ y 44) and `mars_crater` (floor ≥ y 5,
+  rim ≤ y 250), radius 8–48 weighted towards small craters as in the legacy
+  generator, bowl depth at most 11 (15 above radius 32), rim at most one
+  block per eight of radius. Floors stop at y 5 because the bedrock gradient
+  reaches y 4. Both run at the raw-generation step; volcanoes run with the
+  surface structures and geodes with the underground structures.
+- **Venus biomes.** The router is copied unchanged, so its climate
+  parameters are all zero and a multi-noise source cannot split `volcanic`
+  from `volcanic_lowlands`. Venus uses a new biome source
+  `advancedrocketrycommunity:patches`: irregular patches from jittered cell
+  centres (cells of 32 quarts) with a fixed salt, so the layout is the same
+  in every world, as the legacy planets' biome layers did not follow the
+  world seed. The Moon keeps a multi-noise source on its own router.
+- **Caves and canyons.** The legacy generator ran caves and ravines only on
+  planets whose definition enabled them (`generateCaves`, default off), and
+  the legacy Moon did not; Mars and Venus were not legacy default planets.
+  The three bodies therefore get no carvers. Vanilla cave and canyon carvers
+  stay available to data-pack planet biomes, which is how the four cave and
+  ravine rows are delivered.
+- **Spawns and colours.** The new biomes spawn nothing, as the v1.4 Mars and
+  Venus biomes (the legacy volcanic biome's creepers are not restored). Mars
+  and Venus keep their v1.4 fog and sky colours; the Moon biomes have a black
+  sky.
+- **Geodes.** Radius 16–24, centred four blocks of cover plus their half
+  height below the surface; ores from the block tag
+  `advancedrocketrycommunity:geode_ores` (default: the legacy list, iron,
+  gold, copper, tin and redstone ores).
+- **Charred trees.** In the `volcanic` biome only, on average once every ten
+  chunks (the legacy decorator's extra-tree chance with no trees per chunk),
+  a trunk of six to eight charcoal logs with at most one stub branch.
+- **Switches.** COMMON values `worldgen.planetOres`, `worldgen.craters`,
+  `worldgen.volcanoes`, `worldgen.geodes` and `worldgen.charredTrees`
+  (default on), read through the same `server_switch` placement modifier and
+  by each structure's generation point.
+- **Surfaces.** The Moon's top and filler are the turfs over vanilla stone
+  (moon turf on the highlands, dark moon turf on the lowlands); Mars has
+  ferric sand top and filler over red sandstone; Venus is basalt throughout.
+
 ### 6. Classic exoplanet worlds (C15c)
 
 Two new bodies in the Tau Ceti system (ADR-043), each landable with a startup
@@ -499,3 +541,8 @@ need a new revision and review.
   (vanilla replaceable tags, feature names, the ore switch). For the C15a
   implementation review and the owner's acceptance, with the C15a evidence
   packet (`docs/work/v1.8.0-c15a-materials`).
+- Revision 5 (proposed, 2026-10-03): C15b decisions in §5 (two crater
+  structures of one type, the Venus patch biome source, no carvers on the
+  three bodies, no spawns, geode and charred-tree numbers, the five switches,
+  the surfaces). For the C15b implementation review and the owner's
+  acceptance.
