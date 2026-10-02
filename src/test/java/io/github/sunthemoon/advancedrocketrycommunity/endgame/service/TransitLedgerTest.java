@@ -306,6 +306,41 @@ final class TransitLedgerTest {
         assertEquals(1, lines, "a frozen payload was frozen and audited again on later passes");
     }
 
+    /**
+     * Review C13R3 (the safety side of C13R2-N3): a payload frozen as {@code REDIRECT_CONFLICT}, because the ledger
+     * names another endpoint (after an operator restored an older file), stays frozen after that endpoint delivered
+     * it and its record was pruned. Before the fix, the next pass found no record and moved the stale copy into the
+     * receive buffer: a second delivery.
+     */
+    @Test
+    void aRedirectConflictStaysFrozenAfterItsRecordIsPruned() {
+        EndgameService service = hubService();
+        TransitKey key = transit(service, SOURCE, 1, OTHER, record -> record.arrived().claimed(OTHER));
+        durable(service);
+        CompoundTag section = new CompoundTag();
+        ListTag incoming = new ListTag();
+        incoming.add(TransitCodec.encodeIncoming(key, payload()));
+        ListTag receipts = new ListTag();
+        receipts.add(TransitCodec.encodeKey(key));
+        section.put("incoming", incoming);
+        section.put("receipts", receipts);
+        section.put("conflicts", new ListTag());
+        Endpoint stale = new Endpoint(DESTINATION);
+        stale.destination.read(section);
+        service.transits().attach(stale);
+        save(service, stale, DESTINATION_POS);
+        for (long now = 100L; now <= 150L; now++) {
+            service.tick(now);
+        }
+        assertTrue(stale.destination.conflicts().contains(key), "the stale payload was not frozen");
+        service.coalesced(root -> root.transits().remove(key)); // The other endpoint delivered it.
+        for (long now = 151L; now <= 250L; now++) {
+            service.tick(now);
+        }
+        assertTrue(stale.received.isEmpty() && stale.destination.incoming().containsKey(key),
+                "the frozen stale payload moved into the receive buffer once its record was gone (a second delivery)");
+    }
+
     @Test
     void escrowAdmissionCountsKnownOutboxEntriesAndAPendingObservationAppliesAtLoad() {
         EndgameService service = service(new TransitLimits(256, 2));
