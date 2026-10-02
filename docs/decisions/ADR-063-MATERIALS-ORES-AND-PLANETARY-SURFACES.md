@@ -227,11 +227,23 @@ ADR-055; no batch depends on that.
   - Mars and Venus: no height step, because the terrain shape is unchanged; the
     top block changes (red sand to ferric sand on Mars, yellow terracotta to
     basalt on Venus), and craters and volcanoes appear only in new chunks.
-  Arrivals are unaffected: the Moon keeps its fixed y 80 rule over lower
+  Arrivals keep their rules: the Moon keeps its fixed y 80 rule over lower
   terrain, and Mars and Venus land on the heightmap (ADR-033). Players who
   want the new terrain everywhere start a new world or explore farther out.
   The release notes repeat these step heights and the backup advice of the
   celestial data guide.
+- **Moon arrival height (player impact).** A Moon arrival stays at y 80 or
+  above without ground support, as it is today, so a rocket hangs over the
+  regolith instead of standing on it, unlike the legacy game, whose rockets
+  descended to the ground. Today the drop to the flat surface (y 4) is 76
+  blocks; over the new terrain it is 44–68 blocks (surface y 12–36), and up
+  to about 76 over a crater floor. Players get down as they do now: by
+  building down from the rocket, from the developer platform at y 79 where
+  it is used, or with the jetpack (C18b); C18a's gravity-scaled fall damage
+  makes the fall survivable at Moon gravity. Landing Moon rockets on the
+  heightmap is a change to ADR-033's fixed-pad rule and needs its own
+  landing-rule ADR, which must keep existing Moon pads and recovery
+  identities working; v1.8 does not make that change.
 
 ### 6. Classic exoplanet worlds (C15c)
 
@@ -401,7 +413,9 @@ a vanilla derivative (ADR-061 §4.8).
 ## Revisit when
 
 - the owner prefers a flat Moon, or different exoplanet bodies;
-- a feature exceeds its chunk-generation budget.
+- a feature exceeds its chunk-generation budget;
+- a landing-rule ADR lands Moon rockets on the heightmap (the arrival height
+  above then changes).
 
 ## Review history
 
