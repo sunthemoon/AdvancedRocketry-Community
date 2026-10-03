@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -222,8 +223,8 @@ public final class PlanetFeatureGameTests {
     }
 
     /**
-     * The charcoal log drops one charcoal (itself with Silk Touch), as the legacy log did; the geode shell drops
-     * itself only for an iron pickaxe or better (legacy: the jackhammer at level 2).
+     * The charcoal log drops one charcoal (itself with Silk Touch) and does not burn, as the legacy log; the geode
+     * shell drops itself only for an iron pickaxe or better (legacy: the jackhammer at level 2).
      */
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 20)
     public static void theCharcoalLogDropsCharcoalAndTheGeodeShellNeedsAnIronPickaxe(GameTestHelper helper) {
@@ -238,6 +239,13 @@ public final class PlanetFeatureGameTests {
         drops = Block.getDrops(log, level, position, null, null, axe);
         helper.assertTrue(drops.size() == 1 && drops.get(0).is(SurfaceContent.CHARCOAL_LOG.get().asItem()),
                 "With Silk Touch the charcoal log dropped " + drops);
+        // It does not burn, as the legacy log (C15bR1-L2): fire neither spreads to it nor consumes it, and lava does
+        // not light it.
+        for (Direction face : Direction.values()) {
+            helper.assertTrue(!log.isFlammable(level, position, face) && log.getFlammability(level, position, face) == 0
+                    && log.getFireSpreadSpeed(level, position, face) == 0, "The charcoal log burns from " + face);
+        }
+        helper.assertTrue(!log.ignitedByLava(), "Lava lights the charcoal log");
         BlockState shell = SurfaceContent.GEODE_SHELL.get().defaultBlockState();
         helper.assertTrue(shell.requiresCorrectToolForDrops()
                         && !new ItemStack(Items.STONE_PICKAXE).isCorrectToolForDrops(shell)
