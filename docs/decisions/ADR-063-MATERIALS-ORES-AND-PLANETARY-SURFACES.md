@@ -280,6 +280,14 @@ ADR-055; no batch depends on that.
   - Mars and Venus: no height step, because the terrain shape is unchanged; the
     top block changes (red sand to ferric sand on Mars, yellow terracotta to
     basalt on Venus), and craters and volcanoes appear only in new chunks.
+  - The upgrade band (revision 5, C15bR1-M1): around explored areas the old
+    build saved a ring of chunks part-way through generation. The new build
+    finishes them with the new terrain but keeps the biome they already
+    stored (the old `plains` on the Moon, the v1.4 biomes on Mars and Venus).
+    Their surfaces are right (the Moon's highland turf does not depend on the
+    biome), but they get none of the new biomes' ores, and no crater, volcano
+    or geode starts in chunks whose structure starts the old build had already
+    computed, a ring about one chunk wider. The band is about a chunk wide.
   Arrivals keep their rules: the Moon keeps its fixed y 80 rule over lower
   terrain, and Mars and Venus land on the heightmap (ADR-033). Players who
   want the new terrain everywhere start a new world or explore farther out.

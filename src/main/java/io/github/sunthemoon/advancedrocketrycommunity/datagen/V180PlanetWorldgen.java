@@ -258,7 +258,11 @@ public final class V180PlanetWorldgen {
                 SurfaceRules.state(Blocks.BEDROCK.defaultBlockState()));
     }
 
-    /** Legacy top and filler blocks are the turf itself, over vanilla stone. */
+    /**
+     * Legacy top and filler blocks are the turf itself, over vanilla stone: dark turf in the lowlands and the
+     * highland turf everywhere else, so that a foreign biome (the {@code plains} a v1.7 world stored in Moon chunks it
+     * left part-generated, which the v1.8 build finishes) still gets turf rather than bare stone (C15bR1-M1).
+     */
     static SurfaceRules.RuleSource moonSurface() {
         SurfaceRules.RuleSource light = SurfaceRules.state(SurfaceContent.MOON_TURF.get().defaultBlockState());
         SurfaceRules.RuleSource dark = SurfaceRules.state(SurfaceContent.DARK_MOON_TURF.get().defaultBlockState());
@@ -266,9 +270,8 @@ public final class V180PlanetWorldgen {
                 SurfaceRules.ifTrue(SurfaceRules.isBiome(REGOLITH_LOWLANDS), SurfaceRules.sequence(
                         SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, dark),
                         SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, dark))),
-                SurfaceRules.ifTrue(SurfaceRules.isBiome(REGOLITH_HIGHLANDS), SurfaceRules.sequence(
-                        SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, light),
-                        SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, light))));
+                SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, light),
+                SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, light));
     }
 
     /** Mars: ferric sand as top and filler over the v1.4 base block, red sandstone. */

@@ -52,8 +52,22 @@ class V180PlanetResourcesTest {
         JsonObject router = settings.getAsJsonObject("noise_router");
         assertTrue(router.get("continents").toString().contains(NS + ":moon_terrain"),
                 "the biome source reads the terrain noise");
-        String surface = settings.get("surface_rule").toString();
-        assertTrue(surface.contains(NS + ":moon_turf") && surface.contains(NS + ":dark_moon_turf"));
+        // Bedrock, then dark turf in the lowlands, then the highland turf for every other biome as top and filler
+        // (C15bR1-M1: the plains of part-generated v1.7 chunks get turf too; C15bR1-L2: the pairing is exact).
+        JsonArray rules = settings.getAsJsonObject("surface_rule").getAsJsonArray("sequence");
+        assertEquals(4, rules.size());
+        JsonObject lowlandRule = rules.get(1).getAsJsonObject();
+        assertEquals(List.of(NS + ":regolith_lowlands"), strings(lowlandRule.getAsJsonObject("if_true")
+                .getAsJsonArray("biome_is")));
+        assertEquals(2, turfs(lowlandRule.getAsJsonObject("then_run"), NS + ":dark_moon_turf"));
+        for (int index = 2; index <= 3; index++) {
+            JsonObject fallback = rules.get(index).getAsJsonObject();
+            assertEquals("minecraft:stone_depth", fallback.getAsJsonObject("if_true").get("type").getAsString());
+            assertEquals(NS + ":moon_turf", fallback.getAsJsonObject("then_run").getAsJsonObject("result_state")
+                    .get("Name").getAsString());
+        }
+        assertFalse(settings.get("surface_rule").toString().contains(NS + ":regolith_highlands"),
+                "the highland turf does not depend on the biome");
         assertTrue(Files.isRegularFile(WORLDGEN.resolve("noise/moon_terrain.json")));
     }
 
@@ -245,6 +259,18 @@ class V180PlanetResourcesTest {
 
     private static List<String> values(Path tag) throws IOException {
         return strings(json(tag).getAsJsonArray("values"));
+    }
+
+    /** How many rules of a sequence place {@code block}. */
+    private static int turfs(JsonObject sequence, String block) {
+        int count = 0;
+        for (JsonElement rule : sequence.getAsJsonArray("sequence")) {
+            if (rule.getAsJsonObject().getAsJsonObject("then_run").getAsJsonObject("result_state").get("Name")
+                    .getAsString().equals(block)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static List<String> strings(JsonArray array) {

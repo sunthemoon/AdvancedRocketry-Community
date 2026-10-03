@@ -55,9 +55,12 @@ No candidate or release approval is assigned.
   terrain. On the Moon, explored areas end in a wall of 8–32 blocks (up to 40
   at a crater rim) where old flat end-stone chunks meet the new terrain; on
   Mars and Venus the height is unchanged and only the top block changes (red
-  sand to ferric sand, yellow terracotta to basalt). Moon rockets still arrive
-  at y 80 above the terrain, so the drop is now 44–68 blocks. Back up the world
-  before upgrading, or explore farther out for new terrain.
+  sand to ferric sand, yellow terracotta to basalt). Next to explored areas, a
+  band about a chunk wide that the old version left half-generated gets the
+  new terrain without the new ores, craters, volcanoes or geodes. Moon rockets
+  still arrive at y 80 above the terrain, so the drop is now 44–68 blocks (up
+  to about 76 over a crater floor). Back up the world before upgrading, or
+  explore farther out for new terrain.
 - New COMMON values turn each feature off in new chunks:
   `worldgen.planetOres`, `worldgen.craters`, `worldgen.volcanoes`,
   `worldgen.geodes` and `worldgen.charredTrees`. Structures already started
