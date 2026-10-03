@@ -434,13 +434,31 @@ and must still find every C16–C18 output reachable without them.
   Mars: heights 0–256 and a day cycle). Each Level has low relief from one 2D
   noise `n` in [-1, 1], as the Moon (§5), over vanilla stone with bedrock at
   y 0–4 and no caves, aquifers or ore veins. Tau Ceti f has water up to y 62
-  and its top block at `63 + 18n` (y 45–81); the same noise is the
+  and its top block at `63 + 22n` (y 41–85); the same noise is the
   continentalness of a multi-noise source, so the biomes follow the ground:
-  ocean spires below n = -0.45 (the sea floor below y 55), marsh to -0.15
-  (shallows), deep swamp to 0.1 (the shore) and alien forest above. Tau Ceti g
+  ocean spires below n = -0.3 (the sea floor at y 56 and below), marsh to -0.1
+  (shallows, y 57–60), deep swamp to 0.1 (the shore, y 61–65) and alien forest
+  above. Tau Ceti g
   has no sea and its top block at `96 + 8n` (y 88–104), a plateau like the
   legacy stormland and crystal chasms (base height 1); its two biomes lie in
   irregular patches (the `patches` source of revision 5, its own salt).
+- **Landing ground.** A rocket lands only on one of eight fixed pads around
+  the origin, on ground with no fluid and nothing standing in its footprint
+  (ADR-006, ADR-033). Unchanged, Tau Ceti f put all eight pads under the sea in
+  89 of 1,000 seeds, and its jungle grass, trees, mushrooms and crystals block
+  most land pads on both worlds (in one GameTest run a rocket came down only on
+  the fifth Tau Ceti f pad). Each world therefore keeps a landing ground of
+  radius 160 around the origin: the farthest pad's widest footprint (16
+  chunks, 64 blocks around a pad on a chunk corner) reaches about 136 blocks,
+  and a feature writes up to 12 blocks from where it starts. No Tau Ceti
+  feature, and no alien forest grass (the vanilla jungle patch, placed by this
+  mod's `alien_forest_grass`), starts inside it (the
+  `advancedrocketrycommunity:landing_ground` placement filter). On Tau Ceti f,
+  `n` is raised to at least 0.2 inside it (the
+  `advancedrocketrycommunity:landing_ground_floor` density function: 0.2 within
+  160 blocks, falling by one per 96 blocks beyond), so the pads stand on dry
+  alien forest grass at y 67 or above and the sea begins about 24 blocks
+  farther out. Tau Ceti g has no sea and needs only the filter.
 - **Biomes.** The legacy surfaces and colours: alien forest (grass over dirt;
   grass `0x7777FF`, foliage `0x55FFE1`, water `0x8888FF`), marsh (grass over
   dirt, clay and lily pads), deep swamp (grass over dirt; water `0xE0FFAE`, sky
@@ -454,14 +472,15 @@ and must still find every C16–C18 output reachable without them.
   - lightwood tree (`worldgen.lightwoodTrees`): in 1 of 20 alien forest
     chunks; a 2 × 2 trunk 20–29 high with branches and leaf blobs, the branches
     shortened so that nothing passes 12 blocks (the legacy tree reached about
-    14); dense grass (vanilla patch);
+    14); dense grass (the vanilla jungle patch, 25 per chunk);
   - giant swamp tree (`worldgen.swampTrees`): in 1 of 100 deep swamp chunks;
     40–49 high with roots to 20 below and a canopy within 12 blocks; vanilla
     swamp oaks, sugar cane, lily pads, mushrooms and blue orchids around it;
   - marsh: vanilla clay disks and lily pads;
   - inverted pillar (`worldgen.invertedPillars`): in about half the ocean
-    spire chunks (legacy 7 in 16); radius 5, 20–33 high from the sea floor,
-    mossy cobblestone at the foot, cobblestone, dirt at the top;
+    spire chunks (legacy 7 in 16); 20–33 high from the sea floor, widening
+    from radius 1 at the foot to 5 at the top; mossy cobblestone in the lower
+    third, cobblestone, then dirt under a grass top;
   - crystal cluster (`worldgen.crystalClusters`): in 1 of 36 crystal chasm
     chunks; 10–49 high, edge radius 2–5, one of the six colours, the lean capped
     so that the top stays within 12 blocks;
@@ -470,11 +489,11 @@ and must still find every C16–C18 output reachable without them.
   - charred trees (the `worldgen.charredTrees` switch of revision 5): six per
     stormland chunk, as the legacy stormland's trees.
 - **Blocks.** Lightwood log (a log that burns, hardness 3), lightwood leaves
-  (light 8, decay, a sapling in 1 of 100 drops and nothing else, as legacy;
-  shears or Silk Touch take the leaves),
-  lightwood sapling (two stages; bone meal succeeds in 45 % of uses, as
-  legacy; grows the lightwood tree where it fits), lightwood planks (light 4;
-  four from a log), six crystal blocks (`violet_crystal_block`,
+  (vanilla leaves with light 8: decay, a sapling in 1 of 100 drops and nothing
+  else, as legacy; shears or Silk Touch take the leaves),
+  lightwood sapling (a vanilla sapling: two stages, bone meal succeeds in 45 %
+  of uses, as legacy; grows the lightwood tree where it fits), lightwood planks
+  (hardness 3, light 4; four from a log), six crystal blocks (`violet_crystal_block`,
   `blue_crystal_block`, `green_crystal_block`, `red_crystal_block`,
   `yellow_crystal_block`, `orange_crystal_block`: hardness 2, glass sound,
   translucent, one drawn texture tinted with the legacy colours, each drops
@@ -563,7 +582,9 @@ ID in this namespace fail startup through the existing binding checks.
   highest highlands (open sky above the y 79 floor), each server switch, and
   the Tau Ceti
   path: a data-satellite discovery of `tau_ceti_f`, an interstellar warp to its
-  orbit, a docked rocket's landing on its surface and return to the station.
+  orbit, a docked rocket's landing on its surface and return to the station
+  (revision 6: on the first pad), and on both new Levels dry, clear ground
+  within 32 blocks of each pad (revision 6).
 - S1: a packaged dedicated server generates chunks in the Moon, Mars, Venus
   and both new Levels without errors, within the tick budget of a reference
   chunk-generation run, and an upgraded v1.7 world keeps its explored chunks.
@@ -589,6 +610,15 @@ Changes an existing body's capabilities and binding; new bodies avoid that.
 
 They are themselves recolours of the vanilla grass top; any further edit stays
 a vanilla derivative (ADR-061 §4.8).
+
+### D. Let a landing clear plants (revision 6)
+
+A landing could accept replaceable plants (grass, ferns, snow layers) in the
+footprint and remove them, as the legacy rocket simply came down on them. That
+changes ADR-006's rule that a pad be free of blocks and that a failed landing
+never overwrite the world, and it changes Overworld landings too; it would not
+help a pad under the sea. Left to a rocket-landing ADR; revision 6 keeps the
+pads clear by world generation instead.
 
 ## Consequences
 
@@ -639,7 +669,8 @@ need a new revision and review.
   the surfaces, the drops and tools, the saved pieces). For the C15b
   implementation review and the owner's acceptance.
 - Revision 6 (proposed, 2026-10-03): C15c decisions in §6 (the bodies' numbers,
-  their skies, Levels and terrain, the six biomes, the features with their
-  switches and numbers, the blocks, the electric mushroom's client effect, all
-  textures drawn new, the recipe graph check in C16d). For the C15c
-  implementation review and the owner's acceptance.
+  their skies, Levels and terrain, the landing ground, the six biomes, the
+  features with their switches and numbers, the blocks, the electric
+  mushroom's client effect, all textures drawn new, the recipe graph check in
+  C16d) and alternative D. For the C15c implementation review and the owner's
+  acceptance.
