@@ -245,8 +245,10 @@ ADR-055; no batch depends on that.
   ADR-033 support check for other surfaces is not adopted on the Moon, because
   it would move existing Moon arrivals.
 - **Mars and Venus shape unchanged.** Mars and Venus keep their v1.4 noise
-  router, base block and heights, and switch to multi-biome sources with the
-  new biomes; only the top and filler blocks and the features change.
+  router, base block and heights, and switch to new biome sources (revision 5:
+  Mars a fixed source of the one biome `ferric_regolith`, Venus the `patches`
+  source of its two biomes); only the top and filler blocks, the biomes and
+  the features change.
 - **Generation mechanisms.** In 1.20.1 a placed feature may write only within
   the 3 × 3 chunks around its origin chunk, and a carver only removes blocks.
   Each legacy generator therefore gets the mechanism its size needs:
@@ -339,8 +341,12 @@ ADR-055; no batch depends on that.
   ravine rows are delivered.
 - **Spawns and colours.** The new biomes spawn nothing, as the v1.4 Mars and
   Venus biomes (the legacy volcanic biome's creepers are not restored). Mars
-  and Venus keep their v1.4 fog and sky colours; the Moon biomes have a black
-  sky.
+  and Venus keep their v1.4 fog and sky colours (not the legacy Mars sky
+  `0x664444`); the Moon biomes have a black sky.
+- **Biome temperatures.** The new biomes take the legacy temperatures: Mars
+  0.9 (the v1.4 biome had 0.1) and Venus 1.0 (v1.4: 2.0). In new Mars chunks
+  water therefore no longer freezes (0.9 is above vanilla's freezing
+  threshold of 0.15).
 - **Geodes.** Radius 16–24, centred four blocks of cover plus their half
   height below the lowest ground of a 5 × 5 grid over the lens; where a
   column's ground still lies lower, its roof comes down, so that no geode
@@ -350,7 +356,8 @@ ADR-055; no batch depends on that.
   gold, copper, tin and redstone ores).
 - **Charred trees.** In the `volcanic` biome only, on average once every ten
   chunks (the legacy decorator's extra-tree chance with no trees per chunk),
-  a trunk of six to eight charcoal logs with at most one stub branch.
+  a trunk of six to eight charcoal logs with at most one stub branch (an
+  addition: the legacy tree had none).
 - **Switches.** COMMON values `worldgen.planetOres`, `worldgen.craters`,
   `worldgen.volcanoes`, `worldgen.geodes` and `worldgen.charredTrees`
   (default on), read through the same `server_switch` placement modifier and
@@ -368,7 +375,9 @@ ADR-055; no batch depends on that.
 - **Saved pieces.** Crater, volcano and geode pieces save schema version 1
   with their numbers, so a start saved before a restart finishes the same
   way after it; a piece of another schema is refused, and vanilla then drops
-  that start with a logged error.
+  that start with a logged error. A geode reads its ore tag as each of its
+  chunks is placed, so it finishes the same way only while data packs leave
+  that tag unchanged.
 
 ### 6. Classic exoplanet worlds (C15c)
 
@@ -687,6 +696,11 @@ need a new revision and review.
   three bodies, no spawns, geode and charred-tree numbers, the five switches,
   the surfaces, the drops and tools, the saved pieces). For the C15b
   implementation review and the owner's acceptance.
+- Revision 5 changes from the C15b implementation review round 1
+  (2026-10-03): the geode cover rule for every column (H1), the volcano
+  relief limit (L1), the upgrade band in the seams (M1), the corrected Venus
+  layout reason with its player impact (M5), and Mars's single fixed biome,
+  the biome temperatures, the stub branch and the geode ore tag caveat (L4).
 - Revision 6 (proposed, 2026-10-03): C15c decisions in §6 (the bodies' numbers,
   their skies, Levels and terrain, the landing ground, the six biomes, the
   features with their switches and numbers, the blocks, the electric
