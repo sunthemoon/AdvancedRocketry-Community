@@ -307,6 +307,9 @@ ADR-055; no batch depends on that.
   block per eight of radius. Floors stop at y 5 because the bedrock gradient
   reaches y 4. Both run at the raw-generation step; volcanoes run with the
   surface structures and geodes with the underground structures.
+- **Volcano relief.** A volcano does not start where any column of its cone
+  has its ground more than 32 blocks (the skirt) below the base, so a cone
+  never hangs over a Venus cliff.
 - **Venus biomes.** The router is copied unchanged, so its climate
   parameters are all zero and a multi-noise source cannot split `volcanic`
   from `volcanic_lowlands`. Venus uses a new biome source

@@ -36,11 +36,32 @@ public final class VolcanoStructure extends Structure {
         VolcanoShape shape = VolcanoShape.random(new Random(random.nextLong()));
         int bottom = context.heightAccessor().getMinBuildHeight() + 5;
         int top = context.heightAccessor().getMaxBuildHeight() - 1;
-        if (surface - VolcanoShape.SKIRT < bottom || surface + shape.height() + 1 > top) {
+        if (surface - VolcanoShape.SKIRT < bottom || surface + shape.height() + 1 > top
+                || overhangs(context, x, z, surface, shape)) {
             return Optional.empty();
         }
         BlockPos base = new BlockPos(x, surface, z);
         return Optional.of(new GenerationStub(base, builder -> builder.addPiece(new VolcanoPiece(base, shape))));
+    }
+
+    /**
+     * Whether any column of the cone has its ground more than the skirt below the base, where the cone would hang over
+     * a cliff (C15bR1-L1); such a start is refused. Every column is sampled (at most about 3,200, once per 16 x 16
+     * chunks): the Venus cliffs are vertical, so a lattice could miss a drop between its points.
+     */
+    public static boolean overhangs(GenerationContext context, int x, int z, int surface, VolcanoShape shape) {
+        int radius = shape.radius();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if (dx * dx + dz * dz < radius * radius
+                        && context.chunkGenerator().getFirstOccupiedHeight(x + dx, z + dz,
+                        Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState())
+                        < surface - VolcanoShape.SKIRT) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
