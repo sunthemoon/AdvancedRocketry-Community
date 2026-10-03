@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.Registry
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
+import java.util.Set;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public final class CommonConfig {
@@ -418,55 +419,74 @@ public final class CommonConfig {
     }
 
     /** ADR-063 section 3: whether the small plate press acts; the default until the COMMON config is loaded. */
+    /** The server switches: the small plate press and the worldgen switches, which tests hold in memory. */
+    private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
+            OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
+            CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
+            CRYSTAL_CLUSTERS_ENABLED, ELECTRIC_MUSHROOMS_ENABLED);
+
+    static boolean serverSwitch(ForgeConfigSpec.BooleanValue value) {
+        return SERVER_SWITCHES.contains(value);
+    }
+
+    /** An in-memory override ({@link SwitchOverrides}, tests only), else the loaded value, else the default. */
+    private static boolean serverSwitchValue(ForgeConfigSpec.BooleanValue value) {
+        Boolean override = SwitchOverrides.get(value);
+        if (override != null) {
+            return override;
+        }
+        return SPEC.isLoaded() ? value.get() : value.getDefault();
+    }
+
     public static boolean smallPlatePressEnabled() {
-        return SPEC.isLoaded() ? SMALL_PLATE_PRESS_ENABLED.get() : SMALL_PLATE_PRESS_ENABLED.getDefault();
+        return serverSwitchValue(SMALL_PLATE_PRESS_ENABLED);
     }
 
     /** ADR-063 section 4: whether the Overworld ores generate; the default until the COMMON config is loaded. */
     public static boolean overworldOresEnabled() {
-        return SPEC.isLoaded() ? OVERWORLD_ORES_ENABLED.get() : OVERWORLD_ORES_ENABLED.getDefault();
+        return serverSwitchValue(OVERWORLD_ORES_ENABLED);
     }
 
     /** ADR-063 sections 4 and 5: the C15b world-feature switches; each reads its default until the config loads. */
     public static boolean planetOresEnabled() {
-        return SPEC.isLoaded() ? PLANET_ORES_ENABLED.get() : PLANET_ORES_ENABLED.getDefault();
+        return serverSwitchValue(PLANET_ORES_ENABLED);
     }
 
     public static boolean cratersEnabled() {
-        return SPEC.isLoaded() ? CRATERS_ENABLED.get() : CRATERS_ENABLED.getDefault();
+        return serverSwitchValue(CRATERS_ENABLED);
     }
 
     public static boolean volcanoesEnabled() {
-        return SPEC.isLoaded() ? VOLCANOES_ENABLED.get() : VOLCANOES_ENABLED.getDefault();
+        return serverSwitchValue(VOLCANOES_ENABLED);
     }
 
     public static boolean geodesEnabled() {
-        return SPEC.isLoaded() ? GEODES_ENABLED.get() : GEODES_ENABLED.getDefault();
+        return serverSwitchValue(GEODES_ENABLED);
     }
 
     public static boolean charredTreesEnabled() {
-        return SPEC.isLoaded() ? CHARRED_TREES_ENABLED.get() : CHARRED_TREES_ENABLED.getDefault();
+        return serverSwitchValue(CHARRED_TREES_ENABLED);
     }
 
     /** ADR-063 section 6: the C15c world-feature switches; each reads its default until the config loads. */
     public static boolean lightwoodTreesEnabled() {
-        return SPEC.isLoaded() ? LIGHTWOOD_TREES_ENABLED.get() : LIGHTWOOD_TREES_ENABLED.getDefault();
+        return serverSwitchValue(LIGHTWOOD_TREES_ENABLED);
     }
 
     public static boolean swampTreesEnabled() {
-        return SPEC.isLoaded() ? SWAMP_TREES_ENABLED.get() : SWAMP_TREES_ENABLED.getDefault();
+        return serverSwitchValue(SWAMP_TREES_ENABLED);
     }
 
     public static boolean invertedPillarsEnabled() {
-        return SPEC.isLoaded() ? INVERTED_PILLARS_ENABLED.get() : INVERTED_PILLARS_ENABLED.getDefault();
+        return serverSwitchValue(INVERTED_PILLARS_ENABLED);
     }
 
     public static boolean crystalClustersEnabled() {
-        return SPEC.isLoaded() ? CRYSTAL_CLUSTERS_ENABLED.get() : CRYSTAL_CLUSTERS_ENABLED.getDefault();
+        return serverSwitchValue(CRYSTAL_CLUSTERS_ENABLED);
     }
 
     public static boolean electricMushroomsEnabled() {
-        return SPEC.isLoaded() ? ELECTRIC_MUSHROOMS_ENABLED.get() : ELECTRIC_MUSHROOMS_ENABLED.getDefault();
+        return serverSwitchValue(ELECTRIC_MUSHROOMS_ENABLED);
     }
 
     private CommonConfig() {

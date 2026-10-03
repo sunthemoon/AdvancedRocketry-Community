@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import io.github.sunthemoon.advancedrocketrycommunity.material.worldgen.OverworldOres;
@@ -57,7 +58,7 @@ public final class MaterialRecipeGameTests {
 
     @AfterBatch(batch = ORE_SWITCH_BATCH)
     public static void restoreSwitch(ServerLevel level) {
-        CommonConfig.OVERWORLD_ORES_ENABLED.set(true);
+        SwitchOverrides.clear(CommonConfig.OVERWORLD_ORES_ENABLED);
     }
 
     /** Every rolling input, at a full stack, matches one recipe: the machine never refuses a material as ambiguous. */
@@ -182,13 +183,13 @@ public final class MaterialRecipeGameTests {
                         vein.featureName() + " left its chunk or height range at " + position);
             }
         }
-        CommonConfig.OVERWORLD_ORES_ENABLED.set(false);
+        SwitchOverrides.set(CommonConfig.OVERWORLD_ORES_ENABLED, false);
         for (Vein vein : OverworldOres.VEINS) {
             PlacedFeature placed = level.registryAccess().registryOrThrow(Registries.PLACED_FEATURE)
                     .getOrThrow(vein.placed());
             helper.assertTrue(positions(level, placed, origin).isEmpty(), vein.featureName() + " ignored the switch");
         }
-        CommonConfig.OVERWORLD_ORES_ENABLED.set(true);
+        SwitchOverrides.clear(CommonConfig.OVERWORLD_ORES_ENABLED);
         helper.succeed();
     }
 

@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.worldg
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.worldgen.ExoplanetWorldgen;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.config.WorldgenSwitches;
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetWorldgen;
 import io.github.sunthemoon.advancedrocketrycommunity.material.worldgen.SwitchPlacement;
@@ -368,12 +369,12 @@ public final class ExoplanetGameTests {
             PlacementContext context = new PlacementContext(f, f.getChunkSource().getGenerator(), Optional.of(placed));
             helper.assertTrue(first.getPositions(context, RandomSource.create(1L), origin).count() == 1,
                     entry.getKey().location() + " blocked while on");
-            entry.getValue().set(false);
+            SwitchOverrides.set(entry.getValue(), false);
             try {
                 helper.assertTrue(first.getPositions(context, RandomSource.create(1L), origin).count() == 0,
                         entry.getKey().location() + " ignored its switch");
             } finally {
-                entry.getValue().set(true);
+                SwitchOverrides.clear(entry.getValue());
             }
         }
         helper.succeed();

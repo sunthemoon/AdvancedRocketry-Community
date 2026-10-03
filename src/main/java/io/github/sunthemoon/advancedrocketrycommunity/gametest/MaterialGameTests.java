@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import io.github.sunthemoon.advancedrocketrycommunity.material.press.SmallPlatePressBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.material.press.SmallPlatePressBlock.PressResult;
@@ -51,8 +52,8 @@ public final class MaterialGameTests {
 
     @AfterBatch(batch = SWITCH_BATCH)
     public static void restoreSwitches(ServerLevel level) {
-        CommonConfig.SMALL_PLATE_PRESS_ENABLED.set(true);
-        CommonConfig.OVERWORLD_ORES_ENABLED.set(true);
+        SwitchOverrides.clear(CommonConfig.SMALL_PLATE_PRESS_ENABLED);
+        SwitchOverrides.clear(CommonConfig.OVERWORLD_ORES_ENABLED);
     }
 
     @GameTest(template = "rocket_test", timeoutTicks = 40)
@@ -185,7 +186,8 @@ public final class MaterialGameTests {
     @GameTest(template = "rocket_test", batch = SWITCH_BATCH, timeoutTicks = 40)
     public static void theServerSwitchTurnsThePressOff(GameTestHelper helper) {
         column(helper, 0, Blocks.OBSIDIAN, MaterialContent.block("iridium_block"));
-        CommonConfig.SMALL_PLATE_PRESS_ENABLED.set(false);
+        // In memory: a config write races Forge's file reload (C15bR1-M4).
+        SwitchOverrides.set(CommonConfig.SMALL_PLATE_PRESS_ENABLED, false);
         helper.assertTrue(SmallPlatePressBlock.press(helper.getLevel(), at(helper, 0, PRESS)) == PressResult.DISABLED,
                 "A disabled press acted");
         power(helper, 0);
@@ -199,7 +201,7 @@ public final class MaterialGameTests {
             helper.assertTrue(helper.getBlockState(TARGET).is(MaterialContent.block("iridium_block")),
                     "The disabled press's block is gone; " + seen);
             helper.assertTrue(items(helper, 0).isEmpty(), "A disabled press made plates; " + seen);
-            CommonConfig.SMALL_PLATE_PRESS_ENABLED.set(true);
+            SwitchOverrides.clear(CommonConfig.SMALL_PLATE_PRESS_ENABLED);
             helper.succeed();
         });
     }

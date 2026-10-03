@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.config.WorldgenSwitches;
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PlanetWorldgen;
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PlanetWorldgen.PlanetVein;
@@ -273,13 +274,16 @@ public final class PlanetFeatureGameTests {
                 level, structure.biomes()::contains);
     }
 
-    /** Turns a switch off for the duration of a check and always turns it back on. */
+    /**
+     * Holds a switch off in memory for the duration of a check and always releases it; a config write would race
+     * Forge's file reload (C15bR1-M4).
+     */
     private static void withSwitchOff(ForgeConfigSpec.BooleanValue value, Runnable check) {
-        value.set(false);
+        SwitchOverrides.set(value, false);
         try {
             check.run();
         } finally {
-            value.set(true);
+            SwitchOverrides.clear(value);
         }
     }
 
