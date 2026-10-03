@@ -210,7 +210,10 @@ copper ore, 10 veins of 6), tin (10 of 6), rutile (6 of 6), aluminum (1 of 16)
 and iridium (1 of 16), uniform between y 4 and y 40. Dilithium follows the
 legacy airless rule: 10 veins of 16 on the Moon, which has no atmosphere, and 1
 of 16 on Mars. On the Moon the ores replace stone; on Mars they replace its base
-block, red sandstone. No other Level gets these ores.
+block, red sandstone. No other Level gets these ores. The Moon yields less than
+these counts suggest: its stone below the turf is thin and much of y 4–40 is
+turf or air, so a vein often places few blocks (in one review sample iridium
+appeared in 85 of 144 Moon chunks and in all 144 Mars chunks).
 
 **Iridium source.** Iridium ore is placed on the Moon and Mars (§5), one vein
 of 16 per chunk, uniform between y 4 and y 40 (the legacy `IridiumPerChunk` and
@@ -312,8 +315,9 @@ ADR-055; no batch depends on that.
 
 - **Crater structures.** One structure type `crater` with two structures:
   `moon_crater` (floor ≥ y 5, rim ≤ y 44) and `mars_crater` (floor ≥ y 5,
-  rim ≤ y 250), radius 8–48 weighted towards small craters as in the legacy
-  generator, bowl depth at most 11 (15 above radius 32), rim at most one
+  rim ≤ y 250), radius 8–48 weighted towards small craters, roughly as in the
+  legacy generator (about 72 % of radii below 24 against the legacy 88 %, and
+  about 10 % at 40 or above against 7 %), bowl depth at most 11 (15 above radius 32), rim at most one
   block per eight of radius. Floors stop at y 5 because the bedrock gradient
   reaches y 4. Both run at the raw-generation step; volcanoes run with the
   surface structures and geodes with the underground structures.
