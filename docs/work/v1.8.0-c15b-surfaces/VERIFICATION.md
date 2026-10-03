@@ -263,3 +263,26 @@ The three JARs (`artifacts.json`, with every entry in `artifact-entries.json`): 
 Next: the C15b implementation review, then the owner's decision on ADR-063 revisions
 4 and 5 and ADR-061 revision 7, then C15c in
 [COMPLETION-PLAN](../../status/COMPLETION-PLAN.md).
+
+## Corrections after review round 1
+
+The [round 1 review](reviews/REVIEW-01.md) disproved some statements above; the
+[dispositions](review-01-dispositions.md) list the fixes. These statements no longer
+hold as written:
+
+- "The GameTest Overworld is a normal world, seed 0": the seed was random in every run
+  (an empty `level-seed`); `ba96cea` pins it to 0 (C15bR1-M3).
+- "Every block outside the piece is unchanged" (A1 structure bounds): no comparison was
+  made at the time; `cff78b1` adds it (C15bR1-M2).
+- "Crater rims are capped at y 44 by the crater test and `SurfaceShapesTest`": a Moon
+  rim cannot pass y 42, so neither test exercises the cap; the bound holds by argument
+  (C15bR1-M2).
+- The geode test "below the surface" checked only the centre column; Venus geodes broke
+  the surface on cliffs (C15bR1-H1, fixed by `d0f9545` and `32defdb`).
+- "108 explored chunks unchanged": the v1.8 server loaded 3 of them; the review's
+  variants loaded all 300 of a larger square and its ring, and found them unchanged and
+  the ring finished as bare-stone `plains` on the Moon (C15bR1-L6, M1).
+- The press failure on `3e24ddf`, "with no plates saved near it": the plate assertion
+  never ran, because the block assertion before it failed. The cause is still open; the
+  likeliest is a Forge config reload that turned the switch back on (C15bR1-M4,
+  `182986d` stops the tests writing the file).

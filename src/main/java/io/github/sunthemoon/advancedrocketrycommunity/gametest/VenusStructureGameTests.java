@@ -47,9 +47,9 @@ public final class VenusStructureGameTests {
     }
 
     /**
-     * No geode block lies within {@link GeodeStructure#COVER} blocks of the top of any column: no geode shell, no
-     * geode ore and no cave air (Venus has neither ores nor caves of its own), on the cliffs too. At least three
-     * geodes start in the square, and each is hollow at its centre.
+     * Every column keeps {@link GeodeStructure#COVER} blocks of cover over a geode: its top block and the blocks below
+     * it down to the roof's place hold no geode shell, geode ore or cave air (Venus has neither ores nor caves of its
+     * own), on the cliffs too. At least three geodes start in the square, and each is hollow at its centre.
      */
     @GameTest(template = "empty", batch = "venus_geode_cover", timeoutTicks = 6_000)
     public static void realVenusGeodesKeepTheirCoverOverEveryColumn(GameTestHelper helper) {
@@ -81,7 +81,7 @@ public final class VenusStructureGameTests {
             for (int x = min; x <= max; x++) {
                 for (int z = min; z <= max; z++) {
                     int top = venus.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
-                    for (int depth = 0; depth <= GeodeStructure.COVER; depth++) {
+                    for (int depth = 0; depth < GeodeStructure.COVER; depth++) {
                         BlockPos position = new BlockPos(x, top - depth, z);
                         BlockState state = venus.getBlockState(position);
                         helper.assertTrue(!state.is(SurfaceContent.GEODE_SHELL.get()) && !state.is(Blocks.CAVE_AIR)

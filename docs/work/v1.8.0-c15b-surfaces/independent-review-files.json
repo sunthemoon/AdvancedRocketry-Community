@@ -1,0 +1,620 @@
+{
+  "source": "C:/Users/Administrator/AppData/Local/Temp/arce-v180-c15b-review-38439d11",
+  "excluded": [
+    "*.jar (the rebuilt v1.7 handoff JAR; its hash is in the report)",
+    "packet/ (a copy of the committed packet)",
+    "__pycache__"
+  ],
+  "files": [
+    {
+      "path": "REVIEW.md",
+      "bytes": 27750,
+      "sha256": "30a9dcfa949f8415fa4f6a7f3d85b2d58b3c7934286578e83978e610f05d6bd6"
+    },
+    {
+      "path": "probes/ReviewProbeGameTests.java",
+      "bytes": 16961,
+      "sha256": "be5905bbb317e9d08db057e13ae58ad3c1bace12efcfbfaa6b9bfed329e7b4bc"
+    },
+    {
+      "path": "probes/biomes.py",
+      "bytes": 423,
+      "sha256": "f9d16517b5b5d413ddca0e0ca20c6b5c1b69f052b4eea5a3ba36ac94a8bf40be"
+    },
+    {
+      "path": "probes/check_identity.py",
+      "bytes": 947,
+      "sha256": "671a2aa70fa3bbce28874801472cb9adcd33995ed56a4736c6c3972537a3e0b6"
+    },
+    {
+      "path": "probes/chunk_dump.py",
+      "bytes": 884,
+      "sha256": "c0f572f8ffbe60b2c2faf8e168e6087c454cd9bca24edbfd38ff1057d627e275"
+    },
+    {
+      "path": "probes/extent.py",
+      "bytes": 1163,
+      "sha256": "af03db0555473d76cf9dcab4a4d96f513135262b7a1fe75ed8278c8f990e15dd"
+    },
+    {
+      "path": "probes/hybrid_ring.py",
+      "bytes": 1583,
+      "sha256": "a1a0df266a7829e059a52877e53a9098aff05db002d1191d3520da5f815126db"
+    },
+    {
+      "path": "probes/hybrid_scan.py",
+      "bytes": 1755,
+      "sha256": "a13d63e2be371eda0d2c96248e464e2ee04204f389c43075bb46e7e3df951ac7"
+    },
+    {
+      "path": "probes/jar_probe.py",
+      "bytes": 1940,
+      "sha256": "3953ba58ef654b6155f6a5a74b17a2fb4d9e3bfd8606f38b7c603f92b31da32e"
+    },
+    {
+      "path": "probes/javap-ConfigFileTypeHandler.txt",
+      "bytes": 18850,
+      "sha256": "1db68a2a20d7ecef36b2c648ec16e58831d5970d6528d59083fa643c4a9d0375"
+    },
+    {
+      "path": "probes/javap-ConfigWatcher.txt",
+      "bytes": 7492,
+      "sha256": "684ec15e10dbd11731d7961c692033c9d7eeab2e453d353452f08089c351ccba"
+    },
+    {
+      "path": "probes/javap-GameTestServer.txt",
+      "bytes": 35403,
+      "sha256": "d36302f0741e1544c2923d0ceec348e4a5be21b271551196dd77c97de68df5bf"
+    },
+    {
+      "path": "probes/javap-Main.txt",
+      "bytes": 59354,
+      "sha256": "2d703360ae861820d9fb9c597aee713e37f8faa38f22109c7e51e4687bd2ff44"
+    },
+    {
+      "path": "probes/mutations.json",
+      "bytes": 2842,
+      "sha256": "2dc7558a45d174360b0ff0c70fa0e61c683c3dfda9085f9ee2edf9cd5f4844c0"
+    },
+    {
+      "path": "probes/orig/CraterPiece.java",
+      "bytes": 5727,
+      "sha256": "85b43828cee638982e0da7a57679d25ecda1c2d6517c0ce2500113398d3c19b0"
+    },
+    {
+      "path": "probes/orig/CraterStructure.java",
+      "bytes": 3407,
+      "sha256": "2bdb29bde03b74071f088a110ace8bc82c37398ce1d3dd4845a23ecd24acee66"
+    },
+    {
+      "path": "probes/orig/GeodeStructure.java",
+      "bytes": 2444,
+      "sha256": "041b5a241f8bf43755e131cf232f3333cae380be86911514d161161046e025a7"
+    },
+    {
+      "path": "probes/orig/PieceArea.java",
+      "bytes": 846,
+      "sha256": "ac66cdd6d0bec4516ff3083533509b84d84f18420e5cbfd88538598fc8b669b9"
+    },
+    {
+      "path": "probes/orig/PieceArea.java.bak",
+      "bytes": 846,
+      "sha256": "ac66cdd6d0bec4516ff3083533509b84d84f18420e5cbfd88538598fc8b669b9"
+    },
+    {
+      "path": "probes/orig/PieceSchema.java",
+      "bytes": 956,
+      "sha256": "465be7e38f637b097b5bd9e1806b090c1204c5489b637807e24a2cefb7e5849c"
+    },
+    {
+      "path": "probes/orig/SurfaceContent.java",
+      "bytes": 4673,
+      "sha256": "5f33c474ed39d83d6b65cd005178edc149c9bf7192c217b2845732a4f8a82130"
+    },
+    {
+      "path": "probes/orig/VolcanoPiece.java",
+      "bytes": 5202,
+      "sha256": "ab5f30d2ebfe7170172a0f2514086b644d73b157d10bcc86ec1dfe364eb1cc3b"
+    },
+    {
+      "path": "probes/orig/mars_tin_ore.json",
+      "bytes": 357,
+      "sha256": "af91a79f210f09e931d66d43b775af1520ba0621cc0c4b895bf5aded2772b562"
+    },
+    {
+      "path": "probes/orig/moon.json",
+      "bytes": 7884,
+      "sha256": "d1acdce493b3377f69c1c9eecbc6910b7abd28a3ea09cbd8156f210a50af943e"
+    },
+    {
+      "path": "probes/ring_check.py",
+      "bytes": 996,
+      "sha256": "4dd6fdb05555b923ba9ec2e2ddb9bce96223a2477497575bf57c138afa41696e"
+    },
+    {
+      "path": "probes/ring_check2.py",
+      "bytes": 1002,
+      "sha256": "bedf872bf8dfc1719d6ca86ba36290831dc5e1128820d6896f79316ff990a8b8"
+    },
+    {
+      "path": "probes/router.py",
+      "bytes": 243,
+      "sha256": "02a93bf3dbcdf80b25cf089a0566ddf31634882b7ed7108c44c8e8e43ccadcbd"
+    },
+    {
+      "path": "probes/seed.py",
+      "bytes": 177,
+      "sha256": "fa600a60088ce366a9ef690f4b6dcd62e98ed771d3ac0230020af7c2c6b43225"
+    },
+    {
+      "path": "probes/status_map.py",
+      "bytes": 1089,
+      "sha256": "3e9d88711bad5de53516e71c42a853dd94b4672231d611e0f690adb7d2b2c30a"
+    },
+    {
+      "path": "probes/tag_union.py",
+      "bytes": 605,
+      "sha256": "83cf75c06e34cfac9181b36f78a30297fa96a7606866addfcfe93111d69f1715"
+    },
+    {
+      "path": "probes/top_blocks.py",
+      "bytes": 2285,
+      "sha256": "56aa6abb5a5747b69ae50103f7140314b5266e0fac6366dbaf81842d69534aab"
+    },
+    {
+      "path": "probes-out/probe-lines.txt",
+      "bytes": 3237,
+      "sha256": "eb1efe3f0872eaaf31eebe61717832e0707a337ef7bf7afa4f67d62649c19cc2"
+    },
+    {
+      "path": "probes-out/s1c-mars-top-blocks.txt",
+      "bytes": 135,
+      "sha256": "63bf460b4cb457f159267de9933d6cbbc0ce063b76554debeaa8db47e42708ad"
+    },
+    {
+      "path": "probes-out/s1c-moon-chunk-m10-m10.txt",
+      "bytes": 1165,
+      "sha256": "50a0ec0e6fb3bfea93ab709afd1ea52100c009a7fad59d99cb575238b94c8c2f"
+    },
+    {
+      "path": "probes-out/s1c-moon-status-map.txt",
+      "bytes": 1968,
+      "sha256": "0e58e7bf25dd60bfcb35ac3cf212f154108d9c45ff03ce565a44f9b099b3c667"
+    },
+    {
+      "path": "probes-out/s1c-moon-top-blocks.txt",
+      "bytes": 953,
+      "sha256": "b548ea86044c6c5cfc686907cb1b4502d8284f970f52d21c32a411bb6c493139"
+    },
+    {
+      "path": "probes-out/s1c-ring-classes.txt",
+      "bytes": 2834,
+      "sha256": "8e5eff66ef1b16a454fb2f87d645a10f268420927b4d65107d38ab7dcfaad0b4"
+    },
+    {
+      "path": "logs/generated-after.sha256",
+      "bytes": 159818,
+      "sha256": "a8b8c219eb3bb264641765ba19ba8cf21f07df5b5d67e0cf737322fcf84b7739"
+    },
+    {
+      "path": "logs/generated-before.sha256",
+      "bytes": 158102,
+      "sha256": "d40f1d67427f773f022b00fb19ec5034d1cd643b456eb70928baa8a1d705caf8"
+    },
+    {
+      "path": "logs/generated-restoreA.sha256",
+      "bytes": 158102,
+      "sha256": "d40f1d67427f773f022b00fb19ec5034d1cd643b456eb70928baa8a1d705caf8"
+    },
+    {
+      "path": "logs/gradle-full-1.log",
+      "bytes": 1223719,
+      "sha256": "50ded5a4e974df6fa1b40dd28f20f39cf0395e08de58afc488624af16ecbbd26"
+    },
+    {
+      "path": "logs/gradle-mutA-junit.log",
+      "bytes": 1456,
+      "sha256": "ddd79764b5406a9e2cc8e061c8ffe0727bcdaf5930dcd88449d011d9857c225a"
+    },
+    {
+      "path": "logs/gradle-mutA.log",
+      "bytes": 1205660,
+      "sha256": "548e950f784ad4e1ba730251293c1666fae2e304d541d183c3ed6f3e0aa4270c"
+    },
+    {
+      "path": "logs/gradle-mutB.filtered.log",
+      "bytes": 555098,
+      "sha256": "9d7dc12b9fe1ae2f8f0ce5eede13259aa38550d9a740a42daa8c4219a945d8f9"
+    },
+    {
+      "path": "logs/gradle-mutB.log.gz",
+      "bytes": 4808971,
+      "sha256": "4ec70900b0afc35b365ba803834bbe29355aa281a2c41bf88c5271847bad4985"
+    },
+    {
+      "path": "logs/gradle-mutC-junit.log",
+      "bytes": 2099,
+      "sha256": "78e9c2d2393a73b95245ff4190112040b8aff9c7825de4faff37fa6c129dc2fc"
+    },
+    {
+      "path": "logs/gradle-mutC.log",
+      "bytes": 1198528,
+      "sha256": "e1181d1f28dd25d9b762d2c7036c0ba62044e3af3044c326ef0ac9051ce64ce2"
+    },
+    {
+      "path": "logs/gradle-probe-1.log",
+      "bytes": 1206951,
+      "sha256": "809756a5b395fa01eb9791cc1676f0a67dbfbae14e473b936ef4ca8f78f66144"
+    },
+    {
+      "path": "logs/gradle-v17-assemble.log",
+      "bytes": 1379,
+      "sha256": "dd8d013412c868576135ecfccf8e8b48c274e41f83ef23a8b9e71137df42e248"
+    },
+    {
+      "path": "logs/gradle-v18-assemble.log",
+      "bytes": 1379,
+      "sha256": "2825869465e52b200f4e8f90e596eaee369d8518a4e31ae8f6a0d2a245ca1115"
+    },
+    {
+      "path": "logs/ledger-accepted.log",
+      "bytes": 557,
+      "sha256": "11a0ebf2e8ab6cda01e7fbebfe823caac3d69cde437b3c8569992a2eba16cd23"
+    },
+    {
+      "path": "logs/ledger.log",
+      "bytes": 557,
+      "sha256": "11a0ebf2e8ab6cda01e7fbebfe823caac3d69cde437b3c8569992a2eba16cd23"
+    },
+    {
+      "path": "logs/python/art-screen.json",
+      "bytes": 12563,
+      "sha256": "989c49624c988e43daa79972cdca48337f80156f6cffca00999227fb1e99ec5e"
+    },
+    {
+      "path": "logs/python/art-screen.log",
+      "bytes": 15,
+      "sha256": "f00a001f52fa30d488fe5d69e54028a903d35572c77c07883795bde17b532ac1"
+    },
+    {
+      "path": "logs/python/beta-resources.log",
+      "bytes": 92,
+      "sha256": "f928543eadf143aa689e8fd09be8869a2d633dacdd2dff438cd346ed124f2214"
+    },
+    {
+      "path": "logs/python/client-imports.log",
+      "bytes": 70,
+      "sha256": "41d7f9b8f46d1eeaf40be07406c7c5b8fe4fc53b75ce90cd23b55ed7c489293c"
+    },
+    {
+      "path": "logs/python/derivation.log",
+      "bytes": 50,
+      "sha256": "0c13be0642042a9912cb8909f1a08bec88a103831808e31db4f7efdc55aca1c0"
+    },
+    {
+      "path": "logs/python/inventory.log",
+      "bytes": 23,
+      "sha256": "e4000ddc4513b26590568009299586c84eb74db65d349b9359aa6fe66958e755"
+    },
+    {
+      "path": "logs/python/ledger-closure.log",
+      "bytes": 650,
+      "sha256": "b6287ec77e7e5d2bfe23050abf82ea3a2e7292602edbe34d6cbdc0cde47fe873"
+    },
+    {
+      "path": "logs/python/machine-resources.log",
+      "bytes": 72,
+      "sha256": "1d3d83a4191126823a59aa2d308d349ec7d46cd33af9f50025384f513b8dcf6d"
+    },
+    {
+      "path": "logs/python/unittest.log",
+      "bytes": 326,
+      "sha256": "72939dc7571500de13bbd80b140754e5494c4fd82ec1969f293dfef99a9fc90d"
+    },
+    {
+      "path": "logs/python/validate_repository.log",
+      "bytes": 20551,
+      "sha256": "ee2d2333742ba1368d113686679e09b755ae972fa3151fd410b7fd7a89c6a1d7"
+    },
+    {
+      "path": "s1/native-run.exit",
+      "bytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": "s1/native-run.log",
+      "bytes": 155,
+      "sha256": "d42fc98f9e22ae94228252a6e5098699155dca61f9184200640c5d4f779763b3"
+    },
+    {
+      "path": "s1/native/explore/commands.json",
+      "bytes": 795,
+      "sha256": "e755fe3d42f6ca259d9e98b682d2768a3942697f628d28a7b637d1500e63c9eb"
+    },
+    {
+      "path": "s1/native/explore/debug.log",
+      "bytes": 111862,
+      "sha256": "36d8754061cc75f0ee7dd935c24dcf1ff5933c67df407b6626d6536bfb697c91"
+    },
+    {
+      "path": "s1/native/explore/latest.log",
+      "bytes": 32671,
+      "sha256": "0e7540d4b4df350550e4833cea89928fb8d08f5d613b901d730e1c2a8df438d0"
+    },
+    {
+      "path": "s1/native/explore/launch.json",
+      "bytes": 1254,
+      "sha256": "f3c9d59f0c3d5c0fdca498173d0d5d3a2df1a83250db8dec659202f7425a48e1"
+    },
+    {
+      "path": "s1/native/explore/receipt.json",
+      "bytes": 471,
+      "sha256": "8f11cd5aeea789554d4bbbdd8748cd644b36e09a72bace74abfd3316d6baa47f"
+    },
+    {
+      "path": "s1/native/explore/stdout.txt",
+      "bytes": 26617,
+      "sha256": "56af524352ffec399b1b0f914af77b80565ca6df9a6177bb6bd31910da4541ad"
+    },
+    {
+      "path": "s1/native/explored-before.json",
+      "bytes": 20,
+      "sha256": "6ad6e012b525eba9714db8abd651ec33620e32db0f665eee3004e32e5448c5fb"
+    },
+    {
+      "path": "s1/native/explored-differences.json",
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "path": "s1/native/inputs.json",
+      "bytes": 1606,
+      "sha256": "8bda8eb4baf750d3ed75f5746f39c423832fefaa4df2e63abc54017069069864"
+    },
+    {
+      "path": "s1/native/source-world-files.json",
+      "bytes": 23304,
+      "sha256": "c36043265f5a7453561ffdc9e8885086940d3d744c2203959e0cc143a6c6f7d4"
+    },
+    {
+      "path": "s1/native/summary.json",
+      "bytes": 6756,
+      "sha256": "e4ec475074356a0e7134925ed662b27dae3e0894a5f8c3c9cfa4c2217936e334"
+    },
+    {
+      "path": "s1/native/upgrade/commands.json",
+      "bytes": 1993,
+      "sha256": "91aed65fc71912dd6a107511d2468a6db484e20e0acd9a3e4c1355e721082e59"
+    },
+    {
+      "path": "s1/native/upgrade/debug.log",
+      "bytes": 108935,
+      "sha256": "1589f9248a6f73010a592be0a7a7c4e5ec589878707b5b16f60d89b2e85325a1"
+    },
+    {
+      "path": "s1/native/upgrade/latest.log",
+      "bytes": 38671,
+      "sha256": "16b25699e1d6f9eb4f6370b1fe73ec2b25444039cdf33f4e53fc029ae0f71d24"
+    },
+    {
+      "path": "s1/native/upgrade/launch.json",
+      "bytes": 1255,
+      "sha256": "dbf68ac5d7f336614a48bc55ec33d1c2c330c4b37954d32430ba45043891623f"
+    },
+    {
+      "path": "s1/native/upgrade/receipt.json",
+      "bytes": 19171,
+      "sha256": "4c266c82145b8857dd8f6e5a7727039e69e0de673007745485b62484c8fcffcf"
+    },
+    {
+      "path": "s1/native/upgrade/stdout.txt",
+      "bytes": 32149,
+      "sha256": "e480d46fede0af93fdc3ce5b16f1e3fc3a0ec6051b8a79a953d2bd389472a486"
+    },
+    {
+      "path": "s1/scripts/native_c15b_check.py",
+      "bytes": 16990,
+      "sha256": "c56cc198fc0242156e6939bf6a32bf60aea0c5d730ac0efb21409a9724f4f6d6"
+    },
+    {
+      "path": "s1b/native-run.exit",
+      "bytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": "s1b/native-run.log",
+      "bytes": 179,
+      "sha256": "6033a9bd51aa71984e507600ba3486b57cdf9ff6f7535a103e1d3f988227b081"
+    },
+    {
+      "path": "s1b/native/explore/commands.json",
+      "bytes": 795,
+      "sha256": "e755fe3d42f6ca259d9e98b682d2768a3942697f628d28a7b637d1500e63c9eb"
+    },
+    {
+      "path": "s1b/native/explore/debug.log",
+      "bytes": 111907,
+      "sha256": "da7e28adbf0b2f3ae3f837b5f8bc9a664b98153ef79acc6429d732c4554cc699"
+    },
+    {
+      "path": "s1b/native/explore/latest.log",
+      "bytes": 32680,
+      "sha256": "2fd88bfbfdc2a24dfe75e0bf3f5924b48e1eb77ab35e7350a3573b7a3b521313"
+    },
+    {
+      "path": "s1b/native/explore/launch.json",
+      "bytes": 1256,
+      "sha256": "d6e40aaa1c2ab187026bbae155b2c55b70140a9a1f9021b43db4f03b054d7150"
+    },
+    {
+      "path": "s1b/native/explore/receipt.json",
+      "bytes": 471,
+      "sha256": "2eac39139890089e07e111e50c5a802777257876efaa1c4f17162ad0a06d5707"
+    },
+    {
+      "path": "s1b/native/explore/stdout.txt",
+      "bytes": 26626,
+      "sha256": "bd16f24aba5658548d693f197b3dfea8df166afc20b2d5ca1081450d96fedb1f"
+    },
+    {
+      "path": "s1b/native/explored-before.json",
+      "bytes": 20,
+      "sha256": "6ad6e012b525eba9714db8abd651ec33620e32db0f665eee3004e32e5448c5fb"
+    },
+    {
+      "path": "s1b/native/explored-differences.json",
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "path": "s1b/native/inputs.json",
+      "bytes": 1608,
+      "sha256": "8be8e19bfc722a43f168da1bdfae222a4f64aaee166ca86bd1b339d6c197f128"
+    },
+    {
+      "path": "s1b/native/source-world-files.json",
+      "bytes": 23304,
+      "sha256": "c36043265f5a7453561ffdc9e8885086940d3d744c2203959e0cc143a6c6f7d4"
+    },
+    {
+      "path": "s1b/native/summary.json",
+      "bytes": 6885,
+      "sha256": "8edbecd5610e207cb8dbb8b597420e39561748c3a1bcbfe252f4d0b814a58a1f"
+    },
+    {
+      "path": "s1b/native/upgrade/commands.json",
+      "bytes": 2755,
+      "sha256": "f29c6fc685535b183b4739922ce84555242971acf22bea6d633f37c1a89455ec"
+    },
+    {
+      "path": "s1b/native/upgrade/debug.log",
+      "bytes": 110627,
+      "sha256": "f024752e3bbd0c6411cd203141b658b490f8fbc807432ea3d6092e2f5cf7ff4c"
+    },
+    {
+      "path": "s1b/native/upgrade/latest.log",
+      "bytes": 40148,
+      "sha256": "47d9b2ea63d461f3de3ad2611bff3c11da7c19ac725a0fce50449a567f0756e0"
+    },
+    {
+      "path": "s1b/native/upgrade/launch.json",
+      "bytes": 1257,
+      "sha256": "4226e7e355a031bec70f53ec08cc124122dbe965e7929ccc1b79502f80e2be9f"
+    },
+    {
+      "path": "s1b/native/upgrade/receipt.json",
+      "bytes": 19302,
+      "sha256": "1b5f92f753547576da4c708bd83fd7ad430cab70eb3b43ed25a3a7fa72e36964"
+    },
+    {
+      "path": "s1b/native/upgrade/stdout.txt",
+      "bytes": 33383,
+      "sha256": "7c841560cfd2fb80ccff66cd4cb19227186d122bb43066cbeaf8823841f1f775"
+    },
+    {
+      "path": "s1b/scripts/native_c15b_seam_check.py",
+      "bytes": 18197,
+      "sha256": "4c7e5d19dd6fdec5b6e3d7dd5810c3cac396c716140674f1e17ec680f28013fe"
+    },
+    {
+      "path": "s1c/native-run.exit",
+      "bytes": 7,
+      "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+    },
+    {
+      "path": "s1c/native-run.log",
+      "bytes": 177,
+      "sha256": "ba72799136f10ae67f34dbad800d618fc0bd9ec20fe07d81d994fa8522b200fe"
+    },
+    {
+      "path": "s1c/native/explore/commands.json",
+      "bytes": 795,
+      "sha256": "1e1140e8cdb43875b23d300299897c7ab0bd7b7b2e1a212c030e2fb2b639a9ec"
+    },
+    {
+      "path": "s1c/native/explore/debug.log",
+      "bytes": 112046,
+      "sha256": "87a42b29c95be556d907730266b6154f41d1ca2e5bef44b60315632eac2b0391"
+    },
+    {
+      "path": "s1c/native/explore/latest.log",
+      "bytes": 32820,
+      "sha256": "e17e5e6e02183e2f294eb54e73c1d9d1561b7609c33c069cc7ee423eb3e0aaf1"
+    },
+    {
+      "path": "s1c/native/explore/launch.json",
+      "bytes": 1256,
+      "sha256": "ebbe3f86217bcc0a4b6c82c029eb05f7f3fe084a167a5404744c0bf803cfd49f"
+    },
+    {
+      "path": "s1c/native/explore/receipt.json",
+      "bytes": 471,
+      "sha256": "4a01b29f5e3eebf38c4fd04675bbe6a541efa5adee409a88655cbc99f5f65ab2"
+    },
+    {
+      "path": "s1c/native/explore/stdout.txt",
+      "bytes": 26724,
+      "sha256": "f8c2cb949ab36efb27cecb62ddb74bc79fde61d7abddef830e8d5fe96f97d645"
+    },
+    {
+      "path": "s1c/native/explored-before.json",
+      "bytes": 20,
+      "sha256": "ae5de79b08c3f54d0e21ff1d3088b10f888f23042357cac7ea2a8d0c1ded3f77"
+    },
+    {
+      "path": "s1c/native/explored-differences.json",
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "path": "s1c/native/inputs.json",
+      "bytes": 1608,
+      "sha256": "2dff8ace9772d3dc3f863e277cdbc619bb14c881cbfd32d94d7bd9bd373b3f56"
+    },
+    {
+      "path": "s1c/native/source-world-files.json",
+      "bytes": 23304,
+      "sha256": "c36043265f5a7453561ffdc9e8885086940d3d744c2203959e0cc143a6c6f7d4"
+    },
+    {
+      "path": "s1c/native/summary.json",
+      "bytes": 7040,
+      "sha256": "1bcc4ed9ca392d980cd9c6296b8773dc1c02502aa40afe5fd2f9aabdbae60f3d"
+    },
+    {
+      "path": "s1c/native/upgrade/commands.json",
+      "bytes": 3050,
+      "sha256": "dfadf5ea65b341c654894b0fbb3fa4a8179f39c2166d08eb20bcb14039e89269"
+    },
+    {
+      "path": "s1c/native/upgrade/debug.log",
+      "bytes": 110971,
+      "sha256": "f30173dee050548690122dd6dcfb7ec42a7151817dd7c1b0206f9f40ae0ca1f6"
+    },
+    {
+      "path": "s1c/native/upgrade/latest.log",
+      "bytes": 40492,
+      "sha256": "db2482a8ea75d2c140f124a18f28c96254bd0388f961f0e3441b9dad7f082ebf"
+    },
+    {
+      "path": "s1c/native/upgrade/launch.json",
+      "bytes": 1257,
+      "sha256": "48a328f7108a27792a9e150421c56037fb04f2cb6d1099c8ac1f7fc3a7516826"
+    },
+    {
+      "path": "s1c/native/upgrade/receipt.json",
+      "bytes": 19457,
+      "sha256": "ed20387872bba8d9486026ad86c58d07d4ff9d3de5c4a06946fff27a977ad0f6"
+    },
+    {
+      "path": "s1c/native/upgrade/stdout.txt",
+      "bytes": 33646,
+      "sha256": "381df4eab12f9281db5389df88ee44b6b1ad797220f45a4793e89bc6420f2467"
+    },
+    {
+      "path": "s1c/scripts/native_c15b_seam_check.py",
+      "bytes": 18319,
+      "sha256": "0de55cfb3a3736af40d2f1a23ec163438fb70f46f979b6c1018c442668de8f7a"
+    }
+  ]
+}
