@@ -293,10 +293,21 @@ tasks.register('importLegacyCelestial', JavaExec) {
 }
 
 def gameTestStartedAt = 0L
+// The GameTest world's seed. Fixed, so terrain-dependent tests (and any failure) reproduce from run to run.
+def gameTestSeed = '0'
 tasks.matching { it.name == 'runGameTestServer' }.configureEach {
     doFirst {
         // Every run starts from a fresh world: entities an earlier run saved can load after a test cleared its area.
         delete file('build/gametest/world')
+        // The dedicated GameTest server takes its seed from server.properties (an empty value is random); it fills
+        // in every other property on its first start.
+        File properties = file('build/gametest/server.properties')
+        properties.parentFile.mkdirs()
+        List<String> lines = properties.isFile()
+                ? properties.readLines('ISO-8859-1').findAll { !it.startsWith('level-seed=') }
+                : []
+        lines.add("level-seed=${gameTestSeed}".toString())
+        properties.write(lines.join('\n') + '\n', 'ISO-8859-1')
         gameTestStartedAt = System.currentTimeMillis()
     }
     doLast {
