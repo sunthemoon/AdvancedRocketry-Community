@@ -1,5 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.ChunkPlacementChecks.placeChunkByChunk;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.ChunkPlacementChecks.whenLoaded;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent;
@@ -15,12 +18,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.VolcanoPiece;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.VolcanoShape;
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PlanetWorldgen;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +30,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -57,8 +52,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 /**
  * ADR-063 section 5 and 9 (A1) on a running server: the Moon terrain bound for two seeds, the surfaces and biomes of
  * the Moon, Mars and Venus, and the write bounds of the crater, volcano, geode and charred tree generators. Each
- * structure test places its piece by hand far from the spawn area, one chunk at a time, and compares every block
- * around it before and after.
+ * structure test places its piece by hand far from the spawn area, one chunk at a time, and compares every block of
+ * its box and a 16-block margin before and after: only the recorded writes inside the box may change.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -72,8 +67,6 @@ public final class PlanetSurfaceGameTests {
      * ({@link CraterShape}). This bound covers both with a margin.
      */
     private static final int MAX_FILLER = 20;
-    private static final TicketType<ChunkPos> LOAD_TICKET = TicketType.create("arce_gametest_planet_load",
-            Comparator.comparingLong(ChunkPos::toLong));
 
     private PlanetSurfaceGameTests() {
     }
@@ -130,11 +123,14 @@ public final class PlanetSurfaceGameTests {
         helper.succeed();
     }
 
-    /** A crater of the largest radius on the Moon: each chunk call writes only its own chunk; floor y ≥ 5, rim ≤ 44. */
+    /**
+     * A crater of the largest radius on the Moon: each chunk call writes only its own chunk; rim ≤ 44. Its base lies
+     * at y 16 on purpose, so the 15-block bowl would reach y 1 and the floor clamp at y 5 always acts (C15bR1-M2).
+     */
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 2_400)
     public static void aMoonCraterWritesOnlyItsChunkWithinItsBounds(GameTestHelper helper) {
         ServerLevel moon = level(helper, CelestialIds.MOON_LEVEL);
-        BlockPos centre = surface(moon, -20_008, 20_008);
+        BlockPos centre = new BlockPos(-20_008, 16, 20_008);
         CraterShape shape = new CraterShape(48, 15, 6, new int[] {5, 5, 5, 5});
         CraterPiece piece = new CraterPiece(centre, shape, V180PlanetWorldgen.CRATER_FLOOR_MIN,
                 V180PlanetWorldgen.MOON_RIM_MAX);
@@ -152,8 +148,8 @@ public final class PlanetSurfaceGameTests {
                 }
             }
             helper.assertTrue(highest <= V180PlanetWorldgen.MOON_RIM_MAX, "A crater rim reached y " + highest);
-            helper.assertTrue(lowestFloor >= V180PlanetWorldgen.CRATER_FLOOR_MIN, "A crater floor reached y " + lowestFloor);
-            helper.assertTrue(lowestFloor < centre.getY(), "The crater dug nothing");
+            helper.assertTrue(lowestFloor == V180PlanetWorldgen.CRATER_FLOOR_MIN,
+                    "The deepest crater floor is at y " + lowestFloor + ", not the clamp");
         });
     }
 
@@ -169,8 +165,23 @@ public final class PlanetSurfaceGameTests {
             int top = venus.getHeight(Heightmap.Types.WORLD_SURFACE, base.getX(), base.getZ()) - 1;
             helper.assertTrue(top > base.getY() && top <= base.getY() + VolcanoShape.MAX_HEIGHT + 1,
                     "Volcano summit at y " + top + " over a base at " + base.getY());
-            helper.assertTrue(venus.getBlockState(base.above(shape.coneRise(0) + 1)).is(Blocks.LAVA), "No crater lava pool");
+            helper.assertTrue(venus.getBlockState(base.above(shape.poolRise())).is(Blocks.LAVA), "No crater lava pool");
             helper.assertTrue(venus.getBlockState(base.below(2)).is(Blocks.LAVA), "No lava core");
+            // Lava only in the core and the crater, and never above the pool (C15bR1-M2).
+            BoundingBox box = piece.getBoundingBox();
+            for (int x = box.minX(); x <= box.maxX(); x++) {
+                for (int z = box.minZ(); z <= box.maxZ(); z++) {
+                    double distance = Math.sqrt((double) (x - base.getX()) * (x - base.getX())
+                            + (double) (z - base.getZ()) * (z - base.getZ()));
+                    boolean lavaAllowed = shape.inCore(distance) || shape.inCrater(distance);
+                    for (int y = box.minY(); y <= box.maxY(); y++) {
+                        if (venus.getBlockState(new BlockPos(x, y, z)).is(Blocks.LAVA)) {
+                            helper.assertTrue(lavaAllowed && y <= base.getY() + shape.poolRise(),
+                                    "Lava outside the core and the crater pool at " + new BlockPos(x, y, z));
+                        }
+                    }
+                }
+            }
         });
     }
 
@@ -274,8 +285,11 @@ public final class PlanetSurfaceGameTests {
             CompoundTag saved = piece.createTag(context);
             helper.assertTrue(saved.getInt(PieceSchema.KEY) == PieceSchema.CURRENT, name + " saved no schema");
             StructurePiece loaded = piece.getType().load(context, saved);
-            helper.assertTrue(loaded.getClass() == piece.getClass() && loaded.createTag(context).equals(saved),
-                    name + " did not load back to the same piece");
+            // The loaded piece's own numbers, not its tag: a field that is never saved must not go unnoticed
+            // (C15bR1-M2).
+            helper.assertTrue(loaded.getClass() == piece.getClass() && numbers(loaded).equals(numbers(piece))
+                            && loaded.getBoundingBox().equals(piece.getBoundingBox()),
+                    name + " did not load back to the same piece: " + numbers(loaded) + " vs " + numbers(piece));
             for (int schema : new int[] {0, PieceSchema.CURRENT + 1}) {
                 CompoundTag other = saved.copy();
                 other.putInt(PieceSchema.KEY, schema);
@@ -288,6 +302,21 @@ public final class PlanetSurfaceGameTests {
             }
         }
         helper.succeed();
+    }
+
+    /** Every number a saved piece must carry, read from the piece itself. */
+    private static List<Object> numbers(StructurePiece piece) {
+        if (piece instanceof CraterPiece crater) {
+            return List.of(crater.centre(), crater.shape().radius(), crater.shape().depth(), crater.shape().rimHeight(),
+                    java.util.Arrays.toString(crater.shape().bulges()), crater.floorMinY(), crater.rimMaxY());
+        }
+        if (piece instanceof VolcanoPiece volcano) {
+            return List.of(volcano.base(), volcano.shape().radius(), volcano.shape().height());
+        }
+        if (piece instanceof GeodePiece geode) {
+            return List.of(geode.centre(), geode.shape().radius(), geode.salt());
+        }
+        throw new IllegalArgumentException("Unknown piece " + piece);
     }
 
     /** The developer platform still sits in open sky over the highest highlands (ADR-063 section 5). */
@@ -309,29 +338,6 @@ public final class PlanetSurfaceGameTests {
         // Leave the shared Moon pad area as other tests expect it: no platform.
         MoonPadArea.shape(moon, 3, V180PlanetWorldgen.MOON_SURFACE_MAX);
         helper.succeed();
-    }
-
-    /**
-     * Requests every chunk a piece's box touches with a ticket and waits until all are loaded, so the generation is
-     * spread over ticks instead of stalling one tick (and every test running beside it); then runs the check, lets the
-     * chunks go and succeeds.
-     */
-    static void whenLoaded(GameTestHelper helper, ServerLevel level, BoundingBox box, Runnable check) {
-        List<ChunkPos> chunks = new ArrayList<>();
-        for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) {
-            for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) {
-                ChunkPos chunk = new ChunkPos(cx, cz);
-                chunks.add(chunk);
-                level.getChunkSource().addRegionTicket(LOAD_TICKET, chunk, 1, chunk);
-            }
-        }
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(chunks.stream().allMatch(chunk ->
-                        level.getChunkSource().hasChunk(chunk.x, chunk.z)), "Chunks still loading"))
-                .thenExecute(check)
-                .thenExecute(() -> chunks.forEach(chunk ->
-                        level.getChunkSource().removeRegionTicket(LOAD_TICKET, chunk, 1, chunk)))
-                .thenSucceed();
     }
 
     private static ServerLevel level(GameTestHelper helper, ResourceKey<Level> key) {
@@ -369,72 +375,6 @@ public final class PlanetSurfaceGameTests {
                     key.location() + " rock " + below + " at " + under + " below " + filler + " filler under " + top);
             ResourceKey<Biome> biome = level.getBiome(top).unwrapKey().orElseThrow();
             helper.assertTrue(biomes.contains(biome), key.location() + " biome " + biome.location());
-        }
-    }
-
-    /**
-     * Places a piece in every chunk its box touches, one chunk box at a time, through a level that records every
-     * block write, and checks that each call wrote only inside its own chunk and the piece's box, and that the box
-     * lies within {@code reach} of the centre. Returns every position written.
-     */
-    private static List<BlockPos> placeChunkByChunk(GameTestHelper helper, ServerLevel level, StructurePiece piece,
-                                                    BlockPos centre, int reach, int minY, int maxY) {
-        BoundingBox pieceBox = piece.getBoundingBox();
-        helper.assertTrue(pieceBox.minX() >= centre.getX() - reach && pieceBox.maxX() <= centre.getX() + reach
-                        && pieceBox.minZ() >= centre.getZ() - reach && pieceBox.maxZ() <= centre.getZ() + reach
-                        && pieceBox.minY() >= minY && pieceBox.maxY() <= maxY,
-                "The piece box exceeds its bounds: " + pieceBox);
-        List<BlockPos> writes = new ArrayList<>();
-        for (int cx = pieceBox.minX() >> 4; cx <= pieceBox.maxX() >> 4; cx++) {
-            for (int cz = pieceBox.minZ() >> 4; cz <= pieceBox.maxZ() >> 4; cz++) {
-                level.getChunk(cx, cz);
-            }
-        }
-        for (int cx = pieceBox.minX() >> 4; cx <= pieceBox.maxX() >> 4; cx++) {
-            for (int cz = pieceBox.minZ() >> 4; cz <= pieceBox.maxZ() >> 4; cz++) {
-                ChunkPos chunk = new ChunkPos(cx, cz);
-                BoundingBox chunkBox = new BoundingBox(chunk.getMinBlockX(), level.getMinBuildHeight(),
-                        chunk.getMinBlockZ(), chunk.getMaxBlockX(), level.getMaxBuildHeight() - 1, chunk.getMaxBlockZ());
-                List<BlockPos> written = new ArrayList<>();
-                piece.postProcess(RecordingLevel.wrap(level, written), level.structureManager(),
-                        level.getChunkSource().getGenerator(), RandomSource.create(1L), chunkBox, chunk, centre);
-                for (BlockPos position : written) {
-                    helper.assertTrue(chunkBox.isInside(position) && pieceBox.isInside(position),
-                            "A write outside chunk " + chunk + " or the piece box at " + position);
-                }
-                writes.addAll(written);
-            }
-        }
-        helper.assertTrue(!writes.isEmpty(), "The piece wrote nothing");
-        return writes;
-    }
-
-    /** A {@link WorldGenLevel} view of a server level that records the position of every block write. */
-    static final class RecordingLevel implements InvocationHandler {
-        private final ServerLevel level;
-        private final List<BlockPos> written;
-
-        private RecordingLevel(ServerLevel level, List<BlockPos> written) {
-            this.level = level;
-            this.written = written;
-        }
-
-        static WorldGenLevel wrap(ServerLevel level, List<BlockPos> written) {
-            return (WorldGenLevel) Proxy.newProxyInstance(WorldGenLevel.class.getClassLoader(),
-                    new Class<?>[] {WorldGenLevel.class}, new RecordingLevel(level, written));
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable {
-            if (method.getName().equals("setBlock") && arguments != null && arguments.length > 0
-                    && arguments[0] instanceof BlockPos position) {
-                written.add(position.immutable());
-            }
-            try {
-                return method.invoke(level, arguments);
-            } catch (InvocationTargetException exception) {
-                throw exception.getCause();
-            }
         }
     }
 }

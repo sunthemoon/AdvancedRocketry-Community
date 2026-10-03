@@ -57,6 +57,18 @@ public final class CraterPiece extends StructurePiece {
                 centre.getX() + reach, rimMaxY, centre.getZ() + reach);
     }
 
+    public BlockPos centre() {
+        return new BlockPos(centreX, baseY, centreZ);
+    }
+
+    public int floorMinY() {
+        return floorMinY;
+    }
+
+    public int rimMaxY() {
+        return rimMaxY;
+    }
+
     public CraterShape shape() {
         return shape;
     }

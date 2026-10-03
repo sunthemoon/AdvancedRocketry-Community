@@ -58,7 +58,7 @@ public final class VenusStructureGameTests {
         int min = FIRST_CHUNK * 16;
         int max = (FIRST_CHUNK + CHUNKS) * 16 - 1;
         BoundingBox area = new BoundingBox(min, 0, min, max, 255, max);
-        PlanetSurfaceGameTests.whenLoaded(helper, venus, area, () -> {
+        ChunkPlacementChecks.whenLoaded(helper, venus, area, () -> {
             List<BoundingBox> geodes = new ArrayList<>();
             for (int cx = FIRST_CHUNK; cx < FIRST_CHUNK + CHUNKS; cx++) {
                 for (int cz = FIRST_CHUNK; cz < FIRST_CHUNK + CHUNKS; cz++) {

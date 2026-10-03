@@ -60,6 +60,14 @@ public final class GeodePiece extends StructurePiece {
                 centre.getX() + shape.radius(), centre.getY() + reach, centre.getZ() + shape.radius());
     }
 
+    public BlockPos centre() {
+        return new BlockPos(centreX, centreY, centreZ);
+    }
+
+    public long salt() {
+        return salt;
+    }
+
     public GeodeShape shape() {
         return shape;
     }

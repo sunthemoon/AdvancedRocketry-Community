@@ -63,6 +63,11 @@ public final class VolcanoShape {
         return Math.max(0, Math.min(height, rise));
     }
 
+    /** How far above the base the lava pool's surface lies: one block over the crater bottom, below the rim. */
+    public int poolRise() {
+        return coneRise(0) + 1;
+    }
+
     public int craterDepth() {
         return Math.max(2, craterRadius() - 1);
     }

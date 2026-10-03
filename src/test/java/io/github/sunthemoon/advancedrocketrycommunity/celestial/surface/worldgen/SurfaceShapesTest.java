@@ -65,8 +65,10 @@ class SurfaceShapesTest {
             VolcanoShape shape = VolcanoShape.random(random);
             assertTrue(shape.radius() <= VolcanoShape.MAX_RADIUS && shape.height() <= VolcanoShape.MAX_HEIGHT);
             assertTrue(shape.craterRadius() > VolcanoShape.CORE_RADIUS, "the core must lie inside the crater");
-            // The piece fills lava up to one block above the crater bottom wherever the cone is lower than that.
-            int pool = shape.coneRise(0) + 1;
+            // The piece fills lava up to the pool level wherever the cone is lower than that; the pool lies under
+            // the rim, so it cannot spill (C15bR1-M2).
+            int pool = shape.poolRise();
+            assertTrue(pool < shape.coneRise(shape.craterRadius()), "pool " + pool + " reaches the rim");
             int reach = shape.radius() + 1;
             for (int dx = -reach; dx <= reach; dx++) {
                 for (int dz = -reach; dz <= reach; dz++) {

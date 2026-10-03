@@ -155,14 +155,14 @@ public final class ExoplanetGameTests {
     public static void newTauCetiFChunksWearTheirBiomesSurfaces(GameTestHelper helper) {
         ServerLevel f = level(helper, ExoplanetContent.TAU_CETI_F_LEVEL);
         BoundingBox area = new BoundingBox(48_000, 0, 48_000, 48_047, 255, 48_047);
-        PlanetSurfaceGameTests.whenLoaded(helper, f, area, () -> surfaces(helper, f, area));
+        ChunkPlacementChecks.whenLoaded(helper, f, area, () -> surfaces(helper, f, area));
     }
 
     @GameTest(template = "empty", batch = "exoplanet_surfaces_g", timeoutTicks = 2_400)
     public static void newTauCetiGChunksWearTheirBiomesSurfaces(GameTestHelper helper) {
         ServerLevel g = level(helper, ExoplanetContent.TAU_CETI_G_LEVEL);
         BoundingBox area = new BoundingBox(-48_048, 0, 48_000, -48_001, 255, 48_047);
-        PlanetSurfaceGameTests.whenLoaded(helper, g, area, () -> surfaces(helper, g, area));
+        ChunkPlacementChecks.whenLoaded(helper, g, area, () -> surfaces(helper, g, area));
     }
 
     private static void surfaces(GameTestHelper helper, ServerLevel level, BoundingBox area) {
@@ -221,7 +221,7 @@ public final class ExoplanetGameTests {
                 V180ExoplanetWorldgen.CRYSTAL_CLUSTER);
         BoundingBox area = new BoundingBox(base.getX() - 16, 0, base.getZ() - 16, base.getX() + 4 * 48 + 16, 255,
                 base.getZ() + 48 + 16);
-        PlanetSurfaceGameTests.whenLoaded(helper, f, area, () -> {
+        ChunkPlacementChecks.whenLoaded(helper, f, area, () -> {
             Registry<ConfiguredFeature<?, ?>> registry = f.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE);
             for (int index = 0; index < features.size(); index++) {
                 for (int copy = 0; copy < 2; copy++) {
@@ -235,7 +235,7 @@ public final class ExoplanetGameTests {
                     }
                     List<BlockPos> written = new ArrayList<>();
                     ConfiguredFeature<?, ?> feature = registry.getOrThrow(features.get(index));
-                    boolean placed = place(feature, PlanetSurfaceGameTests.RecordingLevel.wrap(f, written), f, origin,
+                    boolean placed = place(feature, ChunkPlacementChecks.RecordingLevel.wrap(f, written), f, origin,
                             31L * index + copy);
                     helper.assertTrue(placed && !written.isEmpty(), features.get(index).location() + " placed nothing");
                     for (BlockPos write : written) {
@@ -267,7 +267,7 @@ public final class ExoplanetGameTests {
         BlockPos blocked = free.offset(32, 0, 0);
         BoundingBox area = new BoundingBox(free.getX() - 16, 0, free.getZ() - 16, blocked.getX() + 16, 255,
                 blocked.getZ() + 16);
-        PlanetSurfaceGameTests.whenLoaded(helper, f, area, () -> {
+        ChunkPlacementChecks.whenLoaded(helper, f, area, () -> {
             SaplingBlock sapling = (SaplingBlock) ExoplanetBlocks.LIGHTWOOD_SAPLING.get();
             for (BlockPos position : List.of(free, blocked)) {
                 f.setBlock(position.below(), Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);

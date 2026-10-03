@@ -156,7 +156,7 @@ public final class TauCetiPathGameTests {
         ServerLevel level = helper.getLevel().getServer().getLevel(key);
         helper.assertTrue(level != null, "Missing Level " + key.location());
         int reach = 64 + FOOTPRINT;
-        PlanetSurfaceGameTests.whenLoaded(helper, level, new BoundingBox(-reach, 0, -reach, reach, 255, reach), () -> {
+        ChunkPlacementChecks.whenLoaded(helper, level, new BoundingBox(-reach, 0, -reach, reach, 255, reach), () -> {
             for (int[] pad : PADS) {
                 for (int x = pad[0] - FOOTPRINT; x <= pad[0] + FOOTPRINT; x++) {
                     for (int z = pad[1] - FOOTPRINT; z <= pad[1] + FOOTPRINT; z++) {

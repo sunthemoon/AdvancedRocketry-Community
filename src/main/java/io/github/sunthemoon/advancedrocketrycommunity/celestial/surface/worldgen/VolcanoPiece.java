@@ -51,6 +51,10 @@ public final class VolcanoPiece extends StructurePiece {
                 base.getZ() + shape.radius());
     }
 
+    public BlockPos base() {
+        return new BlockPos(baseX, baseY, baseZ);
+    }
+
     public VolcanoShape shape() {
         return shape;
     }
@@ -73,7 +77,7 @@ public final class VolcanoPiece extends StructurePiece {
             return;
         }
         BlockState lava = Blocks.LAVA.defaultBlockState();
-        int poolLevel = baseY + shape.coneRise(0) + 1;
+        int poolLevel = baseY + shape.poolRise();
         BlockPos.MutableBlockPos position = new BlockPos.MutableBlockPos();
         for (int x = area.minX(); x <= area.maxX(); x++) {
             for (int z = area.minZ(); z <= area.maxZ(); z++) {
