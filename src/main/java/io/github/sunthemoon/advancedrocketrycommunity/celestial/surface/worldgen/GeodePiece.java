@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
@@ -22,7 +23,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 /**
  * The single piece of a geode: a lens-shaped hollow lined with geode shell, with ore clusters from the
  * {@code geode_ores} block tag (at most {@link #MAX_ORES} kinds, in registry-name order) on the roof and the floor.
- * Every write stays inside the chunk being generated.
+ * No geode block comes within {@link GeodeStructure#COVER} blocks of the ground of its column, so a geode never opens
+ * to the surface under low ground. Every write stays inside the chunk being generated.
  */
 public final class GeodePiece extends StructurePiece {
     public static final int MAX_ORES = 32;
@@ -91,22 +93,30 @@ public final class GeodePiece extends StructurePiece {
                 if (half < 0) {
                     continue;
                 }
-                for (int y = centreY - half + 1; y <= centreY + half - 1; y++) {
+                // The start keeps COVER blocks of rock above the centre column; where the ground of another column
+                // lies lower, the roof comes down to stay COVER blocks under that column's own ground.
+                int ground = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
+                int top = Math.min(centreY + half, ground - GeodeStructure.COVER);
+                int bottom = centreY - half;
+                if (top < bottom) {
+                    continue;
+                }
+                for (int y = bottom + 1; y < top; y++) {
                     set(level, chunkBox, position.set(x, y, z), air);
                 }
-                set(level, chunkBox, position.set(x, centreY + half, z), shell);
-                set(level, chunkBox, position.set(x, centreY - half, z), shell);
+                set(level, chunkBox, position.set(x, top, z), shell);
+                set(level, chunkBox, position.set(x, bottom, z), shell);
                 if (ores.isEmpty()) {
                     continue;
                 }
                 BlockState ore = ores.get(Math.floorMod(Math.floorDiv(dx, 4) + Math.floorDiv(dz, 4), ores.size()));
                 int length = shape.clusterLength(dx, dz, salt);
                 for (int i = 1; i <= length; i++) {
-                    if (GeodeShape.roofCluster(dx, dz)) {
-                        set(level, chunkBox, position.set(x, centreY + half - i, z), ore);
+                    if (GeodeShape.roofCluster(dx, dz) && top - i > bottom) {
+                        set(level, chunkBox, position.set(x, top - i, z), ore);
                     }
-                    if (GeodeShape.floorCluster(dx, dz)) {
-                        set(level, chunkBox, position.set(x, centreY - half + i, z), ore);
+                    if (GeodeShape.floorCluster(dx, dz) && bottom + i < top) {
+                        set(level, chunkBox, position.set(x, bottom + i, z), ore);
                     }
                 }
             }

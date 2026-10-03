@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.CraterShape;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.GeodePiece;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.GeodeShape;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.GeodeStructure;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.PieceSchema;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.SurfaceWorldgen;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.VolcanoPiece;
@@ -20,7 +21,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -179,8 +182,34 @@ public final class PlanetSurfaceGameTests {
         BlockPos centre = ground.below(4 + shape.verticalReach());
         GeodePiece piece = new GeodePiece(centre, shape, 7L);
         whenLoaded(helper, venus, piece.getBoundingBox(), () -> {
-            placeChunkByChunk(helper, venus, piece, centre, shape.radius(), centre.getY() - shape.verticalReach() - 1,
-                    ground.getY() + 2);
+            // Low ground over part of the geode: a pit dug below where the roof would be. No column, the pit's
+            // included, may get a geode block within GeodeStructure.COVER blocks of its own ground.
+            BlockPos pit = centre.offset(8, 0, 0);
+            int pitFloor = centre.getY() + shape.halfHeight(8, 0) - 2;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    for (int y = pitFloor + 1; y <= ground.getY() + 8; y++) {
+                        venus.setBlock(new BlockPos(pit.getX() + dx, y, pit.getZ() + dz), Blocks.AIR.defaultBlockState(),
+                                Block.UPDATE_CLIENTS);
+                    }
+                }
+            }
+            BoundingBox box = piece.getBoundingBox();
+            Map<Long, Integer> groundBefore = new HashMap<>();
+            for (int x = box.minX(); x <= box.maxX(); x++) {
+                for (int z = box.minZ(); z <= box.maxZ(); z++) {
+                    groundBefore.put(ChunkPos.asLong(x, z), venus.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1);
+                }
+            }
+            List<BlockPos> writes = placeChunkByChunk(helper, venus, piece, centre, shape.radius(),
+                    centre.getY() - shape.verticalReach() - 1, ground.getY() + 2);
+            for (BlockPos write : writes) {
+                int cover = groundBefore.get(ChunkPos.asLong(write.getX(), write.getZ())) - write.getY();
+                helper.assertTrue(cover >= GeodeStructure.COVER, "A geode write " + cover + " blocks under the ground at "
+                        + write);
+            }
+            helper.assertTrue(writes.stream().anyMatch(write -> write.getX() == pit.getX() && write.getZ() == pit.getZ()),
+                    "The geode left out the column under the pit");
             helper.assertTrue(venus.getBlockState(centre).isAir(), "The geode is not hollow");
             helper.assertTrue(venus.getBlockState(centre.above(shape.halfHeight(0, 0))).is(SurfaceContent.GEODE_SHELL.get()),
                     "No geode shell roof");
@@ -346,16 +375,16 @@ public final class PlanetSurfaceGameTests {
     /**
      * Places a piece in every chunk its box touches, one chunk box at a time, through a level that records every
      * block write, and checks that each call wrote only inside its own chunk and the piece's box, and that the box
-     * lies within {@code reach} of the centre.
+     * lies within {@code reach} of the centre. Returns every position written.
      */
-    private static void placeChunkByChunk(GameTestHelper helper, ServerLevel level, StructurePiece piece,
-                                          BlockPos centre, int reach, int minY, int maxY) {
+    private static List<BlockPos> placeChunkByChunk(GameTestHelper helper, ServerLevel level, StructurePiece piece,
+                                                    BlockPos centre, int reach, int minY, int maxY) {
         BoundingBox pieceBox = piece.getBoundingBox();
         helper.assertTrue(pieceBox.minX() >= centre.getX() - reach && pieceBox.maxX() <= centre.getX() + reach
                         && pieceBox.minZ() >= centre.getZ() - reach && pieceBox.maxZ() <= centre.getZ() + reach
                         && pieceBox.minY() >= minY && pieceBox.maxY() <= maxY,
                 "The piece box exceeds its bounds: " + pieceBox);
-        int writes = 0;
+        List<BlockPos> writes = new ArrayList<>();
         for (int cx = pieceBox.minX() >> 4; cx <= pieceBox.maxX() >> 4; cx++) {
             for (int cz = pieceBox.minZ() >> 4; cz <= pieceBox.maxZ() >> 4; cz++) {
                 level.getChunk(cx, cz);
@@ -373,10 +402,11 @@ public final class PlanetSurfaceGameTests {
                     helper.assertTrue(chunkBox.isInside(position) && pieceBox.isInside(position),
                             "A write outside chunk " + chunk + " or the piece box at " + position);
                 }
-                writes += written.size();
+                writes.addAll(written);
             }
         }
-        helper.assertTrue(writes > 0, "The piece wrote nothing");
+        helper.assertTrue(!writes.isEmpty(), "The piece wrote nothing");
+        return writes;
     }
 
     /** A {@link WorldGenLevel} view of a server level that records the position of every block write. */
