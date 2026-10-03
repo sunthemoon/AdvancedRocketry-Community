@@ -1,0 +1,382 @@
+{
+  "links": [
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/ENDGAME-OPERATOR-GUIDE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v1.3.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.2.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.1.0/"
+    },
+    {
+      "document": "CHANGELOG.md",
+      "target": "docs/releases/v0.0.2/INSTALLATION.md"
+    },
+    {
+      "document": "docs/CELESTIAL-DATA-GUIDE.md",
+      "target": "PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "docs/CELESTIAL-DATA-GUIDE.md",
+      "target": "PLANETARY-SKY-GUIDE.md"
+    },
+    {
+      "document": "docs/CELESTIAL-DATA-GUIDE.md",
+      "target": "PLANETARY-DISCOVERY-GUIDE.md"
+    },
+    {
+      "document": "docs/CELESTIAL-DATA-GUIDE.md",
+      "target": "PLANETARY-DISCOVERY-GUIDE.md"
+    },
+    {
+      "document": "docs/CELESTIAL-DATA-GUIDE.md",
+      "target": "work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.2.0-machine-audit.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.8.0-content-ledger.csv"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.8.0-asset-plan.csv"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "16-POST-1.0-VERSION-ROADMAP.md"
+    },
+    {
+      "document": "docs/PORTING_MATRIX.md",
+      "target": "work/v1.0.0-core-baseline-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "target": "../work/v1.8.0-content-audit.md"
+    },
+    {
+      "document": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "target": "../work/v1.8.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "target": "../work/v1.8.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "target": "../work/v1.8.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v0.9.0/GATE-STATUS.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.0.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.8.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.8.0-c15a-materials/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.8.0-c15b-surfaces/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.8.0-c15c-worlds/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-053-V170-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.7.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.7.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../decisions/ADR-048-V160-DEVELOPMENT-BASELINE-EXCEPTION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.6.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.6.0-c7-close/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.6.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md#checkpoint--2026-09-30-paused-then-resumed"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-expansion/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-station-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-orbit-environment/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-star-systems/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-schema/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-core/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-rockets/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-warp-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-slices-review/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-review-closure/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-closure/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.5.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-implementation-log.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-orbit-sky/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-elevator-ui/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.5.0-mig-native/VERIFICATION.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../releases/v1.4.0/RELEASE-EVIDENCE.md"
+    },
+    {
+      "document": "docs/status/CURRENT_VERSION.md",
+      "target": "../work/v1.4.0-implementation-log.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "target": "../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "target": "../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "target": "../../decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "target": "../../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "target": "reviews/REVIEW-01.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "target": "review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/review-01-dispositions.md",
+      "target": "reviews/REVIEW-01.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/review-01-dispositions.md",
+      "target": "independent-review.zip"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15b-surfaces/review-01-dispositions.md",
+      "target": "VERIFICATION.md#corrections-after-review-round-1"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15c-worlds/VERIFICATION.md",
+      "target": "../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15c-worlds/VERIFICATION.md",
+      "target": "../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15c-worlds/VERIFICATION.md",
+      "target": "../../decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15c-worlds/VERIFICATION.md",
+      "target": "../v1.8.0-c15b-surfaces/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-c15c-worlds/VERIFICATION.md",
+      "target": "../../status/COMPLETION-PLAN.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "../versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-content-audit.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-legacy-inventory.json"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-content-ledger.csv"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-asset-plan.csv"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-contract-coverage.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-preparation/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-preparation/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-preparation/review-03-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-preparation/review-04-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-preparation/review-05-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-preparation/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15a-materials/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15a-materials/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15a-materials/review-02-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15b-surfaces/VERIFICATION.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15b-surfaces/review-01-dispositions.md"
+    },
+    {
+      "document": "docs/work/v1.8.0-implementation-log.md",
+      "target": "v1.8.0-c15c-worlds/VERIFICATION.md"
+    }
+  ],
+  "result": "PASS",
+  "scope": "Changed Markdown local file targets only"
+}

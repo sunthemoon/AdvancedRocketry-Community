@@ -33,26 +33,26 @@ atmosphere:AtmosphereType,IMPLEMENTED,v0.4.0,breathable air,ADR-024,,
 atmosphere:AtmosphereVacuum,IMPLEMENTED,v0.4.0,vacuum,ADR-024,,
 atmosphere:AtmosphereVeryHot,REDESIGNED,v1.4.0,heat exposure,ADR-034,,
 atmosphere:AtmosphereVeryHotNoOxygen,REDESIGNED,v1.4.0,heat exposure without oxygen,ADR-034,,
-biome:alien_forest,PLANNED,C15c,alien forest biome,ADR-062,classic exoplanet world,
-biome:crystalchasms,PLANNED,C15c,crystal chasms biome,ADR-062,classic exoplanet world,
-biome:deepswamp,PLANNED,C15c,deep swamp biome,ADR-062,classic exoplanet world,
+biome:alien_forest,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:alien_forest biome,ADR-063,Tau Ceti f,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+biome:crystalchasms,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:crystal_chasms biome,ADR-063,Tau Ceti g,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+biome:deepswamp,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:deep_swamp biome,ADR-063,Tau Ceti f; nothing spawns (the legacy slimes are not restored),docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 biome:hotdryrock,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_regolith biome,ADR-063,"Mars; keeps the v1.4 sky colour, not the legacy 0x664444",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-biome:marsh,PLANNED,C15c,marsh biome,ADR-062,classic exoplanet world,
+biome:marsh,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:marsh biome,ADR-063,Tau Ceti f,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 biome:moon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:regolith_highlands biome,ADR-063,Moon,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:moondark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:regolith_lowlands biome,ADR-063,Moon,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-biome:oceanspires,PLANNED,C15c,ocean spires biome,ADR-062,classic exoplanet world,
+biome:oceanspires,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ocean_spires biome,ADR-063,Tau Ceti f,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 biome:space,REDESIGNED,v0.3.0,space Level,ADR-031,shared space Level,
-biome:stormland,PLANNED,C15c,stormland biome,ADR-062,classic exoplanet world,
-biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-063,"Venus; nothing spawns (the legacy creepers are not restored)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+biome:stormland,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:stormland biome,ADR-063,Tau Ceti g; nothing spawns (the legacy creepers are not restored),docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-063,Venus; nothing spawns (the legacy creepers are not restored),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowlands biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
 block:advbipropellantRocketmotor,PLANNED,C17a,advanced bipropellant engine,ADR-062,propulsion tier with fuel and oxidizer,
 block:advRocketmotor,PLANNED,C17a,advanced monopropellant engine,ADR-062,propulsion tier,
 block:airlock_door,PLANNED,C18a,airlock door,ADR-062,sealing door; block half of the small airlock,
-block:alienLeaves,PLANNED,C15c,lightwood leaves,ADR-062,alien forest flora,
-block:alienSapling,PLANNED,C15c,lightwood sapling,ADR-062,alien forest flora,
-block:alienWood,PLANNED,C15c,lightwood log,ADR-062,alien forest flora,
+block:alienLeaves,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_leaves,ADR-063,"alien forest flora; light 8, a sapling in 1 of 100 drops",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block:alienSapling,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_sapling,ADR-063,alien forest flora; grows the lightwood tree,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block:alienWood,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_log,ADR-063,"alien forest flora; burns, hardness 3",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:altitudeController,PLANNED,C17b,station altitude control,ADR-062,station orbit setting through the checked station commit,
 block:arcfurnace,PLANNED,C16b,electric arc furnace,ADR-062,alloys and silicon; classic machine family,
 block:basalt,REDESIGNED,v1.8.0,vanilla basalt in the Venus surface,ADR-063,vanilla basalt replaces the legacy block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
@@ -69,12 +69,12 @@ block:charcoalLog,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:charcoal_log,ADR-
 block:chemicalReactor,PLANNED,C16c,chemical reactor,ADR-062,rocket fuel and chemistry,
 block:circleLight,PLANNED,C17b,station light,ADR-062,decorative light block,
 block:concrete,PLANNED,C17b,vanilla concrete in the pad recipes,ADR-062,vanilla concrete replaces the legacy block,
-block:crystal,PLANNED,C15c,crystal blocks,ADR-062,"six colours, crystal chasm decoration",
+block:crystal,REDESIGNED,v1.8.0,"six crystal blocks, one per colour",ADR-063,the legacy block with six variants is one block per colour; crystal chasm decoration,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:crystallizer,PLANNED,C16c,crystallizer,ADR-062,silicon boules and dilithium; low-gravity rule,
 block:cuttingMachine,PLANNED,C16b,cutting machine,ADR-062,wafers and sawmill recipes,
 block:deployableRocketBuilder,REJECTED,-,-,ADR-062,station-deployed mining rockets replaced by logical missions,
 block:drill,REDESIGNED,v1.6.0,advancedrocketrycommunity:asteroid_drill_module,ADR-051,asteroid mining is a logical mission,
-block:electricMushroom,PLANNED,C15c,electric mushroom,ADR-062,stormland flora,
+block:electricMushroom,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:electric_mushroom,ADR-063,"stormland flora; sparks, and flashes in the rain",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:electrolyser,IMPLEMENTED,v0.2.0,advancedrocketrycommunity:electrolyzer,ADR-016,single-block redesign kept in the v1.2 kernel,
 block:enrichedLavaFluid,PLANNED,C16a,enriched lava fluid block,ADR-062,volcanic resource fluid,
 block:forceField,PLANNED,C17b,force field block,ADR-062,placed only by the projector,
@@ -115,7 +115,7 @@ block:pipeSealer,PLANNED,C18a,pipe seal,ADR-062,sealing block that passes pipes,
 block:planetAnalyser,PLANNED,C18c,astrobody data processor,ADR-062,turns survey data into research,
 block:planetHoloSelector,REDESIGNED,v1.5.0,station warp destination command,ADR-044 ADR-046 ADR-062,it set the station warp destination; the C17b warp screen fronts the command,
 block:planetSelector,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,multiblock selector replaced by screens,
-block:planks,PLANNED,C15c,lightwood planks,ADR-062,alien forest flora,
+block:planks,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_planks,ADR-063,"alien forest flora; light 4, four from a log",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:platepress,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:small_plate_press,ADR-063,redstone-powered press over obsidian; early plates,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 block:precisionassemblingmachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:precision_assembler,ADR-016 ADR-019,,
 block:precisionlaseretcher,PLANNED,C16c,precision laser etcher,ADR-062,circuit plates,
@@ -209,12 +209,12 @@ block_entity:ARTileMetalBender,MERGED,-,block:rollingMachine,ADR-062,block entit
 block_entity:ARTilePlanetSelector,MERGED,-,block:planetSelector,ADR-062,block entity follows its block,
 block_entity:ARTransciever,MERGED,-,block:wirelessTransciever,ADR-062,block entity follows its block,
 block_entity:ARwarpCore,MERGED,-,block:warpCore,ADR-062,block entity follows its block,
-block_variant:crystal/0,PLANNED,C15c,violet crystal block,ADR-062,crystal colour variant,
-block_variant:crystal/1,PLANNED,C15c,blue crystal block,ADR-062,crystal colour variant,
-block_variant:crystal/2,PLANNED,C15c,green crystal block,ADR-062,crystal colour variant,
-block_variant:crystal/3,PLANNED,C15c,red crystal block,ADR-062,crystal colour variant,
-block_variant:crystal/4,PLANNED,C15c,yellow crystal block,ADR-062,crystal colour variant,
-block_variant:crystal/5,PLANNED,C15c,orange crystal block,ADR-062,crystal colour variant,
+block_variant:crystal/0,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:violet_crystal_block,ADR-063,crystal colour variant,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block_variant:crystal/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:blue_crystal_block,ADR-063,crystal colour variant,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block_variant:crystal/2,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:green_crystal_block,ADR-063,crystal colour variant,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block_variant:crystal/3,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:red_crystal_block,ADR-063,crystal colour variant,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block_variant:crystal/4,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:yellow_crystal_block,ADR-063,crystal colour variant,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+block_variant:crystal/5,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:orange_crystal_block,ADR-063,crystal colour variant,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block_variant:loader/0,REDESIGNED,v0.8.0,advancedrocketrycommunity:data_storage_unit,V0.8.0 ADR-062,"data moves in storage units, no data bus",
 block_variant:loader/1,PLANNED,C17c,rocket satellite bay,ADR-049 ADR-062,"deploy a satellite package on reaching orbit, exactly once",
 block_variant:loader/2,PLANNED,C17a,rocket item unloader,ADR-062,docked rocket inventories,
@@ -268,7 +268,7 @@ config:CLIENT.atmBarModeX,PLANNED,C18d,HUD layout settings,ADR-062,client-only p
 config:CLIENT.atmBarModeY,PLANNED,C18d,HUD layout settings,ADR-062,client-only positions,
 config:CLIENT.atmBarX,PLANNED,C18d,HUD layout settings,ADR-062,client-only positions,
 config:CLIENT.atmBarY,PLANNED,C18d,HUD layout settings,ADR-062,client-only positions,
-config:CLIENT.electricPlantsSpawnLightning,PLANNED,C15c,electric mushroom effect setting,ADR-062,client effect only,
+config:CLIENT.electricPlantsSpawnLightning,REDESIGNED,v1.8.0,CLIENT value effects.electricMushroomFlashes,ADR-063,client effect only: a sky flash and distant thunder in a stormland during rain; nothing is struck,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 config:CLIENT.EnableAtmosphericNausea,PLANNED,C18b,atmospheric nausea,ADR-062,,
 config:CLIENT.hydrogenBarModeX,PLANNED,C18d,HUD layout settings,ADR-062,client-only positions,
 config:CLIENT.hydrogenBarModeY,PLANNED,C18d,HUD layout settings,ADR-062,client-only positions,
@@ -632,20 +632,20 @@ worldgen:MapGenCraterHuge,REDESIGNED,v1.8.0,crater structures (radius capped at 
 worldgen:MapGenCraterSmall,REDESIGNED,v1.8.0,crater structures (small radii),ADR-063,,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenGeode,REDESIGNED,v1.8.0,geode structure,ADR-063,legacy radius 24-48 is capped at 24,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenHighCaves,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-worldgen:MapGenInvertedPillar,PLANNED,C15c,inverted pillar feature,ADR-062,ocean spires,
+worldgen:MapGenInvertedPillar,REDESIGNED,v1.8.0,inverted_pillar placed feature in the ocean spires,ADR-063,a placed feature within 12 blocks instead of a map generator,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 worldgen:MapGenLander,DEFERRED,post-2.0,-,ADR-062,decorative lander structure,
-worldgen:MapGenLargeCrystal,PLANNED,C15c,large crystal feature,ADR-062,,
+worldgen:MapGenLargeCrystal,REDESIGNED,v1.8.0,crystal_cluster placed feature in the crystal chasms,ADR-063,"the large crystals become the crystal cluster feature, within 12 blocks",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 worldgen:MapGenMassiveRavine,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenRavineExt,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenSpaceStation,REJECTED,-,-,ADR-062,never referenced in the legacy build,
 worldgen:MapGenSpaceVillage,DEFERRED,post-2.0,-,ADR-062,vanilla villages on habitable planets,
-worldgen:MapGenSwampTree,PLANNED,C15c,swamp tree feature,ADR-062,,
+worldgen:MapGenSwampTree,REDESIGNED,v1.8.0,giant_swamp_tree placed feature in the deep swamp,ADR-063,a placed feature with its canopy within 12 blocks instead of a map generator,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 worldgen:MapGenVolcano,REDESIGNED,v1.8.0,volcano structure,ADR-063,cone radius at most 32 (ADR-063 section 5),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:OreGenerator,REDESIGNED,v1.8.0,Overworld ore placed features and the overworld_ores biome modifier,ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
-worldgen:WorldGenAlienTree,PLANNED,C15c,lightwood tree feature,ADR-062,,
-worldgen:WorldGenCharredTree,IMPLEMENTED,v1.8.0,charred_tree feature in the volcanic biome,ADR-063,adds at most one stub branch the legacy tree did not have,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-worldgen:WorldGenElectricMushroom,PLANNED,C15c,electric mushroom feature,ADR-062,,
-worldgen:WorldGenLargeCrystal,PLANNED,C15c,crystal cluster feature,ADR-062,,
+worldgen:WorldGenAlienTree,REDESIGNED,v1.8.0,lightwood_tree placed feature in the alien forest,ADR-063,branches shortened to stay within 12 blocks (the legacy tree reached about 14),docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+worldgen:WorldGenCharredTree,IMPLEMENTED,v1.8.0,charred_tree feature in the volcanic biome and the stormland,ADR-063,adds at most one stub branch the legacy tree did not have,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:WorldGenElectricMushroom,IMPLEMENTED,v1.8.0,electric_mushrooms placed feature in the stormland,ADR-063,,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
+worldgen:WorldGenLargeCrystal,REDESIGNED,v1.8.0,crystal_cluster placed feature in the crystal chasms,ADR-063,the lean is capped so that the top stays within 12 blocks,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 worldgen:WorldGenNoTree,MERGED,-,worldgen:WorldGenAlienTree,ADR-062,internal helper,
 worldgen:WorldProviderAsteroid,REJECTED,-,-,ADR-051 ADR-062,temporary asteroid dimensions,
 worldgen:WorldProviderPlanet,REDESIGNED,v1.4.0,fixed planetary Levels,ADR-031 ADR-033,,

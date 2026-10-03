@@ -1,0 +1,1085 @@
+{
+  "base_commit": "7be922633831c4ce51589645468c6c66ef325a32",
+  "files": [
+    {
+      "bytes": 49478,
+      "path": "CHANGELOG.md",
+      "sha256": "4a4669692c274724fa8fb3f56f3432470c6e087ba2ea9d7c0e0edc908c350ceb",
+      "working_sha256": "4a4669692c274724fa8fb3f56f3432470c6e087ba2ea9d7c0e0edc908c350ceb"
+    },
+    {
+      "bytes": 23739,
+      "path": "build.gradle",
+      "sha256": "0e8363349295ee8a7f36be417f0bc0c07bb10643351ccbe4ddad2a7701ff6437",
+      "working_sha256": "0e8363349295ee8a7f36be417f0bc0c07bb10643351ccbe4ddad2a7701ff6437"
+    },
+    {
+      "bytes": 15527,
+      "path": "docs/CELESTIAL-DATA-GUIDE.md",
+      "sha256": "104cfcdb9b04b32a83ded719293b37695fabaed309629ce26c5de5772567a105",
+      "working_sha256": "104cfcdb9b04b32a83ded719293b37695fabaed309629ce26c5de5772567a105"
+    },
+    {
+      "bytes": 19969,
+      "path": "docs/PORTING_MATRIX.md",
+      "sha256": "4b56e82f6e42b57d1eb3ac2df0b39cca501ba1c18666b39f6c197f64f47a57a7",
+      "working_sha256": "4b56e82f6e42b57d1eb3ac2df0b39cca501ba1c18666b39f6c197f64f47a57a7"
+    },
+    {
+      "bytes": 44199,
+      "path": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "sha256": "b703b204e9574eae8fc6369cbd64bd311e1e1b22a04f1a236c69b4ff310adc06",
+      "working_sha256": "b703b204e9574eae8fc6369cbd64bd311e1e1b22a04f1a236c69b4ff310adc06"
+    },
+    {
+      "bytes": 6059,
+      "path": "docs/provenance/v1.8.0-development-metadata.md",
+      "sha256": "284eb7536833beda4063c415ab9b4a9e5e2bcf994828eebee701e31999580381",
+      "working_sha256": "284eb7536833beda4063c415ab9b4a9e5e2bcf994828eebee701e31999580381"
+    },
+    {
+      "bytes": 15991,
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "460a835838fd7d6860c02c848b6c91b576ed1685131b32292ee17aee5bd9dc82",
+      "working_sha256": "460a835838fd7d6860c02c848b6c91b576ed1685131b32292ee17aee5bd9dc82"
+    },
+    {
+      "bytes": 10798,
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "8c9891a35f2a319c6e0f91f243fef908bbc2088a5fefe5bc758c05dcac9e585a",
+      "working_sha256": "8c9891a35f2a319c6e0f91f243fef908bbc2088a5fefe5bc758c05dcac9e585a"
+    },
+    {
+      "bytes": 52623,
+      "path": "docs/work/v1.8.0-asset-plan.csv",
+      "sha256": "b7c51f078c81f3bf4358ca86368c76b0d956acfc20be5365901f13a0185b32a5",
+      "working_sha256": "b7c51f078c81f3bf4358ca86368c76b0d956acfc20be5365901f13a0185b32a5"
+    },
+    {
+      "bytes": 866,
+      "path": "docs/work/v1.8.0-c15b-surfaces/SHA256SUMS.txt",
+      "sha256": "d3d62aaf236025feec6bc5dc2a06f89ac81a0f6e11338ff9711e3c7479c7fd8c",
+      "working_sha256": "d3d62aaf236025feec6bc5dc2a06f89ac81a0f6e11338ff9711e3c7479c7fd8c"
+    },
+    {
+      "bytes": 24677,
+      "path": "docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md",
+      "sha256": "f276891f2923dac56e4e045f060190e434557d0d36368fa46b73ab21436ec49b",
+      "working_sha256": "f276891f2923dac56e4e045f060190e434557d0d36368fa46b73ab21436ec49b"
+    },
+    {
+      "bytes": 20031,
+      "path": "docs/work/v1.8.0-c15b-surfaces/independent-review-files.json",
+      "sha256": "c82aeabfd7f4ce1cd3d843babccf7c0ff52d6cd78d979bbfc682bdb743b5a068",
+      "working_sha256": "c82aeabfd7f4ce1cd3d843babccf7c0ff52d6cd78d979bbfc682bdb743b5a068"
+    },
+    {
+      "bytes": 2708844,
+      "path": "docs/work/v1.8.0-c15b-surfaces/independent-review.zip",
+      "sha256": "bf1b414ba6485d33582c08a83fe247ed08fda096782af1539912898cdec4d14c",
+      "working_sha256": "bf1b414ba6485d33582c08a83fe247ed08fda096782af1539912898cdec4d14c"
+    },
+    {
+      "bytes": 6137,
+      "path": "docs/work/v1.8.0-c15b-surfaces/review-01-dispositions.md",
+      "sha256": "c64733be0c5d1c8f0f60a17f11d7465a69a8530c4d5d697aaa8e56784e9b3f5d",
+      "working_sha256": "c64733be0c5d1c8f0f60a17f11d7465a69a8530c4d5d697aaa8e56784e9b3f5d"
+    },
+    {
+      "bytes": 27750,
+      "path": "docs/work/v1.8.0-c15b-surfaces/reviews/REVIEW-01.md",
+      "sha256": "30a9dcfa949f8415fa4f6a7f3d85b2d58b3c7934286578e83978e610f05d6bd6",
+      "working_sha256": "30a9dcfa949f8415fa4f6a7f3d85b2d58b3c7934286578e83978e610f05d6bd6"
+    },
+    {
+      "bytes": 73122,
+      "path": "docs/work/v1.8.0-content-ledger.csv",
+      "sha256": "0beb0636bd95bf9ca331162175503cc863375c55a95c6c4dd6eeaa3bbc216c6c",
+      "working_sha256": "0beb0636bd95bf9ca331162175503cc863375c55a95c6c4dd6eeaa3bbc216c6c"
+    },
+    {
+      "bytes": 21337,
+      "path": "docs/work/v1.8.0-implementation-log.md",
+      "sha256": "ccb3bff714ca1757e91961e0eae27e79016bec8fb7486a6746e97ddc841dfaea",
+      "working_sha256": "ccb3bff714ca1757e91961e0eae27e79016bec8fb7486a6746e97ddc841dfaea"
+    },
+    {
+      "bytes": 107,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/blue_crystal_block.json",
+      "sha256": "9900a484c4efcfc0225d7ee9203a153bc0d382bf2adffb9f50a7b08a62876963",
+      "working_sha256": "9900a484c4efcfc0225d7ee9203a153bc0d382bf2adffb9f50a7b08a62876963"
+    },
+    {
+      "bytes": 106,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/electric_mushroom.json",
+      "sha256": "d49f1a312e4496044d850b5e975729c3099622d8051a004f8d85148ad298d16c",
+      "working_sha256": "d49f1a312e4496044d850b5e975729c3099622d8051a004f8d85148ad298d16c"
+    },
+    {
+      "bytes": 108,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/green_crystal_block.json",
+      "sha256": "b57de2b6a816da15d0599ab52c3f76f1ec6ba974de6f23d9aab657bee8ca36a1",
+      "working_sha256": "b57de2b6a816da15d0599ab52c3f76f1ec6ba974de6f23d9aab657bee8ca36a1"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_leaves.json",
+      "sha256": "d29c0f6e76418d18dd3be75cef524d3446d0e4df3888ac87ffcc72c96d2c3620",
+      "working_sha256": "d29c0f6e76418d18dd3be75cef524d3446d0e4df3888ac87ffcc72c96d2c3620"
+    },
+    {
+      "bytes": 347,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_log.json",
+      "sha256": "19810e932adfa5f1e1bd7410eddcc04ff81719fd2ff9837857b7e1d1955aeae0",
+      "working_sha256": "19810e932adfa5f1e1bd7410eddcc04ff81719fd2ff9837857b7e1d1955aeae0"
+    },
+    {
+      "bytes": 105,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_planks.json",
+      "sha256": "7a7c855554421651cda63184710bca1c19bb6c229abaa46ba2c1a13bd93e6709",
+      "working_sha256": "7a7c855554421651cda63184710bca1c19bb6c229abaa46ba2c1a13bd93e6709"
+    },
+    {
+      "bytes": 106,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_sapling.json",
+      "sha256": "9af593e8f9689e7ee3ecca5d958e9131c50d8564f7a042375a948268f9517349",
+      "working_sha256": "9af593e8f9689e7ee3ecca5d958e9131c50d8564f7a042375a948268f9517349"
+    },
+    {
+      "bytes": 109,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/orange_crystal_block.json",
+      "sha256": "883808496a783fbbe7bee9aa19a2266fe864b18ebc55e7999aeb9debd3a20fe4",
+      "working_sha256": "883808496a783fbbe7bee9aa19a2266fe864b18ebc55e7999aeb9debd3a20fe4"
+    },
+    {
+      "bytes": 106,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/red_crystal_block.json",
+      "sha256": "d4f37f6c7e0a79401237e20eb1c06e44d36de1d41a63b7a117270e38420f6ac1",
+      "working_sha256": "d4f37f6c7e0a79401237e20eb1c06e44d36de1d41a63b7a117270e38420f6ac1"
+    },
+    {
+      "bytes": 109,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/violet_crystal_block.json",
+      "sha256": "10444d9535b79614ab4bdebdf2de3254f72d72d7f9968047b7fe34dfb5cdd626",
+      "working_sha256": "10444d9535b79614ab4bdebdf2de3254f72d72d7f9968047b7fe34dfb5cdd626"
+    },
+    {
+      "bytes": 109,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/yellow_crystal_block.json",
+      "sha256": "435d02895a819ab4c98f65e33e6ccf3ac1cd8852443da990db0ab53a7c578dc4",
+      "working_sha256": "435d02895a819ab4c98f65e33e6ccf3ac1cd8852443da990db0ab53a7c578dc4"
+    },
+    {
+      "bytes": 255,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/celestial_visuals/tau_ceti_f.json",
+      "sha256": "284ff077267fc082f06f224d39e11bb9d0e63f5b73fbf7a2dcf19e80f8f30c8b",
+      "working_sha256": "284ff077267fc082f06f224d39e11bb9d0e63f5b73fbf7a2dcf19e80f8f30c8b"
+    },
+    {
+      "bytes": 255,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/celestial_visuals/tau_ceti_g.json",
+      "sha256": "a7e3915525565882d3dd8d7da11bb37a10570e5ac0e5a29767b2fb955571a685",
+      "working_sha256": "a7e3915525565882d3dd8d7da11bb37a10570e5ac0e5a29767b2fb955571a685"
+    },
+    {
+      "bytes": 156,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/blue_crystal_block.json",
+      "sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "working_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a"
+    },
+    {
+      "bytes": 162,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electric_mushroom.json",
+      "sha256": "5e143738df2af32b3c89a12e6646e610a32046974793510a779727e684b9365b",
+      "working_sha256": "5e143738df2af32b3c89a12e6646e610a32046974793510a779727e684b9365b"
+    },
+    {
+      "bytes": 156,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/green_crystal_block.json",
+      "sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "working_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a"
+    },
+    {
+      "bytes": 169,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_leaves.json",
+      "sha256": "1d7a73e9eb0f1ac23ef7b3d2d651104e3c6c9fee94cc6279ad616564532fc894",
+      "working_sha256": "1d7a73e9eb0f1ac23ef7b3d2d651104e3c6c9fee94cc6279ad616564532fc894"
+    },
+    {
+      "bytes": 190,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_log.json",
+      "sha256": "9c356486a9f7854da93daa860213ff8b727940a53d8bb18d32f019095fe20a63",
+      "working_sha256": "9c356486a9f7854da93daa860213ff8b727940a53d8bb18d32f019095fe20a63"
+    },
+    {
+      "bytes": 201,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_log_horizontal.json",
+      "sha256": "46e460333968f0a0b65063d49151c6a77c05d080d05c5dd45dcdd9b53f78255e",
+      "working_sha256": "46e460333968f0a0b65063d49151c6a77c05d080d05c5dd45dcdd9b53f78255e"
+    },
+    {
+      "bytes": 125,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_planks.json",
+      "sha256": "0938b33d94723927bf298409d29ea5bee571f931f5f03fc5bd3ee633e41af6e3",
+      "working_sha256": "0938b33d94723927bf298409d29ea5bee571f931f5f03fc5bd3ee633e41af6e3"
+    },
+    {
+      "bytes": 162,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_sapling.json",
+      "sha256": "fd03d6b66e9fcaa719358dc79531b0aaafc31e26874c0ff4773c435ccd06ce1c",
+      "working_sha256": "fd03d6b66e9fcaa719358dc79531b0aaafc31e26874c0ff4773c435ccd06ce1c"
+    },
+    {
+      "bytes": 156,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/orange_crystal_block.json",
+      "sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "working_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a"
+    },
+    {
+      "bytes": 156,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/red_crystal_block.json",
+      "sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "working_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a"
+    },
+    {
+      "bytes": 156,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/violet_crystal_block.json",
+      "sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "working_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a"
+    },
+    {
+      "bytes": 156,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/yellow_crystal_block.json",
+      "sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "working_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a"
+    },
+    {
+      "bytes": 68,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/blue_crystal_block.json",
+      "sha256": "ac263b2c35a282545784e7fde5137a18481be079ddd7efe4bedf032cb04489ce",
+      "working_sha256": "ac263b2c35a282545784e7fde5137a18481be079ddd7efe4bedf032cb04489ce"
+    },
+    {
+      "bytes": 129,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/electric_mushroom.json",
+      "sha256": "b3c87fcd055668da6e826bd25fe44b97cda9916f7c2fc8c7ff53915c0a79d5ce",
+      "working_sha256": "b3c87fcd055668da6e826bd25fe44b97cda9916f7c2fc8c7ff53915c0a79d5ce"
+    },
+    {
+      "bytes": 69,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/green_crystal_block.json",
+      "sha256": "9c73ef5497c3baddc9c3453fc56cedc5cf89e850b17f3eba5a5c4395a1c8a525",
+      "working_sha256": "9c73ef5497c3baddc9c3453fc56cedc5cf89e850b17f3eba5a5c4395a1c8a525"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_leaves.json",
+      "sha256": "03d966c98dce90a15f283b60d73440d61ac2784d4c658f2214e7635992bb0c50",
+      "working_sha256": "03d966c98dce90a15f283b60d73440d61ac2784d4c658f2214e7635992bb0c50"
+    },
+    {
+      "bytes": 63,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_log.json",
+      "sha256": "88509d942fbd59259dc68aa3695ea166dc8b3c4c35eefb2d425552a5aa89644b",
+      "working_sha256": "88509d942fbd59259dc68aa3695ea166dc8b3c4c35eefb2d425552a5aa89644b"
+    },
+    {
+      "bytes": 66,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_planks.json",
+      "sha256": "242396db6849270fefcce90dbdd5c987c814be850341dba99da354ef871a9a27",
+      "working_sha256": "242396db6849270fefcce90dbdd5c987c814be850341dba99da354ef871a9a27"
+    },
+    {
+      "bytes": 129,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_sapling.json",
+      "sha256": "2f90e2e341d8edb8e15f59e733b49f19ca61cd874caeed0207adf4ab65bd6e9f",
+      "working_sha256": "2f90e2e341d8edb8e15f59e733b49f19ca61cd874caeed0207adf4ab65bd6e9f"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/orange_crystal_block.json",
+      "sha256": "ccbfc72e67e6f14f3e412d042b32fab6f74160a7fda85e7ae8369f1ccb178f29",
+      "working_sha256": "ccbfc72e67e6f14f3e412d042b32fab6f74160a7fda85e7ae8369f1ccb178f29"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/red_crystal_block.json",
+      "sha256": "d69e07312145ae5723b66174db6cc6ea2c525f6af7b927a70b285b58e8eb9010",
+      "working_sha256": "d69e07312145ae5723b66174db6cc6ea2c525f6af7b927a70b285b58e8eb9010"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/violet_crystal_block.json",
+      "sha256": "17dc6782f466cf9d750133c636fef1b9e51f2ad597bd686f8486e1b7746ed9c0",
+      "working_sha256": "17dc6782f466cf9d750133c636fef1b9e51f2ad597bd686f8486e1b7746ed9c0"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/yellow_crystal_block.json",
+      "sha256": "77089a58886969fff792e8c47d261dae452fe9ecfa29b3e0c6293eacf89d9eab",
+      "working_sha256": "77089a58886969fff792e8c47d261dae452fe9ecfa29b3e0c6293eacf89d9eab"
+    },
+    {
+      "bytes": 217,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/crystal.png",
+      "sha256": "15737229f68ab9e0287246ca7a574d84fec70c2d3a27fb0824bd87d6cc5c4a14",
+      "working_sha256": "15737229f68ab9e0287246ca7a574d84fec70c2d3a27fb0824bd87d6cc5c4a14"
+    },
+    {
+      "bytes": 143,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electric_mushroom.png",
+      "sha256": "721cdad405458c22f719298d97966ea5b600b7917db83985efb2dd87d378f74c",
+      "working_sha256": "721cdad405458c22f719298d97966ea5b600b7917db83985efb2dd87d378f74c"
+    },
+    {
+      "bytes": 295,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/lightwood_leaves.png",
+      "sha256": "c777c27cca8f53a7e596f420e7d1be60492e0afa9f958b4652c5909af2d5ffe9",
+      "working_sha256": "c777c27cca8f53a7e596f420e7d1be60492e0afa9f958b4652c5909af2d5ffe9"
+    },
+    {
+      "bytes": 288,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/lightwood_log.png",
+      "sha256": "f80fce56035a3078c214e786df66d92fe6f148138d898e39113de508556ee043",
+      "working_sha256": "f80fce56035a3078c214e786df66d92fe6f148138d898e39113de508556ee043"
+    },
+    {
+      "bytes": 268,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/lightwood_log_top.png",
+      "sha256": "f05d5421cedd13cd0de5f528e892c6ffc940154901f472b34a3ae801a8ec83b4",
+      "working_sha256": "f05d5421cedd13cd0de5f528e892c6ffc940154901f472b34a3ae801a8ec83b4"
+    },
+    {
+      "bytes": 254,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/lightwood_planks.png",
+      "sha256": "7be161ea6844cf2011be739e51606ca6bc819f2ca5374483b006b95a39bd27e2",
+      "working_sha256": "7be161ea6844cf2011be739e51606ca6bc819f2ca5374483b006b95a39bd27e2"
+    },
+    {
+      "bytes": 164,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/lightwood_sapling.png",
+      "sha256": "4bbb54f11b181ef85c0e5f2be2d50e50934ebddf2e6604c37e3381012d4b3159",
+      "working_sha256": "4bbb54f11b181ef85c0e5f2be2d50e50934ebddf2e6604c37e3381012d4b3159"
+    },
+    {
+      "bytes": 8332,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "sha256": "6bab5008b7e16a23d79a026842a820e41ba0fe7404a7e028f8eb5932b0b7ccb5",
+      "working_sha256": "6bab5008b7e16a23d79a026842a820e41ba0fe7404a7e028f8eb5932b0b7ccb5"
+    },
+    {
+      "bytes": 7773,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "sha256": "1a70b482c8953b15c9496de113004861b930d62394d03fd53e94c7afb800b54c",
+      "working_sha256": "1a70b482c8953b15c9496de113004861b930d62394d03fd53e94c7afb800b54c"
+    },
+    {
+      "bytes": 683,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/building_blocks/lightwood_planks.json",
+      "sha256": "771c3973268a92d2834d748a5160e3a14c783164897cf4f4394a8c24ff51754e",
+      "working_sha256": "771c3973268a92d2834d748a5160e3a14c783164897cf4f4394a8c24ff51754e"
+    },
+    {
+      "bytes": 724,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/celestial_bodies/tau_ceti_f.json",
+      "sha256": "0c4206bacf51a275b6aef8b95db62feea80ad76aae3bd5b77beb324a35552a88",
+      "working_sha256": "0c4206bacf51a275b6aef8b95db62feea80ad76aae3bd5b77beb324a35552a88"
+    },
+    {
+      "bytes": 722,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/celestial_bodies/tau_ceti_g.json",
+      "sha256": "d2616e3d37014542a5dc579060d298a5a56565e6fa7ca397e9f00d94fe56f1e8",
+      "working_sha256": "d2616e3d37014542a5dc579060d298a5a56565e6fa7ca397e9f00d94fe56f1e8"
+    },
+    {
+      "bytes": 2553,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/dimension/tau_ceti_f.json",
+      "sha256": "bc18a8feeef89944d41a2a0b3d95c3e38f69dc886e09adf96f3d3cb8abe5f4e8",
+      "working_sha256": "bc18a8feeef89944d41a2a0b3d95c3e38f69dc886e09adf96f3d3cb8abe5f4e8"
+    },
+    {
+      "bytes": 422,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/dimension/tau_ceti_g.json",
+      "sha256": "9a80acf7d0c429da2419193693169606e171ee9d0a0aa443ce96b847cab55854",
+      "working_sha256": "9a80acf7d0c429da2419193693169606e171ee9d0a0aa443ce96b847cab55854"
+    },
+    {
+      "bytes": 476,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/dimension_type/tau_ceti_f.json",
+      "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab",
+      "working_sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+    },
+    {
+      "bytes": 476,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/dimension_type/tau_ceti_g.json",
+      "sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab",
+      "working_sha256": "3a81e4efb53d9a02d1c9e6b8248fb9b99d3805117ce23a7ef39c493df47126ab"
+    },
+    {
+      "bytes": 436,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/blue_crystal_block.json",
+      "sha256": "e2fe9aa7ac93f30c8640ff76f5cdfc8af1d959acf6831e753a01c98f7f3f0f5b",
+      "working_sha256": "e2fe9aa7ac93f30c8640ff76f5cdfc8af1d959acf6831e753a01c98f7f3f0f5b"
+    },
+    {
+      "bytes": 434,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/electric_mushroom.json",
+      "sha256": "f2513c3ecf29ac310b85ce2310aad0da18a9ae951641fa5235bb0e789df24592",
+      "working_sha256": "f2513c3ecf29ac310b85ce2310aad0da18a9ae951641fa5235bb0e789df24592"
+    },
+    {
+      "bytes": 438,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/green_crystal_block.json",
+      "sha256": "fe3ab0dae585ce99be64af939e0657931c7a7221ab8032b3bc453c5dc4f9e70c",
+      "working_sha256": "fe3ab0dae585ce99be64af939e0657931c7a7221ab8032b3bc453c5dc4f9e70c"
+    },
+    {
+      "bytes": 1771,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/lightwood_leaves.json",
+      "sha256": "979331ce977eec4b25ff219c6afec491f235f7760099a663b6427c59618fc37d",
+      "working_sha256": "979331ce977eec4b25ff219c6afec491f235f7760099a663b6427c59618fc37d"
+    },
+    {
+      "bytes": 426,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/lightwood_log.json",
+      "sha256": "87d25ba895e07647f1191fa84fe4dfaba048a2e969cbe26cc1ebbba5b8e8fc28",
+      "working_sha256": "87d25ba895e07647f1191fa84fe4dfaba048a2e969cbe26cc1ebbba5b8e8fc28"
+    },
+    {
+      "bytes": 432,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/lightwood_planks.json",
+      "sha256": "747451be60990501bfb72b8f044e07e86a3ec7ec2f80aff13bd7c54ad565d82c",
+      "working_sha256": "747451be60990501bfb72b8f044e07e86a3ec7ec2f80aff13bd7c54ad565d82c"
+    },
+    {
+      "bytes": 434,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/lightwood_sapling.json",
+      "sha256": "5583943c35abe222154440cd1b43ab941e30c35b957a991842d5834445a82f7d",
+      "working_sha256": "5583943c35abe222154440cd1b43ab941e30c35b957a991842d5834445a82f7d"
+    },
+    {
+      "bytes": 440,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/orange_crystal_block.json",
+      "sha256": "969cab35a123b13d5beef4c807298e9c675d2f2f0aadf0a8fc8c8897055b2c17",
+      "working_sha256": "969cab35a123b13d5beef4c807298e9c675d2f2f0aadf0a8fc8c8897055b2c17"
+    },
+    {
+      "bytes": 434,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/red_crystal_block.json",
+      "sha256": "542ab1316a29c31e5e20f616c53c59594262df1e44c63400f7ec1081a35cdc57",
+      "working_sha256": "542ab1316a29c31e5e20f616c53c59594262df1e44c63400f7ec1081a35cdc57"
+    },
+    {
+      "bytes": 440,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/violet_crystal_block.json",
+      "sha256": "5379e04d13b91712023471d082f9689b198f07fd598bf2f1f86b28a6493fe520",
+      "working_sha256": "5379e04d13b91712023471d082f9689b198f07fd598bf2f1f86b28a6493fe520"
+    },
+    {
+      "bytes": 440,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/yellow_crystal_block.json",
+      "sha256": "ce9fe09edeaa58e7a9876769c4a5e2736a54ae2167ba4d2b5148b984141c8440",
+      "working_sha256": "ce9fe09edeaa58e7a9876769c4a5e2736a54ae2167ba4d2b5148b984141c8440"
+    },
+    {
+      "bytes": 275,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/lightwood_planks.json",
+      "sha256": "fb856785ce894ec2595a8dec93d3c067da441aca8a0cd2ad2eba883da8ffee9d",
+      "working_sha256": "fb856785ce894ec2595a8dec93d3c067da441aca8a0cd2ad2eba883da8ffee9d"
+    },
+    {
+      "bytes": 555,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/satellite_definitions/data_satellite.json",
+      "sha256": "49180c544c426f987ed628ea23afd6862fb1c43116e582e3402205ab1b3a791f",
+      "working_sha256": "49180c544c426f987ed628ea23afd6862fb1c43116e582e3402205ab1b3a791f"
+    },
+    {
+      "bytes": 372,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/travel_routes/tau_ceti_f_g.json",
+      "sha256": "7b5bdab35d9f9b122b3220011a630d42bbc99323e8ef75a40e0da77c2cdd9af9",
+      "working_sha256": "7b5bdab35d9f9b122b3220011a630d42bbc99323e8ef75a40e0da77c2cdd9af9"
+    },
+    {
+      "bytes": 377,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/travel_routes/tau_ceti_f_surface_orbit.json",
+      "sha256": "0f3173c876509538dea167f0d7c8990d1be1fadb9551fbf5b12f833bb6c2b473",
+      "working_sha256": "0f3173c876509538dea167f0d7c8990d1be1fadb9551fbf5b12f833bb6c2b473"
+    },
+    {
+      "bytes": 377,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/travel_routes/tau_ceti_g_surface_orbit.json",
+      "sha256": "03bd54cfa667ee23caa65ac4bcde40bc804685ebbe4570a8627061a74521c043",
+      "working_sha256": "03bd54cfa667ee23caa65ac4bcde40bc804685ebbe4570a8627061a74521c043"
+    },
+    {
+      "bytes": 710,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/biome/alien_forest.json",
+      "sha256": "71fa2fb26a1852e452800411e854587ae3787cbcb572486f9121753d6abbd71a",
+      "working_sha256": "71fa2fb26a1852e452800411e854587ae3787cbcb572486f9121753d6abbd71a"
+    },
+    {
+      "bytes": 542,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/biome/crystal_chasms.json",
+      "sha256": "e553b473428531c6b44933244a7d80a5e27a70f3b01510c0294cfda2b8db5461",
+      "working_sha256": "e553b473428531c6b44933244a7d80a5e27a70f3b01510c0294cfda2b8db5461"
+    },
+    {
+      "bytes": 858,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/biome/deep_swamp.json",
+      "sha256": "8f6919ebc9cdd4d3543d30df0e6f75f24775f71cbdbefec4a942194d885841da",
+      "working_sha256": "8f6919ebc9cdd4d3543d30df0e6f75f24775f71cbdbefec4a942194d885841da"
+    },
+    {
+      "bytes": 616,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/biome/marsh.json",
+      "sha256": "5a4f8b87780da3765a7b11e34718e9fb711f1896a835b5b233b301d8c70828f0",
+      "working_sha256": "5a4f8b87780da3765a7b11e34718e9fb711f1896a835b5b233b301d8c70828f0"
+    },
+    {
+      "bytes": 638,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/biome/ocean_spires.json",
+      "sha256": "b2d8cb4b439df19bfce6843ff150580f06e95b6c409db9f0ca979687d41c3da0",
+      "working_sha256": "b2d8cb4b439df19bfce6843ff150580f06e95b6c409db9f0ca979687d41c3da0"
+    },
+    {
+      "bytes": 717,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/biome/stormland.json",
+      "sha256": "2c771c7dd614c95d047677e765980a31e11d2aabc01bcb20d836f70785e59084",
+      "working_sha256": "2c771c7dd614c95d047677e765980a31e11d2aabc01bcb20d836f70785e59084"
+    },
+    {
+      "bytes": 73,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/configured_feature/crystal_cluster.json",
+      "sha256": "5ea0c600b82c228664d7672fb1930f26392df27156fa1e070ff4ed0dd50bdf69",
+      "working_sha256": "5ea0c600b82c228664d7672fb1930f26392df27156fa1e070ff4ed0dd50bdf69"
+    },
+    {
+      "bytes": 659,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/configured_feature/electric_mushrooms.json",
+      "sha256": "88bb182fcaa6ce11a9d6d040a760d24016e777e966a0b1f7283f19f16e28084d",
+      "working_sha256": "88bb182fcaa6ce11a9d6d040a760d24016e777e966a0b1f7283f19f16e28084d"
+    },
+    {
+      "bytes": 74,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/configured_feature/giant_swamp_tree.json",
+      "sha256": "1fbac8d26dc16329d98f566490687ac13697e4398ff501d626d54ef57baa0048",
+      "working_sha256": "1fbac8d26dc16329d98f566490687ac13697e4398ff501d626d54ef57baa0048"
+    },
+    {
+      "bytes": 73,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/configured_feature/inverted_pillar.json",
+      "sha256": "023068ddd6ee0b098b451fefd5b99b51da63b24fc0f83f81f25a413b3d3ce7e9",
+      "working_sha256": "023068ddd6ee0b098b451fefd5b99b51da63b24fc0f83f81f25a413b3d3ce7e9"
+    },
+    {
+      "bytes": 72,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/configured_feature/lightwood_tree.json",
+      "sha256": "92979fe4dff729f368d85b1fa1eed33ae2890a842e6d748729d0e5897f9c808e",
+      "working_sha256": "92979fe4dff729f368d85b1fa1eed33ae2890a842e6d748729d0e5897f9c808e"
+    },
+    {
+      "bytes": 73,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/noise/tau_ceti_f_terrain.json",
+      "sha256": "e049ceb5cfbcb105f7e18b4f17637256218ab7624d49fae4defa2c7be43d7f51",
+      "working_sha256": "e049ceb5cfbcb105f7e18b4f17637256218ab7624d49fae4defa2c7be43d7f51"
+    },
+    {
+      "bytes": 73,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/noise/tau_ceti_g_terrain.json",
+      "sha256": "f309ab56b3cf2cd87ad0a135de607758df4ad2d95307286d914c118884ddafd4",
+      "working_sha256": "f309ab56b3cf2cd87ad0a135de607758df4ad2d95307286d914c118884ddafd4"
+    },
+    {
+      "bytes": 7365,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/noise_settings/moon.json",
+      "sha256": "884fb0f51ed5def86424d50a238e6d021aa3dd3942a2902b4cf0a2594f1f07d3",
+      "working_sha256": "884fb0f51ed5def86424d50a238e6d021aa3dd3942a2902b4cf0a2594f1f07d3"
+    },
+    {
+      "bytes": 7808,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/noise_settings/tau_ceti_f.json",
+      "sha256": "cb018c0a05226d036d7444e7f6d58e960f6e35551ff89b411f26fc594e366431",
+      "working_sha256": "cb018c0a05226d036d7444e7f6d58e960f6e35551ff89b411f26fc594e366431"
+    },
+    {
+      "bytes": 6852,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/noise_settings/tau_ceti_g.json",
+      "sha256": "f91a8e59518c5c9250b00a965220f010ee2eaf742ce68a80186ba4d1d55e918b",
+      "working_sha256": "f91a8e59518c5c9250b00a965220f010ee2eaf742ce68a80186ba4d1d55e918b"
+    },
+    {
+      "bytes": 405,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/alien_forest_grass.json",
+      "sha256": "7b917eb2bcf7cfaf10ff70f867d129005643ae51381293beb6c84092fb23f307",
+      "working_sha256": "7b917eb2bcf7cfaf10ff70f867d129005643ae51381293beb6c84092fb23f307"
+    },
+    {
+      "bytes": 532,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/crystal_cluster.json",
+      "sha256": "ae380ff8698a2fb4699e1b9c70646ef01a1afdc716d9371085bf9efc17a0a9d8",
+      "working_sha256": "ae380ff8698a2fb4699e1b9c70646ef01a1afdc716d9371085bf9efc17a0a9d8"
+    },
+    {
+      "bytes": 464,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/electric_mushrooms.json",
+      "sha256": "55987bb7c82d0afe6791d837ce1207d1900711f6b88e06b4436e65cdf493b0cd",
+      "working_sha256": "55987bb7c82d0afe6791d837ce1207d1900711f6b88e06b4436e65cdf493b0cd"
+    },
+    {
+      "bytes": 621,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/giant_swamp_tree.json",
+      "sha256": "290b4131effe8955fccd41f0f0e0c1b94fe2d3c922e3bde5a25ee7d87421cf41",
+      "working_sha256": "290b4131effe8955fccd41f0f0e0c1b94fe2d3c922e3bde5a25ee7d87421cf41"
+    },
+    {
+      "bytes": 529,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/inverted_pillar.json",
+      "sha256": "97a09d18aaef687df9d1722e749f0248d50d5f9e41fd6bc2fecbb202863dbdc3",
+      "working_sha256": "97a09d18aaef687df9d1722e749f0248d50d5f9e41fd6bc2fecbb202863dbdc3"
+    },
+    {
+      "bytes": 622,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/lightwood_tree.json",
+      "sha256": "0eb3fb6b21f406c95385ae553054c8fc5a371d2bd94dd7733095a0420bcd3b8d",
+      "working_sha256": "0eb3fb6b21f406c95385ae553054c8fc5a371d2bd94dd7733095a0420bcd3b8d"
+    },
+    {
+      "bytes": 516,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/stormland_charred_tree.json",
+      "sha256": "6cb758373b38d3ad95dfa1507d81d8ffe4349e355ddbac4dd0b26cb259dc0d3d",
+      "working_sha256": "6cb758373b38d3ad95dfa1507d81d8ffe4349e355ddbac4dd0b26cb259dc0d3d"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/leaves.json",
+      "sha256": "fe06129a1fbe8c5edcba3a086d62c0d677e38891ba0ed04c53ae49ea287d33e6",
+      "working_sha256": "fe06129a1fbe8c5edcba3a086d62c0d677e38891ba0ed04c53ae49ea287d33e6"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/logs_that_burn.json",
+      "sha256": "ec281983efcd278a0634bdba29b24f509757c5ff4f0169f3e05e215d8bbc3eda",
+      "working_sha256": "ec281983efcd278a0634bdba29b24f509757c5ff4f0169f3e05e215d8bbc3eda"
+    },
+    {
+      "bytes": 2670,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "47751d3f7cd539664c60a412a7fb8379381a7c0ba6789f7642dc66d192effe81",
+      "working_sha256": "47751d3f7cd539664c60a412a7fb8379381a7c0ba6789f7642dc66d192effe81"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/planks.json",
+      "sha256": "5ea652a958a467cb607baf381bddb6e15d2327edfc8c33c0a1ced084d5e7ded5",
+      "working_sha256": "5ea652a958a467cb607baf381bddb6e15d2327edfc8c33c0a1ced084d5e7ded5"
+    },
+    {
+      "bytes": 71,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/saplings.json",
+      "sha256": "c7633c786ddd15f92a636b2949f49671c98fc04b57115fbf1ca2b104e82bf254",
+      "working_sha256": "c7633c786ddd15f92a636b2949f49671c98fc04b57115fbf1ca2b104e82bf254"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/items/leaves.json",
+      "sha256": "fe06129a1fbe8c5edcba3a086d62c0d677e38891ba0ed04c53ae49ea287d33e6",
+      "working_sha256": "fe06129a1fbe8c5edcba3a086d62c0d677e38891ba0ed04c53ae49ea287d33e6"
+    },
+    {
+      "bytes": 67,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/items/logs_that_burn.json",
+      "sha256": "ec281983efcd278a0634bdba29b24f509757c5ff4f0169f3e05e215d8bbc3eda",
+      "working_sha256": "ec281983efcd278a0634bdba29b24f509757c5ff4f0169f3e05e215d8bbc3eda"
+    },
+    {
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/items/planks.json",
+      "sha256": "5ea652a958a467cb607baf381bddb6e15d2327edfc8c33c0a1ced084d5e7ded5",
+      "working_sha256": "5ea652a958a467cb607baf381bddb6e15d2327edfc8c33c0a1ced084d5e7ded5"
+    },
+    {
+      "bytes": 71,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/items/saplings.json",
+      "sha256": "c7633c786ddd15f92a636b2949f49671c98fc04b57115fbf1ca2b104e82bf254",
+      "working_sha256": "c7633c786ddd15f92a636b2949f49671c98fc04b57115fbf1ca2b104e82bf254"
+    },
+    {
+      "bytes": 27504,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "ea2a45360f46f19294b3e40dc9be086cb99dab1e851b07ddae8d09c5394dac57",
+      "working_sha256": "ea2a45360f46f19294b3e40dc9be086cb99dab1e851b07ddae8d09c5394dac57"
+    },
+    {
+      "bytes": 2514,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/ElectricMushroomBlock.java",
+      "sha256": "ae9915063afd062fe3e659aa6dd72168f5c2040432f26bd6d9ad52c2cca800a6",
+      "working_sha256": "ae9915063afd062fe3e659aa6dd72168f5c2040432f26bd6d9ad52c2cca800a6"
+    },
+    {
+      "bytes": 8325,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/ExoplanetBlocks.java",
+      "sha256": "10b198f86498d512630199e82966c1f9d552222433b3a5349c6951378daa46f5",
+      "working_sha256": "10b198f86498d512630199e82966c1f9d552222433b3a5349c6951378daa46f5"
+    },
+    {
+      "bytes": 5047,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/ExoplanetContent.java",
+      "sha256": "dfcf11228c3778a8c8a293ad22a6d87bfc739958a0f59ca1c1eaa0d2433410df",
+      "working_sha256": "dfcf11228c3778a8c8a293ad22a6d87bfc739958a0f59ca1c1eaa0d2433410df"
+    },
+    {
+      "bytes": 895,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/LightwoodTreeGrower.java",
+      "sha256": "35f5bf80aee709d6c22a4a0136c8fe97669ec8fe1ca90e2019f6eea733119589",
+      "working_sha256": "35f5bf80aee709d6c22a4a0136c8fe97669ec8fe1ca90e2019f6eea733119589"
+    },
+    {
+      "bytes": 1890,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/CrystalClusterFeature.java",
+      "sha256": "cb4a489c0b722f54bcf344d83ea2c802901c25703dc48f85793815bb15db1f7c",
+      "working_sha256": "cb4a489c0b722f54bcf344d83ea2c802901c25703dc48f85793815bb15db1f7c"
+    },
+    {
+      "bytes": 9127,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/ExoplanetShapes.java",
+      "sha256": "04a8dd7744d9a63588d6fb58b4098b979fdd4b4bdd0dca21355487d8e9b53e49",
+      "working_sha256": "04a8dd7744d9a63588d6fb58b4098b979fdd4b4bdd0dca21355487d8e9b53e49"
+    },
+    {
+      "bytes": 4662,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/ExoplanetWorldgen.java",
+      "sha256": "bc25dd2ceb7aceb00ebe44bc5bfcaa14fe6946c9a3a5e2ac77804dc20216e0eb",
+      "working_sha256": "bc25dd2ceb7aceb00ebe44bc5bfcaa14fe6946c9a3a5e2ac77804dc20216e0eb"
+    },
+    {
+      "bytes": 3219,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/GiantSwampTreeFeature.java",
+      "sha256": "4c453d6636931de7dfdb9b73910321d555872f7f02d3a58e4c0556aeb46899ba",
+      "working_sha256": "4c453d6636931de7dfdb9b73910321d555872f7f02d3a58e4c0556aeb46899ba"
+    },
+    {
+      "bytes": 2308,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/InvertedPillarFeature.java",
+      "sha256": "ba90583ba1ebef9488af01195f9350b658ff5a1dce586f0b2ba5b995b4e17b23",
+      "working_sha256": "ba90583ba1ebef9488af01195f9350b658ff5a1dce586f0b2ba5b995b4e17b23"
+    },
+    {
+      "bytes": 2379,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/LandingGroundFilter.java",
+      "sha256": "d5b95fb1338cd04ea54a35430c13e369f12688a46da83b806b1a8c275cafcd66",
+      "working_sha256": "d5b95fb1338cd04ea54a35430c13e369f12688a46da83b806b1a8c275cafcd66"
+    },
+    {
+      "bytes": 3429,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/LandingGroundFloor.java",
+      "sha256": "d5e46a12380cdc9d01cc4e1a85441a678477e84ac7f594b43f47d64975401479",
+      "working_sha256": "d5e46a12380cdc9d01cc4e1a85441a678477e84ac7f594b43f47d64975401479"
+    },
+    {
+      "bytes": 3450,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/LightwoodTreeFeature.java",
+      "sha256": "097090794926656a2b8123361604e44a22c94bd04e53aeec4a25cd98c1e5566e",
+      "working_sha256": "097090794926656a2b8123361604e44a22c94bd04e53aeec4a25cd98c1e5566e"
+    },
+    {
+      "bytes": 2651,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/TreePlan.java",
+      "sha256": "35d60289cbdd790807f303c1a9abc5398c433b642d68987f4620940bfa7b894c",
+      "working_sha256": "35d60289cbdd790807f303c1a9abc5398c433b642d68987f4620940bfa7b894c"
+    },
+    {
+      "bytes": 5939,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/CraterPiece.java",
+      "sha256": "83aad132b97970b7ed6e916a03baa5f0c3d1affc0784b9ff7d124fcd2a576964",
+      "working_sha256": "83aad132b97970b7ed6e916a03baa5f0c3d1affc0784b9ff7d124fcd2a576964"
+    },
+    {
+      "bytes": 6632,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/GeodePiece.java",
+      "sha256": "deb0ad9a53465765767a536ccf77091274afe37d59973d278cdc3e605bcbc8e1",
+      "working_sha256": "deb0ad9a53465765767a536ccf77091274afe37d59973d278cdc3e605bcbc8e1"
+    },
+    {
+      "bytes": 3185,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/GeodeStructure.java",
+      "sha256": "e016a99ad885e5b67ed20ddeb3f84b7ff9be8a44ceca3cd196e63e9cc68e32a2",
+      "working_sha256": "e016a99ad885e5b67ed20ddeb3f84b7ff9be8a44ceca3cd196e63e9cc68e32a2"
+    },
+    {
+      "bytes": 3567,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/PatchBiomeSource.java",
+      "sha256": "e230aa9c60c555ed357afa604db03ceec243b066f94422d8d0ffb2fa0077cb21",
+      "working_sha256": "e230aa9c60c555ed357afa604db03ceec243b066f94422d8d0ffb2fa0077cb21"
+    },
+    {
+      "bytes": 5283,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/VolcanoPiece.java",
+      "sha256": "497af771a0c24ae0e64b30a54628cdedf9107695857840938bb958ca2ac007db",
+      "working_sha256": "497af771a0c24ae0e64b30a54628cdedf9107695857840938bb958ca2ac007db"
+    },
+    {
+      "bytes": 3132,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/VolcanoShape.java",
+      "sha256": "9fea829ac5cdf969d7c27d27235e772c583ec6ba81da634961b8d7e94d65c7f2",
+      "working_sha256": "9fea829ac5cdf969d7c27d27235e772c583ec6ba81da634961b8d7e94d65c7f2"
+    },
+    {
+      "bytes": 3305,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/VolcanoStructure.java",
+      "sha256": "9903e8f6f21ad34be49971dbd3475d1c5417c5eb79a73c3465bf467cd2da18a1",
+      "working_sha256": "9903e8f6f21ad34be49971dbd3475d1c5417c5eb79a73c3465bf467cd2da18a1"
+    },
+    {
+      "bytes": 3737,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/exoplanet/ClientExoplanetEffects.java",
+      "sha256": "3f103f599b35e92b5a192a67c7446fec67af1d2a781f412617b8ba41eff7e67a",
+      "working_sha256": "3f103f599b35e92b5a192a67c7446fec67af1d2a781f412617b8ba41eff7e67a"
+    },
+    {
+      "bytes": 1119,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/ClientConfig.java",
+      "sha256": "aaa33ba09053fa21fbe2e9a3a28356a4f7b56d8a2f2836cb5fd5fd4cb002a356",
+      "working_sha256": "aaa33ba09053fa21fbe2e9a3a28356a4f7b56d8a2f2836cb5fd5fd4cb002a356"
+    },
+    {
+      "bytes": 30404,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java",
+      "sha256": "cc2da89bde80c6196e6b10e0702e849f23a2c01882c1a81764292a8d38ed60b6",
+      "working_sha256": "cc2da89bde80c6196e6b10e0702e849f23a2c01882c1a81764292a8d38ed60b6"
+    },
+    {
+      "bytes": 1419,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/SwitchOverrides.java",
+      "sha256": "0e38745fc3263ca33a7e105e78a49a11160ab86a5c52fd5115d90bdf9c161749",
+      "working_sha256": "0e38745fc3263ca33a7e105e78a49a11160ab86a5c52fd5115d90bdf9c161749"
+    },
+    {
+      "bytes": 2572,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/WorldgenSwitches.java",
+      "sha256": "e4b730e714a932d582bb210330eace818692542e7aef09dae2939efa2907b5ef",
+      "working_sha256": "e4b730e714a932d582bb210330eace818692542e7aef09dae2939efa2907b5ef"
+    },
+    {
+      "bytes": 2632,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "a311c85b4be86eb916fd5a7e97c79765392048ea47b184ef2b7e83014554bb37",
+      "working_sha256": "a311c85b4be86eb916fd5a7e97c79765392048ea47b184ef2b7e83014554bb37"
+    },
+    {
+      "bytes": 7405,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetArt.java",
+      "sha256": "07f66cd9604c6142994d5db5bf540707b1a355c9d9f5a60433faf80409d76af1",
+      "working_sha256": "07f66cd9604c6142994d5db5bf540707b1a355c9d9f5a60433faf80409d76af1"
+    },
+    {
+      "bytes": 3207,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetData.java",
+      "sha256": "3c3dfd2cb3a75d6ac4160d782d1a84307f5690972112dedc8ff372357b49af07",
+      "working_sha256": "3c3dfd2cb3a75d6ac4160d782d1a84307f5690972112dedc8ff372357b49af07"
+    },
+    {
+      "bytes": 3357,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "working_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0"
+    },
+    {
+      "bytes": 24527,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetWorldgen.java",
+      "sha256": "cd588e5cdd1e21e9694225385586d0c338c90ea172579a9883c73c41dbff15e7",
+      "working_sha256": "cd588e5cdd1e21e9694225385586d0c338c90ea172579a9883c73c41dbff15e7"
+    },
+    {
+      "bytes": 7889,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "sha256": "632b1cfaa19a19674afd7a6c75b50aa225909e9fb28629037a996b3fbeb8b293",
+      "working_sha256": "632b1cfaa19a19674afd7a6c75b50aa225909e9fb28629037a996b3fbeb8b293"
+    },
+    {
+      "bytes": 13962,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialData.java",
+      "sha256": "7a61061d05b2e4f2fd1e231686584b187304432074e0545ef9490c1dc40fabf2",
+      "working_sha256": "7a61061d05b2e4f2fd1e231686584b187304432074e0545ef9490c1dc40fabf2"
+    },
+    {
+      "bytes": 6275,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialModels.java",
+      "sha256": "690d989a31127cc0dc2db69bf34f9390c64ab4be78317ad450f438affc9ddfdd",
+      "working_sha256": "690d989a31127cc0dc2db69bf34f9390c64ab4be78317ad450f438affc9ddfdd"
+    },
+    {
+      "bytes": 13552,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialRecipes.java",
+      "sha256": "bfc0aecd05bdf26adbde4b2ebddcbcb79bb7b3db52d56e9550c40e38a5b63ae9",
+      "working_sha256": "bfc0aecd05bdf26adbde4b2ebddcbcb79bb7b3db52d56e9550c40e38a5b63ae9"
+    },
+    {
+      "bytes": 7038,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PlanetDimensions.java",
+      "sha256": "211561a2b236a41792028275c6035fe4f9a3cd571c9db10ed33028c5c8d17c4d",
+      "working_sha256": "211561a2b236a41792028275c6035fe4f9a3cd571c9db10ed33028c5c8d17c4d"
+    },
+    {
+      "bytes": 18825,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PlanetWorldgen.java",
+      "sha256": "359fc1f895eb107d439df2ed6acfe5b1d6e6b320e473377d0f43626e6b859bc3",
+      "working_sha256": "359fc1f895eb107d439df2ed6acfe5b1d6e6b320e473377d0f43626e6b859bc3"
+    },
+    {
+      "bytes": 2718,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180Worldgen.java",
+      "sha256": "65fa4d1a449fdb094c45d1c55bc178c7e8cce90966e6cb6bcf27f9b5c2e5f7ed",
+      "working_sha256": "65fa4d1a449fdb094c45d1c55bc178c7e8cce90966e6cb6bcf27f9b5c2e5f7ed"
+    },
+    {
+      "bytes": 34567,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/BootstrapGameTests.java",
+      "sha256": "b67a970238005d7a824cc2fbb61338c276edf6ce38f4972968dba3010a4866ce",
+      "working_sha256": "b67a970238005d7a824cc2fbb61338c276edf6ce38f4972968dba3010a4866ce"
+    },
+    {
+      "bytes": 8387,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ChunkPlacementChecks.java",
+      "sha256": "d8d65b97f6db53ffd0a3ca8e7a94fc8a15f6646535371262fd32c44762154ce9",
+      "working_sha256": "d8d65b97f6db53ffd0a3ca8e7a94fc8a15f6646535371262fd32c44762154ce9"
+    },
+    {
+      "bytes": 4846,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/DiscoveryProgressFixture.java",
+      "sha256": "8ec1e6b7cb2c21e43a28a788482174f5eb02362066a37ab3dc9d9656395a209a",
+      "working_sha256": "8ec1e6b7cb2c21e43a28a788482174f5eb02362066a37ab3dc9d9656395a209a"
+    },
+    {
+      "bytes": 45510,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ElevatorGameTests.java",
+      "sha256": "1f751989857e4f6e4fe9dda6eb31f6d00d18c02b7d34e92c14ec3757cd62b11f",
+      "working_sha256": "1f751989857e4f6e4fe9dda6eb31f6d00d18c02b7d34e92c14ec3757cd62b11f"
+    },
+    {
+      "bytes": 25350,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ExoplanetGameTests.java",
+      "sha256": "015d5d0845099283c7fc161996130c1c1bcbdcda3119f0d305e9823b9f142980",
+      "working_sha256": "015d5d0845099283c7fc161996130c1c1bcbdcda3119f0d305e9823b9f142980"
+    },
+    {
+      "bytes": 17240,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialGameTests.java",
+      "sha256": "fbc6fc1591d8f867194cdd1c856fbcbc09b5e49d4da6b6783acae19595829452",
+      "working_sha256": "fbc6fc1591d8f867194cdd1c856fbcbc09b5e49d4da6b6783acae19595829452"
+    },
+    {
+      "bytes": 18826,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/MaterialRecipeGameTests.java",
+      "sha256": "ab65959981712879a2709ee1f17735ce308be5883f7d18b2f5aa9c1715a3aaf3",
+      "working_sha256": "ab65959981712879a2709ee1f17735ce308be5883f7d18b2f5aa9c1715a3aaf3"
+    },
+    {
+      "bytes": 20808,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetFeatureGameTests.java",
+      "sha256": "9bea21b69342dad18fe6e813586d8b0d4566fc4c59a0d80eae25cd6878738f5e",
+      "working_sha256": "9bea21b69342dad18fe6e813586d8b0d4566fc4c59a0d80eae25cd6878738f5e"
+    },
+    {
+      "bytes": 23254,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetSurfaceGameTests.java",
+      "sha256": "59ff91410d4e6e7ed4b85606b3fd74e95b610adb4920c8c86b18094ba3654931",
+      "working_sha256": "59ff91410d4e6e7ed4b85606b3fd74e95b610adb4920c8c86b18094ba3654931"
+    },
+    {
+      "bytes": 5926,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StarSystemGameTests.java",
+      "sha256": "a33205c8684b402f8fefd73605188f869db1e6206b18bd03bfb98b867442355e",
+      "working_sha256": "a33205c8684b402f8fefd73605188f869db1e6206b18bd03bfb98b867442355e"
+    },
+    {
+      "bytes": 39040,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/StationWarpGameTests.java",
+      "sha256": "1c604a965c64e495b13f99a3adb72a3fe5322c3fb021f0df315d81fe85786654",
+      "working_sha256": "1c604a965c64e495b13f99a3adb72a3fe5322c3fb021f0df315d81fe85786654"
+    },
+    {
+      "bytes": 12759,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/TauCetiPathGameTests.java",
+      "sha256": "a18b481ac8cd256ee27d8b0a4ed5661c62a489252ee575dd6dad3728fd9a18d3",
+      "working_sha256": "a18b481ac8cd256ee27d8b0a4ed5661c62a489252ee575dd6dad3728fd9a18d3"
+    },
+    {
+      "bytes": 8358,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/VenusStructureGameTests.java",
+      "sha256": "5521db9ca5894a9b0b8634e6219442f9a7d5a081d784b855ed392051e1d70ac2",
+      "working_sha256": "5521db9ca5894a9b0b8634e6219442f9a7d5a081d784b855ed392051e1d70ac2"
+    },
+    {
+      "bytes": 1446,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.java",
+      "sha256": "7b56905873a0d844fefca8d0d82f87eb8ba6e44c2913c67d7d5ab67061c1f743",
+      "working_sha256": "7b56905873a0d844fefca8d0d82f87eb8ba6e44c2913c67d7d5ab67061c1f743"
+    },
+    {
+      "bytes": 9868,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/PlanetaryDiscoveryTest.java",
+      "sha256": "e89136d23285c9b000828f9732be4f88f0a18b9e5349500520ab6ff7b81e50ae",
+      "working_sha256": "e89136d23285c9b000828f9732be4f88f0a18b9e5349500520ab6ff7b81e50ae"
+    },
+    {
+      "bytes": 21567,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/V180ExoplanetResourcesTest.java",
+      "sha256": "3f6b51321f480c3808db7e101d466b697a913bae0c0dc38b7b877c7da8149aa2",
+      "working_sha256": "3f6b51321f480c3808db7e101d466b697a913bae0c0dc38b7b877c7da8149aa2"
+    },
+    {
+      "bytes": 7009,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/ExoplanetShapesTest.java",
+      "sha256": "fee3fe12377ca8ba1cfa6dadea8a34e2da4fddfd6842a3674cc57431140df0dd",
+      "working_sha256": "fee3fe12377ca8ba1cfa6dadea8a34e2da4fddfd6842a3674cc57431140df0dd"
+    },
+    {
+      "bytes": 5868,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/LandingGroundTest.java",
+      "sha256": "58a202fb9fe76919a9c60b0c5b70731b3a8d8e8957958621e0dd67d3e6dff053",
+      "working_sha256": "58a202fb9fe76919a9c60b0c5b70731b3a8d8e8957958621e0dd67d3e6dff053"
+    },
+    {
+      "bytes": 18122,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/V180PlanetResourcesTest.java",
+      "sha256": "3622a40e39cd1a5f07162529ff43d902b86363a7b754d46339de90142d90cf51",
+      "working_sha256": "3622a40e39cd1a5f07162529ff43d902b86363a7b754d46339de90142d90cf51"
+    },
+    {
+      "bytes": 7105,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/SurfaceShapesTest.java",
+      "sha256": "5523251b0f496b657dfa496ee3054003e91f2ac03aff6c71867b4b56fb9f0fc8",
+      "working_sha256": "5523251b0f496b657dfa496ee3054003e91f2ac03aff6c71867b4b56fb9f0fc8"
+    },
+    {
+      "bytes": 893,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/ClientConfigTest.java",
+      "sha256": "25dd446289eca80ed750ad2eee0806fa666ce1299e603966a8f9ae5b0c600622",
+      "working_sha256": "25dd446289eca80ed750ad2eee0806fa666ce1299e603966a8f9ae5b0c600622"
+    },
+    {
+      "bytes": 14605,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java",
+      "sha256": "272eb618d9402169806323c2a929db570c7df0c4f40d1560567f3b9143048d9a",
+      "working_sha256": "272eb618d9402169806323c2a929db570c7df0c4f40d1560567f3b9143048d9a"
+    },
+    {
+      "bytes": 3625,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/SwitchOverridesTest.java",
+      "sha256": "8afe686d28628bb08f1477530c1eb9c0f52d65113924b0e6bd32a1b8f7d929fd",
+      "working_sha256": "8afe686d28628bb08f1477530c1eb9c0f52d65113924b0e6bd32a1b8f7d929fd"
+    },
+    {
+      "bytes": 2471,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetArtTest.java",
+      "sha256": "6cdaa4432645400a48a67efe68d00444a1ba63ee98f5fd6c58043430c707eb5c",
+      "working_sha256": "6cdaa4432645400a48a67efe68d00444a1ba63ee98f5fd6c58043430c707eb5c"
+    },
+    {
+      "bytes": 18035,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/material/V180MaterialResourcesTest.java",
+      "sha256": "b77b57c2c1d07f5e12f860863c042be244aac19778ce733972f1208d68dce473",
+      "working_sha256": "b77b57c2c1d07f5e12f860863c042be244aac19778ce733972f1208d68dce473"
+    }
+  ]
+}
