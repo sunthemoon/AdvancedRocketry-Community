@@ -322,9 +322,15 @@ ADR-055; no batch depends on that.
   parameters are all zero and a multi-noise source cannot split `volcanic`
   from `volcanic_lowlands`. Venus uses a new biome source
   `advancedrocketrycommunity:patches`: irregular patches from jittered cell
-  centres (cells of 32 quarts) with a fixed salt, so the layout is the same
-  in every world, as the legacy planets' biome layers did not follow the
-  world seed. The Moon keeps a multi-noise source on its own router.
+  centres (cells of 32 quarts) with a fixed salt. A 1.20.1 biome source
+  receives no world seed, so the layout is the same in every world: the
+  volcanic and volcanic lowland patches lie in the same places in every
+  world, while the terrain and structures still follow the seed. The legacy
+  planets' biome layers did follow the world seed (C15bR1-M5 corrected an
+  earlier statement here). A per-world layout would need a seeded climate
+  noise added to the Venus router, its terrain density unchanged, so the
+  noise settings would no longer equal the v1.4 file; that is open to the
+  owner. The Moon keeps a multi-noise source on its own router.
 - **Caves and canyons.** The legacy generator ran caves and ravines only on
   planets whose definition enabled them (`generateCaves`, default off), and
   the legacy Moon did not; Mars and Venus were not legacy default planets.
@@ -453,7 +459,8 @@ and must still find every C16–C18 output reachable without them.
   above. Tau Ceti g
   has no sea and its top block at `96 + 8n` (y 88–104), a plateau like the
   legacy stormland and crystal chasms (base height 1); its two biomes lie in
-  irregular patches (the `patches` source of revision 5, its own salt).
+  irregular patches (the `patches` source of revision 5, its own salt), the
+  same in every world as on Venus.
 - **Landing ground.** A rocket lands only on one of eight fixed pads around
   the origin, on ground with no fluid and nothing standing in its footprint
   (ADR-006, ADR-033). Unchanged, Tau Ceti f put all eight pads under the sea in

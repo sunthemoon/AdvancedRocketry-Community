@@ -12,8 +12,9 @@ import net.minecraft.world.level.biome.Climate;
 /**
  * A biome source of irregular patches (ADR-063 section 5, Venus): each cell of {@code cell_size} quarts (4 blocks)
  * has a jittered centre, and a position takes the biome of the nearest centre, chosen per cell by a fixed hash. It
- * reads no climate parameter, so a Level keeps its noise router unchanged while it gains several biomes. The layout
- * is the same in every world, as legacy planets' biome layers did not follow the world seed either.
+ * reads no climate parameter, so a Level keeps its noise router unchanged while it gains several biomes. A 1.20.1
+ * biome source receives no world seed, so the layout is the same in every world (the legacy planets' biome layers did
+ * follow the seed); the terrain and structures still follow it.
  */
 public final class PatchBiomeSource extends BiomeSource {
     public static final Codec<PatchBiomeSource> CODEC = RecordCodecBuilder.create(instance -> instance.group(

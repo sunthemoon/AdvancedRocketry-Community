@@ -31,7 +31,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
  * surface rules are new. The earlier copies are excluded from the build as superseded.
  */
 public final class V180PlanetDimensions implements DataProvider {
-    /** The Venus patch layout's fixed salt (the legacy biome layer did not follow the world seed either). */
+    /** The Venus patch layout's fixed salt: a biome source receives no world seed, so every world shares it. */
     public static final long VENUS_PATCH_SALT = 0x5645_4E55_5331_3830L;
     public static final int VENUS_PATCH_CELL = 32;
 
