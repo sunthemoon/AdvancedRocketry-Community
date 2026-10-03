@@ -84,6 +84,20 @@ public final class ElevatorGameTests {
         CommonConfig.ENDGAME_SPACE_ELEVATOR.set(true);
     }
 
+    /**
+     * The zone test's clean-up (its zone, its rider and its fixture), run after its batch whether the test passed or
+     * failed: a failed sequence skips its last steps, and a rider left online reached the next batch's tests
+     * (C15bR1-L5).
+     */
+    private static Runnable zoneCleanup = () -> { };
+
+    @AfterBatch(batch = ZONE)
+    public static void cleanUpZone(ServerLevel level) {
+        Runnable cleanup = zoneCleanup;
+        zoneCleanup = () -> { };
+        cleanup.run();
+    }
+
     /** A bound anchor and terminal of one owner, with the station's chunk loaded and ticking. */
     private static final class Fixture {
         final MinecraftServer server;
@@ -367,6 +381,11 @@ public final class ElevatorGameTests {
         fixture.stations.addMember(fixture.stationId, memberId);
         String zone = "gt_ride_" + memberId.toString().substring(0, 8);
         List<ServerPlayer> joined = new ArrayList<>();
+        zoneCleanup = () -> {
+            service().barrier(root -> root.removeZone(zone));
+            joined.forEach(player -> fixture.server.getPlayerList().remove(player));
+            fixture.close();
+        };
         helper.startSequence()
                 .thenWaitUntil(() -> fixture.registered(helper))
                 .thenExecute(() -> {
@@ -397,11 +416,6 @@ public final class ElevatorGameTests {
                         == EndgameCode.RIDE_COUNTDOWN, "The second ride down was refused"))
                 .thenWaitUntil(() -> helper.assertTrue(joined.get(0).level() == fixture.level
                         && fixture.anchor().onPlatform(joined.get(0)), "A zone allowing the departing owner refused"))
-                .thenExecute(() -> {
-                    service().barrier(root -> root.removeZone(zone));
-                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
-                    fixture.close();
-                })
                 .thenSucceed();
     }
 

@@ -163,6 +163,31 @@ class V180MaterialResourcesTest {
         }
     }
 
+    /**
+     * C15bR1-L5: the v1.8 root holds exactly the placed features of the contract (C15a's Overworld ores, C15b's Moon
+     * and Mars ores and charred tree, C15c's Tau Ceti features), so an unexpected one fails here.
+     */
+    @Test
+    void theV18RootHoldsExactlyTheContractsPlacedFeatures() throws IOException {
+        Set<String> features;
+        try (Stream<Path> files = Files.list(DATA.resolve(NS + "/worldgen/placed_feature"))) {
+            features = files.map(path -> path.getFileName().toString().replace(".json", ""))
+                    .collect(Collectors.toCollection(TreeSet::new));
+        }
+        Set<String> expected = new TreeSet<>(List.of("charred_tree", "alien_forest_grass", "crystal_cluster",
+                "electric_mushrooms", "giant_swamp_tree", "inverted_pillar", "lightwood_tree",
+                "stormland_charred_tree"));
+        for (String ore : List.of("aluminum", "dilithium", "rutile", "tin")) {
+            expected.add("overworld_" + ore + "_ore");
+        }
+        for (String body : List.of("moon", "mars")) {
+            for (String ore : List.of("aluminum", "copper", "dilithium", "iridium", "rutile", "tin")) {
+                expected.add(body + "_" + ore + "_ore");
+            }
+        }
+        assertEquals(expected, features);
+    }
+
     @Test
     void overworldOresAreFourSwitchedFeaturesInOneBiomeModifier() throws IOException {
         Path placed = DATA.resolve(NS + "/worldgen/placed_feature");
