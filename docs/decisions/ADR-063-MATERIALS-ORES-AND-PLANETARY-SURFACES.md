@@ -325,9 +325,10 @@ ADR-055; no batch depends on that.
   and Venus keep their v1.4 fog and sky colours; the Moon biomes have a black
   sky.
 - **Geodes.** Radius 16–24, centred four blocks of cover plus their half
-  height below the surface; where another column's ground lies lower, the
-  roof comes down so that no geode block lies within four blocks of that
-  column's ground (the geode never opens to the surface); ores from the block tag
+  height below the lowest ground of a 5 × 5 grid over the lens; where a
+  column's ground still lies lower, its roof comes down, so that no geode
+  block lies within four blocks of any column's ground (the geode never opens
+  to the surface, on cliffs too); ores from the block tag
   `advancedrocketrycommunity:geode_ores` (default: the legacy list, iron,
   gold, copper, tin and redstone ores).
 - **Charred trees.** In the `volcanic` biome only, on average once every ten
