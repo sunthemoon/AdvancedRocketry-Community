@@ -36,14 +36,14 @@ atmosphere:AtmosphereVeryHotNoOxygen,REDESIGNED,v1.4.0,heat exposure without oxy
 biome:alien_forest,PLANNED,C15c,alien forest biome,ADR-062,classic exoplanet world,
 biome:crystalchasms,PLANNED,C15c,crystal chasms biome,ADR-062,classic exoplanet world,
 biome:deepswamp,PLANNED,C15c,deep swamp biome,ADR-062,classic exoplanet world,
-biome:hotdryrock,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_regolith biome,ADR-063,Mars,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+biome:hotdryrock,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_regolith biome,ADR-063,"Mars; keeps the v1.4 sky colour, not the legacy 0x664444",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:marsh,PLANNED,C15c,marsh biome,ADR-062,classic exoplanet world,
 biome:moon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:regolith_highlands biome,ADR-063,Moon,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:moondark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:regolith_lowlands biome,ADR-063,Moon,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:oceanspires,PLANNED,C15c,ocean spires biome,ADR-062,classic exoplanet world,
 biome:space,REDESIGNED,v0.3.0,space Level,ADR-031,shared space Level,
 biome:stormland,PLANNED,C15c,stormland biome,ADR-062,classic exoplanet world,
-biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-063,"Venus; nothing spawns (the legacy creepers are not restored)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowlands biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
@@ -626,24 +626,24 @@ worldgen:ChunkProviderSpace,REDESIGNED,v0.3.0,space Level generator,ADR-031,,
 worldgen:CustomizableOreGen,REDESIGNED,v1.8.0,configured ore features with the planet_ores server switch,ADR-063,"data-driven ore placement; the Overworld features came in C15a, the Moon and Mars features close the row in C15b",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:GenLayerBiomePlanet,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,,
 worldgen:GenLayerVoronoiExtended,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,,
-worldgen:MapGenCaveExt,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenCaveExt,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenCrater,REDESIGNED,v1.8.0,crater structures moon_crater and mars_crater,ADR-063,radius 8-48 with a raised rim (ADR-063 section 5),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenCraterHuge,REDESIGNED,v1.8.0,crater structures (radius capped at 48),ADR-063,legacy radius up to about 91 is capped at 48,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenCraterSmall,REDESIGNED,v1.8.0,crater structures (small radii),ADR-063,,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenGeode,REDESIGNED,v1.8.0,geode structure,ADR-063,legacy radius 24-48 is capped at 24,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-worldgen:MapGenHighCaves,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenHighCaves,REDESIGNED,v1.8.0,vanilla cave carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenInvertedPillar,PLANNED,C15c,inverted pillar feature,ADR-062,ocean spires,
 worldgen:MapGenLander,DEFERRED,post-2.0,-,ADR-062,decorative lander structure,
 worldgen:MapGenLargeCrystal,PLANNED,C15c,large crystal feature,ADR-062,,
-worldgen:MapGenMassiveRavine,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-worldgen:MapGenRavineExt,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenMassiveRavine,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:MapGenRavineExt,REDESIGNED,v1.8.0,vanilla canyon carvers in planet biome data,ADR-063,"the Moon, Mars and Venus have no carvers, as the legacy defaults; data-pack planet biomes may add vanilla carvers (ADR-063 revision 5; Celestial data guide, Built-in planetary worlds)",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:MapGenSpaceStation,REJECTED,-,-,ADR-062,never referenced in the legacy build,
 worldgen:MapGenSpaceVillage,DEFERRED,post-2.0,-,ADR-062,vanilla villages on habitable planets,
 worldgen:MapGenSwampTree,PLANNED,C15c,swamp tree feature,ADR-062,,
 worldgen:MapGenVolcano,REDESIGNED,v1.8.0,volcano structure,ADR-063,cone radius at most 32 (ADR-063 section 5),docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:OreGenerator,REDESIGNED,v1.8.0,Overworld ore placed features and the overworld_ores biome modifier,ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 worldgen:WorldGenAlienTree,PLANNED,C15c,lightwood tree feature,ADR-062,,
-worldgen:WorldGenCharredTree,IMPLEMENTED,v1.8.0,charred_tree feature in the volcanic biome,ADR-063,,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
+worldgen:WorldGenCharredTree,IMPLEMENTED,v1.8.0,charred_tree feature in the volcanic biome,ADR-063,adds at most one stub branch the legacy tree did not have,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 worldgen:WorldGenElectricMushroom,PLANNED,C15c,electric mushroom feature,ADR-062,,
 worldgen:WorldGenLargeCrystal,PLANNED,C15c,crystal cluster feature,ADR-062,,
 worldgen:WorldGenNoTree,MERGED,-,worldgen:WorldGenAlienTree,ADR-062,internal helper,

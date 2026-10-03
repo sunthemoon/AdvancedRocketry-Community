@@ -62,11 +62,14 @@ pressure and solar exposure require the explicit opt-in described below.
 ## Built-in planetary worlds
 
 The development build adds `advancedrocketrycommunity:mars` and
-`advancedrocketrycommunity:venus` as both body and startup Level IDs. Mars has
-red-sand/red-sandstone rolling terrain; Venus has yellow-terracotta surfaces
-over basalt highlands. These use original generation rules and existing vanilla
-blocks. Their configured environments are gameplay analogues, not a scientific
-simulation. Mars and Venus enable environmental exposure; bring a complete
+`advancedrocketrycommunity:venus` as both body and startup Level IDs. Since
+v1.8 (ADR-063) Mars has oxidized ferric sand over red sandstone with craters,
+and Venus is basalt with volcanoes and buried ore geodes; the Moon is rolling
+regolith between y 12 and 36 with craters. Tau Ceti f (a breathable water
+world of ocean spires, marsh, deep swamp and alien forest) and Tau Ceti g (a
+cold storm plateau of stormland and crystal chasms) are further surfaces in
+the Tau Ceti system. These use original generation rules. Their configured
+environments are gameplay analogues, not a scientific simulation. Mars and Venus enable environmental exposure; bring a complete
 oxygen-filled space suit or maintain a supplied, sealed vent room. Presentation
 uses the [sky profiles](PLANETARY-SKY-GUIDE.md); new arrivals require the
 [shared satellite discovery](PLANETARY-DISCOVERY-GUIDE.md).
@@ -90,6 +93,16 @@ out-of-height or unsupported candidates are skipped; no safe candidate means
 the launch is denied. If support is lost before destination spawning, the
 existing transfer service returns to the source with its original fuel ledger.
 Earth spawn-based and Moon fixed-height landing behavior remains unchanged.
+On Tau Ceti f and g a landing ground of radius 160 around the origin keeps
+these candidates clear: no tree, plant or crystal is generated there, and
+Tau Ceti f's ground there stays above the sea (ADR-063 revision 6).
+
+The Moon, Mars, Venus and Tau Ceti biomes have no cave or canyon carvers, as
+the legacy planets had none by default. A data pack may add vanilla carvers
+(for example `minecraft:cave` or `minecraft:canyon`) to a planet biome's
+`carvers` list; nothing in the planets' noise settings turns carving off, so
+new chunks of that biome are carved. As with any generator change, chunks
+generated earlier keep what they have.
 
 Back up the complete world before installing added worldgen data. The new
 dimensions are available on startup, not created by `/reload`. Existing binding
