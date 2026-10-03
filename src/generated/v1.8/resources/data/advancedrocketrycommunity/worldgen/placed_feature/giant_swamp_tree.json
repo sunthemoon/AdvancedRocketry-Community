@@ -1,0 +1,31 @@
+{
+  "feature": "advancedrocketrycommunity:giant_swamp_tree",
+  "placement": [
+    {
+      "type": "advancedrocketrycommunity:server_switch",
+      "switch": "swamp_trees"
+    },
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 100
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "minecraft:surface_water_depth_filter",
+      "max_water_depth": 3
+    },
+    {
+      "type": "advancedrocketrycommunity:landing_ground",
+      "radius": 160
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "feature": "advancedrocketrycommunity:crystal_cluster",
+  "placement": [
+    {
+      "type": "advancedrocketrycommunity:server_switch",
+      "switch": "crystal_clusters"
+    },
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 36
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "advancedrocketrycommunity:landing_ground",
+      "radius": 160
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

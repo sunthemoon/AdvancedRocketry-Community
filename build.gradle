@@ -159,9 +159,11 @@ def supersededV140Planets = [
 
 tasks.named('processResources') {
     eachFile { details ->
-        // ADR-043: the v1.5 copy is authoritative; the v0.8 and v1.4 copies are superseded.
+        // ADR-043 and ADR-063 section 8: the v1.8 copy is authoritative; the v0.8, v1.4 and v1.5 copies are
+        // superseded.
         if ((details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
-                || details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath()))
+                || details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath())
+                || details.file.toPath().startsWith(file('src/generated/v1.5/resources').toPath()))
                 && details.path == currentSatelliteDefinition) {
             details.exclude()
         }
@@ -200,9 +202,11 @@ tasks.named('processResources') {
 
 tasks.named('sourcesJar') {
     eachFile { details ->
-        // ADR-043: the v1.5 copy is authoritative; the v0.8 and v1.4 copies are superseded.
+        // ADR-043 and ADR-063 section 8: the v1.8 copy is authoritative; the v0.8, v1.4 and v1.5 copies are
+        // superseded.
         if ((details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
-                || details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath()))
+                || details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath())
+                || details.file.toPath().startsWith(file('src/generated/v1.5/resources').toPath()))
                 && details.path == currentSatelliteDefinition) {
             details.exclude()
         }

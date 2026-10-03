@@ -82,4 +82,8 @@ public final class DiscoveryProgressFixture {
     public static void beforePad(ServerLevel level) { install(level, true); }
     @AfterBatch(batch = "planetary_changed_pad")
     public static void afterPad(ServerLevel level) { restore(level); }
+    @BeforeBatch(batch = TauCetiPathGameTests.BATCH)
+    public static void beforeTauCetiPath(ServerLevel level) { install(level, false); }
+    @AfterBatch(batch = TauCetiPathGameTests.BATCH)
+    public static void afterTauCetiPath(ServerLevel level) { restore(level); }
 }

@@ -1,0 +1,27 @@
+{
+  "feature": "advancedrocketrycommunity:inverted_pillar",
+  "placement": [
+    {
+      "type": "advancedrocketrycommunity:server_switch",
+      "switch": "inverted_pillars"
+    },
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 2
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "OCEAN_FLOOR_WG"
+    },
+    {
+      "type": "advancedrocketrycommunity:landing_ground",
+      "radius": 160
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "carvers": {},
+  "downfall": 0.2,
+  "effects": {
+    "fog_color": 2763310,
+    "sky_color": 2105376,
+    "water_color": 4020182,
+    "water_fog_color": 329011
+  },
+  "features": [
+    [],
+    [],
+    [
+      "advancedrocketrycommunity:crystal_cluster"
+    ]
+  ],
+  "has_precipitation": true,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [],
+    "misc": [],
+    "monster": [],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 0.1
+}

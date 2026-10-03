@@ -37,8 +37,9 @@ class CommonConfigTest {
         // Two atmosphere values, the three ADR-044 station warp values, the ADR-041 rev. 2 write spacing,
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
-        // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values.
-        assertEquals(61, countValues(CommonConfig.SPEC.getValues()));
+        // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values, and the v1.8
+        // switches: two of C15a, five of C15b and five of C15c (ADR-063).
+        assertEquals(66, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

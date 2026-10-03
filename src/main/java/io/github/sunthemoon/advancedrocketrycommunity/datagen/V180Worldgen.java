@@ -25,19 +25,32 @@ public final class V180Worldgen {
 
     static RegistrySetBuilder builder() {
         return new RegistrySetBuilder()
-                .add(Registries.NOISE, V180PlanetWorldgen::noise)
+                .add(Registries.NOISE, context -> {
+                    V180PlanetWorldgen.noise(context);
+                    V180ExoplanetWorldgen.noise(context);
+                })
                 .add(Registries.CONFIGURED_FEATURE, context -> {
                     V180MaterialWorldgen.configured(context);
                     V180PlanetWorldgen.configured(context);
+                    V180ExoplanetWorldgen.configured(context);
                 })
                 .add(Registries.PLACED_FEATURE, context -> {
                     V180MaterialWorldgen.placed(context);
                     V180PlanetWorldgen.placed(context);
+                    V180ExoplanetWorldgen.placed(context);
                 })
-                .add(Registries.BIOME, V180PlanetWorldgen::biomes)
+                .add(Registries.BIOME, context -> {
+                    V180PlanetWorldgen.biomes(context);
+                    V180ExoplanetWorldgen.biomes(context);
+                })
                 .add(Registries.STRUCTURE, V180PlanetWorldgen::structures)
                 .add(Registries.STRUCTURE_SET, V180PlanetWorldgen::structureSets)
-                .add(Registries.NOISE_SETTINGS, V180PlanetWorldgen::noiseSettings)
+                .add(Registries.NOISE_SETTINGS, context -> {
+                    V180PlanetWorldgen.noiseSettings(context);
+                    V180ExoplanetWorldgen.noiseSettings(context);
+                })
+                .add(Registries.DIMENSION_TYPE, V180ExoplanetWorldgen::dimensionTypes)
+                .add(Registries.LEVEL_STEM, V180ExoplanetWorldgen::levels)
                 .add(ForgeRegistries.Keys.BIOME_MODIFIERS, V180MaterialWorldgen::biomeModifiers);
     }
 }

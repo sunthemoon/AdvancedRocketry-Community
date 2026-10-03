@@ -1,0 +1,27 @@
+{
+  "feature": "advancedrocketrycommunity:charred_tree",
+  "placement": [
+    {
+      "type": "advancedrocketrycommunity:server_switch",
+      "switch": "charred_trees"
+    },
+    {
+      "type": "minecraft:count",
+      "count": 6
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "advancedrocketrycommunity:landing_ground",
+      "radius": 160
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

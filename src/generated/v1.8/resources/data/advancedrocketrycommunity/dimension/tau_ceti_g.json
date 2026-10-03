@@ -1,0 +1,16 @@
+{
+  "type": "advancedrocketrycommunity:tau_ceti_g",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "advancedrocketrycommunity:patches",
+      "biomes": [
+        "advancedrocketrycommunity:stormland",
+        "advancedrocketrycommunity:crystal_chasms"
+      ],
+      "cell_size": 32,
+      "salt": 6071227520086460743
+    },
+    "settings": "advancedrocketrycommunity:tau_ceti_g"
+  }
+}

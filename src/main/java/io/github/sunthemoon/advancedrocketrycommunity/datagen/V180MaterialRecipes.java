@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
 import com.google.gson.JsonObject;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Material;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.OreKind;
@@ -47,6 +48,11 @@ public final class V180MaterialRecipes extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> output) {
+        // C15c (ADR-063 section 6): four lightwood planks from a log, in the vanilla planks group.
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, ExoplanetBlocks.LIGHTWOOD_PLANKS.get(), 4)
+                .requires(ExoplanetBlocks.LIGHTWOOD_LOG.get()).group("planks")
+                .unlockedBy("has_log", has(ExoplanetBlocks.LIGHTWOOD_LOG.get()))
+                .save(output, ModIdentity.id("lightwood_planks"));
         for (Material material : Material.values()) {
             String id = material.id();
             TagKey<Item> ingots = MaterialTags.item(material, Product.INGOT);

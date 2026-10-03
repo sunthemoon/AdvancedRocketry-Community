@@ -316,7 +316,7 @@ public final class PlanetSurfaceGameTests {
      * spread over ticks instead of stalling one tick (and every test running beside it); then runs the check, lets the
      * chunks go and succeeds.
      */
-    private static void whenLoaded(GameTestHelper helper, ServerLevel level, BoundingBox box, Runnable check) {
+    static void whenLoaded(GameTestHelper helper, ServerLevel level, BoundingBox box, Runnable check) {
         List<ChunkPos> chunks = new ArrayList<>();
         for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) {
             for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) {
@@ -410,7 +410,7 @@ public final class PlanetSurfaceGameTests {
     }
 
     /** A {@link WorldGenLevel} view of a server level that records the position of every block write. */
-    private static final class RecordingLevel implements InvocationHandler {
+    static final class RecordingLevel implements InvocationHandler {
         private final ServerLevel level;
         private final List<BlockPos> written;
 

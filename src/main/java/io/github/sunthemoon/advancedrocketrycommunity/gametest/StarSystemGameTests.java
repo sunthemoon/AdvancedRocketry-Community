@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -13,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCre
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -33,20 +35,25 @@ public final class StarSystemGameTests {
     public static void packagedExampleSystemIsLoadedKnownByDiscoveryAndGivesStationContext(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         var dispatcher = server.getCommands().getDispatcher();
-        String tauCeti = "system=" + StarSystemContent.TAU_CETI + " known=true bodies=2";
+        // v1.8 (ADR-063 section 6): the star, Tau Ceti e and the classic worlds Tau Ceti f and g.
+        String tauCeti = "system=" + StarSystemContent.TAU_CETI + " known=true bodies=4";
         List<String> console = new ArrayList<>();
         run(dispatcher, server, console, "arce celestial systems");
         helper.assertTrue(console.stream().anyMatch(line -> line.startsWith("system=" + CelestialIds.EARTH_ID)),
                 "Home system missing: " + console);
         CelestialSavedData discovery = CelestialSavedData.get(server);
         boolean alreadyDiscovered = discovery.get(StarSystemContent.TAU_CETI_E).isPresent();
-        helper.assertTrue(console.stream().anyMatch(line -> line.equals(tauCeti + " known_bodies="
-                + (alreadyDiscovered ? 2 : 1))), "Example system missing or wrong: " + console);
+        // The star is known; each planet counts once discovered (other tests may discover f or g first).
+        long known = 1 + Stream.of(StarSystemContent.TAU_CETI_E, ExoplanetContent.TAU_CETI_F,
+                ExoplanetContent.TAU_CETI_G).filter(body -> discovery.get(body).isPresent()).count();
+        helper.assertTrue(console.stream().anyMatch(line -> line.equals(tauCeti + " known_bodies=" + known)),
+                "Example system missing or wrong: " + console);
         if (!alreadyDiscovered) {
             discovery.discover(StarSystemContent.TAU_CETI_E, helper.getLevel().getGameTime());
             console.clear();
             run(dispatcher, server, console, "arce celestial systems");
-            helper.assertTrue(console.contains(tauCeti + " known_bodies=2"), "Discovery not reflected: " + console);
+            helper.assertTrue(console.contains(tauCeti + " known_bodies=" + (known + 1)),
+                    "Discovery not reflected: " + console);
         }
 
         // A station orbiting the example planet resolves the planet's (not Earth's) solar intensity.

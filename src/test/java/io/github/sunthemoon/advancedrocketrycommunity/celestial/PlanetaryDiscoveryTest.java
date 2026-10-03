@@ -129,10 +129,13 @@ class PlanetaryDiscoveryTest {
             assertNotNull(input);
             var definition = io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition.CODEC
                     .parse(JsonOps.INSTANCE, JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8))).result().orElseThrow();
-            // v1.5 (ADR-043) supersedes the v1.4 copy: the same economy plus the example planet.
-            assertEquals(io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent
-                    .surveySatellite(), definition);
-            assertEquals(7, definition.allowedTargets().size());
+            // v1.5 (ADR-043) superseded the v1.4 copy with the example planet; v1.8 (ADR-063 sections 6 and 8)
+            // supersedes the v1.5 copy: the same economy plus Tau Ceti f and g.
+            assertEquals(io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetContent
+                    .dataSatellite(), definition);
+            assertEquals(9, definition.allowedTargets().size());
+            assertTrue(definition.allowedTargets().containsAll(io.github.sunthemoon.advancedrocketrycommunity
+                    .celestial.content.StarSystemContent.surveySatellite().allowedTargets()));
             assertTrue(definition.allowedTargets().containsAll(PlanetaryContent.surveySatellite().allowedTargets()));
             assertEquals(200, definition.missionDurationTicks());
             assertEquals(120, definition.researchYield());

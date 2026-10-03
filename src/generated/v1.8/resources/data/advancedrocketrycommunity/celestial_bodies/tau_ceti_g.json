@@ -1,0 +1,28 @@
+{
+  "parent": "advancedrocketrycommunity:tau_ceti",
+  "atmosphere": {
+    "breathable": false,
+    "pressure": 1.4,
+    "profile": "advancedrocketrycommunity:tau_ceti_g",
+    "temperature_kelvin": 255.0
+  },
+  "capabilities": {
+    "gas_giant": false,
+    "landable": true,
+    "orbitable": true
+  },
+  "discovery_required": true,
+  "environment_effects": true,
+  "gravity_multiplier": 1.2,
+  "id": "advancedrocketrycommunity:tau_ceti_g",
+  "level": "advancedrocketrycommunity:tau_ceti_g",
+  "orbit": {
+    "distance": 19400000,
+    "inclination_degrees": 0.0,
+    "period_ticks": 646400
+  },
+  "radiation": 0.1,
+  "schema_version": 2,
+  "solar_intensity": 1.2,
+  "visual_profile": "advancedrocketrycommunity:tau_ceti_g"
+}

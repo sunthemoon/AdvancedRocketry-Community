@@ -94,6 +94,7 @@ public final class V180MaterialModels extends BlockStateProvider {
         simpleBlock(MaterialContent.SMALL_PLATE_PRESS.get(), press);
         simpleBlockItem(MaterialContent.SMALL_PLATE_PRESS.get(), press);
         V180SurfaceModels.register(this, existingFiles);
+        V180ExoplanetModels.register(this, existingFiles);
     }
 
     private ModelFile ore(ModelFile template, String name, String base, String overlay) {

@@ -1,0 +1,14 @@
+{
+  "bidirectional": true,
+  "distance_units": 25,
+  "from": {
+    "type": "advancedrocketrycommunity:body_surface",
+    "body_id": "advancedrocketrycommunity:tau_ceti_f"
+  },
+  "id": "advancedrocketrycommunity:tau_ceti_f_surface_orbit",
+  "schema_version": 1,
+  "to": {
+    "type": "advancedrocketrycommunity:orbit",
+    "body_id": "advancedrocketrycommunity:tau_ceti_f"
+  }
+}

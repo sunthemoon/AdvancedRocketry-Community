@@ -63,6 +63,31 @@ No candidate or release approval is assigned.
   `worldgen.geodes` and `worldgen.charredTrees`. Structures already started
   still finish. Data packs can change the ores a geode holds through the block
   tag `advancedrocketrycommunity:geode_ores`.
+- Add two Tau Ceti worlds (ADR-063 section 6). A data satellite finds them;
+  a station's interstellar warp reaches their orbits, and rockets fly between
+  each surface and its orbit and between the two surfaces. Tau Ceti f is a
+  breathable, temperate water world (gravity 1.0): its ground rises from the
+  sea through Ocean Spires (gravel with upside-down stone pillars), Marsh,
+  Deep Swamp (giant swamp trees with roots) and Alien Forest (Lightwood trees
+  and dense grass). Tau Ceti g is a cold storm plateau (gravity 1.2,
+  1.4 atm, not breathable) of Stormland (charred trees and Electric
+  Mushrooms under a dark sky) and Crystal Chasms (snow over packed ice with
+  giant crystals in six colours). Nothing spawns on either world. Around each
+  world's origin, a landing ground of radius 160 keeps the rocket landing pads
+  dry and free of trees and plants.
+- New blocks: Lightwood Log, Leaves, Sapling and Planks (the leaves and
+  planks glow, the sapling grows a Lightwood tree, and they work in vanilla
+  wood recipes), six Crystal Blocks (violet, blue, green, red, yellow and
+  orange) and the Electric Mushroom. Electric Mushrooms throw sparks; in a
+  stormland during rain the sky flashes and distant thunder sounds. The CLIENT
+  value `effects.electricMushroomFlashes` turns the flashes off.
+- New COMMON values turn each Tau Ceti feature off in new chunks:
+  `worldgen.lightwoodTrees`, `worldgen.swampTrees`,
+  `worldgen.invertedPillars`, `worldgen.crystalClusters` and
+  `worldgen.electricMushrooms`; `worldgen.charredTrees` also covers the
+  stormland's trees.
+- A station warp to Tau Ceti no longer warns that the star system has no
+  rocket routes.
 - Data packs: Rolling Machine, Precision Assembler and Electrolyzer recipes
   must name items; tag ingredients are refused until the classic machine
   family resolves tags after they load. Electrolyzer ingredients also take

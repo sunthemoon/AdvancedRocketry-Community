@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.worldgen.SurfaceWorldgen;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog;
@@ -23,6 +24,7 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
@@ -31,6 +33,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -78,6 +81,17 @@ public final class V180MaterialData {
             add(log, createSilkTouchDispatchTable(log, applyExplosionDecay(log, LootItem.lootTableItem(
                     net.minecraft.world.item.Items.CHARCOAL)
                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE)))));
+            // C15c blocks (ADR-063 section 6) drop themselves, except the lightwood leaves: a sapling one time in a
+            // hundred and nothing else (legacy), or the leaves themselves with shears or Silk Touch.
+            for (RegistryObject<Block> block : ExoplanetBlocks.blocks()) {
+                if (block != ExoplanetBlocks.LIGHTWOOD_LEAVES) {
+                    dropSelf(block.get());
+                }
+            }
+            Block leaves = ExoplanetBlocks.LIGHTWOOD_LEAVES.get();
+            add(leaves, createSilkTouchOrShearsDispatchTable(leaves, applyExplosionCondition(leaves,
+                    LootItem.lootTableItem(ExoplanetBlocks.LIGHTWOOD_SAPLING.get()))
+                    .when(LootItemRandomChanceCondition.randomChance(0.01F))));
         }
 
         @Override
@@ -86,6 +100,7 @@ public final class V180MaterialData {
             MaterialContent.blocks().values().forEach(block -> blocks.add(block.get()));
             blocks.add(MaterialContent.SMALL_PLATE_PRESS.get());
             SurfaceContent.blocks().forEach(block -> blocks.add(block.get()));
+            ExoplanetBlocks.blocks().forEach(block -> blocks.add(block.get()));
             return blocks;
         }
     }
@@ -138,6 +153,13 @@ public final class V180MaterialData {
             tag(BlockTags.MINEABLE_WITH_AXE).add(SurfaceContent.CHARCOAL_LOG.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(SurfaceContent.GEODE_SHELL.get());
             tag(BlockTags.NEEDS_IRON_TOOL).add(SurfaceContent.GEODE_SHELL.get());
+            // C15c: the lightwood set joins the vanilla wood tags, so vanilla wood recipes, tools and fuel accept it;
+            // the crystal blocks dig with a pickaxe.
+            tag(BlockTags.LOGS_THAT_BURN).add(ExoplanetBlocks.LIGHTWOOD_LOG.get());
+            tag(BlockTags.PLANKS).add(ExoplanetBlocks.LIGHTWOOD_PLANKS.get());
+            tag(BlockTags.LEAVES).add(ExoplanetBlocks.LIGHTWOOD_LEAVES.get());
+            tag(BlockTags.SAPLINGS).add(ExoplanetBlocks.LIGHTWOOD_SAPLING.get());
+            ExoplanetBlocks.CRYSTALS.forEach(crystal -> tag(BlockTags.MINEABLE_WITH_PICKAXE).add(crystal.get()));
             tag(SurfaceWorldgen.GEODE_ORES).add(net.minecraft.world.level.block.Blocks.IRON_ORE,
                     net.minecraft.world.level.block.Blocks.GOLD_ORE, net.minecraft.world.level.block.Blocks.COPPER_ORE,
                     MaterialContent.block("tin_ore"), net.minecraft.world.level.block.Blocks.REDSTONE_ORE);
@@ -182,6 +204,10 @@ public final class V180MaterialData {
 
         @Override
         protected void addTags(HolderLookup.Provider provider) {
+            copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);
+            copy(BlockTags.PLANKS, ItemTags.PLANKS);
+            copy(BlockTags.LEAVES, ItemTags.LEAVES);
+            copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
             for (Entry entry : MaterialCatalog.entries()) {
                 Item item = MaterialContent.item(entry.id());
                 Material material = entry.material();

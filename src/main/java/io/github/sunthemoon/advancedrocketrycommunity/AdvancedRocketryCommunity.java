@@ -18,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.binding.PlanetaryBindingLifecycle;
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnosticId;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents;
@@ -125,6 +126,7 @@ public final class AdvancedRocketryCommunity {
 
         ModRegistries.register(modBus);
         context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+        context.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         modBus.addListener(this::onCommonSetup);
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);

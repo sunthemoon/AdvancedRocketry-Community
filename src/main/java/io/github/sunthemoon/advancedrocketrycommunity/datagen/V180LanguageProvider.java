@@ -43,6 +43,26 @@ public final class V180LanguageProvider extends LanguageProvider {
         add("biome." + NS + ".ferric_regolith", chinese ? "氧化铁风化层荒原" : "Ferric Regolith Wasteland");
         add("biome." + NS + ".volcanic", chinese ? "火山" : "Volcanic");
         add("biome." + NS + ".volcanic_lowlands", chinese ? "火山低地" : "Volcanic Lowlands");
+        // C15c Tau Ceti f and g blocks and biomes (ADR-063 section 6), with the legacy names.
+        add("block." + NS + ".lightwood_log", chinese ? "轻木原木" : "Lightwood Log");
+        add("block." + NS + ".lightwood_leaves", chinese ? "轻木树叶" : "Lightwood Leaves");
+        add("block." + NS + ".lightwood_sapling", chinese ? "轻木树苗" : "Lightwood Sapling");
+        add("block." + NS + ".lightwood_planks", chinese ? "轻木木板" : "Lightwood Planks");
+        add("block." + NS + ".violet_crystal_block", chinese ? "紫色水晶块" : "Violet Crystal Block");
+        add("block." + NS + ".blue_crystal_block", chinese ? "蓝色水晶块" : "Blue Crystal Block");
+        add("block." + NS + ".green_crystal_block", chinese ? "绿色水晶块" : "Green Crystal Block");
+        add("block." + NS + ".red_crystal_block", chinese ? "红色水晶块" : "Red Crystal Block");
+        add("block." + NS + ".yellow_crystal_block", chinese ? "黄色水晶块" : "Yellow Crystal Block");
+        add("block." + NS + ".orange_crystal_block", chinese ? "橙色水晶块" : "Orange Crystal Block");
+        add("block." + NS + ".electric_mushroom", chinese ? "电蘑菇" : "Electric Mushroom");
+        add("biome." + NS + ".alien_forest", chinese ? "异星森林" : "Alien Forest");
+        add("biome." + NS + ".marsh", chinese ? "湿地" : "Marsh");
+        add("biome." + NS + ".deep_swamp", chinese ? "深沼泽" : "Deep Swamp");
+        add("biome." + NS + ".ocean_spires", chinese ? "海上尖塔" : "Ocean Spires");
+        add("biome." + NS + ".stormland", chinese ? "风暴之地" : "Stormland");
+        add("biome." + NS + ".crystal_chasms", chinese ? "水晶裂谷" : "Crystal Chasms");
+        add("body." + NS + ".tau_ceti_f", chinese ? "鲸鱼座τ f" : "Tau Ceti f");
+        add("body." + NS + ".tau_ceti_g", chinese ? "鲸鱼座τ g" : "Tau Ceti g");
         Map<Material, String[]> names = materialNames();
         for (Entry entry : MaterialCatalog.entries()) {
             String key = (entry.isBlock() ? "block." : "item.") + NS + "." + entry.id();

@@ -38,5 +38,8 @@ public final class BootstrapDataGenerators {
                 existingFiles));
         generator.addProvider(event.includeServer(), new V180PlanetDimensions(output, existingFiles));
         generator.addProvider(event.includeClient(), new V180SurfaceArt(output));
+        generator.addProvider(event.includeClient(), new V180ExoplanetArt(output));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180ExoplanetData(output, event.includeClient(), event.includeServer()));
     }
 }

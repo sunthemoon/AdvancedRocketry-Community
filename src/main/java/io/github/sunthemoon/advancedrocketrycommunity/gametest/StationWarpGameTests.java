@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.SingularityContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
@@ -202,9 +203,14 @@ public final class StationWarpGameTests {
             fixture.core(fixture.pad.east(2));
             List<String> owner = fixture.join(fixture.ownerId, "starOwner");
             fixture.look(fixture.ownerId, fixture.pad.east(2));
-            fixture.run(fixture.ownerId, "arce station warp " + StarSystemContent.TAU_CETI_E);
+            // Cygnus X-1 has no rocket routes; since ADR-063 revision 6 Tau Ceti has (Tau Ceti f and g).
+            fixture.run(fixture.ownerId, "arce station warp " + SingularityContent.CYGNUS_X1);
             helper.assertTrue(last(owner).contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
                     && last(owner).contains("The target's star system has no rocket routes."),
+                    "Routeless quote differs: " + last(owner));
+            fixture.run(fixture.ownerId, "arce station warp " + StarSystemContent.TAU_CETI_E);
+            helper.assertTrue(last(owner).contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
+                    && !last(owner).contains("no rocket routes"),
                     "Interstellar quote differs: " + last(owner));
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             scheduled = true;

@@ -274,8 +274,25 @@ public final class CommonConfig {
                     "Geodes already started still finish.")
             .define("worldgen.geodes", true);
     public static final ForgeConfigSpec.BooleanValue CHARRED_TREES_ENABLED = BUILDER
-            .comment("Place charred trees on Venus in new chunks (ADR-063 section 5).")
+            .comment("Place charred trees on Venus and in the Tau Ceti g stormland in new chunks",
+                    "(ADR-063 sections 5 and 6).")
             .define("worldgen.charredTrees", true);
+    public static final ForgeConfigSpec.BooleanValue LIGHTWOOD_TREES_ENABLED = BUILDER
+            .comment("Place lightwood trees in the Tau Ceti f alien forest in new chunks (ADR-063 section 6).",
+                    "Saplings still grow.")
+            .define("worldgen.lightwoodTrees", true);
+    public static final ForgeConfigSpec.BooleanValue SWAMP_TREES_ENABLED = BUILDER
+            .comment("Place giant swamp trees in the Tau Ceti f deep swamp in new chunks (ADR-063 section 6).")
+            .define("worldgen.swampTrees", true);
+    public static final ForgeConfigSpec.BooleanValue INVERTED_PILLARS_ENABLED = BUILDER
+            .comment("Place inverted pillars in the Tau Ceti f ocean spires in new chunks (ADR-063 section 6).")
+            .define("worldgen.invertedPillars", true);
+    public static final ForgeConfigSpec.BooleanValue CRYSTAL_CLUSTERS_ENABLED = BUILDER
+            .comment("Place crystal clusters in the Tau Ceti g crystal chasms in new chunks (ADR-063 section 6).")
+            .define("worldgen.crystalClusters", true);
+    public static final ForgeConfigSpec.BooleanValue ELECTRIC_MUSHROOMS_ENABLED = BUILDER
+            .comment("Place electric mushrooms in the Tau Ceti g stormland in new chunks (ADR-063 section 6).")
+            .define("worldgen.electricMushrooms", true);
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -429,6 +446,27 @@ public final class CommonConfig {
 
     public static boolean charredTreesEnabled() {
         return SPEC.isLoaded() ? CHARRED_TREES_ENABLED.get() : CHARRED_TREES_ENABLED.getDefault();
+    }
+
+    /** ADR-063 section 6: the C15c world-feature switches; each reads its default until the config loads. */
+    public static boolean lightwoodTreesEnabled() {
+        return SPEC.isLoaded() ? LIGHTWOOD_TREES_ENABLED.get() : LIGHTWOOD_TREES_ENABLED.getDefault();
+    }
+
+    public static boolean swampTreesEnabled() {
+        return SPEC.isLoaded() ? SWAMP_TREES_ENABLED.get() : SWAMP_TREES_ENABLED.getDefault();
+    }
+
+    public static boolean invertedPillarsEnabled() {
+        return SPEC.isLoaded() ? INVERTED_PILLARS_ENABLED.get() : INVERTED_PILLARS_ENABLED.getDefault();
+    }
+
+    public static boolean crystalClustersEnabled() {
+        return SPEC.isLoaded() ? CRYSTAL_CLUSTERS_ENABLED.get() : CRYSTAL_CLUSTERS_ENABLED.getDefault();
+    }
+
+    public static boolean electricMushroomsEnabled() {
+        return SPEC.isLoaded() ? ELECTRIC_MUSHROOMS_ENABLED.get() : ELECTRIC_MUSHROOMS_ENABLED.getDefault();
     }
 
     private CommonConfig() {
