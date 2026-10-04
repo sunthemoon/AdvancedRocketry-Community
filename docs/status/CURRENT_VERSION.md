@@ -92,8 +92,13 @@ lifecycle conflicts: startup properties rewriting and repeated reload forceload
 refusal. Revision 3 remains unadopted. The [revision 4 disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04.md)
 adopts the independently reviewed phase-bound contract only, committed and
 pushed at `d04a116e6e6001f166bbf5e8f31fb78623a6b392`. A fresh isolated fixture
-implementation is assigned; actual-source review, clean host selection and
-native execution remain pending. Exact proposals/failures/primary controls are
+implementation has a [limited phase01 source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE01.md):
+two Python modules/two records are independently reviewed with no C/H/M/L and
+imported byte-exact. Actual Root intermediate 39/16/8 pure checks pass; CLI2
+explicitly refuses to act as the unimplemented full driver. Source publication/
+committed Python checks remain separate obligations. File/JSON/NBT/transport,
+Java fixture, clean host selection and native execution remain pending.
+Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).

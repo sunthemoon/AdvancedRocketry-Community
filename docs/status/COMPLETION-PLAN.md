@@ -110,7 +110,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   有两项 Medium：原生启动重写配置哈希、重启重复强制加载命令拒绝。
   两项冲突的[第四版限定处置](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04.md)
   经独立审核无 C/H/M/L，契约已在 `d04a116e` 提交并推送；旧第三版仍未接受。
-  新隔离 worktree 的夹具实现已分配；实际源码、适用干净主机和原生执行仍待验证。
+  [phase01 精确源码](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE01.md)
+  已独立审核无 C/H/M/L，四文件原样导入；Root 39/16/8 纯检查通过，CLI2 仍明确拒绝完整驱动。
+  提交后的 Python 回归、文件/JSON/NBT/transport/Java、适用干净主机和原生执行仍待验证。
 - [~] [C18a-01](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)：单项手持大气分析仪的
   只读契约经独立审核无 C/H/M/L，并按既有授权限定接受；原创资源已登记，
   精确源码及八项中央集成已独立审核，真实独立 19 单测通过。Root 已集成，
